@@ -103,20 +103,6 @@ internal sealed partial class EditorSceneWorkspace :
         m_sceneStateDiagnostics = new SceneStateDiagnosticTracker(runtimeSession.scenes, types);
     }
 
-    internal SceneWorld world => m_playModeSession?.runtimeWorld ?? m_runtimeSession.scenes;
-
-    internal IDisposable EnterPresentationScope() => (m_playModeSession?.runtimeSession ?? m_runtimeSession).EnterExecutionScope();
-
-    internal SerializationRegistry serialization => m_serialization;
-
-    internal IAssetReferenceResolver assets => m_assets;
-
-    internal TypeCatalog types => m_types;
-
-    internal TSceneObject? Find<TSceneObject>(Guid persistentId)
-        where TSceneObject : IdentityObject
-            => world.Find<TSceneObject>(persistentId);
-
     /// <summary>
     /// Gets all scenes currently available to editor features.
     /// </summary>
@@ -198,6 +184,100 @@ internal sealed partial class EditorSceneWorkspace :
         using IDisposable scope = EnterPresentationScope();
         world.SetActiveScene(scene);
     }
+
+    void IEditorReloadParticipant.RefreshDiagnostics() => m_sceneStateDiagnostics.Reconcile(force: true);
+
+    internal SceneWorld world => m_playModeSession?.runtimeWorld ?? m_runtimeSession.scenes;
+
+    internal SerializationRegistry serialization => m_serialization;
+
+    internal IAssetReferenceResolver assets => m_assets;
+
+    internal TypeCatalog types => m_types;
+
+    /// <summary>
+    /// Attaches the workspace to Asset Database changes and ensures an editable scene exists.
+    /// </summary>
+    /// <param name="context">
+    /// The shared editor context for the active runtime.
+    /// </param>
+    protected override void OnStart(EditorContext context)
+    {
+        if (m_isAttached)
+        {
+            return;
+        }
+        m_assets.Changed += OnAssetDatabaseChanged;
+        m_reloadIntegration = SceneReloadIntegration.Acquire(m_runtimeSession, m_serialization, m_assets, m_reloads);
+        m_reloadRegistration = m_reloads.Register(this);
+        m_isAttached = true;
+        m_sceneStateDiagnostics.Reconcile(force: true);
+    }
+
+    /// <summary>
+    /// Refreshes source synchronization for loaded editor documents.
+    /// </summary>
+    /// <param name="context">
+    /// The shared editor context containing current frame state.
+    /// </param>
+    protected override void OnUpdate(EditorContext context)
+    {
+        if (m_playModeSession is not null)
+        {
+            m_sceneStateDiagnostics.Reconcile();
+            return;
+        }
+        TryRestorePendingScenes();
+        Refresh();
+    }
+
+    /// <summary>
+    /// Detaches the workspace from Asset Database changes and releases any scene it created for the editor.
+    /// </summary>
+    /// <param name="context">
+    /// The shared editor context for the runtime being stopped.
+    /// </param>
+    protected override void OnStop(EditorContext context)
+    {
+        if (!m_isAttached)
+        {
+            return;
+        }
+        try
+        {
+            m_playModeSession?.Dispose();
+        }
+        finally
+        {
+            m_assets.Changed -= OnAssetDatabaseChanged;
+            m_reloadRegistration?.Dispose();
+            m_reloadRegistration = null;
+            m_runtimeSession.scenes.UnloadAllScenes();
+            m_sceneStateDiagnostics.Reconcile(force: true);
+            m_reloadIntegration?.Dispose();
+            m_reloadIntegration = null;
+            m_isAttached = false;
+            Clear();
+        }
+    }
+
+    /// <summary>
+    /// Releases resources retained by this feature after it has stopped.
+    /// </summary>
+    protected override void OnDispose()
+    {
+        m_reloadRegistration?.Dispose();
+        m_reloadRegistration = null;
+        m_reloadIntegration?.Dispose();
+        m_reloadIntegration = null;
+        m_diagnostics.Dispose();
+    }
+
+    internal IDisposable EnterPresentationScope() => (m_playModeSession?.runtimeSession ?? m_runtimeSession).EnterExecutionScope();
+
+    internal TSceneObject? Find<TSceneObject>(Guid persistentId)
+        where TSceneObject : IdentityObject
+            => world.Find<TSceneObject>(persistentId);
 
     internal void DisposeUnattached()
     {
@@ -297,86 +377,6 @@ internal sealed partial class EditorSceneWorkspace :
         {
         }
     }
-
-    /// <summary>
-    /// Attaches the workspace to Asset Database changes and ensures an editable scene exists.
-    /// </summary>
-    /// <param name="context">
-    /// The shared editor context for the active runtime.
-    /// </param>
-    protected override void OnStart(EditorContext context)
-    {
-        if (m_isAttached)
-        {
-            return;
-        }
-        m_assets.Changed += OnAssetDatabaseChanged;
-        m_reloadIntegration = SceneReloadIntegration.Acquire(m_runtimeSession, m_serialization, m_assets, m_reloads);
-        m_reloadRegistration = m_reloads.Register(this);
-        m_isAttached = true;
-        m_sceneStateDiagnostics.Reconcile(force: true);
-    }
-
-    /// <summary>
-    /// Refreshes source synchronization for loaded editor documents.
-    /// </summary>
-    /// <param name="context">
-    /// The shared editor context containing current frame state.
-    /// </param>
-    protected override void OnUpdate(EditorContext context)
-    {
-        if (m_playModeSession is not null)
-        {
-            m_sceneStateDiagnostics.Reconcile();
-            return;
-        }
-        TryRestorePendingScenes();
-        Refresh();
-    }
-
-    /// <summary>
-    /// Detaches the workspace from Asset Database changes and releases any scene it created for the editor.
-    /// </summary>
-    /// <param name="context">
-    /// The shared editor context for the runtime being stopped.
-    /// </param>
-    protected override void OnStop(EditorContext context)
-    {
-        if (!m_isAttached)
-        {
-            return;
-        }
-        try
-        {
-            m_playModeSession?.Dispose();
-        }
-        finally
-        {
-            m_assets.Changed -= OnAssetDatabaseChanged;
-            m_reloadRegistration?.Dispose();
-            m_reloadRegistration = null;
-            m_runtimeSession.scenes.UnloadAllScenes();
-            m_sceneStateDiagnostics.Reconcile(force: true);
-            m_reloadIntegration?.Dispose();
-            m_reloadIntegration = null;
-            m_isAttached = false;
-            Clear();
-        }
-    }
-
-    /// <summary>
-    /// Releases resources retained by this feature after it has stopped.
-    /// </summary>
-    protected override void OnDispose()
-    {
-        m_reloadRegistration?.Dispose();
-        m_reloadRegistration = null;
-        m_reloadIntegration?.Dispose();
-        m_reloadIntegration = null;
-        m_diagnostics.Dispose();
-    }
-
-    void IEditorReloadParticipant.RefreshDiagnostics() => m_sceneStateDiagnostics.Reconcile(force: true);
 
     internal void EnsureEditable(GameScene scene)
     {

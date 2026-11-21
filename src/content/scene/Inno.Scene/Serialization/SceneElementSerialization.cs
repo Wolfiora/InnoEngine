@@ -287,21 +287,6 @@ public static class SceneElementSerialization
         }
     }
 
-    private static void RequireComplete(
-        SerializationPropertyRestoreResult result,
-        string kind
-    ) {
-        if (result.success && result.ignoredCount == 0)
-        {
-            return;
-        }
-        throw new InvalidOperationException(
-            $"Scene {kind} property restoration was incomplete: "
-            + $"{result.restoredCount} restored, {result.ignoredCount} ignored, "
-            + $"{result.failures.Count} failed."
-        );
-    }
-
     internal static void RethrowAfterCleanup(
         Exception restoreFailure,
         EngineObject element,
@@ -339,6 +324,21 @@ public static class SceneElementSerialization
         throw new InvalidOperationException(
             $"Scene {kind} restoration failed and its cleanup did not complete successfully.",
             new AggregateException(restoreFailure, cleanupFailure)
+        );
+    }
+
+    private static void RequireComplete(
+        SerializationPropertyRestoreResult result,
+        string kind
+    ) {
+        if (result.success && result.ignoredCount == 0)
+        {
+            return;
+        }
+        throw new InvalidOperationException(
+            $"Scene {kind} property restoration was incomplete: "
+            + $"{result.restoredCount} restored, {result.ignoredCount} ignored, "
+            + $"{result.failures.Count} failed."
         );
     }
 

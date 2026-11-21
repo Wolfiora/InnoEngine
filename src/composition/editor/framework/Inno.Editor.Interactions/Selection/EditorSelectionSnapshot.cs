@@ -34,6 +34,11 @@ public sealed class EditorSelectionSnapshot
     public RuntimeIdentity? anchor { get; }
 
     /// <summary>
+    /// Gets the primary identity, or null when this snapshot contains no registered targets.
+    /// </summary>
+    public RuntimeIdentity? primary => identities.Count == 0 ? null : identities[^1];
+
+    /// <summary>
     /// Resolves this immutable selection in its original domains, including same-identity recovery after a generation change.
     /// </summary>
     /// <typeparam name="TTarget">
@@ -65,9 +70,4 @@ public sealed class EditorSelectionSnapshot
         }
         return destination.Count;
     }
-
-    /// <summary>
-    /// Gets the primary identity, or null when this snapshot contains no registered targets.
-    /// </summary>
-    public RuntimeIdentity? primary => identities.Count == 0 ? null : identities[^1];
 }

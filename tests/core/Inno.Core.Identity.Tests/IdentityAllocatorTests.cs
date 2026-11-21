@@ -8,28 +8,6 @@ public sealed class IdentityAllocatorTests
 {
     private readonly IdentityAllocator m_allocator = new();
 
-    private static void AssertRuntimeIdNotNull(IdentityObject target) => Assert.NotNull(target.identity.runtimeId);
-
-    private static void AssertRuntimeIdIsNull(IdentityObject target) => Assert.Null(target.identity.runtimeId);
-
-    private static int UnpackSlot(int runtimeId) => runtimeId & 0x000F_FFFF;
-
-    private static int UnpackGeneration(int runtimeId) => (runtimeId >> 20) & 0x0000_0FFF;
-
-    private static Identity GetIdentity(IdentityObject target) => target.identity;
-
-    private WeakReference<Entity> CreateRegisteredEntity(out int runtimeId)
-    {
-        var entity = new Entity();
-        m_allocator.Register(entity);
-        runtimeId = GetIdentity(entity).runtimeId!.Value;
-        return new WeakReference<Entity>(entity);
-    }
-
-    private sealed class Entity : IdentityObject;
-
-    private sealed class UnrelatedEntity : IdentityObject;
-
     [Fact]
     public void GetIdentity_DoesNotAutoRegisterObject()
     {
@@ -222,4 +200,26 @@ public sealed class IdentityAllocatorTests
         Assert.False(weakEntity.TryGetTarget(out _));
         Assert.Null(m_allocator.Get<Entity>(runtimeId));
     }
+
+    private WeakReference<Entity> CreateRegisteredEntity(out int runtimeId)
+    {
+        var entity = new Entity();
+        m_allocator.Register(entity);
+        runtimeId = GetIdentity(entity).runtimeId!.Value;
+        return new WeakReference<Entity>(entity);
+    }
+
+    private static void AssertRuntimeIdNotNull(IdentityObject target) => Assert.NotNull(target.identity.runtimeId);
+
+    private static void AssertRuntimeIdIsNull(IdentityObject target) => Assert.Null(target.identity.runtimeId);
+
+    private static int UnpackSlot(int runtimeId) => runtimeId & 0x000F_FFFF;
+
+    private static int UnpackGeneration(int runtimeId) => (runtimeId >> 20) & 0x0000_0FFF;
+
+    private static Identity GetIdentity(IdentityObject target) => target.identity;
+
+    private sealed class Entity : IdentityObject;
+
+    private sealed class UnrelatedEntity : IdentityObject;
 }

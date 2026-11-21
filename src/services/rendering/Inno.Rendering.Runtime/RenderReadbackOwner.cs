@@ -19,6 +19,42 @@ internal sealed class RenderReadbackOwner(
     private int m_peak;
     private long m_rejected;
 
+    /// <summary>
+    /// Releases the resources owned by this implementation.
+    /// </summary>
+    public void Dispose()
+    {
+        if (m_disposed)
+        {
+            return;
+        }
+        if (m_retirement is null)
+        {
+            m_retirement = new RenderRetirementQueue();
+            foreach ((RenderTextureReadbackHandle handle, PendingReadback pending) in m_pending)
+            {
+                m_retirement.Add(() => device.CancelTextureReadback(handle));
+                m_retirement.Add(() => pending.completion.TrySetException(new ObjectDisposedException(nameof(RenderReadbackOwner))));
+            }
+        }
+        try
+        {
+            m_retirement.Dispose();
+        }
+        catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
+        {
+            throw;
+        }
+        catch
+        {
+            m_pending.Clear();
+            m_disposed = true;
+            throw;
+        }
+        m_pending.Clear();
+        m_disposed = true;
+    }
+
     internal int count => m_pending.Count;
     internal int peakCount => m_peak;
     internal long rejectedCount => m_rejected;
@@ -98,42 +134,6 @@ internal sealed class RenderReadbackOwner(
                 pending.completion.TrySetCanceled(pending.cancellation);
             }
         }
-    }
-
-    /// <summary>
-    /// Releases the resources owned by this implementation.
-    /// </summary>
-    public void Dispose()
-    {
-        if (m_disposed)
-        {
-            return;
-        }
-        if (m_retirement is null)
-        {
-            m_retirement = new RenderRetirementQueue();
-            foreach ((RenderTextureReadbackHandle handle, PendingReadback pending) in m_pending)
-            {
-                m_retirement.Add(() => device.CancelTextureReadback(handle));
-                m_retirement.Add(() => pending.completion.TrySetException(new ObjectDisposedException(nameof(RenderReadbackOwner))));
-            }
-        }
-        try
-        {
-            m_retirement.Dispose();
-        }
-        catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
-        {
-            throw;
-        }
-        catch
-        {
-            m_pending.Clear();
-            m_disposed = true;
-            throw;
-        }
-        m_pending.Clear();
-        m_disposed = true;
     }
 
     private sealed class PendingReadback(CancellationToken cancellation)

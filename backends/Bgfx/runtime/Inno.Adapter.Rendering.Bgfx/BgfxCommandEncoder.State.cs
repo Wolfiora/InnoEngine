@@ -327,6 +327,17 @@ internal sealed unsafe partial class BgfxCommandEncoder
         return color | (alpha << 3);
     }
 
+    private static bgfx.StateFlags BlendEquation(RenderBlendEquation equation)
+        => equation switch
+    {
+        RenderBlendEquation.Add => bgfx.StateFlags.BlendEquationAdd,
+        RenderBlendEquation.Subtract => bgfx.StateFlags.BlendEquationSub,
+        RenderBlendEquation.ReverseSubtract => bgfx.StateFlags.BlendEquationRevsub,
+        RenderBlendEquation.Minimum => bgfx.StateFlags.BlendEquationMin,
+        RenderBlendEquation.Maximum => bgfx.StateFlags.BlendEquationMax,
+        _ => throw new ArgumentOutOfRangeException(nameof(equation))
+    };
+
     private static bgfx.StateFlags BlendFactor(RenderBlendFactor factor)
         => factor switch
     {
@@ -344,16 +355,5 @@ internal sealed unsafe partial class BgfxCommandEncoder
         RenderBlendFactor.Constant => bgfx.StateFlags.BlendFactor,
         RenderBlendFactor.InverseConstant => bgfx.StateFlags.BlendInvFactor,
         _ => throw new ArgumentOutOfRangeException(nameof(factor))
-    };
-
-    private static bgfx.StateFlags BlendEquation(RenderBlendEquation equation)
-        => equation switch
-    {
-        RenderBlendEquation.Add => bgfx.StateFlags.BlendEquationAdd,
-        RenderBlendEquation.Subtract => bgfx.StateFlags.BlendEquationSub,
-        RenderBlendEquation.ReverseSubtract => bgfx.StateFlags.BlendEquationRevsub,
-        RenderBlendEquation.Minimum => bgfx.StateFlags.BlendEquationMin,
-        RenderBlendEquation.Maximum => bgfx.StateFlags.BlendEquationMax,
-        _ => throw new ArgumentOutOfRangeException(nameof(equation))
     };
 }

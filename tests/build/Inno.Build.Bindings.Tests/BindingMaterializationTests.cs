@@ -164,10 +164,6 @@ public sealed class BindingMaterializationTests : IDisposable
 
     private sealed class RecordingBuildEngine : IBuildEngine3
     {
-        internal List<BuildErrorEventArgs> errors { get; } = [];
-        internal TaskCompletionSource yielded { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        internal bool reacquired { get; private set; }
-        internal bool failReacquire { get; set; }
         public bool ContinueOnError => false;
         public int LineNumberOfTaskNode => 0;
         public int ColumnNumberOfTaskNode => 0;
@@ -208,6 +204,15 @@ public sealed class BindingMaterializationTests : IDisposable
             string toolsVersion
         ) => throw new NotSupportedException();
 
+        public BuildEngineResult BuildProjectFilesInParallel(
+            string[] projects,
+            string[] targets,
+            IDictionary[] properties,
+            IList<string>[] removedProperties,
+            string[] toolsVersions,
+            bool returnTargetOutputs
+        ) => throw new NotSupportedException();
+
         public bool BuildProjectFilesInParallel(
             string[] projects,
             string[] targets,
@@ -218,13 +223,9 @@ public sealed class BindingMaterializationTests : IDisposable
             bool unloadProjects
         ) => throw new NotSupportedException();
 
-        public BuildEngineResult BuildProjectFilesInParallel(
-            string[] projects,
-            string[] targets,
-            IDictionary[] properties,
-            IList<string>[] removedProperties,
-            string[] toolsVersions,
-            bool returnTargetOutputs
-        ) => throw new NotSupportedException();
+        internal List<BuildErrorEventArgs> errors { get; } = [];
+        internal TaskCompletionSource yielded { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal bool reacquired { get; private set; }
+        internal bool failReacquire { get; set; }
     }
 }

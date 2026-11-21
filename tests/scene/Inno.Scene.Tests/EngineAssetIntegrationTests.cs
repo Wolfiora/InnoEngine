@@ -385,6 +385,15 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
         return new WeakReference(loaded);
     }
 
+    private void WriteAsset(
+        string relativePath,
+        string content
+    ) {
+        string path = Path.Combine(m_root, "Assets", relativePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllText(path, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+    }
+
     private static void DestroyScene(GameScene scene)
     {
         if (scene.isLoaded)
@@ -395,14 +404,5 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
 
         SceneManager.LoadScene(scene);
         SceneManager.UnloadScene(scene);
-    }
-
-    private void WriteAsset(
-        string relativePath,
-        string content
-    ) {
-        string path = Path.Combine(m_root, "Assets", relativePath);
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        File.WriteAllText(path, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
     }
 }

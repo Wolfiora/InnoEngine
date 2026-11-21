@@ -11,18 +11,6 @@ namespace Inno.Assets;
 public sealed class TextAsset : AssetObject
 {
     /// <summary>
-    /// Gets the decoded text content.
-    /// </summary>
-    [SerializableProperty]
-    public string content { get; private set; } = string.Empty;
-
-    /// <summary>
-    /// Gets the language or format hint associated with the text.
-    /// </summary>
-    [SerializableProperty]
-    public string languageHint { get; private set; } = "plain";
-
-    /// <summary>
     /// Creates an empty text asset.
     /// </summary>
     public TextAsset() {}
@@ -43,4 +31,16 @@ public sealed class TextAsset : AssetObject
         this.content = content ?? string.Empty;
         this.languageHint = languageHint ?? "plain";
     }
+
+    /// <summary>
+    /// Gets the decoded text content.
+    /// </summary>
+    [SerializableProperty]
+    public string content { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// Gets the language or format hint associated with the text.
+    /// </summary>
+    [SerializableProperty]
+    public string languageHint { get; private set; } = "plain";
 }

@@ -114,8 +114,6 @@ internal sealed class CatalogParticipantRegistration(
 {
     private bool m_disposed;
 
-    internal Guid id { get; } = id;
-
     /// <summary>
     /// Releases the resources owned by this instance.
     /// </summary>
@@ -128,6 +126,8 @@ internal sealed class CatalogParticipantRegistration(
         m_disposed = true;
         owner.Unregister(id);
     }
+
+    internal Guid id { get; } = id;
 }
 
 internal sealed class AssemblyCatalogRefreshSet(IReadOnlyList<IAssemblyCatalogTransaction> transactions)

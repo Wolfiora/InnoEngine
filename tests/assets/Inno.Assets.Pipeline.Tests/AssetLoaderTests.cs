@@ -658,29 +658,6 @@ public sealed class AssetLoaderTests : IDisposable
         m_diagnostics.UnregisterSink(sink);
     }
 
-    private sealed class CatalogObserver : IAssemblyCatalogParticipant
-    {
-        internal Action? prepare;
-        internal Action? activate;
-
-        public IAssemblyCatalogTransaction Prepare(AssemblyCatalogSnapshot catalog)
-        {
-            prepare?.Invoke();
-            return new Observation(activate);
-        }
-
-        private sealed class Observation(Action? activate) : IAssemblyCatalogTransaction
-        {
-            public object? context => null;
-
-            public void Activate() => activate?.Invoke();
-
-            public void Complete() {}
-
-            public void Rollback() {}
-        }
-    }
-
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -1112,23 +1089,6 @@ public sealed class AssetLoaderTests : IDisposable
         Assert.Equal(0, database.residencyStatistics.residentAssetCount);
         Assert.Null(identities.Get<AssetObject>(identity));
         Assert.Throws<ObjectDisposedException>(() => last.asset);
-    }
-
-    private sealed class IdentityConflict : IdentityObject;
-
-    private sealed class MountedSourceMetadata : ISerializable
-    {
-        [SerializableProperty]
-        public Guid persistentId { get; set; }
-
-        [SerializableProperty]
-        public int sourceKind { get; set; }
-
-        [SerializableProperty]
-        public string importerId { get; set; } = string.Empty;
-
-        [SerializableProperty]
-        public byte[] importerSettingsBytes { get; set; } = [];
     }
 
     [Fact]
@@ -2445,6 +2405,46 @@ public sealed class AssetLoaderTests : IDisposable
         return new WeakReference(root);
     }
 
+    private sealed class CatalogObserver : IAssemblyCatalogParticipant
+    {
+        internal Action? prepare;
+        internal Action? activate;
+
+        public IAssemblyCatalogTransaction Prepare(AssemblyCatalogSnapshot catalog)
+        {
+            prepare?.Invoke();
+            return new Observation(activate);
+        }
+
+        private sealed class Observation(Action? activate) : IAssemblyCatalogTransaction
+        {
+            public object? context => null;
+
+            public void Activate() => activate?.Invoke();
+
+            public void Complete() {}
+
+            public void Rollback() {}
+        }
+    }
+
+    private sealed class IdentityConflict : IdentityObject;
+
+    private sealed class MountedSourceMetadata : ISerializable
+    {
+        [SerializableProperty]
+        public Guid persistentId { get; set; }
+
+        [SerializableProperty]
+        public int sourceKind { get; set; }
+
+        [SerializableProperty]
+        public string importerId { get; set; } = string.Empty;
+
+        [SerializableProperty]
+        public byte[] importerSettingsBytes { get; set; } = [];
+    }
+
     private sealed class TestWorkspace : IDisposable
     {
         private readonly string m_root = Path.Combine(
@@ -2457,6 +2457,15 @@ public sealed class AssetLoaderTests : IDisposable
         {
             Directory.CreateDirectory(assetRoot);
             Directory.CreateDirectory(libraryRoot);
+        }
+
+        public void Dispose()
+        {
+            SlowAssetImporter.allowImport.Set();
+            if (Directory.Exists(m_root))
+            {
+                Directory.Delete(m_root, recursive: true);
+            }
         }
 
         internal string assetRoot => Path.Combine(m_root, "Assets");
@@ -2517,24 +2526,15 @@ public sealed class AssetLoaderTests : IDisposable
                 File.Delete(path);
             }
         }
-
-        public void Dispose()
-        {
-            SlowAssetImporter.allowImport.Set();
-            if (Directory.Exists(m_root))
-            {
-                Directory.Delete(m_root, recursive: true);
-            }
-        }
     }
 
     private sealed class TestDiagnosticSink : IDiagnosticSink
     {
-        internal Dictionary<string, DiagnosticReport> reports { get; } = new(StringComparer.Ordinal);
-
         public void Replace(DiagnosticReport report) => reports[report.source.id] = report;
 
         public void Clear(DiagnosticSource source) => reports.Remove(source.id);
+
+        internal Dictionary<string, DiagnosticReport> reports { get; } = new(StringComparer.Ordinal);
     }
 }
 
@@ -2627,9 +2627,9 @@ internal sealed class DeferredAssetImporter : AssetImporter<DeferredAsset>
 {
     private static readonly IReadOnlyList<string> s_extensions = [".deferredasset"];
 
-    internal static bool isAvailable { get; set; } = true;
-
     public override IReadOnlyList<string> supportedExtensions => isAvailable ? s_extensions : Array.Empty<string>();
+
+    internal static bool isAvailable { get; set; } = true;
 
     protected override ValueTask ImportAsync(
         AssetImportContext context,
@@ -2784,13 +2784,6 @@ internal sealed class SlowAssetImporter : AssetImporter<SlowAsset>
 
     public override IReadOnlyList<string> supportedExtensions { get; } = [".slowasset"];
 
-    internal static void Reset()
-    {
-        importCount = 0;
-        importStarted.Reset();
-        allowImport.Reset();
-    }
-
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<SlowAsset> output,
@@ -2804,6 +2797,13 @@ internal sealed class SlowAssetImporter : AssetImporter<SlowAsset>
         }
         output.SetAsset(new SlowAsset { value = context.ReadUtf8Text() });
         return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+    }
+
+    internal static void Reset()
+    {
+        importCount = 0;
+        importStarted.Reset();
+        allowImport.Reset();
     }
 }
 

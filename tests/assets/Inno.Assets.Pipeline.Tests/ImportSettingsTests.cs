@@ -162,7 +162,6 @@ public sealed class ImportSettingsTests
 
     private sealed class Fixture : IDisposable
     {
-        internal static AssetPath path => AssetPath.Project("value.configured");
         private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoImportSettingsTests", Guid.NewGuid().ToString("N"));
         private readonly ModuleHost m_modules;
         private readonly TypeCatalog m_types;
@@ -185,6 +184,18 @@ public sealed class ImportSettingsTests
             m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         }
 
+        public void Dispose()
+        {
+            m_serialization.Dispose();
+            m_types.Dispose();
+            m_modules.Dispose();
+            m_logs.Dispose();
+            m_scope.Dispose();
+            Directory.Delete(m_root, true);
+        }
+
+        internal static AssetPath path => AssetPath.Project("value.configured");
+
         internal string assetRoot => Path.Combine(m_root, "Assets");
         internal string sourcePath => Path.Combine(assetRoot, "value.configured");
 
@@ -204,16 +215,6 @@ public sealed class ImportSettingsTests
                 ],
                 Path.Combine(m_root, "ReadOnlyLibrary")
             );
-
-        public void Dispose()
-        {
-            m_serialization.Dispose();
-            m_types.Dispose();
-            m_modules.Dispose();
-            m_logs.Dispose();
-            m_scope.Dispose();
-            Directory.Delete(m_root, true);
-        }
     }
 }
 

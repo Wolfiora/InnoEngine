@@ -11,6 +11,21 @@ namespace Inno.Scripting.Compiler;
 public sealed class ScriptSourceAsset : AssetObject
 {
     /// <summary>
+    /// Creates an empty script source asset for deserialization.
+    /// </summary>
+    public ScriptSourceAsset() {}
+
+    internal ScriptSourceAsset(
+        ScriptAssemblyScope scope,
+        string[] declaredTypeNames,
+        string[] parseDiagnostics
+    ) {
+        this.scope = scope;
+        this.declaredTypeNames = declaredTypeNames;
+        this.parseDiagnostics = parseDiagnostics;
+    }
+
+    /// <summary>
     /// Gets the default assembly scope inferred for the source.
     /// </summary>
     [SerializableProperty]
@@ -27,19 +42,4 @@ public sealed class ScriptSourceAsset : AssetObject
     /// </summary>
     [SerializableProperty]
     public string[] parseDiagnostics { get; private set; } = [];
-
-    /// <summary>
-    /// Creates an empty script source asset for deserialization.
-    /// </summary>
-    public ScriptSourceAsset() {}
-
-    internal ScriptSourceAsset(
-        ScriptAssemblyScope scope,
-        string[] declaredTypeNames,
-        string[] parseDiagnostics
-    ) {
-        this.scope = scope;
-        this.declaredTypeNames = declaredTypeNames;
-        this.parseDiagnostics = parseDiagnostics;
-    }
 }

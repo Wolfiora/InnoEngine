@@ -98,6 +98,19 @@ public sealed class CoroutineScheduler : IDisposable
     }
 
     /// <summary>
+    /// Requests stopping all active coroutines.
+    /// </summary>
+    public void StopAllCoroutines()
+    {
+        if (Volatile.Read(ref m_disposed) != 0)
+        {
+            return;
+        }
+
+        m_commands.Enqueue(Command.StopAll());
+    }
+
+    /// <summary>
     /// Stops owned coroutines and disposes their nested enumerators in reverse order.
     /// Reentrant calls defer cleanup of an executing callback until that callback returns.
     /// </summary>
@@ -131,19 +144,6 @@ public sealed class CoroutineScheduler : IDisposable
     }
 
     /// <summary>
-    /// Requests stopping all active coroutines.
-    /// </summary>
-    public void StopAllCoroutines()
-    {
-        if (Volatile.Read(ref m_disposed) != 0)
-        {
-            return;
-        }
-
-        m_commands.Enqueue(Command.StopAll());
-    }
-
-    /// <summary>
     /// Closes admission and disposes all active and pending enumerators.
     /// Reentrant disposal retires the executing enumerator after its callback returns.
     /// </summary>
@@ -172,9 +172,6 @@ public sealed class CoroutineScheduler : IDisposable
             }
         }
     }
-
-    internal double now => m_now;
-    internal ulong frame => m_frame;
 
     /// <summary>
     /// Advances coroutine execution by one frame.
@@ -224,6 +221,9 @@ public sealed class CoroutineScheduler : IDisposable
             }
         }
     }
+
+    internal double now => m_now;
+    internal ulong frame => m_frame;
 
     internal bool Contains(CoroutineHandle handle)
     {

@@ -19,9 +19,29 @@ namespace Inno.Extensibility.Modules.Tests;
 
 public sealed class ModuleHostTests : IDisposable
 {
-    private static object? s_retained;
     private static readonly AsyncLocal<object?> S_ASYNC_ROOT = new();
-    private static event Action? s_signal;
+
+    private static readonly Guid S_RELOADABLE_TYPE_ID =
+        Guid.Parse("44a4cda2-a03e-4918-8db2-f37048a9e4f1");
+
+    private static object? s_retained;
+
+    private readonly string m_cacheDirectory = Path.Combine(
+        Path.GetTempPath(),
+        "InnoModuleHostTests",
+        Guid.NewGuid().ToString("N")
+    );
+
+    private readonly ModuleHost m_modules;
+    private readonly TypeCatalog m_types;
+
+    public ModuleHostTests()
+    {
+        m_modules = new ModuleHost(
+            new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleHostTests).Assembly)}
+        );
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+    }
 
     [Fact]
     public void RepeatedReloadCollectsEveryRetiredContextBeforeNextGeneration()
@@ -64,90 +84,6 @@ public sealed class ModuleHostTests : IDisposable
         ForceCollection();
         Assert.True(monitor.isCompleted);
         Assert.Throws<AssemblyUnloadException>(() => barrier.Advance());
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private IDisposable CreateRetention(string kind)
-    {
-        Type type = new TypeRef(S_RELOADABLE_TYPE_ID).Resolve(m_types);
-        switch (kind)
-        {
-            case "async-local":
-                S_ASYNC_ROOT.Value = type;
-                return new Retention(() => S_ASYNC_ROOT.Value = null);
-            case "static":
-                s_retained = type;
-                return new Retention(() => s_retained = null);
-            case "event":
-                Action handler = () => GC.KeepAlive(type);
-                s_signal += handler;
-                s_signal?.Invoke();
-                return new Retention(() => s_signal -= handler);
-            case "task":
-                s_retained = Task.FromResult(type);
-                return new Retention(() => s_retained = null);
-            case "thread":
-                var stop = new ManualResetEventSlim();
-                var started = new ManualResetEventSlim();
-                var thread = new Thread(() =>
-                {
-                    started.Set();
-                    stop.Wait();
-                    GC.KeepAlive(type);
-                });
-                thread.Start();
-                started.Wait();
-                return new Retention(() =>
-                {
-                    stop.Set();
-                    thread.Join();
-                    stop.Dispose();
-                    started.Dispose();
-                });
-            case "handle":
-                GCHandle handle = GCHandle.Alloc(type);
-                return new Retention(handle.Free);
-            case "callback":
-                NativeCallback callback = () => GC.KeepAlive(type);
-                IntPtr pointer = Marshal.GetFunctionPointerForDelegate(callback);
-                GCHandle root = GCHandle.Alloc(callback);
-                InvokeNativeCallback(pointer);
-                return new Retention(root.Free);
-            default:
-                throw new ArgumentOutOfRangeException(nameof(kind));
-        }
-    }
-
-    private static unsafe void InvokeNativeCallback(IntPtr pointer) => ((delegate* unmanaged[Cdecl]<void>)pointer)();
-
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private delegate void NativeCallback();
-
-    private sealed class Retention(Action release) : IDisposable
-    {
-        private Action? m_release = release;
-
-        public void Dispose() => Interlocked.Exchange(ref m_release, null)?.Invoke();
-    }
-
-    private static readonly Guid S_RELOADABLE_TYPE_ID =
-        Guid.Parse("44a4cda2-a03e-4918-8db2-f37048a9e4f1");
-
-    private readonly string m_cacheDirectory = Path.Combine(
-        Path.GetTempPath(),
-        "InnoModuleHostTests",
-        Guid.NewGuid().ToString("N")
-    );
-
-    private readonly ModuleHost m_modules;
-    private readonly TypeCatalog m_types;
-
-    public ModuleHostTests()
-    {
-        m_modules = new ModuleHost(
-            new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleHostTests).Assembly)}
-        );
-        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
     }
 
     public void Dispose()
@@ -462,6 +398,60 @@ public sealed class ModuleHostTests : IDisposable
         Assert.Empty(m_modules.modules);
     }
 
+    private static event Action? s_signal;
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private IDisposable CreateRetention(string kind)
+    {
+        Type type = new TypeRef(S_RELOADABLE_TYPE_ID).Resolve(m_types);
+        switch (kind)
+        {
+            case "async-local":
+                S_ASYNC_ROOT.Value = type;
+                return new Retention(() => S_ASYNC_ROOT.Value = null);
+            case "static":
+                s_retained = type;
+                return new Retention(() => s_retained = null);
+            case "event":
+                Action handler = () => GC.KeepAlive(type);
+                s_signal += handler;
+                s_signal?.Invoke();
+                return new Retention(() => s_signal -= handler);
+            case "task":
+                s_retained = Task.FromResult(type);
+                return new Retention(() => s_retained = null);
+            case "thread":
+                var stop = new ManualResetEventSlim();
+                var started = new ManualResetEventSlim();
+                var thread = new Thread(() =>
+                {
+                    started.Set();
+                    stop.Wait();
+                    GC.KeepAlive(type);
+                });
+                thread.Start();
+                started.Wait();
+                return new Retention(() =>
+                {
+                    stop.Set();
+                    thread.Join();
+                    stop.Dispose();
+                    started.Dispose();
+                });
+            case "handle":
+                GCHandle handle = GCHandle.Alloc(type);
+                return new Retention(handle.Free);
+            case "callback":
+                NativeCallback callback = () => GC.KeepAlive(type);
+                nint pointer = Marshal.GetFunctionPointerForDelegate(callback);
+                GCHandle root = GCHandle.Alloc(callback);
+                InvokeNativeCallback(pointer);
+                return new Retention(root.Free);
+            default:
+                throw new ArgumentOutOfRangeException(nameof(kind));
+        }
+    }
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     private IAssemblyUnloadProbe CompleteReload(AssemblyModuleHandle handle)
     {
@@ -473,10 +463,6 @@ public sealed class ModuleHostTests : IDisposable
     [MethodImpl(MethodImplOptions.NoInlining)]
     private StrongTypeHolder CreateStrongTypeHolder()
         => new(new TypeRef(S_RELOADABLE_TYPE_ID).Resolve(m_types));
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ClearStrongTypeHolder(StrongTypeHolder holder)
-        => holder.type = null;
 
     private AssemblyModuleHandle LoadVersion(string version) => m_modules.Load(CreateRequest(version));
 
@@ -525,6 +511,12 @@ public sealed class ModuleHostTests : IDisposable
         };
     }
 
+    private static unsafe void InvokeNativeCallback(nint pointer) => ((delegate* unmanaged[Cdecl]<void>)pointer)();
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ClearStrongTypeHolder(StrongTypeHolder holder)
+        => holder.type = null;
+
     private static int ReadVersion(Type type)
     {
         object instance = Activator.CreateInstance(type)!;
@@ -538,6 +530,16 @@ public sealed class ModuleHostTests : IDisposable
             GC.Collect(2, GCCollectionMode.Forced, blocking: true, compacting: true);
             GC.WaitForPendingFinalizers();
         }
+    }
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate void NativeCallback();
+
+    private sealed class Retention(Action release) : IDisposable
+    {
+        private Action? m_release = release;
+
+        public void Dispose() => Interlocked.Exchange(ref m_release, null)?.Invoke();
     }
 
     private sealed class ReloadableTypeRegistry(TypeCatalog types) : TypeRegistry<Type[]>(types)

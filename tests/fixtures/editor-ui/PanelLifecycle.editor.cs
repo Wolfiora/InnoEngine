@@ -30,6 +30,7 @@ public sealed class PanelLifecycle(
 
     private readonly List<string> m_resources = ["completed-cycles\t" + C_RESOURCE_COLUMNS];
     private readonly List<string> m_preparationResources = ["phase\t" + C_RESOURCE_COLUMNS];
+    private readonly int m_requiredCycles = ReadRequiredCycles();
     private string[] m_panels = [];
     private bool[] m_originalOpenStates = [];
     private string? m_undoName;
@@ -42,7 +43,6 @@ public sealed class PanelLifecycle(
     private int m_preparationFrames;
     private int m_frame;
     private int m_cycles;
-    private readonly int m_requiredCycles = ReadRequiredCycles();
     private bool m_baselineCaptured;
     private bool m_completed;
 
@@ -184,17 +184,6 @@ public sealed class PanelLifecycle(
     private void CaptureResources()
         => m_resources.Add(CaptureResourceRow(m_cycles.ToString(System.Globalization.CultureInfo.InvariantCulture)));
 
-    private static int ReadRequiredCycles()
-    {
-        string value = Environment.GetEnvironmentVariable("INNO_ACCEPTANCE_PANEL_CYCLES") ?? "100";
-        if (!int.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out int cycles)
-            || cycles < 100 || cycles > 10_000 || cycles % 10 != 0
-        ) {
-            throw new InvalidOperationException("The lifecycle acceptance requires 100–10000 cycles in ten-cycle intervals.");
-        }
-        return cycles;
-    }
-
     private string CaptureResourceRow(string observation)
     {
         ManagedMemorySample memory = ManagedMemorySample.Capture();
@@ -206,5 +195,16 @@ public sealed class PanelLifecycle(
             + FormattableString.Invariant(
                 $"\t{memory.collectionIndex}\t{memory.generation}\t{memory.compacted}\t{memory.concurrent}\t{memory.heapBytes}\t{memory.fragmentedBytes}\t{memory.estimatedBytes}"
             );
+    }
+
+    private static int ReadRequiredCycles()
+    {
+        string value = Environment.GetEnvironmentVariable("INNO_ACCEPTANCE_PANEL_CYCLES") ?? "100";
+        if (!int.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out int cycles)
+            || cycles < 100 || cycles > 10_000 || cycles % 10 != 0
+        ) {
+            throw new InvalidOperationException("The lifecycle acceptance requires 100–10000 cycles in ten-cycle intervals.");
+        }
+        return cycles;
     }
 }

@@ -14,6 +14,63 @@ namespace Inno.Build.Toolchains;
 public sealed class NativeBindingGenerationDescriptor
 {
     /// <summary>
+    /// Gets the immutable input identity assigned to this target generation.
+    /// </summary>
+    public required string fingerprint { get; init; }
+
+    /// <summary>
+    /// Gets whether the generated context uses runtime-resolved imports instead of a module provider.
+    /// This initialization choice is independent of static or shared native linkage.
+    /// </summary>
+    public required bool usesRuntimeImports { get; init; }
+
+    /// <summary>
+    /// Gets the absolute managed source path selected by the component project.
+    /// </summary>
+    public required string bindingsPath { get; init; }
+
+    /// <summary>
+    /// Gets the complete native artifact and compilation-requirement directory, or empty when none is required.
+    /// </summary>
+    public required string nativeDirectory { get; init; }
+
+    /// <summary>
+    /// Gets the immutable artifact root protected by reading leases, or an empty value for mutable host sources.
+    /// </summary>
+    public required string artifactDirectory { get; init; }
+
+    /// <summary>
+    /// Gets the publisher root coordinating immutable artifact readers and retirement, or empty for host sources.
+    /// This owner remains unchanged when component sources are copied into a frozen build workspace.
+    /// </summary>
+    public required string artifactOwnerDirectory { get; init; }
+
+    /// <summary>
+    /// Atomically writes this completed generation to a request-owned descriptor file.
+    /// </summary>
+    /// <param name="path">
+    /// The descriptor destination; a unique path keeps concurrent requests independent.
+    /// </param>
+    public void Write(string path)
+    {
+        string destination = Path.GetFullPath(path);
+        Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+        string staging = destination + ".staging-" + Guid.NewGuid().ToString("N");
+        try
+        {
+            File.WriteAllText(staging, JsonSerializer.Serialize(this));
+            File.Move(staging, destination, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(staging))
+            {
+                File.Delete(staging);
+            }
+        }
+    }
+
+    /// <summary>
     /// Writes the exact native binding identities for a subsequent managed build without reselecting generations.
     /// Identical content preserves the existing import timestamp; changed content is installed atomically.
     /// </summary>
@@ -92,38 +149,6 @@ public sealed class NativeBindingGenerationDescriptor
     }
 
     /// <summary>
-    /// Gets the immutable input identity assigned to this target generation.
-    /// </summary>
-    public required string fingerprint { get; init; }
-
-    /// <summary>
-    /// Gets whether the generated context uses runtime-resolved imports instead of a module provider.
-    /// This initialization choice is independent of static or shared native linkage.
-    /// </summary>
-    public required bool usesRuntimeImports { get; init; }
-
-    /// <summary>
-    /// Gets the absolute managed source path selected by the component project.
-    /// </summary>
-    public required string bindingsPath { get; init; }
-
-    /// <summary>
-    /// Gets the complete native artifact and compilation-requirement directory, or empty when none is required.
-    /// </summary>
-    public required string nativeDirectory { get; init; }
-
-    /// <summary>
-    /// Gets the immutable artifact root protected by reading leases, or an empty value for mutable host sources.
-    /// </summary>
-    public required string artifactDirectory { get; init; }
-
-    /// <summary>
-    /// Gets the publisher root coordinating immutable artifact readers and retirement, or empty for host sources.
-    /// This owner remains unchanged when component sources are copied into a frozen build workspace.
-    /// </summary>
-    public required string artifactOwnerDirectory { get; init; }
-
-    /// <summary>
     /// Reads and validates the result of a completed component generation request.
     /// </summary>
     /// <param name="path">
@@ -148,31 +173,6 @@ public sealed class NativeBindingGenerationDescriptor
         ) ?? throw new InvalidDataException("The binding generation descriptor is empty.");
         descriptor.Validate();
         return descriptor;
-    }
-
-    /// <summary>
-    /// Atomically writes this completed generation to a request-owned descriptor file.
-    /// </summary>
-    /// <param name="path">
-    /// The descriptor destination; a unique path keeps concurrent requests independent.
-    /// </param>
-    public void Write(string path)
-    {
-        string destination = Path.GetFullPath(path);
-        Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-        string staging = destination + ".staging-" + Guid.NewGuid().ToString("N");
-        try
-        {
-            File.WriteAllText(staging, JsonSerializer.Serialize(this));
-            File.Move(staging, destination, overwrite: true);
-        }
-        finally
-        {
-            if (File.Exists(staging))
-            {
-                File.Delete(staging);
-            }
-        }
     }
 
     internal void Validate()

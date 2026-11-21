@@ -46,11 +46,11 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
     private readonly List<CompositionRequest> m_currentCompositions = [];
     private readonly List<IRenderFrameGraphContributor> m_contributors = [];
     private readonly RenderFrameScratch m_scratch = new();
+    private readonly Dictionary<FrameIssueKey, Diagnostic> m_previousFrameIssues = [];
+    private readonly Dictionary<FrameIssueKey, Diagnostic> m_currentFrameIssues = [];
     private RenderContributorSnapshot m_contributorSnapshot = RenderContributorSnapshot.empty;
     private RenderContributorSnapshot m_frameContributors = RenderContributorSnapshot.empty;
     private long m_prunedTypeCacheVersion = -1;
-    private readonly Dictionary<FrameIssueKey, Diagnostic> m_previousFrameIssues = [];
-    private readonly Dictionary<FrameIssueKey, Diagnostic> m_currentFrameIssues = [];
     private ulong m_frameIndex;
     private uint m_graphGeneration;
     private RenderExtensionRegistry.RequestProviderGeneration? m_requestProviders;
@@ -170,6 +170,26 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
     public ulong currentFrameIndex => m_frameIndex;
 
     /// <summary>
+    /// Gets the non-zero rendering-device generation that owns persistent handles.
+    /// </summary>
+    public uint deviceGeneration => m_device.generation;
+
+    /// <summary>
+    /// Gets a detached control-thread snapshot of resource occupancy, high-water marks and rejected admissions.
+    /// </summary>
+    public RenderResourceStatistics resourceStatistics
+        => m_resourceService.statistics with
+    {
+        uploadPages = m_uploads.pageCount,
+        uploadResidentBytes = m_uploads.residentBytes,
+        uploadPeakBytes = m_uploads.peakResidentBytes,
+        uploadedFrameBytes = m_uploads.frameBytes,
+        rejectedUploads = m_uploads.rejectedCount,
+        targets = targets.count,
+        rejectedTargets = targets.rejectedCount
+    };
+
+    /// <summary>
     /// Collects frame requests from rendering models and registered providers.
     /// </summary>
     /// <param name="context">
@@ -214,26 +234,6 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
     }
 
     /// <summary>
-    /// Gets the non-zero rendering-device generation that owns persistent handles.
-    /// </summary>
-    public uint deviceGeneration => m_device.generation;
-
-    /// <summary>
-    /// Gets a detached control-thread snapshot of resource occupancy, high-water marks and rejected admissions.
-    /// </summary>
-    public RenderResourceStatistics resourceStatistics
-        => m_resourceService.statistics with
-    {
-        uploadPages = m_uploads.pageCount,
-        uploadResidentBytes = m_uploads.residentBytes,
-        uploadPeakBytes = m_uploads.peakResidentBytes,
-        uploadedFrameBytes = m_uploads.frameBytes,
-        rejectedUploads = m_uploads.rejectedCount,
-        targets = targets.count,
-        rejectedTargets = targets.rejectedCount
-    };
-
-    /// <summary>
     /// Binds this rendering runtime to script-facing graphics APIs for the current asynchronous execution flow.
     /// </summary>
     /// <returns>
@@ -256,6 +256,12 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
     /// </summary>
     protected override void OnStart() => EnsureActive();
 
+    /// <summary>
+    /// Releases every runtime rendering generation, persistent target, upload, and GPU resource
+    /// owned by this instance.
+    /// </summary>
+    protected override void OnStop() => ReleaseRendering();
+
     private void EnsureActive()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
@@ -265,10 +271,4 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
         }
         m_extensions.EnsureHealthy();
     }
-
-    /// <summary>
-    /// Releases every runtime rendering generation, persistent target, upload, and GPU resource
-    /// owned by this instance.
-    /// </summary>
-    protected override void OnStop() => ReleaseRendering();
 }

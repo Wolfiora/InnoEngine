@@ -20,25 +20,9 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     private readonly IAnimationBindingSink m_bindings;
     private readonly EventDispatcher m_events;
     private readonly uint m_runtimeGeneration;
-    private bool m_disposed;
     private readonly int m_maxPlaybacks;
+    private bool m_disposed;
     private long m_rejectedPlaybacks;
-
-    /// <summary>
-    /// Captures snapshots and binds service façades.
-    /// </summary>
-    /// <param name="frame">
-    /// The variable frame timing.
-    /// </param>
-    protected override void OnBeginFrame(RuntimeFrame frame) => OwnFrameScope(AnimationExecutionContext.EnterScope(this));
-
-    /// <summary>
-    /// Advances domain state on the variable clock.
-    /// </summary>
-    /// <param name="frame">
-    /// The variable frame timing.
-    /// </param>
-    protected override void OnUpdate(RuntimeFrame frame) => Update(frame.deltaTime, frame.unscaledDeltaTime);
 
     /// <summary>
     /// Creates one isolated animation runtime generation.
@@ -63,6 +47,16 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxPlaybacks);
         m_maxPlaybacks = maxPlaybacks;
     }
+
+    /// <summary>
+    /// Gets active animation playback slots.
+    /// </summary>
+    public int playbackCount => m_playbacks.Count - m_freeSlots.Count;
+
+    /// <summary>
+    /// Gets playback admissions rejected by finite capacity.
+    /// </summary>
+    public long rejectedPlaybacks => m_rejectedPlaybacks;
 
     /// <summary>
     /// Starts one clip with the runtime's default playback policy.
@@ -158,16 +152,6 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         }
         return m_handles.Create(slot, generation);
     }
-
-    /// <summary>
-    /// Gets active animation playback slots.
-    /// </summary>
-    public int playbackCount => m_playbacks.Count - m_freeSlots.Count;
-
-    /// <summary>
-    /// Gets playback admissions rejected by finite capacity.
-    /// </summary>
-    public long rejectedPlaybacks => m_rejectedPlaybacks;
 
     /// <summary>
     /// Stops and retires one live playback slot.
@@ -347,6 +331,22 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     }
 
     /// <summary>
+    /// Captures snapshots and binds service façades.
+    /// </summary>
+    /// <param name="frame">
+    /// The variable frame timing.
+    /// </param>
+    protected override void OnBeginFrame(RuntimeFrame frame) => OwnFrameScope(AnimationExecutionContext.EnterScope(this));
+
+    /// <summary>
+    /// Advances domain state on the variable clock.
+    /// </summary>
+    /// <param name="frame">
+    /// The variable frame timing.
+    /// </param>
+    protected override void OnUpdate(RuntimeFrame frame) => Update(frame.deltaTime, frame.unscaledDeltaTime);
+
+    /// <summary>
     /// Releases every live playback in this runtime generation.
     /// </summary>
     protected override void OnStop()
@@ -420,6 +420,35 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         }
     }
 
+    private bool TryGetPlayback(
+        AnimationPlaybackHandle handle,
+        [NotNullWhen(true)] out Playback? playback
+    ) {
+        playback = null;
+        (int slot, uint generation) identity = m_handles.Decode(handle);
+        if (m_disposed || !handle.isValid || handle.runtimeGeneration != m_runtimeGeneration
+            || identity.slot < 0 || identity.slot >= m_playbacks.Count
+        ) {
+            return false;
+        }
+        playback = m_playbacks[identity.slot];
+        return playback is not null && playback.generation == identity.generation;
+    }
+
+    private void Retire(
+        int slot,
+        Playback playback
+    ) {
+        uint next = unchecked(playback.generation + 1);
+        if (next == 0)
+        {
+            next = 1;
+        }
+        m_slotGenerations[slot] = next;
+        m_playbacks[slot] = null;
+        m_freeSlots.Push(slot);
+    }
+
     private static void Sample(
         Playback playback,
         IDictionary<(AnimationTarget target, AnimationBindingId binding), BlendAccumulator> samples
@@ -476,35 +505,6 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
             );
         }
         return keys[^1].value;
-    }
-
-    private bool TryGetPlayback(
-        AnimationPlaybackHandle handle,
-        [NotNullWhen(true)] out Playback? playback
-    ) {
-        playback = null;
-        (int slot, uint generation) identity = m_handles.Decode(handle);
-        if (m_disposed || !handle.isValid || handle.runtimeGeneration != m_runtimeGeneration
-            || identity.slot < 0 || identity.slot >= m_playbacks.Count
-        ) {
-            return false;
-        }
-        playback = m_playbacks[identity.slot];
-        return playback is not null && playback.generation == identity.generation;
-    }
-
-    private void Retire(
-        int slot,
-        Playback playback
-    ) {
-        uint next = unchecked(playback.generation + 1);
-        if (next == 0)
-        {
-            next = 1;
-        }
-        m_slotGenerations[slot] = next;
-        m_playbacks[slot] = null;
-        m_freeSlots.Push(slot);
     }
 
     private static void ValidateOptions(AnimationPlayOptions options)

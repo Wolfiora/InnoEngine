@@ -47,18 +47,6 @@ internal sealed class EditorLayer : Layer
         m_prepareFrame = m_runtime.PrepareFrame;
     }
 
-    internal int panelCount => m_runtime.panelCount;
-    internal bool isFocused { get; set; }
-
-    internal float totalTime
-    {
-        set => m_totalTime = value;
-    }
-
-    internal void DisposeUnattached() => m_resources.Dispose();
-
-    internal void QuiescePlayMode() => m_playModeLoop.Quiesce();
-
     /// <summary>
     /// Starts the editor extension runtime and subscribes its host-level input handling.
     /// </summary>
@@ -98,7 +86,17 @@ internal sealed class EditorLayer : Layer
         SaveLayoutIfChanged();
     }
 
-    private void HandleKeyPressed(KeyPressedEvent keyEvent) => m_runtime.HandleKeyPressed(keyEvent);
+    internal int panelCount => m_runtime.panelCount;
+    internal bool isFocused { get; set; }
+
+    internal float totalTime
+    {
+        set => m_totalTime = value;
+    }
+
+    internal void DisposeUnattached() => m_resources.Dispose();
+
+    internal void QuiescePlayMode() => m_playModeLoop.Quiesce();
 
     internal bool PrepareShutdown()
     {
@@ -127,6 +125,8 @@ internal sealed class EditorLayer : Layer
             return false;
         }
     }
+
+    private void HandleKeyPressed(KeyPressedEvent keyEvent) => m_runtime.HandleKeyPressed(keyEvent);
 
     private void SaveLayoutIfChanged()
     {

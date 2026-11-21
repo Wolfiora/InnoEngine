@@ -35,10 +35,10 @@ internal readonly record struct SceneStoreRemovedComponent(
 
 internal sealed class SceneStore
 {
-    private readonly SceneTypeCatalog m_types;
     private static readonly Lock S_TYPE_CACHE_SYNC = new();
     private static readonly List<WeakReference<SceneStore>> S_STORES = [];
 
+    private readonly SceneTypeCatalog m_types;
     private readonly IndexedObjectStore<SceneObjectRecord> m_objects = new();
     private readonly IndexedObjectKey<GameObject> m_objectKey;
     private readonly IndexedObjectKey<Guid> m_objectPersistentIdKey;
@@ -416,6 +416,45 @@ internal sealed class SceneStore
     internal IReadOnlyList<GameComponent> GetComponents(GameObject owner)
         => GetAliveRecord(owner).components.Where(IsLocallyVisible).ToArray();
 
+    internal IReadOnlyList<TComponent> GetComponents<TComponent>(
+        SceneComponentTypeDescriptor requestedType) where TComponent : GameComponent
+    {
+        if (m_typedComponentQueryCache.TryGetValue(requestedType.runtimeTypeId, out object? cached))
+        {
+            return (ReadOnlyCollection<TComponent>)cached;
+        }
+
+        GameComponent[] untyped = GetCommittedComponents(requestedType);
+        var typed = new TComponent[untyped.Length];
+        for (int i = 0; i < untyped.Length; i++)
+        {
+            typed[i] = (TComponent)untyped[i];
+        }
+        ReadOnlyCollection<TComponent> view = Array.AsReadOnly(typed);
+        m_typedComponentQueryCache.Add(requestedType.runtimeTypeId, view);
+        return view;
+    }
+
+    internal IReadOnlyList<TComponent> GetComponents<TComponent>(
+        GameObject owner,
+        SceneComponentTypeDescriptor requestedType
+    ) where TComponent : GameComponent
+    {
+        SceneObjectRecord record = GetAliveRecord(owner);
+        var result = new List<TComponent>(record.components.Count);
+        for (int i = 0; i < record.components.Count; i++)
+        {
+            GameComponent candidate = record.components[i];
+            if (TryGetEntry(candidate, out ComponentEntry? entry)
+                && entry!.isAlive
+                && requestedType.IsAssignableFrom(entry.runtimeTypeId)
+            ) {
+                result.Add((TComponent)candidate);
+            }
+        }
+        return result;
+    }
+
     internal bool TryGetComponent<TComponent>(
         GameObject owner,
         SceneComponentTypeDescriptor requestedType,
@@ -492,45 +531,6 @@ internal sealed class SceneStore
         m_structureSnapshotCache = null;
     }
 
-    internal IReadOnlyList<TComponent> GetComponents<TComponent>(
-        GameObject owner,
-        SceneComponentTypeDescriptor requestedType
-    ) where TComponent : GameComponent
-    {
-        SceneObjectRecord record = GetAliveRecord(owner);
-        var result = new List<TComponent>(record.components.Count);
-        for (int i = 0; i < record.components.Count; i++)
-        {
-            GameComponent candidate = record.components[i];
-            if (TryGetEntry(candidate, out ComponentEntry? entry)
-                && entry!.isAlive
-                && requestedType.IsAssignableFrom(entry.runtimeTypeId)
-            ) {
-                result.Add((TComponent)candidate);
-            }
-        }
-        return result;
-    }
-
-    internal IReadOnlyList<TComponent> GetComponents<TComponent>(
-        SceneComponentTypeDescriptor requestedType) where TComponent : GameComponent
-    {
-        if (m_typedComponentQueryCache.TryGetValue(requestedType.runtimeTypeId, out object? cached))
-        {
-            return (ReadOnlyCollection<TComponent>)cached;
-        }
-
-        GameComponent[] untyped = GetCommittedComponents(requestedType);
-        var typed = new TComponent[untyped.Length];
-        for (int i = 0; i < untyped.Length; i++)
-        {
-            typed[i] = (TComponent)untyped[i];
-        }
-        ReadOnlyCollection<TComponent> view = Array.AsReadOnly(typed);
-        m_typedComponentQueryCache.Add(requestedType.runtimeTypeId, view);
-        return view;
-    }
-
     internal IReadOnlyList<GameObject> Query(SceneComponentTypeDescriptor requestedType)
         => Query(ComponentQueryKey.Create(requestedType.runtimeTypeId));
 
@@ -544,6 +544,71 @@ internal sealed class SceneStore
         SceneComponentTypeDescriptor second,
         SceneComponentTypeDescriptor third
     ) => Query(ComponentQueryKey.Create(first.runtimeTypeId, second.runtimeTypeId, third.runtimeTypeId));
+
+    internal IDisposable BeginExecutionPhase()
+    {
+        if (m_clearRequested)
+        {
+            throw new InvalidOperationException("A scene execution phase cannot begin while the store is pending clear.");
+        }
+        m_executionDepth++;
+        return new ExecutionScope(this);
+    }
+
+    internal SceneStructureSnapshot CaptureStructure()
+    {
+        if (isExecuting || hasPendingChanges)
+        {
+            throw new InvalidOperationException(
+                "A scene cannot be captured during an execution phase with uncommitted structural changes."
+            );
+        }
+
+        if (m_structureSnapshotCache is not null)
+        {
+            return m_structureSnapshotCache;
+        }
+        SceneObjectStructureSnapshot[] objects = GetObjects()
+            .Select(gameObject => new SceneObjectStructureSnapshot(gameObject, GetComponents(gameObject)))
+            .ToArray();
+        return m_structureSnapshotCache = new SceneStructureSnapshot(objects);
+    }
+
+    internal void InvalidateTypeCaches()
+    {
+        m_componentQueryCache.Clear();
+        m_typedComponentQueryCache.Clear();
+        m_objectQueryCache.Clear();
+    }
+
+    internal void Clear()
+    {
+        InvalidateStructureCaches();
+        if (isExecuting)
+        {
+            m_clearRequested = true;
+            return;
+        }
+        ClearImmediately();
+    }
+
+    internal static void InvalidateAllTypeCaches()
+    {
+        lock (S_TYPE_CACHE_SYNC)
+        {
+            for (int i = S_STORES.Count - 1; i >= 0; i--)
+            {
+                if (S_STORES[i].TryGetTarget(out SceneStore? store))
+                {
+                    store.InvalidateTypeCaches();
+                }
+                else
+                {
+                    S_STORES.RemoveAt(i);
+                }
+            }
+        }
+    }
 
     private IReadOnlyList<GameObject> Query(ComponentQueryKey query)
     {
@@ -600,71 +665,6 @@ internal sealed class SceneStore
         cached = Array.AsReadOnly(result.ToArray());
         m_objectQueryCache.Add(query, cached);
         return cached;
-    }
-
-    internal IDisposable BeginExecutionPhase()
-    {
-        if (m_clearRequested)
-        {
-            throw new InvalidOperationException("A scene execution phase cannot begin while the store is pending clear.");
-        }
-        m_executionDepth++;
-        return new ExecutionScope(this);
-    }
-
-    internal SceneStructureSnapshot CaptureStructure()
-    {
-        if (isExecuting || hasPendingChanges)
-        {
-            throw new InvalidOperationException(
-                "A scene cannot be captured during an execution phase with uncommitted structural changes."
-            );
-        }
-
-        if (m_structureSnapshotCache is not null)
-        {
-            return m_structureSnapshotCache;
-        }
-        SceneObjectStructureSnapshot[] objects = GetObjects()
-            .Select(gameObject => new SceneObjectStructureSnapshot(gameObject, GetComponents(gameObject)))
-            .ToArray();
-        return m_structureSnapshotCache = new SceneStructureSnapshot(objects);
-    }
-
-    internal void InvalidateTypeCaches()
-    {
-        m_componentQueryCache.Clear();
-        m_typedComponentQueryCache.Clear();
-        m_objectQueryCache.Clear();
-    }
-
-    internal static void InvalidateAllTypeCaches()
-    {
-        lock (S_TYPE_CACHE_SYNC)
-        {
-            for (int i = S_STORES.Count - 1; i >= 0; i--)
-            {
-                if (S_STORES[i].TryGetTarget(out SceneStore? store))
-                {
-                    store.InvalidateTypeCaches();
-                }
-                else
-                {
-                    S_STORES.RemoveAt(i);
-                }
-            }
-        }
-    }
-
-    internal void Clear()
-    {
-        InvalidateStructureCaches();
-        if (isExecuting)
-        {
-            m_clearRequested = true;
-            return;
-        }
-        ClearImmediately();
     }
 
     private GameComponent[] GetCommittedComponents(SceneComponentTypeDescriptor requestedType)

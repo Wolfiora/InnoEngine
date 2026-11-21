@@ -25,21 +25,6 @@ public sealed unsafe class EditorMenuRenderer
         m_session = session;
     }
 
-    internal void RetireOwner(string owner)
-    {
-        foreach ((string Owner, uint Popup) key in m_contextSearches.Keys.Where(value => value.Owner == owner).ToArray())
-        {
-            m_contextSearches.Remove(key);
-        }
-    }
-
-    internal void Clear() => m_contextSearches.Clear();
-
-    private readonly record struct MenuSection(
-        EditorInteraction interaction,
-        IReadOnlyList<EditorMenuItem> items
-    );
-
     /// <summary>
     /// Draws a resolved right-click menu for the most recently submitted ImGui item.
     /// </summary>
@@ -186,6 +171,118 @@ public sealed unsafe class EditorMenuRenderer
         return true;
     }
 
+    /// <summary>
+    /// Draws the complete editor main menu bar for the supplied menu context.
+    /// </summary>
+    /// <param name="interaction">
+    /// The main-menu interaction area.
+    /// </param>
+    public void MainMenu(EditorInteraction interaction)
+    {
+        m_session.EnsureDrawing();
+        if (!NativeImGui.BeginMainMenuBar())
+        {
+            return;
+        }
+        try
+        {
+            DrawItems(interaction, interaction.BuildMenu().items);
+            DrawCenteredToolbar(interaction, interaction.BuildToolbar().items);
+        }
+        finally
+        {
+            NativeImGui.EndMainMenuBar();
+        }
+    }
+
+    /// <summary>
+    /// Recursively draws resolved menu nodes into the currently open popup or menu.
+    /// </summary>
+    /// <param name="interaction">
+    /// The interaction used to resolve shortcuts and enqueue selected actions.
+    /// </param>
+    /// <param name="items">
+    /// The immutable menu nodes to draw in display order.
+    /// </param>
+    public void DrawItems(
+        EditorInteraction interaction,
+        IReadOnlyList<EditorMenuItem> items
+    ) {
+        m_session.EnsureDrawing();
+        ArgumentNullException.ThrowIfNull(items);
+        for (int i = 0; i < items.Count; i++)
+        {
+            EditorMenuItem item = items[i];
+            // A separator groups adjacent commands; it is never meaningful before the first
+            // visible item of a popup or submenu. Enforcing that here keeps every menu surface
+            // consistent even when a type-specific query hides the commands that preceded it.
+            if (i > 0 && item.separatorBefore)
+            {
+                NativeImGui.Separator();
+            }
+            if (item.children.Count > 0)
+            {
+                if (!NativeImGui.BeginMenu(item.label, item.status.isEnabled))
+                {
+                    continue;
+                }
+                try
+                {
+                    DrawItems(interaction, item.children);
+                }
+                finally
+                {
+                    NativeImGui.EndMenu();
+                }
+
+                continue;
+            }
+
+            string shortcut = interaction.TryGetShortcut(item.actionId, out HotKeyGesture gesture) ? gesture.ToString() : string.Empty;
+            if (NativeImGui.MenuItem(item.label, shortcut, item.status.isChecked, item.status.isEnabled))
+            {
+                interaction.Enqueue(item.actionId, item.argument);
+            }
+
+            DrawUnavailableReason(item.status);
+        }
+    }
+
+    /// <summary>
+    /// Draws matching leaf commands as a flat searchable list.
+    /// </summary>
+    /// <param name="interaction">
+    /// The interaction used to enqueue selected actions.
+    /// </param>
+    /// <param name="items">
+    /// The immutable menu tree whose leaves should be searched.
+    /// </param>
+    /// <param name="search">
+    /// The case-insensitive text matched against each slash-delimited leaf path.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when a command was selected.
+    /// </returns>
+    public bool DrawSearchItems(
+        EditorInteraction interaction,
+        IReadOnlyList<EditorMenuItem> items,
+        string search
+    ) {
+        m_session.EnsureDrawing();
+        ArgumentNullException.ThrowIfNull(items);
+        return DrawSearchItems(interaction, items, search ?? string.Empty, string.Empty);
+    }
+
+    internal void RetireOwner(string owner)
+    {
+        foreach ((string Owner, uint Popup) key in m_contextSearches.Keys.Where(value => value.Owner == owner).ToArray())
+        {
+            m_contextSearches.Remove(key);
+        }
+    }
+
+    internal void Clear() => m_contextSearches.Clear();
+
     private void DrawContextMenuContents(
         uint popupId,
         IReadOnlyList<MenuSection> sections
@@ -246,30 +343,6 @@ public sealed unsafe class EditorMenuRenderer
            || NativeImGui.IsWindowHovered()
               && !NativeImGui.IsAnyItemHovered()
               && NativeImGui.IsMouseReleased((int)(NativeMouseButton.Right));
-
-    /// <summary>
-    /// Draws the complete editor main menu bar for the supplied menu context.
-    /// </summary>
-    /// <param name="interaction">
-    /// The main-menu interaction area.
-    /// </param>
-    public void MainMenu(EditorInteraction interaction)
-    {
-        m_session.EnsureDrawing();
-        if (!NativeImGui.BeginMainMenuBar())
-        {
-            return;
-        }
-        try
-        {
-            DrawItems(interaction, interaction.BuildMenu().items);
-            DrawCenteredToolbar(interaction, interaction.BuildToolbar().items);
-        }
-        finally
-        {
-            NativeImGui.EndMainMenuBar();
-        }
-    }
 
     private void DrawCenteredToolbar(
         EditorInteraction interaction,
@@ -354,84 +427,6 @@ public sealed unsafe class EditorMenuRenderer
         _ => string.Empty
     };
 
-    /// <summary>
-    /// Recursively draws resolved menu nodes into the currently open popup or menu.
-    /// </summary>
-    /// <param name="interaction">
-    /// The interaction used to resolve shortcuts and enqueue selected actions.
-    /// </param>
-    /// <param name="items">
-    /// The immutable menu nodes to draw in display order.
-    /// </param>
-    public void DrawItems(
-        EditorInteraction interaction,
-        IReadOnlyList<EditorMenuItem> items
-    ) {
-        m_session.EnsureDrawing();
-        ArgumentNullException.ThrowIfNull(items);
-        for (int i = 0; i < items.Count; i++)
-        {
-            EditorMenuItem item = items[i];
-            // A separator groups adjacent commands; it is never meaningful before the first
-            // visible item of a popup or submenu. Enforcing that here keeps every menu surface
-            // consistent even when a type-specific query hides the commands that preceded it.
-            if (i > 0 && item.separatorBefore)
-            {
-                NativeImGui.Separator();
-            }
-            if (item.children.Count > 0)
-            {
-                if (!NativeImGui.BeginMenu(item.label, item.status.isEnabled))
-                {
-                    continue;
-                }
-                try
-                {
-                    DrawItems(interaction, item.children);
-                }
-                finally
-                {
-                    NativeImGui.EndMenu();
-                }
-
-                continue;
-            }
-
-            string shortcut = interaction.TryGetShortcut(item.actionId, out HotKeyGesture gesture) ? gesture.ToString() : string.Empty;
-            if (NativeImGui.MenuItem(item.label, shortcut, item.status.isChecked, item.status.isEnabled))
-            {
-                interaction.Enqueue(item.actionId, item.argument);
-            }
-
-            DrawUnavailableReason(item.status);
-        }
-    }
-
-    /// <summary>
-    /// Draws matching leaf commands as a flat searchable list.
-    /// </summary>
-    /// <param name="interaction">
-    /// The interaction used to enqueue selected actions.
-    /// </param>
-    /// <param name="items">
-    /// The immutable menu tree whose leaves should be searched.
-    /// </param>
-    /// <param name="search">
-    /// The case-insensitive text matched against each slash-delimited leaf path.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when a command was selected.
-    /// </returns>
-    public bool DrawSearchItems(
-        EditorInteraction interaction,
-        IReadOnlyList<EditorMenuItem> items,
-        string search
-    ) {
-        m_session.EnsureDrawing();
-        ArgumentNullException.ThrowIfNull(items);
-        return DrawSearchItems(interaction, items, search ?? string.Empty, string.Empty);
-    }
-
     private bool DrawSearchItems(
         EditorInteraction interaction,
         IReadOnlyList<EditorMenuItem> items,
@@ -496,4 +491,9 @@ public sealed unsafe class EditorMenuRenderer
             NativeImGui.EndTooltip();
         }
     }
+
+    private readonly record struct MenuSection(
+        EditorInteraction interaction,
+        IReadOnlyList<EditorMenuItem> items
+    );
 }

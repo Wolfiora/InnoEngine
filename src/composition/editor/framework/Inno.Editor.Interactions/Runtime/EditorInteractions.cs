@@ -18,10 +18,10 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     private readonly EditorContext m_editor;
     private readonly Dictionary<IdentityDomainId, IdentityAllocator> m_identityDomains;
     private readonly int m_identityOwnerThread = Environment.CurrentManagedThreadId;
-    private bool m_identityDomainsRetired;
     private readonly EditorHistory m_history;
     private readonly EditorDocumentService m_documents;
     private readonly Logger m_log;
+    private bool m_identityDomainsRetired;
     private EditorActionRouter? m_actions;
     private EditorExtensionCatalog? m_catalog;
     private EditorMenuCatalog? m_menus;
@@ -61,8 +61,6 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     [ScriptingApiIgnore]
     public EventDispatcher events { get; } = new();
 
-    internal void PrepareOperation() => events.Emit(new EditorOperationPreparingEvent());
-
     /// <summary>
     /// Gets the shared read-only editor selection state.
     /// </summary>
@@ -73,8 +71,6 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     /// </summary>
     public EditorKeyboardPolicy keyboard => m_editor.keyboard;
 
-    object? IEditorSelectionCoordinator.selectedTarget => selection.selectedTarget;
-
     /// <summary>
     /// Gets the transactional Undo and Redo history owned by this editor runtime.
     /// </summary>
@@ -84,6 +80,18 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     /// Gets the headless reload-safe document lifetime used by dedicated asset editors and Inspectors.
     /// </summary>
     public IEditorDocumentService documents => m_documents;
+
+    /// <summary>
+    /// Gets the area that most recently received keyboard focus.
+    /// </summary>
+    public string focusedArea => m_focusedArea;
+
+    /// <summary>
+    /// Gets the target associated with the focused area.
+    /// </summary>
+    public object? focusedTarget => m_focus?.Resolve(this);
+
+    object? IEditorSelectionCoordinator.selectedTarget => selection.selectedTarget;
 
     /// <summary>
     /// Resolves an active feature module for immediate use in the current Editor callback.
@@ -127,13 +135,6 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     [ScriptingApiIgnore]
     public IDisposable BeginHistoryIsolation() => m_history.BeginIsolation();
 
-    internal EditorHistory historyHost => m_history;
-
-    /// <summary>
-    /// Gets the area that most recently received keyboard focus.
-    /// </summary>
-    public string focusedArea => m_focusedArea;
-
     /// <summary>
     /// Gets immutable discovery metadata for the active, available panels.
     /// </summary>
@@ -163,11 +164,6 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
         isOpen = false;
         return m_catalog?.TryGetPanelState(panelId, out isOpen) == true;
     }
-
-    /// <summary>
-    /// Gets the target associated with the focused area.
-    /// </summary>
-    public object? focusedTarget => m_focus?.Resolve(this);
 
     /// <summary>
     /// Creates a lightweight interaction handle for one area and optional target.
@@ -493,6 +489,10 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
         ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
         return m_catalog?.TryClosePanel(panelId) == true;
     }
+
+    internal EditorHistory historyHost => m_history;
+
+    internal void PrepareOperation() => events.Emit(new EditorOperationPreparingEvent());
 
     internal void Attach(EditorExtensionCatalog catalog)
     {

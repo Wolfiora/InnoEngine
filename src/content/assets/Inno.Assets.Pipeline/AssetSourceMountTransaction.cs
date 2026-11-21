@@ -38,28 +38,6 @@ public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnaps
         );
     }
 
-    internal AssetCatalogCandidate catalogCandidate { get; }
-
-    internal AssetLoader candidateLoader => catalogCandidate.loader;
-
-    internal AssetFileSystem candidateFileSystem { get; }
-
-    internal AssetLoader? previousLoader { get; set; }
-
-    internal AssetFileSystem? previousFileSystem { get; set; }
-
-    internal IReadOnlyList<AssetSourceMount>? previousMounts { get; set; }
-
-    internal AssetPipelineOptions previousOptions { get; set; }
-
-    internal bool isActivated { get; set; }
-
-    internal bool isFinished { get; set; }
-
-    internal LifetimeScope? retirement { get; set; }
-
-    internal RetirementBarrier retirementBarrier { get; } = new("Asset source-mount generation");
-
     /// <summary>
     /// Gets the complete isolated mount snapshot represented by this candidate.
     /// </summary>
@@ -263,6 +241,28 @@ public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnaps
         Rollback();
         GC.SuppressFinalize(this);
     }
+
+    internal AssetCatalogCandidate catalogCandidate { get; }
+
+    internal AssetLoader candidateLoader => catalogCandidate.loader;
+
+    internal AssetFileSystem candidateFileSystem { get; }
+
+    internal AssetLoader? previousLoader { get; set; }
+
+    internal AssetFileSystem? previousFileSystem { get; set; }
+
+    internal IReadOnlyList<AssetSourceMount>? previousMounts { get; set; }
+
+    internal AssetPipelineOptions previousOptions { get; set; }
+
+    internal bool isActivated { get; set; }
+
+    internal bool isFinished { get; set; }
+
+    internal LifetimeScope? retirement { get; set; }
+
+    internal RetirementBarrier retirementBarrier { get; } = new("Asset source-mount generation");
 
     private void EnsureOpen()
     {

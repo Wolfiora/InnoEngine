@@ -60,23 +60,6 @@ public sealed unsafe class EditorUiSession : IDisposable
     /// </summary>
     public bool isDisposed => m_disposed;
 
-    internal string owner => m_owner;
-
-    internal bool shouldDeferStyleChanges
-    {
-        get
-        {
-            EnsureOwner();
-            ObjectDisposedException.ThrowIf(m_disposed, this);
-            if (m_nativeContext == 0)
-            {
-                return false;
-            }
-            ImGuiNativeContext* context = NativeImGui.Raw.GetCurrentContext();
-            return context is null || (nint)context != m_nativeContext || context->WithinFrameScope != 0;
-        }
-    }
-
     /// <summary>
     /// Activates this session for a synchronous callback while preserving the enclosing scope.
     /// </summary>
@@ -122,6 +105,23 @@ public sealed unsafe class EditorUiSession : IDisposable
         m_lifecycleHub = null;
         m_disposed = true;
         GC.SuppressFinalize(this);
+    }
+
+    internal string owner => m_owner;
+
+    internal bool shouldDeferStyleChanges
+    {
+        get
+        {
+            EnsureOwner();
+            ObjectDisposedException.ThrowIf(m_disposed, this);
+            if (m_nativeContext == 0)
+            {
+                return false;
+            }
+            ImGuiNativeContext* context = NativeImGui.Raw.GetCurrentContext();
+            return context is null || (nint)context != m_nativeContext || context->WithinFrameScope != 0;
+        }
     }
 
     internal void Connect(EditorInteractions interactions)

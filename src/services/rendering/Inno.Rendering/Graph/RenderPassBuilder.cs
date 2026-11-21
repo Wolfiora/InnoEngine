@@ -19,9 +19,6 @@ public abstract class RenderPassBuilder
         m_pass = pass;
     }
 
-    internal RenderGraphBuilder graph => m_graph;
-    internal RenderPassRecord pass => m_pass;
-
     /// <summary>
     /// Orders this pass before every pass in a target phase.
     /// </summary>
@@ -113,4 +110,7 @@ public abstract class RenderPassBuilder
         m_graph.AddUse(m_pass, buffer, RenderResourceAccess.Read, RenderResourceUseKind.GenericRead);
         return this;
     }
+
+    internal RenderGraphBuilder graph => m_graph;
+    internal RenderPassRecord pass => m_pass;
 }

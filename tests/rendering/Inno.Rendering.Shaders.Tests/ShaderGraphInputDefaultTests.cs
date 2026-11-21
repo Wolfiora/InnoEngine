@@ -225,6 +225,14 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
         Assert.Equal("SHADER_GRAPH_OPTIONAL_TYPE", diagnostic.code);
     }
 
+    public void Dispose()
+    {
+        m_serialization.Dispose();
+        m_types.Dispose();
+        m_modules.Dispose();
+        if (Directory.Exists(m_root)) Directory.Delete(m_root, true);
+    }
+
     private ShaderGraphLoweringResult Lower(
         GraphDocument graph,
         ShaderNodeCompilerCatalog catalog
@@ -239,12 +247,4 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
         string key,
         T value
     ) => node.SetValue(key, ShaderGraphDocument.Encode(value, m_serialization, SerializationContext.empty));
-
-    public void Dispose()
-    {
-        m_serialization.Dispose();
-        m_types.Dispose();
-        m_modules.Dispose();
-        if (Directory.Exists(m_root)) Directory.Delete(m_root, true);
-    }
 }

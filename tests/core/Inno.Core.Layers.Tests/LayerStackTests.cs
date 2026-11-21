@@ -190,18 +190,6 @@ public sealed class LayerStackTests
             m_calls = calls;
         }
 
-        internal bool throwOnAttach { get; init; }
-
-        internal bool throwOnRender { get; init; }
-
-        internal bool throwOnDetach { get; init; }
-
-        internal int pendingDetaches { get; set; }
-
-        internal int detachCount { get; private set; }
-
-        internal int eventCount { get; private set; }
-
         public override void OnAttach()
         {
             _ = Listen<ProbeEvent>(_ =>
@@ -240,5 +228,17 @@ public sealed class LayerStackTests
         }
 
         public override void OnAfterRender(float deltaTime) => m_calls?.Add($"{name}.after");
+
+        internal bool throwOnAttach { get; init; }
+
+        internal bool throwOnRender { get; init; }
+
+        internal bool throwOnDetach { get; init; }
+
+        internal int pendingDetaches { get; set; }
+
+        internal int detachCount { get; private set; }
+
+        internal int eventCount { get; private set; }
     }
 }

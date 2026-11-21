@@ -160,6 +160,19 @@ public sealed class BuildCacheInventoryProgressTests : IDisposable
         Assert.Empty(Directory.GetFiles(directory, "*.inventory"));
     }
 
+    public void Dispose()
+    {
+        string parent = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "InnoInventoryProgress")) + Path.DirectorySeparatorChar;
+        if (!Path.GetFullPath(m_root).StartsWith(parent, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("The inventory fixture escaped its owner.");
+        }
+        if (Directory.Exists(m_root))
+        {
+            Directory.Delete(m_root, recursive: true);
+        }
+    }
+
     private async Task PrepareAsync(
         string name,
         string content
@@ -187,17 +200,4 @@ public sealed class BuildCacheInventoryProgressTests : IDisposable
             null,
             CancellationToken.None
         );
-
-    public void Dispose()
-    {
-        string parent = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "InnoInventoryProgress")) + Path.DirectorySeparatorChar;
-        if (!Path.GetFullPath(m_root).StartsWith(parent, StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidOperationException("The inventory fixture escaped its owner.");
-        }
-        if (Directory.Exists(m_root))
-        {
-            Directory.Delete(m_root, recursive: true);
-        }
-    }
 }

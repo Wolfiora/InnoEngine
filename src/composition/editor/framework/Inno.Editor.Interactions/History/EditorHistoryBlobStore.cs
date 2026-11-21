@@ -20,6 +20,34 @@ internal sealed class EditorHistoryBlobStore : IDisposable
         m_sessionDirectory = Path.Combine(Path.GetFullPath(cacheDirectory), Guid.NewGuid().ToString("N"));
     }
 
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose()
+    {
+        if (m_disposed)
+        {
+            return;
+        }
+        m_disposed = true;
+        m_references.Clear();
+        if (m_sessionDirectory is not null)
+        {
+            try
+            {
+                if (Directory.Exists(m_sessionDirectory))
+                {
+                    Directory.Delete(m_sessionDirectory, recursive: true);
+                }
+            }
+            catch
+            {
+                // A stale session directory is safe to remove with the project's Library cache.
+            }
+        }
+        GC.SuppressFinalize(this);
+    }
+
     internal string Retain(ReadOnlySpan<byte> bytes)
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
@@ -70,33 +98,5 @@ internal sealed class EditorHistoryBlobStore : IDisposable
         {
             // Session cleanup retries deletion when the history is disposed.
         }
-    }
-
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose()
-    {
-        if (m_disposed)
-        {
-            return;
-        }
-        m_disposed = true;
-        m_references.Clear();
-        if (m_sessionDirectory is not null)
-        {
-            try
-            {
-                if (Directory.Exists(m_sessionDirectory))
-                {
-                    Directory.Delete(m_sessionDirectory, recursive: true);
-                }
-            }
-            catch
-            {
-                // A stale session directory is safe to remove with the project's Library cache.
-            }
-        }
-        GC.SuppressFinalize(this);
     }
 }

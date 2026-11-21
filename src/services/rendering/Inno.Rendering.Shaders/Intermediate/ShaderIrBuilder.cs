@@ -425,6 +425,20 @@ public sealed partial class ShaderIrBuilder
         return new(m_instructions, outputs);
     }
 
+    internal void RequireOwned(ShaderIrValue value)
+    {
+        EnsureWritable();
+        ArgumentNullException.ThrowIfNull(value);
+        for (ShaderIrBuilder? scope = this; scope is not null; scope = scope.m_parent)
+        {
+            if (ReferenceEquals(value.owner, scope.m_owner))
+            {
+                return;
+            }
+        }
+        throw new ArgumentException("The value is outside this region's visible scope.", nameof(value));
+    }
+
     private ShaderIrValue ConstantBits(
         string type,
         ulong bits
@@ -438,20 +452,6 @@ public sealed partial class ShaderIrBuilder
     {
         EnsureWritable();
         return new(m_owner, m_root.m_nextValue++, type);
-    }
-
-    internal void RequireOwned(ShaderIrValue value)
-    {
-        EnsureWritable();
-        ArgumentNullException.ThrowIfNull(value);
-        for (ShaderIrBuilder? scope = this; scope is not null; scope = scope.m_parent)
-        {
-            if (ReferenceEquals(value.owner, scope.m_owner))
-            {
-                return;
-            }
-        }
-        throw new ArgumentException("The value is outside this region's visible scope.", nameof(value));
     }
 
     private void EnsureWritable()

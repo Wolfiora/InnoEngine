@@ -24,11 +24,11 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     private readonly IDiagnosticReporter m_diagnostics;
     private readonly EventDispatcher m_events;
     private readonly AudioExtensionRegistry m_extensions;
+    private readonly AudioRuntimeOptions m_options;
+    private readonly List<Exception> m_retirementFailures = [];
     private AudioClipCache m_clipCache;
     private AudioVoiceOwner m_voices;
     private AudioContentOwner m_content;
-    private readonly AudioRuntimeOptions m_options;
-
     private IAudioDevice m_device;
     private AudioMixerOwner m_mixer;
     private string? m_mixerDiagnosticSource;
@@ -39,7 +39,6 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     private bool m_stopping;
     private bool m_extensionsRetired;
     private int m_retirementStage;
-    private readonly List<Exception> m_retirementFailures = [];
     private AudioDeviceCandidate? m_candidateRetirement;
 
     /// <summary>
@@ -144,25 +143,6 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     /// Gets the monotonic backend audio clock in seconds.
     /// </summary>
     public double dspTime => m_device.dspTime;
-
-    /// <inheritdoc/>
-    protected override void OnStart() => m_events.dispatched += OnEventDispatched;
-
-    /// <summary>
-    /// Captures snapshots and binds service façades.
-    /// </summary>
-    /// <param name="frame">
-    /// The variable frame timing.
-    /// </param>
-    protected override void OnBeginFrame(RuntimeFrame frame) => OwnFrameScope(EnterExecutionScope());
-
-    /// <summary>
-    /// Advances domain state on the variable clock.
-    /// </summary>
-    /// <param name="frame">
-    /// The variable frame timing.
-    /// </param>
-    protected override void OnUpdate(RuntimeFrame frame) => Update(frame.unscaledDeltaTime);
 
     /// <summary>
     /// Gets current runtime resource statistics.
@@ -730,6 +710,25 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
         }
         AdvanceDeviceRecovery(deltaTime);
     }
+
+    /// <inheritdoc/>
+    protected override void OnStart() => m_events.dispatched += OnEventDispatched;
+
+    /// <summary>
+    /// Captures snapshots and binds service façades.
+    /// </summary>
+    /// <param name="frame">
+    /// The variable frame timing.
+    /// </param>
+    protected override void OnBeginFrame(RuntimeFrame frame) => OwnFrameScope(EnterExecutionScope());
+
+    /// <summary>
+    /// Advances domain state on the variable clock.
+    /// </summary>
+    /// <param name="frame">
+    /// The variable frame timing.
+    /// </param>
+    protected override void OnUpdate(RuntimeFrame frame) => Update(frame.unscaledDeltaTime);
 
     /// <summary>
     /// Stops voices and releases providers, cache entries, mixer generations, and the owned backend device.

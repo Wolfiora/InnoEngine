@@ -41,6 +41,66 @@ public sealed partial class IndexedObjectStore<T>
         }
     }
 
+    internal T? ExecuteOrderedFirst<TKey>(
+        IndexedObjectKey<TKey> orderKey,
+        List<IIndexedObjectQueryCondition<T>> conditions
+    ) where TKey : notnull
+    {
+        m_lock.EnterReadLock();
+        try
+        {
+            IndexedObjectIndex<T, TKey> index = GetIndex(orderKey);
+            if ((index.flags & IndexedObjectKeyFlags.Ordered) == 0)
+            {
+                throw new InvalidOperationException($"Key '{orderKey.name}' is not ordered.");
+            }
+
+            if (TryGetOrderedCandidateSeed(conditions, out int seedIndex, out int seedCount))
+            {
+                if (seedCount == 0)
+                {
+                    return null;
+                }
+                if (seedCount == 1 && conditions[seedIndex].TryGetSingle(this, out T single))
+                {
+                    return ValidateConditions(conditions, single) ? single : null;
+                }
+
+                HashSet<T>? seed = conditions[seedIndex].GetSet(this);
+                if (seed is not null)
+                {
+                    T? first = null;
+                    TKey firstKey = default!;
+                    int firstDenseIndex = int.MaxValue;
+                    foreach (T item in seed)
+                    {
+                        if (!ValidateConditions(conditions, item)
+                            || !index.TryGetKey(item, out TKey itemKey)
+                            || !m_activeIndex.TryGetValue(item, out int denseIndex)
+                        ) {
+                            continue;
+                        }
+
+                        int comparison = first is null ? -1 : index.CompareKeys(itemKey, firstKey);
+                        if (comparison < 0 || comparison == 0 && denseIndex < firstDenseIndex)
+                        {
+                            first = item;
+                            firstKey = itemKey;
+                            firstDenseIndex = denseIndex;
+                        }
+                    }
+                    return first;
+                }
+            }
+
+            return ScanOrderedFirst(index, conditions);
+        }
+        finally
+        {
+            m_lock.ExitReadLock();
+        }
+    }
+
     private IEnumerable<T> EnumerateOrderedQuery<TKey>(
         IndexedObjectKey<TKey> orderKey,
         List<IIndexedObjectQueryCondition<T>> conditions
@@ -110,66 +170,6 @@ public sealed partial class IndexedObjectStore<T>
                     yield return item;
                 }
             }
-        }
-    }
-
-    internal T? ExecuteOrderedFirst<TKey>(
-        IndexedObjectKey<TKey> orderKey,
-        List<IIndexedObjectQueryCondition<T>> conditions
-    ) where TKey : notnull
-    {
-        m_lock.EnterReadLock();
-        try
-        {
-            IndexedObjectIndex<T, TKey> index = GetIndex(orderKey);
-            if ((index.flags & IndexedObjectKeyFlags.Ordered) == 0)
-            {
-                throw new InvalidOperationException($"Key '{orderKey.name}' is not ordered.");
-            }
-
-            if (TryGetOrderedCandidateSeed(conditions, out int seedIndex, out int seedCount))
-            {
-                if (seedCount == 0)
-                {
-                    return null;
-                }
-                if (seedCount == 1 && conditions[seedIndex].TryGetSingle(this, out T single))
-                {
-                    return ValidateConditions(conditions, single) ? single : null;
-                }
-
-                HashSet<T>? seed = conditions[seedIndex].GetSet(this);
-                if (seed is not null)
-                {
-                    T? first = null;
-                    TKey firstKey = default!;
-                    int firstDenseIndex = int.MaxValue;
-                    foreach (T item in seed)
-                    {
-                        if (!ValidateConditions(conditions, item)
-                            || !index.TryGetKey(item, out TKey itemKey)
-                            || !m_activeIndex.TryGetValue(item, out int denseIndex)
-                        ) {
-                            continue;
-                        }
-
-                        int comparison = first is null ? -1 : index.CompareKeys(itemKey, firstKey);
-                        if (comparison < 0 || comparison == 0 && denseIndex < firstDenseIndex)
-                        {
-                            first = item;
-                            firstKey = itemKey;
-                            firstDenseIndex = denseIndex;
-                        }
-                    }
-                    return first;
-                }
-            }
-
-            return ScanOrderedFirst(index, conditions);
-        }
-        finally
-        {
-            m_lock.ExitReadLock();
         }
     }
 
@@ -243,17 +243,6 @@ public sealed partial class IndexedObjectStore<T>
         }
     }
 
-    private static IReadOnlyList<T> SelectOrderedItems<TKey>(List<OrderedCandidate<TKey>> candidates)
-        where TKey : notnull
-    {
-        var result = new T[candidates.Count];
-        for (int i = 0; i < candidates.Count; i++)
-        {
-            result[i] = candidates[i].item;
-        }
-        return result;
-    }
-
     private IReadOnlyList<T> ScanOrderedSnapshot<TKey>(
         IndexedObjectIndex<T, TKey> index,
         List<IIndexedObjectQueryCondition<T>> conditions
@@ -317,6 +306,17 @@ public sealed partial class IndexedObjectStore<T>
             }
         }
         return null;
+    }
+
+    private static IReadOnlyList<T> SelectOrderedItems<TKey>(List<OrderedCandidate<TKey>> candidates)
+        where TKey : notnull
+    {
+        var result = new T[candidates.Count];
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            result[i] = candidates[i].item;
+        }
+        return result;
     }
 
     private static void SortOrderedCandidates<TKey>(

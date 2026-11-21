@@ -22,10 +22,10 @@ internal sealed class SettingsModal(
 {
     private readonly SettingsNavigation m_navigation = new();
     private readonly SettingsTree m_tree = new();
+    private readonly Logger m_log = logs.CreateLogger<SettingsModal>();
     private long m_navigationRevision = -1;
     private string m_query = string.Empty;
     private float m_treePaneRatio = 0.25f;
-    private readonly Logger m_log = logs.CreateLogger<SettingsModal>();
     private string m_applyError = string.Empty;
 
     /// <summary>
@@ -322,15 +322,6 @@ internal sealed class SettingsModal(
         return ClampTreeWidth(usable * Math.Clamp(m_treePaneRatio, 0f, 1f), usable);
     }
 
-    private static float ClampTreeWidth(
-        float requested,
-        float usable
-    ) {
-        float minimum = MathF.Min(EditorUiSession.current.widgets.style.paneMinimumVisibleWidth, usable * 0.5f);
-        float maximum = MathF.Max(minimum, usable - minimum);
-        return Math.Clamp(requested, minimum, maximum);
-    }
-
     private void DrawButtons(SettingsEditSession session)
     {
         EditorUiLayout style = Ui.GetLayout();
@@ -395,9 +386,6 @@ internal sealed class SettingsModal(
         m_log.Write(LogLevel.Error, "Settings operation failed; edits and History ownership were retained: {0}", [failure]);
     }
 
-    private static bool IsOperationalFailure(Exception failure)
-        => failure is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException or AggregateException;
-
     private void DrawNavigationButtons()
     {
         float frameHeight = Ui.GetFrameHeight();
@@ -430,4 +418,16 @@ internal sealed class SettingsModal(
         SettingsPage? first = SettingsTree.FindFirstMatch(pages, m_query);
         m_navigation.Reset(first?.path ?? string.Empty);
     }
+
+    private static float ClampTreeWidth(
+        float requested,
+        float usable
+    ) {
+        float minimum = MathF.Min(EditorUiSession.current.widgets.style.paneMinimumVisibleWidth, usable * 0.5f);
+        float maximum = MathF.Max(minimum, usable - minimum);
+        return Math.Clamp(requested, minimum, maximum);
+    }
+
+    private static bool IsOperationalFailure(Exception failure)
+        => failure is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException or AggregateException;
 }

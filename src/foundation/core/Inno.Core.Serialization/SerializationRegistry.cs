@@ -441,26 +441,6 @@ public sealed class SerializationRegistry : IDisposable
         }
     }
 
-    internal byte[] Serialize<T>(
-        T value,
-        ConverterRegistryLease converters,
-        SerializationContext? context = null
-    ) where T : class, ISerializable
-    {
-        ArgumentNullException.ThrowIfNull(value);
-        ArgumentNullException.ThrowIfNull(converters);
-        var operation = new SerializationOperation(CreateContext(context), converters);
-        try
-        {
-            SerializationNode root = ValuePipeline.WriteRoot(value, typeof(T), operation);
-            return BinarySerializationFormat.Encode(root);
-        }
-        finally
-        {
-            operation.Fail();
-        }
-    }
-
     /// <summary>
     /// Deserializes a new serializable root object from deterministic binary data.
     /// </summary>
@@ -487,28 +467,6 @@ public sealed class SerializationRegistry : IDisposable
         EnsureInitialized();
         using ConverterRegistryLease converters = m_converters.Capture();
         return Deserialize<T>(bytes, converters, context);
-    }
-
-    internal T Deserialize<T>(
-        ReadOnlySpan<byte> bytes,
-        ConverterRegistryLease converters,
-        SerializationContext? context = null
-    ) where T : class, ISerializable
-    {
-        ArgumentNullException.ThrowIfNull(converters);
-        SerializationNode root = BinarySerializationFormat.Decode(bytes);
-        var operation = new SerializationOperation(CreateContext(context), converters);
-        try
-        {
-            T result = (T)ValuePipeline.ReadRoot(root, typeof(T), operation);
-            operation.Complete();
-            return result;
-        }
-        catch
-        {
-            operation.Fail();
-            throw;
-        }
     }
 
     /// <summary>
@@ -583,26 +541,6 @@ public sealed class SerializationRegistry : IDisposable
         return Encode(write, converters, context);
     }
 
-    internal byte[] Encode(
-        Action<SerializationWriter> write,
-        ConverterRegistryLease converters,
-        SerializationContext? context = null
-    ) {
-        ArgumentNullException.ThrowIfNull(write);
-        ArgumentNullException.ThrowIfNull(converters);
-        var operation = new SerializationOperation(CreateContext(context), converters);
-        try
-        {
-            var writer = new SerializationWriter(operation, null, "$", typeof(object));
-            write(writer);
-            return BinarySerializationFormat.Encode(writer.Complete());
-        }
-        finally
-        {
-            operation.Fail();
-        }
-    }
-
     /// <summary>
     /// Decodes a manually defined structured schema from deterministic binary data.
     /// </summary>
@@ -636,6 +574,68 @@ public sealed class SerializationRegistry : IDisposable
         ArgumentNullException.ThrowIfNull(read);
         using ConverterRegistryLease converters = m_converters.Capture();
         return Decode(bytes, read, converters, context);
+    }
+
+    internal byte[] Serialize<T>(
+        T value,
+        ConverterRegistryLease converters,
+        SerializationContext? context = null
+    ) where T : class, ISerializable
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(converters);
+        var operation = new SerializationOperation(CreateContext(context), converters);
+        try
+        {
+            SerializationNode root = ValuePipeline.WriteRoot(value, typeof(T), operation);
+            return BinarySerializationFormat.Encode(root);
+        }
+        finally
+        {
+            operation.Fail();
+        }
+    }
+
+    internal T Deserialize<T>(
+        ReadOnlySpan<byte> bytes,
+        ConverterRegistryLease converters,
+        SerializationContext? context = null
+    ) where T : class, ISerializable
+    {
+        ArgumentNullException.ThrowIfNull(converters);
+        SerializationNode root = BinarySerializationFormat.Decode(bytes);
+        var operation = new SerializationOperation(CreateContext(context), converters);
+        try
+        {
+            T result = (T)ValuePipeline.ReadRoot(root, typeof(T), operation);
+            operation.Complete();
+            return result;
+        }
+        catch
+        {
+            operation.Fail();
+            throw;
+        }
+    }
+
+    internal byte[] Encode(
+        Action<SerializationWriter> write,
+        ConverterRegistryLease converters,
+        SerializationContext? context = null
+    ) {
+        ArgumentNullException.ThrowIfNull(write);
+        ArgumentNullException.ThrowIfNull(converters);
+        var operation = new SerializationOperation(CreateContext(context), converters);
+        try
+        {
+            var writer = new SerializationWriter(operation, null, "$", typeof(object));
+            write(writer);
+            return BinarySerializationFormat.Encode(writer.Complete());
+        }
+        finally
+        {
+            operation.Fail();
+        }
     }
 
     internal TResult Decode<TResult>(

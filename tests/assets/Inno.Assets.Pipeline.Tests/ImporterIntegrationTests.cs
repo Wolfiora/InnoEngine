@@ -131,6 +131,14 @@ public sealed class ImporterIntegrationTests : IDisposable
             Directory.CreateDirectory(libraryRoot);
         }
 
+        public void Dispose()
+        {
+            if (Directory.Exists(m_root))
+            {
+                Directory.Delete(m_root, recursive: true);
+            }
+        }
+
         internal string assetRoot => Path.Combine(m_root, "Assets");
         internal string libraryRoot => Path.Combine(m_root, "Library");
 
@@ -141,14 +149,6 @@ public sealed class ImporterIntegrationTests : IDisposable
             string path = Path.Combine(assetRoot, relativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             File.WriteAllBytes(path, bytes);
-        }
-
-        public void Dispose()
-        {
-            if (Directory.Exists(m_root))
-            {
-                Directory.Delete(m_root, recursive: true);
-            }
         }
     }
 }

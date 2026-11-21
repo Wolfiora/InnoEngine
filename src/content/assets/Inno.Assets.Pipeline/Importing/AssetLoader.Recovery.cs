@@ -25,50 +25,6 @@ namespace Inno.Assets.Pipeline;
 
 public sealed partial class AssetLoader
 {
-    private bool IsSourceBackedTypeUnavailableLocked(Guid persistentId)
-    {
-        if (!m_recordsById.TryGetValue(persistentId, out AssetRecord? record)
-            || record.meta.isTombstone
-            || record.persistentId == Guid.Empty
-            || string.IsNullOrWhiteSpace(record.meta.importerId)
-            || !IsMounted(record.relativePath)
-            || !IOFile.Exists(GetSourcePath(record.relativePath))
-        ) {
-            return false;
-        }
-        return ResolveRecordType(record) is null || m_unavailableImports.ContainsKey(record.relativePath);
-    }
-
-    private void RefreshLoadedAssetReferencesLocked()
-    {
-        AssetRecord[] loaded = m_recordsByPath.Values
-            .Where(static record => record.asset is not null)
-            .ToArray();
-        for (int i = 0; i < loaded.Length; i++)
-        {
-            AssetRecord record = loaded[i];
-            AssetObject asset = record.asset!;
-            if (record.meta.assetStateBytes.Length == 0)
-            {
-                continue;
-            }
-            byte[] rollback = CaptureAssetState(asset);
-            try
-            {
-                RestoreAssetState(asset, record.meta.assetStateBytes);
-            }
-            catch
-            {
-                RestoreAssetState(asset, rollback);
-                throw;
-            }
-        }
-        for (int i = 0; i < loaded.Length; i++)
-        {
-            AttachDependenciesLocked(loaded[i]);
-        }
-    }
-
     internal IReadOnlyList<SerializedMissingState> CaptureRecoveryStates()
         => Execute(() =>
         {
@@ -194,6 +150,50 @@ public sealed partial class AssetLoader
                 throw;
             }
         });
+
+    private bool IsSourceBackedTypeUnavailableLocked(Guid persistentId)
+    {
+        if (!m_recordsById.TryGetValue(persistentId, out AssetRecord? record)
+            || record.meta.isTombstone
+            || record.persistentId == Guid.Empty
+            || string.IsNullOrWhiteSpace(record.meta.importerId)
+            || !IsMounted(record.relativePath)
+            || !IOFile.Exists(GetSourcePath(record.relativePath))
+        ) {
+            return false;
+        }
+        return ResolveRecordType(record) is null || m_unavailableImports.ContainsKey(record.relativePath);
+    }
+
+    private void RefreshLoadedAssetReferencesLocked()
+    {
+        AssetRecord[] loaded = m_recordsByPath.Values
+            .Where(static record => record.asset is not null)
+            .ToArray();
+        for (int i = 0; i < loaded.Length; i++)
+        {
+            AssetRecord record = loaded[i];
+            AssetObject asset = record.asset!;
+            if (record.meta.assetStateBytes.Length == 0)
+            {
+                continue;
+            }
+            byte[] rollback = CaptureAssetState(asset);
+            try
+            {
+                RestoreAssetState(asset, record.meta.assetStateBytes);
+            }
+            catch
+            {
+                RestoreAssetState(asset, rollback);
+                throw;
+            }
+        }
+        for (int i = 0; i < loaded.Length; i++)
+        {
+            AttachDependenciesLocked(loaded[i]);
+        }
+    }
 
     private sealed class MissingAsset : AssetObject;
 }

@@ -100,6 +100,13 @@ public sealed partial class SceneEdits
            ? target.identity.persistentId
            : null;
 
+    private TypeRef GetTypeRef(Type type)
+        => m_workspace.types.TryGetTypeRef(type, out TypeRef typeRef)
+           ? typeRef
+           : throw new InvalidOperationException(
+               $"Scene element type '{type.FullName}' does not have an active StableTypeId."
+           );
+
     private static void RecordWithRollback(
         Action record,
         Action rollback
@@ -132,11 +139,4 @@ public sealed partial class SceneEdits
         }
         ExceptionDispatchInfo.Capture(failure).Throw();
     }
-
-    private TypeRef GetTypeRef(Type type)
-        => m_workspace.types.TryGetTypeRef(type, out TypeRef typeRef)
-           ? typeRef
-           : throw new InvalidOperationException(
-               $"Scene element type '{type.FullName}' does not have an active StableTypeId."
-           );
 }

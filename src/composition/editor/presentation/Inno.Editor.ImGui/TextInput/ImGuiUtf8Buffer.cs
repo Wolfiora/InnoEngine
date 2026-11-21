@@ -22,48 +22,6 @@ internal static unsafe class ImGuiUtf8Buffer
 
     internal static void DrawText(string text) => _ = PresentText(text, 0f, measure: false);
 
-    [SkipLocalsInit]
-    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-    private static Vector2 PresentText(
-        string text,
-        float wrapWidth,
-        bool measure
-    ) {
-        ArgumentNullException.ThrowIfNull(text);
-        if (text.AsSpan().Contains('\0'))
-        {
-            throw new ArgumentException("Literal native text cannot contain zero code units.", nameof(text));
-        }
-        int length = checked(S_TEXT_ENCODING.GetByteCount(text) + 1);
-        byte[]? rented = length > 1024 ? ArrayPool<byte>.Shared.Rent(length) : null;
-        Span<byte> buffer = rented is null ? stackalloc byte[length] : rented.AsSpan(0, length);
-        try
-        {
-            int count = S_TEXT_ENCODING.GetBytes(text.AsSpan(), buffer);
-            buffer[count] = 0;
-            fixed (byte* value = buffer)
-            {
-                ImVec2C size = default;
-                if (measure)
-                {
-                    NativeImGui.Raw.CalcTextSize((sbyte*)value, (sbyte*)value + count, 0, wrapWidth, &size);
-                }
-                else
-                {
-                    NativeImGui.Raw.TextUnformatted((sbyte*)value, (sbyte*)value + count);
-                }
-                return new Vector2(size.X, size.Y);
-            }
-        }
-        finally
-        {
-            if (rented is not null)
-            {
-                ArrayPool<byte>.Shared.Return(rented, clearArray: true);
-            }
-        }
-    }
-
     internal static bool InputText(
         string label,
         string? hint,
@@ -125,6 +83,48 @@ internal static unsafe class ImGuiUtf8Buffer
             }
 
             return changed;
+        }
+        finally
+        {
+            if (rented is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rented, clearArray: true);
+            }
+        }
+    }
+
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+    private static Vector2 PresentText(
+        string text,
+        float wrapWidth,
+        bool measure
+    ) {
+        ArgumentNullException.ThrowIfNull(text);
+        if (text.AsSpan().Contains('\0'))
+        {
+            throw new ArgumentException("Literal native text cannot contain zero code units.", nameof(text));
+        }
+        int length = checked(S_TEXT_ENCODING.GetByteCount(text) + 1);
+        byte[]? rented = length > 1024 ? ArrayPool<byte>.Shared.Rent(length) : null;
+        Span<byte> buffer = rented is null ? stackalloc byte[length] : rented.AsSpan(0, length);
+        try
+        {
+            int count = S_TEXT_ENCODING.GetBytes(text.AsSpan(), buffer);
+            buffer[count] = 0;
+            fixed (byte* value = buffer)
+            {
+                ImVec2C size = default;
+                if (measure)
+                {
+                    NativeImGui.Raw.CalcTextSize((sbyte*)value, (sbyte*)value + count, 0, wrapWidth, &size);
+                }
+                else
+                {
+                    NativeImGui.Raw.TextUnformatted((sbyte*)value, (sbyte*)value + count);
+                }
+                return new Vector2(size.X, size.Y);
+            }
         }
         finally
         {

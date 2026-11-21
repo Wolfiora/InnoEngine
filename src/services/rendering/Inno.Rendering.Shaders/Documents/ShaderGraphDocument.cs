@@ -21,6 +21,26 @@ public static class ShaderGraphDocument
     public const string targetKey = "inno.shader.target";
 
     /// <summary>
+    /// Identifies a stage output node; its incoming edges name the stage's GPU outputs.
+    /// </summary>
+    public const string outputDefinitionId = "inno.shader.stage-output";
+
+    /// <summary>
+    /// Identifies a node property containing its owning stage output node identity.
+    /// </summary>
+    public const string stageKey = "stage";
+
+    /// <summary>
+    /// Identifies the structured settings stored on a stage output node.
+    /// </summary>
+    public const string settingsKey = "settings";
+
+    /// <summary>
+    /// Prefixes stable port IDs storing explicit typed defaults for unconnected inputs.
+    /// </summary>
+    public const string inputDefaultPrefix = "input-default.";
+
+    /// <summary>
     /// Reads the stable domain target assignment without resolving extension instances.
     /// </summary>
     /// <param name="graph">
@@ -74,26 +94,6 @@ public static class ShaderGraphDocument
             graph.SetMetadata(targetKey, Encode(targetId, serialization, context));
         }
     }
-
-    /// <summary>
-    /// Identifies a stage output node; its incoming edges name the stage's GPU outputs.
-    /// </summary>
-    public const string outputDefinitionId = "inno.shader.stage-output";
-
-    /// <summary>
-    /// Identifies a node property containing its owning stage output node identity.
-    /// </summary>
-    public const string stageKey = "stage";
-
-    /// <summary>
-    /// Identifies the structured settings stored on a stage output node.
-    /// </summary>
-    public const string settingsKey = "settings";
-
-    /// <summary>
-    /// Prefixes stable port IDs storing explicit typed defaults for unconnected inputs.
-    /// </summary>
-    public const string inputDefaultPrefix = "input-default.";
 
     /// <summary>
     /// Creates an empty graph with a source-free shader contract; incomplete graphs remain serializable.

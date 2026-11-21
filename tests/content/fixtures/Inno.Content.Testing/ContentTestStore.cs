@@ -46,24 +46,6 @@ public sealed class ContentTestStore : IRuntimeContentStore
     public ContentPackIndex index { get; }
 
     /// <summary>
-    /// Captures a test's exported directory as independently owned memory content.
-    /// </summary>
-    /// <param name="directory">
-    /// The fixture output directory; the returned store does not retain its location.
-    /// </param>
-    /// <returns>
-    /// A caller-owned memory provider usable after the directory has been removed.
-    /// </returns>
-    public static ContentTestStore FromDirectory(string directory)
-        => new(
-            Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories).Select(path =>
-                new KeyValuePair<ContentKey, byte[]>(
-                    new ContentKey(Path.GetRelativePath(directory, path).Replace('\\', '/')),
-                    File.ReadAllBytes(path)
-                ))
-        );
-
-    /// <summary>
     /// Injects a provider corruption while preserving its previously declared inventory.
     /// </summary>
     /// <param name="key">
@@ -102,4 +84,22 @@ public sealed class ContentTestStore : IRuntimeContentStore
         m_disposed = true;
         m_payloads.Clear();
     }
+
+    /// <summary>
+    /// Captures a test's exported directory as independently owned memory content.
+    /// </summary>
+    /// <param name="directory">
+    /// The fixture output directory; the returned store does not retain its location.
+    /// </param>
+    /// <returns>
+    /// A caller-owned memory provider usable after the directory has been removed.
+    /// </returns>
+    public static ContentTestStore FromDirectory(string directory)
+        => new(
+            Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories).Select(path =>
+                new KeyValuePair<ContentKey, byte[]>(
+                    new ContentKey(Path.GetRelativePath(directory, path).Replace('\\', '/')),
+                    File.ReadAllBytes(path)
+                ))
+        );
 }

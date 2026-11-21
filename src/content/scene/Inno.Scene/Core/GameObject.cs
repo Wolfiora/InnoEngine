@@ -483,15 +483,6 @@ public sealed class GameObject : EngineObject, ISerializable
         MarkDestroyed();
     }
 
-    private GameScene EnsureAlive()
-    {
-        if (isDestroyed || m_scene is null || !m_scene.Contains(this))
-        {
-            throw new InvalidOperationException($"GameObject '{m_name}' is destroyed or detached from its scene.");
-        }
-        return m_scene;
-    }
-
     /// <summary>
     /// Validates and normalizes a tag used by runtime storage and serialization.
     /// </summary>
@@ -508,6 +499,15 @@ public sealed class GameObject : EngineObject, ISerializable
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         return value.Trim();
+    }
+
+    private GameScene EnsureAlive()
+    {
+        if (isDestroyed || m_scene is null || !m_scene.Contains(this))
+        {
+            throw new InvalidOperationException($"GameObject '{m_name}' is destroyed or detached from its scene.");
+        }
+        return m_scene;
     }
 
     private void AdvanceCaptureRevision()

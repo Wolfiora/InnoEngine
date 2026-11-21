@@ -81,22 +81,6 @@ public sealed unsafe class SettingsApplyNativeTests
         }
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void OpenAndClose(NativeProjectPanelHost host)
-    {
-        Assert.True(host.reloads.CanRequestReload(out _));
-        Assert.True(host.runtime.interactions.For("editor/main-menu").Execute("editor.settings.open"));
-        var driver = new SettingsInput(host);
-        driver.Draw();
-        Assert.False(host.reloads.CanActivateReload(out string? reason));
-        Assert.Contains("Settings", reason);
-        driver.Search("Atomic Editor");
-        driver.CloseClean();
-        Assert.False(driver.isVisible);
-        Assert.True(host.reloads.CanRequestReload(out _));
-        Assert.True(host.reloads.CanActivateReload(out _));
-    }
-
     [Fact]
     [Trait("Acceptance", "Workflows")]
     public void FailedRollbackKeepsHistoryFaultedAndPreventsFurtherApply()
@@ -229,9 +213,24 @@ public sealed unsafe class SettingsApplyNativeTests
         }
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void OpenAndClose(NativeProjectPanelHost host)
+    {
+        Assert.True(host.reloads.CanRequestReload(out _));
+        Assert.True(host.runtime.interactions.For("editor/main-menu").Execute("editor.settings.open"));
+        var driver = new SettingsInput(host);
+        driver.Draw();
+        Assert.False(host.reloads.CanActivateReload(out string? reason));
+        Assert.Contains("Settings", reason);
+        driver.Search("Atomic Editor");
+        driver.CloseClean();
+        Assert.False(driver.isVisible);
+        Assert.True(host.reloads.CanRequestReload(out _));
+        Assert.True(host.reloads.CanActivateReload(out _));
+    }
+
     private sealed class FailingSettingsDocument(IByteDocumentStore owner) : IByteDocumentStore
     {
-        internal bool failWrites { get; set; }
         public string documentName => owner.documentName;
         public bool canWrite => owner.canWrite;
         public bool exists => owner.exists;
@@ -246,6 +245,8 @@ public sealed unsafe class SettingsApplyNativeTests
             }
             owner.Write(data);
         }
+
+        internal bool failWrites { get; set; }
     }
 
     private sealed class SettingsInput(NativeProjectPanelHost host)
@@ -330,10 +331,10 @@ public sealed unsafe class SettingsApplyNativeTests
 [EditorSettingPath("Editor/Atomic Editor/Value")]
 public sealed class AtomicEditorSetting : EditorSetting
 {
+    public static readonly List<WeakReference<EditorSettingObject>> snapshots = [];
     public static bool stage;
     public static bool throwOnDraw;
     public static bool observe;
-    public static readonly List<WeakReference<EditorSettingObject>> snapshots = [];
 
     public override EditorSettingObject defaultValue
     {

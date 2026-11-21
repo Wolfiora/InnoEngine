@@ -13,11 +13,6 @@ namespace Inno.Editor.Panel.Hierarchy;
 
 internal sealed partial class HierarchyPanel
 {
-    private readonly record struct HierarchyRow(
-        RuntimeIdentity identity,
-        int depth
-    );
-
     private readonly List<HierarchyRow> m_rows = [];
     private readonly List<(RuntimeIdentity identity, ulong revision)> m_sceneInputs = [];
     private ulong m_expansionRevision = ulong.MaxValue;
@@ -156,4 +151,9 @@ internal sealed partial class HierarchyPanel
     private static RuntimeIdentity RequireIdentity(IdentityObject target)
         => target.identity.runtimeIdentity
            ?? throw new InvalidOperationException("A visible hierarchy row requires a registered identity.");
+
+    private readonly record struct HierarchyRow(
+        RuntimeIdentity identity,
+        int depth
+    );
 }

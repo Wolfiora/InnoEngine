@@ -15,21 +15,6 @@ public sealed class AssetSerializationServices
     private readonly SerializationRegistry m_serialization;
     private readonly TypeCatalog m_types;
 
-    internal IAssetReferenceResolver references
-        => m_references
-           ?? throw new InvalidOperationException(
-               "Asset reference resolution is unavailable outside an import transaction."
-           );
-
-    internal SerializationRegistry serialization => m_serialization;
-
-    internal TypeCatalog types => m_types;
-
-    internal SerializationContext context
-        => m_references is null
-           ? SerializationContext.empty
-           : AssetSerializationContext.Create(m_references);
-
     internal AssetSerializationServices(
         TypeCatalog types,
         SerializationRegistry serialization,
@@ -140,4 +125,19 @@ public sealed class AssetSerializationServices
                                        : AssetSerializationContext.Create(m_references);
         return m_serialization.Deserialize<TValue>(bytes, context);
     }
+
+    internal IAssetReferenceResolver references
+        => m_references
+           ?? throw new InvalidOperationException(
+               "Asset reference resolution is unavailable outside an import transaction."
+           );
+
+    internal SerializationRegistry serialization => m_serialization;
+
+    internal TypeCatalog types => m_types;
+
+    internal SerializationContext context
+        => m_references is null
+           ? SerializationContext.empty
+           : AssetSerializationContext.Create(m_references);
 }

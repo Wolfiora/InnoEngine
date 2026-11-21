@@ -52,7 +52,7 @@ public abstract class KeyEvent(
 /// <param name="repeat">
 /// The repeat used to initialize this instance.
 /// </param>
-public class KeyPressedEvent(
+public sealed class KeyPressedEvent(
     uint windowId,
     KeyCode key,
     KeyModifier modifiers = KeyModifier.None,
@@ -77,7 +77,7 @@ public class KeyPressedEvent(
 /// <param name="modifiers">
 /// The modifiers used to initialize this instance.
 /// </param>
-public class KeyReleasedEvent(
+public sealed class KeyReleasedEvent(
     uint windowId,
     KeyCode key,
     KeyModifier modifiers = KeyModifier.None

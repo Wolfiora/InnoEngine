@@ -206,6 +206,15 @@ internal sealed partial class FileBrowserPanel
         }
     }
 
+    private float GetGridCellSize()
+    {
+        float fontSize = Ui.GetFontSize();
+        return MathF.Max(
+            CurrentBrowserStyle.gridMinimumCellSize,
+            fontSize * (m_gridScale + CurrentBrowserStyle.gridScaleBias) + CurrentBrowserStyle.gridFixedCellPadding
+        );
+    }
+
     private static void DrawGridItemVisual(
         string icon,
         string name,
@@ -272,14 +281,5 @@ internal sealed partial class FileBrowserPanel
         }
 
         Ui.PopClipRect();
-    }
-
-    private float GetGridCellSize()
-    {
-        float fontSize = Ui.GetFontSize();
-        return MathF.Max(
-            CurrentBrowserStyle.gridMinimumCellSize,
-            fontSize * (m_gridScale + CurrentBrowserStyle.gridScaleBias) + CurrentBrowserStyle.gridFixedCellPadding
-        );
     }
 }

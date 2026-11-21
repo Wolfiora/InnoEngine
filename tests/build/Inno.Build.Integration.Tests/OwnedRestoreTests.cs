@@ -126,11 +126,7 @@ public sealed class OwnedRestoreTests : IDisposable
     {
         private volatile bool m_yielded;
         private int m_builds;
-        internal bool yielded => m_yielded;
-        internal int builds => m_builds;
-        internal bool reacquired { get; private set; }
-        internal IDictionary? properties { get; private set; }
-        internal IList<string>? removed { get; private set; }
+
         public bool ContinueOnError => false;
         public int LineNumberOfTaskNode => 0;
         public int ColumnNumberOfTaskNode => 0;
@@ -165,6 +161,16 @@ public sealed class OwnedRestoreTests : IDisposable
             return new BuildEngineResult(restore(), []);
         }
 
+        public bool BuildProjectFilesInParallel(
+            string[] projects,
+            string[] targets,
+            IDictionary[] properties,
+            IDictionary[] outputs,
+            string[] toolsVersions,
+            bool useResultsCache,
+            bool unloadProjects
+        ) => throw new NotSupportedException();
+
         public bool BuildProjectFile(
             string project,
             string[] targets,
@@ -180,14 +186,10 @@ public sealed class OwnedRestoreTests : IDisposable
             string toolsVersion
         ) => throw new NotSupportedException();
 
-        public bool BuildProjectFilesInParallel(
-            string[] projects,
-            string[] targets,
-            IDictionary[] properties,
-            IDictionary[] outputs,
-            string[] toolsVersions,
-            bool useResultsCache,
-            bool unloadProjects
-        ) => throw new NotSupportedException();
+        internal bool yielded => m_yielded;
+        internal int builds => m_builds;
+        internal bool reacquired { get; private set; }
+        internal IDictionary? properties { get; private set; }
+        internal IList<string>? removed { get; private set; }
     }
 }

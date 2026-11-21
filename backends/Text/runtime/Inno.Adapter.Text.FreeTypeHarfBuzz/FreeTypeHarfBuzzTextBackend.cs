@@ -255,6 +255,8 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
         m_context = null;
     }
 
+    private void EnsureActive() => ObjectDisposedException.ThrowIf(m_disposed, this);
+
     private static byte[] Utf8(string value)
     {
         var bytes = new byte[Encoding.UTF8.GetByteCount(value) + 1];
@@ -273,6 +275,4 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
             );
         }
     }
-
-    private void EnsureActive() => ObjectDisposedException.ThrowIf(m_disposed, this);
 }

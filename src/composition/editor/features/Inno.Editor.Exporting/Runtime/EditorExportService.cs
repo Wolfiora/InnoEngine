@@ -66,6 +66,11 @@ public sealed class EditorExportService : EditorModule
         );
 
     /// <summary>
+    /// Gets the targets registered by the active Build distribution.
+    /// </summary>
+    public IReadOnlyList<BuildTargetId> availableGameTargets => m_buildPipeline.availableGameTargets;
+
+    /// <summary>
     /// Cancels the observed export only while that operation still owns this service.
     /// </summary>
     /// <param name="operationId">
@@ -78,11 +83,6 @@ public sealed class EditorExportService : EditorModule
             CancelCurrent();
         }
     }
-
-    /// <summary>
-    /// Gets the targets registered by the active Build distribution.
-    /// </summary>
-    public IReadOnlyList<BuildTargetId> availableGameTargets => m_buildPipeline.availableGameTargets;
 
     /// <summary>
     /// Gets deployment implementations registered for a target.
@@ -161,14 +161,6 @@ public sealed class EditorExportService : EditorModule
         }
     }
 
-    private void EnsureIdle()
-    {
-        if (isPluginBusy || isGameBusy)
-        {
-            throw new InvalidOperationException("An export still owns the build service.");
-        }
-    }
-
     /// <summary>
     /// Advances compilation tickets, build progress, and completed export tasks.
     /// </summary>
@@ -209,6 +201,14 @@ public sealed class EditorExportService : EditorModule
     /// </summary>
     protected override void OnDispose() => RetireExports();
 
+    private void EnsureIdle()
+    {
+        if (isPluginBusy || isGameBusy)
+        {
+            throw new InvalidOperationException("An export still owns the build service.");
+        }
+    }
+
     private void RetireExports()
     {
         m_cancellation?.Cancel();
@@ -248,14 +248,6 @@ public sealed class EditorExportService : EditorModule
         }
 
         ReleaseCancellation();
-    }
-
-    private static void RequireRetiredOutcome(Task? task)
-    {
-        if (task?.Exception is Exception failure && RetirementPendingException.Find(failure) is not null)
-        {
-            throw failure;
-        }
     }
 
     private void CompletePluginExport()
@@ -429,6 +421,14 @@ public sealed class EditorExportService : EditorModule
         m_status = string.Empty;
         m_error = message;
         m_log.Write(LogLevel.Error, "{0} failed:{1}{2}", [operation, Environment.NewLine, message]);
+    }
+
+    private static void RequireRetiredOutcome(Task? task)
+    {
+        if (task?.Exception is Exception failure && RetirementPendingException.Find(failure) is not null)
+        {
+            throw failure;
+        }
     }
 
     private sealed class BuildProgressSink(

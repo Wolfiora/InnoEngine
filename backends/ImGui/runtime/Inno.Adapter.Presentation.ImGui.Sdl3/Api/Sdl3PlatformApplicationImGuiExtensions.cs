@@ -12,74 +12,6 @@ namespace Inno.Adapter.Presentation.ImGui;
 /// </summary>
 public static class Sdl3PlatformApplicationImGuiExtensions
 {
-    private sealed class ImGuiState : ISdl3ApplicationExtension
-    {
-        private readonly Sdl3PlatformApplication m_application;
-        private IDisposable? m_registration;
-        private bool m_isRetiring;
-
-        internal ImGuiState(Sdl3PlatformApplication application)
-        {
-            m_application = application;
-        }
-
-        internal Dictionary<uint, PlatformImGuiContext> contexts { get; } = [];
-        internal bool isRetiring => m_isRetiring;
-
-        internal void Register() => m_registration = m_application.RegisterExtension(this);
-
-        internal void Release(
-            uint windowId,
-            PlatformImGuiContext context
-        ) {
-            if (!contexts.TryGetValue(windowId, out PlatformImGuiContext? registered) || !ReferenceEquals(registered, context))
-            {
-                throw new InvalidOperationException("The retired ImGui context no longer owns its application registration.");
-            }
-            contexts.Remove(windowId);
-        }
-
-        void ISdl3ApplicationExtension.ProcessNativeEvent(
-            Sdl3PlatformApplication application,
-            scoped ReadOnlySpan<byte> nativeEventData
-        ) {
-            if (nativeEventData.Length < Marshal.SizeOf<SDLEvent>())
-            {
-                return;
-            }
-
-            SDLEvent sdlEvent = MemoryMarshal.Read<SDLEvent>(nativeEventData);
-            foreach (PlatformImGuiContext context in contexts.Values)
-            {
-                context.ProcessEvent(ref sdlEvent);
-            }
-        }
-
-        void ISdl3ApplicationExtension.PrepareLiveResizeWindow(
-            Sdl3PlatformApplication application,
-            uint windowId
-        ) {
-            foreach (PlatformImGuiContext context in contexts.Values)
-            {
-                context.PrepareLiveResizeWindow(windowId);
-            }
-        }
-
-        void ISdl3ApplicationExtension.OnApplicationDisposing(Sdl3PlatformApplication application)
-        {
-            m_isRetiring = true;
-            var retiring = new PlatformImGuiContext[contexts.Count];
-            contexts.Values.CopyTo(retiring, 0);
-            foreach (PlatformImGuiContext context in retiring)
-            {
-                context.Dispose();
-            }
-            s_states.Remove(application);
-            m_registration?.Dispose();
-            m_registration = null;
-        }
-    }
-
     private static readonly ConditionalWeakTable<Sdl3PlatformApplication, ImGuiState> s_states = new();
 
     /// <summary>
@@ -198,5 +130,73 @@ public static class Sdl3PlatformApplicationImGuiExtensions
         var state = new ImGuiState(application);
         state.Register();
         return state;
+    }
+
+    private sealed class ImGuiState : ISdl3ApplicationExtension
+    {
+        private readonly Sdl3PlatformApplication m_application;
+        private IDisposable? m_registration;
+        private bool m_isRetiring;
+
+        internal ImGuiState(Sdl3PlatformApplication application)
+        {
+            m_application = application;
+        }
+
+        void ISdl3ApplicationExtension.ProcessNativeEvent(
+            Sdl3PlatformApplication application,
+            scoped ReadOnlySpan<byte> nativeEventData
+        ) {
+            if (nativeEventData.Length < Marshal.SizeOf<SDLEvent>())
+            {
+                return;
+            }
+
+            SDLEvent sdlEvent = MemoryMarshal.Read<SDLEvent>(nativeEventData);
+            foreach (PlatformImGuiContext context in contexts.Values)
+            {
+                context.ProcessEvent(ref sdlEvent);
+            }
+        }
+
+        void ISdl3ApplicationExtension.PrepareLiveResizeWindow(
+            Sdl3PlatformApplication application,
+            uint windowId
+        ) {
+            foreach (PlatformImGuiContext context in contexts.Values)
+            {
+                context.PrepareLiveResizeWindow(windowId);
+            }
+        }
+
+        void ISdl3ApplicationExtension.OnApplicationDisposing(Sdl3PlatformApplication application)
+        {
+            m_isRetiring = true;
+            var retiring = new PlatformImGuiContext[contexts.Count];
+            contexts.Values.CopyTo(retiring, 0);
+            foreach (PlatformImGuiContext context in retiring)
+            {
+                context.Dispose();
+            }
+            s_states.Remove(application);
+            m_registration?.Dispose();
+            m_registration = null;
+        }
+
+        internal Dictionary<uint, PlatformImGuiContext> contexts { get; } = [];
+        internal bool isRetiring => m_isRetiring;
+
+        internal void Register() => m_registration = m_application.RegisterExtension(this);
+
+        internal void Release(
+            uint windowId,
+            PlatformImGuiContext context
+        ) {
+            if (!contexts.TryGetValue(windowId, out PlatformImGuiContext? registered) || !ReferenceEquals(registered, context))
+            {
+                throw new InvalidOperationException("The retired ImGui context no longer owns its application registration.");
+            }
+            contexts.Remove(windowId);
+        }
     }
 }

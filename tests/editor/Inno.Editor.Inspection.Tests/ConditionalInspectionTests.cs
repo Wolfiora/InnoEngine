@@ -112,6 +112,16 @@ public sealed class ConditionalInspectionTests : IDisposable
         );
     }
 
+    public void Dispose()
+    {
+        m_runtime.Dispose();
+        m_serialization.Dispose();
+        m_types.Dispose();
+        m_modules.Dispose();
+        m_logs.Dispose();
+        Directory.Delete(m_root, true);
+    }
+
     [StableTypeId("eeeb7c59-2af3-4cc3-81d2-c853feef3874")]
     public sealed class AvailabilityTarget : ISerializable
     {
@@ -195,15 +205,5 @@ public sealed class ConditionalInspectionTests : IDisposable
             string? mergeKey,
             string? componentName
         ) => throw new InvalidOperationException("Resolution must not edit a property.");
-    }
-
-    public void Dispose()
-    {
-        m_runtime.Dispose();
-        m_serialization.Dispose();
-        m_types.Dispose();
-        m_modules.Dispose();
-        m_logs.Dispose();
-        Directory.Delete(m_root, true);
     }
 }

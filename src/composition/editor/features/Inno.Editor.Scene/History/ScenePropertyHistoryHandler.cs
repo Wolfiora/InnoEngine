@@ -148,36 +148,6 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
         }
     }
 
-    private static bool IsComplete(SerializationPropertyRestoreResult result)
-        => result.success && result.ignoredCount == 0 && result.restoredCount > 0;
-
-    private void RestoreDeltas(
-        EngineObject target,
-        IReadOnlyList<ScenePropertyValueDelta> deltas,
-        bool useAfter
-    ) {
-        for (int index = 0; index < deltas.Count; index++)
-        {
-            RestoreOne(target, useAfter ? deltas[index].after : deltas[index].before);
-        }
-    }
-
-    private void RestoreOne(
-        EngineObject target,
-        ReadOnlySpan<byte> data
-    ) {
-        SerializationPropertyRestoreResult result = ScenePropertySerialization.RestoreProperties(
-            target,
-            data,
-            m_workspace.serialization,
-            m_workspace.assets
-        );
-        if (!IsComplete(result))
-        {
-            throw new InvalidOperationException("The scene property restore was incomplete.");
-        }
-    }
-
     /// <summary>
     /// Attempts to merge without changing state when the operation cannot complete.
     /// </summary>
@@ -260,4 +230,34 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
             return false;
         }
     }
+
+    private void RestoreDeltas(
+        EngineObject target,
+        IReadOnlyList<ScenePropertyValueDelta> deltas,
+        bool useAfter
+    ) {
+        for (int index = 0; index < deltas.Count; index++)
+        {
+            RestoreOne(target, useAfter ? deltas[index].after : deltas[index].before);
+        }
+    }
+
+    private void RestoreOne(
+        EngineObject target,
+        ReadOnlySpan<byte> data
+    ) {
+        SerializationPropertyRestoreResult result = ScenePropertySerialization.RestoreProperties(
+            target,
+            data,
+            m_workspace.serialization,
+            m_workspace.assets
+        );
+        if (!IsComplete(result))
+        {
+            throw new InvalidOperationException("The scene property restore was incomplete.");
+        }
+    }
+
+    private static bool IsComplete(SerializationPropertyRestoreResult result)
+        => result.success && result.ignoredCount == 0 && result.restoredCount > 0;
 }

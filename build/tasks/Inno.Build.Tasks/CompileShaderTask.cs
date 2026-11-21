@@ -76,6 +76,11 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
     public string OutputFile { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the exact native dependency selection, disabling source production when supplied.
+    /// </summary>
+    public string NativeDependencyManifestPath { get; set; } = string.Empty;
+
+    /// <summary>
     /// Compiles the requested graph artifact and reports compilation failures through MSBuild.
     /// </summary>
     /// <returns>
@@ -130,11 +135,6 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
             m_cancellation?.Cancel();
         }
     }
-
-    /// <summary>
-    /// Gets or sets the exact native dependency selection, disabling source production when supplied.
-    /// </summary>
-    public string NativeDependencyManifestPath { get; set; } = string.Empty;
 
     private ToolRunner PrepareTools(
         CancellationToken cancellationToken,

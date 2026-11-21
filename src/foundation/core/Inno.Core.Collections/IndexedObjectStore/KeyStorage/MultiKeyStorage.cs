@@ -7,8 +7,9 @@ internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T>
     where T : class
     where TKey : notnull
 {
-    private readonly Dictionary<TKey, HashSet<T>> m_map = new(EqualityComparer<TKey>.Default);
     private static readonly HashSet<T> EMPTY_SET = new(IndexedObjectStore<T>.ReferenceEqualityComparer<T>.INSTANCE);
+
+    private readonly Dictionary<TKey, HashSet<T>> m_map = new(EqualityComparer<TKey>.Default);
 
     /// <summary>
     /// Adds the supplied value while preserving the collection's invariants.

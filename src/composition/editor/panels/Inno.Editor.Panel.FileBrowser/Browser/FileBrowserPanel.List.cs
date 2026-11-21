@@ -196,17 +196,6 @@ internal sealed partial class FileBrowserPanel
         DrawListColumnSeparator(origin.X + width * m_listTypeSeparatorPosition, origin.Y, bottom, state.typeHovered, state.typeActive);
     }
 
-    private static void DrawListColumnSeparator(
-        float x,
-        float top,
-        float bottom,
-        bool hovered,
-        bool active
-    ) {
-        Vector4 color = active ? EditorPalette.contentAccent : hovered ? EditorPalette.contentBorder : EditorPalette.contentBorderSoft;
-        Ui.DrawLine(new Vector2(x, top), new Vector2(x, bottom), Ui.ToPackedColor(color), EditorUI.current.widgets.style.borderSize);
-    }
-
     private void SetListColumnSeparators(
         float namePosition,
         float typePosition
@@ -214,22 +203,6 @@ internal sealed partial class FileBrowserPanel
         float minimum = browserStyle.listMinimumColumnRatio;
         m_listNameSeparatorPosition = Math.Clamp(namePosition, minimum, 1f - minimum * 2f);
         m_listTypeSeparatorPosition = Math.Clamp(typePosition, m_listNameSeparatorPosition + minimum, 1f - minimum);
-    }
-
-    private static void DrawHeaderRow()
-    {
-        Ui.TableNextRow();
-        Ui.TableSetBgColor(ImGuiTableBgTarget.RowBg0, Ui.ToPackedColor(EditorPalette.collectionHeader));
-        Ui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, Ui.ToPackedColor(EditorPalette.collectionHeader));
-        _ = Ui.TableSetColumnIndex(0);
-        InsetListCellContent();
-        Ui.Text("Name");
-        _ = Ui.TableSetColumnIndex(1);
-        InsetListCellContent();
-        Ui.Text("Type");
-        _ = Ui.TableSetColumnIndex(2);
-        InsetListCellContent();
-        Ui.Text("Source");
     }
 
     private void DrawNameCell(
@@ -315,6 +288,33 @@ internal sealed partial class FileBrowserPanel
         {
             Ui.PopStyleColor(3);
         }
+    }
+
+    private static void DrawListColumnSeparator(
+        float x,
+        float top,
+        float bottom,
+        bool hovered,
+        bool active
+    ) {
+        Vector4 color = active ? EditorPalette.contentAccent : hovered ? EditorPalette.contentBorder : EditorPalette.contentBorderSoft;
+        Ui.DrawLine(new Vector2(x, top), new Vector2(x, bottom), Ui.ToPackedColor(color), EditorUI.current.widgets.style.borderSize);
+    }
+
+    private static void DrawHeaderRow()
+    {
+        Ui.TableNextRow();
+        Ui.TableSetBgColor(ImGuiTableBgTarget.RowBg0, Ui.ToPackedColor(EditorPalette.collectionHeader));
+        Ui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, Ui.ToPackedColor(EditorPalette.collectionHeader));
+        _ = Ui.TableSetColumnIndex(0);
+        InsetListCellContent();
+        Ui.Text("Name");
+        _ = Ui.TableSetColumnIndex(1);
+        InsetListCellContent();
+        Ui.Text("Type");
+        _ = Ui.TableSetColumnIndex(2);
+        InsetListCellContent();
+        Ui.Text("Source");
     }
 
     private static void DrawTextCell(

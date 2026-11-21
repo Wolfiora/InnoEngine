@@ -285,7 +285,7 @@ public sealed unsafe class FontCoverageTests
         public bool supportsViewports => false;
         public bool supportsVertexOffsets => false;
 
-        public void RenderMain(IntPtr drawData) {}
+        public void RenderMain(nint drawData) {}
 
         public void SynchronizeMainOutput(
             int pixelWidth,
@@ -298,7 +298,7 @@ public sealed unsafe class FontCoverageTests
 
         public void RenderViewport(
             PlatformImGuiViewportTarget target,
-            IntPtr drawData
+            nint drawData
         ) => throw new NotSupportedException();
 
         public void PresentViewport(PlatformImGuiViewportTarget target) => throw new NotSupportedException();

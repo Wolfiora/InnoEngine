@@ -406,8 +406,6 @@ public sealed partial class RenderRuntime
     {
         private readonly List<ViewContentItem> m_items = [];
 
-        internal IReadOnlyList<ViewContentItem> items => m_items;
-
         /// <summary>
         /// Submits validated work to the active backend for ordered processing.
         /// </summary>
@@ -419,5 +417,7 @@ public void Submit(ViewContentItem item)
             ArgumentNullException.ThrowIfNull(item);
             m_items.Add(item);
         }
+
+        internal IReadOnlyList<ViewContentItem> items => m_items;
     }
 }

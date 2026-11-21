@@ -70,8 +70,6 @@ public sealed class EventHub : IDisposable
         }
     }
 
-    internal long sequence { get; }
-
     /// <summary>
     /// Subscribes a listener for the specified event type.
     /// </summary>
@@ -185,6 +183,8 @@ public sealed class EventHub : IDisposable
             dispatcher.RemoveHub(this);
         }
     }
+
+    internal long sequence { get; }
 
     internal void Dispatch(Event e)
     {

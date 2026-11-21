@@ -17,6 +17,9 @@ internal sealed class CommandSearchModule(EditorInteractions interactions) : Edi
     internal string search { get; set; } = string.Empty;
     internal bool requestsFocus { get; set; }
 
+    /// <inheritdoc/>
+    protected override void OnStop(EditorContext context) => Close();
+
     internal void Open()
     {
         m_area = interactions.focusedArea;
@@ -60,9 +63,6 @@ internal sealed class CommandSearchModule(EditorInteractions interactions) : Edi
             }
         }
     }
-
-    /// <inheritdoc/>
-    protected override void OnStop(EditorContext context) => Close();
 
     private static IEnumerable<EditorMenuItem> Leaves(IReadOnlyList<EditorMenuItem> items)
     {

@@ -69,6 +69,11 @@ public struct Quaternion : IEquatable<Quaternion>
     public static Quaternion identity => new Quaternion(0, 0, 0, 1);
 
     /// <summary>
+    /// Gets a unit-length copy, or the zero value when normalization is undefined.
+    /// </summary>
+    public Quaternion normalized => Normalize(this);
+
+    /// <summary>
     /// Calculates the Euclidean magnitude of this value.
     /// </summary>
     /// <returns>
@@ -87,9 +92,129 @@ public struct Quaternion : IEquatable<Quaternion>
     public float LengthSquared() => SimdMath.Dot4(x, y, z, w, x, y, z, w);
 
     /// <summary>
-    /// Gets a unit-length copy, or the zero value when normalization is undefined.
+    /// Converts this quaternion to a rotation matrix.
     /// </summary>
-    public Quaternion normalized => Normalize(this);
+    /// <returns>
+    /// The validated matrix that represents the completed operation.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Matrix ToMatrix() => Matrix.CreateFromQuaternion(this);
+
+    /// <summary>
+    /// Converts this value to its euler angles xyz representation.
+    /// </summary>
+    /// <returns>
+    /// The validated vector3 that represents the completed operation.
+    /// </returns>
+    public Vector3 ToEulerAnglesXYZ()
+    {
+        Quaternion normalized = this.normalized;
+        float sinY = Math.Clamp(2f * (normalized.x * normalized.z + normalized.w * normalized.y), -1f, 1f);
+        float angleY = MathF.Asin(sinY);
+        float angleX = MathF.Atan2(
+            2f * (normalized.w * normalized.x - normalized.y * normalized.z),
+            1f - 2f * (normalized.x * normalized.x + normalized.y * normalized.y)
+        );
+        float angleZ = MathF.Atan2(
+            2f * (normalized.w * normalized.z - normalized.x * normalized.y),
+            1f - 2f * (normalized.y * normalized.y + normalized.z * normalized.z)
+        );
+        return new Vector3(angleX, angleY, angleZ);
+    }
+
+    /// <summary>
+    /// Converts this value to its euler angles xyzdegrees representation.
+    /// </summary>
+    /// <returns>
+    /// The validated vector3 that represents the completed operation.
+    /// </returns>
+    public Vector3 ToEulerAnglesXYZDegrees() => ToEulerAnglesXYZ() * (180f / MathF.PI);
+
+    /// <summary>
+    /// Converts this value to its euler angles zyx representation.
+    /// </summary>
+    /// <returns>
+    /// The validated vector3 that represents the completed operation.
+    /// </returns>
+    public Vector3 ToEulerAnglesZYX()
+    {
+        float sinrCosp = 2 * (w * z + x * y);
+        float cosrCosp = 1 - 2 * (y * y + z * z);
+        float angleZ = MathF.Atan2(sinrCosp, cosrCosp);
+
+        float sinp = 2 * (w * y - z * x);
+        float angleY = MathF.Abs(sinp) >= 1
+                       ? MathF.CopySign(MathF.PI / 2, sinp)
+                       : MathF.Asin(sinp);
+
+        float sinyCosp = 2 * (w * x + y * z);
+        float cosyCosp = 1 - 2 * (x * x + y * y);
+        float angleX = MathF.Atan2(sinyCosp, cosyCosp);
+
+        return new Vector3(angleX, angleY, angleZ);
+    }
+
+    /// <summary>
+    /// Converts this value to its euler angles zyxdegrees representation.
+    /// </summary>
+    /// <returns>
+    /// The validated vector3 that represents the completed operation.
+    /// </returns>
+    public Vector3 ToEulerAnglesZYXDegrees()
+    {
+        float sinrCosp = 2 * (w * z + x * y);
+        float cosrCosp = 1 - 2 * (y * y + z * z);
+        float angleZ = MathF.Atan2(sinrCosp, cosrCosp);
+
+        float sinp = 2 * (w * y - z * x);
+        float angleY = MathF.Abs(sinp) >= 1
+                       ? MathF.CopySign(MathF.PI / 2, sinp)
+                       : MathF.Asin(sinp);
+
+        float sinyCosp = 2 * (w * x + y * z);
+        float cosyCosp = 1 - 2 * (x * x + y * y);
+        float angleX = MathF.Atan2(sinyCosp, cosyCosp);
+
+        return new Vector3(angleX * 180f / MathF.PI, angleY * 180f / MathF.PI, angleZ * 180f / MathF.PI);
+    }
+
+    /// <summary>
+    /// Determines whether this value and the supplied value represent the same logical state.
+    /// </summary>
+    /// <param name="obj">
+    /// The object compared with this value.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    public override bool Equals(object? obj) => obj is Quaternion q && this == q;
+
+    /// <summary>
+    /// Determines whether this value and the supplied value represent the same logical state.
+    /// </summary>
+    /// <param name="other">
+    /// The strongly typed value compared with this value.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    public bool Equals(Quaternion other) => this == other;
+
+    /// <summary>
+    /// Computes a hash code consistent with the implemented equality contract.
+    /// </summary>
+    /// <returns>
+    /// The scalar result calculated from the supplied inputs.
+    /// </returns>
+    public override int GetHashCode() => HashCode.Combine(x, y, z, w);
+
+    /// <summary>
+    /// Formats this value as a human-readable component list.
+    /// </summary>
+    /// <returns>
+    /// The validated text representation owned by the caller.
+    /// </returns>
+    public override string ToString() => $"({x:F3}, {y:F3}, {z:F3}, {w:F3})";
 
     /// <summary>
     /// Returns a unit-length value while handling degenerate input according to the method contract.
@@ -297,15 +422,6 @@ public struct Quaternion : IEquatable<Quaternion>
     }
 
     /// <summary>
-    /// Converts this quaternion to a rotation matrix.
-    /// </summary>
-    /// <returns>
-    /// The validated matrix that represents the completed operation.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Matrix ToMatrix() => Matrix.CreateFromQuaternion(this);
-
-    /// <summary>
     /// Creates and validates a caller-owned from yaw pitch roll value.
     /// </summary>
     /// <param name="yaw">
@@ -326,84 +442,6 @@ public struct Quaternion : IEquatable<Quaternion>
         float pitch,
         float roll
     ) => FromEulerAnglesZYX(new Vector3(pitch, yaw, roll));
-
-    /// <summary>
-    /// Converts this value to its euler angles xyz representation.
-    /// </summary>
-    /// <returns>
-    /// The validated vector3 that represents the completed operation.
-    /// </returns>
-    public Vector3 ToEulerAnglesXYZ()
-    {
-        Quaternion normalized = this.normalized;
-        float sinY = Math.Clamp(2f * (normalized.x * normalized.z + normalized.w * normalized.y), -1f, 1f);
-        float angleY = MathF.Asin(sinY);
-        float angleX = MathF.Atan2(
-            2f * (normalized.w * normalized.x - normalized.y * normalized.z),
-            1f - 2f * (normalized.x * normalized.x + normalized.y * normalized.y)
-        );
-        float angleZ = MathF.Atan2(
-            2f * (normalized.w * normalized.z - normalized.x * normalized.y),
-            1f - 2f * (normalized.y * normalized.y + normalized.z * normalized.z)
-        );
-        return new Vector3(angleX, angleY, angleZ);
-    }
-
-    /// <summary>
-    /// Converts this value to its euler angles xyzdegrees representation.
-    /// </summary>
-    /// <returns>
-    /// The validated vector3 that represents the completed operation.
-    /// </returns>
-    public Vector3 ToEulerAnglesXYZDegrees() => ToEulerAnglesXYZ() * (180f / MathF.PI);
-
-    /// <summary>
-    /// Converts this value to its euler angles zyx representation.
-    /// </summary>
-    /// <returns>
-    /// The validated vector3 that represents the completed operation.
-    /// </returns>
-    public Vector3 ToEulerAnglesZYX()
-    {
-        float sinrCosp = 2 * (w * z + x * y);
-        float cosrCosp = 1 - 2 * (y * y + z * z);
-        float angleZ = MathF.Atan2(sinrCosp, cosrCosp);
-
-        float sinp = 2 * (w * y - z * x);
-        float angleY = MathF.Abs(sinp) >= 1
-                       ? MathF.CopySign(MathF.PI / 2, sinp)
-                       : MathF.Asin(sinp);
-
-        float sinyCosp = 2 * (w * x + y * z);
-        float cosyCosp = 1 - 2 * (x * x + y * y);
-        float angleX = MathF.Atan2(sinyCosp, cosyCosp);
-
-        return new Vector3(angleX, angleY, angleZ);
-    }
-
-    /// <summary>
-    /// Converts this value to its euler angles zyxdegrees representation.
-    /// </summary>
-    /// <returns>
-    /// The validated vector3 that represents the completed operation.
-    /// </returns>
-    public Vector3 ToEulerAnglesZYXDegrees()
-    {
-        float sinrCosp = 2 * (w * z + x * y);
-        float cosrCosp = 1 - 2 * (y * y + z * z);
-        float angleZ = MathF.Atan2(sinrCosp, cosrCosp);
-
-        float sinp = 2 * (w * y - z * x);
-        float angleY = MathF.Abs(sinp) >= 1
-                       ? MathF.CopySign(MathF.PI / 2, sinp)
-                       : MathF.Asin(sinp);
-
-        float sinyCosp = 2 * (w * x + y * z);
-        float cosyCosp = 1 - 2 * (x * x + y * y);
-        float angleX = MathF.Atan2(sinyCosp, cosyCosp);
-
-        return new Vector3(angleX * 180f / MathF.PI, angleY * 180f / MathF.PI, angleZ * 180f / MathF.PI);
-    }
 
     /// <summary>
     /// Creates the target representation from the supplied euler angles xyz value.
@@ -597,42 +635,4 @@ public struct Quaternion : IEquatable<Quaternion>
     /// The validated quaternion that represents the completed operation.
     /// </returns>
     public static implicit operator Quaternion(NumericsQuaternion q) => new(q.X, q.Y, q.Z, q.W);
-
-    /// <summary>
-    /// Determines whether this value and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="obj">
-    /// The object compared with this value.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public override bool Equals(object? obj) => obj is Quaternion q && this == q;
-
-    /// <summary>
-    /// Determines whether this value and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="other">
-    /// The strongly typed value compared with this value.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public bool Equals(Quaternion other) => this == other;
-
-    /// <summary>
-    /// Computes a hash code consistent with the implemented equality contract.
-    /// </summary>
-    /// <returns>
-    /// The scalar result calculated from the supplied inputs.
-    /// </returns>
-    public override int GetHashCode() => HashCode.Combine(x, y, z, w);
-
-    /// <summary>
-    /// Formats this value as a human-readable component list.
-    /// </summary>
-    /// <returns>
-    /// The validated text representation owned by the caller.
-    /// </returns>
-    public override string ToString() => $"({x:F3}, {y:F3}, {z:F3}, {w:F3})";
 }

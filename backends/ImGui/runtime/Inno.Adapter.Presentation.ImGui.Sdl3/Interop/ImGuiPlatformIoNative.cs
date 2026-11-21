@@ -35,18 +35,6 @@ internal static unsafe class ImGuiPlatformIoNative
         ImGuiNative.Raw.InnoDestroyPlatformWindowCallbacks(registration);
     }
 
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal unsafe delegate void PlatformGetWindowPosCallback(
-        ImGuiViewport* viewport,
-        ImVec2C* outPos
-    );
-
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal unsafe delegate void PlatformGetWindowSizeCallback(
-        ImGuiViewport* viewport,
-        ImVec2C* outSize
-    );
-
     internal static void SetPlatformGetWindowPos(
         ImGuiPlatformIO* platformIo,
         PlatformGetWindowPosCallback callback
@@ -66,4 +54,16 @@ internal static unsafe class ImGuiPlatformIoNative
             (delegate* unmanaged[Cdecl]<ImGuiViewport*, ImVec2C*, void>)callbackPtr;
         ImGuiNative.Raw.PlatformIOSetPlatformGetWindowSize(platformIo, setterArg);
     }
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal unsafe delegate void PlatformGetWindowPosCallback(
+        ImGuiViewport* viewport,
+        ImVec2C* outPos
+    );
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal unsafe delegate void PlatformGetWindowSizeCallback(
+        ImGuiViewport* viewport,
+        ImVec2C* outSize
+    );
 }

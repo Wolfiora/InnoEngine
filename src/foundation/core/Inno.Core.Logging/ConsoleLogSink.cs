@@ -5,7 +5,7 @@ namespace Inno.Core.Logging;
 /// <summary>
 /// Writes log entries to the process console, using level-based colors when a terminal is available.
 /// </summary>
-public class ConsoleLogSink : ILogSink
+public sealed class ConsoleLogSink : ILogSink
 {
     private readonly bool m_useColors;
 

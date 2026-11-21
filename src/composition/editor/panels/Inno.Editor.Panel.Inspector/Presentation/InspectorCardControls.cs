@@ -237,6 +237,20 @@ internal sealed class InspectorCardControls
         }
     }
 
+    private void TryEdit(
+        Action edit,
+        string operation
+    ) {
+        try
+        {
+            edit();
+        }
+        catch (InvalidOperationException exception)
+        {
+            m_log.Write(LogLevel.Warn, "{0} was rejected: {1}", [operation, exception.Message]);
+        }
+    }
+
     private static void DrawDragPreview(
         string title,
         bool dimmed
@@ -264,20 +278,6 @@ internal sealed class InspectorCardControls
             title
         );
         Ui.Dummy(size);
-    }
-
-    private void TryEdit(
-        Action edit,
-        string operation
-    ) {
-        try
-        {
-            edit();
-        }
-        catch (InvalidOperationException exception)
-        {
-            m_log.Write(LogLevel.Warn, "{0} was rejected: {1}", [operation, exception.Message]);
-        }
     }
 
     private static bool IsOwnedBy(

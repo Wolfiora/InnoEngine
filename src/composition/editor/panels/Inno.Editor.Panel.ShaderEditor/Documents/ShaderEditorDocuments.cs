@@ -37,16 +37,8 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
     private readonly Dictionary<Guid, Draft> m_drafts = [];
     private readonly Dictionary<Guid, ViewState> m_views = [];
     private readonly HashSet<AssetPath> m_pendingImports = [];
-    private Guid? m_checkDraftId;
-    private long m_sourceRevision = long.MinValue;
     private readonly GraphEditorModule m_graphs;
     private readonly ShaderGraphSourceStore m_sources;
-    private LifetimeScope? m_lifetime;
-    private ShaderNodeCompilerRegistry? m_nodes;
-    private ShaderSourceFrontendRegistry? m_frontends;
-    internal ShaderNodeDrawerRegistry? drawers;
-    internal ShaderGraphTemplateRegistry? templates;
-    internal ShaderTargetRegistry? targets;
     private readonly TypeCatalog m_types;
     private readonly EditorShaderCompilation m_compilation;
     internal readonly AssetImportSettingsEdits importSettings;
@@ -54,6 +46,14 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
     internal readonly AssetPipeline assets;
     internal readonly SerializationRegistry serialization;
     internal readonly EditorInteractions interactions;
+    private Guid? m_checkDraftId;
+    private long m_sourceRevision = long.MinValue;
+    private LifetimeScope? m_lifetime;
+    private ShaderNodeCompilerRegistry? m_nodes;
+    private ShaderSourceFrontendRegistry? m_frontends;
+    internal ShaderNodeDrawerRegistry? drawers;
+    internal ShaderGraphTemplateRegistry? templates;
+    internal ShaderTargetRegistry? targets;
     internal ShaderClipboardData? clipboard;
 
     internal ShaderEditorDocuments(
@@ -85,6 +85,161 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         => m_frontends ?? throw new InvalidOperationException("Shader documents have not started.");
 
     internal long typeVersion => m_types.current.version;
+
+    /// <summary>
+    /// Initializes this feature when its owning runtime becomes active.
+    /// </summary>
+    /// <param name="editor">
+    /// The editor consumed by on start; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    protected override void OnStart(EditorContext editor)
+    {
+        m_lifetime = new();
+        try
+        {
+            m_nodes = m_lifetime.Own(new ShaderNodeCompilerRegistry(m_types));
+            m_frontends = m_lifetime.Own(new ShaderSourceFrontendRegistry(m_types));
+            drawers = m_lifetime.Own(new ShaderNodeDrawerRegistry(m_types));
+            templates = m_lifetime.Own(new ShaderGraphTemplateRegistry(m_types));
+            targets = m_lifetime.Own(new ShaderTargetRegistry(m_types));
+            _ = m_lifetime.Own(interactions.documents.RegisterProvider(new Provider(this)));
+            EventHub operations = m_lifetime.Own(interactions.events.CreateHub(int.MaxValue - 1));
+            operations.Listen<EditorOperationPreparingEvent>(_ => CompleteCanvasEdits());
+        }
+        catch (Exception failure)
+        {
+            try
+            {
+                m_lifetime.Dispose();
+            }
+            catch (Exception retirement)
+            {
+                throw new AggregateException(failure, retirement);
+            }
+
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Advances this feature using the current runtime state.
+    /// </summary>
+    /// <param name="editor">
+    /// The editor consumed by on update; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    protected override void OnUpdate(EditorContext editor)
+    {
+        if (TryGetCheckDraft(out Draft checking))
+        {
+            EditorShaderDraftCompilationSnapshot result = Check(checking);
+            if (result.state != EditorShaderCompilationState.Compiling)
+            {
+                PublishCheck(checking, result);
+                checkStatus = result.state == EditorShaderCompilationState.Succeeded
+                              ? "Shader check completed."
+                              : "Shader check failed. See Console diagnostics.";
+                CloseCheck();
+            }
+        }
+        foreach (AssetPath path in m_pendingImports.ToArray())
+        {
+            m_pendingImports.Remove(path);
+            try
+            {
+                _ = assets.Import(path);
+            }
+            catch (Exception failure) when ((failure is IOException
+                                             or UnauthorizedAccessException
+                                             or InvalidOperationException
+                                             or FormatException)
+                                            && RetirementPendingException.Find(failure) is null)
+            {
+                foreach (Draft draft in m_drafts.Values.Where(draft => draft.path == path))
+                {
+                    draft.compilationStatus = "Import failed";
+                    draft.compilationDiagnostics = failure.Message;
+                }
+            }
+        }
+
+        if (m_sourceRevision != assets.revision)
+        {
+            SynchronizeSources();
+            m_sourceRevision = assets.revision;
+        }
+
+        foreach (Draft draft in m_drafts.Values)
+        {
+            GraphDocumentController controller = Controller(draft);
+            if (controller.revision != draft.observedRevision)
+            {
+                Changed(draft);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Captures an immutable snapshot of the current observable state.
+    /// </summary>
+    /// <param name="state">
+    /// The lifecycle or domain state applied by this operation.
+    /// </param>
+    protected override void Capture(EditorState state)
+    {
+        foreach (Draft draft in m_drafts.Values)
+        {
+            RememberView(draft);
+        }
+        state.Set("views", m_views.Values.ToArray());
+    }
+
+    /// <summary>
+    /// Restores the supplied snapshot while preserving current invariants.
+    /// </summary>
+    /// <param name="state">
+    /// The lifecycle or domain state applied by this operation.
+    /// </param>
+    protected override void Restore(EditorState state)
+    {
+        m_views.Clear();
+        foreach (ViewState view in state.Get("views", Array.Empty<ViewState>()))
+        {
+            if (view.assetId != Guid.Empty && float.IsFinite(view.x) && float.IsFinite(view.y) && float.IsFinite(view.zoom))
+            {
+                m_views[view.assetId] = view;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Stops this feature before its owning runtime releases the active generation.
+    /// </summary>
+    /// <param name="editor">
+    /// The editor consumed by on stop; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    protected override void OnStop(EditorContext editor)
+    {
+        m_checkDraftId = null;
+        // Recovery is not an asset save. Closing the panel, shutdown and reload must not apply a draft.
+        foreach (Draft draft in m_drafts.Values)
+        {
+            CancelCanvasEdit(draft);
+            if (Controller(draft).isDirty)
+            {
+                PreserveRecovery(draft, Controller(draft));
+            }
+            ClearNodeDiagnostics(draft);
+            ReleasePreview(draft);
+        }
+
+        m_lifetime?.Dispose();
+        m_lifetime = null;
+        m_frontends = null;
+        drawers = null;
+        templates = null;
+        targets = null;
+        m_nodes = null;
+    }
 
     internal EditorShaderDraftCompilationSnapshot? Preview(Draft draft)
     {
@@ -184,55 +339,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         Diagnostics.Set(draft.id, C_NODE_DIAGNOSTIC_GROUP, diagnostics, draft.path.ToString());
     }
 
-    private static void PublishCheck(
-        Draft draft,
-        EditorShaderDraftCompilationSnapshot snapshot
-    ) {
-        var diagnostics = new List<Diagnostic>(Math.Max(1, snapshot.diagnostics.Count));
-        for (int index = 0; index < snapshot.diagnostics.Count; index++)
-        {
-            ShaderDiagnostic shader = snapshot.diagnostics[index];
-            DiagnosticLocation? location = shader.location is ShaderSourceLocation source
-                                           ? new(source.assetPath, source.line, source.column)
-                                           : null;
-            diagnostics.Add(
-                shader.severity switch
-                {
-                    DiagnosticSeverity.Info => Diagnostic.Info(shader.code, shader.message, location),
-                    DiagnosticSeverity.Warning => Diagnostic.Warning(shader.code, shader.message, location),
-                    DiagnosticSeverity.Error => Diagnostic.Error(shader.code, shader.message, location),
-                    _ => Diagnostic.Error(shader.code, shader.message, location)
-                }
-            );
-        }
-
-        if (diagnostics.Count == 0)
-        {
-            diagnostics.Add(
-                snapshot.state == EditorShaderCompilationState.Succeeded
-                ? Diagnostic.Info("SHADER_CHECK_SUCCEEDED", "Shader check completed without diagnostics.")
-                : Diagnostic.Error("SHADER_CHECK_FAILED", "Shader check failed without a compiler diagnostic.")
-            );
-        }
-
-        Diagnostics.Set(draft.id, "Shader Check", diagnostics, draft.path.ToString());
-    }
-
-    private static void ClearNodeDiagnostics(Draft draft) => Diagnostics.Clear(draft.id, C_NODE_DIAGNOSTIC_GROUP);
-
     internal Draft Open(AssetFileEntry entry) => Open(entry, AssetId(entry));
-
-    private Draft Open(
-        AssetFileEntry entry,
-        Guid id
-    ) {
-        if (m_drafts.TryGetValue(id, out Draft? existing))
-        {
-            return existing;
-        }
-        EditorDocumentContext document = interactions.documents.Open(entry.assetPath.ToString(), id);
-        return m_drafts[document.assetId];
-    }
 
     internal bool TryOpen(
         AssetFileEntry entry,
@@ -453,161 +560,6 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         }
     }
 
-    /// <summary>
-    /// Initializes this feature when its owning runtime becomes active.
-    /// </summary>
-    /// <param name="editor">
-    /// The editor consumed by on start; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    protected override void OnStart(EditorContext editor)
-    {
-        m_lifetime = new();
-        try
-        {
-            m_nodes = m_lifetime.Own(new ShaderNodeCompilerRegistry(m_types));
-            m_frontends = m_lifetime.Own(new ShaderSourceFrontendRegistry(m_types));
-            drawers = m_lifetime.Own(new ShaderNodeDrawerRegistry(m_types));
-            templates = m_lifetime.Own(new ShaderGraphTemplateRegistry(m_types));
-            targets = m_lifetime.Own(new ShaderTargetRegistry(m_types));
-            _ = m_lifetime.Own(interactions.documents.RegisterProvider(new Provider(this)));
-            EventHub operations = m_lifetime.Own(interactions.events.CreateHub(int.MaxValue - 1));
-            operations.Listen<EditorOperationPreparingEvent>(_ => CompleteCanvasEdits());
-        }
-        catch (Exception failure)
-        {
-            try
-            {
-                m_lifetime.Dispose();
-            }
-            catch (Exception retirement)
-            {
-                throw new AggregateException(failure, retirement);
-            }
-
-            throw;
-        }
-    }
-
-    /// <summary>
-    /// Advances this feature using the current runtime state.
-    /// </summary>
-    /// <param name="editor">
-    /// The editor consumed by on update; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    protected override void OnUpdate(EditorContext editor)
-    {
-        if (TryGetCheckDraft(out Draft checking))
-        {
-            EditorShaderDraftCompilationSnapshot result = Check(checking);
-            if (result.state != EditorShaderCompilationState.Compiling)
-            {
-                PublishCheck(checking, result);
-                checkStatus = result.state == EditorShaderCompilationState.Succeeded
-                              ? "Shader check completed."
-                              : "Shader check failed. See Console diagnostics.";
-                CloseCheck();
-            }
-        }
-        foreach (AssetPath path in m_pendingImports.ToArray())
-        {
-            m_pendingImports.Remove(path);
-            try
-            {
-                _ = assets.Import(path);
-            }
-            catch (Exception failure) when ((failure is IOException
-                                             or UnauthorizedAccessException
-                                             or InvalidOperationException
-                                             or FormatException)
-                                            && RetirementPendingException.Find(failure) is null)
-            {
-                foreach (Draft draft in m_drafts.Values.Where(draft => draft.path == path))
-                {
-                    draft.compilationStatus = "Import failed";
-                    draft.compilationDiagnostics = failure.Message;
-                }
-            }
-        }
-
-        if (m_sourceRevision != assets.revision)
-        {
-            SynchronizeSources();
-            m_sourceRevision = assets.revision;
-        }
-
-        foreach (Draft draft in m_drafts.Values)
-        {
-            GraphDocumentController controller = Controller(draft);
-            if (controller.revision != draft.observedRevision)
-            {
-                Changed(draft);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Captures an immutable snapshot of the current observable state.
-    /// </summary>
-    /// <param name="state">
-    /// The lifecycle or domain state applied by this operation.
-    /// </param>
-    protected override void Capture(EditorState state)
-    {
-        foreach (Draft draft in m_drafts.Values)
-        {
-            RememberView(draft);
-        }
-        state.Set("views", m_views.Values.ToArray());
-    }
-
-    /// <summary>
-    /// Restores the supplied snapshot while preserving current invariants.
-    /// </summary>
-    /// <param name="state">
-    /// The lifecycle or domain state applied by this operation.
-    /// </param>
-    protected override void Restore(EditorState state)
-    {
-        m_views.Clear();
-        foreach (ViewState view in state.Get("views", Array.Empty<ViewState>()))
-        {
-            if (view.assetId != Guid.Empty && float.IsFinite(view.x) && float.IsFinite(view.y) && float.IsFinite(view.zoom))
-            {
-                m_views[view.assetId] = view;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Stops this feature before its owning runtime releases the active generation.
-    /// </summary>
-    /// <param name="editor">
-    /// The editor consumed by on stop; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    protected override void OnStop(EditorContext editor)
-    {
-        m_checkDraftId = null;
-        // Recovery is not an asset save. Closing the panel, shutdown and reload must not apply a draft.
-        foreach (Draft draft in m_drafts.Values)
-        {
-            CancelCanvasEdit(draft);
-            if (Controller(draft).isDirty)
-            {
-                PreserveRecovery(draft, Controller(draft));
-            }
-            ClearNodeDiagnostics(draft);
-            ReleasePreview(draft);
-        }
-
-        m_lifetime?.Dispose();
-        m_lifetime = null;
-        m_frontends = null;
-        drawers = null;
-        templates = null;
-        targets = null;
-        m_nodes = null;
-    }
-
     private void Open(EditorDocumentContext document)
     {
         if (m_drafts.ContainsKey(document.assetId))
@@ -697,6 +649,18 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         }
     }
 
+    private Draft Open(
+        AssetFileEntry entry,
+        Guid id
+    ) {
+        if (m_drafts.TryGetValue(id, out Draft? existing))
+        {
+            return existing;
+        }
+        EditorDocumentContext document = interactions.documents.Open(entry.assetPath.ToString(), id);
+        return m_drafts[document.assetId];
+    }
+
     private void PreserveRecovery(
         Draft draft,
         GraphDocumentController controller
@@ -729,17 +693,6 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
     }
 
     private string RecoveryPath(Guid id) => Path.Combine(assets.libraryRoot, "Editor", "ShaderRecovery", id.ToString("N") + ".inno");
-
-    private static string ArchiveStaleRecovery(
-        Guid id,
-        string recoveryPath
-    ) {
-        string directory = Path.GetDirectoryName(recoveryPath)
-                           ?? throw new InvalidOperationException("The Shader recovery directory is unavailable.");
-        string archive = Path.Combine(directory, id.ToString("N") + "." + DateTime.UtcNow.ToString("yyyyMMddHHmmssfff") + ".stale.inno");
-        File.Move(recoveryPath, archive);
-        return archive;
-    }
 
     private void SynchronizeSources()
     {
@@ -808,6 +761,53 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
     }
 
     private void RememberView(Draft draft) => m_views[draft.id] = new(draft.id, draft.canvas.pan.x, draft.canvas.pan.y, draft.canvas.zoom);
+
+    private static void PublishCheck(
+        Draft draft,
+        EditorShaderDraftCompilationSnapshot snapshot
+    ) {
+        var diagnostics = new List<Diagnostic>(Math.Max(1, snapshot.diagnostics.Count));
+        for (int index = 0; index < snapshot.diagnostics.Count; index++)
+        {
+            ShaderDiagnostic shader = snapshot.diagnostics[index];
+            DiagnosticLocation? location = shader.location is ShaderSourceLocation source
+                                           ? new(source.assetPath, source.line, source.column)
+                                           : null;
+            diagnostics.Add(
+                shader.severity switch
+                {
+                    DiagnosticSeverity.Info => Diagnostic.Info(shader.code, shader.message, location),
+                    DiagnosticSeverity.Warning => Diagnostic.Warning(shader.code, shader.message, location),
+                    DiagnosticSeverity.Error => Diagnostic.Error(shader.code, shader.message, location),
+                    _ => Diagnostic.Error(shader.code, shader.message, location)
+                }
+            );
+        }
+
+        if (diagnostics.Count == 0)
+        {
+            diagnostics.Add(
+                snapshot.state == EditorShaderCompilationState.Succeeded
+                ? Diagnostic.Info("SHADER_CHECK_SUCCEEDED", "Shader check completed without diagnostics.")
+                : Diagnostic.Error("SHADER_CHECK_FAILED", "Shader check failed without a compiler diagnostic.")
+            );
+        }
+
+        Diagnostics.Set(draft.id, "Shader Check", diagnostics, draft.path.ToString());
+    }
+
+    private static void ClearNodeDiagnostics(Draft draft) => Diagnostics.Clear(draft.id, C_NODE_DIAGNOSTIC_GROUP);
+
+    private static string ArchiveStaleRecovery(
+        Guid id,
+        string recoveryPath
+    ) {
+        string directory = Path.GetDirectoryName(recoveryPath)
+                           ?? throw new InvalidOperationException("The Shader recovery directory is unavailable.");
+        string archive = Path.Combine(directory, id.ToString("N") + "." + DateTime.UtcNow.ToString("yyyyMMddHHmmssfff") + ".stale.inno");
+        File.Move(recoveryPath, archive);
+        return archive;
+    }
 
     private readonly record struct ViewState(
         Guid assetId,
@@ -901,6 +901,14 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
     ) {
         internal readonly Guid id = id;
         internal readonly Guid documentId = documentId;
+        internal readonly HashSet<GraphNodeId> expandedPreviews = [];
+        internal readonly GraphCanvasState canvas = new();
+        internal readonly EditorPlanarNavigation navigation = new();
+        internal readonly GraphCanvasLayout layout = new();
+        internal readonly Dictionary<GraphNodeId, ShaderNodePort[]> ports = [];
+        internal readonly Dictionary<GraphNodeId, ShaderPortSnapshot[]> portSnapshots = [];
+        internal readonly HashSet<GraphEndpoint> missingPorts = [];
+        internal readonly Dictionary<GraphNodeId, string> nodeErrors = [];
         internal AssetPath path = path;
         internal string hash = hash;
         internal bool readOnly = readOnly;
@@ -919,23 +927,18 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         internal bool frameRequested;
         internal ShaderCanvasGroup[] groups = [];
         internal string selectedGroupId = string.Empty;
-        internal readonly HashSet<GraphNodeId> expandedPreviews = [];
         internal Guid settingsSource;
         internal byte[] sourceSettings = [];
         internal string sourceSettingsFingerprint = string.Empty;
         internal string sourceSettingsStatus = string.Empty;
-        internal readonly GraphCanvasState canvas = new();
         internal GraphPosition menuPosition;
         internal GraphNodeId? activeStage;
         internal string inspectedPass = string.Empty;
         internal GraphNodeId[] inspectedNodes = [];
         internal ShaderInspectionSelection? inspectionSelection;
         internal string valueGesture = Guid.NewGuid().ToString("N");
-        internal readonly EditorPlanarNavigation navigation = new();
         private GraphCanvasPointerController? m_pointer;
-        internal GraphCanvasPointerController pointer => m_pointer ??= new(canvas);
         internal IReadOnlyDictionary<GraphNodeId, GraphPosition>? pendingMove;
-        internal readonly GraphCanvasLayout layout = new();
         internal ulong layoutRevision = ulong.MaxValue;
         internal long layoutAssetRevision = long.MinValue;
         internal long layoutTypeRevision = long.MinValue;
@@ -946,10 +949,8 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         internal ulong portRevision = ulong.MaxValue;
         internal long assetRevision = long.MinValue;
         internal long typeRevision = long.MinValue;
-        internal readonly Dictionary<GraphNodeId, ShaderNodePort[]> ports = [];
-        internal readonly Dictionary<GraphNodeId, ShaderPortSnapshot[]> portSnapshots = [];
-        internal readonly HashSet<GraphEndpoint> missingPorts = [];
-        internal readonly Dictionary<GraphNodeId, string> nodeErrors = [];
+
+        internal GraphCanvasPointerController pointer => m_pointer ??= new(canvas);
     }
 
     private sealed class RecoveryData : ISerializable

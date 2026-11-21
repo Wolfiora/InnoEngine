@@ -21,11 +21,6 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
     private long m_revision;
 
     /// <summary>
-    /// Gets the unique, non-persistent lifetime identity used with the effective snapshot revision.
-    /// </summary>
-    public Guid ownerId { get; } = Guid.NewGuid();
-
-    /// <summary>
     /// Creates a project settings store from one type and serialization generation owner.
     /// </summary>
     /// <param name="documentStore">
@@ -63,6 +58,11 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
     }
 
     /// <summary>
+    /// Gets the unique, non-persistent lifetime identity used with the effective snapshot revision.
+    /// </summary>
+    public Guid ownerId { get; } = Guid.NewGuid();
+
+    /// <summary>
     /// Gets detached neutral contributions whose setting definitions are currently Missing.
     /// </summary>
     [ScriptingApiIgnore]
@@ -78,30 +78,9 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
     }
 
     /// <summary>
-    /// Creates a five-phase settings change for the host's shared generation transaction.
-    /// </summary>
-    /// <returns>
-    /// An owner-thread change that captures neutral effective values before publication, rebuilds against candidate
-    /// types, and restores exact previous values and contributors without writing the project document on rollback.
-    /// </returns>
-    [ScriptingApiIgnore]
-    public IGenerationChange CreateReloadChange() => new SettingsChange(this);
-
-    /// <summary>
     /// Gets the current project namespace.
     /// </summary>
     public ProjectId projectId => Get<ProjectIdentitySettings>(ProjectIdentitySettings.settingId).id;
-
-    /// <summary>
-    /// Qualifies one local name under the current project namespace.
-    /// </summary>
-    /// <param name="name">
-    /// The local display name.
-    /// </param>
-    /// <returns>
-    /// The canonical <c>projectId.name</c> identity.
-    /// </returns>
-    public ProjectScopedId QualifyId(string name) => projectId.Qualify(ProjectLocalId.FromName(name));
 
     /// <summary>
     /// Gets whether project settings are initialized.
@@ -135,6 +114,27 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
             }
         }
     }
+
+    /// <summary>
+    /// Creates a five-phase settings change for the host's shared generation transaction.
+    /// </summary>
+    /// <returns>
+    /// An owner-thread change that captures neutral effective values before publication, rebuilds against candidate
+    /// types, and restores exact previous values and contributors without writing the project document on rollback.
+    /// </returns>
+    [ScriptingApiIgnore]
+    public IGenerationChange CreateReloadChange() => new SettingsChange(this);
+
+    /// <summary>
+    /// Qualifies one local name under the current project namespace.
+    /// </summary>
+    /// <param name="name">
+    /// The local display name.
+    /// </param>
+    /// <returns>
+    /// The canonical <c>projectId.name</c> identity.
+    /// </returns>
+    public ProjectScopedId QualifyId(string name) => projectId.Qualify(ProjectLocalId.FromName(name));
 
     /// <summary>
     /// Binds this settings store to the current asynchronous script execution context.

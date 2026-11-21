@@ -21,6 +21,25 @@ namespace Inno.Audio.Runtime.Tests;
 
 public sealed class AudioRuntimeTests : IDisposable
 {
+    private readonly FakeArtifactLookup m_artifacts = new();
+    private readonly EventDispatcher m_events = new();
+    private readonly string m_root;
+    private readonly ModuleHost m_modules;
+    private readonly TypeCatalog m_types;
+
+    public AudioRuntimeTests()
+    {
+        m_root = Path.Combine(Path.GetTempPath(), "InnoAudioRuntimeTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(m_root);
+        m_modules = new ModuleHost(new ModuleHostOptions
+        {
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(AudioRuntimeTests).Assembly)
+        });
+        _ = typeof(TestMixerExtension);
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_types.Rebuild();
+    }
+
     [Fact]
     public void ConsumedApplicationLifecycleStillSuspendsAudioAndUnsubscribesOnStop()
     {
@@ -419,49 +438,6 @@ public sealed class AudioRuntimeTests : IDisposable
         Assert.Throws<ArgumentOutOfRangeException>(() => runtime.Update(deltaTime));
     }
 
-    private sealed class TestAudioContent : IdentityObject
-    {
-        internal Action<AudioContentProviderContext>? first;
-        internal Action<AudioContentProviderContext>? second;
-        internal Action<AudioContentProviderContext>? third;
-    }
-
-    [AudioContentProviderExtension("tests.content.first", -30)]
-    private sealed class FirstContentProvider : AudioContentProvider
-    {
-        public override void Submit(AudioContentProviderContext context)
-        {
-            foreach (TestAudioContent content in context.content.GetValues<TestAudioContent>())
-            {
-                content.first?.Invoke(context);
-            }
-        }
-    }
-
-    [AudioContentProviderExtension("tests.content.second", -20)]
-    private sealed class SecondContentProvider : AudioContentProvider
-    {
-        public override void Submit(AudioContentProviderContext context)
-        {
-            foreach (TestAudioContent content in context.content.GetValues<TestAudioContent>())
-            {
-                content.second?.Invoke(context);
-            }
-        }
-    }
-
-    [AudioContentProviderExtension("tests.content.third", -10)]
-    private sealed class ThirdContentProvider : AudioContentProvider
-    {
-        public override void Submit(AudioContentProviderContext context)
-        {
-            foreach (TestAudioContent content in context.content.GetValues<TestAudioContent>())
-            {
-                content.third?.Invoke(context);
-            }
-        }
-    }
-
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -657,48 +633,6 @@ public sealed class AudioRuntimeTests : IDisposable
         }
     }
 
-    [AudioContentProviderExtension("tests.retirement.first", -100)]
-    private sealed class RetirementProviderFirst : AudioContentProvider
-    {
-        internal static bool fail;
-        internal static int disposals;
-        internal static int pendingRetirements;
-
-        public override void Submit(AudioContentProviderContext context) {}
-
-        protected override void Dispose(bool disposing)
-        {
-            disposals++;
-            if (pendingRetirements-- > 0)
-            {
-                throw new RetirementPendingException("Expected provider drain.");
-            }
-            if (fail)
-            {
-                throw new InvalidOperationException("Expected provider retirement failure.");
-            }
-        }
-    }
-
-    [AudioContentProviderExtension("tests.retirement.second", 100)]
-    private sealed class RetirementProviderSecond : AudioContentProvider
-    {
-        internal static bool failConstruction;
-        internal static int disposals;
-
-        public RetirementProviderSecond()
-        {
-            if (failConstruction)
-            {
-                throw new InvalidOperationException("Expected provider candidate failure.");
-            }
-        }
-
-        public override void Submit(AudioContentProviderContext context) {}
-
-        protected override void Dispose(bool disposing) => disposals++;
-    }
-
     [Fact]
     public void RecoveredMixerResolvesItsPreviousMissingDiagnostic()
     {
@@ -713,34 +647,6 @@ public sealed class AudioRuntimeTests : IDisposable
         mixer.mixerTypeId = string.Empty;
         Assert.True(runtime.ApplyMixer(mixer));
         Assert.DoesNotContain(sink.issues, issue => issue.code == "AUDIO_MIXER_EXTENSION_MISSING");
-    }
-
-    private sealed class RecordingSink : IDiagnosticSink
-    {
-        internal IReadOnlyList<Diagnostic> issues { get; private set; } = [];
-
-        public void Replace(DiagnosticReport report) => issues = report.diagnostics;
-
-        public void Clear(DiagnosticSource source) => issues = [];
-    }
-
-    private readonly FakeArtifactLookup m_artifacts = new();
-    private readonly EventDispatcher m_events = new();
-    private readonly string m_root;
-    private readonly ModuleHost m_modules;
-    private readonly TypeCatalog m_types;
-
-    public AudioRuntimeTests()
-    {
-        m_root = Path.Combine(Path.GetTempPath(), "InnoAudioRuntimeTests", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(m_root);
-        m_modules = new ModuleHost(new ModuleHostOptions
-        {
-            catalogSource = new DotNetAssemblyCatalogSource(typeof(AudioRuntimeTests).Assembly)
-        });
-        _ = typeof(TestMixerExtension);
-        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
-        m_types.Rebuild();
     }
 
     public void Dispose()
@@ -1148,6 +1054,100 @@ public sealed class AudioRuntimeTests : IDisposable
         return clip;
     }
 
+    private sealed class TestAudioContent : IdentityObject
+    {
+        internal Action<AudioContentProviderContext>? first;
+        internal Action<AudioContentProviderContext>? second;
+        internal Action<AudioContentProviderContext>? third;
+    }
+
+    [AudioContentProviderExtension("tests.content.first", -30)]
+    private sealed class FirstContentProvider : AudioContentProvider
+    {
+        public override void Submit(AudioContentProviderContext context)
+        {
+            foreach (TestAudioContent content in context.content.GetValues<TestAudioContent>())
+            {
+                content.first?.Invoke(context);
+            }
+        }
+    }
+
+    [AudioContentProviderExtension("tests.content.second", -20)]
+    private sealed class SecondContentProvider : AudioContentProvider
+    {
+        public override void Submit(AudioContentProviderContext context)
+        {
+            foreach (TestAudioContent content in context.content.GetValues<TestAudioContent>())
+            {
+                content.second?.Invoke(context);
+            }
+        }
+    }
+
+    [AudioContentProviderExtension("tests.content.third", -10)]
+    private sealed class ThirdContentProvider : AudioContentProvider
+    {
+        public override void Submit(AudioContentProviderContext context)
+        {
+            foreach (TestAudioContent content in context.content.GetValues<TestAudioContent>())
+            {
+                content.third?.Invoke(context);
+            }
+        }
+    }
+
+    [AudioContentProviderExtension("tests.retirement.first", -100)]
+    private sealed class RetirementProviderFirst : AudioContentProvider
+    {
+        internal static bool fail;
+        internal static int disposals;
+        internal static int pendingRetirements;
+
+        public override void Submit(AudioContentProviderContext context) {}
+
+        protected override void Dispose(bool disposing)
+        {
+            disposals++;
+            if (pendingRetirements-- > 0)
+            {
+                throw new RetirementPendingException("Expected provider drain.");
+            }
+            if (fail)
+            {
+                throw new InvalidOperationException("Expected provider retirement failure.");
+            }
+        }
+    }
+
+    [AudioContentProviderExtension("tests.retirement.second", 100)]
+    private sealed class RetirementProviderSecond : AudioContentProvider
+    {
+        internal static bool failConstruction;
+        internal static int disposals;
+
+        public RetirementProviderSecond()
+        {
+            if (failConstruction)
+            {
+                throw new InvalidOperationException("Expected provider candidate failure.");
+            }
+        }
+
+        public override void Submit(AudioContentProviderContext context) {}
+
+        protected override void Dispose(bool disposing) => disposals++;
+    }
+
+    private sealed class RecordingSink : IDiagnosticSink
+    {
+        public void Replace(DiagnosticReport report) => issues = report.diagnostics;
+
+        public void Clear(DiagnosticSource source) => issues = [];
+
+        internal IReadOnlyList<Diagnostic> issues { get; private set; } = [];
+    }
+
     [AudioMixerExtension("tests.audio.mixer")]
     private sealed class TestMixerExtension : AudioMixerExtension
     {
@@ -1173,7 +1173,6 @@ public sealed class AudioRuntimeTests : IDisposable
         internal Guid pendingReleaseId;
         internal int pendingReleases;
         internal int releaseAttempts;
-        internal IReadOnlyList<AssetArtifactKey> retainedKeys => m_retention.GetRetainedKeys();
 
         public ArtifactLease AcquireArtifact(
             Guid persistentId,
@@ -1199,6 +1198,22 @@ public sealed class AudioRuntimeTests : IDisposable
             });
         }
 
+        public bool TryGetArtifact(
+            Guid persistentId,
+            string outputName,
+            out AssetArtifactInfo? artifact
+        ) {
+            if (outputName == "audio-data" && m_artifacts.TryGetValue(persistentId, out AssetArtifactInfo? found))
+            {
+                artifact = found;
+                return true;
+            }
+            artifact = null;
+            return false;
+        }
+
+        internal IReadOnlyList<AssetArtifactKey> retainedKeys => m_retention.GetRetainedKeys();
+
         internal void Add(
             Guid id,
             string path
@@ -1212,20 +1227,6 @@ public sealed class AudioRuntimeTests : IDisposable
                 Convert.ToHexString(SHA256.HashData(bytes)),
                 256
             );
-        }
-
-        public bool TryGetArtifact(
-            Guid persistentId,
-            string outputName,
-            out AssetArtifactInfo? artifact
-        ) {
-            if (outputName == "audio-data" && m_artifacts.TryGetValue(persistentId, out AssetArtifactInfo? found))
-            {
-                artifact = found;
-                return true;
-            }
-            artifact = null;
-            return false;
         }
     }
 
@@ -1248,6 +1249,7 @@ public sealed class AudioRuntimeTests : IDisposable
         internal int listenerCreations;
         internal int stops;
         internal Exception? clipQueryFailure;
+        internal AudioClipState clipState = AudioClipState.Ready;
 
         public AudioCapabilities capabilities => m_inner.capabilities;
 
@@ -1263,8 +1265,6 @@ public sealed class AudioRuntimeTests : IDisposable
             AudioClipDescriptor descriptor,
             IAudioClipSource source
         ) => m_inner.CreateClip(descriptor, source);
-
-        internal AudioClipState clipState = AudioClipState.Ready;
 
         public AudioClipState GetClipState(AudioClipHandle clip)
         {

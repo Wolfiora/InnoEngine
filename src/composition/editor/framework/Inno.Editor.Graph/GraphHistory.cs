@@ -60,6 +60,32 @@ internal sealed record GraphHistoryData(
     private static readonly UTF8Encoding S_UTF8 = new(false, true);
 
     /// <summary>
+    /// Encodes the supplied value into deterministic structured data.
+    /// </summary>
+    /// <returns>
+    /// An immutable snapshot of the values selected by the operation.
+    /// </returns>
+    public byte[] Encode()
+    {
+        byte[] id = S_UTF8.GetBytes(documentId.ToString("D"));
+        var result = new byte[checked((sizeof(int) * 3) + sizeof(long) + id.Length + before.Length + after.Length)];
+        Span<byte> span = result;
+        BinaryPrimitives.WriteInt32LittleEndian(span, id.Length);
+        id.CopyTo(span[sizeof(int)..]);
+        int offset = sizeof(int) + id.Length;
+        BinaryPrimitives.WriteInt32LittleEndian(span[offset..], before.Length);
+        offset += sizeof(int);
+        before.CopyTo(span[offset..]);
+        offset += before.Length;
+        BinaryPrimitives.WriteInt32LittleEndian(span[offset..], after.Length);
+        offset += sizeof(int);
+        after.CopyTo(span[offset..]);
+        offset += after.Length;
+        BinaryPrimitives.WriteInt64LittleEndian(span[offset..], timestamp);
+        return result;
+    }
+
+    /// <summary>
     /// Creates and validates a caller-owned change value.
     /// </summary>
     /// <param name="documentId">
@@ -85,32 +111,6 @@ internal sealed record GraphHistoryData(
     ) {
         var data = new GraphHistoryData(documentId, before.ToArray(), after.ToArray(), Stopwatch.GetTimestamp());
         return new EditorHistoryChange(C_KIND, EditorHistoryPayload.FromBytes(data.Encode()), mergeKey);
-    }
-
-    /// <summary>
-    /// Encodes the supplied value into deterministic structured data.
-    /// </summary>
-    /// <returns>
-    /// An immutable snapshot of the values selected by the operation.
-    /// </returns>
-    public byte[] Encode()
-    {
-        byte[] id = S_UTF8.GetBytes(documentId.ToString("D"));
-        var result = new byte[checked((sizeof(int) * 3) + sizeof(long) + id.Length + before.Length + after.Length)];
-        Span<byte> span = result;
-        BinaryPrimitives.WriteInt32LittleEndian(span, id.Length);
-        id.CopyTo(span[sizeof(int)..]);
-        int offset = sizeof(int) + id.Length;
-        BinaryPrimitives.WriteInt32LittleEndian(span[offset..], before.Length);
-        offset += sizeof(int);
-        before.CopyTo(span[offset..]);
-        offset += before.Length;
-        BinaryPrimitives.WriteInt32LittleEndian(span[offset..], after.Length);
-        offset += sizeof(int);
-        after.CopyTo(span[offset..]);
-        offset += after.Length;
-        BinaryPrimitives.WriteInt64LittleEndian(span[offset..], timestamp);
-        return result;
     }
 
     /// <summary>

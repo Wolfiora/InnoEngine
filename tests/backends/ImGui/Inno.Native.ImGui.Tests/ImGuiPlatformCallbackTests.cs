@@ -10,14 +10,6 @@ namespace Inno.Native.ImGui.Tests;
 [Collection("ImGuiContext")]
 public sealed unsafe class ImGuiPlatformCallbackTests
 {
-    private struct CallbackState
-    {
-        internal void* registration;
-        internal int positions;
-        internal int sizes;
-        internal bool invalid;
-    }
-
     [Fact]
     public void RegistrationRejectsForeignOwnersAndRequiresItsIdleContextThread()
     {
@@ -196,4 +188,12 @@ public sealed unsafe class ImGuiPlatformCallbackTests
         ImGuiViewport* viewport,
         ImVec2C* size
     ) => *size = viewport->Size;
+
+    private struct CallbackState
+    {
+        internal void* registration;
+        internal int positions;
+        internal int sizes;
+        internal bool invalid;
+    }
 }

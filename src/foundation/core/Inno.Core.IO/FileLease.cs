@@ -19,6 +19,11 @@ public sealed class FileLease : IDisposable
     }
 
     /// <summary>
+    /// Releases ownership; repeated disposal has no effect and the lease file is retained.
+    /// </summary>
+    public void Dispose() => m_stream.Dispose();
+
+    /// <summary>
     /// Waits for exclusive ownership without blocking an owner thread or changing shared data.
     /// </summary>
     /// <param name="path">
@@ -101,11 +106,6 @@ public sealed class FileLease : IDisposable
         FileShare.Read,
         cancellationToken
     ).ConfigureAwait(false);
-
-    /// <summary>
-    /// Releases ownership; repeated disposal has no effect and the lease file is retained.
-    /// </summary>
-    public void Dispose() => m_stream.Dispose();
 
     private static async ValueTask<FileLease> AcquireCoreAsync(
         string path,

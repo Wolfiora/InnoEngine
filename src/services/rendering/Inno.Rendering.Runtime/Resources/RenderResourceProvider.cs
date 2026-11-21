@@ -18,19 +18,6 @@ namespace Inno.Rendering.Runtime;
 public abstract class RenderResourceProvider
 {
     /// <summary>
-    /// Represents one material binding staged by a derived resource service.
-    /// </summary>
-    protected readonly struct MaterialBinding
-    {
-        internal MaterialBinding(RenderMaterialBinding value)
-        {
-            this.value = value;
-        }
-
-        internal RenderMaterialBinding value { get; }
-    }
-
-    /// <summary>
     /// Creates a protected uniform binding value.
     /// </summary>
     /// <param name="id">
@@ -166,4 +153,17 @@ public abstract class RenderResourceProvider
         int indexCount,
         IReadOnlyList<RenderGeometrySection> sections
     ) => new(vertexBuffer, indexBuffer, vertexLayout, vertexCount, indexCount, sections);
+
+    /// <summary>
+    /// Represents one material binding staged by a derived resource service.
+    /// </summary>
+    protected readonly struct MaterialBinding
+    {
+        internal MaterialBinding(RenderMaterialBinding value)
+        {
+            this.value = value;
+        }
+
+        internal RenderMaterialBinding value { get; }
+    }
 }

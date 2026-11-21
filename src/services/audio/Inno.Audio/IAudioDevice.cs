@@ -45,17 +45,6 @@ public readonly record struct AudioDeviceCompletion
 public interface IAudioDevice : IDisposable
 {
     /// <summary>
-    /// Queries asynchronous clip preparation without blocking the owner thread.
-    /// </summary>
-    /// <param name="clip">
-    /// A handle created by this device generation.
-    /// </param>
-    /// <returns>
-    /// The preparation state, or Failed for a retired or invalid handle.
-    /// </returns>
-    AudioClipState GetClipState(AudioClipHandle clip);
-
-    /// <summary>
     /// Gets immutable capabilities for the active device generation.
     /// </summary>
     AudioCapabilities capabilities { get; }
@@ -79,6 +68,17 @@ public interface IAudioDevice : IDisposable
     /// Gets current backend resource statistics.
     /// </summary>
     AudioStatistics statistics { get; }
+
+    /// <summary>
+    /// Queries asynchronous clip preparation without blocking the owner thread.
+    /// </summary>
+    /// <param name="clip">
+    /// A handle created by this device generation.
+    /// </param>
+    /// <returns>
+    /// The preparation state, or Failed for a retired or invalid handle.
+    /// </returns>
+    AudioClipState GetClipState(AudioClipHandle clip);
 
     /// <summary>
     /// Starts preparation of one decoded or streamed clip from immutable encoded content.

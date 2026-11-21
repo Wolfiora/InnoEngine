@@ -51,6 +51,10 @@ public sealed class MissingGameComponent : GameComponent
     /// </summary>
     public string missingTypeName { get; }
 
+    internal IReadOnlyDictionary<Guid, Guid> referenceAliases => m_referenceAliases;
+
+    internal IReadOnlyList<AssetDependency> dependencies => m_dependencies;
+
     internal byte[] CaptureSerializedState() => (byte[])m_serializedState.Clone();
 
     internal void RestoreState(SceneElementState state)
@@ -62,10 +66,6 @@ public sealed class MissingGameComponent : GameComponent
         m_dependencies = dependencies;
         m_referenceAliases = aliases;
     }
-
-    internal IReadOnlyDictionary<Guid, Guid> referenceAliases => m_referenceAliases;
-
-    internal IReadOnlyList<AssetDependency> dependencies => m_dependencies;
 
     internal void SetReferenceAliases(IReadOnlyDictionary<Guid, Guid> aliases)
     {

@@ -71,12 +71,6 @@ public sealed class AssetResidencyTests
             m_artifactPath = artifactPath;
         }
 
-        internal TextAsset asset { get; } = new();
-
-        internal int assetReleaseCount { get; private set; }
-
-        internal int artifactReleaseCount { get; private set; }
-
         public ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
             AssetPath path,
             CancellationToken cancellationToken = default
@@ -100,6 +94,12 @@ public sealed class AssetResidencyTests
             () => File.OpenRead(m_artifactPath),
             () => artifactReleaseCount++
         );
+
+        internal TextAsset asset { get; } = new();
+
+        internal int assetReleaseCount { get; private set; }
+
+        internal int artifactReleaseCount { get; private set; }
     }
 
     private sealed class CallbackLease(Action callback) : IDisposable

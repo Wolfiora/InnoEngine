@@ -193,42 +193,6 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
         transaction.Commit();
     }
 
-    private void RecordReplace(
-        Draft draft,
-        byte[] next,
-        string? mergeKey = null
-    ) {
-        byte[] before = draft.bytes;
-        if (before.AsSpan().SequenceEqual(next))
-        {
-            return;
-        }
-        var payload = new ChangeData
-        {
-            assetId = draft.id,
-            before = before,
-            after = next
-        };
-        var change = new EditorHistoryChange(
-            m_historyKind,
-            EditorHistoryPayload.FromBytes(m_serialization.Serialize(payload)),
-            mergeKey
-        );
-        draft.bytes = next;
-        try
-        {
-            Changed(draft);
-            m_interactions.history.RecordApplied("Edit " + m_label, change);
-        }
-        catch
-        {
-            change.Dispose();
-            draft.bytes = before;
-            Changed(draft);
-            throw;
-        }
-    }
-
     /// <summary>
     /// Combines adjacent samples of the same document and gesture without retaining live assets.
     /// </summary>
@@ -310,6 +274,112 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
         (Draft draft, ChangeData data) = ResolveHistory(change, direction);
         draft.bytes = direction == EditorHistoryDirection.Undo ? data.before : data.after;
         Changed(draft);
+    }
+
+    /// <summary>
+    /// Registers the feature provider with the headless document ownership service.
+    /// </summary>
+    public void Start()
+    {
+        if (m_provider is not null)
+        {
+            throw new InvalidOperationException("This draft provider is already started.");
+        }
+        m_provider = m_interactions.documents.RegisterProvider(new Provider(this));
+    }
+
+    /// <summary>
+    /// Imports explicit saves and reconciles source changes without owning UI gesture lifetimes.
+    /// </summary>
+    public void Update()
+    {
+        foreach (AssetPath path in m_imports.ToArray())
+        {
+            m_imports.Remove(path);
+            try
+            {
+                if (!m_assets.Import(path))
+                {
+                    string diagnostics = m_assets.TryGetInfo(path, out AssetInfo? info)
+                                         && info is not null
+                                         ? string.Join("\n", info.diagnostics)
+                                         : "The asset importer did not publish this asset.";
+                    foreach (Draft draft in m_drafts.Values.Where(value => value.path == path))
+                    {
+                        draft.error = "Saved; import failed: " + diagnostics;
+                    }
+                }
+            }
+            catch (Exception error) when (Recoverable(error))
+            {
+                foreach (Draft draft in m_drafts.Values.Where(value => value.path == path))
+                {
+                    draft.error = "Saved; import failed: " + error.Message;
+                }
+            }
+        }
+
+        if (m_sourceRevision != m_assets.revision)
+        {
+            foreach (Draft draft in m_drafts.Values)
+            {
+                SynchronizeSource(draft);
+            }
+            m_sourceRevision = m_assets.revision;
+        }
+    }
+
+    /// <summary>
+    /// Preserves unsaved recovery and unregisters the current feature provider.
+    /// </summary>
+    public void Dispose()
+    {
+        foreach (Draft draft in m_drafts.Values)
+        {
+            if (draft.isDirty)
+            {
+                Changed(draft);
+            }
+        }
+
+        m_provider?.Dispose();
+        m_provider = null;
+    }
+
+    private void RecordReplace(
+        Draft draft,
+        byte[] next,
+        string? mergeKey = null
+    ) {
+        byte[] before = draft.bytes;
+        if (before.AsSpan().SequenceEqual(next))
+        {
+            return;
+        }
+        var payload = new ChangeData
+        {
+            assetId = draft.id,
+            before = before,
+            after = next
+        };
+        var change = new EditorHistoryChange(
+            m_historyKind,
+            EditorHistoryPayload.FromBytes(m_serialization.Serialize(payload)),
+            mergeKey
+        );
+        draft.bytes = next;
+        try
+        {
+            Changed(draft);
+            m_interactions.history.RecordApplied("Edit " + m_label, change);
+        }
+        catch
+        {
+            change.Dispose();
+            draft.bytes = before;
+            Changed(draft);
+            throw;
+        }
     }
 
     private (Draft, ChangeData) ResolveHistory(
@@ -454,59 +524,6 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
         }
     }
 
-    /// <summary>
-    /// Registers the feature provider with the headless document ownership service.
-    /// </summary>
-    public void Start()
-    {
-        if (m_provider is not null)
-        {
-            throw new InvalidOperationException("This draft provider is already started.");
-        }
-        m_provider = m_interactions.documents.RegisterProvider(new Provider(this));
-    }
-
-    /// <summary>
-    /// Imports explicit saves and reconciles source changes without owning UI gesture lifetimes.
-    /// </summary>
-    public void Update()
-    {
-        foreach (AssetPath path in m_imports.ToArray())
-        {
-            m_imports.Remove(path);
-            try
-            {
-                if (!m_assets.Import(path))
-                {
-                    string diagnostics = m_assets.TryGetInfo(path, out AssetInfo? info)
-                                         && info is not null
-                                         ? string.Join("\n", info.diagnostics)
-                                         : "The asset importer did not publish this asset.";
-                    foreach (Draft draft in m_drafts.Values.Where(value => value.path == path))
-                    {
-                        draft.error = "Saved; import failed: " + diagnostics;
-                    }
-                }
-            }
-            catch (Exception error) when (Recoverable(error))
-            {
-                foreach (Draft draft in m_drafts.Values.Where(value => value.path == path))
-                {
-                    draft.error = "Saved; import failed: " + error.Message;
-                }
-            }
-        }
-
-        if (m_sourceRevision != m_assets.revision)
-        {
-            foreach (Draft draft in m_drafts.Values)
-            {
-                SynchronizeSource(draft);
-            }
-            m_sourceRevision = m_assets.revision;
-        }
-    }
-
     private void SynchronizeSource(Draft draft)
     {
         try
@@ -534,23 +551,6 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
         {
             draft.error = error.Message;
         }
-    }
-
-    /// <summary>
-    /// Preserves unsaved recovery and unregisters the current feature provider.
-    /// </summary>
-    public void Dispose()
-    {
-        foreach (Draft draft in m_drafts.Values)
-        {
-            if (draft.isDirty)
-            {
-                Changed(draft);
-            }
-        }
-
-        m_provider?.Dispose();
-        m_provider = null;
     }
 
     private string RecoveryPath(Guid id)

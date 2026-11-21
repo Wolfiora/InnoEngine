@@ -23,8 +23,8 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
     private readonly HashSet<Guid> m_documents = [];
     private readonly List<GraphDocumentSession> m_ownedSessions = [];
     private readonly EditorReloadCoordinator m_reloads;
-    private IDisposable? m_registration;
     private readonly SerializationRegistry m_serialization;
+    private IDisposable? m_registration;
 
     internal GraphEditorModule(
         SerializationRegistry serialization,
@@ -33,8 +33,6 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
         m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
         m_reloads = reloads ?? throw new ArgumentNullException(nameof(reloads));
     }
-
-    internal SerializationRegistry serialization => m_serialization;
 
     /// <summary>
     /// Opens or joins an active graph document session.
@@ -181,13 +179,12 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
         session.available = true;
     }
 
-    internal bool TryResolve(
-        Guid documentId,
-        out GraphDocumentSession? session
-    ) {
-        session = m_identities.Get<GraphDocumentSession>(documentId);
-        return session is not null && session.available;
-    }
+    IGenerationChange IEditorReloadParticipant.Capture(AssemblyReloadContext context)
+        => new ReferenceRecoveryTransaction(ReferenceCatalog.empty, [], [new Recovery(this)]);
+
+    void IEditorReloadParticipant.RefreshDiagnostics() {}
+
+    internal SerializationRegistry serialization => m_serialization;
 
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.
@@ -226,10 +223,13 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
         m_ownedSessions.Clear();
     }
 
-    IGenerationChange IEditorReloadParticipant.Capture(AssemblyReloadContext context)
-        => new ReferenceRecoveryTransaction(ReferenceCatalog.empty, [], [new Recovery(this)]);
-
-    void IEditorReloadParticipant.RefreshDiagnostics() {}
+    internal bool TryResolve(
+        Guid documentId,
+        out GraphDocumentSession? session
+    ) {
+        session = m_identities.Get<GraphDocumentSession>(documentId);
+        return session is not null && session.available;
+    }
 
     private sealed class Recovery(GraphEditorModule owner) : IReferenceRecoveryParticipant
     {

@@ -6,8 +6,8 @@ namespace Inno.Audio.Runtime;
 
 internal sealed class AudioClipRequest : IDisposable
 {
-    private ArtifactLease? m_artifact;
     private readonly string? m_failure;
+    private ArtifactLease? m_artifact;
 
     internal AudioClipRequest(
         AudioClipAsset clip,
@@ -35,6 +35,15 @@ internal sealed class AudioClipRequest : IDisposable
         }
     }
 
+    /// <summary>
+    /// Releases an artifact that was not transferred into the native clip cache.
+    /// </summary>
+    public void Dispose()
+    {
+        m_artifact?.Dispose();
+        m_artifact = null;
+    }
+
     internal Guid persistentId { get; }
     internal long contentVersion { get; }
     internal AssetPath assetPath { get; }
@@ -56,14 +65,5 @@ internal sealed class AudioClipRequest : IDisposable
         ArtifactLease result = m_artifact!;
         m_artifact = null;
         return result;
-    }
-
-    /// <summary>
-    /// Releases an artifact that was not transferred into the native clip cache.
-    /// </summary>
-    public void Dispose()
-    {
-        m_artifact?.Dispose();
-        m_artifact = null;
     }
 }

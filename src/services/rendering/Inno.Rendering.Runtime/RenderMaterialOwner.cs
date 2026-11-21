@@ -11,11 +11,6 @@ namespace Inno.Rendering.Runtime;
 
 internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
 {
-    internal delegate bool TextureResolver(
-        RenderTextureArtifactReference texture,
-        out PersistentTextureHandle handle
-    );
-
     private readonly IRenderDevice m_device;
     private readonly IDiagnosticReporter m_diagnostics;
     private readonly IRenderTargetArtifactProvider? m_targetArtifacts;
@@ -43,6 +38,21 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
         m_textureResolver = textureResolver;
         m_capacity = capacity;
         m_programs = new(DestroyPublication, capacity);
+    }
+
+    /// <summary>
+    /// Retires every program publication without releasing dependencies before pending native retirement completes.
+    /// </summary>
+    public void Dispose()
+    {
+        m_stopping = true;
+        if (m_retirement is null)
+        {
+            m_retirement = new();
+            m_retirement.Add(DrainFailed);
+            m_retirement.Add(m_programs.Dispose);
+        }
+        m_retirement.Dispose();
     }
 
     internal int count
@@ -76,21 +86,6 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
         ObjectDisposedException.ThrowIf(m_stopping, this);
         DrainFailed();
         m_programs.Drain();
-    }
-
-    /// <summary>
-    /// Retires every program publication without releasing dependencies before pending native retirement completes.
-    /// </summary>
-    public void Dispose()
-    {
-        m_stopping = true;
-        if (m_retirement is null)
-        {
-            m_retirement = new();
-            m_retirement.Add(DrainFailed);
-            m_retirement.Add(m_programs.Dispose);
-        }
-        m_retirement.Dispose();
     }
 
     internal bool TryResolveMaterial(
@@ -288,6 +283,30 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
             }
         }
         return false;
+    }
+
+    internal void ValidateArtifact(RenderShaderArtifact artifact)
+    {
+        ArgumentNullException.ThrowIfNull(artifact);
+        foreach (RenderShaderPassArtifact pass in artifact.passes)
+        {
+            ProgramEntry? program = null;
+            try
+            {
+                program = CreateProgram(artifact, new(pass.name, pass.programKind, null));
+            }
+            finally
+            {
+                if (program?.graphicsPipeline.isValid == true)
+                {
+                    m_device.DestroyGraphicsPipeline(program.graphicsPipeline);
+                }
+                if (program?.computePipeline.isValid == true)
+                {
+                    m_device.DestroyComputePipeline(program.computePipeline);
+                }
+            }
+        }
     }
 
     private ArtifactResult QueryArtifact(
@@ -520,30 +539,6 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
         return new(default, compute, pass.shaderInterface);
     }
 
-    internal void ValidateArtifact(RenderShaderArtifact artifact)
-    {
-        ArgumentNullException.ThrowIfNull(artifact);
-        foreach (RenderShaderPassArtifact pass in artifact.passes)
-        {
-            ProgramEntry? program = null;
-            try
-            {
-                program = CreateProgram(artifact, new(pass.name, pass.programKind, null));
-            }
-            finally
-            {
-                if (program?.graphicsPipeline.isValid == true)
-                {
-                    m_device.DestroyGraphicsPipeline(program.graphicsPipeline);
-                }
-                if (program?.computePipeline.isValid == true)
-                {
-                    m_device.DestroyComputePipeline(program.computePipeline);
-                }
-            }
-        }
-    }
-
     private void ValidatePublication(
         RenderShaderArtifact artifact,
         ShaderDefinition definition,
@@ -688,6 +683,34 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
         return true;
     }
 
+    private void Publish(
+        string code,
+        string message,
+        string? source,
+        IDiagnosticReporter? diagnostics = null
+    ) => (diagnostics ?? m_diagnostics).Publish(new Diagnostic(code, message, DiagnosticSeverity.Error, source));
+
+    private void DestroyPublication(ProgramPublication publication)
+    {
+        if (publication.retirement is null)
+        {
+            publication.retirement = new();
+            foreach (ProgramEntry program in publication.programs.Values)
+            {
+                if (program.graphicsPipeline.isValid)
+                {
+                    publication.retirement.Add(() => m_device.DestroyGraphicsPipeline(program.graphicsPipeline));
+                }
+                if (program.computePipeline.isValid)
+                {
+                    publication.retirement.Add(() => m_device.DestroyComputePipeline(program.computePipeline));
+                }
+            }
+            publication.retirement.Add(publication.programs.Clear);
+        }
+        publication.retirement.Dispose();
+    }
+
     private static bool TryEncodeUniform(
         ShaderPropertyType type,
         MaterialValue value,
@@ -799,33 +822,10 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
         return result;
     }
 
-    private void Publish(
-        string code,
-        string message,
-        string? source,
-        IDiagnosticReporter? diagnostics = null
-    ) => (diagnostics ?? m_diagnostics).Publish(new Diagnostic(code, message, DiagnosticSeverity.Error, source));
-
-    private void DestroyPublication(ProgramPublication publication)
-    {
-        if (publication.retirement is null)
-        {
-            publication.retirement = new();
-            foreach (ProgramEntry program in publication.programs.Values)
-            {
-                if (program.graphicsPipeline.isValid)
-                {
-                    publication.retirement.Add(() => m_device.DestroyGraphicsPipeline(program.graphicsPipeline));
-                }
-                if (program.computePipeline.isValid)
-                {
-                    publication.retirement.Add(() => m_device.DestroyComputePipeline(program.computePipeline));
-                }
-            }
-            publication.retirement.Add(publication.programs.Clear);
-        }
-        publication.retirement.Dispose();
-    }
+    internal delegate bool TextureResolver(
+        RenderTextureArtifactReference texture,
+        out PersistentTextureHandle handle
+    );
 
     private sealed class ProgramPublication
     {

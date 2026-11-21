@@ -333,25 +333,6 @@ public sealed partial class SceneHistoryTests : IDisposable
         Assert.IsType<MissingGameComponent>(m_session.scenes.Find<GameComponent>(componentId));
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private Guid AddAndRemoveReloadableComponent(
-        GameObject owner,
-        TextAsset? asset,
-        bool rejectRestore
-    ) {
-        Type type = new TypeRef(Guid.Parse("9f67d41e-082b-46d5-aaf0-dfc76c693182")).Resolve(m_host.types);
-        GameComponent component = owner.AddComponent(type);
-        type.GetProperty("value")!.SetValue(component, 73);
-        type.GetProperty("asset")!.SetValue(component, asset);
-        type.GetProperty("rejectRestore")!.SetValue(component, rejectRestore);
-        Guid id = component.identity.persistentId;
-        Assert.True(m_edits.RemoveComponent(component));
-        return id;
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void AssertRejectedHistoryModule() => Assert.ThrowsAny<Exception>(() => ReloadHistoryModule(install: true));
-
     [Fact]
     public void MissingComponentEditsPreserveOriginalStateAndRecoveryDoesNotDirtySavedScene()
     {
@@ -383,14 +364,6 @@ public sealed partial class SceneHistoryTests : IDisposable
         Assert.False(documents.IsDirty(scene));
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void AssertRecoveredValue(Guid id)
-    {
-        GameComponent component = Assert.IsAssignableFrom<GameComponent>(m_session.scenes.Find<GameComponent>(id));
-        Assert.IsNotType<MissingGameComponent>(component);
-        Assert.Equal(73, component.GetType().GetProperty("value")!.GetValue(component));
-    }
-
     [Fact]
     public void MissingSystemUndoAndRemovalKeepItsLogicalTypeForRecovery()
     {
@@ -411,60 +384,6 @@ public sealed partial class SceneHistoryTests : IDisposable
         m_host.modules.generations.Wait();
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private Guid AddAndRemoveReloadableSystem(GameScene scene)
-    {
-        Type type = new TypeRef(Guid.Parse("92dd722d-f4ce-468d-8f6d-056cf5b1f79b")).Resolve(m_host.types);
-        GameSystem system = scene.AddSystem(type);
-        type.GetProperty("value")!.SetValue(system, 92);
-        Guid id = system.identity.persistentId;
-        Assert.True(m_edits.RemoveSystem(system));
-        return id;
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void AssertRecoveredSystem(Guid id)
-    {
-        GameSystem system = Assert.IsAssignableFrom<GameSystem>(m_session.scenes.Find<GameSystem>(id));
-        Assert.IsNotType<MissingGameSystem>(system);
-        Assert.Equal(92, system.GetType().GetProperty("value")!.GetValue(system));
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void AssertRecoveredComponent(
-        Guid componentId,
-        Guid assetId,
-        int missingRuntimeId
-    ) {
-        GameComponent component = Assert.IsAssignableFrom<GameComponent>(m_session.scenes.Find<GameComponent>(componentId));
-        Assert.IsNotType<MissingGameComponent>(component);
-        Assert.NotEqual(missingRuntimeId, component.identity.runtimeId);
-        Assert.Equal(73, component.GetType().GetProperty("value")!.GetValue(component));
-        TextAsset asset = Assert.IsType<TextAsset>(component.GetType().GetProperty("asset")!.GetValue(component));
-        Assert.False(asset.isMissing);
-        Assert.Equal(assetId, asset.identity.persistentId);
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ReloadHistoryModule(bool install)
-    {
-        DotNetModuleSource request = CreateHistoryRequest();
-        using AssemblyReloadSession reload = install
-                                             ? m_host.modules.BeginReload([request])
-                                             : m_host.modules.BeginReload([], [request.moduleName]);
-        _ = m_reloads.Execute(reload);
-    }
-
-    private DotNetModuleSource CreateHistoryRequest()
-        => new()
-    {
-        moduleName = "SceneHistoryRecovery",
-        artifactRootDirectory = Path.Combine(m_projectRoot, "Library", "Modules"),
-        mainAssemblyPath = Path.Combine(AppContext.BaseDirectory, "Modules", "SceneReload", "Inno.Scene.Reload.TestModule.dll"),
-        domain = AssemblyDomain.InnoPlugin,
-        scope = AssemblyScope.Runtime
-    };
-
     [Fact]
     public void ExternalResolversAreRestoredBeforeDomainPropertyCompensation()
     {
@@ -483,49 +402,6 @@ public sealed partial class SceneHistoryTests : IDisposable
         reload.Dispose();
         m_host.modules.generations.Wait();
         Assert.Equal(GenerationState.Ready, m_host.modules.generations.state);
-    }
-
-    private sealed class ExternalContentChange(
-        Action activate,
-        Action restore
-    ) : IGenerationChange
-    {
-        public void PrepareForActivation() {}
-
-        public void Apply() => activate();
-
-        public void Complete() {}
-
-        public void RollbackStructure() {}
-
-        public void RestorePreviousState() => restore();
-    }
-
-    private sealed class ExternalRecoveryOrder(Func<bool> externalCandidateActive) : IEditorReloadParticipant, IGenerationChange
-    {
-        internal bool restored { get; private set; }
-
-        public IGenerationChange Capture(AssemblyReloadContext context) => this;
-
-        public void RefreshDiagnostics() {}
-
-        public void PrepareForActivation() => Assert.False(externalCandidateActive());
-
-        public void Apply()
-        {
-            Assert.True(externalCandidateActive());
-            throw new InvalidOperationException("Rejected domain candidate.");
-        }
-
-        public void RollbackStructure() => Assert.True(externalCandidateActive());
-
-        public void RestorePreviousState()
-        {
-            Assert.False(externalCandidateActive());
-            restored = true;
-        }
-
-        public void Complete() => Assert.Fail("Failed candidate cannot commit.");
     }
 
     [Fact]
@@ -810,7 +686,131 @@ public sealed partial class SceneHistoryTests : IDisposable
         Assert.Same(gameObject, scene.FindObjectWithLayer(gameplay));
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private Guid AddAndRemoveReloadableComponent(
+        GameObject owner,
+        TextAsset? asset,
+        bool rejectRestore
+    ) {
+        Type type = new TypeRef(Guid.Parse("9f67d41e-082b-46d5-aaf0-dfc76c693182")).Resolve(m_host.types);
+        GameComponent component = owner.AddComponent(type);
+        type.GetProperty("value")!.SetValue(component, 73);
+        type.GetProperty("asset")!.SetValue(component, asset);
+        type.GetProperty("rejectRestore")!.SetValue(component, rejectRestore);
+        Guid id = component.identity.persistentId;
+        Assert.True(m_edits.RemoveComponent(component));
+        return id;
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void AssertRejectedHistoryModule() => Assert.ThrowsAny<Exception>(() => ReloadHistoryModule(install: true));
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void AssertRecoveredValue(Guid id)
+    {
+        GameComponent component = Assert.IsAssignableFrom<GameComponent>(m_session.scenes.Find<GameComponent>(id));
+        Assert.IsNotType<MissingGameComponent>(component);
+        Assert.Equal(73, component.GetType().GetProperty("value")!.GetValue(component));
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private Guid AddAndRemoveReloadableSystem(GameScene scene)
+    {
+        Type type = new TypeRef(Guid.Parse("92dd722d-f4ce-468d-8f6d-056cf5b1f79b")).Resolve(m_host.types);
+        GameSystem system = scene.AddSystem(type);
+        type.GetProperty("value")!.SetValue(system, 92);
+        Guid id = system.identity.persistentId;
+        Assert.True(m_edits.RemoveSystem(system));
+        return id;
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void AssertRecoveredSystem(Guid id)
+    {
+        GameSystem system = Assert.IsAssignableFrom<GameSystem>(m_session.scenes.Find<GameSystem>(id));
+        Assert.IsNotType<MissingGameSystem>(system);
+        Assert.Equal(92, system.GetType().GetProperty("value")!.GetValue(system));
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void AssertRecoveredComponent(
+        Guid componentId,
+        Guid assetId,
+        int missingRuntimeId
+    ) {
+        GameComponent component = Assert.IsAssignableFrom<GameComponent>(m_session.scenes.Find<GameComponent>(componentId));
+        Assert.IsNotType<MissingGameComponent>(component);
+        Assert.NotEqual(missingRuntimeId, component.identity.runtimeId);
+        Assert.Equal(73, component.GetType().GetProperty("value")!.GetValue(component));
+        TextAsset asset = Assert.IsType<TextAsset>(component.GetType().GetProperty("asset")!.GetValue(component));
+        Assert.False(asset.isMissing);
+        Assert.Equal(assetId, asset.identity.persistentId);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void ReloadHistoryModule(bool install)
+    {
+        DotNetModuleSource request = CreateHistoryRequest();
+        using AssemblyReloadSession reload = install
+                                             ? m_host.modules.BeginReload([request])
+                                             : m_host.modules.BeginReload([], [request.moduleName]);
+        _ = m_reloads.Execute(reload);
+    }
+
+    private DotNetModuleSource CreateHistoryRequest()
+        => new()
+    {
+        moduleName = "SceneHistoryRecovery",
+        artifactRootDirectory = Path.Combine(m_projectRoot, "Library", "Modules"),
+        mainAssemblyPath = Path.Combine(AppContext.BaseDirectory, "Modules", "SceneReload", "Inno.Scene.Reload.TestModule.dll"),
+        domain = AssemblyDomain.InnoPlugin,
+        scope = AssemblyScope.Runtime
+    };
+
     private GameScene CreateScene() => m_session.scenes.LoadNewSceneAdditive();
+
+    private sealed class ExternalContentChange(
+        Action activate,
+        Action restore
+    ) : IGenerationChange
+    {
+        public void PrepareForActivation() {}
+
+        public void Apply() => activate();
+
+        public void Complete() {}
+
+        public void RollbackStructure() {}
+
+        public void RestorePreviousState() => restore();
+    }
+
+    private sealed class ExternalRecoveryOrder(Func<bool> externalCandidateActive) : IEditorReloadParticipant, IGenerationChange
+    {
+        public IGenerationChange Capture(AssemblyReloadContext context) => this;
+
+        public void RefreshDiagnostics() {}
+
+        public void PrepareForActivation() => Assert.False(externalCandidateActive());
+
+        public void Apply()
+        {
+            Assert.True(externalCandidateActive());
+            throw new InvalidOperationException("Rejected domain candidate.");
+        }
+
+        public void RollbackStructure() => Assert.True(externalCandidateActive());
+
+        public void RestorePreviousState()
+        {
+            Assert.False(externalCandidateActive());
+            restored = true;
+        }
+
+        public void Complete() => Assert.Fail("Failed candidate cannot commit.");
+
+        internal bool restored { get; private set; }
+    }
 }
 
 [EditorModule("tests.scene-history-probe", order: 220)]
@@ -926,9 +926,6 @@ internal sealed class SubtreeRestoreFailureComponent : GameBehavior
     [SerializableProperty]
     public int value { get; set; } = 5;
 
-    [OnSerializableRestored]
-    private void OnRestored() => throw new InvalidOperationException("Injected subtree restore callback failure.");
-
     protected override void OnDestroy()
     {
         if (throwOnDestroy)
@@ -936,4 +933,7 @@ internal sealed class SubtreeRestoreFailureComponent : GameBehavior
             throw new InvalidOperationException("Injected subtree destruction callback failure.");
         }
     }
+
+    [OnSerializableRestored]
+    private void OnRestored() => throw new InvalidOperationException("Injected subtree restore callback failure.");
 }

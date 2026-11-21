@@ -17,6 +17,11 @@ internal sealed class InspectorLockControl
     private bool m_isLocked;
 
     /// <summary>
+    /// Gets whether the Inspector is currently retaining a target independently from global selection.
+    /// </summary>
+    internal bool isLocked => m_isLocked;
+
+    /// <summary>
     /// Resolves the target that the Inspector should present this frame.
     /// </summary>
     /// <param name="interactions">
@@ -42,11 +47,6 @@ internal sealed class InspectorLockControl
         object? target = m_isLocked ? lockedTarget : selectedTarget;
         return IsValid(target) ? target : null;
     }
-
-    /// <summary>
-    /// Gets whether the Inspector is currently retaining a target independently from global selection.
-    /// </summary>
-    internal bool isLocked => m_isLocked;
 
     /// <summary>
     /// Toggles target retention using the target currently displayed by the Inspector.

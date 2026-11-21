@@ -14,12 +14,12 @@ internal sealed class MiniAudioClipSourceLease : IDisposable
         this.preparation = preparation;
     }
 
-    internal MiniAudioClipPreparation preparation { get; }
-
     /// <inheritdoc/>
     public void Dispose()
     {
         m_owner?.Release(preparation);
         m_owner = null;
     }
+
+    internal MiniAudioClipPreparation preparation { get; }
 }

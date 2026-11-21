@@ -10,37 +10,20 @@ namespace Inno.Editor.Panel.Logging;
 
 internal sealed partial class ConsolePanel
 {
-    private sealed class EntryMeasurement(
-        ConsoleView.Row row,
-        bool open,
-        float height
-    ) {
-        internal readonly ConsoleView.Row row = row;
-        internal readonly bool open = open;
-        internal float height = height;
-        internal int remainingMeasurements = open ? 2 : 0;
-    }
-
+    private readonly List<int> m_pendingMeasurements = [];
+    private readonly Dictionary<string, CardWindowSlot> m_cardSlots = new(StringComparer.Ordinal);
+    private readonly List<string> m_cardWindowNames = [];
+    private readonly Stack<int> m_freeCardWindows = [];
+    private readonly List<string> m_retiredCardKeys = [];
     private Dictionary<string, EntryMeasurement> m_measurements = new(StringComparer.Ordinal);
     private EntryMeasurement[] m_layout = [];
-    private readonly List<int> m_pendingMeasurements = [];
     private IReadOnlyList<ConsoleView.Row>? m_layoutRows;
     private float[] m_offsets = [0f];
     private (float width, float frameHeight, float padding, float spacing, float zoom)? m_layoutShape;
     private int m_openRevision;
     private int m_layoutOpenRevision = -1;
     private bool m_scrollFocusedRow;
-    private readonly Dictionary<string, CardWindowSlot> m_cardSlots = new(StringComparer.Ordinal);
-    private readonly List<string> m_cardWindowNames = [];
-    private readonly Stack<int> m_freeCardWindows = [];
-    private readonly List<string> m_retiredCardKeys = [];
     private ulong m_cardFrame;
-
-    private sealed class CardWindowSlot(int index)
-    {
-        internal readonly int index = index;
-        internal ulong lastFrame;
-    }
 
     private string AcquireCardWindow(string key)
     {
@@ -250,5 +233,22 @@ internal sealed partial class ConsolePanel
     {
         int index = Array.BinarySearch(m_offsets, position);
         return Math.Clamp(index < 0 ? ~index - 1 : index, 0, m_layout.Length - 1);
+    }
+
+    private sealed class EntryMeasurement(
+        ConsoleView.Row row,
+        bool open,
+        float height
+    ) {
+        internal readonly ConsoleView.Row row = row;
+        internal readonly bool open = open;
+        internal float height = height;
+        internal int remainingMeasurements = open ? 2 : 0;
+    }
+
+    private sealed class CardWindowSlot(int index)
+    {
+        internal readonly int index = index;
+        internal ulong lastFrame;
     }
 }

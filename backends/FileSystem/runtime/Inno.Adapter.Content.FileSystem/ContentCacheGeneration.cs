@@ -115,14 +115,14 @@ internal sealed class ContentCacheGeneration
         }
 
         /// <inheritdoc/>
+        public override int Read(Span<byte> buffer) => m_input.Read(buffer);
+
+        /// <inheritdoc/>
         public override int Read(
             byte[] buffer,
             int offset,
             int count
         ) => m_input.Read(buffer, offset, count);
-
-        /// <inheritdoc/>
-        public override int Read(Span<byte> buffer) => m_input.Read(buffer);
 
         /// <inheritdoc/>
         public override int ReadByte() => m_input.ReadByte();

@@ -42,18 +42,6 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     }
 
     /// <summary>
-    /// Captures the input service snapshot and binds script-facing UI for the complete runtime frame.
-    /// </summary>
-    /// <param name="frame">
-    /// The current runtime frame.
-    /// </param>
-    protected override void OnBeginFrame(RuntimeFrame frame)
-    {
-        m_input = InputExecutionContext.current.snapshot;
-        OwnFrameScope(EnterExecutionScope());
-    }
-
-    /// <summary>
     /// Binds this runtime to the current asynchronous execution context.
     /// </summary>
     /// <returns>
@@ -504,6 +492,18 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     }
 
     /// <summary>
+    /// Captures the input service snapshot and binds script-facing UI for the complete runtime frame.
+    /// </summary>
+    /// <param name="frame">
+    /// The current runtime frame.
+    /// </param>
+    protected override void OnBeginFrame(RuntimeFrame frame)
+    {
+        m_input = InputExecutionContext.current.snapshot;
+        OwnFrameScope(EnterExecutionScope());
+    }
+
+    /// <summary>
     /// Releases native UI state before releasing retained font artifacts.
     /// </summary>
     protected override void OnStop()
@@ -608,17 +608,6 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
         }
     }
 
-    private sealed class FontResidency(ArtifactLease lease)
-    {
-        internal ArtifactLease lease { get; } = lease;
-        internal int references = 1;
-    }
-
-    private readonly record struct DocumentKey(
-        UiContextHandle context,
-        UiDocumentHandle document
-    );
-
     private void EnsureLanguageSupported(UiDocumentLanguageId language)
     {
         if (!m_backend.capabilities.Supports(language))
@@ -628,6 +617,18 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
             );
         }
     }
+
+    private sealed class FontResidency(ArtifactLease lease)
+    {
+        internal int references = 1;
+
+        internal ArtifactLease lease { get; } = lease;
+    }
+
+    private readonly record struct DocumentKey(
+        UiContextHandle context,
+        UiDocumentHandle document
+    );
 
     private readonly record struct FontRegistration(
         Guid persistentId,

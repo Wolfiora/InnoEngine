@@ -47,16 +47,15 @@ public sealed class ScriptReloadHost : IDisposable
     );
 
     private readonly CancellationToken m_lifetimeToken;
-
+    private readonly Dictionary<string, AssemblyModuleHandle> m_pluginModules = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> m_activeModuleFingerprints = new(StringComparer.Ordinal);
     private CancellationTokenSource? m_activeCompilationCancellation;
     private ScriptCompilationResult? m_activeCompilation;
     private PendingReload? m_pendingCompilation;
     private ScriptCompilationResult? m_lastCompilation;
-    private readonly Dictionary<string, AssemblyModuleHandle> m_pluginModules = new(StringComparer.Ordinal);
     private AssemblyModuleHandle? m_runtimeScriptModule;
     private AssemblyModuleHandle? m_editorScriptModule;
     private string? m_activeCompilationDirectory;
-    private readonly Dictionary<string, string> m_activeModuleFingerprints = new(StringComparer.Ordinal);
     private ScriptReloadProgress m_progress = new(0, 0f, "Waiting for script changes.", false);
     private long m_progressOperation;
     private long m_activeProgressOperation;
@@ -421,126 +420,6 @@ public sealed class ScriptReloadHost : IDisposable
         return true;
     }
 
-    private async ValueTask<ScriptCompilationResult> CompileAsync(
-        ScriptReloadRequest request,
-        PluginUnavailabilityPlan? unavailability,
-        long operation,
-        CancellationToken cancellationToken = default
-    ) {
-        ObjectDisposedException.ThrowIf(m_disposed, this);
-        using CancellationTokenSource linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(
-            cancellationToken,
-            m_lifetimeToken
-        );
-        CancellationToken effectiveCancellation = linkedCancellation.Token;
-        await m_compileGate.WaitAsync(effectiveCancellation).ConfigureAwait(false);
-        try
-        {
-            effectiveCancellation.ThrowIfCancellationRequested();
-            ObjectDisposedException.ThrowIf(m_disposed, this);
-            Volatile.Write(ref m_isCompiling, 1);
-            Volatile.Write(ref m_compilationStartedTimestamp, Environment.TickCount64);
-            lock (m_sync)
-            {
-                m_activeCompilationCancellation = linkedCancellation;
-                m_activeProgressOperation = operation;
-                m_acceptCompilerProgress = true;
-            }
-            SetCompilationProgress(0f, "Preparing script compilation...", operation, canCancel: true);
-            ScriptCompilationResult result;
-            try
-            {
-                result = await m_compiler
-                    .CompileAuthoringGenerationAsync(
-                        new ScriptProgressObserver((
-                            progress,
-                            status
-                        ) => SetCompilationProgress(
-                            progress * C_COMPILATION_PROGRESS_SHARE,
-                            progress >= 1f ? "Compilation finished; waiting for generation activation and state recovery." : status,
-                            operation,
-                            isCompilerUpdate: true
-                        )),
-                        effectiveCancellation
-                    )
-                    .ConfigureAwait(false);
-            }
-            catch (OperationCanceledException) when (effectiveCancellation.IsCancellationRequested)
-            {
-                throw;
-            }
-            catch (Exception exception)
-            {
-                result = ScriptCompilationResult.Failure(
-                    new ScriptDiagnostic(
-                        "INNO0001",
-                        DiagnosticSeverity.Error,
-                        exception.ToString(),
-                        filePath: null,
-                        line: 0,
-                        column: 0
-                    )
-                );
-            }
-            lock (m_sync)
-            {
-                if (!m_disposed)
-                {
-                    m_acceptCompilerProgress = false;
-                    m_lastCompilation = result;
-                    if (m_requestedReload != ScriptReloadRequest.None)
-                    {
-                        if (request > m_requestedReload)
-                        {
-                            m_requestedReload = request;
-                        }
-                        m_pendingCompilation = null;
-                    }
-                    else if (result.success || unavailability is not null)
-                    {
-                        m_pendingCompilation = new PendingReload(
-                            result,
-                            request,
-                            operation,
-                            result.success ? null : unavailability
-                        );
-                    }
-                    SetCompilationProgress(
-                        result.success || unavailability is not null ? C_COMPILATION_PROGRESS_SHARE : progress.fraction,
-                        m_requestedReload != ScriptReloadRequest.None
-                        ? "Compilation superseded by a queued reload request."
-                        : result.success
-                          ? "Script compilation completed; waiting for generation activation and state recovery."
-                          : unavailability is not null
-                            ? "Compilation failed after a Plugin availability change; the unavailable "
-                              + "generation is ready to activate."
-                            : "Script compilation failed.",
-                        operation
-                    );
-                }
-            }
-            return result;
-        }
-        finally
-        {
-            long started = Interlocked.Exchange(ref m_compilationStartedTimestamp, 0);
-            if (started != 0)
-            {
-                m_lastCompilationElapsed = TimeSpan.FromMilliseconds(Math.Max(0, Environment.TickCount64 - started));
-            }
-            lock (m_sync)
-            {
-                if (ReferenceEquals(m_activeCompilationCancellation, linkedCancellation))
-                {
-                    m_activeCompilationCancellation = null;
-                    m_acceptCompilerProgress = false;
-                }
-            }
-            Volatile.Write(ref m_isCompiling, 0);
-            m_compileGate.Release();
-        }
-    }
-
     /// <summary>
     /// Applies the latest compiled generation, or commits a Plugin-unavailability generation when changed
     /// Plugin code cannot produce a replacement, at a caller-controlled main-thread safe point.
@@ -762,6 +641,126 @@ public sealed class ScriptReloadHost : IDisposable
                 "Generation retirement failed. Restart the host before Play, Build, Export or reload."
             );
             return true;
+        }
+    }
+
+    private async ValueTask<ScriptCompilationResult> CompileAsync(
+        ScriptReloadRequest request,
+        PluginUnavailabilityPlan? unavailability,
+        long operation,
+        CancellationToken cancellationToken = default
+    ) {
+        ObjectDisposedException.ThrowIf(m_disposed, this);
+        using CancellationTokenSource linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken,
+            m_lifetimeToken
+        );
+        CancellationToken effectiveCancellation = linkedCancellation.Token;
+        await m_compileGate.WaitAsync(effectiveCancellation).ConfigureAwait(false);
+        try
+        {
+            effectiveCancellation.ThrowIfCancellationRequested();
+            ObjectDisposedException.ThrowIf(m_disposed, this);
+            Volatile.Write(ref m_isCompiling, 1);
+            Volatile.Write(ref m_compilationStartedTimestamp, Environment.TickCount64);
+            lock (m_sync)
+            {
+                m_activeCompilationCancellation = linkedCancellation;
+                m_activeProgressOperation = operation;
+                m_acceptCompilerProgress = true;
+            }
+            SetCompilationProgress(0f, "Preparing script compilation...", operation, canCancel: true);
+            ScriptCompilationResult result;
+            try
+            {
+                result = await m_compiler
+                    .CompileAuthoringGenerationAsync(
+                        new ScriptProgressObserver((
+                            progress,
+                            status
+                        ) => SetCompilationProgress(
+                            progress * C_COMPILATION_PROGRESS_SHARE,
+                            progress >= 1f ? "Compilation finished; waiting for generation activation and state recovery." : status,
+                            operation,
+                            isCompilerUpdate: true
+                        )),
+                        effectiveCancellation
+                    )
+                    .ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (effectiveCancellation.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                result = ScriptCompilationResult.Failure(
+                    new ScriptDiagnostic(
+                        "INNO0001",
+                        DiagnosticSeverity.Error,
+                        exception.ToString(),
+                        filePath: null,
+                        line: 0,
+                        column: 0
+                    )
+                );
+            }
+            lock (m_sync)
+            {
+                if (!m_disposed)
+                {
+                    m_acceptCompilerProgress = false;
+                    m_lastCompilation = result;
+                    if (m_requestedReload != ScriptReloadRequest.None)
+                    {
+                        if (request > m_requestedReload)
+                        {
+                            m_requestedReload = request;
+                        }
+                        m_pendingCompilation = null;
+                    }
+                    else if (result.success || unavailability is not null)
+                    {
+                        m_pendingCompilation = new PendingReload(
+                            result,
+                            request,
+                            operation,
+                            result.success ? null : unavailability
+                        );
+                    }
+                    SetCompilationProgress(
+                        result.success || unavailability is not null ? C_COMPILATION_PROGRESS_SHARE : progress.fraction,
+                        m_requestedReload != ScriptReloadRequest.None
+                        ? "Compilation superseded by a queued reload request."
+                        : result.success
+                          ? "Script compilation completed; waiting for generation activation and state recovery."
+                          : unavailability is not null
+                            ? "Compilation failed after a Plugin availability change; the unavailable "
+                              + "generation is ready to activate."
+                            : "Script compilation failed.",
+                        operation
+                    );
+                }
+            }
+            return result;
+        }
+        finally
+        {
+            long started = Interlocked.Exchange(ref m_compilationStartedTimestamp, 0);
+            if (started != 0)
+            {
+                m_lastCompilationElapsed = TimeSpan.FromMilliseconds(Math.Max(0, Environment.TickCount64 - started));
+            }
+            lock (m_sync)
+            {
+                if (ReferenceEquals(m_activeCompilationCancellation, linkedCancellation))
+                {
+                    m_activeCompilationCancellation = null;
+                    m_acceptCompilerProgress = false;
+                }
+            }
+            Volatile.Write(ref m_isCompiling, 0);
+            m_compileGate.Release();
         }
     }
 
@@ -1006,25 +1005,6 @@ public sealed class ScriptReloadHost : IDisposable
         }
     }
 
-    private static IEnumerable<string> GetOwnedAssemblyNames(ScriptModuleDeployment request)
-        => new[] { request.mainAssemblyPath }
-            .Concat(request.preloadAssemblyPaths)
-            .Select(static path => AssemblyName.GetAssemblyName(path).Name ?? string.Empty);
-
-    private static string ComputeRequestFingerprint(ScriptModuleDeployment request)
-    {
-        using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        foreach (string path in new[] { request.mainAssemblyPath }
-            .Concat(request.preloadAssemblyPaths)
-            .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
-        ) {
-            byte[] name = Encoding.UTF8.GetBytes(Path.GetFileName(path));
-            hash.AppendData(name);
-            hash.AppendData(File.ReadAllBytes(path));
-        }
-        return Convert.ToHexString(hash.GetHashAndReset());
-    }
-
     private void CompletePendingReload(PendingReload applied)
     {
         lock (m_sync)
@@ -1091,6 +1071,33 @@ public sealed class ScriptReloadHost : IDisposable
         );
     }
 
+    private void ThrowIfFaultedLocked()
+    {
+        if (m_modules.generations.state == GenerationState.Faulted)
+        {
+            throw new InvalidOperationException("The generation owner is Faulted; restart the host.", m_modules.generations.failure);
+        }
+    }
+
+    private static IEnumerable<string> GetOwnedAssemblyNames(ScriptModuleDeployment request)
+        => new[] { request.mainAssemblyPath }
+            .Concat(request.preloadAssemblyPaths)
+            .Select(static path => AssemblyName.GetAssemblyName(path).Name ?? string.Empty);
+
+    private static string ComputeRequestFingerprint(ScriptModuleDeployment request)
+    {
+        using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        foreach (string path in new[] { request.mainAssemblyPath }
+            .Concat(request.preloadAssemblyPaths)
+            .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
+        ) {
+            byte[] name = Encoding.UTF8.GetBytes(Path.GetFileName(path));
+            hash.AppendData(name);
+            hash.AppendData(File.ReadAllBytes(path));
+        }
+        return Convert.ToHexString(hash.GetHashAndReset());
+    }
+
     private static bool IsScriptInput(string path)
         => path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
            || path.EndsWith(".iasmdef", StringComparison.OrdinalIgnoreCase);
@@ -1108,14 +1115,6 @@ public sealed class ScriptReloadHost : IDisposable
         catch (ArgumentException)
         {
             return false;
-        }
-    }
-
-    private void ThrowIfFaultedLocked()
-    {
-        if (m_modules.generations.state == GenerationState.Faulted)
-        {
-            throw new InvalidOperationException("The generation owner is Faulted; restart the host.", m_modules.generations.failure);
         }
     }
 

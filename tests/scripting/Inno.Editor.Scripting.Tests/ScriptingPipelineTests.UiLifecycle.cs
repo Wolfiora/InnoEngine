@@ -43,14 +43,6 @@ public sealed partial class ScriptingPipelineTests
         GC.KeepAlive(snapshot);
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static (SerializationSnapshot, WeakReference) CaptureScriptSnapshot(ScriptingFixture fixture)
-    {
-        Type type = fixture.ResolveActiveType("SnapshotPayload");
-        ISerializable payload = (ISerializable)Activator.CreateInstance(type)!;
-        return (fixture.host.serialization.CaptureSnapshot(new CapturedScriptPayload(payload)), new WeakReference(type));
-    }
-
     [Fact]
     [Trait("Acceptance", "Lifecycle")]
     [Trait("ProcessIsolation", "Required")]
@@ -105,6 +97,14 @@ public sealed partial class ScriptingPipelineTests
                     protected override void Execute(EditorActionContext context) { }
                 }
                 """);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static (SerializationSnapshot, WeakReference) CaptureScriptSnapshot(ScriptingFixture fixture)
+    {
+        Type type = fixture.ResolveActiveType("SnapshotPayload");
+        ISerializable payload = (ISerializable)Activator.CreateInstance(type)!;
+        return (fixture.host.serialization.CaptureSnapshot(new CapturedScriptPayload(payload)), new WeakReference(type));
     }
 
     private static void AssertMenu(

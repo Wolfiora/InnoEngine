@@ -11,6 +11,27 @@ namespace Inno.Rendering;
 public readonly record struct GraphicsApi : IComparable<GraphicsApi>
 {
     /// <summary>
+    /// Creates an open, stable backend identity without registering a backend implementation.
+    /// </summary>
+    /// <param name="value">
+    /// A portable case-sensitive identifier used in target artifact paths.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// The identifier is empty or contains nonportable characters.
+    /// </exception>
+    public GraphicsApi(string value)
+    {
+        if (!IsPortableIdentifier(value))
+        {
+            throw new ArgumentException(
+                "Graphics API IDs must begin with a letter or digit and use only portable letters, numbers, dots, underscores or hyphens.",
+                nameof(value)
+            );
+        }
+        this.value = value;
+    }
+
+    /// <summary>
     /// Headless validation backend.
     /// </summary>
     public static GraphicsApi Noop { get; } = new("Noop");
@@ -51,27 +72,6 @@ public readonly record struct GraphicsApi : IComparable<GraphicsApi>
     public static GraphicsApi WebGPU { get; } = new("WebGPU");
 
     /// <summary>
-    /// Creates an open, stable backend identity without registering a backend implementation.
-    /// </summary>
-    /// <param name="value">
-    /// A portable case-sensitive identifier used in target artifact paths.
-    /// </param>
-    /// <exception cref="ArgumentException">
-    /// The identifier is empty or contains nonportable characters.
-    /// </exception>
-    public GraphicsApi(string value)
-    {
-        if (!IsPortableIdentifier(value))
-        {
-            throw new ArgumentException(
-                "Graphics API IDs must begin with a letter or digit and use only portable letters, numbers, dots, underscores or hyphens.",
-                nameof(value)
-            );
-        }
-        this.value = value;
-    }
-
-    /// <summary>
     /// Gets the stable backend identity used by target artifacts and provider selection.
     /// </summary>
     public string value { get; }
@@ -80,6 +80,25 @@ public readonly record struct GraphicsApi : IComparable<GraphicsApi>
     /// Gets whether this value contains an initialized backend identity.
     /// </summary>
     public bool isValid => !string.IsNullOrEmpty(value);
+
+    /// <summary>
+    /// Compares two backend identities using stable ordinal ordering.
+    /// </summary>
+    /// <param name="other">
+    /// The other backend identity.
+    /// </param>
+    /// <returns>
+    /// A negative, zero, or positive value according to ordinal identifier order.
+    /// </returns>
+    public int CompareTo(GraphicsApi other) => string.Compare(value, other.value, StringComparison.Ordinal);
+
+    /// <summary>
+    /// Formats the exact stable backend identity.
+    /// </summary>
+    /// <returns>
+    /// The identity, or an empty string for an uninitialized value.
+    /// </returns>
+    public override string ToString() => value ?? string.Empty;
 
     /// <summary>
     /// Parses an open backend identity without consulting a closed engine-side backend list.
@@ -105,25 +124,6 @@ public readonly record struct GraphicsApi : IComparable<GraphicsApi>
         api = new GraphicsApi(value!);
         return true;
     }
-
-    /// <summary>
-    /// Compares two backend identities using stable ordinal ordering.
-    /// </summary>
-    /// <param name="other">
-    /// The other backend identity.
-    /// </param>
-    /// <returns>
-    /// A negative, zero, or positive value according to ordinal identifier order.
-    /// </returns>
-    public int CompareTo(GraphicsApi other) => string.Compare(value, other.value, StringComparison.Ordinal);
-
-    /// <summary>
-    /// Formats the exact stable backend identity.
-    /// </summary>
-    /// <returns>
-    /// The identity, or an empty string for an uninitialized value.
-    /// </returns>
-    public override string ToString() => value ?? string.Empty;
 
     private static bool IsPortableIdentifier(string? candidate)
     {

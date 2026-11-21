@@ -141,6 +141,8 @@ public sealed class EditorSelectionState
         return false;
     }
 
+    internal EditorTargetReference? anchorReference => m_anchor;
+
     internal void Select(object target)
     {
         ArgumentNullException.ThrowIfNull(target);
@@ -196,8 +198,6 @@ public sealed class EditorSelectionState
         m_anchor = null;
         Changed();
     }
-
-    internal EditorTargetReference? anchorReference => m_anchor;
 
     internal EditorTargetReference[] CaptureReferences() => (EditorTargetReference[])m_targets.Clone();
 

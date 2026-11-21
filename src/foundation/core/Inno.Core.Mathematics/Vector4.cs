@@ -16,6 +16,38 @@ namespace Inno.Core.Mathematics;
 public struct Vector4 : IEquatable<Vector4>
 {
     /// <summary>
+    /// A value whose components are all zero.
+    /// </summary>
+
+    // Common vectors
+    public static readonly Vector4 ZERO = new(0, 0, 0, 0);
+
+    /// <summary>
+    /// A value whose components are all one.
+    /// </summary>
+    public static readonly Vector4 ONE = new(1, 1, 1, 1);
+
+    /// <summary>
+    /// A unit value aligned with the x axis.
+    /// </summary>
+    public static readonly Vector4 UNIT_X = new(1, 0, 0, 0);
+
+    /// <summary>
+    /// A unit value aligned with the y axis.
+    /// </summary>
+    public static readonly Vector4 UNIT_Y = new(0, 1, 0, 0);
+
+    /// <summary>
+    /// A unit value aligned with the z axis.
+    /// </summary>
+    public static readonly Vector4 UNIT_Z = new(0, 0, 1, 0);
+
+    /// <summary>
+    /// A unit value aligned with the w axis.
+    /// </summary>
+    public static readonly Vector4 UNIT_W = new(0, 0, 0, 1);
+
+    /// <summary>
     /// The horizontal or first component.
     /// </summary>
     [DataMember]
@@ -67,36 +99,16 @@ public struct Vector4 : IEquatable<Vector4>
     }
 
     /// <summary>
-    /// A value whose components are all zero.
+    /// Gets a unit-length copy, or the zero value when normalization is undefined.
     /// </summary>
-
-    // Common vectors
-    public static readonly Vector4 ZERO = new(0, 0, 0, 0);
-
-    /// <summary>
-    /// A value whose components are all one.
-    /// </summary>
-    public static readonly Vector4 ONE = new(1, 1, 1, 1);
-
-    /// <summary>
-    /// A unit value aligned with the x axis.
-    /// </summary>
-    public static readonly Vector4 UNIT_X = new(1, 0, 0, 0);
-
-    /// <summary>
-    /// A unit value aligned with the y axis.
-    /// </summary>
-    public static readonly Vector4 UNIT_Y = new(0, 1, 0, 0);
-
-    /// <summary>
-    /// A unit value aligned with the z axis.
-    /// </summary>
-    public static readonly Vector4 UNIT_Z = new(0, 0, 1, 0);
-
-    /// <summary>
-    /// A unit value aligned with the w axis.
-    /// </summary>
-    public static readonly Vector4 UNIT_W = new(0, 0, 0, 1);
+    public Vector4 normalized
+    {
+        get
+        {
+            float len = Length();
+            return len > 0 ? this / len : ZERO;
+        }
+    }
 
     /// <summary>
     /// Calculates the Euclidean magnitude of this value.
@@ -119,16 +131,61 @@ public struct Vector4 : IEquatable<Vector4>
     public float LengthSquared() => SimdMath.Dot4(x, y, z, w, x, y, z, w);
 
     /// <summary>
-    /// Gets a unit-length copy, or the zero value when normalization is undefined.
+    /// Projects the supplied value onto the requested dimensional space.
     /// </summary>
-    public Vector4 normalized
+    /// <returns>
+    /// The validated vector3 that represents the completed operation.
+    /// </returns>
+
+    // Project (useful in homogeneous coordinate systems)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Vector3 ProjectToVector3()
     {
-        get
+        if (w == 0f)
         {
-            float len = Length();
-            return len > 0 ? this / len : ZERO;
+            // Avoid division by zero
+            return new Vector3(x, y, z);
         }
+        return new Vector3(x / w, y / w, z / w);
     }
+
+    /// <summary>
+    /// Determines whether this value and the supplied value represent the same logical state.
+    /// </summary>
+    /// <param name="obj">
+    /// The object compared with this value.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    public override bool Equals(object? obj) => obj is Vector4 other && this == other;
+
+    /// <summary>
+    /// Determines whether this value and the supplied value represent the same logical state.
+    /// </summary>
+    /// <param name="other">
+    /// The strongly typed value compared with this value.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    public bool Equals(Vector4 other) => this == other;
+
+    /// <summary>
+    /// Computes a hash code consistent with the implemented equality contract.
+    /// </summary>
+    /// <returns>
+    /// The scalar result calculated from the supplied inputs.
+    /// </returns>
+    public override int GetHashCode() => HashCode.Combine(x, y, z, w);
+
+    /// <summary>
+    /// Formats this value as a human-readable component list.
+    /// </summary>
+    /// <returns>
+    /// The validated text representation owned by the caller.
+    /// </returns>
+    public override string ToString() => $"({x}, {y}, {z}, {w})";
 
     /// <summary>
     /// Calculates the scalar dot product of two values.
@@ -236,25 +293,6 @@ public struct Vector4 : IEquatable<Vector4>
     }
 
     /// <summary>
-    /// Projects the supplied value onto the requested dimensional space.
-    /// </summary>
-    /// <returns>
-    /// The validated vector3 that represents the completed operation.
-    /// </returns>
-
-    // Project (useful in homogeneous coordinate systems)
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Vector3 ProjectToVector3()
-    {
-        if (w == 0f)
-        {
-            // Avoid division by zero
-            return new Vector3(x, y, z);
-        }
-        return new Vector3(x / w, y / w, z / w);
-    }
-
-    /// <summary>
     /// Adds the supplied values component by component.
     /// </summary>
     /// <param name="a">
@@ -277,6 +315,18 @@ public struct Vector4 : IEquatable<Vector4>
     /// <summary>
     /// Subtracts or negates the supplied value component by component.
     /// </summary>
+    /// <param name="v">
+    /// The concrete value read or transformed by this operation.
+    /// </param>
+    /// <returns>
+    /// The validated vector4 that represents the completed operation.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Vector4 operator -(Vector4 v) => new(-v.x, -v.y, -v.z, -v.w);
+
+    /// <summary>
+    /// Subtracts or negates the supplied value component by component.
+    /// </summary>
     /// <param name="a">
     /// The first operand or interpolation endpoint.
     /// </param>
@@ -291,18 +341,6 @@ public struct Vector4 : IEquatable<Vector4>
         Vector4 a,
         Vector4 b
     ) => new(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
-
-    /// <summary>
-    /// Subtracts or negates the supplied value component by component.
-    /// </summary>
-    /// <param name="v">
-    /// The concrete value read or transformed by this operation.
-    /// </param>
-    /// <returns>
-    /// The validated vector4 that represents the completed operation.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector4 operator -(Vector4 v) => new(-v.x, -v.y, -v.z, -v.w);
 
     /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
@@ -441,42 +479,4 @@ public struct Vector4 : IEquatable<Vector4>
     /// The validated vector4 that represents the completed operation.
     /// </returns>
     public static implicit operator Vector4(NumericsVector4 v) => new(v.X, v.Y, v.Z, v.W);
-
-    /// <summary>
-    /// Determines whether this value and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="obj">
-    /// The object compared with this value.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public override bool Equals(object? obj) => obj is Vector4 other && this == other;
-
-    /// <summary>
-    /// Determines whether this value and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="other">
-    /// The strongly typed value compared with this value.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public bool Equals(Vector4 other) => this == other;
-
-    /// <summary>
-    /// Computes a hash code consistent with the implemented equality contract.
-    /// </summary>
-    /// <returns>
-    /// The scalar result calculated from the supplied inputs.
-    /// </returns>
-    public override int GetHashCode() => HashCode.Combine(x, y, z, w);
-
-    /// <summary>
-    /// Formats this value as a human-readable component list.
-    /// </summary>
-    /// <returns>
-    /// The validated text representation owned by the caller.
-    /// </returns>
-    public override string ToString() => $"({x}, {y}, {z}, {w})";
 }

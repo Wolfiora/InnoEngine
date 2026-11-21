@@ -17,20 +17,6 @@ namespace Inno.Editor.PlayMode.Tests;
 
 public sealed unsafe class VisualScaleMatrixTests
 {
-    public static IEnumerable<object[]> Metrics()
-    {
-        foreach (float zoom in new[] { 0.75f, 0.85f, 0.9f, 1f, 1.1f, 1.25f, 1.5f })
-        {
-            foreach (float density in new[] { 1f, 1.25f, 1.5f, 2f })
-            {
-                foreach (Vector2 size in new[] { new Vector2(1280f, 720f), new Vector2(1920f, 1080f) })
-                {
-                    yield return [zoom, density, size.X, size.Y];
-                }
-            }
-        }
-    }
-
     [Theory]
     [MemberData(nameof(Metrics))]
     [Trait("Acceptance", "Visual")]
@@ -86,5 +72,19 @@ public sealed unsafe class VisualScaleMatrixTests
         }
         Assert.InRange(labelWidth / (labelWidth + valueWidth), 0.37f, 0.42f);
         Assert.True(float.IsFinite(labelWidth) && float.IsFinite(valueWidth));
+    }
+
+    public static IEnumerable<object[]> Metrics()
+    {
+        foreach (float zoom in new[] { 0.75f, 0.85f, 0.9f, 1f, 1.1f, 1.25f, 1.5f })
+        {
+            foreach (float density in new[] { 1f, 1.25f, 1.5f, 2f })
+            {
+                foreach (Vector2 size in new[] { new Vector2(1280f, 720f), new Vector2(1920f, 1080f) })
+                {
+                    yield return [zoom, density, size.X, size.Y];
+                }
+            }
+        }
     }
 }

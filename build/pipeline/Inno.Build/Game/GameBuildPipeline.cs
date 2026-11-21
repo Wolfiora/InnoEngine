@@ -318,6 +318,42 @@ internal sealed class GameBuildPipeline
         }
     }
 
+    private void EnsureGenerationUnchanged(
+        long expectedAssetRevision,
+        long expectedPluginRevision,
+        long expectedSettingsRevision
+    ) {
+        if (m_assets.revision != expectedAssetRevision
+            || m_plugins.revision != expectedPluginRevision
+            || m_settings.revision != expectedSettingsRevision
+        ) {
+            throw new InvalidOperationException(
+                "The active Asset, Plugin, or Project Settings generation changed during the build. "
+                + "No output was committed; start a new build from the latest generation."
+            );
+        }
+    }
+
+    private void ValidateOutputRoot(string outputRoot)
+    {
+        List<string> protectedRoots = m_assets.sourceMounts
+            .Select(static mount => mount.rootPath)
+            .Append(m_assets.libraryRoot)
+            .ToList();
+        string? projectRoot = Directory.GetParent(m_assets.assetRoot)?.FullName;
+        if (projectRoot is not null)
+        {
+            protectedRoots.Add(Path.Combine(projectRoot, "Plugins"));
+        }
+        string? conflict = protectedRoots.FirstOrDefault(root => IsWithin(root, outputRoot));
+        if (conflict is not null)
+        {
+            throw new InvalidOperationException(
+                $"Build output cannot be written inside managed project content '{Path.GetFullPath(conflict)}'."
+            );
+        }
+    }
+
     private static async ValueTask ObserveCompletionAsync(Task? task)
     {
         if (task is null)
@@ -467,42 +503,6 @@ internal sealed class GameBuildPipeline
             visiting.Remove(module.name);
             visited.Add(module.name);
             ordered.Add(module);
-        }
-    }
-
-    private void EnsureGenerationUnchanged(
-        long expectedAssetRevision,
-        long expectedPluginRevision,
-        long expectedSettingsRevision
-    ) {
-        if (m_assets.revision != expectedAssetRevision
-            || m_plugins.revision != expectedPluginRevision
-            || m_settings.revision != expectedSettingsRevision
-        ) {
-            throw new InvalidOperationException(
-                "The active Asset, Plugin, or Project Settings generation changed during the build. "
-                + "No output was committed; start a new build from the latest generation."
-            );
-        }
-    }
-
-    private void ValidateOutputRoot(string outputRoot)
-    {
-        List<string> protectedRoots = m_assets.sourceMounts
-            .Select(static mount => mount.rootPath)
-            .Append(m_assets.libraryRoot)
-            .ToList();
-        string? projectRoot = Directory.GetParent(m_assets.assetRoot)?.FullName;
-        if (projectRoot is not null)
-        {
-            protectedRoots.Add(Path.Combine(projectRoot, "Plugins"));
-        }
-        string? conflict = protectedRoots.FirstOrDefault(root => IsWithin(root, outputRoot));
-        if (conflict is not null)
-        {
-            throw new InvalidOperationException(
-                $"Build output cannot be written inside managed project content '{Path.GetFullPath(conflict)}'."
-            );
         }
     }
 

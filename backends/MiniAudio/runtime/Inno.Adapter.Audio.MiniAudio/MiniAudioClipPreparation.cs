@@ -35,14 +35,6 @@ internal sealed class MiniAudioClipPreparation : IDisposable
         }
     }
 
-    internal string contentHash { get; }
-    internal long length { get; }
-    internal string path { get; }
-    internal Task completion { get; }
-    internal int references { get; set; }
-
-    internal void Cancel() => m_cancellation.Cancel();
-
     /// <inheritdoc/>
     public void Dispose()
     {
@@ -57,6 +49,14 @@ internal sealed class MiniAudioClipPreparation : IDisposable
         }
         m_cancellation.Dispose();
     }
+
+    internal string contentHash { get; }
+    internal long length { get; }
+    internal string path { get; }
+    internal Task completion { get; }
+    internal int references { get; set; }
+
+    internal void Cancel() => m_cancellation.Cancel();
 
     private async Task PrepareAsync(
         IAudioClipSource source,

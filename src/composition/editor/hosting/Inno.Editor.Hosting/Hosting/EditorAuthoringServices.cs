@@ -35,6 +35,21 @@ internal sealed class EditorAuthoringServices : IDisposable
         this.compiler = compiler;
     }
 
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose()
+    {
+        if (m_disposed)
+        {
+            return;
+        }
+        m_disposed = true;
+        plugins.Dispose();
+        assets.Dispose();
+        settings.Dispose();
+    }
+
     internal AssetPipeline assets { get; }
 
     internal IdentityAllocator identities { get; }
@@ -44,6 +59,13 @@ internal sealed class EditorAuthoringServices : IDisposable
     internal ScriptCompiler compiler { get; }
 
     internal ProjectSettingsStore settings { get; }
+
+    internal void Update()
+    {
+        ObjectDisposedException.ThrowIf(m_disposed, this);
+        plugins.Update();
+        assets.Update();
+    }
 
     internal static EditorAuthoringServices Start(
         string projectDirectory,
@@ -132,27 +154,5 @@ internal sealed class EditorAuthoringServices : IDisposable
             settings?.Dispose();
             throw;
         }
-    }
-
-    internal void Update()
-    {
-        ObjectDisposedException.ThrowIf(m_disposed, this);
-        plugins.Update();
-        assets.Update();
-    }
-
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose()
-    {
-        if (m_disposed)
-        {
-            return;
-        }
-        m_disposed = true;
-        plugins.Dispose();
-        assets.Dispose();
-        settings.Dispose();
     }
 }

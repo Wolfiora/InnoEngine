@@ -188,16 +188,6 @@ public sealed class AssetBrowserState
     public string GetDirectory(AssetBrowserRoot targetRoot)
         => targetRoot == AssetBrowserRoot.Assets ? m_assetsDirectory : m_pluginsDirectory;
 
-    internal void Restore(
-        AssetBrowserRoot restoredRoot,
-        string assetsDirectory,
-        string pluginsDirectory
-    ) {
-        m_assetsDirectory = Normalize(assetsDirectory);
-        m_pluginsDirectory = Normalize(pluginsDirectory);
-        root = restoredRoot;
-    }
-
     /// <summary>
     /// Changes the displayed source root and its isolated navigation directory.
     /// </summary>
@@ -227,6 +217,16 @@ public sealed class AssetBrowserState
 
         SetDirectory(targetRoot, normalized);
         root = targetRoot;
+    }
+
+    internal void Restore(
+        AssetBrowserRoot restoredRoot,
+        string assetsDirectory,
+        string pluginsDirectory
+    ) {
+        m_assetsDirectory = Normalize(assetsDirectory);
+        m_pluginsDirectory = Normalize(pluginsDirectory);
+        root = restoredRoot;
     }
 
     private void SetDirectory(

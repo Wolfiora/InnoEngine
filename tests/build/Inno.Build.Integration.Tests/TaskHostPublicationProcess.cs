@@ -32,6 +32,24 @@ internal sealed class TaskHostPublicationProcess : IAsyncDisposable
         m_budget = budget;
     }
 
+    /// <inheritdoc/>
+    public async ValueTask DisposeAsync()
+    {
+        if (Interlocked.Exchange(ref m_disposed, 1) != 0)
+        {
+            return;
+        }
+        File.WriteAllText(m_release, "release");
+        try
+        {
+            await m_running;
+        }
+        finally
+        {
+            m_budget.Dispose();
+        }
+    }
+
     internal string loadDirectory { get; }
     internal string publisherDirectory { get; }
     internal string readyFile { get; }
@@ -149,24 +167,6 @@ internal sealed class TaskHostPublicationProcess : IAsyncDisposable
             catch (Exception) { }
             budget.Dispose();
             throw;
-        }
-    }
-
-    /// <inheritdoc/>
-    public async ValueTask DisposeAsync()
-    {
-        if (Interlocked.Exchange(ref m_disposed, 1) != 0)
-        {
-            return;
-        }
-        File.WriteAllText(m_release, "release");
-        try
-        {
-            await m_running;
-        }
-        finally
-        {
-            m_budget.Dispose();
         }
     }
 }

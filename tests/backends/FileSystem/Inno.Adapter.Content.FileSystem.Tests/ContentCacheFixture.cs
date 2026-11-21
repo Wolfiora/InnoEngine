@@ -18,10 +18,6 @@ internal sealed class ContentCacheFixture : IDisposable
         ["Artifacts/aa/bb/data"] = [4, 5, 6]
     });
 
-    internal string cache => Path.Combine(root, "Content", source.descriptor.contentHash);
-    internal string current => Path.Combine(cache, "generations", File.ReadAllText(Path.Combine(cache, "current")));
-    internal FileContentCacheOptions options => new(root);
-
     public void Dispose()
     {
         source.Dispose();
@@ -30,6 +26,10 @@ internal sealed class ContentCacheFixture : IDisposable
             Directory.Delete(root, true);
         }
     }
+
+    internal string cache => Path.Combine(root, "Content", source.descriptor.contentHash);
+    internal string current => Path.Combine(cache, "generations", File.ReadAllText(Path.Combine(cache, "current")));
+    internal FileContentCacheOptions options => new(root);
 
     internal sealed class MemoryContentStore : IRuntimeContentStore
     {

@@ -84,13 +84,6 @@ public static partial class ShaderGraphArtifact
         return Encode(graph, sources, serialization, program);
     }
 
-    private static GraphDocument MissingGraphResolver(
-        Guid id,
-        string path
-    ) => throw new InvalidOperationException(
-        $"Shader graph node '{id}' at '{path}' requires a graph resolver during artifact capture."
-    );
-
     /// <summary>
     /// Reads the target-expanded runtime interface from the same frozen candidate as its computations.
     /// </summary>
@@ -276,6 +269,13 @@ public static partial class ShaderGraphArtifact
         );
         return new ShaderGraphProgramCompiler(nodes).Lower(graph, implementationId, sources, serialization, context);
     }
+
+    private static GraphDocument MissingGraphResolver(
+        Guid id,
+        string path
+    ) => throw new InvalidOperationException(
+        $"Shader graph node '{id}' at '{path}' requires a graph resolver during artifact capture."
+    );
 
     [StableTypeId("16182a41-f19b-5a28-a66f-5310360f8a32")]
     private sealed class ArtifactData : ISerializable

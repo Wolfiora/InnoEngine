@@ -8,7 +8,7 @@ namespace Inno.Core.Logging;
 /// <summary>
 /// Writes complete log entries to uniquely named rotating files under the router's delivery policy.
 /// </summary>
-public class FileLogSink : ILogSink, IDisposable
+public sealed class FileLogSink : ILogSink, IDisposable
 {
     /// <summary>
     /// Prefix used for generated log file names.
@@ -178,9 +178,6 @@ public class FileLogSink : ILogSink, IDisposable
         }
     }
 
-    private static string FormatEntry(LogEntry entry)
-        => $"[{entry.time:yyyy-MM-dd HH:mm:ss.fff}] [{entry.domain}/{entry.scope}] [{entry.level}]: {entry.message} ({entry.file}:{entry.line})";
-
     private void OpenWriter()
     {
         string timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmssfffffff");
@@ -211,4 +208,7 @@ public class FileLogSink : ILogSink, IDisposable
         m_writer = null;
         writer?.Dispose();
     }
+
+    private static string FormatEntry(LogEntry entry)
+        => $"[{entry.time:yyyy-MM-dd HH:mm:ss.fff}] [{entry.domain}/{entry.scope}] [{entry.level}]: {entry.message} ({entry.file}:{entry.line})";
 }

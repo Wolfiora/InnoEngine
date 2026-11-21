@@ -357,6 +357,17 @@ public sealed unsafe class DynamicModalTests
             m_runtime.Start();
         }
 
+        public void Dispose()
+        {
+            NativeGui.Raw.SetCurrentContext(m_native);
+            m_runtime.Dispose();
+            m_types.Dispose();
+            m_modules.Dispose();
+            m_logs.Dispose();
+            NativeGui.Raw.DestroyContext(m_native);
+            Directory.Delete(m_root, true);
+        }
+
         internal void Refresh() => m_types.Rebuild();
 
         internal void Frame()
@@ -367,17 +378,6 @@ public sealed unsafe class DynamicModalTests
             m_runtime.Draw();
             state.popupOpen = NativeGui.IsPopupOpen("Dynamic Modal##tests.dynamic-modal");
             NativeGui.Render();
-        }
-
-        public void Dispose()
-        {
-            NativeGui.Raw.SetCurrentContext(m_native);
-            m_runtime.Dispose();
-            m_types.Dispose();
-            m_modules.Dispose();
-            m_logs.Dispose();
-            NativeGui.Raw.DestroyContext(m_native);
-            Directory.Delete(m_root, true);
         }
     }
 }

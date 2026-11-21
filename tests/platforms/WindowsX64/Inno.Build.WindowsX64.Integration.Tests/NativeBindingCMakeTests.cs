@@ -18,9 +18,6 @@ namespace Inno.Build.WindowsX64.Integration.Tests;
 [SupportedOSPlatform("windows")]
 public sealed class NativeBindingCMakeTests
 {
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private delegate int ReadValue();
-
     [WindowsCompilerFact]
     public async Task WindowsCompilationUsesFrozenHeadersAndKeepsBindingDefinesOutOfUpstreamSources()
     {
@@ -190,6 +187,9 @@ public sealed class NativeBindingCMakeTests
         byte[] content = File.ReadAllBytes(path);
         return new(rootId, relative, content.Length, Convert.ToHexStringLower(SHA256.HashData(content)), compile);
     }
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int ReadValue();
 
     private sealed class WindowsCompilerFactAttribute : FactAttribute
     {

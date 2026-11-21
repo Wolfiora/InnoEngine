@@ -120,6 +120,16 @@ public sealed class EditorPlayModeController :
     /// </summary>
     public bool isPlaying => m_state == EditorPlayModeState.Playing;
 
+    /// <summary>
+    /// Gets the most recent transition or simulation failure.
+    /// </summary>
+    public string? lastFailure => m_lastFailure;
+
+    /// <summary>
+    /// Gets the isolated runtime log session associated with the current request.
+    /// </summary>
+    public LogSessionId activeSessionId => m_activeSessionId;
+
     /// <inheritdoc/>
     bool IEditorReloadGuard.canRequestReload => !m_disposed && m_state == EditorPlayModeState.Editing;
 
@@ -134,16 +144,6 @@ public sealed class EditorPlayModeController :
         => m_state == EditorPlayModeState.Editing
            ? null
            : "Stop Play Mode and wait for its runtime session to retire before reloading scripts or Plugins.";
-
-    /// <summary>
-    /// Gets the most recent transition or simulation failure.
-    /// </summary>
-    public string? lastFailure => m_lastFailure;
-
-    /// <summary>
-    /// Gets the isolated runtime log session associated with the current request.
-    /// </summary>
-    public LogSessionId activeSessionId => m_activeSessionId;
 
     /// <inheritdoc/>
     public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener)
@@ -297,6 +297,72 @@ public sealed class EditorPlayModeController :
         m_disposed = true;
     }
 
+    internal void Quiesce()
+    {
+        if (m_disposed)
+        {
+            return;
+        }
+        SetState(EditorPlayModeState.Stopping);
+        List<Exception>? failures = null;
+        try
+        {
+            new RetirementBarrier("Play Mode before generation activation").Wait(ReleasePlayResources);
+        }
+        catch (Exception exception)
+        {
+            m_engineHost.generations.Fault(exception);
+            if (RetirementPendingException.Find(exception) is not null)
+            {
+                throw;
+            }
+            failures = [exception];
+            m_lastFailure = $"Play Mode could not release its runtime generation: {exception.Message}";
+        }
+        try
+        {
+            CompleteEditingTransition();
+        }
+        catch (Exception exception)
+        {
+            failures ??= [];
+            failures.Add(exception);
+        }
+
+        if (failures is not null)
+        {
+            throw new InvalidOperationException(
+                "Assembly reload cannot continue because Play Mode still owns generation-bound runtime state.",
+                new AggregateException(failures)
+            );
+        }
+    }
+
+    internal IDisposable? EnterPresentationScope()
+    {
+        if (m_state != EditorPlayModeState.Playing || m_runtimeSession is not RuntimeSession session)
+        {
+            return null;
+        }
+        IDisposable? sessionScope = null;
+        IDisposable? audioScope = null;
+        IDisposable? uiScope = null;
+        try
+        {
+            sessionScope = session.EnterExecutionScope();
+            audioScope = m_audio?.EnterExecutionScope(session);
+            uiScope = session.subsystems.GetRequiredSubsystem<UiRuntime>().EnterExecutionScope();
+            return new PresentationScope(sessionScope, audioScope, uiScope);
+        }
+        catch
+        {
+            uiScope?.Dispose();
+            audioScope?.Dispose();
+            sessionScope?.Dispose();
+            throw;
+        }
+    }
+
     private void AdvanceCompilation()
     {
         IScriptCompilationTicket? ticket = m_compilationTicket;
@@ -429,47 +495,6 @@ public sealed class EditorPlayModeController :
         }
     }
 
-    internal void Quiesce()
-    {
-        if (m_disposed)
-        {
-            return;
-        }
-        SetState(EditorPlayModeState.Stopping);
-        List<Exception>? failures = null;
-        try
-        {
-            new RetirementBarrier("Play Mode before generation activation").Wait(ReleasePlayResources);
-        }
-        catch (Exception exception)
-        {
-            m_engineHost.generations.Fault(exception);
-            if (RetirementPendingException.Find(exception) is not null)
-            {
-                throw;
-            }
-            failures = [exception];
-            m_lastFailure = $"Play Mode could not release its runtime generation: {exception.Message}";
-        }
-        try
-        {
-            CompleteEditingTransition();
-        }
-        catch (Exception exception)
-        {
-            failures ??= [];
-            failures.Add(exception);
-        }
-
-        if (failures is not null)
-        {
-            throw new InvalidOperationException(
-                "Assembly reload cannot continue because Play Mode still owns generation-bound runtime state.",
-                new AggregateException(failures)
-            );
-        }
-    }
-
     private void RunSimulation(
         Action<RuntimeSession> callback,
         string phase
@@ -496,31 +521,6 @@ public sealed class EditorPlayModeController :
         }
     }
 
-    internal IDisposable? EnterPresentationScope()
-    {
-        if (m_state != EditorPlayModeState.Playing || m_runtimeSession is not RuntimeSession session)
-        {
-            return null;
-        }
-        IDisposable? sessionScope = null;
-        IDisposable? audioScope = null;
-        IDisposable? uiScope = null;
-        try
-        {
-            sessionScope = session.EnterExecutionScope();
-            audioScope = m_audio?.EnterExecutionScope(session);
-            uiScope = session.subsystems.GetRequiredSubsystem<UiRuntime>().EnterExecutionScope();
-            return new PresentationScope(sessionScope, audioScope, uiScope);
-        }
-        catch
-        {
-            uiScope?.Dispose();
-            audioScope?.Dispose();
-            sessionScope?.Dispose();
-            throw;
-        }
-    }
-
     private void Fail(string failure)
     {
         m_lastFailure = failure;
@@ -534,6 +534,21 @@ public sealed class EditorPlayModeController :
         m_activeSessionId = LogSessionId.none;
         m_playTime = 0f;
         SetState(EditorPlayModeState.Editing);
+    }
+
+    private void SetState(EditorPlayModeState value)
+    {
+        if (m_state == value)
+        {
+            return;
+        }
+        m_state = value;
+        var notification = new StateTransitionEvent(value);
+        m_stateDispatcher.Emit(notification);
+        if (notification.failures.Count != 0)
+        {
+            throw new AggregateException("One or more Play Mode state observers failed.", notification.failures);
+        }
     }
 
     private static string CreateCompilationFailure(IScriptCompilationTicket ticket)
@@ -552,27 +567,6 @@ public sealed class EditorPlayModeController :
             }
         }
         return "Play Mode is unavailable because the active script compilation failed.";
-    }
-
-    private void SetState(EditorPlayModeState value)
-    {
-        if (m_state == value)
-        {
-            return;
-        }
-        m_state = value;
-        var notification = new StateTransitionEvent(value);
-        m_stateDispatcher.Emit(notification);
-        if (notification.failures.Count != 0)
-        {
-            throw new AggregateException("One or more Play Mode state observers failed.", notification.failures);
-        }
-    }
-
-    private sealed class StateTransitionEvent(EditorPlayModeState state) : Event
-    {
-        internal EditorPlayModeState state { get; } = state;
-        internal List<Exception> failures { get; } = [];
     }
 
     private static void DisposeResource<T>(
@@ -599,6 +593,12 @@ public sealed class EditorPlayModeController :
             failures.Add(exception);
         }
         resource = null;
+    }
+
+    private sealed class StateTransitionEvent(EditorPlayModeState state) : Event
+    {
+        internal EditorPlayModeState state { get; } = state;
+        internal List<Exception> failures { get; } = [];
     }
 
     private sealed class PresentationScope(

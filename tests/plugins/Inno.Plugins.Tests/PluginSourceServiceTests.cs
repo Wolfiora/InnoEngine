@@ -844,23 +844,6 @@ public sealed class PluginSourceServiceTests : IDisposable
         );
     }
 
-    private static PluginManifest Manifest(
-        string id,
-        params string[] dependencies
-    ) => new()
-    {
-        pluginId = id,
-        displayName = id,
-        dependencies = dependencies
-    };
-
-    private static Dictionary<string, byte[]> TextContent(string value)
-        => new()
-    {
-        ["Assets/content.txt"] = Encoding.UTF8.GetBytes(value),
-        ["Assets/content.txt.imeta"] = [1]
-    };
-
     private ProjectSettingRecord SettingRecord(int value)
         => new(
             PluginDefaultTestSetting.id,
@@ -924,15 +907,6 @@ public sealed class PluginSourceServiceTests : IDisposable
         WriteEntry(archive, "Assets/value.txt.imeta", [1]);
     }
 
-    private static byte[] CreateNoise(
-        int length,
-        int seed
-    ) {
-        var result = new byte[length];
-        new Random(seed).NextBytes(result);
-        return result;
-    }
-
     private void InitializeProjectAssets()
     {
         string assets = Path.Combine(m_root, "RuntimeProject", "Assets");
@@ -972,6 +946,32 @@ public sealed class PluginSourceServiceTests : IDisposable
             importerId = "inno.assets.text"
         });
 
+    private static PluginManifest Manifest(
+        string id,
+        params string[] dependencies
+    ) => new()
+    {
+        pluginId = id,
+        displayName = id,
+        dependencies = dependencies
+    };
+
+    private static Dictionary<string, byte[]> TextContent(string value)
+        => new()
+    {
+        ["Assets/content.txt"] = Encoding.UTF8.GetBytes(value),
+        ["Assets/content.txt.imeta"] = [1]
+    };
+
+    private static byte[] CreateNoise(
+        int length,
+        int seed
+    ) {
+        var result = new byte[length];
+        new Random(seed).NextBytes(result);
+        return result;
+    }
+
     private static void WriteEntry(
         ZipArchive archive,
         string path,
@@ -990,10 +990,10 @@ public sealed class PluginSourceSerializationCollection;
 [ProjectSettingDefinition("tests.plugins.default")]
 internal sealed class PluginDefaultTestSetting : ISerializable
 {
-    internal static ProjectSettingId id => new("tests.plugins.default");
-
     [SerializableProperty]
     public int value { get; set; } = 1;
+
+    internal static ProjectSettingId id => new("tests.plugins.default");
 }
 
 internal sealed class TestAssetSourceMeta : ISerializable

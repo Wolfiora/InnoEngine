@@ -49,6 +49,46 @@ public sealed class PlayerSupportPackPreparationIdentity
     public string? nativeDependencies => m_properties.GetValueOrDefault("InnoNativeDependencyManifest");
 
     /// <summary>
+    /// Creates the exclusively owned fixed managed execution planned by this preparation identity.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// Cancels materialization without changing any installed Pack.
+    /// </param>
+    /// <returns>
+    /// Caller-owned input copies for compilation and source extraction.
+    /// </returns>
+    public ValueTask<ManagedBuildExecution> CreateExecutionAsync(CancellationToken cancellationToken = default)
+        => (m_managed
+            ?? throw new InvalidOperationException("Managed preparation was not captured.")).CreateExecutionAsync(cancellationToken);
+
+    /// <summary>
+    /// Freshly verifies the complete current source input closure after waiting or preparing output.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// Cancels verification before cache acceptance or publication.
+    /// </param>
+    /// <returns>
+    /// Completion when the current graph and bytes still match the frozen preparation identity.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Preparation inputs changed; no candidate may be selected.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// Verification was canceled.
+    /// </exception>
+    public async ValueTask VerifyAsync(CancellationToken cancellationToken = default)
+    {
+        string current = await ComputeAsync(
+            m_context.BeginInputVerification("support-pack-inputs"),
+            cancellationToken
+        ).ConfigureAwait(false);
+        if (current != fingerprint)
+        {
+            throw new InvalidOperationException("Support Pack inputs changed after planning; the candidate cannot be selected.");
+        }
+    }
+
+    /// <summary>
     /// Captures Native declarations, selected binding inputs, the managed graph and explicit packaging inputs.
     /// </summary>
     /// <param name="context">
@@ -112,46 +152,6 @@ public sealed class PlayerSupportPackPreparationIdentity
         );
         result.fingerprint = await result.ComputeAsync(context, cancellationToken).ConfigureAwait(false);
         return result;
-    }
-
-    /// <summary>
-    /// Creates the exclusively owned fixed managed execution planned by this preparation identity.
-    /// </summary>
-    /// <param name="cancellationToken">
-    /// Cancels materialization without changing any installed Pack.
-    /// </param>
-    /// <returns>
-    /// Caller-owned input copies for compilation and source extraction.
-    /// </returns>
-    public ValueTask<ManagedBuildExecution> CreateExecutionAsync(CancellationToken cancellationToken = default)
-        => (m_managed
-            ?? throw new InvalidOperationException("Managed preparation was not captured.")).CreateExecutionAsync(cancellationToken);
-
-    /// <summary>
-    /// Freshly verifies the complete current source input closure after waiting or preparing output.
-    /// </summary>
-    /// <param name="cancellationToken">
-    /// Cancels verification before cache acceptance or publication.
-    /// </param>
-    /// <returns>
-    /// Completion when the current graph and bytes still match the frozen preparation identity.
-    /// </returns>
-    /// <exception cref="InvalidOperationException">
-    /// Preparation inputs changed; no candidate may be selected.
-    /// </exception>
-    /// <exception cref="OperationCanceledException">
-    /// Verification was canceled.
-    /// </exception>
-    public async ValueTask VerifyAsync(CancellationToken cancellationToken = default)
-    {
-        string current = await ComputeAsync(
-            m_context.BeginInputVerification("support-pack-inputs"),
-            cancellationToken
-        ).ConfigureAwait(false);
-        if (current != fingerprint)
-        {
-            throw new InvalidOperationException("Support Pack inputs changed after planning; the candidate cannot be selected.");
-        }
     }
 
     private async ValueTask<string> ComputeAsync(

@@ -179,8 +179,6 @@ public sealed class AnimationBindingRuntime : IAnimationBindingSink, IDisposable
 
     private sealed class Snapshot : IDisposable
     {
-        internal Dictionary<(AnimationBindingId, AnimationValueKind), AnimationBindingProvider> providers { get; } = [];
-
         /// <summary>
         /// Attempts to release every provider without retaining failed instances.
         /// </summary>
@@ -204,5 +202,7 @@ public sealed class AnimationBindingRuntime : IAnimationBindingSink, IDisposable
                 throw new AggregateException("Animation provider retirement failed.", failures);
             }
         }
+
+        internal Dictionary<(AnimationBindingId, AnimationValueKind), AnimationBindingProvider> providers { get; } = [];
     }
 }

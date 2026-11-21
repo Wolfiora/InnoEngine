@@ -153,6 +153,9 @@ public sealed class BrowserWasm32PlayerSupportPackSource : IPlayerSupportPackSou
         return new PreparationPlan(this, context.engineRoot, project, sdk, nativeContext, identity);
     }
 
+    /// <inheritdoc/>
+    public void Validate(string directory) => m_validator.Validate(directory);
+
     private async ValueTask ExecuteAsync(
         PlayerSupportPackBuildContext context,
         string project,
@@ -230,9 +233,6 @@ public sealed class BrowserWasm32PlayerSupportPackSource : IPlayerSupportPackSou
         ).ConfigureAwait(false);
         await execution.VerifyAsync(cancellationToken).ConfigureAwait(false);
     }
-
-    /// <inheritdoc/>
-    public void Validate(string directory) => m_validator.Validate(directory);
 
     private static void CopyLinkTemplate(
         string engineRoot,

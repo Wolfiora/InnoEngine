@@ -18,43 +18,6 @@ public sealed class PrefabAsset : AssetObject
 {
     private byte[] m_pendingPayload = [];
 
-    [SerializableProperty]
-    internal AssetDependency[] sourceDependencies { get; set; } = [];
-
-    /// <summary>
-    /// Captures a game object subtree into a new unsaved prefab asset.
-    /// </summary>
-    /// <param name="root">
-    /// Prefab source root.
-    /// </param>
-    /// <param name="serialization">
-    /// The serialization registry that owns the active prefab converter generation.
-    /// </param>
-    /// <param name="assets">
-    /// The runtime asset generation used to resolve persistent references in the prefab graph.
-    /// </param>
-    /// <returns>
-    /// A prefab asset ready to save.
-    /// </returns>
-    [ScriptingApiIgnore]
-    public static PrefabAsset Capture(
-        GameObject root,
-        SerializationRegistry serialization,
-        IAssetReferenceResolver assets
-    ) {
-        ArgumentNullException.ThrowIfNull(root);
-        ArgumentNullException.ThrowIfNull(serialization);
-        ArgumentNullException.ThrowIfNull(assets);
-        var dependencyCollection = new AssetDependencyCollection();
-        SerializationContext context = AssetSerializationContext.Create(assets, dependencyCollection);
-        byte[] payload = serialization.Serialize(root, context);
-        return new PrefabAsset
-        {
-            m_pendingPayload = payload,
-            sourceDependencies = dependencyCollection.dependencies.ToArray()
-        };
-    }
-
     /// <summary>
     /// Instantiates this prefab into a scene using newly generated object identities.
     /// </summary>
@@ -103,6 +66,49 @@ public sealed class PrefabAsset : AssetObject
     }
 
     /// <summary>
+    /// Captures the immutable runtime payload and dependency descriptors required by the prefab asset pipeline.
+    /// </summary>
+    /// <returns>
+    /// A detached authoring-content snapshot owned by the caller.
+    /// </returns>
+    [ScriptingApiIgnore]
+    public EngineAssetContent CaptureContent() => new(GetPayload(), sourceDependencies);
+
+    /// <summary>
+    /// Captures a game object subtree into a new unsaved prefab asset.
+    /// </summary>
+    /// <param name="root">
+    /// Prefab source root.
+    /// </param>
+    /// <param name="serialization">
+    /// The serialization registry that owns the active prefab converter generation.
+    /// </param>
+    /// <param name="assets">
+    /// The runtime asset generation used to resolve persistent references in the prefab graph.
+    /// </param>
+    /// <returns>
+    /// A prefab asset ready to save.
+    /// </returns>
+    [ScriptingApiIgnore]
+    public static PrefabAsset Capture(
+        GameObject root,
+        SerializationRegistry serialization,
+        IAssetReferenceResolver assets
+    ) {
+        ArgumentNullException.ThrowIfNull(root);
+        ArgumentNullException.ThrowIfNull(serialization);
+        ArgumentNullException.ThrowIfNull(assets);
+        var dependencyCollection = new AssetDependencyCollection();
+        SerializationContext context = AssetSerializationContext.Create(assets, dependencyCollection);
+        byte[] payload = serialization.Serialize(root, context);
+        return new PrefabAsset
+        {
+            m_pendingPayload = payload,
+            sourceDependencies = dependencyCollection.dependencies.ToArray()
+        };
+    }
+
+    /// <summary>
     /// Creates an imported prefab asset from validated runtime content produced by the prefab asset pipeline.
     /// </summary>
     /// <param name="payload">
@@ -131,14 +137,8 @@ public sealed class PrefabAsset : AssetObject
         };
     }
 
-    /// <summary>
-    /// Captures the immutable runtime payload and dependency descriptors required by the prefab asset pipeline.
-    /// </summary>
-    /// <returns>
-    /// A detached authoring-content snapshot owned by the caller.
-    /// </returns>
-    [ScriptingApiIgnore]
-    public EngineAssetContent CaptureContent() => new(GetPayload(), sourceDependencies);
+    [SerializableProperty]
+    internal AssetDependency[] sourceDependencies { get; set; } = [];
 
     private byte[] GetPayload()
     {

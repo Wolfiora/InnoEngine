@@ -16,6 +16,22 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
     private readonly Dictionary<Guid, string> m_dirtyCheckStates = [];
     private string m_restoreState = string.Empty;
 
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose()
+    {
+        ResolveRestore();
+        foreach (Guid sceneId in m_synchronizationStates.Keys.ToArray())
+        {
+            ResolveSynchronization(sceneId);
+        }
+        foreach (Guid sceneId in m_dirtyCheckStates.Keys.ToArray())
+        {
+            ResolveDirtyCheck(sceneId);
+        }
+    }
+
     internal bool PublishRestoreFailure(
         string code,
         string message
@@ -145,22 +161,6 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
         for (int i = 0; i < removedDirtyChecks.Length; i++)
         {
             ResolveDirtyCheck(removedDirtyChecks[i]);
-        }
-    }
-
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose()
-    {
-        ResolveRestore();
-        foreach (Guid sceneId in m_synchronizationStates.Keys.ToArray())
-        {
-            ResolveSynchronization(sceneId);
-        }
-        foreach (Guid sceneId in m_dirtyCheckStates.Keys.ToArray())
-        {
-            ResolveDirtyCheck(sceneId);
         }
     }
 }

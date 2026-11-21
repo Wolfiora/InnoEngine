@@ -185,16 +185,6 @@ internal sealed partial class EditorSceneWorkspace
         private readonly Dictionary<Guid, SceneDocumentSnapshot> m_snapshotBySceneId =
             sceneSnapshots.ToDictionary(static snapshot => snapshot.sceneId);
 
-        internal IReadOnlyList<SceneDocumentSnapshot> snapshots { get; } = sceneSnapshots;
-
-        internal Guid? activeSceneId { get; } = activeScene;
-
-        internal Guid? editSelectionId { get; } = selectedSceneObject;
-
-        internal RuntimeSession runtimeSession { get; } = playSession;
-
-        internal SceneWorld runtimeWorld => runtimeSession.scenes;
-
         private bool m_disposed;
 
         /// <summary>
@@ -210,6 +200,16 @@ internal sealed partial class EditorSceneWorkspace
             identityDomain?.Dispose();
             m_disposed = true;
         }
+
+        internal IReadOnlyList<SceneDocumentSnapshot> snapshots { get; } = sceneSnapshots;
+
+        internal Guid? activeSceneId { get; } = activeScene;
+
+        internal Guid? editSelectionId { get; } = selectedSceneObject;
+
+        internal RuntimeSession runtimeSession { get; } = playSession;
+
+        internal SceneWorld runtimeWorld => runtimeSession.scenes;
 
         internal void Capture(EditorState state)
         {

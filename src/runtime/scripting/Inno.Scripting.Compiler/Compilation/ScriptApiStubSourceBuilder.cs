@@ -18,6 +18,40 @@ internal static class ScriptApiStubSourceBuilder
         | BindingFlags.Static
         | BindingFlags.DeclaredOnly;
 
+    private static readonly HashSet<string> C_KEYWORDS = new(StringComparer.Ordinal)
+    {
+        "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked",
+        "class", "const", "continue", "decimal", "default", "delegate", "do", "double", "else",
+        "enum", "event", "explicit", "extern", "false", "finally", "fixed", "float", "for",
+        "foreach", "goto", "if", "implicit", "in", "int", "interface", "internal", "is", "lock",
+        "long", "namespace", "new", "null", "object", "operator", "out", "override", "params",
+        "private", "protected", "public", "readonly", "ref", "return", "sbyte", "sealed", "short",
+        "sizeof", "stackalloc", "static", "string", "struct", "switch", "this", "throw", "true",
+        "try", "typeof", "uint", "ulong", "unchecked", "unsafe", "ushort", "using", "virtual",
+        "void", "volatile", "while"
+    };
+
+    private static readonly IReadOnlyDictionary<Type, string> C_TYPE_ALIASES =
+        new Dictionary<Type, string>
+        {
+            [typeof(void)] = "void",
+            [typeof(bool)] = "bool",
+            [typeof(byte)] = "byte",
+            [typeof(sbyte)] = "sbyte",
+            [typeof(short)] = "short",
+            [typeof(ushort)] = "ushort",
+            [typeof(int)] = "int",
+            [typeof(uint)] = "uint",
+            [typeof(long)] = "long",
+            [typeof(ulong)] = "ulong",
+            [typeof(char)] = "char",
+            [typeof(float)] = "float",
+            [typeof(double)] = "double",
+            [typeof(decimal)] = "decimal",
+            [typeof(string)] = "string",
+            [typeof(object)] = "object"
+        };
+
     [ThreadStatic]
     private static IReadOnlySet<Type>? s_exportedTypes;
 
@@ -741,56 +775,6 @@ internal static class ScriptApiStubSourceBuilder
 
     private static string FormatType(Type type) => FormatType(type, null);
 
-    private static string FormatParameterType(ParameterInfo parameter)
-        => FormatType(
-            parameter.ParameterType,
-            s_nullability!.Create(parameter),
-            new(parameter.GetCustomAttributesData(), parameter.Member)
-        );
-
-    private static void AppendFlowAttributes(
-        StringBuilder builder,
-        IEnumerable<CustomAttributeData> attributes
-    ) {
-        foreach (CustomAttributeData attribute in attributes)
-        {
-            if (attribute.AttributeType.Namespace == "System.Runtime.CompilerServices"
-                && attribute.AttributeType.Name is "CallerFilePathAttribute" or "CallerLineNumberAttribute"
-                   or "CallerMemberNameAttribute" or "CallerArgumentExpressionAttribute"
-            ) {
-                builder.Append("[global::")
-                    .Append(attribute.AttributeType.FullName)
-                    .Append('(')
-                    .Append(
-                        string.Join(
-                            ", ",
-                            attribute.ConstructorArguments.Select(static argument =>
-                                FormatConstant(argument.Value, argument.ArgumentType))
-                        )
-                    )
-                    .Append(")] ");
-                continue;
-            }
-            if (attribute.AttributeType.Namespace != "System.Diagnostics.CodeAnalysis"
-                || attribute.AttributeType.Name is not ("AllowNullAttribute" or "DisallowNullAttribute"
-                or "MaybeNullAttribute" or "NotNullAttribute" or "NotNullWhenAttribute"
-                or "MaybeNullWhenAttribute" or "NotNullIfNotNullAttribute" or "DoesNotReturnIfAttribute")
-            ) {
-                        continue;
-            }
-            builder.Append("[global::")
-                .Append(attribute.AttributeType.FullName)
-                .Append('(')
-                .Append(
-                    string.Join(
-                        ", ",
-                        attribute.ConstructorArguments.Select(static argument => FormatConstant(argument.Value, argument.ArgumentType))
-                    )
-                )
-                .Append(")] ");
-        }
-    }
-
     private static string FormatType(
         Type type,
         NullabilityInfo? nullability,
@@ -839,47 +823,53 @@ internal static class ScriptApiStubSourceBuilder
                ) + ">" + annotation;
     }
 
-    private sealed class NullableAnnotations
-    {
-        private readonly byte[] m_flags;
-        private readonly byte m_context;
-        private int m_index;
+    private static string FormatParameterType(ParameterInfo parameter)
+        => FormatType(
+            parameter.ParameterType,
+            s_nullability!.Create(parameter),
+            new(parameter.GetCustomAttributesData(), parameter.Member)
+        );
 
-        internal NullableAnnotations(
-            IEnumerable<CustomAttributeData> attributes,
-            MemberInfo owner
-        ) {
-            CustomAttributeData? transform = attributes.FirstOrDefault(static attribute => (
-                attribute.AttributeType.FullName == "System.Runtime.CompilerServices.NullableAttribute"
-            ));
-            m_flags = transform?.ConstructorArguments[0].Value switch
-            {
-                byte flag => [flag],
-                IEnumerable<CustomAttributeTypedArgument> flags => flags.Select(static value => (byte)value.Value!).ToArray(),
-                _ => []
-            };
-            for (MemberInfo? current = owner; current is not null; current = current.DeclaringType)
-            {
-                CustomAttributeData? context = current.GetCustomAttributesData().FirstOrDefault(static attribute => (
-                    attribute.AttributeType.FullName == "System.Runtime.CompilerServices.NullableContextAttribute"
-                ));
-                if (context is null)
-                {
-                    continue;
-                }
-                m_context = (byte)context.ConstructorArguments[0].Value!;
-                break;
-            }
-        }
-
-        internal byte Next(Type type)
+    private static void AppendFlowAttributes(
+        StringBuilder builder,
+        IEnumerable<CustomAttributeData> attributes
+    ) {
+        foreach (CustomAttributeData attribute in attributes)
         {
-            if (type.IsValueType && !type.IsGenericType)
-            {
-                return 0;
+            if (attribute.AttributeType.Namespace == "System.Runtime.CompilerServices"
+                && attribute.AttributeType.Name is "CallerFilePathAttribute" or "CallerLineNumberAttribute"
+                   or "CallerMemberNameAttribute" or "CallerArgumentExpressionAttribute"
+            ) {
+                builder.Append("[global::")
+                    .Append(attribute.AttributeType.FullName)
+                    .Append('(')
+                    .Append(
+                        string.Join(
+                            ", ",
+                            attribute.ConstructorArguments.Select(static argument =>
+                                FormatConstant(argument.Value, argument.ArgumentType))
+                        )
+                    )
+                    .Append(")] ");
+                continue;
             }
-            int index = m_index++;
-            return index < m_flags.Length ? m_flags[index] : m_context;
+            if (attribute.AttributeType.Namespace != "System.Diagnostics.CodeAnalysis"
+                || attribute.AttributeType.Name is not ("AllowNullAttribute" or "DisallowNullAttribute"
+                or "MaybeNullAttribute" or "NotNullAttribute" or "NotNullWhenAttribute"
+                or "MaybeNullWhenAttribute" or "NotNullIfNotNullAttribute" or "DoesNotReturnIfAttribute")
+            ) {
+                        continue;
+            }
+            builder.Append("[global::")
+                .Append(attribute.AttributeType.FullName)
+                .Append('(')
+                .Append(
+                    string.Join(
+                        ", ",
+                        attribute.ConstructorArguments.Select(static argument => FormatConstant(argument.Value, argument.ArgumentType))
+                    )
+                )
+                .Append(")] ");
         }
     }
 
@@ -1133,37 +1123,47 @@ internal static class ScriptApiStubSourceBuilder
 
     private static bool IsStaticClass(this Type type) => type.IsAbstract && type.IsSealed;
 
-    private static readonly HashSet<string> C_KEYWORDS = new(StringComparer.Ordinal)
+    private sealed class NullableAnnotations
     {
-        "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked",
-        "class", "const", "continue", "decimal", "default", "delegate", "do", "double", "else",
-        "enum", "event", "explicit", "extern", "false", "finally", "fixed", "float", "for",
-        "foreach", "goto", "if", "implicit", "in", "int", "interface", "internal", "is", "lock",
-        "long", "namespace", "new", "null", "object", "operator", "out", "override", "params",
-        "private", "protected", "public", "readonly", "ref", "return", "sbyte", "sealed", "short",
-        "sizeof", "stackalloc", "static", "string", "struct", "switch", "this", "throw", "true",
-        "try", "typeof", "uint", "ulong", "unchecked", "unsafe", "ushort", "using", "virtual",
-        "void", "volatile", "while"
-    };
+        private readonly byte[] m_flags;
+        private readonly byte m_context;
+        private int m_index;
 
-    private static readonly IReadOnlyDictionary<Type, string> C_TYPE_ALIASES =
-        new Dictionary<Type, string>
+        internal NullableAnnotations(
+            IEnumerable<CustomAttributeData> attributes,
+            MemberInfo owner
+        ) {
+            CustomAttributeData? transform = attributes.FirstOrDefault(static attribute => (
+                attribute.AttributeType.FullName == "System.Runtime.CompilerServices.NullableAttribute"
+            ));
+            m_flags = transform?.ConstructorArguments[0].Value switch
+            {
+                byte flag => [flag],
+                IEnumerable<CustomAttributeTypedArgument> flags => flags.Select(static value => (byte)value.Value!).ToArray(),
+                _ => []
+            };
+            for (MemberInfo? current = owner; current is not null; current = current.DeclaringType)
+            {
+                CustomAttributeData? context = current.GetCustomAttributesData().FirstOrDefault(static attribute => (
+                    attribute.AttributeType.FullName == "System.Runtime.CompilerServices.NullableContextAttribute"
+                ));
+                if (context is null)
+                {
+                    continue;
+                }
+                m_context = (byte)context.ConstructorArguments[0].Value!;
+                break;
+            }
+        }
+
+        internal byte Next(Type type)
         {
-            [typeof(void)] = "void",
-            [typeof(bool)] = "bool",
-            [typeof(byte)] = "byte",
-            [typeof(sbyte)] = "sbyte",
-            [typeof(short)] = "short",
-            [typeof(ushort)] = "ushort",
-            [typeof(int)] = "int",
-            [typeof(uint)] = "uint",
-            [typeof(long)] = "long",
-            [typeof(ulong)] = "ulong",
-            [typeof(char)] = "char",
-            [typeof(float)] = "float",
-            [typeof(double)] = "double",
-            [typeof(decimal)] = "decimal",
-            [typeof(string)] = "string",
-            [typeof(object)] = "object"
-        };
+            if (type.IsValueType && !type.IsGenericType)
+            {
+                return 0;
+            }
+            int index = m_index++;
+            return index < m_flags.Length ? m_flags[index] : m_context;
+        }
+    }
 }

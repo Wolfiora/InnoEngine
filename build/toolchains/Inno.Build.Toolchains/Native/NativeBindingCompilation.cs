@@ -77,35 +77,6 @@ public sealed class NativeBindingCompilation
     public required string[] staticExportNames { get; init; }
 
     /// <summary>
-    /// Reads the current engine-owned compilation description from a selected native output.
-    /// </summary>
-    /// <param name="nativeDirectory">
-    /// The complete selected generation's native directory.
-    /// </param>
-    /// <returns>
-    /// The validated description; missing or malformed descriptions fail explicitly.
-    /// </returns>
-    /// <exception cref="IOException">
-    /// The description cannot be read.
-    /// </exception>
-    /// <exception cref="JsonException">
-    /// The description does not match the current contract.
-    /// </exception>
-    /// <exception cref="InvalidDataException">
-    /// A root, path or content identity is invalid.
-    /// </exception>
-    public static NativeBindingCompilation Load(string nativeDirectory)
-    {
-        NativeBindingCompilation result = JsonSerializer.Deserialize<NativeBindingCompilation>(
-            File.ReadAllBytes(Path.Combine(nativeDirectory, "compilation.json")),
-            S_OPTIONS
-        )
-                                          ?? throw new InvalidDataException("A native compilation description is required.");
-        result.Validate();
-        return result;
-    }
-
-    /// <summary>
     /// Resolves a component-local root using the current checkout and selected output.
     /// </summary>
     /// <param name="engineRoot">
@@ -187,6 +158,35 @@ public sealed class NativeBindingCompilation
         engineRoot,
         PathBoundary.Resolve(ResolveRoot(engineRoot, nativeDirectory, input.rootId), input.relativePath)
     ));
+
+    /// <summary>
+    /// Reads the current engine-owned compilation description from a selected native output.
+    /// </summary>
+    /// <param name="nativeDirectory">
+    /// The complete selected generation's native directory.
+    /// </param>
+    /// <returns>
+    /// The validated description; missing or malformed descriptions fail explicitly.
+    /// </returns>
+    /// <exception cref="IOException">
+    /// The description cannot be read.
+    /// </exception>
+    /// <exception cref="JsonException">
+    /// The description does not match the current contract.
+    /// </exception>
+    /// <exception cref="InvalidDataException">
+    /// A root, path or content identity is invalid.
+    /// </exception>
+    public static NativeBindingCompilation Load(string nativeDirectory)
+    {
+        NativeBindingCompilation result = JsonSerializer.Deserialize<NativeBindingCompilation>(
+            File.ReadAllBytes(Path.Combine(nativeDirectory, "compilation.json")),
+            S_OPTIONS
+        )
+                                          ?? throw new InvalidDataException("A native compilation description is required.");
+        result.Validate();
+        return result;
+    }
 
     private void Validate()
     {

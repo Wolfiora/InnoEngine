@@ -20,6 +20,49 @@ public sealed class PropertyDrawContext
     private readonly string m_rootPropertyName;
     private readonly bool m_isReadOnly;
 
+    internal PropertyDrawContext(
+        EditorContext editorContext,
+        EditorInteractions interactions,
+        IInspectionPropertyEditService edits,
+        object owner,
+        string rootPropertyName,
+        string path,
+        string label,
+        Type propertyType,
+        PropertyVisibility visibility,
+        bool isReadOnly,
+        double? minimum,
+        double? maximum,
+        string? tooltip,
+        Func<object?> getter,
+        Action<object?> setter,
+        SerializedPropertyRenderer renderer,
+        bool hdrColor = false
+    ) {
+        this.editorContext = editorContext;
+        this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
+        m_edits = edits ?? throw new ArgumentNullException(nameof(edits));
+        m_owner = owner ?? throw new ArgumentNullException(nameof(owner));
+        m_rootPropertyName = string.IsNullOrWhiteSpace(rootPropertyName)
+                             ? throw new ArgumentException(
+                                 "The root property name is required.",
+                                 nameof(rootPropertyName)
+                             )
+                             : rootPropertyName;
+        this.path = path;
+        this.label = label;
+        this.propertyType = propertyType;
+        this.visibility = visibility;
+        m_isReadOnly = isReadOnly;
+        this.minimum = minimum;
+        this.maximum = maximum;
+        this.tooltip = tooltip;
+        m_getter = getter;
+        m_setter = setter;
+        m_renderer = renderer;
+        this.hdrColor = hdrColor;
+    }
+
     /// <summary>
     /// Gets the shared editor context.
     /// </summary>
@@ -74,51 +117,6 @@ public sealed class PropertyDrawContext
     /// Gets whether Color values are unclamped linear floating-point channels.
     /// </summary>
     public bool hdrColor { get; }
-
-    internal object owner => m_owner;
-
-    internal PropertyDrawContext(
-        EditorContext editorContext,
-        EditorInteractions interactions,
-        IInspectionPropertyEditService edits,
-        object owner,
-        string rootPropertyName,
-        string path,
-        string label,
-        Type propertyType,
-        PropertyVisibility visibility,
-        bool isReadOnly,
-        double? minimum,
-        double? maximum,
-        string? tooltip,
-        Func<object?> getter,
-        Action<object?> setter,
-        SerializedPropertyRenderer renderer,
-        bool hdrColor = false
-    ) {
-        this.editorContext = editorContext;
-        this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-        m_edits = edits ?? throw new ArgumentNullException(nameof(edits));
-        m_owner = owner ?? throw new ArgumentNullException(nameof(owner));
-        m_rootPropertyName = string.IsNullOrWhiteSpace(rootPropertyName)
-                             ? throw new ArgumentException(
-                                 "The root property name is required.",
-                                 nameof(rootPropertyName)
-                             )
-                             : rootPropertyName;
-        this.path = path;
-        this.label = label;
-        this.propertyType = propertyType;
-        this.visibility = visibility;
-        m_isReadOnly = isReadOnly;
-        this.minimum = minimum;
-        this.maximum = maximum;
-        this.tooltip = tooltip;
-        m_getter = getter;
-        m_setter = setter;
-        m_renderer = renderer;
-        this.hdrColor = hdrColor;
-    }
 
     /// <summary>
     /// Gets the latest value.
@@ -209,6 +207,46 @@ public sealed class PropertyDrawContext
     }
 
     /// <summary>
+    /// Draws a nested serialized property.
+    /// </summary>
+    /// <param name="property">
+    /// Nested property.
+    /// </param>
+    public void DrawChild(SerializedProperty property) => DrawChild(GetValue() ?? m_owner, property);
+
+    /// <summary>
+    /// Draws a nested serialized property with presentation metadata resolved from its immediate owner.
+    /// </summary>
+    /// <param name="metadataOwner">
+    /// Object that declares the nested serialized member.
+    /// </param>
+    /// <param name="property">
+    /// Nested property.
+    /// </param>
+    public void DrawChild(
+        object metadataOwner,
+        SerializedProperty property
+    ) {
+        ArgumentNullException.ThrowIfNull(metadataOwner);
+        ArgumentNullException.ThrowIfNull(property);
+        m_renderer.Draw(
+            editorContext,
+            m_owner,
+            metadataOwner,
+            InspectorMemberMetadata.Resolve(metadataOwner.GetType(), property.name),
+            property,
+            m_rootPropertyName,
+            $"{path}.{property.name}",
+            property.name,
+            property.propertyType,
+            isReadOnly || !property.canWrite ? PropertyVisibility.Readonly : property.visibility,
+            property.GetValue,
+            property.SetValue,
+            m_edits
+        );
+    }
+
+    /// <summary>
     /// Draws a nested value whose setter writes through this property path.
     /// </summary>
     /// <param name="childName">
@@ -252,74 +290,6 @@ public sealed class PropertyDrawContext
     }
 
     /// <summary>
-    /// Draws a nested serialized property.
-    /// </summary>
-    /// <param name="property">
-    /// Nested property.
-    /// </param>
-    public void DrawChild(SerializedProperty property) => DrawChild(GetValue() ?? m_owner, property);
-
-    /// <summary>
-    /// Draws a nested serialized property with presentation metadata resolved from its immediate owner.
-    /// </summary>
-    /// <param name="metadataOwner">
-    /// Object that declares the nested serialized member.
-    /// </param>
-    /// <param name="property">
-    /// Nested property.
-    /// </param>
-    public void DrawChild(
-        object metadataOwner,
-        SerializedProperty property
-    ) {
-        ArgumentNullException.ThrowIfNull(metadataOwner);
-        ArgumentNullException.ThrowIfNull(property);
-        m_renderer.Draw(
-            editorContext,
-            m_owner,
-            metadataOwner,
-            InspectorMemberMetadata.Resolve(metadataOwner.GetType(), property.name),
-            property,
-            m_rootPropertyName,
-            $"{path}.{property.name}",
-            property.name,
-            property.propertyType,
-            isReadOnly || !property.canWrite ? PropertyVisibility.Readonly : property.visibility,
-            property.GetValue,
-            property.SetValue,
-            m_edits
-        );
-    }
-
-    internal void DrawChildMember(
-        object metadataOwner,
-        MemberInfo member,
-        Type childType,
-        Func<object?> getter,
-        Action<object?> setter,
-        bool readOnly
-    ) {
-        ArgumentNullException.ThrowIfNull(metadataOwner);
-        ArgumentNullException.ThrowIfNull(member);
-        PropertyVisibility childVisibility = readOnly || isReadOnly ? PropertyVisibility.Readonly : PropertyVisibility.Show;
-        m_renderer.Draw(
-            editorContext,
-            m_owner,
-            metadataOwner,
-            member,
-            null,
-            m_rootPropertyName,
-            $"{path}.{member.Name}",
-            member.Name,
-            childType,
-            childVisibility,
-            getter,
-            setter,
-            m_edits
-        );
-    }
-
-    /// <summary>
     /// Draws a nested value inline without adding another label row.
     /// </summary>
     /// <param name="childName">
@@ -353,6 +323,36 @@ public sealed class PropertyDrawContext
             m_rootPropertyName,
             $"{path}.{childName}",
             childName,
+            childType,
+            childVisibility,
+            getter,
+            setter,
+            m_edits
+        );
+    }
+
+    internal object owner => m_owner;
+
+    internal void DrawChildMember(
+        object metadataOwner,
+        MemberInfo member,
+        Type childType,
+        Func<object?> getter,
+        Action<object?> setter,
+        bool readOnly
+    ) {
+        ArgumentNullException.ThrowIfNull(metadataOwner);
+        ArgumentNullException.ThrowIfNull(member);
+        PropertyVisibility childVisibility = readOnly || isReadOnly ? PropertyVisibility.Readonly : PropertyVisibility.Show;
+        m_renderer.Draw(
+            editorContext,
+            m_owner,
+            metadataOwner,
+            member,
+            null,
+            m_rootPropertyName,
+            $"{path}.{member.Name}",
+            member.Name,
             childType,
             childVisibility,
             getter,

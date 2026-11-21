@@ -37,7 +37,6 @@ public sealed partial class PlayerWithoutFileSystemTests
             m_render = new MemoryRenderDevice(retired, failFrame);
         }
 
-        internal int completedFrames => m_render.completedFrames;
         public MemoryApplication application { get; }
         public List<string> retired { get; } = [];
         public IPlatformBackendFactory platform => this;
@@ -68,15 +67,15 @@ public sealed partial class PlayerWithoutFileSystemTests
             RenderingBackendOptions options
         ) => m_render;
 
-        public IApplicationStorage CreateStorage(
-            StorageBackendId backend,
-            StorageScope scope
-        ) => new MemoryStorage();
-
         public IAudioDevice CreateDevice(
             AudioBackendId backend,
             AudioBackendOptions options = default
         ) => new MutedAudioDevice();
+
+        public IApplicationStorage CreateStorage(
+            StorageBackendId backend,
+            StorageScope scope
+        ) => new MemoryStorage();
 
         public ITextBackend CreateBackend(TextBackendId backend) => new MemoryText(retired);
 
@@ -84,6 +83,8 @@ public sealed partial class PlayerWithoutFileSystemTests
 
         public IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider(RenderingBackendId backend)
             => new UnusedCompositionPrograms();
+
+        internal int completedFrames => m_render.completedFrames;
     }
 
     private sealed class MemoryApplication(List<string> retired) : IPlatformApplication
@@ -260,8 +261,6 @@ public sealed partial class PlayerWithoutFileSystemTests
 
     private sealed class MemoryUi(List<string> retired) : IUiBackend
     {
-        internal UiInputSnapshot? lastInput { get; private set; }
-
         public string implementationId => "tests.ui";
         public UiBackendCapabilities capabilities { get; } = new([new("tests.ui-language")], true);
 
@@ -349,6 +348,8 @@ public sealed partial class PlayerWithoutFileSystemTests
         public IReadOnlyList<UiEvent> DrainEvents(UiContextHandle context) => [];
 
         public void Dispose() => retired.Add("ui");
+
+        internal UiInputSnapshot? lastInput { get; private set; }
     }
 
     private sealed class UnusedCompositionPrograms : IRenderLayerCompositionProgramProvider

@@ -31,16 +31,46 @@ internal abstract class SceneReferenceScope
         m_captureRoot = captureRoot;
     }
 
-    internal static SceneReferenceScope current => C_CURRENT.current;
-
     /// <summary>
     /// Gets the Scene that owns the references admitted by this boundary.
     /// </summary>
     protected GameScene scene { get; }
 
-    internal static bool TryGetCurrent(out SceneReferenceScope? references) => C_CURRENT.TryGet(out references);
+    internal static SceneReferenceScope current => C_CURRENT.current;
 
-    internal static IDisposable Suspend() => C_CURRENT.Suspend();
+    /// <summary>
+    /// Looks up the identifier assigned to an object by this reference boundary.
+    /// </summary>
+    /// <param name="engineObject">
+    /// The non-null object being captured within the synchronous owner operation.
+    /// </param>
+    /// <param name="sourceId">
+    /// The admitted identifier, or the empty GUID when the boundary rejects the object.
+    /// </param>
+    /// <returns>
+    /// True when the boundary maps the object; false when it lies outside the admitted scope.
+    /// </returns>
+    protected abstract bool TryGetSourceId(
+        EngineObject engineObject,
+        out Guid sourceId
+    );
+
+    /// <summary>
+    /// Resolves one identifier within the frozen or current owner boundary.
+    /// </summary>
+    /// <param name="sourceId">
+    /// The reference identifier from the current serialized payload.
+    /// </param>
+    /// <param name="engineObject">
+    /// The mapped object, or null when the boundary cannot resolve the identifier.
+    /// </param>
+    /// <returns>
+    /// True when the boundary contains the identifier; false without publishing a replacement object.
+    /// </returns>
+    protected abstract bool TryResolve(
+        Guid sourceId,
+        out EngineObject? engineObject
+    );
 
     internal IDisposable Enter() => C_CURRENT.Enter(this, threadAffine: true);
 
@@ -102,37 +132,7 @@ internal abstract class SceneReferenceScope
         return engineObject;
     }
 
-    /// <summary>
-    /// Looks up the identifier assigned to an object by this reference boundary.
-    /// </summary>
-    /// <param name="engineObject">
-    /// The non-null object being captured within the synchronous owner operation.
-    /// </param>
-    /// <param name="sourceId">
-    /// The admitted identifier, or the empty GUID when the boundary rejects the object.
-    /// </param>
-    /// <returns>
-    /// True when the boundary maps the object; false when it lies outside the admitted scope.
-    /// </returns>
-    protected abstract bool TryGetSourceId(
-        EngineObject engineObject,
-        out Guid sourceId
-    );
+    internal static bool TryGetCurrent(out SceneReferenceScope? references) => C_CURRENT.TryGet(out references);
 
-    /// <summary>
-    /// Resolves one identifier within the frozen or current owner boundary.
-    /// </summary>
-    /// <param name="sourceId">
-    /// The reference identifier from the current serialized payload.
-    /// </param>
-    /// <param name="engineObject">
-    /// The mapped object, or null when the boundary cannot resolve the identifier.
-    /// </param>
-    /// <returns>
-    /// True when the boundary contains the identifier; false without publishing a replacement object.
-    /// </returns>
-    protected abstract bool TryResolve(
-        Guid sourceId,
-        out EngineObject? engineObject
-    );
+    internal static IDisposable Suspend() => C_CURRENT.Suspend();
 }

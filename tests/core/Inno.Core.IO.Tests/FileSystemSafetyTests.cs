@@ -209,40 +209,6 @@ public sealed class FileSystemSafetyTests : IDisposable
     [Trait("ProcessIsolation", "Required")]
     public void DirectoryPublicationObservesPendingCancellationAtTheDeadline() => VerifyBlockedCancellation(true);
 
-    [SupportedOSPlatform("windows")]
-    private void VerifyBlockedCancellation(bool expireWindow)
-    {
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-        string candidate = Directory.CreateDirectory(Path.Combine(m_root, "candidate")).FullName;
-        string destination = Path.Combine(m_root, "published");
-        string file = Path.Combine(candidate, "value.txt");
-        File.WriteAllText(file, "complete");
-        using FileStream reader = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
-        using var cancellation = new CancellationTokenSource();
-        ObserveBlockedRename(
-            () =>
-            {
-                cancellation.Cancel();
-                if (expireWindow)
-                {
-                    Thread.Sleep(TimeSpan.FromMilliseconds(2100));
-                }
-            },
-            () =>
-            {
-                OperationCanceledException failure = Assert.ThrowsAny<OperationCanceledException>(
-                    () => AtomicDirectory.Publish(candidate, destination, cancellation.Token)
-                );
-                Assert.Equal(cancellation.Token, failure.CancellationToken);
-            }
-        );
-        Assert.Equal("complete", File.ReadAllText(file));
-        Assert.False(Directory.Exists(destination));
-    }
-
     [Fact]
     [SupportedOSPlatform("windows")]
     [Trait("ProcessIsolation", "Required")]
@@ -293,47 +259,6 @@ public sealed class FileSystemSafetyTests : IDisposable
         Assert.ThrowsAny<IOException>(() => AtomicDirectory.Publish(candidate, destination));
         Assert.Equal("previous", File.ReadAllText(Path.Combine(destination, "previous.txt")));
         Assert.Equal("complete", File.ReadAllText(Path.Combine(candidate, "value.txt")));
-    }
-
-    private static bool IsSharingError(Exception exception)
-        => exception.HResult is unchecked((int)0x8007_0005) or unchecked((int)0x8007_0020) or unchecked((int)0x8007_0021);
-
-    private void ObserveBlockedRename(
-        Action onBlocked,
-        Action operation
-    ) {
-        // The isolated test intercepts the actual Windows denial before the production catch filter runs.
-        int thread = Environment.CurrentManagedThreadId;
-        Stopwatch clock = Stopwatch.StartNew();
-        long blocked = -1;
-        long resumed = -1;
-        int hresult = 0;
-        void Observe(
-            object? sender,
-            FirstChanceExceptionEventArgs args
-        ) {
-            if (Environment.CurrentManagedThreadId != thread || blocked >= 0 || !IsSharingError(args.Exception))
-            {
-                return;
-            }
-            blocked = clock.ElapsedMilliseconds;
-            hresult = args.Exception.HResult;
-            onBlocked();
-            resumed = clock.ElapsedMilliseconds;
-        }
-        AppDomain.CurrentDomain.FirstChanceException += Observe;
-        try
-        {
-            operation();
-        }
-        finally
-        {
-            AppDomain.CurrentDomain.FirstChanceException -= Observe;
-            m_output.WriteLine(
-                $"Rename worker started at 0 ms, denied at {blocked} ms, intervention completed at {resumed} ms, exited at {clock.ElapsedMilliseconds} ms, HRESULT 0x{hresult:X8}."
-            );
-        }
-        Assert.True(blocked >= 0, "Expected an actual Windows sharing failure on the publishing thread.");
     }
 
     [Fact]
@@ -438,4 +363,79 @@ public sealed class FileSystemSafetyTests : IDisposable
             Directory.Delete(m_root, recursive: true);
         }
     }
+
+    [SupportedOSPlatform("windows")]
+    private void VerifyBlockedCancellation(bool expireWindow)
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+        string candidate = Directory.CreateDirectory(Path.Combine(m_root, "candidate")).FullName;
+        string destination = Path.Combine(m_root, "published");
+        string file = Path.Combine(candidate, "value.txt");
+        File.WriteAllText(file, "complete");
+        using FileStream reader = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using var cancellation = new CancellationTokenSource();
+        ObserveBlockedRename(
+            () =>
+            {
+                cancellation.Cancel();
+                if (expireWindow)
+                {
+                    Thread.Sleep(TimeSpan.FromMilliseconds(2100));
+                }
+            },
+            () =>
+            {
+                OperationCanceledException failure = Assert.ThrowsAny<OperationCanceledException>(
+                    () => AtomicDirectory.Publish(candidate, destination, cancellation.Token)
+                );
+                Assert.Equal(cancellation.Token, failure.CancellationToken);
+            }
+        );
+        Assert.Equal("complete", File.ReadAllText(file));
+        Assert.False(Directory.Exists(destination));
+    }
+
+    private void ObserveBlockedRename(
+        Action onBlocked,
+        Action operation
+    ) {
+        // The isolated test intercepts the actual Windows denial before the production catch filter runs.
+        int thread = Environment.CurrentManagedThreadId;
+        Stopwatch clock = Stopwatch.StartNew();
+        long blocked = -1;
+        long resumed = -1;
+        int hresult = 0;
+        void Observe(
+            object? sender,
+            FirstChanceExceptionEventArgs args
+        ) {
+            if (Environment.CurrentManagedThreadId != thread || blocked >= 0 || !IsSharingError(args.Exception))
+            {
+                return;
+            }
+            blocked = clock.ElapsedMilliseconds;
+            hresult = args.Exception.HResult;
+            onBlocked();
+            resumed = clock.ElapsedMilliseconds;
+        }
+        AppDomain.CurrentDomain.FirstChanceException += Observe;
+        try
+        {
+            operation();
+        }
+        finally
+        {
+            AppDomain.CurrentDomain.FirstChanceException -= Observe;
+            m_output.WriteLine(
+                $"Rename worker started at 0 ms, denied at {blocked} ms, intervention completed at {resumed} ms, exited at {clock.ElapsedMilliseconds} ms, HRESULT 0x{hresult:X8}."
+            );
+        }
+        Assert.True(blocked >= 0, "Expected an actual Windows sharing failure on the publishing thread.");
+    }
+
+    private static bool IsSharingError(Exception exception)
+        => exception.HResult is unchecked((int)0x8007_0005) or unchecked((int)0x8007_0020) or unchecked((int)0x8007_0021);
 }

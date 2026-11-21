@@ -54,123 +54,6 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
     private RetirementBarrier? m_shutdownBarrier;
 
     /// <summary>
-    /// Gets whether asset services are initialized.
-    /// </summary>
-    public bool isInitialized { get; private set; }
-
-    /// <summary>
-    /// Gets the absolute source asset root.
-    /// </summary>
-    public string assetRoot { get; private set; } = string.Empty;
-
-    /// <summary>
-    /// Gets the absolute root containing rebuildable asset database data.
-    /// </summary>
-    public string libraryRoot { get; private set; } = string.Empty;
-
-    /// <summary>
-    /// Gets the absolute generated artifact root.
-    /// </summary>
-    public string artifactRoot { get; private set; } = string.Empty;
-
-    /// <summary>
-    /// Gets the monotonic identity of the current committed asset and source-mount state.
-    /// </summary>
-    [ScriptingApiIgnore]
-    public long revision => Interlocked.Read(ref m_revision);
-
-    /// <summary>
-    /// Gets the active isolated source mount snapshot.
-    /// </summary>
-    [ScriptingApiIgnore]
-    public IReadOnlyList<AssetSourceMount> sourceMounts { get; private set; } = [];
-
-    /// <summary>
-    /// Gets the authoring identity domain shared by canonical assets and addressable source entries.
-    /// </summary>
-    [ScriptingApiIgnore]
-    public IdentityAllocator identities => m_identities;
-
-    /// <summary>
-    /// Creates a detached source editor sharing this owner's mounts, native converters and references.
-    /// </summary>
-    /// <returns>
-    /// A source store that must not outlive this asset pipeline.
-    /// </returns>
-    [ScriptingApiIgnore]
-    public AssetSourceStore CreateSourceStore() => new(this, new AssetSerializationServices(m_types, m_serialization, this, null));
-
-    /// <summary>
-    /// Captures native settings and nested asset dependencies through this explicit authoring owner.
-    /// </summary>
-    /// <typeparam name="TValue">
-    /// Current settings type.
-    /// </typeparam>
-    /// <param name="value">
-    /// Typed settings, never retained by the returned snapshot.
-    /// </param>
-    /// <returns>
-    /// Complete stable properties and dependencies without writing or importing an asset.
-    /// </returns>
-    public AssetPropertySnapshot CaptureProperties<TValue>(TValue value)
-        where TValue : class, ISerializable
-    {
-        EnsureOwnerThread();
-        using IDisposable operationScope = AcquireOperation();
-        return new AssetSerializationServices(m_types, m_serialization, this, null).CaptureProperties(value);
-    }
-
-    /// <summary>
-    /// Restores serialized properties to the existing asset object.
-    /// </summary>
-    /// <typeparam name="TValue">
-    /// Serialized asset object type receiving restored properties.
-    /// </typeparam>
-    /// <param name="stableTypeId">
-    /// The stable type id consumed by restore properties; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <param name="propertyData">
-    /// The property data consumed by restore properties; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <param name="target">
-    /// The existing target that receives the validated result.
-    /// </param>
-    public void RestoreProperties<TValue>(
-        Guid stableTypeId,
-        byte[] propertyData,
-        TValue target
-    ) where TValue : class, ISerializable
-    {
-        ArgumentNullException.ThrowIfNull(target);
-        using IDisposable operationScope = AcquireOperation();
-        if (m_types.GetTypeRef(target.GetType()).stableId != stableTypeId)
-        {
-            throw new InvalidOperationException("The asset property payload has an incompatible stable type identity.");
-        }
-        m_serialization.Decode(propertyData, reader =>
-        {
-            reader.RestoreProperties(target);
-            return true;
-        }, AssetSerializationContext.Create(this));
-    }
-
-    /// <summary>
-    /// Occurs after an asset database transaction has committed.
-    /// </summary>
-    public event Action<AssetChangeSet>? Changed;
-
-    /// <summary>
-    /// Occurs after a canonical loaded asset has been updated in place.
-    /// </summary>
-    public event Action<AssetObject>? AssetReloaded;
-
-    /// <summary>
-    /// Occurs after a complete isolated source-mount generation is atomically replaced.
-    /// </summary>
-    [ScriptingApiIgnore]
-    public event Action? SourceMountsChanged;
-
-    /// <summary>
     /// Creates one isolated authoring or deployed-runtime asset pipeline.
     /// </summary>
     /// <param name="modules">
@@ -300,6 +183,123 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
                 throw;
             }
         }
+    }
+
+    /// <summary>
+    /// Gets whether asset services are initialized.
+    /// </summary>
+    public bool isInitialized { get; private set; }
+
+    /// <summary>
+    /// Gets the absolute source asset root.
+    /// </summary>
+    public string assetRoot { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// Gets the absolute root containing rebuildable asset database data.
+    /// </summary>
+    public string libraryRoot { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// Gets the absolute generated artifact root.
+    /// </summary>
+    public string artifactRoot { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// Gets the monotonic identity of the current committed asset and source-mount state.
+    /// </summary>
+    [ScriptingApiIgnore]
+    public long revision => Interlocked.Read(ref m_revision);
+
+    /// <summary>
+    /// Gets the active isolated source mount snapshot.
+    /// </summary>
+    [ScriptingApiIgnore]
+    public IReadOnlyList<AssetSourceMount> sourceMounts { get; private set; } = [];
+
+    /// <summary>
+    /// Gets the authoring identity domain shared by canonical assets and addressable source entries.
+    /// </summary>
+    [ScriptingApiIgnore]
+    public IdentityAllocator identities => m_identities;
+
+    /// <summary>
+    /// Occurs after an asset database transaction has committed.
+    /// </summary>
+    public event Action<AssetChangeSet>? Changed;
+
+    /// <summary>
+    /// Occurs after a canonical loaded asset has been updated in place.
+    /// </summary>
+    public event Action<AssetObject>? AssetReloaded;
+
+    /// <summary>
+    /// Occurs after a complete isolated source-mount generation is atomically replaced.
+    /// </summary>
+    [ScriptingApiIgnore]
+    public event Action? SourceMountsChanged;
+
+    /// <summary>
+    /// Creates a detached source editor sharing this owner's mounts, native converters and references.
+    /// </summary>
+    /// <returns>
+    /// A source store that must not outlive this asset pipeline.
+    /// </returns>
+    [ScriptingApiIgnore]
+    public AssetSourceStore CreateSourceStore() => new(this, new AssetSerializationServices(m_types, m_serialization, this, null));
+
+    /// <summary>
+    /// Captures native settings and nested asset dependencies through this explicit authoring owner.
+    /// </summary>
+    /// <typeparam name="TValue">
+    /// Current settings type.
+    /// </typeparam>
+    /// <param name="value">
+    /// Typed settings, never retained by the returned snapshot.
+    /// </param>
+    /// <returns>
+    /// Complete stable properties and dependencies without writing or importing an asset.
+    /// </returns>
+    public AssetPropertySnapshot CaptureProperties<TValue>(TValue value)
+        where TValue : class, ISerializable
+    {
+        EnsureOwnerThread();
+        using IDisposable operationScope = AcquireOperation();
+        return new AssetSerializationServices(m_types, m_serialization, this, null).CaptureProperties(value);
+    }
+
+    /// <summary>
+    /// Restores serialized properties to the existing asset object.
+    /// </summary>
+    /// <typeparam name="TValue">
+    /// Serialized asset object type receiving restored properties.
+    /// </typeparam>
+    /// <param name="stableTypeId">
+    /// The stable type id consumed by restore properties; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="propertyData">
+    /// The property data consumed by restore properties; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="target">
+    /// The existing target that receives the validated result.
+    /// </param>
+    public void RestoreProperties<TValue>(
+        Guid stableTypeId,
+        byte[] propertyData,
+        TValue target
+    ) where TValue : class, ISerializable
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        using IDisposable operationScope = AcquireOperation();
+        if (m_types.GetTypeRef(target.GetType()).stableId != stableTypeId)
+        {
+            throw new InvalidOperationException("The asset property payload has an incompatible stable type identity.");
+        }
+        m_serialization.Decode(propertyData, reader =>
+        {
+            reader.RestoreProperties(target);
+            return true;
+        }, AssetSerializationContext.Create(this));
     }
 
     /// <summary>

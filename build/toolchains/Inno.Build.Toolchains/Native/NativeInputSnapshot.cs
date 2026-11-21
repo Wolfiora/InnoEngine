@@ -7,12 +7,6 @@ namespace Inno.Build.Toolchains;
 
 internal sealed class NativeInputSnapshot
 {
-    internal sealed record Entry(
-        string logicalPath,
-        string physicalPath,
-        byte[] hash
-    );
-
     internal NativeInputSnapshot(IEnumerable<Entry> entries)
     {
         this.entries = Array.AsReadOnly(entries.OrderBy(static entry => entry.logicalPath, StringComparer.Ordinal).ToArray());
@@ -52,4 +46,10 @@ internal sealed class NativeInputSnapshot
             ) => new Entry(pair.Key, pair.Value, hashes[index]))
         );
     }
+
+    internal sealed record Entry(
+        string logicalPath,
+        string physicalPath,
+        byte[] hash
+    );
 }

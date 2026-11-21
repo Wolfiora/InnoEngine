@@ -166,9 +166,6 @@ public sealed class GameTagCatalog : ISerializable
         return new GameTagCatalog { m_tags = (string[])m_tags.Clone() };
     }
 
-    [OnSerializableRestored]
-    private void OnSerializableRestored() => ValidateState();
-
     internal static string Normalize(string tag)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tag);
@@ -179,6 +176,9 @@ public sealed class GameTagCatalog : ISerializable
         }
         return normalized;
     }
+
+    [OnSerializableRestored]
+    private void OnSerializableRestored() => ValidateState();
 
     private void ValidateState()
     {

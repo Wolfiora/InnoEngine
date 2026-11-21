@@ -87,40 +87,6 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     private long m_buildProcessorRegistryVersion = -1;
 
     /// <summary>
-    /// Restores serialized properties to the existing asset object.
-    /// </summary>
-    /// <typeparam name="TValue">
-    /// Serialized asset object type receiving restored properties.
-    /// </typeparam>
-    /// <param name="stableTypeId">
-    /// The stable type id consumed by restore properties; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <param name="propertyData">
-    /// The property data consumed by restore properties; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <param name="target">
-    /// The existing target that receives the validated result.
-    /// </param>
-    public void RestoreProperties<TValue>(
-        Guid stableTypeId,
-        byte[] propertyData,
-        TValue target
-    ) where TValue : class, ISerializable
-    {
-        ObjectDisposedException.ThrowIf(m_disposed || m_disposeRequested, this);
-        ArgumentNullException.ThrowIfNull(target);
-        if (m_types.GetTypeRef(target.GetType()).stableId != stableTypeId)
-        {
-            throw new InvalidOperationException("The asset property payload has an incompatible stable type identity.");
-        }
-        m_serialization.Decode(propertyData, reader =>
-        {
-            reader.RestoreProperties(target);
-            return true;
-        }, m_serializationContext);
-    }
-
-    /// <summary>
     /// Creates an asset loader for one source and Library root pair.
     /// </summary>
     /// <param name="types">
@@ -316,6 +282,65 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     /// </summary>
     public event Action<AssetObject>? AssetReloaded;
 
+    /// <summary>
+    /// Restores serialized properties to the existing asset object.
+    /// </summary>
+    /// <typeparam name="TValue">
+    /// Serialized asset object type receiving restored properties.
+    /// </typeparam>
+    /// <param name="stableTypeId">
+    /// The stable type id consumed by restore properties; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="propertyData">
+    /// The property data consumed by restore properties; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="target">
+    /// The existing target that receives the validated result.
+    /// </param>
+    public void RestoreProperties<TValue>(
+        Guid stableTypeId,
+        byte[] propertyData,
+        TValue target
+    ) where TValue : class, ISerializable
+    {
+        ObjectDisposedException.ThrowIf(m_disposed || m_disposeRequested, this);
+        ArgumentNullException.ThrowIfNull(target);
+        if (m_types.GetTypeRef(target.GetType()).stableId != stableTypeId)
+        {
+            throw new InvalidOperationException("The asset property payload has an incompatible stable type identity.");
+        }
+        m_serialization.Decode(propertyData, reader =>
+        {
+            reader.RestoreProperties(target);
+            return true;
+        }, m_serializationContext);
+    }
+
+    /// <summary>
+    /// Waits for pending import and build work.
+    /// </summary>
+    public void WaitForIdle() => Execute(static () => {});
+
+    /// <summary>
+    /// Refreshes extension registries and reimports affected sources when their snapshot changed.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> when the importer registry changed.
+    /// </returns>
+    public bool RefreshRegistries()
+        => Execute(() =>
+        {
+            long version = m_importers.snapshotVersion;
+            long buildVersion = m_buildProcessors.snapshotVersion;
+            if (version == m_importerRegistryVersion
+                && buildVersion == m_buildProcessorRegistryVersion
+            ) {
+                return false;
+            }
+            RescanLocked();
+            return true;
+        });
+
     internal void DeferUnavailableExtensions()
         => Execute(() =>
         {
@@ -343,31 +368,6 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
             CompleteExtensionDiscovery();
         }
     }
-
-    /// <summary>
-    /// Waits for pending import and build work.
-    /// </summary>
-    public void WaitForIdle() => Execute(static () => {});
-
-    /// <summary>
-    /// Refreshes extension registries and reimports affected sources when their snapshot changed.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when the importer registry changed.
-    /// </returns>
-    public bool RefreshRegistries()
-        => Execute(() =>
-        {
-            long version = m_importers.snapshotVersion;
-            long buildVersion = m_buildProcessors.snapshotVersion;
-            if (version == m_importerRegistryVersion
-                && buildVersion == m_buildProcessorRegistryVersion
-            ) {
-                return false;
-            }
-            RescanLocked();
-            return true;
-        });
 
     private void PublishReloaded(AssetObject asset)
     {

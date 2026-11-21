@@ -22,7 +22,7 @@ namespace Inno.Adapter.Platform;
 /// The handle identifier selects the ABI; this value is not a runtime or scripting contract.
 /// </remarks>
 public readonly record struct PlatformNativeHandles(
-    IntPtr windowHandle,
-    IntPtr displayHandle = default,
+    nint windowHandle,
+    nint displayHandle = default,
     PlatformNativeHandleId handleKind = default
 );

@@ -171,6 +171,14 @@ public sealed class ShaderCompilerTests : IDisposable
         Assert.Same(success.artifact, second.artifact);
     }
 
+    public void Dispose()
+    {
+        m_nodes.Dispose();
+        m_serialization.Dispose();
+        m_types.Dispose();
+        m_modules.Dispose();
+    }
+
     private GraphDocument Template() => ShaderGraphTemplates.CreateRaster(m_serialization, SerializationContext.empty);
 
     private ShaderDefinition Definition(GraphDocument graph)
@@ -212,20 +220,11 @@ public sealed class ShaderCompilerTests : IDisposable
     private static string Diagnostics(ShaderCompilationResult result)
         => string.Join("\n", result.diagnostics.Select(static value => value.message));
 
-    public void Dispose()
-    {
-        m_nodes.Dispose();
-        m_serialization.Dispose();
-        m_types.Dispose();
-        m_modules.Dispose();
-    }
-
     private sealed class FakeToolchain : IShaderCompilerToolchain
     {
         public string implementationId => "tests.fake";
-        internal bool reportError { get; init; }
+
         public IReadOnlyList<string> supportedSourceLanguages => [];
-        internal List<ShaderStageToolRequest> requests { get; } = [];
 
         public ShaderCompileTarget CreateTarget(
             GraphicsCapabilities capabilities,
@@ -255,5 +254,9 @@ public sealed class ShaderCompilerTests : IDisposable
                 )
             );
         }
+
+        internal bool reportError { get; init; }
+
+        internal List<ShaderStageToolRequest> requests { get; } = [];
     }
 }

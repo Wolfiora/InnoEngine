@@ -7,6 +7,19 @@ namespace Inno.Core.Diagnostics;
 /// </summary>
 public sealed class Diagnostic
 {
+    private Diagnostic(
+        DiagnosticSeverity severity,
+        string code,
+        string message,
+        DiagnosticLocation? location
+    ) {
+        ArgumentNullException.ThrowIfNull(message);
+        this.severity = severity;
+        this.code = code ?? string.Empty;
+        this.message = message;
+        this.location = location;
+    }
+
     /// <summary>
     /// Creates a neutral diagnostic while keeping protocol, object and file identities distinct.
     /// </summary>
@@ -61,6 +74,26 @@ public sealed class Diagnostic
     /// Gets the related persistent object identity, or null for a non-object issue.
     /// </summary>
     public Guid? objectId { get; }
+
+    /// <summary>
+    /// Gets the diagnostic severity.
+    /// </summary>
+    public DiagnosticSeverity severity { get; }
+
+    /// <summary>
+    /// Gets the stable producer-defined code, or an empty string when unavailable.
+    /// </summary>
+    public string code { get; }
+
+    /// <summary>
+    /// Gets the human-readable diagnostic message.
+    /// </summary>
+    public string message { get; }
+
+    /// <summary>
+    /// Gets the related source location, or <see langword="null"/> when unavailable.
+    /// </summary>
+    public DiagnosticLocation? location { get; }
 
     /// <summary>
     /// Creates an informational diagnostic value without publishing it.
@@ -133,37 +166,4 @@ public sealed class Diagnostic
         string message,
         DiagnosticLocation? location = null
     ) => new(DiagnosticSeverity.Error, code, message, location);
-
-    private Diagnostic(
-        DiagnosticSeverity severity,
-        string code,
-        string message,
-        DiagnosticLocation? location
-    ) {
-        ArgumentNullException.ThrowIfNull(message);
-        this.severity = severity;
-        this.code = code ?? string.Empty;
-        this.message = message;
-        this.location = location;
-    }
-
-    /// <summary>
-    /// Gets the diagnostic severity.
-    /// </summary>
-    public DiagnosticSeverity severity { get; }
-
-    /// <summary>
-    /// Gets the stable producer-defined code, or an empty string when unavailable.
-    /// </summary>
-    public string code { get; }
-
-    /// <summary>
-    /// Gets the human-readable diagnostic message.
-    /// </summary>
-    public string message { get; }
-
-    /// <summary>
-    /// Gets the related source location, or <see langword="null"/> when unavailable.
-    /// </summary>
-    public DiagnosticLocation? location { get; }
 }

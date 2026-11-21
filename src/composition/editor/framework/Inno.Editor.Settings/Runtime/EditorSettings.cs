@@ -68,6 +68,16 @@ public sealed class EditorSettings : EditorModule
     }
 
     /// <summary>
+    /// Gets the current discovered type-catalog revision.
+    /// </summary>
+    public long catalogRevision => m_catalog.snapshot.revision;
+
+    /// <summary>
+    /// Gets all discovered path definitions in deterministic path order.
+    /// </summary>
+    public IReadOnlyList<EditorSetting> definitions => Array.AsReadOnly(m_catalog.snapshot.definitions);
+
+    /// <summary>
     /// Observes committed Apply, Undo and Redo changes through an owned Core Event hub.
     /// </summary>
     /// <param name="observer">
@@ -100,16 +110,6 @@ public sealed class EditorSettings : EditorModule
         });
         return hub;
     }
-
-    /// <summary>
-    /// Gets the current discovered type-catalog revision.
-    /// </summary>
-    public long catalogRevision => m_catalog.snapshot.revision;
-
-    /// <summary>
-    /// Gets all discovered path definitions in deterministic path order.
-    /// </summary>
-    public IReadOnlyList<EditorSetting> definitions => Array.AsReadOnly(m_catalog.snapshot.definitions);
 
     /// <summary>
     /// Reads an isolated effective object from one complete Settings path.

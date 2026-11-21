@@ -214,14 +214,14 @@ public sealed class ShellLifecycleTests
             RenderingBackendOptions options
         ) => new TestRenderDevice(retired);
 
-        public IApplicationStorage CreateStorage(
-            StorageBackendId backend,
-            StorageScope scope
-        ) => throw new NotSupportedException();
-
         public IAudioDevice CreateDevice(
             AudioBackendId backend,
             AudioBackendOptions options = default
+        ) => throw new NotSupportedException();
+
+        public IApplicationStorage CreateStorage(
+            StorageBackendId backend,
+            StorageScope scope
         ) => throw new NotSupportedException();
 
         public ITextBackend CreateBackend(TextBackendId backend) => throw new NotSupportedException();

@@ -10,12 +10,6 @@ namespace Inno.Integration.WindowsX64.Bgfx;
 internal sealed class WindowsX64BgfxBuildProfile : BgfxNativeBuildProfile
 {
     /// <inheritdoc/>
-    public override NativeToolchainSelection SelectTools(
-        NativeBuildContext context,
-        bool includeTools
-    ) => WindowsX64BgfxToolContribution.Select(context, includeTools);
-
-    /// <inheritdoc/>
     public override string targetId => WindowsX64BuildModule.target.id.value;
 
     /// <inheritdoc/>
@@ -27,6 +21,12 @@ internal sealed class WindowsX64BgfxBuildProfile : BgfxNativeBuildProfile
     /// <inheritdoc/>
     public override IReadOnlyList<string> bindingCmakeArguments
         => ["-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded$<$<CONFIG:Debug>:Debug>"];
+
+    /// <inheritdoc/>
+    public override NativeToolchainSelection SelectTools(
+        NativeBuildContext context,
+        bool includeTools
+    ) => WindowsX64BgfxToolContribution.Select(context, includeTools);
 
     /// <inheritdoc/>
     public override (string reference, IReadOnlyList<string> arguments) CreateBindingLinkSettings(string archivePath)

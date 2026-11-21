@@ -13,8 +13,9 @@ namespace Inno.Build.SupportPacks.Tests;
 
 public sealed class SupportPackPublisherTests : IDisposable
 {
-    private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoPackTransactionTests", Guid.NewGuid().ToString("N"));
     private static readonly BuildTargetId S_TARGET = new("tests-target");
+
+    private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoPackTransactionTests", Guid.NewGuid().ToString("N"));
 
     public SupportPackPublisherTests()
     {
@@ -330,6 +331,8 @@ public sealed class SupportPackPublisherTests : IDisposable
             CancellationToken cancellationToken
         ) => ValueTask.FromResult<PlayerSupportPackPlan>(new PendingPlan(entered, release));
 
+        public void Validate(string directory) => new TestSource(null).Validate(directory);
+
         private sealed class PendingPlan(
             TaskCompletionSource entered,
             TaskCompletionSource release
@@ -350,8 +353,6 @@ public sealed class SupportPackPublisherTests : IDisposable
                 await plan.PrepareAsync(stagingDirectory, cancellationToken);
             }
         }
-
-        public void Validate(string directory) => new TestSource(null).Validate(directory);
     }
 
     private sealed class PlanningSource(
@@ -394,6 +395,15 @@ public sealed class SupportPackPublisherTests : IDisposable
             CancellationToken cancellationToken
         ) => ValueTask.FromResult<PlayerSupportPackPlan>(new TestPlan(failure, payload));
 
+        public void Validate(string directory)
+        {
+            if (!File.Exists(Path.Combine(directory, "References", "Inno.Test.dll")))
+            {
+                throw new InvalidDataException("Candidate is incomplete.");
+            }
+            afterValidation?.Invoke();
+        }
+
         private sealed class TestPlan(
             Exception? failure,
             string payload
@@ -415,15 +425,6 @@ public sealed class SupportPackPublisherTests : IDisposable
                 }
                 return ValueTask.CompletedTask;
             }
-        }
-
-        public void Validate(string directory)
-        {
-            if (!File.Exists(Path.Combine(directory, "References", "Inno.Test.dll")))
-            {
-                throw new InvalidDataException("Candidate is incomplete.");
-            }
-            afterValidation?.Invoke();
         }
     }
 }

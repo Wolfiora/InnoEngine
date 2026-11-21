@@ -11,14 +11,14 @@ internal sealed class AudioContentOwner : IDisposable
 {
     private readonly Dictionary<Guid, EmitterRecord> m_emitters = [];
     private readonly HashSet<string> m_providerDiagnosticIds = new(StringComparer.Ordinal);
-    private AudioListenerHandle m_listener;
-    private Guid m_listenerId;
-    private Guid m_listenerDiagnosticId;
     private readonly IAudioDevice m_device;
     private readonly AudioVoiceOwner m_voices;
     private readonly IDiagnosticReporter m_diagnostics;
     private readonly Func<ContentReadScope>? m_contentScopeProvider;
     private readonly int m_capacity;
+    private AudioListenerHandle m_listener;
+    private Guid m_listenerId;
+    private Guid m_listenerDiagnosticId;
 
     internal AudioContentOwner(
         IAudioDevice device,
@@ -34,10 +34,6 @@ internal sealed class AudioContentOwner : IDisposable
         m_capacity = capacity;
         this.statistics = new AudioContentStatistics(capacity, 0, 0);
     }
-
-    internal AudioContentStatistics statistics { get; private set; }
-
-    internal void ClearEmitters() => m_emitters.Clear();
 
     /// <summary>
     /// Releases the listener and clears neutral synchronization state before the device can retire.
@@ -62,6 +58,10 @@ internal sealed class AudioContentOwner : IDisposable
         }
         m_listenerDiagnosticId = Guid.Empty;
     }
+
+    internal AudioContentStatistics statistics { get; private set; }
+
+    internal void ClearEmitters() => m_emitters.Clear();
 
     internal void Update(
         AudioExtensionRegistry.ProviderGeneration providers,
@@ -246,6 +246,13 @@ internal sealed class AudioContentOwner : IDisposable
         _ = m_device.SetListener(m_listener, selected.state);
     }
 
+    private void Publish(
+        string code,
+        string message,
+        DiagnosticSeverity severity,
+        string? source
+    ) => m_diagnostics.Publish(new Diagnostic(code, message, severity, source));
+
     private sealed class EmitterRecord(
         AudioClipAsset clip,
         ulong playbackRevision,
@@ -256,11 +263,4 @@ internal sealed class AudioContentOwner : IDisposable
         internal ulong playbackRevision { get; } = playbackRevision;
         internal AudioVoiceHandle voice { get; } = voice;
     }
-
-    private void Publish(
-        string code,
-        string message,
-        DiagnosticSeverity severity,
-        string? source
-    ) => m_diagnostics.Publish(new Diagnostic(code, message, severity, source));
 }

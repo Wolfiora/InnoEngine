@@ -163,8 +163,6 @@ public sealed class NativeProductExecutorTests : IDisposable
 
     private sealed class SelectedExecutor : INativeProductExecutor
     {
-        internal int executions { get; private set; }
-
         public Task<ProductNativeBuildResult> BuildAsync(
             NativeBuildContext context,
             ProductNativeBuildPlan plan,
@@ -173,5 +171,7 @@ public sealed class NativeProductExecutorTests : IDisposable
             executions++;
             return new ComponentNativeProductExecutor().BuildAsync(context, plan, cancellationToken);
         }
+
+        internal int executions { get; private set; }
     }
 }

@@ -110,21 +110,6 @@ internal sealed class IndexedObjectIndex<T, TKey> : IIndexedObjectIndex<T>
     private readonly IComparer<TKey> m_orderComparer;
     private readonly Dictionary<T, TKey> m_keyByItem;
 
-    /// <summary>
-    /// Gets the human-readable name used for presentation and diagnostics.
-    /// </summary>
-    public string name { get; }
-
-    /// <summary>
-    /// Gets the key type accepted by this index implementation.
-    /// </summary>
-    public Type keyType => typeof(TKey);
-
-    /// <summary>
-    /// Gets the index capabilities supported by this key declaration.
-    /// </summary>
-    public IndexedObjectKeyFlags flags { get; }
-
     internal IndexedObjectIndex(
         string name,
         IndexedObjectKeyFlags flags,
@@ -145,28 +130,20 @@ internal sealed class IndexedObjectIndex<T, TKey> : IIndexedObjectIndex<T>
         m_keyByItem = new Dictionary<T, TKey>(IndexedObjectStore<T>.ReferenceEqualityComparer<T>.INSTANCE);
     }
 
-    void IIndexedObjectIndex<T>.AddOrUpdate(
-        T item,
-        object key
-    ) => AddOrUpdate(item, (TKey)key);
+    /// <summary>
+    /// Gets the human-readable name used for presentation and diagnostics.
+    /// </summary>
+    public string name { get; }
 
-    void IIndexedObjectIndex<T>.Remove(T item) => Remove(item);
+    /// <summary>
+    /// Gets the key type accepted by this index implementation.
+    /// </summary>
+    public Type keyType => typeof(TKey);
 
-    void IIndexedObjectIndex<T>.Clear() => Clear();
-
-    int IIndexedObjectIndex<T>.GetCount(object key) => GetCount((TKey)key);
-
-    bool IIndexedObjectIndex<T>.TryGetSingle(
-        object key,
-        out T? item
-    ) => TryGetSingle((TKey)key, out item);
-
-    bool IIndexedObjectIndex<T>.Contains(
-        object key,
-        T item
-    ) => Contains((TKey)key, item);
-
-    HashSet<T>? IIndexedObjectIndex<T>.GetSet(object key) => FindUnsafe((TKey)key);
+    /// <summary>
+    /// Gets the index capabilities supported by this key declaration.
+    /// </summary>
+    public IndexedObjectKeyFlags flags { get; }
 
     /// <summary>
     /// Adds a new keyed value or atomically replaces the existing value for that key.
@@ -258,6 +235,29 @@ internal sealed class IndexedObjectIndex<T, TKey> : IIndexedObjectIndex<T>
         TKey key,
         out T? item
     ) => m_storage.TryGetSingle(key, out item);
+
+    void IIndexedObjectIndex<T>.AddOrUpdate(
+        T item,
+        object key
+    ) => AddOrUpdate(item, (TKey)key);
+
+    void IIndexedObjectIndex<T>.Remove(T item) => Remove(item);
+
+    void IIndexedObjectIndex<T>.Clear() => Clear();
+
+    int IIndexedObjectIndex<T>.GetCount(object key) => GetCount((TKey)key);
+
+    bool IIndexedObjectIndex<T>.TryGetSingle(
+        object key,
+        out T? item
+    ) => TryGetSingle((TKey)key, out item);
+
+    bool IIndexedObjectIndex<T>.Contains(
+        object key,
+        T item
+    ) => Contains((TKey)key, item);
+
+    HashSet<T>? IIndexedObjectIndex<T>.GetSet(object key) => FindUnsafe((TKey)key);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal HashSet<T>? FindUnsafe(TKey key) => m_storage.GetSet(key);

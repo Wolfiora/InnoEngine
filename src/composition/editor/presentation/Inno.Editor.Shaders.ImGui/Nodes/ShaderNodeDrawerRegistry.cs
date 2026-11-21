@@ -92,6 +92,9 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
     /// </summary>
     public void Dispose() => m_registry.Dispose();
 
+    private static string Normalize(string value)
+        => string.Join('/', value.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+
     private sealed class Registry(TypeCatalog types) : TypeRegistry<Snapshot>(types)
     {
         internal Snapshot snapshot => current;
@@ -155,9 +158,6 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
         /// </param>
         protected override void DisposeSnapshot(Snapshot snapshot) => DisposeExtensions(snapshot.drawers.Values);
     }
-
-    private static string Normalize(string value)
-        => string.Join('/', value.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
 
     private sealed record Snapshot(
         IReadOnlyDictionary<string, ShaderNodeDrawer> drawers,

@@ -10,8 +10,6 @@ namespace Inno.Build.Toolchains;
 /// </summary>
 public sealed class NativeBuildRecipe
 {
-    internal NativeToolchainSelection? toolchain { get; private init; }
-
     /// <summary>
     /// Creates a complete recipe without inferring implementation identity from an assembly MVID.
     /// </summary>
@@ -86,6 +84,39 @@ public sealed class NativeBuildRecipe
     /// Gets ordered non-file inputs; callers must explicitly sort unordered metadata before construction.
     /// </summary>
     public IReadOnlyList<string> declarations { get; }
+
+    /// <summary>
+    /// Adds one explicitly selected published dependency while preserving the recipe's frozen execution tools.
+    /// </summary>
+    /// <param name="input">
+    /// The dependency file whose bytes participate in compilation.
+    /// </param>
+    /// <param name="fingerprint">
+    /// The immutable dependency artifact identity selected by the product.
+    /// </param>
+    /// <returns>
+    /// A new declaration with the dependency input and identity; this recipe is unchanged.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The dependency identity is empty.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// The input is null.
+    /// </exception>
+    public NativeBuildRecipe WithDependency(
+        NativeBuildInput input,
+        string fingerprint
+    ) {
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentException.ThrowIfNullOrWhiteSpace(fingerprint);
+        return new(
+            owner,
+            component,
+            targetId,
+            inputs.Append(input),
+            declarations.Append("dependency=" + fingerprint)
+        ) { toolchain = toolchain };
+    }
 
     /// <summary>
     /// Declares a component's source, execution and SDK inputs before binding outputs need to exist.
@@ -241,38 +272,7 @@ public sealed class NativeBuildRecipe
         ) { toolchain = context.toolchain };
     }
 
-    /// <summary>
-    /// Adds one explicitly selected published dependency while preserving the recipe's frozen execution tools.
-    /// </summary>
-    /// <param name="input">
-    /// The dependency file whose bytes participate in compilation.
-    /// </param>
-    /// <param name="fingerprint">
-    /// The immutable dependency artifact identity selected by the product.
-    /// </param>
-    /// <returns>
-    /// A new declaration with the dependency input and identity; this recipe is unchanged.
-    /// </returns>
-    /// <exception cref="ArgumentException">
-    /// The dependency identity is empty.
-    /// </exception>
-    /// <exception cref="ArgumentNullException">
-    /// The input is null.
-    /// </exception>
-    public NativeBuildRecipe WithDependency(
-        NativeBuildInput input,
-        string fingerprint
-    ) {
-        ArgumentNullException.ThrowIfNull(input);
-        ArgumentException.ThrowIfNullOrWhiteSpace(fingerprint);
-        return new(
-            owner,
-            component,
-            targetId,
-            inputs.Append(input),
-            declarations.Append("dependency=" + fingerprint)
-        ) { toolchain = toolchain };
-    }
+    internal NativeToolchainSelection? toolchain { get; private init; }
 
     /// <summary>
     /// Freezes the selected output bytes and generation identity into the executable recipe.

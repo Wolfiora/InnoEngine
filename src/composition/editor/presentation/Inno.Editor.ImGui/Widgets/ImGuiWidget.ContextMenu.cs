@@ -243,12 +243,6 @@ public sealed unsafe partial class ImGuiWidget
         ImGui.ConstrainNativeWindowSize(pixelMinimum, pixelMaximum, &RoundMenuPopupSize, null);
     }
 
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static unsafe void RoundMenuPopupSize(ImGuiSizeCallbackData* data) =>
-        // ImGui truncates constrained sizes. Round content upward within integer bounds so
-        // fractional padding cannot turn a fully fitting menu into a scrolling window.
-        data->DesiredSize = ImGui.ToNative(new Vector2(MathF.Ceiling(data->DesiredSize.X), MathF.Ceiling(data->DesiredSize.Y)));
-
     private void PushContextMenuStyle()
     {
         NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.menuText);
@@ -270,4 +264,10 @@ public sealed unsafe partial class ImGuiWidget
         NativeImGui.PopStyleVar(5);
         NativeImGui.PopStyleColor(7);
     }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static unsafe void RoundMenuPopupSize(ImGuiSizeCallbackData* data) =>
+        // ImGui truncates constrained sizes. Round content upward within integer bounds so
+        // fractional padding cannot turn a fully fitting menu into a scrolling window.
+        data->DesiredSize = ImGui.ToNative(new Vector2(MathF.Ceiling(data->DesiredSize.X), MathF.Ceiling(data->DesiredSize.Y)));
 }

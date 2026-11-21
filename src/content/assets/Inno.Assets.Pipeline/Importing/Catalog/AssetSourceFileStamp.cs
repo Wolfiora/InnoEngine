@@ -16,40 +16,6 @@ internal readonly struct AssetSourceFileStamp : IEquatable<AssetSourceFileStamp>
         this.isValid = true;
     }
 
-    internal bool isValid { get; }
-    internal long length { get; }
-    internal long lastWriteUtcTicks { get; }
-    internal long creationTimeUtcTicks { get; }
-
-    internal static bool TryCapture(
-        string path,
-        out AssetSourceFileStamp stamp
-    ) {
-        try
-        {
-            var info = new FileInfo(path);
-            info.Refresh();
-            if (!info.Exists)
-            {
-                stamp = default;
-                return false;
-            }
-
-            stamp = new AssetSourceFileStamp(info.Length, info.LastWriteTimeUtc.Ticks, info.CreationTimeUtc.Ticks);
-            return true;
-        }
-        catch (IOException)
-        {
-            stamp = default;
-            return false;
-        }
-        catch (UnauthorizedAccessException)
-        {
-            stamp = default;
-            return false;
-        }
-    }
-
     /// <summary>
     /// Determines whether this value and the supplied value represent the same logical state.
     /// </summary>
@@ -117,4 +83,38 @@ internal readonly struct AssetSourceFileStamp : IEquatable<AssetSourceFileStamp>
         AssetSourceFileStamp left,
         AssetSourceFileStamp right
     ) => !left.Equals(right);
+
+    internal bool isValid { get; }
+    internal long length { get; }
+    internal long lastWriteUtcTicks { get; }
+    internal long creationTimeUtcTicks { get; }
+
+    internal static bool TryCapture(
+        string path,
+        out AssetSourceFileStamp stamp
+    ) {
+        try
+        {
+            var info = new FileInfo(path);
+            info.Refresh();
+            if (!info.Exists)
+            {
+                stamp = default;
+                return false;
+            }
+
+            stamp = new AssetSourceFileStamp(info.Length, info.LastWriteTimeUtc.Ticks, info.CreationTimeUtc.Ticks);
+            return true;
+        }
+        catch (IOException)
+        {
+            stamp = default;
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            stamp = default;
+            return false;
+        }
+    }
 }

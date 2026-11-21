@@ -80,7 +80,15 @@ public sealed class EditorContext
     [ScriptingApiIgnore]
     public string imguiLayout => layout.imguiLayout;
 
-    internal EditorLayoutSettings layout { get; }
+    /// <summary>
+    /// Gets the latest immutable editor frame snapshot.
+    /// </summary>
+    public EditorFrame frame { get; internal set; }
+
+    /// <summary>
+    /// Gets whether any editor viewport currently owns application focus.
+    /// </summary>
+    public bool isFocused => frame.isFocused;
 
     /// <summary>
     /// Gets layout section names matching an ordinal prefix.
@@ -190,13 +198,5 @@ public sealed class EditorContext
     [ScriptingApiIgnore]
     public void SaveLayout() => layout.Save();
 
-    /// <summary>
-    /// Gets the latest immutable editor frame snapshot.
-    /// </summary>
-    public EditorFrame frame { get; internal set; }
-
-    /// <summary>
-    /// Gets whether any editor viewport currently owns application focus.
-    /// </summary>
-    public bool isFocused => frame.isFocused;
+    internal EditorLayoutSettings layout { get; }
 }

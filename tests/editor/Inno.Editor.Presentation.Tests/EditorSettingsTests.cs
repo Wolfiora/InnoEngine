@@ -287,12 +287,12 @@ public sealed class EditorSettingsTests : IDisposable
 
     private sealed class FakePlayMode : IEditorPlayMode
     {
+        private readonly EventDispatcher m_stateDispatcher = new();
+
         public EditorPlayModeState state => EditorPlayModeState.Editing;
         public bool isPlaying => false;
         public string? lastFailure => null;
         public LogSessionId activeSessionId => LogSessionId.none;
-
-        private readonly EventDispatcher m_stateDispatcher = new();
 
         public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener) => m_stateDispatcher.CreateHub();
 

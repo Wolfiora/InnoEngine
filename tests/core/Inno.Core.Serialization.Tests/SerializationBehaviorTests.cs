@@ -817,36 +817,36 @@ internal struct StructSample
 
 internal sealed class PrivateConstructorSample : ISerializable
 {
-    [SerializableProperty]
-    public int value { get; set; }
-
-    public bool wasConstructed { get; }
-
     private PrivateConstructorSample()
     {
         this.wasConstructed = true;
     }
+
+    [SerializableProperty]
+    public int value { get; set; }
+
+    public bool wasConstructed { get; }
 }
 
 internal sealed class MissingConstructorSample : ISerializable
 {
-    [SerializableProperty]
-    public int value { get; set; }
-
     public MissingConstructorSample(int value)
     {
         this.value = value;
     }
+
+    [SerializableProperty]
+    public int value { get; set; }
 }
 
 internal sealed class ConvertedConstructorSample : ISerializable
 {
-    public int value { get; set; }
-
     public ConvertedConstructorSample(int value)
     {
         this.value = value;
     }
+
+    public int value { get; set; }
 }
 
 internal sealed class ConvertedConstructorSampleConverter : SerializationConverter<ConvertedConstructorSample>
@@ -902,6 +902,7 @@ internal sealed class MissingSetterSample : ISerializable
     public int value { get; } = 1;
 }
 
+// Open: DuplicateKeyDerivedSample derives from it.
 internal class DuplicateKeyBaseSample : ISerializable
 {
     [SerializableProperty]
@@ -973,12 +974,14 @@ internal sealed class ConvertedChildConverter : SerializationConverter<Converted
     public override ConvertedChild Read(SerializationReader reader) => new() { value = reader.Read<int>("value") };
 }
 
+// Open: NearestMid derives from it for the converter-selection tests.
 internal class NearestBase
 {
     public int value { get; set; }
     public string selectedBy { get; set; } = string.Empty;
 }
 
+// Open: NearestLeaf derives from it for the converter-selection tests.
 internal class NearestMid : NearestBase;
 
 internal sealed class NearestLeaf : NearestMid;
@@ -1011,6 +1014,7 @@ internal sealed class NearestMidConverter : SerializationConverter<NearestMid>
         => new NearestLeaf { value = reader.Read<int>("value"), selectedBy = "mid" };
 }
 
+// Open: ExactLeaf derives from it for the converter-selection tests.
 internal class ExactBase
 {
     public int value { get; set; }
@@ -1081,12 +1085,12 @@ internal sealed class AmbiguousRightConverter : SerializationConverter<IAmbiguou
 
 internal sealed class GenericBox<T>
 {
-    public T value { get; }
-
     public GenericBox(T value)
     {
         this.value = value;
     }
+
+    public T value { get; }
 }
 
 internal sealed class GenericBoxHost : ISerializable
@@ -1130,6 +1134,7 @@ internal interface ISampleContext;
 
 internal sealed class SampleContext : ISampleContext;
 
+// Open: HookDerivedSample derives from it to inherit its serialization hooks.
 internal class HookBaseSample : ISerializable
 {
     [SerializableProperty]

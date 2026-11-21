@@ -25,8 +25,6 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     private readonly int m_deferredDestroyFrames;
     private readonly bool m_hasPrimarySurface;
     private readonly List<BgfxSurfaceRetirement> m_surfaceRetirements = [];
-    private RetirementBarrier? m_surfaceRetirementBarrier;
-    private ulong m_submissionSequence;
     private readonly IBgfxSurfaceIntegration? m_surfaceIntegration;
     private readonly Dictionary<ulong, bgfx.TextureHandle> m_persistentTextures = [];
     private readonly Dictionary<ulong, RenderTextureDescriptor> m_persistentTextureDescriptors = [];
@@ -38,6 +36,8 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     private readonly List<PooledTransientTexture> m_transientTexturePool = [];
     private readonly List<bgfx.FrameBufferHandle> m_graphFrameBuffers = [];
     private readonly List<CachedGraphFrameBuffer> m_graphFrameBufferCache = [];
+    private RetirementBarrier? m_surfaceRetirementBarrier;
+    private ulong m_submissionSequence;
     private uint m_resetFlags;
     private bool m_resetPending;
 

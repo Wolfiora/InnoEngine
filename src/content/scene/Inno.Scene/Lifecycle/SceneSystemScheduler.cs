@@ -60,6 +60,16 @@ internal sealed class SceneSystemScheduler
         return system;
     }
 
+    internal void Add(
+        GameSystem system,
+        Guid? persistentId = null,
+        bool invokeReset = true
+    ) {
+        ArgumentNullException.ThrowIfNull(system);
+        SceneSystemTypeDescriptor descriptor = m_types.GetSystem(system.GetType());
+        Add(system, descriptor, persistentId, invokeReset);
+    }
+
     internal MissingGameSystem AddMissing(
         TypeRef missingType,
         string missingTypeName,
@@ -70,16 +80,6 @@ internal sealed class SceneSystemScheduler
         var system = new MissingGameSystem(missingType, missingTypeName, serializedState, dependencies);
         Add(system, m_types.GetSystem(typeof(MissingGameSystem)), persistentId, invokeReset: false);
         return system;
-    }
-
-    internal void Add(
-        GameSystem system,
-        Guid? persistentId = null,
-        bool invokeReset = true
-    ) {
-        ArgumentNullException.ThrowIfNull(system);
-        SceneSystemTypeDescriptor descriptor = m_types.GetSystem(system.GetType());
-        Add(system, descriptor, persistentId, invokeReset);
     }
 
     internal bool Remove(GameSystem system)
@@ -444,18 +444,6 @@ internal sealed class SceneSystemScheduler
         return m_executionSnapshot;
     }
 
-    private static bool IsExecutionOrderValid(SystemEntry[] entries)
-    {
-        for (int i = 1; i < entries.Length; i++)
-        {
-            if (SystemEntryExecutionComparer.instance.Compare(entries[i - 1], entries[i]) > 0)
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
     private void RefreshDisplayIndices()
     {
         for (int i = 0; i < m_displayOrder.Count; i++)
@@ -468,6 +456,18 @@ internal sealed class SceneSystemScheduler
     {
         m_displayView = null;
         m_executionSnapshot = null;
+    }
+
+    private static bool IsExecutionOrderValid(SystemEntry[] entries)
+    {
+        for (int i = 1; i < entries.Length; i++)
+        {
+            if (SystemEntryExecutionComparer.instance.Compare(entries[i - 1], entries[i]) > 0)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     private sealed class SystemEntry(
@@ -483,8 +483,6 @@ internal sealed class SceneSystemScheduler
 
     private sealed class SystemEntryExecutionComparer : IComparer<SystemEntry>
     {
-        internal static SystemEntryExecutionComparer instance { get; } = new();
-
         /// <summary>
         /// Compares two values according to the deterministic ordering used by this collection.
         /// </summary>
@@ -518,5 +516,7 @@ internal sealed class SceneSystemScheduler
                    ? orderComparison
                    : left.displayIndex.CompareTo(right.displayIndex);
         }
+
+        internal static SystemEntryExecutionComparer instance { get; } = new();
     }
 }

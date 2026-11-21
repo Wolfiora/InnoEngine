@@ -16,12 +16,12 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
     private readonly List<IDisposable> m_resources = [];
     private readonly List<Task> m_tasks = [];
     private readonly List<Exception> m_retirementFailures = [];
+    private readonly int m_maxTrackedWork;
     private Exception? m_blockedWorkFailure;
     private bool m_canceling;
     private bool m_disposing;
     private bool m_stopping;
     private bool m_disposed;
-    private readonly int m_maxTrackedWork;
     private int m_peakTrackedWork;
     private long m_rejectedWork;
 

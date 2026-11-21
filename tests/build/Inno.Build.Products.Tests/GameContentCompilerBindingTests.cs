@@ -44,7 +44,6 @@ public sealed class GameContentCompilerBindingTests
     private sealed class FixtureCompiler(BuildTargetId target) : IGameContentCompiler
     {
         public BuildTargetId target { get; } = target;
-        internal int calls { get; private set; }
 
         public ValueTask CompileAsync(
             GameBuildContentContext context,
@@ -54,6 +53,8 @@ public sealed class GameContentCompilerBindingTests
             calls++;
             return ValueTask.CompletedTask;
         }
+
+        internal int calls { get; private set; }
     }
 
     private sealed class FixturePackager : IGameBuildTarget
@@ -62,7 +63,6 @@ public sealed class GameContentCompilerBindingTests
         public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.coreClr;
         public string runtimeIdentifier => "fixture-rid";
         public string displayName => "Fixture";
-        internal int calls { get; private set; }
 
         public void Validate(string directory) => throw new InvalidOperationException("Binding must not inspect output.");
 
@@ -73,5 +73,7 @@ public sealed class GameContentCompilerBindingTests
             calls++;
             throw new InvalidOperationException("Content compilation must not call platform packaging.");
         }
+
+        internal int calls { get; private set; }
     }
 }

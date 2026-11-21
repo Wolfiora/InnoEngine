@@ -192,6 +192,14 @@ public sealed class FilePlayerSupportPackPreparation
         return new PreparationPlan(this, context.engineRoot, project, sdk, native, identity);
     }
 
+    /// <summary>
+    /// Validates the prepared platform inputs before atomic installation.
+    /// </summary>
+    /// <param name="directory">
+    /// The isolated target pack directory.
+    /// </param>
+    public void Validate(string directory) => m_validator.Validate(directory);
+
     private async ValueTask ExecuteAsync(
         PlayerSupportPackBuildContext context,
         string project,
@@ -304,14 +312,6 @@ public sealed class FilePlayerSupportPackPreparation
         await CopyNativeToTemplateAsync(context.stagingDirectory, link, cancellationToken).ConfigureAwait(false);
         await execution.VerifyAsync(cancellationToken).ConfigureAwait(false);
     }
-
-    /// <summary>
-    /// Validates the prepared platform inputs before atomic installation.
-    /// </summary>
-    /// <param name="directory">
-    /// The isolated target pack directory.
-    /// </param>
-    public void Validate(string directory) => m_validator.Validate(directory);
 
     private async ValueTask CopyNativeRuntimeAsync(
         IReadOnlyList<NativeBuildProduct> products,

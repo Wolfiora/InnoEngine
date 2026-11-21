@@ -31,8 +31,8 @@ internal static class ReflectionStructMetadata
             FieldInfo? field = type.GetField(member.name, C_MEMBERS);
             if (field is null || field.FieldType != member.type
                 || !(field.FieldType.IsPrimitive
-                     && field.FieldType != typeof(IntPtr)
-                     && field.FieldType != typeof(UIntPtr)
+                     && field.FieldType != typeof(nint)
+                     && field.FieldType != typeof(nuint)
                      && field.FieldType != typeof(char)
                      || field.FieldType == typeof(decimal) || field.FieldType == typeof(Guid) || field.FieldType == typeof(string))
             ) {

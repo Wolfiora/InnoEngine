@@ -8,4 +8,4 @@ public abstract class ApplicationEvent : Event;
 /// <summary>
 /// Raised when the application requests shutdown.
 /// </summary>
-public class ApplicationQuitEvent : ApplicationEvent;
+public sealed class ApplicationQuitEvent : ApplicationEvent;

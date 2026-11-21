@@ -40,6 +40,44 @@ public sealed class ProcessOwnedDirectory : IDisposable
     public string directory { get; }
 
     /// <summary>
+    /// Releases only this directory after its other recorded process lifetimes have exited.
+    /// </summary>
+    /// <exception cref="IOException">
+    /// Removal failed; its explicit claim remains available for later retirement.
+    /// </exception>
+    public void Dispose()
+    {
+        CoordinatedFileLease? lease = m_lease;
+        if (lease is null)
+        {
+            return;
+        }
+        m_lease = null;
+        lease.Dispose();
+        try
+        {
+            using CoordinatedFileLease retirement = CoordinatedFileLease
+                .AcquireAsync(Path.Combine(m_root, "owner.lock"), directory + ".work.lock", TimeSpan.FromSeconds(5))
+                .AsTask()
+                .GetAwaiter()
+                .GetResult();
+            if (QueryOwners(m_record, m_owner) != ProcessOwnerState.Exited)
+            {
+                throw new IOException("A temporary directory still has an active or unverifiable subprocess owner.");
+            }
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(PathBoundary.RequireUnlinkedPath(m_root, directory), recursive: true);
+            }
+            // The claim authorizes later leaf retirement under the owner's exclusive gate.
+        }
+        catch (TimeoutException failure)
+        {
+            throw new IOException("A temporary directory still has a registering subprocess reader.", failure);
+        }
+    }
+
+    /// <summary>
     /// Creates a directory protected by this process lifetime when the caller can retain only file metadata.
     /// Payload consumers in other processes must register their lifetimes before using it.
     /// </summary>
@@ -257,44 +295,6 @@ public sealed class ProcessOwnedDirectory : IDisposable
             }
         }
         return result;
-    }
-
-    /// <summary>
-    /// Releases only this directory after its other recorded process lifetimes have exited.
-    /// </summary>
-    /// <exception cref="IOException">
-    /// Removal failed; its explicit claim remains available for later retirement.
-    /// </exception>
-    public void Dispose()
-    {
-        CoordinatedFileLease? lease = m_lease;
-        if (lease is null)
-        {
-            return;
-        }
-        m_lease = null;
-        lease.Dispose();
-        try
-        {
-            using CoordinatedFileLease retirement = CoordinatedFileLease
-                .AcquireAsync(Path.Combine(m_root, "owner.lock"), directory + ".work.lock", TimeSpan.FromSeconds(5))
-                .AsTask()
-                .GetAwaiter()
-                .GetResult();
-            if (QueryOwners(m_record, m_owner) != ProcessOwnerState.Exited)
-            {
-                throw new IOException("A temporary directory still has an active or unverifiable subprocess owner.");
-            }
-            if (Directory.Exists(directory))
-            {
-                Directory.Delete(PathBoundary.RequireUnlinkedPath(m_root, directory), recursive: true);
-            }
-            // The claim authorizes later leaf retirement under the owner's exclusive gate.
-        }
-        catch (TimeoutException failure)
-        {
-            throw new IOException("A temporary directory still has a registering subprocess reader.", failure);
-        }
     }
 
     /// <summary>

@@ -181,7 +181,6 @@ public sealed class TaskHostPublicationTests : IDisposable
 
     private sealed class RecordingBuildEngine : IBuildEngine
     {
-        internal ConcurrentBag<BuildErrorEventArgs> errors { get; } = [];
         public bool ContinueOnError => false;
         public int LineNumberOfTaskNode => 0;
         public int ColumnNumberOfTaskNode => 0;
@@ -201,5 +200,7 @@ public sealed class TaskHostPublicationTests : IDisposable
             IDictionary properties,
             IDictionary outputs
         ) => throw new NotSupportedException();
+
+        internal ConcurrentBag<BuildErrorEventArgs> errors { get; } = [];
     }
 }

@@ -16,16 +16,6 @@ namespace Inno.Build.Toolchains.Bgfx.Tools;
 /// </summary>
 public sealed partial class BgfxShadercToolchain
 {
-    // The shader binary's uniform tags belong to its wire format. Offline compilation
-    // does not load or require the renderer's native binding assembly.
-    private enum ShaderUniformType : byte
-    {
-        Sampler = 0,
-        Vec4 = 2,
-        Mat3 = 3,
-        Mat4 = 4
-    }
-
     private static byte[] NormalizeGlslUniformTable(
         byte[] binary,
         ShaderIrStage stage,
@@ -104,5 +94,15 @@ public sealed partial class BgfxShadercToolchain
         metadata[1] = (byte)count;
         BinaryPrimitives.WriteUInt16LittleEndian(metadata[4..], (ushort)registerCount);
         return record;
+    }
+
+    // The shader binary's uniform tags belong to its wire format. Offline compilation
+    // does not load or require the renderer's native binding assembly.
+    private enum ShaderUniformType : byte
+    {
+        Sampler = 0,
+        Vec4 = 2,
+        Mat3 = 3,
+        Mat4 = 4
     }
 }

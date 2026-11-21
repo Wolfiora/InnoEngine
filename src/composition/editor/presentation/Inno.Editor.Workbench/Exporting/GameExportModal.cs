@@ -115,39 +115,6 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
         DrawButtons();
     }
 
-    private static bool BeginFields(string id)
-        => Ui.BeginTable(
-            id,
-            2,
-            ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings | ImGuiTableFlags.NoPadOuterX,
-            default,
-            0f
-        );
-
-    private static void BeginField(string label)
-    {
-        Ui.TableNextRow();
-        _ = Ui.TableSetColumnIndex(0);
-        EditorUI.current.widgets.PropertyLabel(label);
-        _ = Ui.TableSetColumnIndex(1);
-    }
-
-    private static void DrawReadOnly(
-        string label,
-        string value
-    ) {
-        BeginField(label);
-        Ui.PushStyleColor((ImGuiCol.Text), EditorPalette.textDisabled);
-        try
-        {
-            EditorUI.current.widgets.WrappedText(value);
-        }
-        finally
-        {
-            Ui.PopStyleColor();
-        }
-    }
-
     private void DrawWindowSize()
     {
         int width = window.gameWindowWidth;
@@ -247,6 +214,39 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
         if (Ui.Button(primaryLabel))
         {
             window.BeginGameExport();
+        }
+    }
+
+    private static bool BeginFields(string id)
+        => Ui.BeginTable(
+            id,
+            2,
+            ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings | ImGuiTableFlags.NoPadOuterX,
+            default,
+            0f
+        );
+
+    private static void BeginField(string label)
+    {
+        Ui.TableNextRow();
+        _ = Ui.TableSetColumnIndex(0);
+        EditorUI.current.widgets.PropertyLabel(label);
+        _ = Ui.TableSetColumnIndex(1);
+    }
+
+    private static void DrawReadOnly(
+        string label,
+        string value
+    ) {
+        BeginField(label);
+        Ui.PushStyleColor((ImGuiCol.Text), EditorPalette.textDisabled);
+        try
+        {
+            EditorUI.current.widgets.WrappedText(value);
+        }
+        finally
+        {
+            Ui.PopStyleColor();
         }
     }
 

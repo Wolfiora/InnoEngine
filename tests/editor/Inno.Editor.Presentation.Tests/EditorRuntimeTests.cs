@@ -95,11 +95,6 @@ public sealed partial class EditorRuntimeTests : IDisposable
         }
     }
 
-    private EditorInteractionRuntime CreateRuntime(
-        EditorContext context,
-        params object[] hostServices
-    ) => new(context, m_types, m_logs, [m_types, m_identities, m_secondaryIdentities, ..hostServices]);
-
     [Fact]
     public void FeatureLookupReturnsOnlyStartedNonQuarantinedModules()
     {
@@ -653,13 +648,6 @@ public sealed partial class EditorRuntimeTests : IDisposable
         Assert.False(m_runtime.interactions.TryGetDragSource(identity, out _));
     }
 
-    private TIdentity Register<TIdentity>(TIdentity value)
-        where TIdentity : IdentityObject
-    {
-        Assert.True(m_identities.Register(value));
-        return value;
-    }
-
     [Fact]
     public void ThrowingPanelPresentationPropertyQuarantinesOnlyThatPanel()
     {
@@ -884,16 +872,29 @@ public sealed partial class EditorRuntimeTests : IDisposable
         Assert.False(TestModule.rebuildDuringRestore);
     }
 
+    private EditorInteractionRuntime CreateRuntime(
+        EditorContext context,
+        params object[] hostServices
+    ) => new(context, m_types, m_logs, [m_types, m_identities, m_secondaryIdentities, ..hostServices]);
+
+    private TIdentity Register<TIdentity>(TIdentity value)
+        where TIdentity : IdentityObject
+    {
+        Assert.True(m_identities.Register(value));
+        return value;
+    }
+
     private sealed class TestDiagnosticSink : IDiagnosticSink
     {
-        internal Dictionary<string, DiagnosticReport> reports { get; } = new(StringComparer.Ordinal);
-
         public void Replace(DiagnosticReport report) => reports[report.source.id] = report;
 
         public void Clear(DiagnosticSource source) => reports.Remove(source.id);
+
+        internal Dictionary<string, DiagnosticReport> reports { get; } = new(StringComparer.Ordinal);
     }
 }
 
+// Open: DerivedTarget derives from it for the action-resolution tests.
 public class BaseTarget;
 
 public sealed class DerivedTarget : BaseTarget;
@@ -972,7 +973,6 @@ public sealed class HostServicePanel : EditorPanel
 [EditorModule("tests.state")]
 public sealed class TestModule : EditorModule
 {
-    private readonly TypeCatalog m_types;
     public static int startCount;
     public static int stopCount;
     public static int stateValue;
@@ -982,6 +982,8 @@ public sealed class TestModule : EditorModule
     public static bool throwOnStart;
     public static bool throwOnStop;
     public static int pendingStops;
+
+    private readonly TypeCatalog m_types;
 
     public TestModule(TypeCatalog types)
     {

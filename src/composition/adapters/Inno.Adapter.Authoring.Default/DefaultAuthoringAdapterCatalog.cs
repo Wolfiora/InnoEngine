@@ -51,9 +51,6 @@ public sealed class DefaultAuthoringAdapterCatalog :
         m_renderingAuthoring = new RenderingAuthoringBackendCatalog(m_runtime.rendering, authoringProviders);
     }
 
-    IReadOnlyList<RenderingBackendId> IRenderingAuthoringBackendFactory.supportedBackends
-        => m_renderingAuthoring.supportedBackends;
-
     /// <summary>
     /// Gets the built-in platform backend factory.
     /// </summary>
@@ -98,6 +95,9 @@ public sealed class DefaultAuthoringAdapterCatalog :
     /// Gets the built-in graphical host-presentation factory.
     /// </summary>
     public IPresentationBackendFactory presentation => m_presentation;
+
+    IReadOnlyList<RenderingBackendId> IRenderingAuthoringBackendFactory.supportedBackends
+        => m_renderingAuthoring.supportedBackends;
 
     IShaderCompilerToolchain IRenderingAuthoringBackendFactory.CreateShaderCompilerToolchain(RenderingBackendId backend)
         => m_renderingAuthoring.CreateShaderCompilerToolchain(backend);

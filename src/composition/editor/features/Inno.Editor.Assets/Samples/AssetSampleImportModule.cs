@@ -102,23 +102,6 @@ public sealed class AssetSampleImportModule : EditorModule
     }
 
     /// <summary>
-    /// Requests cancellation without releasing work that has not retired.
-    /// </summary>
-    private void CancelCurrent()
-    {
-        if (m_import is null)
-        {
-            return;
-        }
-        m_canceled = true;
-        lock (m_progressLock)
-        {
-            m_progress = m_progress with { status = "Canceling sample import...", cancellationRequested = true };
-        }
-        m_import.Cancel();
-    }
-
-    /// <summary>
     /// Cancels only the import observed by the presentation.
     /// </summary>
     /// <param name="operationId">
@@ -253,6 +236,23 @@ public sealed class AssetSampleImportModule : EditorModule
     /// Retries retirement without releasing dependencies still used by background work.
     /// </summary>
     protected override void OnDispose() => RetireImport();
+
+    /// <summary>
+    /// Requests cancellation without releasing work that has not retired.
+    /// </summary>
+    private void CancelCurrent()
+    {
+        if (m_import is null)
+        {
+            return;
+        }
+        m_canceled = true;
+        lock (m_progressLock)
+        {
+            m_progress = m_progress with { status = "Canceling sample import...", cancellationRequested = true };
+        }
+        m_import.Cancel();
+    }
 
     private void RetireImport()
     {

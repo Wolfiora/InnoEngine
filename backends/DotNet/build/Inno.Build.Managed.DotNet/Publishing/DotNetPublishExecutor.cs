@@ -112,8 +112,6 @@ internal static class DotNetPublishExecutor
             m_log = new StreamWriter(path, append: false);
         }
 
-        internal string tail => string.Join(Environment.NewLine, m_tail);
-
         /// <inheritdoc/>
         public override Encoding Encoding => Encoding.UTF8;
 
@@ -134,5 +132,7 @@ internal static class DotNetPublishExecutor
 
         /// <inheritdoc/>
         public override ValueTask DisposeAsync() => m_log.DisposeAsync();
+
+        internal string tail => string.Join(Environment.NewLine, m_tail);
     }
 }

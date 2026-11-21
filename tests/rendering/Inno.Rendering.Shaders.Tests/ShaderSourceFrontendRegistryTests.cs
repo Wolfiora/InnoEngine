@@ -61,8 +61,6 @@ public sealed class ShaderSourceFrontendRegistryTests
     private sealed class Fixture : IDisposable
     {
         private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoShaderRegistry", Guid.NewGuid().ToString("N"));
-        internal ModuleHost modules { get; }
-        internal TypeCatalog types { get; }
 
         internal Fixture()
         {
@@ -81,6 +79,9 @@ public sealed class ShaderSourceFrontendRegistryTests
             modules.Dispose();
             if (Directory.Exists(m_root)) Directory.Delete(m_root, true);
         }
+
+        internal ModuleHost modules { get; }
+        internal TypeCatalog types { get; }
     }
 }
 

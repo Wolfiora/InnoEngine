@@ -18,9 +18,6 @@ public sealed class BackendPrebuiltArchiveTests : IDisposable
         Guid.NewGuid().ToString("N")
     );
 
-    private string Inventory => Path.Combine(m_root, "inventory.json");
-    private string Archive => Path.Combine(m_root, "platform.zip");
-
     public BackendPrebuiltArchiveTests()
     {
         Directory.CreateDirectory(m_root);
@@ -76,6 +73,11 @@ public sealed class BackendPrebuiltArchiveTests : IDisposable
         Assert.False(Directory.Exists(output));
     }
 
+    public void Dispose() => Directory.Delete(m_root, recursive: true);
+
+    private string Inventory => Path.Combine(m_root, "inventory.json");
+    private string Archive => Path.Combine(m_root, "platform.zip");
+
     private void Select(string path)
     {
         string digest = Digest(Path.Combine(m_root, path));
@@ -93,6 +95,4 @@ public sealed class BackendPrebuiltArchiveTests : IDisposable
         using FileStream stream = File.OpenRead(path);
         return Convert.ToHexStringLower(SHA256.HashData(stream));
     }
-
-    public void Dispose() => Directory.Delete(m_root, recursive: true);
 }

@@ -18,11 +18,6 @@ internal sealed class PluginCatalog
     private long s_revision;
 
     /// <summary>
-    /// Occurs after installed discovery or active Plugin state changes.
-    /// </summary>
-    public event Action? Changed;
-
-    /// <summary>
     /// Gets dependency-ordered active Plugins.
     /// </summary>
     public IReadOnlyList<PluginCandidate> activePlugins
@@ -63,6 +58,11 @@ internal sealed class PluginCatalog
             }
         }
     }
+
+    /// <summary>
+    /// Occurs after installed discovery or active Plugin state changes.
+    /// </summary>
+    public event Action? Changed;
 
     /// <summary>
     /// Tries to resolve the active Plugin that owns an asset source.

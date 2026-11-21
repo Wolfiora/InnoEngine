@@ -15,14 +15,6 @@ internal sealed class AudioDeviceCandidate : IDisposable
         m_device = device;
     }
 
-    internal AudioMixerOwner Prepare(AudioMixerOwner previous) => m_mixer = previous.PrepareReplacement(m_device!);
-
-    internal void Commit()
-    {
-        m_mixer = null;
-        m_device = null;
-    }
-
     /// <summary>
     /// Retires an unpublished graph before its device, retaining both while retirement remains pending.
     /// </summary>
@@ -61,5 +53,13 @@ internal sealed class AudioDeviceCandidate : IDisposable
         Exception[] failures = m_failures.ToArray();
         m_failures.Clear();
         throw new AggregateException("Audio candidate retirement failed after every owner was attempted.", failures);
+    }
+
+    internal AudioMixerOwner Prepare(AudioMixerOwner previous) => m_mixer = previous.PrepareReplacement(m_device!);
+
+    internal void Commit()
+    {
+        m_mixer = null;
+        m_device = null;
     }
 }

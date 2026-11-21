@@ -46,6 +46,43 @@ public abstract class GameSystem : EngineObject, ISerializable, ISceneLifecycleO
     /// </summary>
     public virtual int order => 0;
 
+    bool ISceneLifecycleObject.lifecycleIsActive => isActiveAndEnabled;
+    bool ISceneLifecycleObject.lifecycleIsDestroyed => isDestroyed;
+
+    bool ISceneLifecycleObject.lifecycleAwakeCalled
+    {
+        get => lifecycleAwakeCalled;
+        set => lifecycleAwakeCalled = value;
+    }
+
+    bool ISceneLifecycleObject.lifecycleStartCalled
+    {
+        get => lifecycleStartCalled;
+        set => lifecycleStartCalled = value;
+    }
+
+    bool ISceneLifecycleObject.lifecycleWasEnabled
+    {
+        get => lifecycleWasEnabled;
+        set => lifecycleWasEnabled = value;
+    }
+
+    bool ISceneLifecycleObject.lifecycleDestroyCalled
+    {
+        get => lifecycleDestroyCalled;
+        set => lifecycleDestroyCalled = value;
+    }
+
+    void ISceneLifecycleObject.DispatchAwake() => Awake();
+
+    void ISceneLifecycleObject.DispatchStart() => Start();
+
+    void ISceneLifecycleObject.DispatchEnable() => OnEnable();
+
+    void ISceneLifecycleObject.DispatchDisable() => OnDisable();
+
+    void ISceneLifecycleObject.DispatchDestroy() => OnDestroy();
+
     /// <summary>
     /// Gets the owning scene after this system has been registered.
     /// </summary>
@@ -53,6 +90,12 @@ public abstract class GameSystem : EngineObject, ISerializable, ISceneLifecycleO
         => m_scene ?? throw new InvalidOperationException(
             $"System '{GetType().FullName}' is not registered with a scene."
         );
+
+    internal bool lifecycleAwakeCalled { get; set; }
+    internal bool lifecycleStartCalled { get; set; }
+    internal bool lifecycleWasEnabled { get; set; }
+    internal bool lifecycleDestroyCalled { get; set; }
+    internal GameScene? ownerScene => m_scene;
 
     /// <summary>
     /// Restores this system to defaults when added or explicitly reset.
@@ -169,12 +212,6 @@ public abstract class GameSystem : EngineObject, ISerializable, ISceneLifecycleO
         where T3 : GameComponent
             => scene.Query<T1, T2, T3>();
 
-    internal bool lifecycleAwakeCalled { get; set; }
-    internal bool lifecycleStartCalled { get; set; }
-    internal bool lifecycleWasEnabled { get; set; }
-    internal bool lifecycleDestroyCalled { get; set; }
-    internal GameScene? ownerScene => m_scene;
-
     internal void Attach(GameScene owner)
     {
         ArgumentNullException.ThrowIfNull(owner);
@@ -198,41 +235,4 @@ public abstract class GameSystem : EngineObject, ISerializable, ISceneLifecycleO
     internal void DispatchUpdate() => OnUpdate();
 
     internal void DispatchLateUpdate() => OnLateUpdate();
-
-    bool ISceneLifecycleObject.lifecycleIsActive => isActiveAndEnabled;
-    bool ISceneLifecycleObject.lifecycleIsDestroyed => isDestroyed;
-
-    bool ISceneLifecycleObject.lifecycleAwakeCalled
-    {
-        get => lifecycleAwakeCalled;
-        set => lifecycleAwakeCalled = value;
-    }
-
-    bool ISceneLifecycleObject.lifecycleStartCalled
-    {
-        get => lifecycleStartCalled;
-        set => lifecycleStartCalled = value;
-    }
-
-    bool ISceneLifecycleObject.lifecycleWasEnabled
-    {
-        get => lifecycleWasEnabled;
-        set => lifecycleWasEnabled = value;
-    }
-
-    bool ISceneLifecycleObject.lifecycleDestroyCalled
-    {
-        get => lifecycleDestroyCalled;
-        set => lifecycleDestroyCalled = value;
-    }
-
-    void ISceneLifecycleObject.DispatchAwake() => Awake();
-
-    void ISceneLifecycleObject.DispatchStart() => Start();
-
-    void ISceneLifecycleObject.DispatchEnable() => OnEnable();
-
-    void ISceneLifecycleObject.DispatchDisable() => OnDisable();
-
-    void ISceneLifecycleObject.DispatchDestroy() => OnDestroy();
 }

@@ -20,21 +20,16 @@ internal sealed class EditorZoomModule(
     EditorUiSession ui
 ) : EditorModule
 {
-    private IDisposable? m_settingsSubscription;
     private const string C_ACTUAL_SIZE_PATH = "Editor/Appearance/Accessibility/Actual Size";
     private const string C_DENSITY_PATH = "Editor/Appearance/Density";
+
+    private IDisposable? m_settingsSubscription;
     private float m_actualSize = 1f;
     private int m_zoomStep;
     internal float zoom => ui.widgets.style.zoom;
     internal bool canZoomIn => ResolveZoom(m_zoomStep + 1) > ResolveZoom(m_zoomStep) + 0.0001f;
     internal bool canZoomOut => ResolveZoom(m_zoomStep - 1) < ResolveZoom(m_zoomStep) - 0.0001f;
     internal bool isActualSize => m_zoomStep == 0;
-
-    internal bool ZoomIn() => SetStep(m_zoomStep + 1);
-
-    internal bool ZoomOut() => SetStep(m_zoomStep - 1);
-
-    internal bool UseActualSize() => SetStep(0);
 
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.
@@ -75,6 +70,12 @@ internal sealed class EditorZoomModule(
         m_zoomStep = Math.Clamp(state.Get("step", 0), -10, 10);
         _ = ui.widgets.style.SetZoom(ResolveZoom(m_zoomStep));
     }
+
+    internal bool ZoomIn() => SetStep(m_zoomStep + 1);
+
+    internal bool ZoomOut() => SetStep(m_zoomStep - 1);
+
+    internal bool UseActualSize() => SetStep(0);
 
     private void ApplyActualSize(EditorSettings changedSettings)
     {

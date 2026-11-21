@@ -10,34 +10,6 @@ namespace Inno.Rendering;
 public abstract class RenderDevice
 {
     /// <summary>
-    /// Stores one decoded persistent device identity for use inside a concrete backend.
-    /// </summary>
-    /// <param name="value">
-    /// The backend-owned non-zero resource identity.
-    /// </param>
-    /// <param name="generation">
-    /// The device generation that owns the resource.
-    /// </param>
-    protected readonly record struct DeviceHandleIdentity(
-        ulong value,
-        uint generation
-    );
-
-    /// <summary>
-    /// Stores one decoded frame-scoped graph identity for use inside a concrete backend.
-    /// </summary>
-    /// <param name="index">
-    /// The zero-based logical resource index.
-    /// </param>
-    /// <param name="generation">
-    /// The render-graph generation that owns the resource.
-    /// </param>
-    protected readonly record struct GraphHandleIdentity(
-        int index,
-        uint generation
-    );
-
-    /// <summary>
     /// Encodes a persistent texture identity into a backend-neutral handle.
     /// </summary>
     /// <param name="value">
@@ -227,4 +199,32 @@ public abstract class RenderDevice
     /// The graph resource index and owning graph generation.
     /// </returns>
     protected static GraphHandleIdentity GetHandleIdentity(RenderBufferHandle handle) => new(handle.index, handle.generation);
+
+    /// <summary>
+    /// Stores one decoded persistent device identity for use inside a concrete backend.
+    /// </summary>
+    /// <param name="value">
+    /// The backend-owned non-zero resource identity.
+    /// </param>
+    /// <param name="generation">
+    /// The device generation that owns the resource.
+    /// </param>
+    protected readonly record struct DeviceHandleIdentity(
+        ulong value,
+        uint generation
+    );
+
+    /// <summary>
+    /// Stores one decoded frame-scoped graph identity for use inside a concrete backend.
+    /// </summary>
+    /// <param name="index">
+    /// The zero-based logical resource index.
+    /// </param>
+    /// <param name="generation">
+    /// The render-graph generation that owns the resource.
+    /// </param>
+    protected readonly record struct GraphHandleIdentity(
+        int index,
+        uint generation
+    );
 }

@@ -133,17 +133,6 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
         base.Dispose();
     }
 
-    protected static BuildProfile CreateProfile(
-        BuildTargetId target,
-        string productName = "Test Game"
-    ) => new()
-    {
-        applicationId = "tests.game",
-        productName = productName,
-        startupScene = "Scenes/Startup.iscene",
-        target = target
-    };
-
     protected void SaveStartupScene()
     {
         var scene = new GameScene("Startup");
@@ -199,6 +188,17 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
         managedDeployments ?? CreateManagedDeployments(),
         provisioner
     );
+
+    protected static BuildProfile CreateProfile(
+        BuildTargetId target,
+        string productName = "Test Game"
+    ) => new()
+    {
+        applicationId = "tests.game",
+        productName = productName,
+        startupScene = "Scenes/Startup.iscene",
+        target = target
+    };
 
     protected static ManagedDeploymentCatalog CreateManagedDeployments()
         => new([new FixtureManagedDeploymentCompiler()]);
@@ -314,8 +314,6 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
 
         public TaskCompletionSource release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public void Validate(string directory) => new MacOSArm64SupportPackValidator().Validate(directory);
-
         public BuildTargetId id => new BuildTargetId("macos-arm64");
         public BuildTargetId target => id;
 
@@ -324,6 +322,8 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
         public string runtimeIdentifier => "osx-arm64";
 
         public string displayName => "Blocking test target";
+
+        public void Validate(string directory) => new MacOSArm64SupportPackValidator().Validate(directory);
 
         public async ValueTask CompileAsync(
             GameBuildContentContext context,

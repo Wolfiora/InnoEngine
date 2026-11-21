@@ -7,9 +7,9 @@ namespace Inno.Adapter.Modules.DotNet;
 
 internal sealed class DotNetModuleLifetime : IModuleLifetime
 {
-    private AssemblyLoadContext? m_loadContext;
     private readonly string m_shadowDirectory;
     private readonly string m_description;
+    private AssemblyLoadContext? m_loadContext;
     private IAssemblyUnloadProbe? m_retirement;
 
     internal DotNetModuleLifetime(

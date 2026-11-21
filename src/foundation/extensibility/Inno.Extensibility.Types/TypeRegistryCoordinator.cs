@@ -38,8 +38,6 @@ internal interface ITypeRegistryTransaction
 
 internal sealed class TypeRegistryNoopTransaction : ITypeRegistryTransaction
 {
-    internal static TypeRegistryNoopTransaction instance { get; } = new();
-
     /// <summary>
     /// Makes the prepared value active at the owning subsystem's safety point.
     /// </summary>
@@ -54,6 +52,8 @@ internal sealed class TypeRegistryNoopTransaction : ITypeRegistryTransaction
     /// Restores the state captured before the current transaction began.
     /// </summary>
     public void Rollback() {}
+
+    internal static TypeRegistryNoopTransaction instance { get; } = new();
 }
 
 internal sealed class TypeRegistryCoordinator
@@ -163,8 +163,6 @@ internal sealed class TypeRegistryRegistration(
 {
     private bool m_disposed;
 
-    internal Guid id { get; } = id;
-
     /// <summary>
     /// Releases the resources owned by this instance.
     /// </summary>
@@ -177,6 +175,8 @@ internal sealed class TypeRegistryRegistration(
         m_disposed = true;
         owner.Unregister(id);
     }
+
+    internal Guid id { get; } = id;
 }
 
 internal sealed class TypeRegistryRefreshSet(IReadOnlyList<ITypeRegistryTransaction> transactions)

@@ -43,7 +43,7 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
     /// <param name="drawData">
     /// The draw data consumed by render main; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void RenderMain(IntPtr drawData) => Render((ImDrawData*)drawData);
+    public void RenderMain(nint drawData) => Render((ImDrawData*)drawData);
 
     /// <summary>
     /// Synchronizes the main render output with the current drawable dimensions.
@@ -91,7 +91,7 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
     /// </param>
     public void RenderViewport(
         PlatformImGuiViewportTarget target,
-        IntPtr drawData
+        nint drawData
     ) {}
 
     /// <summary>
@@ -115,6 +115,31 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
 
     /// <inheritdoc/>
     public void DrainViewportRetirements() {}
+
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose()
+    {
+        if (m_disposed)
+        {
+            return;
+        }
+
+        if (m_fontTexture is not null)
+        {
+            SDL.Raw.DestroyTexture(m_fontTexture);
+            m_fontTexture = null;
+        }
+
+        if (m_renderer is not null)
+        {
+            SDL.Raw.DestroyRenderer(m_renderer);
+            m_renderer = null;
+        }
+
+        m_disposed = true;
+    }
 
     internal void Render(ImDrawData* drawData)
     {
@@ -238,31 +263,6 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
         _ = SDL.Raw.SetRenderLogicalPresentation(m_renderer, 0, 0, SDLRendererLogicalPresentation.Disabled);
         _ = SDL.Raw.SetRenderViewport(m_renderer, null);
         _ = SDL.Raw.SetRenderClipRect(m_renderer, null);
-    }
-
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose()
-    {
-        if (m_disposed)
-        {
-            return;
-        }
-
-        if (m_fontTexture is not null)
-        {
-            SDL.Raw.DestroyTexture(m_fontTexture);
-            m_fontTexture = null;
-        }
-
-        if (m_renderer is not null)
-        {
-            SDL.Raw.DestroyRenderer(m_renderer);
-            m_renderer = null;
-        }
-
-        m_disposed = true;
     }
 
     private void ProcessTextureRequests(ImDrawData* drawData)
@@ -411,6 +411,22 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
         }
     }
 
+    private void EnsureVertexCapacity(int requiredCount)
+    {
+        if (m_vertexScratch.Length < requiredCount)
+        {
+            m_vertexScratch = new SDLVertex[Math.Max(requiredCount, m_vertexScratch.Length * 2 + 64)];
+        }
+    }
+
+    private void EnsureIndexCapacity(int requiredCount)
+    {
+        if (m_indexScratch.Length < requiredCount)
+        {
+            m_indexScratch = new int[Math.Max(requiredCount, m_indexScratch.Length * 2 + 256)];
+        }
+    }
+
     private static SDLVertex ToSdlVertex(
         ImDrawVert vtx,
         ImVec2C displayPos,
@@ -429,20 +445,4 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
     }
 
     private static SDLTexture* TextureFromImGui(ulong textureId) => (SDLTexture*)(nuint)textureId;
-
-    private void EnsureVertexCapacity(int requiredCount)
-    {
-        if (m_vertexScratch.Length < requiredCount)
-        {
-            m_vertexScratch = new SDLVertex[Math.Max(requiredCount, m_vertexScratch.Length * 2 + 64)];
-        }
-    }
-
-    private void EnsureIndexCapacity(int requiredCount)
-    {
-        if (m_indexScratch.Length < requiredCount)
-        {
-            m_indexScratch = new int[Math.Max(requiredCount, m_indexScratch.Length * 2 + 256)];
-        }
-    }
 }

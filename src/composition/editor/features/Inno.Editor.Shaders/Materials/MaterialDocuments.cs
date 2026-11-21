@@ -30,20 +30,7 @@ public sealed class MaterialDocuments : EditorModule
     private readonly AssetDraftDocuments<MaterialAsset> m_documents;
     private readonly SerializationRegistry m_serialization;
     private readonly ConditionalWeakTable<ShaderAsset, PresentationCache> m_presentations = new();
-
-    /// <summary>
-    /// Gets the authoritative asset catalog used by source-aware inspectors.
-    /// </summary>
-    [ScriptingApiIgnore]
-    public AssetPipeline assets { get; }
-
     internal readonly EditorInteractions interactions;
-
-    /// <summary>
-    /// Gets the generation-scoped preview service shared by material presentations.
-    /// </summary>
-    [ScriptingApiIgnore]
-    public IEditorPreviewService previews { get; }
 
     internal MaterialDocuments(
         AssetPipeline assets,
@@ -59,6 +46,18 @@ public sealed class MaterialDocuments : EditorModule
     }
 
     /// <summary>
+    /// Gets the authoritative asset catalog used by source-aware inspectors.
+    /// </summary>
+    [ScriptingApiIgnore]
+    public AssetPipeline assets { get; }
+
+    /// <summary>
+    /// Gets the generation-scoped preview service shared by material presentations.
+    /// </summary>
+    [ScriptingApiIgnore]
+    public IEditorPreviewService previews { get; }
+
+    /// <summary>
     /// Opens native source, including a source with failed import, without publishing its draft.
     /// </summary>
     /// <param name="path">
@@ -68,6 +67,25 @@ public sealed class MaterialDocuments : EditorModule
     /// The persistent identity used for subsequent draft operations.
     /// </returns>
     public Guid Open(AssetPath path) => m_documents.Open(path);
+
+    /// <summary>
+    /// Resolves the source draft for a canonical Material identity.
+    /// </summary>
+    /// <param name="material">
+    /// The current canonical Material whose source is edited.
+    /// </param>
+    /// <returns>
+    /// The generation-scoped editable source draft.
+    /// </returns>
+    [ScriptingApiIgnore]
+    public Draft Open(MaterialAsset material)
+    {
+        if (!assets.TryGetInfo(material.identity.persistentId, out AssetInfo? info) || info is null)
+        {
+            throw new IOException("The Material source identity is unavailable.");
+        }
+        return OpenDraft(info.assetPath);
+    }
 
     /// <summary>
     /// Reads a detached current-generation Material; referenced assets remain canonical read-only inputs.
@@ -125,25 +143,6 @@ public sealed class MaterialDocuments : EditorModule
     public Draft OpenDraft(AssetPath path) => m_documents.GetDraft(Open(path));
 
     /// <summary>
-    /// Resolves the source draft for a canonical Material identity.
-    /// </summary>
-    /// <param name="material">
-    /// The current canonical Material whose source is edited.
-    /// </param>
-    /// <returns>
-    /// The generation-scoped editable source draft.
-    /// </returns>
-    [ScriptingApiIgnore]
-    public Draft Open(MaterialAsset material)
-    {
-        if (!assets.TryGetInfo(material.identity.persistentId, out AssetInfo? info) || info is null)
-        {
-            throw new IOException("The Material source identity is unavailable.");
-        }
-        return OpenDraft(info.assetPath);
-    }
-
-    /// <summary>
     /// Reads parameter presentation from the current authoring Shader graph.
     /// </summary>
     /// <param name="shader">
@@ -186,26 +185,6 @@ public sealed class MaterialDocuments : EditorModule
                : ShaderParameterPresentation.Read(cache.graph, propertyId, m_serialization, AssetSerializationContext.Create(assets));
     }
 
-    internal void ValidateHistory(
-        EditorHistoryChange change,
-        EditorHistoryDirection direction
-    ) => m_documents.ValidateHistory(change, direction);
-
-    internal void ApplyHistory(
-        EditorHistoryChange change,
-        EditorHistoryDirection direction
-    ) => m_documents.ApplyHistory(change, direction);
-
-    internal bool TryMergeHistory(
-        EditorHistoryChange older,
-        EditorHistoryChange newer,
-        out EditorHistoryChange? merged
-    ) => m_documents.TryMergeHistory(older, newer, out merged);
-
-    internal static bool Recoverable(Exception error)
-        => error is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException or FormatException
-           && RetirementPendingException.Find(error) is null;
-
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.
     /// </summary>
@@ -233,6 +212,26 @@ public sealed class MaterialDocuments : EditorModule
         m_presentations.Clear();
         m_documents.Dispose();
     }
+
+    internal void ValidateHistory(
+        EditorHistoryChange change,
+        EditorHistoryDirection direction
+    ) => m_documents.ValidateHistory(change, direction);
+
+    internal void ApplyHistory(
+        EditorHistoryChange change,
+        EditorHistoryDirection direction
+    ) => m_documents.ApplyHistory(change, direction);
+
+    internal bool TryMergeHistory(
+        EditorHistoryChange older,
+        EditorHistoryChange newer,
+        out EditorHistoryChange? merged
+    ) => m_documents.TryMergeHistory(older, newer, out merged);
+
+    internal static bool Recoverable(Exception error)
+        => error is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException or FormatException
+           && RetirementPendingException.Find(error) is null;
 
     private sealed class PresentationCache
     {

@@ -49,14 +49,19 @@ public sealed class SceneWorld : IDisposable
     }
 
     /// <summary>
-    /// Gets the active world bound to the current asynchronous execution context.
+    /// Gets the scene currently selected for unqualified scene operations.
     /// </summary>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown when the caller is outside a scene execution scope.
-    /// </exception>
-    internal static SceneWorld current => S_CURRENT_SCOPE.current;
+    public GameScene? activeScene => m_activeScene;
 
-    internal SceneTypeCatalog typeCatalog => m_types;
+    /// <summary>
+    /// Gets whether this world contains an active scene.
+    /// </summary>
+    public bool hasActiveScene => m_activeScene is not null;
+
+    /// <summary>
+    /// Gets an immutable snapshot of loaded scenes in hierarchy order.
+    /// </summary>
+    public IReadOnlyList<GameScene> loadedScenes => Array.AsReadOnly(GetLoadedSceneSnapshot());
 
     /// <summary>
     /// Binds the session-owned serialization and asset generations used by scene prefab instances.
@@ -85,41 +90,6 @@ public sealed class SceneWorld : IDisposable
         m_prefabSerialization = serialization;
         m_prefabAssets = assets;
     }
-
-    internal GameObject InstantiatePrefab(
-        PrefabAsset prefab,
-        GameScene scene,
-        Transform? parent
-    ) {
-        EnsureActive();
-        ArgumentNullException.ThrowIfNull(prefab);
-        ArgumentNullException.ThrowIfNull(scene);
-        if (!m_loadedScenes.Contains(scene))
-        {
-            throw new InvalidOperationException("A prefab can only be instantiated into a loaded scene in the current world.");
-        }
-        SerializationRegistry serialization = m_prefabSerialization
-            ?? throw new InvalidOperationException("The current scene world has no prefab serialization context.");
-        IAssetReferenceResolver assets = m_prefabAssets
-                                         ?? throw new InvalidOperationException("The current scene world has no prefab asset resolver.");
-        using IDisposable scope = EnterScope();
-        return prefab.Instantiate(scene, serialization, assets, parent);
-    }
-
-    /// <summary>
-    /// Gets the scene currently selected for unqualified scene operations.
-    /// </summary>
-    public GameScene? activeScene => m_activeScene;
-
-    /// <summary>
-    /// Gets whether this world contains an active scene.
-    /// </summary>
-    public bool hasActiveScene => m_activeScene is not null;
-
-    /// <summary>
-    /// Gets an immutable snapshot of loaded scenes in hierarchy order.
-    /// </summary>
-    public IReadOnlyList<GameScene> loadedScenes => Array.AsReadOnly(GetLoadedSceneSnapshot());
 
     /// <summary>
     /// Resolves a live scene object by its persistent identity within this world.
@@ -487,6 +457,36 @@ public sealed class SceneWorld : IDisposable
             m_types.Dispose();
             m_disposed = true;
         }
+    }
+
+    /// <summary>
+    /// Gets the active world bound to the current asynchronous execution context.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the caller is outside a scene execution scope.
+    /// </exception>
+    internal static SceneWorld current => S_CURRENT_SCOPE.current;
+
+    internal SceneTypeCatalog typeCatalog => m_types;
+
+    internal GameObject InstantiatePrefab(
+        PrefabAsset prefab,
+        GameScene scene,
+        Transform? parent
+    ) {
+        EnsureActive();
+        ArgumentNullException.ThrowIfNull(prefab);
+        ArgumentNullException.ThrowIfNull(scene);
+        if (!m_loadedScenes.Contains(scene))
+        {
+            throw new InvalidOperationException("A prefab can only be instantiated into a loaded scene in the current world.");
+        }
+        SerializationRegistry serialization = m_prefabSerialization
+            ?? throw new InvalidOperationException("The current scene world has no prefab serialization context.");
+        IAssetReferenceResolver assets = m_prefabAssets
+                                         ?? throw new InvalidOperationException("The current scene world has no prefab asset resolver.");
+        using IDisposable scope = EnterScope();
+        return prefab.Instantiate(scene, serialization, assets, parent);
     }
 
     private GameScene[] GetLoadedSceneSnapshot() => m_loadedSceneSnapshot ??= [.. m_loadedScenes];

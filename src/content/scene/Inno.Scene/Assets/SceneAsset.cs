@@ -17,35 +17,6 @@ public sealed class SceneAsset : AssetObject
 {
     private byte[] m_pendingPayload = [];
 
-    [SerializableProperty]
-    internal AssetDependency[] sourceDependencies { get; set; } = [];
-
-    /// <summary>
-    /// Captures a runtime scene into a new unsaved scene asset.
-    /// </summary>
-    /// <param name="scene">
-    /// Scene to capture.
-    /// </param>
-    /// <param name="serialization">
-    /// The serialization registry that owns the active scene converter generation.
-    /// </param>
-    /// <param name="assets">
-    /// The asset database generation used to resolve references while collecting dependencies.
-    /// </param>
-    /// <returns>
-    /// A detached scene asset that an authoring asset database can save.
-    /// </returns>
-    [ScriptingApiIgnore]
-    public static SceneAsset Capture(
-        GameScene scene,
-        SerializationRegistry serialization,
-        IAssetReferenceResolver assets
-    ) {
-        var asset = new SceneAsset();
-        asset.CaptureFrom(scene, serialization, assets);
-        return asset;
-    }
-
     /// <summary>
     /// Replaces the pending source content with a fresh capture while preserving this asset identity.
     /// </summary>
@@ -103,6 +74,41 @@ public sealed class SceneAsset : AssetObject
     }
 
     /// <summary>
+    /// Captures the immutable runtime payload and dependency descriptors required by the scene asset pipeline.
+    /// </summary>
+    /// <returns>
+    /// A detached authoring-content snapshot owned by the caller.
+    /// </returns>
+    [ScriptingApiIgnore]
+    public EngineAssetContent CaptureContent() => new(GetPayload(), sourceDependencies);
+
+    /// <summary>
+    /// Captures a runtime scene into a new unsaved scene asset.
+    /// </summary>
+    /// <param name="scene">
+    /// Scene to capture.
+    /// </param>
+    /// <param name="serialization">
+    /// The serialization registry that owns the active scene converter generation.
+    /// </param>
+    /// <param name="assets">
+    /// The asset database generation used to resolve references while collecting dependencies.
+    /// </param>
+    /// <returns>
+    /// A detached scene asset that an authoring asset database can save.
+    /// </returns>
+    [ScriptingApiIgnore]
+    public static SceneAsset Capture(
+        GameScene scene,
+        SerializationRegistry serialization,
+        IAssetReferenceResolver assets
+    ) {
+        var asset = new SceneAsset();
+        asset.CaptureFrom(scene, serialization, assets);
+        return asset;
+    }
+
+    /// <summary>
     /// Creates an imported scene asset from validated runtime content produced by the scene asset pipeline.
     /// </summary>
     /// <param name="payload">
@@ -131,27 +137,8 @@ public sealed class SceneAsset : AssetObject
         };
     }
 
-    /// <summary>
-    /// Captures the immutable runtime payload and dependency descriptors required by the scene asset pipeline.
-    /// </summary>
-    /// <returns>
-    /// A detached authoring-content snapshot owned by the caller.
-    /// </returns>
-    [ScriptingApiIgnore]
-    public EngineAssetContent CaptureContent() => new(GetPayload(), sourceDependencies);
-
-    private byte[] GetPayload()
-    {
-        if (m_pendingPayload.Length != 0)
-        {
-            return (byte[])m_pendingPayload.Clone();
-        }
-        if (!runtimePayload.IsEmpty)
-        {
-            return runtimePayload.ToArray();
-        }
-        throw new InvalidOperationException($"Scene asset '{assetPath}' does not contain an imported or pending scene payload.");
-    }
+    [SerializableProperty]
+    internal AssetDependency[] sourceDependencies { get; set; } = [];
 
     /// <summary>
     /// Rebuilds runtime-derived state after the serialized asset payload changes.
@@ -166,4 +153,17 @@ public sealed class SceneAsset : AssetObject
         ReadOnlyMemory<byte> previousPayload,
         ReadOnlyMemory<byte> currentPayload
     ) => m_pendingPayload = [];
+
+    private byte[] GetPayload()
+    {
+        if (m_pendingPayload.Length != 0)
+        {
+            return (byte[])m_pendingPayload.Clone();
+        }
+        if (!runtimePayload.IsEmpty)
+        {
+            return runtimePayload.ToArray();
+        }
+        throw new InvalidOperationException($"Scene asset '{assetPath}' does not contain an imported or pending scene payload.");
+    }
 }

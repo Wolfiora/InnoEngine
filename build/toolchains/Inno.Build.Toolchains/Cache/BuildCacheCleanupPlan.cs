@@ -53,6 +53,61 @@ public sealed class BuildCacheCleanupPlan
     public long protectedBytes { get; }
 
     /// <summary>
+    /// Executes the original proposal under fresh owner and artifact leases without waiting for active readers.
+    /// </summary>
+    /// <param name="dryRun">
+    /// Whether to report the proposal without acquiring mutation leases or deleting files.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels remaining work; successful earlier retirements are not rolled back.
+    /// </param>
+    /// <returns>
+    /// Actual retirement, activity skips and IO failures; protected generations are never forced out.
+    /// </returns>
+    /// <exception cref="InvalidDataException">
+    /// Fresh ownership metadata violates the registered boundary.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// The caller canceled; no later candidate is processed.
+    /// </exception>
+    public ValueTask<BuildCacheCleanupResult> ExecuteAsync(
+        bool dryRun = false,
+        CancellationToken cancellationToken = default
+    ) {
+        cancellationToken.ThrowIfCancellationRequested();
+        TimeSpan remaining = m_policy.timeBudget - m_elapsed.Elapsed;
+        if (!dryRun && remaining <= TimeSpan.Zero)
+        {
+            return ValueTask.FromResult(
+                new BuildCacheCleanupResult(
+                    [],
+                    candidates.Select(static entry => entry.directory),
+                    new Dictionary<string, string>(),
+                    0,
+                    true
+                )
+            );
+        }
+        return dryRun
+               ? ValueTask.FromResult(
+                   new BuildCacheCleanupResult(
+                       [],
+                       candidates.Select(static entry => entry.directory),
+                       new Dictionary<string, string>(),
+                       0,
+                       false
+                   )
+               )
+               : BuildCacheRetirement.ExecuteAsync(
+                   m_workspace,
+                   m_owners,
+                   new BuildCachePolicy(m_policy.maximumBytes, m_policy.minimumFreeBytes, remaining),
+                   candidates,
+                   cancellationToken
+               );
+    }
+
+    /// <summary>
     /// Plans retirement by budget pressure or an explicit request to retire every unreferenced artifact.
     /// </summary>
     /// <param name="workspace">
@@ -119,6 +174,30 @@ public sealed class BuildCacheCleanupPlan
         }
     }
 
+    internal static void RequireChild(
+        string root,
+        string path
+    ) {
+        if (!Path.IsPathFullyQualified(path) || !IsContained(root, path)
+            || BuildCacheInventory.pathComparer.Equals(
+                Path.TrimEndingDirectorySeparator(Path.GetFullPath(root)),
+                Path.TrimEndingDirectorySeparator(Path.GetFullPath(path))
+            )
+        ) {
+            throw new IOException($"Cache path '{path}' is not a child of owner '{root}'.");
+        }
+        PathBoundary.RequireUnlinkedPath(root, path);
+    }
+
+    internal static bool IsContained(
+        string root,
+        string path
+    ) {
+        string relative = Path.GetRelativePath(root, path);
+        return !Path.IsPathRooted(relative) && relative != ".."
+               && !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal);
+    }
+
     private static BuildCacheCleanupPlan CreateCore(
         string workspace,
         IReadOnlyList<BuildCacheOwnerDescriptor> owners,
@@ -177,61 +256,6 @@ public sealed class BuildCacheCleanupPlan
         return new(root, frozen, policy, Array.AsReadOnly(selected.ToArray()), total, protectedSize, elapsed);
     }
 
-    /// <summary>
-    /// Executes the original proposal under fresh owner and artifact leases without waiting for active readers.
-    /// </summary>
-    /// <param name="dryRun">
-    /// Whether to report the proposal without acquiring mutation leases or deleting files.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels remaining work; successful earlier retirements are not rolled back.
-    /// </param>
-    /// <returns>
-    /// Actual retirement, activity skips and IO failures; protected generations are never forced out.
-    /// </returns>
-    /// <exception cref="InvalidDataException">
-    /// Fresh ownership metadata violates the registered boundary.
-    /// </exception>
-    /// <exception cref="OperationCanceledException">
-    /// The caller canceled; no later candidate is processed.
-    /// </exception>
-    public ValueTask<BuildCacheCleanupResult> ExecuteAsync(
-        bool dryRun = false,
-        CancellationToken cancellationToken = default
-    ) {
-        cancellationToken.ThrowIfCancellationRequested();
-        TimeSpan remaining = m_policy.timeBudget - m_elapsed.Elapsed;
-        if (!dryRun && remaining <= TimeSpan.Zero)
-        {
-            return ValueTask.FromResult(
-                new BuildCacheCleanupResult(
-                    [],
-                    candidates.Select(static entry => entry.directory),
-                    new Dictionary<string, string>(),
-                    0,
-                    true
-                )
-            );
-        }
-        return dryRun
-               ? ValueTask.FromResult(
-                   new BuildCacheCleanupResult(
-                       [],
-                       candidates.Select(static entry => entry.directory),
-                       new Dictionary<string, string>(),
-                       0,
-                       false
-                   )
-               )
-               : BuildCacheRetirement.ExecuteAsync(
-                   m_workspace,
-                   m_owners,
-                   new BuildCachePolicy(m_policy.maximumBytes, m_policy.minimumFreeBytes, remaining),
-                   candidates,
-                   cancellationToken
-               );
-    }
-
     private static void ValidateOwners(
         string workspace,
         IReadOnlyList<BuildCacheOwnerDescriptor> owners
@@ -254,29 +278,5 @@ public sealed class BuildCacheCleanupPlan
                 }
             }
         }
-    }
-
-    internal static void RequireChild(
-        string root,
-        string path
-    ) {
-        if (!Path.IsPathFullyQualified(path) || !IsContained(root, path)
-            || BuildCacheInventory.pathComparer.Equals(
-                Path.TrimEndingDirectorySeparator(Path.GetFullPath(root)),
-                Path.TrimEndingDirectorySeparator(Path.GetFullPath(path))
-            )
-        ) {
-            throw new IOException($"Cache path '{path}' is not a child of owner '{root}'.");
-        }
-        PathBoundary.RequireUnlinkedPath(root, path);
-    }
-
-    internal static bool IsContained(
-        string root,
-        string path
-    ) {
-        string relative = Path.GetRelativePath(root, path);
-        return !Path.IsPathRooted(relative) && relative != ".."
-               && !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal);
     }
 }

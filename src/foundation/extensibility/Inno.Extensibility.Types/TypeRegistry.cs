@@ -19,14 +19,13 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
     private readonly TypeCatalog m_types;
     private readonly RegistryAdapter m_registryAdapter;
     private readonly TypeRegistryRegistration m_registration;
-
+    private readonly TimeSpan m_retirementTimeout;
     private TSnapshot? m_current;
     private long m_typeCacheVersion = -1;
     private bool m_activationInProgress;
     private bool m_disposed;
     private List<object>? m_candidateResources;
     private TypeCacheSnapshot? m_candidateTypes;
-    private readonly TimeSpan m_retirementTimeout;
     private Exception? m_retirementFailure;
     private object? m_retainedRetirement;
 
@@ -779,6 +778,14 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
             ThrowCleanupFailures(failures);
         }
 
+        private void EnsureNotFinished()
+        {
+            if (m_finished)
+            {
+                throw new InvalidOperationException("Registry transaction is already finished.");
+            }
+        }
+
         private static void Attempt(
             Action action,
             List<Exception> failures
@@ -809,14 +816,6 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
             if (failures.Count > 0)
             {
                 throw new AggregateException("Registry retirement or rollback failed after every resource was attempted.", failures);
-            }
-        }
-
-        private void EnsureNotFinished()
-        {
-            if (m_finished)
-            {
-                throw new InvalidOperationException("Registry transaction is already finished.");
             }
         }
     }

@@ -28,6 +28,24 @@ internal sealed class RenderGeometryOwner : RenderResourceProvider, IDisposable
         m_entries = new(entry => entry.retirement.Dispose(), capacity);
     }
 
+    /// <summary>
+    /// Releases the resources owned by this implementation.
+    /// </summary>
+    public void Dispose()
+    {
+        if (m_retirement is null)
+        {
+            m_retirement = new RenderRetirementQueue();
+            if (m_allocation is not null)
+            {
+                m_retirement.Add(m_allocation.Dispose);
+            }
+            m_retirement.Add(m_entries.Dispose);
+        }
+        m_retirement.Dispose();
+        m_allocation = null;
+    }
+
     internal int count => m_entries.Count;
     internal int retiringCount => m_entries.pendingCount;
     internal long rejectedCount => m_entries.rejectedCount;
@@ -112,24 +130,6 @@ internal sealed class RenderGeometryOwner : RenderResourceProvider, IDisposable
         entry.lastUsedFrame = m_frameIndex;
         geometry = entry.geometry;
         return true;
-    }
-
-    /// <summary>
-    /// Releases the resources owned by this implementation.
-    /// </summary>
-    public void Dispose()
-    {
-        if (m_retirement is null)
-        {
-            m_retirement = new RenderRetirementQueue();
-            if (m_allocation is not null)
-            {
-                m_retirement.Add(m_allocation.Dispose);
-            }
-            m_retirement.Add(m_entries.Dispose);
-        }
-        m_retirement.Dispose();
-        m_allocation = null;
     }
 
     private Entry Create(GeometryAsset asset)

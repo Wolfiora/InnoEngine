@@ -31,33 +31,6 @@ public sealed class ModuleHost : IDisposable
     private object? m_retainedRetirement;
 
     /// <summary>
-    /// Gets whether this module host can accept catalog operations.
-    /// </summary>
-    public bool isInitialized { get; private set; }
-
-    /// <summary>
-    /// Gets the admission gate and retirement owner shared by all module and host generation changes.
-    /// </summary>
-    public GenerationCoordinator generations { get; } = new();
-
-    /// <summary>
-    /// Gets non-owning information about active managed and external modules.
-    /// </summary>
-    public IReadOnlyList<AssemblyModuleInfo> modules
-    {
-        get
-        {
-            lock (m_sync)
-            {
-                return m_modules.Values
-                    .OrderBy(static module => module.moduleName, StringComparer.Ordinal)
-                    .Select(static module => module.CreateInfo())
-                    .ToArray();
-            }
-        }
-    }
-
-    /// <summary>
     /// Creates a module host from the explicitly supplied assembly source and publishes its first catalog.
     /// </summary>
     /// <param name="options">
@@ -86,6 +59,33 @@ public sealed class ModuleHost : IDisposable
             {
                 ShutdownLocked();
                 throw;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets whether this module host can accept catalog operations.
+    /// </summary>
+    public bool isInitialized { get; private set; }
+
+    /// <summary>
+    /// Gets the admission gate and retirement owner shared by all module and host generation changes.
+    /// </summary>
+    public GenerationCoordinator generations { get; } = new();
+
+    /// <summary>
+    /// Gets non-owning information about active managed and external modules.
+    /// </summary>
+    public IReadOnlyList<AssemblyModuleInfo> modules
+    {
+        get
+        {
+            lock (m_sync)
+            {
+                return m_modules.Values
+                    .OrderBy(static module => module.moduleName, StringComparer.Ordinal)
+                    .Select(static module => module.CreateInfo())
+                    .ToArray();
             }
         }
     }
@@ -294,6 +294,33 @@ public sealed class ModuleHost : IDisposable
     }
 
     /// <summary>
+    /// Stages a dependency-ordered set of module additions or replacements as one atomic transaction.
+    /// Existing modules are matched by their stable module names; an unknown name creates a new module.
+    /// </summary>
+    /// <param name="requests">
+    /// The complete reverse-dependency reload closure.
+    /// </param>
+    /// <returns>
+    /// A session that publishes or rolls back every candidate together.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="requests"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the request set is empty or contains duplicate module names.
+    /// </exception>
+    public AssemblyReloadSession BeginReload(IReadOnlyList<IModuleSource> requests)
+    {
+        ArgumentNullException.ThrowIfNull(requests);
+        lock (m_sync)
+        {
+            EnsureInitialized();
+            EnsureNoReloadInProgress();
+            return BeginReloadLocked(requests, removedModuleNames: [], forcedHandles: null);
+        }
+    }
+
+    /// <summary>
     /// Stages and validates a replacement generation without publishing it.
     /// </summary>
     /// <param name="module">
@@ -331,33 +358,6 @@ public sealed class ModuleHost : IDisposable
                 removedModuleNames: [],
                 new Dictionary<string, AssemblyModuleHandle>(StringComparer.Ordinal) { [request.moduleName] = module }
             );
-        }
-    }
-
-    /// <summary>
-    /// Stages a dependency-ordered set of module additions or replacements as one atomic transaction.
-    /// Existing modules are matched by their stable module names; an unknown name creates a new module.
-    /// </summary>
-    /// <param name="requests">
-    /// The complete reverse-dependency reload closure.
-    /// </param>
-    /// <returns>
-    /// A session that publishes or rolls back every candidate together.
-    /// </returns>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="requests"/> is <see langword="null"/>.
-    /// </exception>
-    /// <exception cref="ArgumentException">
-    /// Thrown when the request set is empty or contains duplicate module names.
-    /// </exception>
-    public AssemblyReloadSession BeginReload(IReadOnlyList<IModuleSource> requests)
-    {
-        ArgumentNullException.ThrowIfNull(requests);
-        lock (m_sync)
-        {
-            EnsureInitialized();
-            EnsureNoReloadInProgress();
-            return BeginReloadLocked(requests, removedModuleNames: [], forcedHandles: null);
         }
     }
 
@@ -1352,11 +1352,6 @@ public sealed class ModuleHost : IDisposable
         }
     }
 
-    private readonly record struct PlannedAssembly(
-        AssemblyDomain domain,
-        AssemblyScope scope
-    );
-
     private void ShutdownLocked()
     {
         if (m_assemblyLoadSubscribed)
@@ -1419,4 +1414,9 @@ public sealed class ModuleHost : IDisposable
         }
         generations.EnsureRetirementSafe();
     }
+
+    private readonly record struct PlannedAssembly(
+        AssemblyDomain domain,
+        AssemblyScope scope
+    );
 }

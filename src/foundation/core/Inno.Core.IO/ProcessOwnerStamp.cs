@@ -46,24 +46,6 @@ public readonly record struct ProcessOwnerStamp
     public long startedUtcTicks { get; }
 
     /// <summary>
-    /// Captures the current process lifetime and releases its temporary inspection handle.
-    /// </summary>
-    /// <returns>
-    /// The current process identifier and UTC start timestamp.
-    /// </returns>
-    /// <exception cref="Win32Exception">
-    /// The operating system cannot provide the current process start timestamp.
-    /// </exception>
-    /// <exception cref="PlatformNotSupportedException">
-    /// The execution environment does not expose operating-system process lifetimes.
-    /// </exception>
-    public static ProcessOwnerStamp CaptureCurrent()
-    {
-        using Process process = Process.GetCurrentProcess();
-        return new(process.Id, process.StartTime.ToUniversalTime().Ticks);
-    }
-
-    /// <summary>
     /// Checks the exact lifetime conservatively without holding an operating-system handle afterwards.
     /// </summary>
     /// <returns>
@@ -101,5 +83,23 @@ public readonly record struct ProcessOwnerStamp
         {
             return ProcessOwnerState.Unknown;
         }
+    }
+
+    /// <summary>
+    /// Captures the current process lifetime and releases its temporary inspection handle.
+    /// </summary>
+    /// <returns>
+    /// The current process identifier and UTC start timestamp.
+    /// </returns>
+    /// <exception cref="Win32Exception">
+    /// The operating system cannot provide the current process start timestamp.
+    /// </exception>
+    /// <exception cref="PlatformNotSupportedException">
+    /// The execution environment does not expose operating-system process lifetimes.
+    /// </exception>
+    public static ProcessOwnerStamp CaptureCurrent()
+    {
+        using Process process = Process.GetCurrentProcess();
+        return new(process.Id, process.StartTime.ToUniversalTime().Ticks);
     }
 }

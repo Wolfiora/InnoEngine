@@ -12,42 +12,6 @@ namespace Inno.Scripting.Compiler;
 public sealed class ScriptAssemblyDefinitionAsset : AssetObject
 {
     /// <summary>
-    /// Gets the stable assembly name.
-    /// </summary>
-    [SerializableProperty]
-    public string assemblyName { get; private set; } = string.Empty;
-
-    /// <summary>
-    /// Gets the assembly API scope.
-    /// </summary>
-    [SerializableProperty]
-    public ScriptAssemblyScope scope { get; private set; }
-
-    /// <summary>
-    /// Gets referenced script assembly names.
-    /// </summary>
-    [SerializableProperty]
-    public string[] references { get; private set; } = [];
-
-    /// <summary>
-    /// Gets preprocessor symbols applied to this assembly.
-    /// </summary>
-    [SerializableProperty]
-    public string[] defines { get; private set; } = [];
-
-    /// <summary>
-    /// Gets whether nullable reference analysis is enabled.
-    /// </summary>
-    [SerializableProperty]
-    public bool nullable { get; private set; } = true;
-
-    /// <summary>
-    /// Gets whether unsafe source is permitted.
-    /// </summary>
-    [SerializableProperty]
-    public bool allowUnsafe { get; private set; }
-
-    /// <summary>
     /// Creates an empty definition asset for deserialization.
     /// </summary>
     public ScriptAssemblyDefinitionAsset() {}
@@ -92,4 +56,40 @@ public sealed class ScriptAssemblyDefinitionAsset : AssetObject
         this.nullable = nullable;
         this.allowUnsafe = allowUnsafe;
     }
+
+    /// <summary>
+    /// Gets the stable assembly name.
+    /// </summary>
+    [SerializableProperty]
+    public string assemblyName { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// Gets the assembly API scope.
+    /// </summary>
+    [SerializableProperty]
+    public ScriptAssemblyScope scope { get; private set; }
+
+    /// <summary>
+    /// Gets referenced script assembly names.
+    /// </summary>
+    [SerializableProperty]
+    public string[] references { get; private set; } = [];
+
+    /// <summary>
+    /// Gets preprocessor symbols applied to this assembly.
+    /// </summary>
+    [SerializableProperty]
+    public string[] defines { get; private set; } = [];
+
+    /// <summary>
+    /// Gets whether nullable reference analysis is enabled.
+    /// </summary>
+    [SerializableProperty]
+    public bool nullable { get; private set; } = true;
+
+    /// <summary>
+    /// Gets whether unsafe source is permitted.
+    /// </summary>
+    [SerializableProperty]
+    public bool allowUnsafe { get; private set; }
 }

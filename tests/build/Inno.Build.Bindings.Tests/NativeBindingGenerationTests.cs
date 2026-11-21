@@ -533,19 +533,6 @@ public sealed class NativeBindingGenerationTests : IDisposable
         }
     }
 
-    private static NativeBindingGenerationDescriptor SelectedGeneration(
-        string fingerprint,
-        bool usesRuntimeImports = false
-    ) => new()
-    {
-        fingerprint = fingerprint,
-        artifactDirectory = Path.Combine(Path.GetTempPath(), "SelectedGeneration", fingerprint),
-        artifactOwnerDirectory = Path.Combine(Path.GetTempPath(), "SelectedGeneration"),
-        bindingsPath = Path.Combine(Path.GetTempPath(), "SelectedGeneration", fingerprint, "Generated", "Bindings.cs"),
-        usesRuntimeImports = usesRuntimeImports,
-        nativeDirectory = string.Empty
-    };
-
     private string CreateConfig(string header)
     {
         Directory.CreateDirectory(Path.Combine(m_root, "Source"));
@@ -604,6 +591,19 @@ public sealed class NativeBindingGenerationTests : IDisposable
             )
         )
             .Save(Path.Combine(m_root, "bindings.props"));
+
+    private static NativeBindingGenerationDescriptor SelectedGeneration(
+        string fingerprint,
+        bool usesRuntimeImports = false
+    ) => new()
+    {
+        fingerprint = fingerprint,
+        artifactDirectory = Path.Combine(Path.GetTempPath(), "SelectedGeneration", fingerprint),
+        artifactOwnerDirectory = Path.Combine(Path.GetTempPath(), "SelectedGeneration"),
+        bindingsPath = Path.Combine(Path.GetTempPath(), "SelectedGeneration", fingerprint, "Generated", "Bindings.cs"),
+        usesRuntimeImports = usesRuntimeImports,
+        nativeDirectory = string.Empty
+    };
 
     private static void WriteCppConfig(string path)
         => File.WriteAllText(

@@ -203,6 +203,20 @@ public abstract class RenderCommandEncoder
     ) => BindTexture(binding, texture, RenderSamplerState.linearClamp);
 
     /// <summary>
+    /// Binds a persistent texture to a shader interface slot.
+    /// </summary>
+    /// <param name="binding">
+    /// Stable shader binding identifier.
+    /// </param>
+    /// <param name="texture">
+    /// Persistent texture owned by the active device generation.
+    /// </param>
+    public void BindTexture(
+        RenderBindingId binding,
+        PersistentTextureHandle texture
+    ) => BindTexture(binding, texture, RenderSamplerState.linearClamp);
+
+    /// <summary>
     /// Binds a sampled texture and its sampler to a shader binding.
     /// </summary>
     /// <param name="binding">
@@ -219,20 +233,6 @@ public abstract class RenderCommandEncoder
         RenderTextureHandle texture,
         RenderSamplerState sampler
     );
-
-    /// <summary>
-    /// Binds a persistent texture to a shader interface slot.
-    /// </summary>
-    /// <param name="binding">
-    /// Stable shader binding identifier.
-    /// </param>
-    /// <param name="texture">
-    /// Persistent texture owned by the active device generation.
-    /// </param>
-    public void BindTexture(
-        RenderBindingId binding,
-        PersistentTextureHandle texture
-    ) => BindTexture(binding, texture, RenderSamplerState.linearClamp);
 
     /// <summary>
     /// Binds a sampled texture and its sampler to a shader binding.
@@ -423,34 +423,6 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Selects a vertex buffer and its first vertex for subsequent draws.
-    /// </summary>
-    /// <param name="buffer">
-    /// Frame-scoped buffer owned by the current graph generation.
-    /// </param>
-    /// <param name="firstVertex">
-    /// Zero-based vertex offset in the bound buffer.
-    /// </param>
-    public abstract void BindVertexBuffer(
-        RenderBufferHandle buffer,
-        int firstVertex = 0
-    );
-
-    /// <summary>
-    /// Selects a vertex buffer and its first vertex for subsequent draws.
-    /// </summary>
-    /// <param name="buffer">
-    /// Persistent buffer owned by the current device generation.
-    /// </param>
-    /// <param name="firstVertex">
-    /// Zero-based vertex offset in the bound buffer.
-    /// </param>
-    public abstract void BindVertexBuffer(
-        PersistentBufferHandle buffer,
-        int firstVertex = 0
-    );
-
-    /// <summary>
     /// Binds a frame-uploaded vertex slice.
     /// </summary>
     /// <param name="buffer">
@@ -463,31 +435,31 @@ public abstract class RenderCommandEncoder
     }
 
     /// <summary>
-    /// Selects an index buffer and its first index for subsequent indexed draws.
+    /// Selects a vertex buffer and its first vertex for subsequent draws.
     /// </summary>
     /// <param name="buffer">
     /// Frame-scoped buffer owned by the current graph generation.
     /// </param>
-    /// <param name="firstIndex">
-    /// Zero-based index offset in the bound buffer.
+    /// <param name="firstVertex">
+    /// Zero-based vertex offset in the bound buffer.
     /// </param>
-    public abstract void BindIndexBuffer(
+    public abstract void BindVertexBuffer(
         RenderBufferHandle buffer,
-        int firstIndex = 0
+        int firstVertex = 0
     );
 
     /// <summary>
-    /// Selects an index buffer and its first index for subsequent indexed draws.
+    /// Selects a vertex buffer and its first vertex for subsequent draws.
     /// </summary>
     /// <param name="buffer">
     /// Persistent buffer owned by the current device generation.
     /// </param>
-    /// <param name="firstIndex">
-    /// Zero-based index offset in the bound buffer.
+    /// <param name="firstVertex">
+    /// Zero-based vertex offset in the bound buffer.
     /// </param>
-    public abstract void BindIndexBuffer(
+    public abstract void BindVertexBuffer(
         PersistentBufferHandle buffer,
-        int firstIndex = 0
+        int firstVertex = 0
     );
 
     /// <summary>
@@ -503,6 +475,46 @@ public abstract class RenderCommandEncoder
     }
 
     /// <summary>
+    /// Selects an index buffer and its first index for subsequent indexed draws.
+    /// </summary>
+    /// <param name="buffer">
+    /// Frame-scoped buffer owned by the current graph generation.
+    /// </param>
+    /// <param name="firstIndex">
+    /// Zero-based index offset in the bound buffer.
+    /// </param>
+    public abstract void BindIndexBuffer(
+        RenderBufferHandle buffer,
+        int firstIndex = 0
+    );
+
+    /// <summary>
+    /// Selects an index buffer and its first index for subsequent indexed draws.
+    /// </summary>
+    /// <param name="buffer">
+    /// Persistent buffer owned by the current device generation.
+    /// </param>
+    /// <param name="firstIndex">
+    /// Zero-based index offset in the bound buffer.
+    /// </param>
+    public abstract void BindIndexBuffer(
+        PersistentBufferHandle buffer,
+        int firstIndex = 0
+    );
+
+    /// <summary>
+    /// Binds a frame-uploaded vertex slice as per-instance input.
+    /// </summary>
+    /// <param name="buffer">
+    /// Current-frame instance records.
+    /// </param>
+    public void BindInstanceBuffer(RenderBufferSlice buffer)
+    {
+        ValidateSlice(buffer, RenderBufferUsage.Vertex);
+        BindInstanceBuffer(buffer.buffer, buffer.firstElement, buffer.elementCount);
+    }
+
+    /// <summary>
     /// Selects the buffer range supplying per-instance attributes.
     /// </summary>
     /// <param name="buffer">
@@ -537,18 +549,6 @@ public abstract class RenderCommandEncoder
         int firstInstance,
         int instanceCount
     );
-
-    /// <summary>
-    /// Binds a frame-uploaded vertex slice as per-instance input.
-    /// </summary>
-    /// <param name="buffer">
-    /// Current-frame instance records.
-    /// </param>
-    public void BindInstanceBuffer(RenderBufferSlice buffer)
-    {
-        ValidateSlice(buffer, RenderBufferUsage.Vertex);
-        BindInstanceBuffer(buffer.buffer, buffer.firstElement, buffer.elementCount);
-    }
 
     /// <summary>
     /// Submits a draw using the currently bound pipeline and resources.

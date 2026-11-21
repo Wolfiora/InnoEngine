@@ -23,6 +23,18 @@ public sealed class PipelineDocuments : EditorModule
     internal const string C_HISTORY = "inno.pipeline/draft";
     private readonly TypeCatalog m_types;
 
+    internal PipelineDocuments(
+        AssetPipeline assets,
+        SerializationRegistry serialization,
+        TypeCatalog types,
+        EditorInteractions interactions
+    ) {
+        this.assets = assets;
+        this.serialization = serialization;
+        m_types = types;
+        this.drafts = new(assets, serialization, interactions, "inno.pipeline", C_HISTORY, ".irenderpipeline", "Pipeline");
+    }
+
     /// <summary>
     /// Gets the authoritative asset pipeline used by source inspectors.
     /// </summary>
@@ -40,18 +52,6 @@ public sealed class PipelineDocuments : EditorModule
     /// </summary>
     [ScriptingApiIgnore]
     public AssetDraftDocuments<RenderPipelineAsset> drafts { get; }
-
-    internal PipelineDocuments(
-        AssetPipeline assets,
-        SerializationRegistry serialization,
-        TypeCatalog types,
-        EditorInteractions interactions
-    ) {
-        this.assets = assets;
-        this.serialization = serialization;
-        m_types = types;
-        this.drafts = new(assets, serialization, interactions, "inno.pipeline", C_HISTORY, ".irenderpipeline", "Pipeline");
-    }
 
     /// <summary>
     /// Opens a native Pipeline source in the shared document service, including failed imports.
@@ -144,10 +144,6 @@ public sealed class PipelineDocuments : EditorModule
         return settings;
     }
 
-    internal static bool Recoverable(Exception error)
-        => error is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException or FormatException
-           && RetirementPendingException.Find(error) is null;
-
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.
     /// </summary>
@@ -171,6 +167,10 @@ public sealed class PipelineDocuments : EditorModule
     /// The context that supplies state and services for this operation.
     /// </param>
     protected override void OnStop(EditorContext context) => drafts.Dispose();
+
+    internal static bool Recoverable(Exception error)
+        => error is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException or FormatException
+           && RetirementPendingException.Find(error) is null;
 }
 
 [EditorHistoryHandler(PipelineDocuments.C_HISTORY)]

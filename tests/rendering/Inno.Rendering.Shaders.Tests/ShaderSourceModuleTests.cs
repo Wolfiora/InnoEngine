@@ -211,12 +211,12 @@ public sealed class ShaderSourceModuleTests
 
     private sealed class Includes : IShaderSourceResolver
     {
-        internal Dictionary<string, string> values { get; } = new(StringComparer.Ordinal);
-
         public ShaderSourceFile ReadInclude(
             string includingFile,
             string include
         ) => new(include, values.TryGetValue(include, out string? value) ? value : throw new FileNotFoundException(include));
+
+        internal Dictionary<string, string> values { get; } = new(StringComparer.Ordinal);
     }
 
     private sealed class ChangingIncludes : IShaderSourceResolver

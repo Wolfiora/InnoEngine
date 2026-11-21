@@ -43,16 +43,6 @@ internal sealed class BuildCommandContext
     internal BuildCompositionContext composition { get; }
     internal BuildDistribution distribution { get; }
 
-    internal static string ResolveEngineRoot(string? selectedRoot)
-    {
-        string root = Path.GetFullPath(string.IsNullOrWhiteSpace(selectedRoot) ? ToolchainEnvironment.FindRepoRoot() : selectedRoot);
-        if (!File.Exists(Path.Combine(root, "InnoEngine.sln")))
-        {
-            throw new DirectoryNotFoundException($"Engine checkout is unavailable at '{root}'.");
-        }
-        return root;
-    }
-
     internal async Task<string> PreflightEditorAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -82,4 +72,14 @@ internal sealed class BuildCommandContext
             "-nodeReuse:false",
             ..(nativeDependencies.Length == 0 ? Array.Empty<string>() : ["-p:InnoNativeDependencyManifest=" + nativeDependencies])
         ];
+
+    internal static string ResolveEngineRoot(string? selectedRoot)
+    {
+        string root = Path.GetFullPath(string.IsNullOrWhiteSpace(selectedRoot) ? ToolchainEnvironment.FindRepoRoot() : selectedRoot);
+        if (!File.Exists(Path.Combine(root, "InnoEngine.sln")))
+        {
+            throw new DirectoryNotFoundException($"Engine checkout is unavailable at '{root}'.");
+        }
+        return root;
+    }
 }

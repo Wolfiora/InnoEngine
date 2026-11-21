@@ -21,23 +21,6 @@ internal sealed class AssetImporterRegistry : TypeRegistry<AssetImporterRegistry
         m_types = types;
     }
 
-    internal AssetImporter? FindByPath(string relativePath)
-    {
-        string extension = Path.GetExtension(relativePath).ToLowerInvariant();
-        return current.byExtension.GetValueOrDefault(extension);
-    }
-
-    internal AssetImporter? FindById(string importerId) => current.byId.GetValueOrDefault(importerId);
-
-    internal long GetGeneration(string importerId)
-    {
-        _ = current;
-        lock (m_generationSync)
-        {
-            return m_generations.GetValueOrDefault(importerId);
-        }
-    }
-
     internal long snapshotVersion
     {
         get
@@ -192,6 +175,23 @@ internal sealed class AssetImporterRegistry : TypeRegistry<AssetImporterRegistry
     /// The immutable state snapshot consumed by this operation.
     /// </param>
     protected override void DisposeSnapshot(Snapshot snapshot) => DisposeExtensions(snapshot.byId.Values);
+
+    internal AssetImporter? FindByPath(string relativePath)
+    {
+        string extension = Path.GetExtension(relativePath).ToLowerInvariant();
+        return current.byExtension.GetValueOrDefault(extension);
+    }
+
+    internal AssetImporter? FindById(string importerId) => current.byId.GetValueOrDefault(importerId);
+
+    internal long GetGeneration(string importerId)
+    {
+        _ = current;
+        lock (m_generationSync)
+        {
+            return m_generations.GetValueOrDefault(importerId);
+        }
+    }
 
     private static string NormalizeExtension(string extension)
     {

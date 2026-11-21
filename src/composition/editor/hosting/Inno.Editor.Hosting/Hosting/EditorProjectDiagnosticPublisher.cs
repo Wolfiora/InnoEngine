@@ -9,6 +9,11 @@ internal sealed class EditorProjectDiagnosticPublisher : IDisposable
 
     private string m_state = string.Empty;
 
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose() => ResolvePersistence();
+
     internal bool hasPersistenceFailure => !string.IsNullOrEmpty(m_state);
 
     internal bool PublishPersistenceFailure(Exception exception)
@@ -33,9 +38,4 @@ internal sealed class EditorProjectDiagnosticPublisher : IDisposable
         Diagnostics.Clear(C_PERSISTENCE_GROUP);
         m_state = string.Empty;
     }
-
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose() => ResolvePersistence();
 }

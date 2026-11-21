@@ -67,8 +67,6 @@ public sealed class UiRuntimeTests
 
     private sealed class CapturingBackend : IUiBackend
     {
-        internal UiInputSnapshot? lastInput { get; private set; }
-
         public string implementationId => "tests.ui";
         public UiBackendCapabilities capabilities { get; } = new([new("tests.ui-language")], true);
 
@@ -156,5 +154,7 @@ public sealed class UiRuntimeTests
         public IReadOnlyList<UiEvent> DrainEvents(UiContextHandle context) => [];
 
         public void Dispose() {}
+
+        internal UiInputSnapshot? lastInput { get; private set; }
     }
 }

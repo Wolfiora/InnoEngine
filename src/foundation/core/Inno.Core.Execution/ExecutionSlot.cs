@@ -123,20 +123,6 @@ public sealed class ExecutionSlot<TValue>
             m_assigned = assigned;
         }
 
-        internal bool TryGet([MaybeNullWhen(false)] out TValue value)
-        {
-            lock (m_sync)
-            {
-                if (m_active && m_assigned && (m_threadId == 0 || m_threadId == Environment.CurrentManagedThreadId))
-                {
-                    value = m_value;
-                    return true;
-                }
-                value = default;
-                return false;
-            }
-        }
-
         /// <summary>
         /// Revokes this binding only at the top of its execution stack and clears retained values.
         /// </summary>
@@ -163,6 +149,20 @@ public sealed class ExecutionSlot<TValue>
                 m_active = false;
                 m_value = default!;
                 m_parent = null;
+            }
+        }
+
+        internal bool TryGet([MaybeNullWhen(false)] out TValue value)
+        {
+            lock (m_sync)
+            {
+                if (m_active && m_assigned && (m_threadId == 0 || m_threadId == Environment.CurrentManagedThreadId))
+                {
+                    value = m_value;
+                    return true;
+                }
+                value = default;
+                return false;
             }
         }
     }

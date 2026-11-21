@@ -230,6 +230,26 @@ public sealed partial class RenderRuntimeGenerationTests
         );
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private WeakReference CompleteCollectibleContributorFrame(
+        RenderRuntime runtime,
+        TestDeviceProxy proxy,
+        bool rejectGraph
+    ) {
+        Type type = m_types.current.GetTypesImplementing<IRenderFrameGraphContributor>()
+            .Select(reference => reference.Resolve(m_types))
+            .Single(type => type.Name == "ReloadableContributor");
+        IRenderFrameGraphContributor contributor = (IRenderFrameGraphContributor)Activator.CreateInstance(
+            type,
+            new Action<IRenderFrameGraphContributor>(value => Assert.True(runtime.UnregisterContributor(value))),
+            rejectGraph
+        )!;
+        var weak = new WeakReference(contributor);
+        runtime.RegisterContributor(contributor);
+        CompleteContributorFrame(runtime, proxy);
+        return weak;
+    }
+
     private static void CompleteContributorRetirementCycle(
         RenderRuntime runtime,
         TestDeviceProxy proxy,
@@ -262,26 +282,6 @@ public sealed partial class RenderRuntimeGenerationTests
     {
         using IDisposable scope = runtime.EnterExecutionScope();
         return GraphicsSettings.frameStatistics!.graphCompileCount;
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private WeakReference CompleteCollectibleContributorFrame(
-        RenderRuntime runtime,
-        TestDeviceProxy proxy,
-        bool rejectGraph
-    ) {
-        Type type = m_types.current.GetTypesImplementing<IRenderFrameGraphContributor>()
-            .Select(reference => reference.Resolve(m_types))
-            .Single(type => type.Name == "ReloadableContributor");
-        IRenderFrameGraphContributor contributor = (IRenderFrameGraphContributor)Activator.CreateInstance(
-            type,
-            new Action<IRenderFrameGraphContributor>(value => Assert.True(runtime.UnregisterContributor(value))),
-            rejectGraph
-        )!;
-        var weak = new WeakReference(contributor);
-        runtime.RegisterContributor(contributor);
-        CompleteContributorFrame(runtime, proxy);
-        return weak;
     }
 
     private sealed class CountingContributor : IRenderFrameGraphContributor

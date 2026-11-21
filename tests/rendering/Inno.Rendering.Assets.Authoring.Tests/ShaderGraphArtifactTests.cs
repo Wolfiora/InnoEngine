@@ -181,6 +181,13 @@ public sealed class ShaderGraphArtifactTests : IDisposable
         Assert.Equal(ShaderProgramKind.Compute, Assert.Single(restored.passes).programKind);
     }
 
+    public void Dispose()
+    {
+        m_serialization.Dispose();
+        m_types.Dispose();
+        m_modules.Dispose();
+    }
+
     private void SetDefinition(
         GraphDocument graph,
         ShaderDefinition definition
@@ -188,11 +195,4 @@ public sealed class ShaderGraphArtifactTests : IDisposable
         ShaderGraphDocument.definitionKey,
         ShaderGraphDocument.Encode(m_serialization.Serialize(definition), m_serialization, SerializationContext.empty)
     );
-
-    public void Dispose()
-    {
-        m_serialization.Dispose();
-        m_types.Dispose();
-        m_modules.Dispose();
-    }
 }

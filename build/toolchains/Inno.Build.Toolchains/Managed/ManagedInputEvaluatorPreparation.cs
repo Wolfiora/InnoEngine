@@ -11,19 +11,6 @@ namespace Inno.Build.Toolchains;
 
 internal static class ManagedInputEvaluatorPreparation
 {
-    internal sealed class Result(
-        string directory,
-        string fingerprint,
-        BuildArtifactReadLease reading
-    ) : IDisposable
-    {
-        internal string directory { get; } = directory;
-        internal string fingerprint { get; } = fingerprint;
-
-        /// <inheritdoc/>
-        public void Dispose() => reading.Dispose();
-    }
-
     internal static async ValueTask<Result> PrepareAsync(
         NativeBuildContext context,
         DotNetSdkDescriptor sdk,
@@ -219,5 +206,18 @@ internal static class ManagedInputEvaluatorPreparation
                 throw new InvalidOperationException("The managed evaluator's selected SDK changed; no candidate was published.");
             }
         }
+    }
+
+    internal sealed class Result(
+        string directory,
+        string fingerprint,
+        BuildArtifactReadLease reading
+    ) : IDisposable
+    {
+        /// <inheritdoc/>
+        public void Dispose() => reading.Dispose();
+
+        internal string directory { get; } = directory;
+        internal string fingerprint { get; } = fingerprint;
     }
 }

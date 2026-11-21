@@ -16,17 +16,6 @@ namespace Inno.Editor.Panel.FileBrowser;
 
 internal sealed partial class FileBrowserTree
 {
-    private readonly record struct BrowserTreeRow(
-        string path,
-        string label,
-        string nodeId,
-        int depth,
-        bool isRoot,
-        bool virtualRoot,
-        bool isLeaf,
-        RuntimeIdentity? identity
-    );
-
     private readonly List<BrowserTreeRow> m_rows = [];
     private long m_sourceRevision = long.MinValue;
     private ulong m_expansionRevision = ulong.MaxValue;
@@ -150,4 +139,15 @@ internal sealed partial class FileBrowserTree
         m_sourceRevision = pipeline.revision;
         m_expansionRevision = widgets.treeExpansionRevision;
     }
+
+    private readonly record struct BrowserTreeRow(
+        string path,
+        string label,
+        string nodeId,
+        int depth,
+        bool isRoot,
+        bool virtualRoot,
+        bool isLeaf,
+        RuntimeIdentity? identity
+    );
 }

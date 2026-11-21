@@ -15,38 +15,6 @@ public sealed unsafe partial class ImGuiWidget
     private const string C_PRECISE_FLOAT_FORMAT = "%.9g";
 
     /// <summary>
-    /// Draws a two-column property row with a stable internal identifier.
-    /// </summary>
-    /// <param name="id">
-    /// Stable row identifier.
-    /// </param>
-    /// <param name="label">
-    /// Human-readable property label.
-    /// </param>
-    /// <param name="drawValue">
-    /// Value control callback.
-    /// </param>
-    /// <param name="tooltip">
-    /// Optional hover help displayed from the property label.
-    /// </param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="id"/> is empty or whitespace.
-    /// </exception>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name = "label"/> or <paramref name="drawValue"/> is <see langword="null"/>.
-    /// </exception>
-    public void PropertyRow(
-        string id,
-        string label,
-        Action drawValue,
-        string? tooltip = null
-    ) {
-        m_session.EnsureDrawing();
-        ArgumentNullException.ThrowIfNull(label);
-        PropertyRow(id, () => PropertyLabel(label, tooltip), drawValue);
-    }
-
-    /// <summary>
     /// Draws a two-column property row whose label is supplied by a custom presentation callback.
     /// </summary>
     /// <param name="id">
@@ -94,6 +62,38 @@ public sealed unsafe partial class ImGuiWidget
         {
             NativeImGui.EndTable();
         }
+    }
+
+    /// <summary>
+    /// Draws a two-column property row with a stable internal identifier.
+    /// </summary>
+    /// <param name="id">
+    /// Stable row identifier.
+    /// </param>
+    /// <param name="label">
+    /// Human-readable property label.
+    /// </param>
+    /// <param name="drawValue">
+    /// Value control callback.
+    /// </param>
+    /// <param name="tooltip">
+    /// Optional hover help displayed from the property label.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="id"/> is empty or whitespace.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name = "label"/> or <paramref name="drawValue"/> is <see langword="null"/>.
+    /// </exception>
+    public void PropertyRow(
+        string id,
+        string label,
+        Action drawValue,
+        string? tooltip = null
+    ) {
+        m_session.EnsureDrawing();
+        ArgumentNullException.ThrowIfNull(label);
+        PropertyRow(id, () => PropertyLabel(label, tooltip), drawValue);
     }
 
     /// <summary>

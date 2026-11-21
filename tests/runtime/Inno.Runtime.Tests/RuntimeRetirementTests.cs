@@ -166,14 +166,14 @@ public sealed class RuntimeRetirementTests
 
     private sealed class Resource : IDisposable
     {
-        internal bool disposed { get; private set; }
-        internal int disposeCount { get; private set; }
-
         public void Dispose()
         {
             disposed = true;
             disposeCount++;
         }
+
+        internal bool disposed { get; private set; }
+        internal int disposeCount { get; private set; }
     }
 
     private sealed class FailingFactory(
@@ -182,12 +182,12 @@ public sealed class RuntimeRetirementTests
         bool failAttach
     ) : IRuntimeSubsystemFactory
     {
+        internal bool observedRetainedResource;
+
         public RuntimeSubsystemDescriptor descriptor { get; } = new(
             new RuntimeSubsystemId("tests.failure"),
             lifetime: hostLifetime ? RuntimeSubsystemLifetime.Host : RuntimeSubsystemLifetime.Session
         );
-
-        internal bool observedRetainedResource;
 
         public IRuntimeSubsystem Create(RuntimeSubsystemContext context)
         {

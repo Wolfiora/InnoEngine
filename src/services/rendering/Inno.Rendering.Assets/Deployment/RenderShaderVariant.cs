@@ -61,6 +61,44 @@ public readonly struct RenderShaderVariant : IEquatable<RenderShaderVariant>
     public string value => m_value ?? string.Empty;
 
     /// <summary>
+    /// Determines whether this instance and the supplied value represent the same logical state.
+    /// </summary>
+    /// <param name="other">
+    /// The value to compare with this instance.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both values select identical options; otherwise, <see langword="false"/>.
+    /// </returns>
+    public bool Equals(RenderShaderVariant other) => string.Equals(value, other.value, StringComparison.Ordinal);
+
+    /// <summary>
+    /// Determines whether this instance and the supplied object represent the same logical state.
+    /// </summary>
+    /// <param name="obj">
+    /// The object to compare with this instance.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the object is an identical variant; otherwise, <see langword="false"/>.
+    /// </returns>
+    public override bool Equals(object? obj) => obj is RenderShaderVariant other && Equals(other);
+
+    /// <summary>
+    /// Computes a hash code from the canonical variant representation.
+    /// </summary>
+    /// <returns>
+    /// A hash code consistent with logical equality.
+    /// </returns>
+    public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(value);
+
+    /// <summary>
+    /// Formats this value as its canonical representation.
+    /// </summary>
+    /// <returns>
+    /// The canonical representation used by caches and deployed artifact paths.
+    /// </returns>
+    public override string ToString() => value;
+
+    /// <summary>
     /// Parses the canonical representation stored in a deployed artifact.
     /// </summary>
     /// <param name="value">
@@ -178,36 +216,6 @@ public readonly struct RenderShaderVariant : IEquatable<RenderShaderVariant>
     }
 
     /// <summary>
-    /// Determines whether this instance and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="other">
-    /// The value to compare with this instance.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when both values select identical options; otherwise, <see langword="false"/>.
-    /// </returns>
-    public bool Equals(RenderShaderVariant other) => string.Equals(value, other.value, StringComparison.Ordinal);
-
-    /// <summary>
-    /// Determines whether this instance and the supplied object represent the same logical state.
-    /// </summary>
-    /// <param name="obj">
-    /// The object to compare with this instance.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the object is an identical variant; otherwise, <see langword="false"/>.
-    /// </returns>
-    public override bool Equals(object? obj) => obj is RenderShaderVariant other && Equals(other);
-
-    /// <summary>
-    /// Computes a hash code from the canonical variant representation.
-    /// </summary>
-    /// <returns>
-    /// A hash code consistent with logical equality.
-    /// </returns>
-    public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(value);
-
-    /// <summary>
     /// Determines whether two variants select identical stable options.
     /// </summary>
     /// <param name="left">
@@ -240,14 +248,6 @@ public readonly struct RenderShaderVariant : IEquatable<RenderShaderVariant>
         RenderShaderVariant left,
         RenderShaderVariant right
     ) => !left.Equals(right);
-
-    /// <summary>
-    /// Formats this value as its canonical representation.
-    /// </summary>
-    /// <returns>
-    /// The canonical representation used by caches and deployed artifact paths.
-    /// </returns>
-    public override string ToString() => value;
 
     private static void ValidatePart(
         string value,

@@ -31,6 +31,51 @@ internal sealed class BindingGenerationOperation : IDisposable
         m_request = request;
     }
 
+    /// <summary>
+    /// Releases candidate outputs and generation leases after the complete batch has drained.
+    /// </summary>
+    public void Dispose()
+    {
+        List<Exception> failures = [];
+        for (int index = m_reading.Count - 1; index >= 0; index--)
+        {
+            try
+            {
+                m_reading[index].Dispose();
+            }
+            catch (Exception failure)
+            {
+                failures.Add(failure);
+            }
+        }
+        for (int index = m_publications.Count - 1; index >= 0; index--)
+        {
+            try
+            {
+                m_publications[index].Dispose();
+            }
+            catch (Exception failure)
+            {
+                failures.Add(failure);
+            }
+        }
+        for (int index = m_leases.Count - 1; index >= 0; index--)
+        {
+            try
+            {
+                m_leases[index].Dispose();
+            }
+            catch (Exception failure)
+            {
+                failures.Add(failure);
+            }
+        }
+        if (failures.Count > 0)
+        {
+            throw new AggregateException("Binding batch cleanup failed after draining generation.", failures);
+        }
+    }
+
     internal async ValueTask<NativeBindingGenerationResult> ExecuteAsync(CancellationToken cancellation)
     {
         BindingGenerationConfiguration[] definitions = m_request.components.Select(component =>
@@ -223,51 +268,6 @@ internal sealed class BindingGenerationOperation : IDisposable
         var result = new NativeBindingGenerationResult(results, m_reading);
         m_reading.Clear();
         return result;
-    }
-
-    /// <summary>
-    /// Releases candidate outputs and generation leases after the complete batch has drained.
-    /// </summary>
-    public void Dispose()
-    {
-        List<Exception> failures = [];
-        for (int index = m_reading.Count - 1; index >= 0; index--)
-        {
-            try
-            {
-                m_reading[index].Dispose();
-            }
-            catch (Exception failure)
-            {
-                failures.Add(failure);
-            }
-        }
-        for (int index = m_publications.Count - 1; index >= 0; index--)
-        {
-            try
-            {
-                m_publications[index].Dispose();
-            }
-            catch (Exception failure)
-            {
-                failures.Add(failure);
-            }
-        }
-        for (int index = m_leases.Count - 1; index >= 0; index--)
-        {
-            try
-            {
-                m_leases[index].Dispose();
-            }
-            catch (Exception failure)
-            {
-                failures.Add(failure);
-            }
-        }
-        if (failures.Count > 0)
-        {
-            throw new AggregateException("Binding batch cleanup failed after draining generation.", failures);
-        }
     }
 
     private void Verify(

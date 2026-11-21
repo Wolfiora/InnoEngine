@@ -96,6 +96,11 @@ public sealed class AudioClipImporterTests : IDisposable
     private AssetLoader CreateLoader()
         => new(m_types, m_serialization, m_identities, m_diagnostics, m_logs, m_assets, m_library);
 
+    private void Write(
+        string path,
+        byte[] bytes
+    ) => File.WriteAllBytes(Path.Combine(m_assets, path), bytes);
+
     private static AudioClipAsset Load(
         AssetLoader loader,
         string path
@@ -115,11 +120,6 @@ public sealed class AudioClipImporterTests : IDisposable
         using ArtifactLease encoded = loader.AcquireArtifact(asset.identity.persistentId, "audio-data");
         Assert.Equal(expected, encoded.ReadAllBytes());
     }
-
-    private void Write(
-        string path,
-        byte[] bytes
-    ) => File.WriteAllBytes(Path.Combine(m_assets, path), bytes);
 
     private static byte[] CreateWav()
     {

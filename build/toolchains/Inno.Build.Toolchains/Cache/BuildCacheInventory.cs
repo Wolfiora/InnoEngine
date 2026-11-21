@@ -21,6 +21,28 @@ internal sealed class BuildCacheInventory
     internal List<string> roots { get; } = [];
     internal List<string> retirementOrder { get; } = [];
 
+    internal HashSet<string> Protect(IEnumerable<string> roots)
+    {
+        var protectedPaths = new HashSet<string>(pathComparer);
+        var pending = new Stack<string>(roots);
+        while (pending.TryPop(out string? path))
+        {
+            if (!artifacts.TryGetValue(path, out (BuildCacheOwnerDescriptor owner, BuildCacheArtifactDescriptor artifact) entry))
+            {
+                throw new InvalidDataException($"Protected cache path '{path}' has no registered artifact owner.");
+            }
+            if (!protectedPaths.Add(path))
+            {
+                continue;
+            }
+            foreach (string dependency in entry.artifact.dependencies)
+            {
+                pending.Push(dependency);
+            }
+        }
+        return protectedPaths;
+    }
+
     internal static BuildCacheInventory Read(
         string workspace,
         IReadOnlyList<BuildCacheOwnerDescriptor> owners,
@@ -125,27 +147,5 @@ internal sealed class BuildCacheInventory
             throw new ArgumentException("Cache dependency metadata must not contain cycles.");
         }
         return result;
-    }
-
-    internal HashSet<string> Protect(IEnumerable<string> roots)
-    {
-        var protectedPaths = new HashSet<string>(pathComparer);
-        var pending = new Stack<string>(roots);
-        while (pending.TryPop(out string? path))
-        {
-            if (!artifacts.TryGetValue(path, out (BuildCacheOwnerDescriptor owner, BuildCacheArtifactDescriptor artifact) entry))
-            {
-                throw new InvalidDataException($"Protected cache path '{path}' has no registered artifact owner.");
-            }
-            if (!protectedPaths.Add(path))
-            {
-                continue;
-            }
-            foreach (string dependency in entry.artifact.dependencies)
-            {
-                pending.Push(dependency);
-            }
-        }
-        return protectedPaths;
     }
 }

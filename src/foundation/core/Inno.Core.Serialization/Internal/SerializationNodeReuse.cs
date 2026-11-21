@@ -41,31 +41,6 @@ internal static class SerializationNodeReuse
         return EqualityComparer<T>.Default.Equals(value, (T)previous);
     }
 
-    internal static ObjectSerializationNode CopyObject(ObjectSerializationNode previous)
-    {
-        var result = new ObjectSerializationNode();
-        result.values.EnsureCapacity(previous.values.Count);
-        foreach (KeyValuePair<string, SerializationNode> pair in previous.values)
-        {
-            result.values.Add(pair.Key, pair.Value);
-        }
-        return result;
-    }
-
-    internal static SerializationNode Scalar(
-        object value,
-        SerializationNode? previous
-    ) => previous is ScalarSerializationNode scalar && SameScalar(value, scalar.value)
-         ? scalar
-         : new ScalarSerializationNode(value);
-
-    internal static SerializationNode Binary(
-        byte[] value,
-        SerializationNode? previous
-    ) => previous is BinarySerializationNode binary && value.AsSpan().SequenceEqual(binary.value)
-         ? binary
-         : new BinarySerializationNode((byte[])value.Clone());
-
     internal static bool SameScalar(
         object value,
         object previous
@@ -92,4 +67,29 @@ internal static class SerializationNodeReuse
         }
         return value.Equals(previous);
     }
+
+    internal static ObjectSerializationNode CopyObject(ObjectSerializationNode previous)
+    {
+        var result = new ObjectSerializationNode();
+        result.values.EnsureCapacity(previous.values.Count);
+        foreach (KeyValuePair<string, SerializationNode> pair in previous.values)
+        {
+            result.values.Add(pair.Key, pair.Value);
+        }
+        return result;
+    }
+
+    internal static SerializationNode Scalar(
+        object value,
+        SerializationNode? previous
+    ) => previous is ScalarSerializationNode scalar && SameScalar(value, scalar.value)
+         ? scalar
+         : new ScalarSerializationNode(value);
+
+    internal static SerializationNode Binary(
+        byte[] value,
+        SerializationNode? previous
+    ) => previous is BinarySerializationNode binary && value.AsSpan().SequenceEqual(binary.value)
+         ? binary
+         : new BinarySerializationNode((byte[])value.Clone());
 }

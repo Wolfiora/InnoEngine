@@ -161,8 +161,6 @@ public sealed partial class SceneSerializationTests
 [StableTypeId("486290eb-6cc4-4a96-918a-c8022f51ad85")]
 internal sealed class PropertyReferenceProbe : GameComponent
 {
-    internal Action? beforeRead { get; set; }
-
     [SerializableProperty(order = -1)]
     public int trigger
     {
@@ -182,4 +180,6 @@ internal sealed class PropertyReferenceProbe : GameComponent
 
     [SerializableProperty]
     public GameSystem? targetSystem { get; set; }
+
+    internal Action? beforeRead { get; set; }
 }

@@ -33,48 +33,6 @@ public sealed unsafe partial class Sdl3PlatformApplication
     private int m_pendingEventReadIndex;
     private bool m_disposed;
 
-    private unsafe void Initialize()
-    {
-        // Deliver the activating mouse press to the application as well as focusing the window.
-        // This is required for first-click widgets, double-clicks, and drags across editor viewports.
-        _ = SDL.SetHint(SDL.Constants.SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
-        _ = SDL.SetHint(SDL.Constants.SDL_HINT_MOUSE_AUTO_CAPTURE, "0");
-
-        m_hostIntegration.ConfigureInitialization();
-
-        if (!SDL.Init(SDLInitFlags.Video | SDLInitFlags.Events))
-        {
-            throw new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL_Init failed.");
-        }
-
-        // Browser frames are already driven by requestAnimationFrame; SDL's native
-        // resize callback is only needed by desktop window move/resize loops.
-        if (!m_hostIntegration.capabilities.liveResize)
-        {
-            return;
-        }
-
-        m_liveResizeEventWatch = LiveResizeEventWatch;
-        m_liveResizeMainThreadCallback = LiveResizeMainThreadCallback;
-        m_liveResizeEventWatchPointer = (delegate* unmanaged[Cdecl]<void*, SDLEvent*, byte>)
-            Marshal.GetFunctionPointerForDelegate(m_liveResizeEventWatch);
-        m_liveResizeMainThreadCallbackPointer = (delegate* unmanaged[Cdecl]<void*, void>)
-            Marshal.GetFunctionPointerForDelegate(m_liveResizeMainThreadCallback);
-        m_liveResizeEventWatchHandle = GCHandle.Alloc(this, GCHandleType.Normal);
-        nint userData = (nint)GCHandle.ToIntPtr(m_liveResizeEventWatchHandle);
-        if (SDL.Raw.AddEventWatch(m_liveResizeEventWatchPointer, (void*)userData) == 0)
-        {
-            Exception failure = new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL_AddEventWatch failed.");
-            m_liveResizeEventWatchHandle.Free();
-            m_liveResizeEventWatch = null;
-            m_liveResizeMainThreadCallback = null;
-            m_liveResizeEventWatchPointer = null;
-            m_liveResizeMainThreadCallbackPointer = null;
-            SDL.QuitSubSystem(SDLInitFlags.Video | SDLInitFlags.Events);
-            throw failure;
-        }
-    }
-
     /// <summary>
     /// Attempts to dequeue the next backend-neutral platform event.
     /// </summary>
@@ -119,9 +77,6 @@ public sealed unsafe partial class Sdl3PlatformApplication
         return GetWindowsCore();
     }
 
-    private IReadOnlyList<Sdl3PlatformWindow> GetWindowsCore()
-        => new List<Sdl3PlatformWindow>(m_windows.Values).AsReadOnly();
-
     /// <summary>
     /// Registers a platform extension for the application lifetime.
     /// </summary>
@@ -143,6 +98,95 @@ public sealed unsafe partial class Sdl3PlatformApplication
         m_extensions.Add(extension);
         return new ExtensionRegistration(this, extension);
     }
+
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public partial void Dispose()
+    {
+        ValidateOwnerThread();
+        if (m_disposed)
+        {
+            return;
+        }
+
+        if (m_liveResizeEventWatch is not null && m_liveResizeEventWatchHandle.IsAllocated)
+        {
+            nint userData = (nint)GCHandle.ToIntPtr(m_liveResizeEventWatchHandle);
+            unsafe
+            {
+                SDL.Raw.RemoveEventWatch(m_liveResizeEventWatchPointer, (void*)userData);
+            }
+            m_liveResizeEventWatchHandle.Free();
+            m_liveResizeEventWatch = null;
+            m_liveResizeMainThreadCallback = null;
+            unsafe
+            {
+                m_liveResizeEventWatchPointer = null;
+                m_liveResizeMainThreadCallbackPointer = null;
+            }
+        }
+
+        foreach (ISdl3ApplicationExtension extension in m_extensions.ToArray())
+        {
+            extension.OnApplicationDisposing(this);
+        }
+        m_extensions.Clear();
+
+        foreach (Sdl3PlatformWindow window in new List<Sdl3PlatformWindow>(m_windows.Values))
+        {
+            window.Dispose();
+        }
+
+        m_windows.Clear();
+        SDL.QuitSubSystem(SDLInitFlags.Video | SDLInitFlags.Events);
+        m_disposed = true;
+    }
+
+    private unsafe void Initialize()
+    {
+        // Deliver the activating mouse press to the application as well as focusing the window.
+        // This is required for first-click widgets, double-clicks, and drags across editor viewports.
+        _ = SDL.SetHint(SDL.Constants.SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
+        _ = SDL.SetHint(SDL.Constants.SDL_HINT_MOUSE_AUTO_CAPTURE, "0");
+
+        m_hostIntegration.ConfigureInitialization();
+
+        if (!SDL.Init(SDLInitFlags.Video | SDLInitFlags.Events))
+        {
+            throw new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL_Init failed.");
+        }
+
+        // Browser frames are already driven by requestAnimationFrame; SDL's native
+        // resize callback is only needed by desktop window move/resize loops.
+        if (!m_hostIntegration.capabilities.liveResize)
+        {
+            return;
+        }
+
+        m_liveResizeEventWatch = LiveResizeEventWatch;
+        m_liveResizeMainThreadCallback = LiveResizeMainThreadCallback;
+        m_liveResizeEventWatchPointer = (delegate* unmanaged[Cdecl]<void*, SDLEvent*, byte>)
+            Marshal.GetFunctionPointerForDelegate(m_liveResizeEventWatch);
+        m_liveResizeMainThreadCallbackPointer = (delegate* unmanaged[Cdecl]<void*, void>)
+            Marshal.GetFunctionPointerForDelegate(m_liveResizeMainThreadCallback);
+        m_liveResizeEventWatchHandle = GCHandle.Alloc(this, GCHandleType.Normal);
+        nint userData = (nint)GCHandle.ToIntPtr(m_liveResizeEventWatchHandle);
+        if (SDL.Raw.AddEventWatch(m_liveResizeEventWatchPointer, (void*)userData) == 0)
+        {
+            Exception failure = new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL_AddEventWatch failed.");
+            m_liveResizeEventWatchHandle.Free();
+            m_liveResizeEventWatch = null;
+            m_liveResizeMainThreadCallback = null;
+            m_liveResizeEventWatchPointer = null;
+            m_liveResizeMainThreadCallbackPointer = null;
+            SDL.QuitSubSystem(SDLInitFlags.Video | SDLInitFlags.Events);
+            throw failure;
+        }
+    }
+
+    private IReadOnlyList<Sdl3PlatformWindow> GetWindowsCore()
+        => new List<Sdl3PlatformWindow>(m_windows.Values).AsReadOnly();
 
     private bool TryDequeuePendingEvent(out Event? evnt)
     {
@@ -195,113 +239,6 @@ public sealed unsafe partial class Sdl3PlatformApplication
         }
     }
 
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public partial void Dispose()
-    {
-        ValidateOwnerThread();
-        if (m_disposed)
-        {
-            return;
-        }
-
-        if (m_liveResizeEventWatch is not null && m_liveResizeEventWatchHandle.IsAllocated)
-        {
-            nint userData = (nint)GCHandle.ToIntPtr(m_liveResizeEventWatchHandle);
-            unsafe
-            {
-                SDL.Raw.RemoveEventWatch(m_liveResizeEventWatchPointer, (void*)userData);
-            }
-            m_liveResizeEventWatchHandle.Free();
-            m_liveResizeEventWatch = null;
-            m_liveResizeMainThreadCallback = null;
-            unsafe
-            {
-                m_liveResizeEventWatchPointer = null;
-                m_liveResizeMainThreadCallbackPointer = null;
-            }
-        }
-
-        foreach (ISdl3ApplicationExtension extension in m_extensions.ToArray())
-        {
-            extension.OnApplicationDisposing(this);
-        }
-        m_extensions.Clear();
-
-        foreach (Sdl3PlatformWindow window in new List<Sdl3PlatformWindow>(m_windows.Values))
-        {
-            window.Dispose();
-        }
-
-        m_windows.Clear();
-        SDL.QuitSubSystem(SDLInitFlags.Video | SDLInitFlags.Events);
-        m_disposed = true;
-    }
-
-    private static unsafe byte LiveResizeEventWatch(
-        void* userData,
-        SDLEvent* evnt
-    ) {
-        if (userData is null || evnt is null)
-        {
-            return 1;
-        }
-
-        SDLEventType eventType = (SDLEventType)evnt->Type;
-        if (eventType != SDLEventType.WindowExposed || evnt->Window.Data1 == 0)
-        {
-            return 1;
-        }
-
-        GCHandle handle = GCHandle.FromIntPtr((IntPtr)userData);
-        if (handle.Target is not Sdl3PlatformApplication application || application.m_disposed)
-        {
-            return 1;
-        }
-
-        Volatile.Write(ref application.m_liveResizeWindowId, evnt->Window.WindowID);
-        if (Interlocked.Exchange(ref application.m_liveResizeRedrawQueued, 1) == 0)
-        {
-            nint userDataPtr = (nint)GCHandle.ToIntPtr(application.m_liveResizeEventWatchHandle);
-            if (SDL.Raw.RunOnMainThread(application.m_liveResizeMainThreadCallbackPointer, (void*)userDataPtr, 0) == 0)
-            {
-                Interlocked.Exchange(ref application.m_liveResizeRedrawQueued, 0);
-            }
-        }
-
-        return 1;
-    }
-
-    private static unsafe void LiveResizeMainThreadCallback(void* userData)
-    {
-        if (userData is null)
-        {
-            return;
-        }
-
-        GCHandle handle = GCHandle.FromIntPtr((IntPtr)userData);
-        if (handle.Target is not Sdl3PlatformApplication application || application.m_disposed)
-        {
-            return;
-        }
-
-        uint windowId = Volatile.Read(ref application.m_liveResizeWindowId);
-        Interlocked.Exchange(ref application.m_liveResizeRedrawQueued, 0);
-        if (windowId != 0)
-        {
-            try
-            {
-                application.DispatchLiveResizeRedraw(windowId);
-            }
-            catch (Exception exception)
-            {
-                // Never unwind managed exceptions through SDL's native event callback.
-                application.m_redrawFailure ??= ExceptionDispatchInfo.Capture(exception);
-            }
-        }
-    }
-
     private unsafe void DispatchNativeEvent(ref SDLEvent sdlEvent)
     {
         var nativeEventData = new ReadOnlySpan<byte>(Unsafe.AsPointer(ref sdlEvent), sizeof(SDLEvent));
@@ -343,28 +280,6 @@ public sealed unsafe partial class Sdl3PlatformApplication
     }
 
     private void UnregisterExtension(ISdl3ApplicationExtension extension) => m_extensions.Remove(extension);
-
-    private sealed class ExtensionRegistration(
-        Sdl3PlatformApplication application,
-        ISdl3ApplicationExtension extension
-    ) : IDisposable
-    {
-        private Sdl3PlatformApplication? m_application = application;
-        private ISdl3ApplicationExtension? m_extension = extension;
-
-        /// <summary>
-        /// Releases the resources owned by this instance.
-        /// </summary>
-        public void Dispose()
-        {
-            Sdl3PlatformApplication? owner = Interlocked.Exchange(ref m_application, null);
-            ISdl3ApplicationExtension? registered = Interlocked.Exchange(ref m_extension, null);
-            if (owner is not null && registered is not null)
-            {
-                owner.UnregisterExtension(registered);
-            }
-        }
-    }
 
     private unsafe bool TryTranslateEvent(
         ref SDLEvent sdlEvent,
@@ -463,7 +378,7 @@ public sealed unsafe partial class Sdl3PlatformApplication
             {
                 string? text = sdlEvent.Text.Text is null
                                ? null
-                               : Marshal.PtrToStringUTF8((IntPtr)sdlEvent.Text.Text);
+                               : Marshal.PtrToStringUTF8((nint)sdlEvent.Text.Text);
                 if (!string.IsNullOrEmpty(text))
                 {
                     evnt = new TextInputEvent(sdlEvent.Text.WindowID, text);
@@ -511,6 +426,69 @@ public sealed unsafe partial class Sdl3PlatformApplication
 
         evnt = null;
         return false;
+    }
+
+    private static unsafe byte LiveResizeEventWatch(
+        void* userData,
+        SDLEvent* evnt
+    ) {
+        if (userData is null || evnt is null)
+        {
+            return 1;
+        }
+
+        SDLEventType eventType = (SDLEventType)evnt->Type;
+        if (eventType != SDLEventType.WindowExposed || evnt->Window.Data1 == 0)
+        {
+            return 1;
+        }
+
+        GCHandle handle = GCHandle.FromIntPtr((nint)userData);
+        if (handle.Target is not Sdl3PlatformApplication application || application.m_disposed)
+        {
+            return 1;
+        }
+
+        Volatile.Write(ref application.m_liveResizeWindowId, evnt->Window.WindowID);
+        if (Interlocked.Exchange(ref application.m_liveResizeRedrawQueued, 1) == 0)
+        {
+            nint userDataPtr = (nint)GCHandle.ToIntPtr(application.m_liveResizeEventWatchHandle);
+            if (SDL.Raw.RunOnMainThread(application.m_liveResizeMainThreadCallbackPointer, (void*)userDataPtr, 0) == 0)
+            {
+                Interlocked.Exchange(ref application.m_liveResizeRedrawQueued, 0);
+            }
+        }
+
+        return 1;
+    }
+
+    private static unsafe void LiveResizeMainThreadCallback(void* userData)
+    {
+        if (userData is null)
+        {
+            return;
+        }
+
+        GCHandle handle = GCHandle.FromIntPtr((nint)userData);
+        if (handle.Target is not Sdl3PlatformApplication application || application.m_disposed)
+        {
+            return;
+        }
+
+        uint windowId = Volatile.Read(ref application.m_liveResizeWindowId);
+        Interlocked.Exchange(ref application.m_liveResizeRedrawQueued, 0);
+        if (windowId != 0)
+        {
+            try
+            {
+                application.DispatchLiveResizeRedraw(windowId);
+            }
+            catch (Exception exception)
+            {
+                // Never unwind managed exceptions through SDL's native event callback.
+                application.m_redrawFailure ??= ExceptionDispatchInfo.Capture(exception);
+            }
+        }
     }
 
     private static KeyModifier TranslateModifiers(SDLKeymod modifiers)
@@ -697,6 +675,28 @@ public sealed unsafe partial class Sdl3PlatformApplication
 
         key = default;
         return false;
+    }
+
+    private sealed class ExtensionRegistration(
+        Sdl3PlatformApplication application,
+        ISdl3ApplicationExtension extension
+    ) : IDisposable
+    {
+        private Sdl3PlatformApplication? m_application = application;
+        private ISdl3ApplicationExtension? m_extension = extension;
+
+        /// <summary>
+        /// Releases the resources owned by this instance.
+        /// </summary>
+        public void Dispose()
+        {
+            Sdl3PlatformApplication? owner = Interlocked.Exchange(ref m_application, null);
+            ISdl3ApplicationExtension? registered = Interlocked.Exchange(ref m_extension, null);
+            if (owner is not null && registered is not null)
+            {
+                owner.UnregisterExtension(registered);
+            }
+        }
     }
 
     private readonly record struct PendingEventCoalesceKey(

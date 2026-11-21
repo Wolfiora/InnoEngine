@@ -20,6 +20,11 @@ public sealed class BuildArtifactReadLease : IDisposable
     }
 
     /// <summary>
+    /// Ends artifact access and allows repair or retirement; repeated disposal has no effect.
+    /// </summary>
+    public void Dispose() => Interlocked.Exchange(ref m_lease, null)?.Dispose();
+
+    /// <summary>
     /// Acquires reading ownership and verifies the complete artifact before exposing it to a consumer.
     /// </summary>
     /// <param name="directory">
@@ -71,11 +76,6 @@ public sealed class BuildArtifactReadLease : IDisposable
         cancellationToken
     ).ConfigureAwait(false)
          ?? throw new InvalidDataException($"Build artifact '{directory}' is missing, damaged or has a different identity.");
-
-    /// <summary>
-    /// Ends artifact access and allows repair or retirement; repeated disposal has no effect.
-    /// </summary>
-    public void Dispose() => Interlocked.Exchange(ref m_lease, null)?.Dispose();
 
     internal static async ValueTask<BuildArtifactReadLease?> TryAcquireAsync(
         string directory,

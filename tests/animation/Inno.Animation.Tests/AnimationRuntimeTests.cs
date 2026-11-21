@@ -143,8 +143,6 @@ public sealed class AnimationRuntimeTests
         Assert.Throws<ArgumentException>(() => runtime.Play(clip, default));
     }
 
-    private sealed class Destination : IdentityObject;
-
     private static AnimationClipAsset CreateClip()
         => new()
     {
@@ -185,10 +183,12 @@ public sealed class AnimationRuntimeTests
         ]
     };
 
+    private sealed class Destination : IdentityObject;
+
     private sealed class RecordingSink : IAnimationBindingSink
     {
-        internal IReadOnlyList<AnimationSample> lastSamples { get; private set; } = [];
-
         public void Apply(ReadOnlySpan<AnimationSample> samples) => lastSamples = samples.ToArray();
+
+        internal IReadOnlyList<AnimationSample> lastSamples { get; private set; } = [];
     }
 }

@@ -25,6 +25,20 @@ public struct SerializedRenderExtensionState
     }
 
     /// <summary>
+    /// Copies an owner-captured property snapshot, preserving its automatic resource dependency declarations.
+    /// </summary>
+    /// <param name="properties">
+    /// Complete neutral properties produced by the asset authoring services.
+    /// </param>
+    public SerializedRenderExtensionState(AssetPropertySnapshot properties)
+    {
+        ArgumentNullException.ThrowIfNull(properties);
+        this.stableTypeId = properties.stableTypeId;
+        this.propertyData = properties.data.ToArray();
+        this.dependencies = properties.dependencies.ToArray();
+    }
+
+    /// <summary>
     /// Creates immutable extension state from stable identity and property bytes.
     /// </summary>
     /// <param name="stableTypeId">
@@ -40,20 +54,6 @@ public struct SerializedRenderExtensionState
         this.stableTypeId = stableTypeId;
         this.propertyData = propertyData.ToArray();
         this.dependencies = [];
-    }
-
-    /// <summary>
-    /// Copies an owner-captured property snapshot, preserving its automatic resource dependency declarations.
-    /// </summary>
-    /// <param name="properties">
-    /// Complete neutral properties produced by the asset authoring services.
-    /// </param>
-    public SerializedRenderExtensionState(AssetPropertySnapshot properties)
-    {
-        ArgumentNullException.ThrowIfNull(properties);
-        this.stableTypeId = properties.stableTypeId;
-        this.propertyData = properties.data.ToArray();
-        this.dependencies = properties.dependencies.ToArray();
     }
 
     /// <summary>

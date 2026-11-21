@@ -19,24 +19,23 @@ internal sealed class BgfxProcessDeviceLease : IDisposable
         m_singleThreaded = singleThreaded;
     }
 
-    internal static BgfxProcessDeviceLease Acquire(bool singleThreaded)
+    /// <summary>
+    /// Releases active ownership after native shutdown; a consumed inline runtime remains unavailable.
+    /// </summary>
+    public void Dispose()
     {
         lock (S_SYNC)
         {
-            if (s_active is not null)
+            if (m_disposed)
             {
-                throw new InvalidOperationException("Only one BGFX device may own the native process runtime.");
+                return;
             }
-            if (s_singleThreadedRuntimeConsumed)
+            if (!ReferenceEquals(s_active, this))
             {
-                throw new InvalidOperationException(
-                    "BGFX cannot be initialized again after this process entered single-threaded mode."
-                );
+                throw new InvalidOperationException("BGFX process leases must be released by their owner.");
             }
-
-            var lease = new BgfxProcessDeviceLease(singleThreaded);
-            s_active = lease;
-            return lease;
+            m_disposed = true;
+            s_active = null;
         }
     }
 
@@ -55,23 +54,24 @@ internal sealed class BgfxProcessDeviceLease : IDisposable
         }
     }
 
-    /// <summary>
-    /// Releases active ownership after native shutdown; a consumed inline runtime remains unavailable.
-    /// </summary>
-    public void Dispose()
+    internal static BgfxProcessDeviceLease Acquire(bool singleThreaded)
     {
         lock (S_SYNC)
         {
-            if (m_disposed)
+            if (s_active is not null)
             {
-                return;
+                throw new InvalidOperationException("Only one BGFX device may own the native process runtime.");
             }
-            if (!ReferenceEquals(s_active, this))
+            if (s_singleThreadedRuntimeConsumed)
             {
-                throw new InvalidOperationException("BGFX process leases must be released by their owner.");
+                throw new InvalidOperationException(
+                    "BGFX cannot be initialized again after this process entered single-threaded mode."
+                );
             }
-            m_disposed = true;
-            s_active = null;
+
+            var lease = new BgfxProcessDeviceLease(singleThreaded);
+            s_active = lease;
+            return lease;
         }
     }
 }

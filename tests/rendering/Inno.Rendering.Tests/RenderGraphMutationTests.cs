@@ -118,22 +118,6 @@ public sealed class RenderGraphMutationTests
         Assert.Equal("Accepted/Visible", Assert.Single(graph.Compile().graph!.passes).name);
     }
 
-    private static RenderGraphBuilder CreateGraph()
-        => new(
-            1,
-            new GraphicsCapabilities(
-                GraphicsApi.Noop,
-                GraphicsCapability.None,
-                new GraphicsLimits(64, 8, 16_384, 16),
-                Enum.GetValues<RenderTextureFormat>(),
-                Enum.GetValues<RenderTextureFormat>(),
-                [],
-                [],
-                false,
-                false
-            )
-        );
-
     [Fact]
     public void AcceptedFuturePhaseOrderingStillDetectsALaterCycleAndRollsBack()
     {
@@ -188,6 +172,22 @@ public sealed class RenderGraphMutationTests
         first.After(new("last"));
         Assert.Equal(new[] { "Last", "First" }, graph.Compile().graph!.passes.Select(static pass => pass.name));
     }
+
+    private static RenderGraphBuilder CreateGraph()
+        => new(
+            1,
+            new GraphicsCapabilities(
+                GraphicsApi.Noop,
+                GraphicsCapability.None,
+                new GraphicsLimits(64, 8, 16_384, 16),
+                Enum.GetValues<RenderTextureFormat>(),
+                Enum.GetValues<RenderTextureFormat>(),
+                [],
+                [],
+                false,
+                false
+            )
+        );
 
     private static RenderTextureDescriptor Descriptor()
         => new(32, 32, RenderTextureFormat.RGBA8, RenderTextureUsage.ColorAttachment | RenderTextureUsage.Sampled);

@@ -213,8 +213,8 @@ public sealed partial class AssetLoader
         AssetRecord record
     ) : IDisposable
     {
-        private bool m_released;
         private readonly List<Exception> m_failures = [];
+        private bool m_released;
 
         /// <summary>
         /// Keeps the canonical registration until its unload hook has actually quiesced.

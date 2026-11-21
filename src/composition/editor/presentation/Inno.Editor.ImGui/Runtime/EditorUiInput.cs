@@ -8,6 +8,20 @@ namespace Inno.Editor.ImGui;
 /// </summary>
 public readonly struct EditorUiInput
 {
+    internal unsafe EditorUiInput(ImGuiIO* io)
+    {
+        this.alt = io->KeyAlt != 0;
+        bool swapsModifiers = io->ConfigMacOsxBehaviors != 0;
+        this.control = (swapsModifiers ? io->KeySuper : io->KeyCtrl) != 0;
+        this.shift = io->KeyShift != 0;
+        this.super = (swapsModifiers ? io->KeyCtrl : io->KeySuper) != 0;
+        this.wantsText = io->WantTextInput != 0;
+        this.mouseDelta = ImGui.FromNative(io->MouseDelta);
+        this.framebufferScale = ImGui.FromNative(io->DisplayFramebufferScale);
+        this.wheel = io->MouseWheel;
+        this.deltaTime = io->DeltaTime;
+    }
+
     /// <summary>
     /// Gets whether Alt is held.
     /// </summary>
@@ -52,18 +66,4 @@ public readonly struct EditorUiInput
     /// Gets the drawable pixel scale relative to logical UI coordinates.
     /// </summary>
     public Vector2 framebufferScale { get; }
-
-    internal unsafe EditorUiInput(ImGuiIO* io)
-    {
-        this.alt = io->KeyAlt != 0;
-        bool swapsModifiers = io->ConfigMacOsxBehaviors != 0;
-        this.control = (swapsModifiers ? io->KeySuper : io->KeyCtrl) != 0;
-        this.shift = io->KeyShift != 0;
-        this.super = (swapsModifiers ? io->KeyCtrl : io->KeySuper) != 0;
-        this.wantsText = io->WantTextInput != 0;
-        this.mouseDelta = ImGui.FromNative(io->MouseDelta);
-        this.framebufferScale = ImGui.FromNative(io->DisplayFramebufferScale);
-        this.wheel = io->MouseWheel;
-        this.deltaTime = io->DeltaTime;
-    }
 }

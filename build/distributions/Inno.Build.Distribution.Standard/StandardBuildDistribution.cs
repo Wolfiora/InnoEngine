@@ -38,6 +38,23 @@ public sealed class StandardBuildDistribution
     public BuildDistribution build { get; }
 
     /// <summary>
+    /// Resolves explicitly registered shader configuration independently of tool execution target.
+    /// </summary>
+    /// <param name="target">
+    /// The artifact's actual publication target.
+    /// </param>
+    /// <returns>
+    /// The borrowed immutable configuration; unavailable targets fail before native preparation.
+    /// </returns>
+    /// <exception cref="NotSupportedException">
+    /// The distribution has no shader configuration for this target.
+    /// </exception>
+    public BgfxShaderTargetProfile ResolveShaderTarget(BuildTargetId target)
+        => m_shaders.TryGetValue(target, out BgfxShaderTargetProfile? profile)
+           ? profile
+           : throw new NotSupportedException($"No shader configuration is registered for '{target}'.");
+
+    /// <summary>
     /// Composes one explicit binding per implemented platform without resolving tools.
     /// </summary>
     /// <param name="context">
@@ -110,21 +127,4 @@ public sealed class StandardBuildDistribution
             )
         );
     }
-
-    /// <summary>
-    /// Resolves explicitly registered shader configuration independently of tool execution target.
-    /// </summary>
-    /// <param name="target">
-    /// The artifact's actual publication target.
-    /// </param>
-    /// <returns>
-    /// The borrowed immutable configuration; unavailable targets fail before native preparation.
-    /// </returns>
-    /// <exception cref="NotSupportedException">
-    /// The distribution has no shader configuration for this target.
-    /// </exception>
-    public BgfxShaderTargetProfile ResolveShaderTarget(BuildTargetId target)
-        => m_shaders.TryGetValue(target, out BgfxShaderTargetProfile? profile)
-           ? profile
-           : throw new NotSupportedException($"No shader configuration is registered for '{target}'.");
 }

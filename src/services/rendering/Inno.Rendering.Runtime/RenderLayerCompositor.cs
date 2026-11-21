@@ -45,6 +45,38 @@ internal sealed class RenderLayerCompositor : IDisposable
         m_programProvider = programProvider;
     }
 
+    /// <summary>
+    /// Releases the engine-owned shader pipeline and fullscreen quad buffers.
+    /// </summary>
+    public void Dispose()
+    {
+        if (m_disposed)
+        {
+            return;
+        }
+        if (m_indices.isValid)
+        {
+            m_device.DestroyBuffer(m_indices);
+        }
+        if (m_vertices.isValid)
+        {
+            m_device.DestroyBuffer(m_vertices);
+        }
+        if (m_pipeline.isValid)
+        {
+            m_device.DestroyGraphicsPipeline(m_pipeline);
+        }
+        if (m_outputTransferPipeline.isValid)
+        {
+            m_device.DestroyGraphicsPipeline(m_outputTransferPipeline);
+        }
+        m_indices = default;
+        m_vertices = default;
+        m_pipeline = default;
+        m_outputTransferPipeline = default;
+        m_disposed = true;
+    }
+
     internal void AddPasses(
         RenderGraphBuilder graph,
         string name,
@@ -128,38 +160,6 @@ internal sealed class RenderLayerCompositor : IDisposable
         {
             AddOutputTransfer(graph, name, compositionTarget, viewport);
         }
-    }
-
-    /// <summary>
-    /// Releases the engine-owned shader pipeline and fullscreen quad buffers.
-    /// </summary>
-    public void Dispose()
-    {
-        if (m_disposed)
-        {
-            return;
-        }
-        if (m_indices.isValid)
-        {
-            m_device.DestroyBuffer(m_indices);
-        }
-        if (m_vertices.isValid)
-        {
-            m_device.DestroyBuffer(m_vertices);
-        }
-        if (m_pipeline.isValid)
-        {
-            m_device.DestroyGraphicsPipeline(m_pipeline);
-        }
-        if (m_outputTransferPipeline.isValid)
-        {
-            m_device.DestroyGraphicsPipeline(m_outputTransferPipeline);
-        }
-        m_indices = default;
-        m_vertices = default;
-        m_pipeline = default;
-        m_outputTransferPipeline = default;
-        m_disposed = true;
     }
 
     private void EnsureResources()

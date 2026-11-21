@@ -132,21 +132,12 @@ public sealed class EditorAudioHostTests : IDisposable
     private sealed class FakeArtifactLookup : IAssetArtifactLookup
     {
         private readonly ArtifactRetention m_retention = new();
+        private readonly Dictionary<Guid, (AssetArtifactInfo info, string path)> m_artifacts = [];
 
         public ArtifactLease AcquireArtifact(
             Guid persistentId,
             string outputName
         ) => m_retention.Retain(m_artifacts[persistentId].info, () => File.OpenRead(m_artifacts[persistentId].path));
-
-        private readonly Dictionary<Guid, (AssetArtifactInfo info, string path)> m_artifacts = [];
-
-        internal void Add(
-            Guid id,
-            string path
-        ) => m_artifacts.Add(
-            id,
-            (new AssetArtifactInfo(new AssetArtifactKey(new string('A', 64)), "audio-data", "TEST", 128), path)
-        );
 
         public bool TryGetArtifact(
             Guid persistentId,
@@ -161,5 +152,13 @@ public sealed class EditorAudioHostTests : IDisposable
             artifact = null;
             return false;
         }
+
+        internal void Add(
+            Guid id,
+            string path
+        ) => m_artifacts.Add(
+            id,
+            (new AssetArtifactInfo(new AssetArtifactKey(new string('A', 64)), "audio-data", "TEST", 128), path)
+        );
     }
 }

@@ -509,36 +509,6 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
         }
     }
 
-    private static void Retire(
-        Task? task,
-        CancellationTokenSource? cancellation
-    ) {
-        if (cancellation is null)
-        {
-            return;
-        }
-        cancellation.Cancel();
-        if (task is null)
-        {
-            cancellation.Dispose();
-            return;
-        }
-        _ = task.ContinueWith(
-            static (
-                completed,
-                state
-            ) =>
-            {
-                _ = completed.Exception;
-                ((CancellationTokenSource)state!).Dispose();
-            },
-            cancellation,
-            CancellationToken.None,
-            TaskContinuationOptions.ExecuteSynchronously,
-            TaskScheduler.Default
-        );
-    }
-
     private void ReplaceDiagnostics(
         ISet<DiagnosticIdentity> active,
         IEnumerable<Diagnostic> diagnostics
@@ -567,6 +537,36 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
         {
             throw new InvalidOperationException("A retiring artifact provider cannot accept compilation requests.");
         }
+    }
+
+    private static void Retire(
+        Task? task,
+        CancellationTokenSource? cancellation
+    ) {
+        if (cancellation is null)
+        {
+            return;
+        }
+        cancellation.Cancel();
+        if (task is null)
+        {
+            cancellation.Dispose();
+            return;
+        }
+        _ = task.ContinueWith(
+            static (
+                completed,
+                state
+            ) =>
+            {
+                _ = completed.Exception;
+                ((CancellationTokenSource)state!).Dispose();
+            },
+            cancellation,
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default
+        );
     }
 
     private readonly record struct ShaderKey(

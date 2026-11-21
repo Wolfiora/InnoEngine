@@ -449,11 +449,6 @@ public sealed class BuildCachePublisher
         ProcessOwnedDirectory.RetireMetadataUnderOwnership(m_root, cancellation);
     }
 
-    private sealed record Index(
-        string path,
-        string[] dependencies
-    );
-
     private IReadOnlyList<BuildCacheArtifactDescriptor> ReadArtifacts(CancellationToken cancellation)
     {
         List<BuildCacheArtifactDescriptor> result = [];
@@ -633,6 +628,11 @@ public sealed class BuildCachePublisher
             root.GetProperty("targetId").GetString()
         );
     }
+
+    private sealed record Index(
+        string path,
+        string[] dependencies
+    );
 
     private sealed record Entry(
         string directory,

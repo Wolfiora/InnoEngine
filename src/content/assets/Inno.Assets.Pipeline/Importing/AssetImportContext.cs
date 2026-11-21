@@ -19,6 +19,7 @@ public sealed class AssetImportContext
     private readonly List<AssetImportDependency> m_importDependencies = [];
     private readonly Func<string, Type, AssetObject?> m_dependencyResolver;
     private readonly Func<string, ReadOnlyMemory<byte>> m_sourceReader;
+    private readonly IAssetArtifactLookup m_artifacts;
 
     /// <summary>
     /// Creates an asset import context.
@@ -89,28 +90,6 @@ public sealed class AssetImportContext
         m_artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
     }
 
-    private readonly IAssetArtifactLookup m_artifacts;
-
-    /// <summary>
-    /// Acquires an immutable dependency output and records its invalidation dependency automatically.
-    /// </summary>
-    /// <param name="assetId">
-    /// Persistent dependency identity.
-    /// </param>
-    /// <param name="outputName">
-    /// Stable named output protocol.
-    /// </param>
-    /// <returns>
-    /// A caller-owned lease that must be disposed after reading.
-    /// </returns>
-    public ArtifactLease AcquireArtifact(
-        Guid assetId,
-        string outputName
-    ) {
-        DependsOnArtifact(assetId);
-        return m_artifacts.AcquireArtifact(assetId, outputName);
-    }
-
     /// <summary>
     /// Gets the isolated source path.
     /// </summary>
@@ -171,6 +150,26 @@ public sealed class AssetImportContext
     public string extension => Path.GetExtension(assetPath.localPath).ToLowerInvariant();
 
     /// <summary>
+    /// Acquires an immutable dependency output and records its invalidation dependency automatically.
+    /// </summary>
+    /// <param name="assetId">
+    /// Persistent dependency identity.
+    /// </param>
+    /// <param name="outputName">
+    /// Stable named output protocol.
+    /// </param>
+    /// <returns>
+    /// A caller-owned lease that must be disposed after reading.
+    /// </returns>
+    public ArtifactLease AcquireArtifact(
+        Guid assetId,
+        string outputName
+    ) {
+        DependsOnArtifact(assetId);
+        return m_artifacts.AcquireArtifact(assetId, outputName);
+    }
+
+    /// <summary>
     /// Reads the source bytes as UTF-8 text.
     /// </summary>
     /// <returns>
@@ -213,12 +212,6 @@ public sealed class AssetImportContext
     /// Decoded UTF-8 text without an optional byte-order mark.
     /// </returns>
     public string ReadSourceUtf8Text(AssetPath path) => DecodeUtf8(ReadSourceBytes(path).Span);
-
-    private static string DecodeUtf8(ReadOnlySpan<byte> bytes)
-    {
-        string text = Encoding.UTF8.GetString(bytes);
-        return text.Length > 0 && text[0] == '\uFEFF' ? text[1..] : text;
-    }
 
     /// <summary>
     /// Declares a direct runtime dependency by isolated source path.
@@ -334,6 +327,12 @@ public sealed class AssetImportContext
     internal IReadOnlyList<string> runtimeDependencyPaths => m_runtimeDependencyPaths;
     internal IReadOnlyList<AssetDependency> runtimeDependencies => m_runtimeDependencies;
     internal IReadOnlyList<AssetImportDependency> importDependencies => m_importDependencies;
+
+    private static string DecodeUtf8(ReadOnlySpan<byte> bytes)
+    {
+        string text = Encoding.UTF8.GetString(bytes);
+        return text.Length > 0 && text[0] == '\uFEFF' ? text[1..] : text;
+    }
 }
 
 internal enum AssetImportDependencyKind

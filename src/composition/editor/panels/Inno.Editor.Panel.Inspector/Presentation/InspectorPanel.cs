@@ -30,16 +30,6 @@ internal sealed class InspectorPanel : EditorPanel
     private string m_failureState = string.Empty;
 
     /// <summary>
-    /// Gets whether use window padding is enabled for this implementation.
-    /// </summary>
-    public override bool useWindowPadding => false;
-
-    /// <summary>
-    /// Lets the inspector content child own vertical scrolling.
-    /// </summary>
-    public override bool allowScrolling => false;
-
-    /// <summary>
     /// Creates the panel.
     /// </summary>
     /// <param name="inspection">
@@ -75,6 +65,16 @@ internal sealed class InspectorPanel : EditorPanel
         m_log = logs.CreateLogger<InspectorPanel>();
         m_targetHeader = new InspectorTargetHeader();
     }
+
+    /// <summary>
+    /// Gets whether use window padding is enabled for this implementation.
+    /// </summary>
+    public override bool useWindowPadding => false;
+
+    /// <summary>
+    /// Lets the inspector content child own vertical scrolling.
+    /// </summary>
+    public override bool allowScrolling => false;
 
     /// <summary>
     /// Draws this feature using the current editor presentation context.

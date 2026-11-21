@@ -26,8 +26,6 @@ internal sealed class WorkStealingJobSystem : IJobSystem
     private readonly ConcurrentQueue<int> m_globalInjectQueue = new();
     private readonly MainThreadWorkQueue m_mainThreadQueue;
     private readonly int m_maxFrameJobs;
-    private int m_peakFrameJobs;
-    private long m_rejectedJobs;
     private readonly List<Exception> m_shutdownFailures = [];
     private readonly ManualResetEventSlim m_completionSignal = new(false);
     private readonly SemaphoreSlim m_wakeSignal = new(0);
@@ -40,6 +38,8 @@ internal sealed class WorkStealingJobSystem : IJobSystem
 
     private readonly int m_mainThreadId;
     private readonly int m_workerCount;
+    private int m_peakFrameJobs;
+    private long m_rejectedJobs;
     private bool m_disposed;
     private bool m_frameActive;
     private int m_running;

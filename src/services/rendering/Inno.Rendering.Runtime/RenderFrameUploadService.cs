@@ -13,13 +13,13 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
 
     private readonly IRenderDevice m_device;
     private readonly RenderResourceLimits m_limits;
+    private readonly Dictionary<UploadPageKey, UploadPool> m_pools = [];
     private RenderRetirementQueue? m_sweep;
     private int m_pageCount;
     private long m_residentBytes;
     private long m_frameBytes;
     private long m_peakResidentBytes;
     private long m_rejected;
-    private readonly Dictionary<UploadPageKey, UploadPool> m_pools = [];
     private ulong m_frameIndex;
     private bool m_frameOpen;
     private bool m_disposed;
@@ -124,6 +124,56 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
         return CreateBufferSlice(page.handle, firstElement, elementCount, descriptor.usage, m_frameIndex);
     }
 
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose()
+    {
+        if (m_disposed)
+        {
+            return;
+        }
+        m_frameOpen = false;
+        if (m_retirement is null)
+        {
+            m_retirement = new RenderRetirementQueue();
+            if (m_sweep is not null)
+            {
+                m_retirement.Add(m_sweep.Dispose);
+            }
+            foreach (UploadPage page in m_pools.Values.SelectMany(static pool => pool.pages))
+            {
+                m_retirement.Add(() => m_device.DestroyBuffer(page.handle));
+            }
+        }
+        try
+        {
+            m_retirement.Dispose();
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
+        catch
+        {
+            m_pools.Clear();
+            m_residentBytes = 0;
+            m_pageCount = 0;
+            m_disposed = true;
+            throw;
+        }
+        m_pools.Clear();
+        m_residentBytes = 0;
+        m_pageCount = 0;
+        m_disposed = true;
+    }
+
+    internal int pageCount => m_pageCount;
+    internal long residentBytes => m_residentBytes;
+    internal long peakResidentBytes => m_peakResidentBytes;
+    internal long frameBytes => m_frameBytes;
+    internal long rejectedCount => m_rejected;
+
     internal void BeginFrame(ulong frameIndex)
     {
         ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
@@ -178,56 +228,6 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
         }
         DrainSweep();
     }
-
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose()
-    {
-        if (m_disposed)
-        {
-            return;
-        }
-        m_frameOpen = false;
-        if (m_retirement is null)
-        {
-            m_retirement = new RenderRetirementQueue();
-            if (m_sweep is not null)
-            {
-                m_retirement.Add(m_sweep.Dispose);
-            }
-            foreach (UploadPage page in m_pools.Values.SelectMany(static pool => pool.pages))
-            {
-                m_retirement.Add(() => m_device.DestroyBuffer(page.handle));
-            }
-        }
-        try
-        {
-            m_retirement.Dispose();
-        }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
-        {
-            throw;
-        }
-        catch
-        {
-            m_pools.Clear();
-            m_residentBytes = 0;
-            m_pageCount = 0;
-            m_disposed = true;
-            throw;
-        }
-        m_pools.Clear();
-        m_residentBytes = 0;
-        m_pageCount = 0;
-        m_disposed = true;
-    }
-
-    internal int pageCount => m_pageCount;
-    internal long residentBytes => m_residentBytes;
-    internal long peakResidentBytes => m_peakResidentBytes;
-    internal long frameBytes => m_frameBytes;
-    internal long rejectedCount => m_rejected;
 
     private void DrainSweep()
     {

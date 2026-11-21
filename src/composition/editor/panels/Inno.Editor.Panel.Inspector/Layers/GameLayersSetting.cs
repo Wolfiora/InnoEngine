@@ -151,26 +151,6 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
         }
     }
 
-    private static bool DrawTextField(
-        string id,
-        string hint,
-        ref string value
-    ) {
-        Ui.SetNextItemWidth(-1f);
-        Ui.PushStyleColor(ImGuiCol.FrameBg, EditorPalette.transparent);
-        Ui.PushStyleColor(ImGuiCol.FrameBgHovered, EditorPalette.transparent);
-        Ui.PushStyleColor(ImGuiCol.FrameBgActive, EditorPalette.transparent);
-        try
-        {
-            bool submitted = Ui.InputTextWithHint(id, hint, ref value, C_LAYER_NAME_BUFFER_SIZE, ImGuiInputTextFlags.EnterReturnsTrue);
-            return submitted || Ui.IsItemDeactivatedAfterEdit();
-        }
-        finally
-        {
-            Ui.PopStyleColor(3);
-        }
-    }
-
     private void DrawLayerToolbar(
         GameLayerCatalog setting,
         string? [] names,
@@ -183,49 +163,6 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
         Ui.SameLine(0f, spacing);
         DrawAddLayer(setting, names, definedCount);
     }
-
-    private static void DrawReadOnlyCount(
-        string value,
-        float width
-    ) {
-        EditorUiLayout style = Ui.GetLayout();
-        Vector2 minimum = Ui.GetCursorScreenPosition();
-        var size = new Vector2(MathF.Max(1f, width), Ui.GetFrameHeight());
-        Ui.Dummy(size);
-        Vector2 maximum = minimum + size;
-        Ui.DrawFilledRectangle(minimum, maximum, Ui.GetStyleColor(ImGuiCol.FrameBg), style.frameRounding);
-        Ui.DrawRectangle(
-            minimum,
-            maximum,
-            Ui.GetStyleColor(ImGuiCol.Border),
-            style.frameRounding,
-            EditorUI.current.widgets.style.borderSize
-        );
-        Vector2 textSize = Ui.MeasureText(value);
-        Ui.DrawText(minimum + (size - textSize) * 0.5f, Ui.GetStyleColor(ImGuiCol.Text), value);
-    }
-
-    private static void DrawLayerTableHeader()
-    {
-        uint background = Ui.ToPackedColor(EditorPalette.collectionHeader);
-        Ui.TableNextRow();
-        Ui.TableSetBgColor(ImGuiTableBgTarget.RowBg0, background);
-        Ui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, background);
-        DrawHeaderCell(0, "Slot");
-        DrawHeaderCell(1, "Name");
-        DrawHeaderCell(2, "Action");
-    }
-
-    private static void DrawHeaderCell(
-        int column,
-        string label
-    ) {
-        _ = Ui.TableSetColumnIndex(column);
-        InsetPlainCell();
-        Ui.Text(label);
-    }
-
-    private static void InsetPlainCell() => Ui.SetCursorPosX(Ui.GetCursorPosX() + Ui.GetLayout().framePadding.X);
 
     private void DrawAddLayer(
         GameLayerCatalog setting,
@@ -306,6 +243,69 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
         m_nameBuffers[layer.index] = setting.GetName(layer) ?? string.Empty;
         m_observedNames = CaptureNames(setting);
     }
+
+    private static bool DrawTextField(
+        string id,
+        string hint,
+        ref string value
+    ) {
+        Ui.SetNextItemWidth(-1f);
+        Ui.PushStyleColor(ImGuiCol.FrameBg, EditorPalette.transparent);
+        Ui.PushStyleColor(ImGuiCol.FrameBgHovered, EditorPalette.transparent);
+        Ui.PushStyleColor(ImGuiCol.FrameBgActive, EditorPalette.transparent);
+        try
+        {
+            bool submitted = Ui.InputTextWithHint(id, hint, ref value, C_LAYER_NAME_BUFFER_SIZE, ImGuiInputTextFlags.EnterReturnsTrue);
+            return submitted || Ui.IsItemDeactivatedAfterEdit();
+        }
+        finally
+        {
+            Ui.PopStyleColor(3);
+        }
+    }
+
+    private static void DrawReadOnlyCount(
+        string value,
+        float width
+    ) {
+        EditorUiLayout style = Ui.GetLayout();
+        Vector2 minimum = Ui.GetCursorScreenPosition();
+        var size = new Vector2(MathF.Max(1f, width), Ui.GetFrameHeight());
+        Ui.Dummy(size);
+        Vector2 maximum = minimum + size;
+        Ui.DrawFilledRectangle(minimum, maximum, Ui.GetStyleColor(ImGuiCol.FrameBg), style.frameRounding);
+        Ui.DrawRectangle(
+            minimum,
+            maximum,
+            Ui.GetStyleColor(ImGuiCol.Border),
+            style.frameRounding,
+            EditorUI.current.widgets.style.borderSize
+        );
+        Vector2 textSize = Ui.MeasureText(value);
+        Ui.DrawText(minimum + (size - textSize) * 0.5f, Ui.GetStyleColor(ImGuiCol.Text), value);
+    }
+
+    private static void DrawLayerTableHeader()
+    {
+        uint background = Ui.ToPackedColor(EditorPalette.collectionHeader);
+        Ui.TableNextRow();
+        Ui.TableSetBgColor(ImGuiTableBgTarget.RowBg0, background);
+        Ui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, background);
+        DrawHeaderCell(0, "Slot");
+        DrawHeaderCell(1, "Name");
+        DrawHeaderCell(2, "Action");
+    }
+
+    private static void DrawHeaderCell(
+        int column,
+        string label
+    ) {
+        _ = Ui.TableSetColumnIndex(column);
+        InsetPlainCell();
+        Ui.Text(label);
+    }
+
+    private static void InsetPlainCell() => Ui.SetCursorPosX(Ui.GetCursorPosX() + Ui.GetLayout().framePadding.X);
 
     private static string? [] CaptureNames(GameLayerCatalog stack)
     {

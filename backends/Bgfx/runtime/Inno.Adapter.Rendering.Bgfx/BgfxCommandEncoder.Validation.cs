@@ -15,6 +15,44 @@ internal sealed unsafe partial class BgfxCommandEncoder
         }
     }
 
+    private void ValidateIndirect(
+        BgfxBufferResource buffer,
+        int firstCommand,
+        int commandCount
+    ) {
+        if (!m_device.capabilities.Supports(GraphicsCapability.Indirect))
+        {
+            throw new NotSupportedException("The active graphics backend does not support indirect commands.");
+        }
+        ArgumentOutOfRangeException.ThrowIfNegative(firstCommand);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(commandCount);
+        ValidateRange(firstCommand, commandCount, buffer.descriptor.elementCount, nameof(commandCount));
+        if (buffer.kind != BgfxBufferKind.Indirect)
+        {
+            throw new ArgumentException("The buffer was not created for indirect commands.", nameof(buffer));
+        }
+    }
+
+    private BgfxPipelineResource RequireGraphicsPipeline()
+    {
+        if (m_pipeline is null || m_pipeline.compute)
+        {
+            throw new InvalidOperationException("A graphics pipeline must be bound before drawing.");
+        }
+
+        return m_pipeline;
+    }
+
+    private BgfxPipelineResource RequireComputePipeline()
+    {
+        if (m_pipeline is null || !m_pipeline.compute)
+        {
+            throw new InvalidOperationException("A compute pipeline must be bound before dispatch.");
+        }
+
+        return m_pipeline;
+    }
+
     private static void ValidateCompleteTextureCopy(
         RenderTextureDescriptor source,
         RenderTextureDescriptor destination
@@ -72,44 +110,6 @@ internal sealed unsafe partial class BgfxCommandEncoder
         ) {
             throw new ArgumentOutOfRangeException(parameterName, "Texture region is outside the descriptor.");
         }
-    }
-
-    private void ValidateIndirect(
-        BgfxBufferResource buffer,
-        int firstCommand,
-        int commandCount
-    ) {
-        if (!m_device.capabilities.Supports(GraphicsCapability.Indirect))
-        {
-            throw new NotSupportedException("The active graphics backend does not support indirect commands.");
-        }
-        ArgumentOutOfRangeException.ThrowIfNegative(firstCommand);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(commandCount);
-        ValidateRange(firstCommand, commandCount, buffer.descriptor.elementCount, nameof(commandCount));
-        if (buffer.kind != BgfxBufferKind.Indirect)
-        {
-            throw new ArgumentException("The buffer was not created for indirect commands.", nameof(buffer));
-        }
-    }
-
-    private BgfxPipelineResource RequireGraphicsPipeline()
-    {
-        if (m_pipeline is null || m_pipeline.compute)
-        {
-            throw new InvalidOperationException("A graphics pipeline must be bound before drawing.");
-        }
-
-        return m_pipeline;
-    }
-
-    private BgfxPipelineResource RequireComputePipeline()
-    {
-        if (m_pipeline is null || !m_pipeline.compute)
-        {
-            throw new InvalidOperationException("A compute pipeline must be bound before dispatch.");
-        }
-
-        return m_pipeline;
     }
 
     private static void ValidateDrawCounts(

@@ -189,7 +189,6 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
 
     private sealed class Factory(RuntimeSubsystemDescriptor descriptor) : IRuntimeSubsystemFactory
     {
-        public RuntimeSubsystemDescriptor descriptor { get; } = descriptor;
         internal RuntimeSubsystemContext? context;
         internal int createCount;
         internal int releaseCount;
@@ -197,6 +196,8 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
         internal bool failAttach;
         internal bool failRelease;
         internal Task? pending;
+
+        public RuntimeSubsystemDescriptor descriptor { get; } = descriptor;
 
         public IRuntimeSubsystem Create(RuntimeSubsystemContext context)
         {

@@ -222,6 +222,38 @@ public sealed unsafe partial class ImGuiWidget
         NativeImGui.SetCursorScreenPos(new Vector2(contentCursor.X, NativeImGui.GetCursorScreenPos().Y));
     }
 
+    /// <summary>
+    /// Draws disabled hint text that wraps to the current content width.
+    /// </summary>
+    /// <param name="text">
+    /// Hint text.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="text"/> is <see langword="null"/>.
+    /// </exception>
+    public void Hint(string text)
+    {
+        m_session.EnsureDrawing();
+        ArgumentNullException.ThrowIfNull(text);
+        NativeImGui.BeginDisabled(true);
+        try
+        {
+            NativeImGui.PushTextWrapPos(NativeImGui.GetCursorPosX() + MathF.Max(1f, NativeImGui.GetContentRegionAvail().X));
+            try
+            {
+                NativeImGui.TextUnformatted(text);
+            }
+            finally
+            {
+                NativeImGui.PopTextWrapPos();
+            }
+        }
+        finally
+        {
+            NativeImGui.EndDisabled();
+        }
+    }
+
     private bool DrawPanelCloseButton(string title)
     {
         if (!NativeImGui.IsWindowDocked())
@@ -354,37 +386,5 @@ public sealed unsafe partial class ImGuiWidget
         var diagonal = new Vector2(extent);
         ImGui.DrawNativeLine(drawList, center - diagonal, center + diagonal, color, thickness);
         ImGui.DrawNativeLine(drawList, center + new Vector2(-extent, extent), center + new Vector2(extent, -extent), color, thickness);
-    }
-
-    /// <summary>
-    /// Draws disabled hint text that wraps to the current content width.
-    /// </summary>
-    /// <param name="text">
-    /// Hint text.
-    /// </param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="text"/> is <see langword="null"/>.
-    /// </exception>
-    public void Hint(string text)
-    {
-        m_session.EnsureDrawing();
-        ArgumentNullException.ThrowIfNull(text);
-        NativeImGui.BeginDisabled(true);
-        try
-        {
-            NativeImGui.PushTextWrapPos(NativeImGui.GetCursorPosX() + MathF.Max(1f, NativeImGui.GetContentRegionAvail().X));
-            try
-            {
-                NativeImGui.TextUnformatted(text);
-            }
-            finally
-            {
-                NativeImGui.PopTextWrapPos();
-            }
-        }
-        finally
-        {
-            NativeImGui.EndDisabled();
-        }
     }
 }

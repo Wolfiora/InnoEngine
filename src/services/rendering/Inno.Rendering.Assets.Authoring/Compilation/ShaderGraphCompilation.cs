@@ -19,58 +19,6 @@ namespace Inno.Rendering.Assets.Authoring;
 public sealed partial class ShaderCompiler
 {
     /// <summary>
-    /// Captures an imported graph in the current owner generation, then starts native compilation without retaining its asset.
-    /// </summary>
-    /// <param name="shader">
-    /// Committed graph-backed shader asset.
-    /// </param>
-    /// <param name="target">
-    /// Target policy and device capabilities.
-    /// </param>
-    /// <param name="variant">
-    /// Exact material keyword selection.
-    /// </param>
-    /// <param name="types">
-    /// Shared authoring type generation owner.
-    /// </param>
-    /// <param name="serialization">
-    /// Owner converter registry.
-    /// </param>
-    /// <param name="context">
-    /// Complete owner asset/reference context.
-    /// </param>
-    /// <param name="artifacts">
-    /// Authoring artifact owner supplying the graph output, which is absent from runtime packages.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Cancellation before candidate publication.
-    /// </param>
-    /// <returns>
-    /// A native compilation task for the captured graph, or graph diagnostics without any native work.
-    /// </returns>
-    public ValueTask<ShaderCompilationResult> CompileGraphAsync(
-        ShaderAsset shader,
-        ShaderCompileTarget target,
-        RenderShaderVariant variant,
-        TypeCatalog types,
-        SerializationRegistry serialization,
-        SerializationContext context,
-        IAssetArtifactLookup artifacts,
-        CancellationToken cancellationToken = default
-    ) {
-        ArgumentNullException.ThrowIfNull(shader);
-        return CompileGraphAsync(
-            ShaderGraphArtifact.Read(shader, artifacts),
-            target,
-            variant,
-            types,
-            serialization,
-            context,
-            cancellationToken
-        );
-    }
-
-    /// <summary>
     /// Compiles an immutable import or preview candidate without reading or mutating a canonical Shader asset.
     /// </summary>
     /// <param name="artifact">
@@ -142,6 +90,58 @@ public sealed partial class ShaderCompiler
             variant.options
         );
         return CompileAsync(definition, program, target, variant, serialization, context, cancellationToken);
+    }
+
+    /// <summary>
+    /// Captures an imported graph in the current owner generation, then starts native compilation without retaining its asset.
+    /// </summary>
+    /// <param name="shader">
+    /// Committed graph-backed shader asset.
+    /// </param>
+    /// <param name="target">
+    /// Target policy and device capabilities.
+    /// </param>
+    /// <param name="variant">
+    /// Exact material keyword selection.
+    /// </param>
+    /// <param name="types">
+    /// Shared authoring type generation owner.
+    /// </param>
+    /// <param name="serialization">
+    /// Owner converter registry.
+    /// </param>
+    /// <param name="context">
+    /// Complete owner asset/reference context.
+    /// </param>
+    /// <param name="artifacts">
+    /// Authoring artifact owner supplying the graph output, which is absent from runtime packages.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancellation before candidate publication.
+    /// </param>
+    /// <returns>
+    /// A native compilation task for the captured graph, or graph diagnostics without any native work.
+    /// </returns>
+    public ValueTask<ShaderCompilationResult> CompileGraphAsync(
+        ShaderAsset shader,
+        ShaderCompileTarget target,
+        RenderShaderVariant variant,
+        TypeCatalog types,
+        SerializationRegistry serialization,
+        SerializationContext context,
+        IAssetArtifactLookup artifacts,
+        CancellationToken cancellationToken = default
+    ) {
+        ArgumentNullException.ThrowIfNull(shader);
+        return CompileGraphAsync(
+            ShaderGraphArtifact.Read(shader, artifacts),
+            target,
+            variant,
+            types,
+            serialization,
+            context,
+            cancellationToken
+        );
     }
 
     /// <summary>

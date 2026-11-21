@@ -27,13 +27,7 @@ internal sealed partial class ShaderEditorCanvas(
     ShaderEditorDocuments owner,
     ShaderEditorDocuments.Draft draft
 ) {
-    private readonly record struct PortHandle(
-        GraphEndpoint endpoint,
-        GraphPortDirection direction
-    );
-
     internal const string C_AREA = "panel/rendering.shader-editor";
-    private static readonly Vector4 C_EMPTY_GROUP_HEADER = new(0.16f, 0.17f, 0.2f, EditorPalette.opacityOpaque);
     private const string C_NODE_WIDTH = "editor.width";
     private const float C_DEFAULT_WIDTH = 270f;
     private const float C_MINIMUM_WIDTH = 180f;
@@ -41,12 +35,13 @@ internal sealed partial class ShaderEditorCanvas(
     private const float C_HEADER = 32f;
     private const float C_ROW = 24f;
     private const float C_RESIZE_HANDLE = 14f;
-    private GraphDocumentController Controller => owner.Controller(draft);
-    private GraphCanvasState Canvas => draft.canvas;
-    private GraphCanvasView View => new(Canvas, m_origin, m_size);
+
+    private static readonly Vector4 C_EMPTY_GROUP_HEADER = new(0.16f, 0.17f, 0.2f, EditorPalette.opacityOpaque);
 
     private Vector2 m_origin;
     private Vector2 m_size;
+    private GraphNodeRecord[]? m_inspectionNodes;
+    private InspectionDrawContext? m_inspection;
 
     internal void Draw()
     {
@@ -156,17 +151,6 @@ internal sealed partial class ShaderEditorCanvas(
         SynchronizeInspection();
     }
 
-    private void SynchronizeInspection()
-    {
-        if (Canvas.selectedNodes.SequenceEqual(draft.inspectedNodes))
-        {
-            return;
-        }
-        draft.inspectedNodes = Canvas.selectedNodes.ToArray();
-        draft.inspectionSelection = new ShaderInspectionSelection(draft.id, draft.inspectedNodes);
-        owner.interactions.SetSelection(draft.inspectionSelection);
-    }
-
     internal void DrawInspector(
         InspectionDrawContext inspection,
         IReadOnlyList<GraphNodeId> selected
@@ -180,6 +164,148 @@ internal sealed partial class ShaderEditorCanvas(
         {
             m_inspection = null;
         }
+    }
+
+    internal string Title(GraphNodeRecord node)
+    {
+        if (owner.drawers?.GetDisplayName(node.definitionId) is { } displayName)
+        {
+            return displayName;
+        }
+        if (node.definitionId == ShaderGraphDocument.outputDefinitionId)
+        {
+            return Read(node, "settings", new ShaderGraphStageSettings()).stage + " Output";
+        }
+        if (node.definitionId == "inno.shader.binary")
+        {
+            return EditorDisplayNames.Nicify(Read(node, "operation", "add").Replace('-', ' '));
+        }
+        if (node.definitionId == "inno.shader.stage-input")
+        {
+            ShaderGraphInputSettings input = Read(node, "settings", new ShaderGraphInputSettings());
+            return input.id.Length != 0 ? EditorDisplayNames.Nicify(input.id) : "Stage Input";
+        }
+
+        if (node.definitionId == "inno.shader.source")
+        {
+            string function = Read(node, "function", string.Empty);
+            return function.Length == 0 ? "Source Function" : function;
+        }
+
+        if (node.definitionId == ShaderGraphNodes.callDefinitionId)
+        {
+            return Read(node, ShaderGraphNodes.interfaceKey, new ShaderGraphNodeInterface()).displayName;
+        }
+        if (node.definitionId == ShaderGraphNodes.inputDefinitionId)
+        {
+            return ShaderGraphNodes.ReadSettings(
+                Controller.document,
+                owner.serialization,
+                owner.context
+            ).kind == ShaderGraphNodeKind.DomainOutput ? "Domain Inputs" : "Function Inputs";
+        }
+        if (node.definitionId == ShaderGraphNodes.outputDefinitionId)
+        {
+            return "Function Outputs";
+        }
+        return EditorDisplayNames.Nicify(
+            node.definitionId.Replace("inno.shader.", string.Empty, StringComparison.Ordinal).Replace('-', ' ')
+        );
+    }
+
+    internal static void DrawHeader(
+        ShaderEditorDocuments owner,
+        ShaderEditorDocuments.Draft? draft
+    ) {
+        ArgumentNullException.ThrowIfNull(owner);
+        EditorUI.current.widgets.HeaderSurface("##shader-header", () =>
+        {
+            ImGuiApi.SetNextItemWidth(-1f);
+            string title = draft is null
+                           ? "Select Shader"
+                           : Path.GetFileName(draft.path.localPath) + (owner.Controller(draft).isDirty ? " *" : string.Empty);
+            if (EditorUI.current.widgets.BeginBoundedCombo("##shader-header-select", title))
+            {
+                try
+                {
+                    foreach (AssetFileEntry candidate in owner.assets
+                        .GetFileSystemEntries(includeDirectories: false)
+                        .Where(static candidate => candidate.extension.Equals(".ishader", StringComparison.OrdinalIgnoreCase))
+                        .OrderBy(static candidate => candidate.assetPath.ToString(), StringComparer.Ordinal)
+                    ) {
+                        bool selected = draft is not null && candidate.assetPath == draft.path;
+                        if (ImGuiApi.Selectable(candidate.assetPath.ToString(), selected))
+                        {
+                            owner.interactions.SetSelection(candidate);
+                            _ = owner.Open(candidate);
+                        }
+
+                        if (selected)
+                        {
+                            ImGuiApi.SetItemDefaultFocus();
+                        }
+                    }
+                }
+                finally
+                {
+                    EditorUI.current.widgets.EndBoundedCombo();
+                }
+            }
+
+            bool noDocument = draft is null;
+            ImGuiApi.BeginDisabled(noDocument || draft!.readOnly);
+            if (ImGuiApi.Button("Save") && draft is not null && owner.assets.TryGetFileSystemEntry(draft.path, out AssetFileEntry entry))
+            {
+                _ = owner.interactions.For(C_AREA, entry).Execute("shader/save");
+            }
+            EditorUI.current.widgets.DrawItemTooltip(
+                "Save this shader and apply its changes (Command/Ctrl + S). Invalid graphs can be saved; rendering retains the last successful programs."
+            );
+            ImGuiApi.SameLine(0f, -1f);
+            if (ImGuiApi.Button("Revert") && draft is not null)
+            {
+                _ = owner.interactions.documents.Revert(draft.documentId);
+            }
+            EditorUI.current.widgets.DrawItemTooltip("Restore the saved shader. This draft change can be undone.");
+            ImGuiApi.EndDisabled();
+            ImGuiApi.SameLine(0f, -1f);
+            ImGuiApi.BeginDisabled(noDocument);
+            if (ImGuiApi.Button("Format")
+                && draft is not null
+                && owner.assets.TryGetFileSystemEntry(draft.path, out AssetFileEntry formatEntry)
+            ) {
+                _ = owner.interactions.For(C_AREA, formatEntry).Execute("shader/format");
+            }
+            EditorUI.current.widgets.DrawItemTooltip(
+                "Arrange the graph from inputs on the left to outputs on the right. This changes only authoring positions and is undoable."
+            );
+            ImGuiApi.SameLine(0f, -1f);
+            if (ImGuiApi.Button("Check")
+                && draft is not null
+                && owner.assets.TryGetFileSystemEntry(draft.path, out AssetFileEntry checkEntry)
+            ) {
+                _ = owner.interactions.For(C_AREA, checkEntry).Execute("shader/check");
+            }
+            EditorUI.current.widgets.DrawItemTooltip(
+                "Compile-check the current draft without saving or publishing it, and show diagnostics with source locations."
+            );
+            ImGuiApi.EndDisabled();
+        }, spanWindowPadding: true);
+    }
+
+    private GraphDocumentController Controller => owner.Controller(draft);
+    private GraphCanvasState Canvas => draft.canvas;
+    private GraphCanvasView View => new(Canvas, m_origin, m_size);
+
+    private void SynchronizeInspection()
+    {
+        if (Canvas.selectedNodes.SequenceEqual(draft.inspectedNodes))
+        {
+            return;
+        }
+        draft.inspectedNodes = Canvas.selectedNodes.ToArray();
+        draft.inspectionSelection = new ShaderInspectionSelection(draft.id, draft.inspectedNodes);
+        owner.interactions.SetSelection(draft.inspectionSelection);
     }
 
     private void DrawInspectorContents(IReadOnlyList<GraphNodeId> selected)
@@ -333,95 +459,6 @@ internal sealed partial class ShaderEditorCanvas(
             ImGuiApi.PopId();
             m_inspectionNodes = null;
         }
-    }
-
-    private GraphNodeRecord[]? m_inspectionNodes;
-    private InspectionDrawContext? m_inspection;
-
-    private static void InspectorRow(
-        string id,
-        string label,
-        Action draw
-    ) => EditorUI.current.widgets.PropertyRow("shader." + id, label, draw);
-
-    internal static void DrawHeader(
-        ShaderEditorDocuments owner,
-        ShaderEditorDocuments.Draft? draft
-    ) {
-        ArgumentNullException.ThrowIfNull(owner);
-        EditorUI.current.widgets.HeaderSurface("##shader-header", () =>
-        {
-            ImGuiApi.SetNextItemWidth(-1f);
-            string title = draft is null
-                           ? "Select Shader"
-                           : Path.GetFileName(draft.path.localPath) + (owner.Controller(draft).isDirty ? " *" : string.Empty);
-            if (EditorUI.current.widgets.BeginBoundedCombo("##shader-header-select", title))
-            {
-                try
-                {
-                    foreach (AssetFileEntry candidate in owner.assets
-                        .GetFileSystemEntries(includeDirectories: false)
-                        .Where(static candidate => candidate.extension.Equals(".ishader", StringComparison.OrdinalIgnoreCase))
-                        .OrderBy(static candidate => candidate.assetPath.ToString(), StringComparer.Ordinal)
-                    ) {
-                        bool selected = draft is not null && candidate.assetPath == draft.path;
-                        if (ImGuiApi.Selectable(candidate.assetPath.ToString(), selected))
-                        {
-                            owner.interactions.SetSelection(candidate);
-                            _ = owner.Open(candidate);
-                        }
-
-                        if (selected)
-                        {
-                            ImGuiApi.SetItemDefaultFocus();
-                        }
-                    }
-                }
-                finally
-                {
-                    EditorUI.current.widgets.EndBoundedCombo();
-                }
-            }
-
-            bool noDocument = draft is null;
-            ImGuiApi.BeginDisabled(noDocument || draft!.readOnly);
-            if (ImGuiApi.Button("Save") && draft is not null && owner.assets.TryGetFileSystemEntry(draft.path, out AssetFileEntry entry))
-            {
-                _ = owner.interactions.For(C_AREA, entry).Execute("shader/save");
-            }
-            EditorUI.current.widgets.DrawItemTooltip(
-                "Save this shader and apply its changes (Command/Ctrl + S). Invalid graphs can be saved; rendering retains the last successful programs."
-            );
-            ImGuiApi.SameLine(0f, -1f);
-            if (ImGuiApi.Button("Revert") && draft is not null)
-            {
-                _ = owner.interactions.documents.Revert(draft.documentId);
-            }
-            EditorUI.current.widgets.DrawItemTooltip("Restore the saved shader. This draft change can be undone.");
-            ImGuiApi.EndDisabled();
-            ImGuiApi.SameLine(0f, -1f);
-            ImGuiApi.BeginDisabled(noDocument);
-            if (ImGuiApi.Button("Format")
-                && draft is not null
-                && owner.assets.TryGetFileSystemEntry(draft.path, out AssetFileEntry formatEntry)
-            ) {
-                _ = owner.interactions.For(C_AREA, formatEntry).Execute("shader/format");
-            }
-            EditorUI.current.widgets.DrawItemTooltip(
-                "Arrange the graph from inputs on the left to outputs on the right. This changes only authoring positions and is undoable."
-            );
-            ImGuiApi.SameLine(0f, -1f);
-            if (ImGuiApi.Button("Check")
-                && draft is not null
-                && owner.assets.TryGetFileSystemEntry(draft.path, out AssetFileEntry checkEntry)
-            ) {
-                _ = owner.interactions.For(C_AREA, checkEntry).Execute("shader/check");
-            }
-            EditorUI.current.widgets.DrawItemTooltip(
-                "Compile-check the current draft without saving or publishing it, and show diagnostics with source locations."
-            );
-            ImGuiApi.EndDisabled();
-        }, spanWindowPadding: true);
     }
 
     private void RefreshPorts()
@@ -1025,10 +1062,6 @@ internal sealed partial class ShaderEditorCanvas(
         return rows == 0 && node.definitionId is ShaderGraphNodes.inputDefinitionId or ShaderGraphNodes.outputDefinitionId ? 1 : rows;
     }
 
-    private static bool UsesSplitPortLayout(IEnumerable<ShaderNodePort> ports)
-        => ports.Any(static port => port.direction == GraphPortDirection.Input)
-           && ports.Any(static port => port.direction == GraphPortDirection.Output);
-
     private GraphNodeRecord? HitNode(Vector2 point)
         => View.HitNode(draft.layout, point) is { } node ? Controller.document.FindNode(node.id) : null;
 
@@ -1078,18 +1111,6 @@ internal sealed partial class ShaderEditorCanvas(
 
     private GraphPosition ToGraph(Vector2 point) => View.ToGraph(point);
 
-    private static bool Contains(
-        (Vector2 min, Vector2 max) rect,
-        Vector2 point
-    ) => point.X >= rect.min.X && point.Y >= rect.min.Y && point.X <= rect.max.X && point.Y <= rect.max.Y;
-
-    private static uint Color(
-        float r,
-        float g,
-        float b,
-        float a = EditorPalette.opacityOpaque
-    ) => ImGuiApi.ToPackedColor(new(r, g, b, a));
-
     private Vector4 NodeHeaderColor(GraphNodeRecord node)
     {
         string key = node.definitionId + "/" + Title(node);
@@ -1134,40 +1155,6 @@ internal sealed partial class ShaderEditorCanvas(
         Vector4 average = total / count;
         return EditorPalette.WithOpacity(average, EditorPalette.opacityNearOpaque);
     }
-
-    private static Vector4 StableHeaderColor(
-        string key,
-        float startHue,
-        float hueRange
-    ) {
-        uint hash = 2_166_136_261;
-        foreach (char value in key)
-        {
-            hash ^= value;
-            hash *= 16_777_619;
-        }
-
-        float hue = (startHue + hueRange * (hash & 0xFFFF) / 65535f) % 360f;
-        float saturation = 0.52f + 0.12f * ((hash >> 16) & 0xFF) / 255f;
-        float brightness = 0.34f + 0.08f * ((hash >> 24) & 0xFF) / 255f;
-        float chroma = brightness * saturation;
-        float sector = hue / 60f;
-        float secondary = chroma * (1f - MathF.Abs(sector % 2f - 1f));
-        (float red, float green, float blue) = sector switch
-        {
-            < 1f => (chroma, secondary, 0f),
-            < 2f => (secondary, chroma, 0f),
-            < 3f => (0f, chroma, secondary),
-            < 4f => (0f, secondary, chroma),
-            < 5f => (secondary, 0f, chroma),
-            _ => (chroma, 0f, secondary)
-        };
-        float match = brightness - chroma;
-        return new(red + match, green + match, blue + match, EditorPalette.opacityOpaque);
-    }
-
-    private static bool CenteredAddButton(string label)
-        => EditorUI.current.widgets.CenteredButton(label, EditorUI.current.widgets.style.addButtonTopPadding);
 
     private T Read<T>(
         GraphNodeRecord node,
@@ -1271,50 +1258,64 @@ internal sealed partial class ShaderEditorCanvas(
         Canvas.SetViewport(new(m_size.X / 2 - (minX + maxX) / 2 * scale, m_size.Y / 2 - (minY + maxY) / 2 * scale), scale);
     }
 
-    internal string Title(GraphNodeRecord node)
-    {
-        if (owner.drawers?.GetDisplayName(node.definitionId) is { } displayName)
+    private static void InspectorRow(
+        string id,
+        string label,
+        Action draw
+    ) => EditorUI.current.widgets.PropertyRow("shader." + id, label, draw);
+
+    private static bool UsesSplitPortLayout(IEnumerable<ShaderNodePort> ports)
+        => ports.Any(static port => port.direction == GraphPortDirection.Input)
+           && ports.Any(static port => port.direction == GraphPortDirection.Output);
+
+    private static bool Contains(
+        (Vector2 min, Vector2 max) rect,
+        Vector2 point
+    ) => point.X >= rect.min.X && point.Y >= rect.min.Y && point.X <= rect.max.X && point.Y <= rect.max.Y;
+
+    private static uint Color(
+        float r,
+        float g,
+        float b,
+        float a = EditorPalette.opacityOpaque
+    ) => ImGuiApi.ToPackedColor(new(r, g, b, a));
+
+    private static Vector4 StableHeaderColor(
+        string key,
+        float startHue,
+        float hueRange
+    ) {
+        uint hash = 2_166_136_261;
+        foreach (char value in key)
         {
-            return displayName;
-        }
-        if (node.definitionId == ShaderGraphDocument.outputDefinitionId)
-        {
-            return Read(node, "settings", new ShaderGraphStageSettings()).stage + " Output";
-        }
-        if (node.definitionId == "inno.shader.binary")
-        {
-            return EditorDisplayNames.Nicify(Read(node, "operation", "add").Replace('-', ' '));
-        }
-        if (node.definitionId == "inno.shader.stage-input")
-        {
-            ShaderGraphInputSettings input = Read(node, "settings", new ShaderGraphInputSettings());
-            return input.id.Length != 0 ? EditorDisplayNames.Nicify(input.id) : "Stage Input";
+            hash ^= value;
+            hash *= 16_777_619;
         }
 
-        if (node.definitionId == "inno.shader.source")
+        float hue = (startHue + hueRange * (hash & 0xFFFF) / 65535f) % 360f;
+        float saturation = 0.52f + 0.12f * ((hash >> 16) & 0xFF) / 255f;
+        float brightness = 0.34f + 0.08f * ((hash >> 24) & 0xFF) / 255f;
+        float chroma = brightness * saturation;
+        float sector = hue / 60f;
+        float secondary = chroma * (1f - MathF.Abs(sector % 2f - 1f));
+        (float red, float green, float blue) = sector switch
         {
-            string function = Read(node, "function", string.Empty);
-            return function.Length == 0 ? "Source Function" : function;
-        }
-
-        if (node.definitionId == ShaderGraphNodes.callDefinitionId)
-        {
-            return Read(node, ShaderGraphNodes.interfaceKey, new ShaderGraphNodeInterface()).displayName;
-        }
-        if (node.definitionId == ShaderGraphNodes.inputDefinitionId)
-        {
-            return ShaderGraphNodes.ReadSettings(
-                Controller.document,
-                owner.serialization,
-                owner.context
-            ).kind == ShaderGraphNodeKind.DomainOutput ? "Domain Inputs" : "Function Inputs";
-        }
-        if (node.definitionId == ShaderGraphNodes.outputDefinitionId)
-        {
-            return "Function Outputs";
-        }
-        return EditorDisplayNames.Nicify(
-            node.definitionId.Replace("inno.shader.", string.Empty, StringComparison.Ordinal).Replace('-', ' ')
-        );
+            < 1f => (chroma, secondary, 0f),
+            < 2f => (secondary, chroma, 0f),
+            < 3f => (0f, chroma, secondary),
+            < 4f => (0f, secondary, chroma),
+            < 5f => (secondary, 0f, chroma),
+            _ => (chroma, 0f, secondary)
+        };
+        float match = brightness - chroma;
+        return new(red + match, green + match, blue + match, EditorPalette.opacityOpaque);
     }
+
+    private static bool CenteredAddButton(string label)
+        => EditorUI.current.widgets.CenteredButton(label, EditorUI.current.widgets.style.addButtonTopPadding);
+
+    private readonly record struct PortHandle(
+        GraphEndpoint endpoint,
+        GraphPortDirection direction
+    );
 }

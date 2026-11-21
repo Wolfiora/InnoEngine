@@ -35,14 +35,6 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
     }
 
     /// <summary>
-    /// Binds the script-facing text facade for the complete runtime frame.
-    /// </summary>
-    /// <param name="frame">
-    /// The current runtime frame.
-    /// </param>
-    protected override void OnBeginFrame(RuntimeFrame frame) => OwnFrameScope(EnterExecutionScope());
-
-    /// <summary>
     /// Binds this runtime to the current asynchronous execution context.
     /// </summary>
     /// <returns>
@@ -117,6 +109,14 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
         ObjectDisposedException.ThrowIf(m_disposed, this);
         return m_backend.Rasterize(GetOrLoad(font, faceIndex).handle, glyphId, fontSize);
     }
+
+    /// <summary>
+    /// Binds the script-facing text facade for the complete runtime frame.
+    /// </summary>
+    /// <param name="frame">
+    /// The current runtime frame.
+    /// </param>
+    protected override void OnBeginFrame(RuntimeFrame frame) => OwnFrameScope(EnterExecutionScope());
 
     /// <summary>
     /// Releases every native face and retained immutable artifact before the backend.

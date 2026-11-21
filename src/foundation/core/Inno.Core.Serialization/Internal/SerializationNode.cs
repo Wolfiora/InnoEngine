@@ -21,9 +21,9 @@ internal abstract record SerializationNode
 
 internal sealed record NullSerializationNode : SerializationNode
 {
-    internal static NullSerializationNode instance { get; } = new();
-
     private NullSerializationNode() {}
+
+    internal static NullSerializationNode instance { get; } = new();
 }
 
 internal sealed record ScalarSerializationNode(object value) : SerializationNode;

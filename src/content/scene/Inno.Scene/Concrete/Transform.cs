@@ -14,9 +14,9 @@ namespace Inno.Scene.Components;
 [SerializationRevision("m_serializationRevision")]
 public sealed class Transform : GameComponent
 {
-    private ulong? m_serializationRevision = 0;
     private readonly List<Transform> m_children = [];
     private readonly ReadOnlyCollection<Transform> m_readOnlyChildren;
+    private ulong? m_serializationRevision = 0;
     private Transform? m_parent;
     private Vector3 m_localPosition = Vector3.ZERO;
     private Quaternion m_localRotation = Quaternion.identity;

@@ -16,6 +16,17 @@ public abstract class InspectionDrawer<TTarget> : IInspectionDrawer
     /// </summary>
     public abstract string icon { get; }
 
+    bool IInspectionDrawer.CanInspect(object target) => target is TTarget value && CanInspect(value);
+
+    string IInspectionDrawer.GetIcon(InspectionDrawContext context) => GetIcon(context, GetTarget(context));
+
+    (string name, Action<string>? setter) IInspectionDrawer.BindName(InspectionDrawContext context)
+        => BindName(context, GetTarget(context));
+
+    void IInspectionDrawer.DrawHeader(InspectionDrawContext context) => DrawHeader(context, GetTarget(context));
+
+    void IInspectionDrawer.Draw(InspectionDrawContext context) => Draw(context, GetTarget(context));
+
     /// <summary>
     /// Determines whether this drawer handles the selected value, in addition to its registered type.
     /// </summary>
@@ -26,8 +37,6 @@ public abstract class InspectionDrawer<TTarget> : IInspectionDrawer
     /// Whether this drawer accepts the target.
     /// </returns>
     protected virtual bool CanInspect(TTarget target) => true;
-
-    bool IInspectionDrawer.CanInspect(object target) => target is TTarget value && CanInspect(value);
 
     /// <summary>
     /// Binds the name displayed in the first row of the Inspector target header.
@@ -95,15 +104,6 @@ public abstract class InspectionDrawer<TTarget> : IInspectionDrawer
         InspectionDrawContext context,
         TTarget target
     );
-
-    string IInspectionDrawer.GetIcon(InspectionDrawContext context) => GetIcon(context, GetTarget(context));
-
-    (string name, Action<string>? setter) IInspectionDrawer.BindName(InspectionDrawContext context)
-        => BindName(context, GetTarget(context));
-
-    void IInspectionDrawer.DrawHeader(InspectionDrawContext context) => DrawHeader(context, GetTarget(context));
-
-    void IInspectionDrawer.Draw(InspectionDrawContext context) => Draw(context, GetTarget(context));
 
     private static TTarget GetTarget(InspectionDrawContext context)
     {

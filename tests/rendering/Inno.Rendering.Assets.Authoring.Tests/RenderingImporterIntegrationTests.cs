@@ -287,11 +287,6 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
         Assert.Throws<InvalidOperationException>(() => ShaderSourceBundle.Decode(bundle, "PrivateHelper", m_serialization));
     }
 
-    private AssetLoader CreateLoader(
-        string assetRoot,
-        string libraryRoot
-    ) => new(m_types, m_serialization, m_identities, m_diagnostics, m_logs, assetRoot, libraryRoot);
-
     [Fact]
     public void InvalidGraphAutosaveSurvivesImportFailureAndRestartWithoutLosingMissingRecords()
     {
@@ -357,23 +352,6 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
         Assert.Equal(bytes, File.ReadAllBytes(Path.Combine(installed, "shader.ishader")));
     }
 
-    private AssetPipeline CreatePipeline(IReadOnlyList<AssetSourceMount>? mounts = null)
-        => new(
-            m_modules,
-            m_types,
-            m_serialization,
-            m_identities,
-            m_diagnostics,
-            m_logs,
-            new AssetPipelineOptions
-            {
-                assetRoot = m_assets,
-                libraryRoot = m_library,
-                enableFileSystemWatcher = false,
-                sourceMounts = mounts
-            }
-        );
-
     [Fact]
     public void NativePipelineSettingsCaptureNestedReferencesAndRestoreAgainstTheirOwner()
     {
@@ -426,25 +404,32 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
         Assert.Same(shader, firstAgain.nested.shader);
     }
 
-    [StableTypeId("5c438963-794a-4fde-bd59-45c00d7479de")]
-    private sealed class NestedPipelineSettings : ISerializable
-    {
-        [SerializableProperty]
-        public NestedPipelineReferences nested { get; set; }
-    }
-
-    private struct NestedPipelineReferences
-    {
-        public ShaderAsset? shader { get; set; }
-    }
-
-    [StableTypeId("830a7851-bc19-44d4-a6e6-a6c38f6bb972")]
-    private sealed class OtherPipelineSettings : ISerializable;
+    private AssetLoader CreateLoader(
+        string assetRoot,
+        string libraryRoot
+    ) => new(m_types, m_serialization, m_identities, m_diagnostics, m_logs, assetRoot, libraryRoot);
 
     private AssetLoader CreateLoader(
         IReadOnlyList<AssetSourceMount> mounts,
         string libraryRoot
     ) => new(m_types, m_serialization, m_identities, m_diagnostics, m_logs, mounts, libraryRoot);
+
+    private AssetPipeline CreatePipeline(IReadOnlyList<AssetSourceMount>? mounts = null)
+        => new(
+            m_modules,
+            m_types,
+            m_serialization,
+            m_identities,
+            m_diagnostics,
+            m_logs,
+            new AssetPipelineOptions
+            {
+                assetRoot = m_assets,
+                libraryRoot = m_library,
+                enableFileSystemWatcher = false,
+                sourceMounts = mounts
+            }
+        );
 
     private void WriteText(
         string relativePath,
@@ -492,6 +477,21 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
             )
         );
     }
+
+    [StableTypeId("5c438963-794a-4fde-bd59-45c00d7479de")]
+    private sealed class NestedPipelineSettings : ISerializable
+    {
+        [SerializableProperty]
+        public NestedPipelineReferences nested { get; set; }
+    }
+
+    private struct NestedPipelineReferences
+    {
+        public ShaderAsset? shader { get; set; }
+    }
+
+    [StableTypeId("830a7851-bc19-44d4-a6e6-a6c38f6bb972")]
+    private sealed class OtherPipelineSettings : ISerializable;
 }
 
 internal sealed class RenderingAssetSourceMeta : ISerializable

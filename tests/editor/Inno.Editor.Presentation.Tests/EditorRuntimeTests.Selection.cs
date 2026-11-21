@@ -80,19 +80,6 @@ public sealed partial class EditorRuntimeTests
         Assert.Equal(value, Assert.IsType<Guid>(m_runtime.interactions.selection.selectedTarget));
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void SelectScalarTarget(Guid value) => m_runtime.interactions.SetSelection(value);
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private WeakReference SelectBoxedReferenceTarget()
-    {
-        var payload = new object();
-        object target = new KeyValuePair<string, object>("payload", payload);
-        m_runtime.interactions.SetSelection(target);
-        m_runtime.interactions.For("tests/boxed-target", target).Focus();
-        return new WeakReference(payload);
-    }
-
     [Fact]
     public void RejectedDomainRetirementOnAnotherThreadPreservesTheRoutingLease()
     {
@@ -271,6 +258,19 @@ public sealed partial class EditorRuntimeTests
         Assert.Null(m_runtime.interactions.selection.selectedTarget);
         Assert.Null(m_runtime.interactions.focusedTarget);
         m_runtime.Update(new EditorFrame());
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void SelectScalarTarget(Guid value) => m_runtime.interactions.SetSelection(value);
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private WeakReference SelectBoxedReferenceTarget()
+    {
+        var payload = new object();
+        object target = new KeyValuePair<string, object>("payload", payload);
+        m_runtime.interactions.SetSelection(target);
+        m_runtime.interactions.For("tests/boxed-target", target).Focus();
+        return new WeakReference(payload);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

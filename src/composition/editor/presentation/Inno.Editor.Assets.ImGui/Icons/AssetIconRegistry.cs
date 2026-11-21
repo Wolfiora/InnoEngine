@@ -21,29 +21,6 @@ internal sealed class AssetIconRegistry : TypeRegistry<AssetIconRegistry.Snapsho
         m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
     }
 
-    internal bool TryResolve(
-        Type? assetType,
-        string relativePath,
-        out string icon
-    ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
-        if (TryResolveType(assetType, out icon) || TryResolveExtension(relativePath, out icon))
-        {
-            try
-            {
-                icon = m_settings.Get(icon).GetAsString("value", icon) ?? icon;
-            }
-            catch (ArgumentException)
-            {
-            // Extension-defined attributes may still contain a literal glyph.
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
     /// <summary>
     /// Builds a validated result from the current immutable input snapshot.
     /// </summary>
@@ -86,6 +63,29 @@ internal sealed class AssetIconRegistry : TypeRegistry<AssetIconRegistry.Snapsho
         }
 
         return new Snapshot(typeRegistrations.ToArray(), extensionRegistrations.ToArray());
+    }
+
+    internal bool TryResolve(
+        Type? assetType,
+        string relativePath,
+        out string icon
+    ) {
+        ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
+        if (TryResolveType(assetType, out icon) || TryResolveExtension(relativePath, out icon))
+        {
+            try
+            {
+                icon = m_settings.Get(icon).GetAsString("value", icon) ?? icon;
+            }
+            catch (ArgumentException)
+            {
+            // Extension-defined attributes may still contain a literal glyph.
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     private bool TryResolveType(

@@ -28,7 +28,7 @@ public sealed class NativeSurfaceLifetimeTests
             OperatingSystem.IsWindows() ? PlatformNativeHandleId.win32 : PlatformNativeHandleId.cocoa,
             surface.nativeHandles.handleKind
         );
-        Assert.NotEqual(IntPtr.Zero, surface.nativeHandles.windowHandle);
+        Assert.NotEqual(nint.Zero, surface.nativeHandles.windowHandle);
         window.Dispose();
         Assert.Throws<ObjectDisposedException>(() => surface.nativeHandles);
     }

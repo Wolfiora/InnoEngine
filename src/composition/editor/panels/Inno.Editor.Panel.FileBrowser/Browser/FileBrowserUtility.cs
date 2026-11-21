@@ -19,12 +19,6 @@ internal static class FileBrowserUtility
 {
     internal static AssetBrowserStyle CurrentBrowserStyle => new(EditorUI.current.widgets.style);
 
-    internal readonly record struct BreadcrumbPart(
-        string label,
-        AssetBrowserRoot root,
-        string directory
-    );
-
     internal static void PushBrowserStyle()
     {
         Ui.PushStyleColor((ImGuiCol.Text), EditorPalette.contentText);
@@ -334,4 +328,10 @@ internal static class FileBrowserUtility
         int separator = localPath.LastIndexOf('/');
         return separator < 0 ? string.Empty : localPath[..separator];
     }
+
+    internal readonly record struct BreadcrumbPart(
+        string label,
+        AssetBrowserRoot root,
+        string directory
+    );
 }

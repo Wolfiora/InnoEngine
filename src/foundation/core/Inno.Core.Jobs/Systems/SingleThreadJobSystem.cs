@@ -24,8 +24,6 @@ internal sealed class SingleThreadJobSystem : IJobSystem
     private readonly object m_jobsGate = new();
     private readonly MainThreadWorkQueue m_mainThreadQueue;
     private readonly int m_maxFrameJobs;
-    private int m_peakFrameJobs;
-    private long m_rejectedJobs;
     private readonly List<Exception> m_shutdownFailures = [];
     private readonly Queue<int> m_readyQueue = new();
     private readonly List<JobRecord> m_jobs = [];
@@ -33,6 +31,8 @@ internal sealed class SingleThreadJobSystem : IJobSystem
     private readonly List<int> m_frameJobs = [];
 
     private readonly int m_mainThreadId;
+    private int m_peakFrameJobs;
+    private long m_rejectedJobs;
     private bool m_frameActive;
     private bool m_disposed;
 

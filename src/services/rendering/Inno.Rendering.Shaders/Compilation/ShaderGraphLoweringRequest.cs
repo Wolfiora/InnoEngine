@@ -12,8 +12,6 @@ namespace Inno.Rendering.Shaders;
 /// </summary>
 public sealed class ShaderGraphLoweringRequest
 {
-    internal GraphDocument graph { get; }
-
     /// <summary>
     /// Captures a region without retaining an asset object, source resolver, node provider or UI selection.
     /// </summary>
@@ -80,6 +78,8 @@ public sealed class ShaderGraphLoweringRequest
     /// Gets target-assigned input descriptors; they contain no native expressions.
     /// </summary>
     public IReadOnlyDictionary<GraphNodeId, ShaderIrStageInput> stageInputs { get; }
+
+    internal GraphDocument graph { get; }
 }
 
 /// <summary>

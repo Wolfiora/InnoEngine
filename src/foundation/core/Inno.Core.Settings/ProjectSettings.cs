@@ -380,30 +380,6 @@ public sealed class ProjectSettings : IDisposable
         }
     }
 
-    internal ProjectSettingRecord[] CaptureEffective()
-        => m_effective.Values.Select(static record => new ProjectSettingRecord(
-            record.id,
-            record.stableTypeId,
-            record.propertyData
-        )).ToArray();
-
-    internal void RestoreEffective(IEnumerable<ProjectSettingRecord> records)
-    {
-        m_effective.Clear();
-        foreach (ProjectSettingRecord record in records)
-        {
-            m_effective.Add(record.id, new ProjectSettingRecord(record.id, record.stableTypeId, record.propertyData));
-        }
-    }
-
-    internal IReadOnlyList<ProjectSettingRecord> GetUnavailable(IReadOnlyList<ProjectSettingsContributor> contributors)
-        => Array.AsReadOnly(
-            m_document.overrides.Concat(contributors.SelectMany(static item => item.settings))
-                .Where(record => !m_registry.settings.TryGet(record.id, out _))
-                .Select(static record => new ProjectSettingRecord(record.id, record.stableTypeId, record.propertyData))
-                .ToArray()
-        );
-
     /// <summary>
     /// Persists one project-authored semantic contribution and rebuilds the effective value.
     /// </summary>
@@ -535,52 +511,29 @@ public sealed class ProjectSettings : IDisposable
         m_disposed = true;
     }
 
-    private static ProjectSettingRecord? FindRecord(
-        ProjectSettingsContributor contributor,
-        ProjectSettingId id
-    ) => FindRecord(contributor.settings, id);
+    internal ProjectSettingRecord[] CaptureEffective()
+        => m_effective.Values.Select(static record => new ProjectSettingRecord(
+            record.id,
+            record.stableTypeId,
+            record.propertyData
+        )).ToArray();
 
-    private static ProjectSettingRecord? FindRecord(
-        IEnumerable<ProjectSettingRecord> records,
-        ProjectSettingId id
-    ) {
-        ProjectSettingRecord? result = null;
+    internal void RestoreEffective(IEnumerable<ProjectSettingRecord> records)
+    {
+        m_effective.Clear();
         foreach (ProjectSettingRecord record in records)
         {
-            if (record.id != id)
-            {
-                continue;
-            }
-            if (result is not null)
-            {
-                throw new InvalidOperationException($"Project setting '{id}' is contributed more than once by one owner.");
-            }
-            result = record;
+            m_effective.Add(record.id, new ProjectSettingRecord(record.id, record.stableTypeId, record.propertyData));
         }
-        return result;
     }
 
-    private static IReadOnlySet<string> ExpandContributorClosure(
-        IReadOnlySet<string> directDependencies,
-        IReadOnlyList<ProjectSettingsContributor> contributors
-    ) {
-        Dictionary<string, ProjectSettingsContributor> byId = contributors.ToDictionary(
-            static contributor => contributor.id,
-            StringComparer.Ordinal
+    internal IReadOnlyList<ProjectSettingRecord> GetUnavailable(IReadOnlyList<ProjectSettingsContributor> contributors)
+        => Array.AsReadOnly(
+            m_document.overrides.Concat(contributors.SelectMany(static item => item.settings))
+                .Where(record => !m_registry.settings.TryGet(record.id, out _))
+                .Select(static record => new ProjectSettingRecord(record.id, record.stableTypeId, record.propertyData))
+                .ToArray()
         );
-        var result = new HashSet<string>(StringComparer.Ordinal);
-        DependencyGraph<string> graph = CreateContributorGraph(contributors);
-        foreach (string id in directDependencies)
-        {
-            if (!byId.ContainsKey(id))
-            {
-                throw new InvalidOperationException($"Declared Plugin dependency '{id}' is not active.");
-            }
-            result.Add(id);
-            result.UnionWith(graph.GetDependencies(id, recursive: true));
-        }
-        return result;
-    }
 
     internal static void ValidateContributorOrder(IReadOnlyList<ProjectSettingsContributor> contributors)
     {
@@ -597,56 +550,6 @@ public sealed class ProjectSettings : IDisposable
         if (!contributors.Select(static contributor => contributor.id).SequenceEqual(ordered, StringComparer.Ordinal))
         {
             throw new InvalidOperationException("Project settings contributors are not dependency-ordered.");
-        }
-    }
-
-    private static DependencyGraph<string> CreateContributorGraph(IReadOnlyList<ProjectSettingsContributor> contributors)
-    {
-        var graph = new DependencyGraph<string>(StringComparer.Ordinal);
-        var ids = new HashSet<string>(StringComparer.Ordinal);
-        foreach (ProjectSettingsContributor contributor in contributors)
-        {
-            if (!ids.Add(contributor.id))
-            {
-                throw new InvalidOperationException($"Settings contributor '{contributor.id}' is declared more than once.");
-            }
-            graph.AddNode(contributor.id);
-        }
-        foreach (ProjectSettingsContributor contributor in contributors)
-        {
-            foreach (string dependency in contributor.dependencies)
-            {
-                if (!ids.Contains(dependency))
-                {
-                    throw new InvalidOperationException(
-                        $"Settings contributor '{contributor.id}' requires inactive dependency '{dependency}'."
-                    );
-                }
-                graph.AddDependency(contributor.id, dependency);
-            }
-        }
-        return graph;
-    }
-
-    private static bool RecordsEqual(
-        ProjectSettingRecord left,
-        ProjectSettingRecord right
-    ) => left.id == right.id
-         && left.stableTypeId == right.stableTypeId
-         && (left.propertyData ?? []).AsSpan().SequenceEqual(right.propertyData ?? []);
-
-    private static void ValidateRecord(
-        ProjectSettingId id,
-        ProjectSettingsRegistry.Definition definition,
-        ProjectSettingRecord record
-    ) {
-        if (record.stableTypeId != definition.stableTypeId)
-        {
-            throw new InvalidOperationException($"Project setting '{id}' has an incompatible stable type.");
-        }
-        if (record.propertyData is null || record.propertyData.Length == 0)
-        {
-            throw new InvalidOperationException($"Project setting '{id}' contains an empty contribution payload.");
         }
     }
 
@@ -790,15 +693,6 @@ public sealed class ProjectSettings : IDisposable
         return true;
     }
 
-    private static void ValidateDocument(ProjectSettingsDocument document)
-    {
-        ArgumentNullException.ThrowIfNull(document);
-        if (document.overrides is null)
-        {
-            throw new InvalidDataException("A project Settings document requires an override collection.");
-        }
-    }
-
     private void ReplaceDocument(
         ProjectSettingsDocument candidate,
         IReadOnlyList<ProjectSettingsContributor> contributors
@@ -818,6 +712,112 @@ public sealed class ProjectSettings : IDisposable
             m_documents.Restore(previousBytes);
             Rebuild(contributors);
             throw;
+        }
+    }
+
+    private static ProjectSettingRecord? FindRecord(
+        ProjectSettingsContributor contributor,
+        ProjectSettingId id
+    ) => FindRecord(contributor.settings, id);
+
+    private static ProjectSettingRecord? FindRecord(
+        IEnumerable<ProjectSettingRecord> records,
+        ProjectSettingId id
+    ) {
+        ProjectSettingRecord? result = null;
+        foreach (ProjectSettingRecord record in records)
+        {
+            if (record.id != id)
+            {
+                continue;
+            }
+            if (result is not null)
+            {
+                throw new InvalidOperationException($"Project setting '{id}' is contributed more than once by one owner.");
+            }
+            result = record;
+        }
+        return result;
+    }
+
+    private static IReadOnlySet<string> ExpandContributorClosure(
+        IReadOnlySet<string> directDependencies,
+        IReadOnlyList<ProjectSettingsContributor> contributors
+    ) {
+        Dictionary<string, ProjectSettingsContributor> byId = contributors.ToDictionary(
+            static contributor => contributor.id,
+            StringComparer.Ordinal
+        );
+        var result = new HashSet<string>(StringComparer.Ordinal);
+        DependencyGraph<string> graph = CreateContributorGraph(contributors);
+        foreach (string id in directDependencies)
+        {
+            if (!byId.ContainsKey(id))
+            {
+                throw new InvalidOperationException($"Declared Plugin dependency '{id}' is not active.");
+            }
+            result.Add(id);
+            result.UnionWith(graph.GetDependencies(id, recursive: true));
+        }
+        return result;
+    }
+
+    private static DependencyGraph<string> CreateContributorGraph(IReadOnlyList<ProjectSettingsContributor> contributors)
+    {
+        var graph = new DependencyGraph<string>(StringComparer.Ordinal);
+        var ids = new HashSet<string>(StringComparer.Ordinal);
+        foreach (ProjectSettingsContributor contributor in contributors)
+        {
+            if (!ids.Add(contributor.id))
+            {
+                throw new InvalidOperationException($"Settings contributor '{contributor.id}' is declared more than once.");
+            }
+            graph.AddNode(contributor.id);
+        }
+        foreach (ProjectSettingsContributor contributor in contributors)
+        {
+            foreach (string dependency in contributor.dependencies)
+            {
+                if (!ids.Contains(dependency))
+                {
+                    throw new InvalidOperationException(
+                        $"Settings contributor '{contributor.id}' requires inactive dependency '{dependency}'."
+                    );
+                }
+                graph.AddDependency(contributor.id, dependency);
+            }
+        }
+        return graph;
+    }
+
+    private static bool RecordsEqual(
+        ProjectSettingRecord left,
+        ProjectSettingRecord right
+    ) => left.id == right.id
+         && left.stableTypeId == right.stableTypeId
+         && (left.propertyData ?? []).AsSpan().SequenceEqual(right.propertyData ?? []);
+
+    private static void ValidateRecord(
+        ProjectSettingId id,
+        ProjectSettingsRegistry.Definition definition,
+        ProjectSettingRecord record
+    ) {
+        if (record.stableTypeId != definition.stableTypeId)
+        {
+            throw new InvalidOperationException($"Project setting '{id}' has an incompatible stable type.");
+        }
+        if (record.propertyData is null || record.propertyData.Length == 0)
+        {
+            throw new InvalidOperationException($"Project setting '{id}' contains an empty contribution payload.");
+        }
+    }
+
+    private static void ValidateDocument(ProjectSettingsDocument document)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        if (document.overrides is null)
+        {
+            throw new InvalidDataException("A project Settings document requires an override collection.");
         }
     }
 }

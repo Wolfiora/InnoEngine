@@ -103,7 +103,7 @@ public interface IPlatformImGuiRenderer : IDisposable
     /// <param name="drawData">
     /// Opaque native ImDrawData pointer valid for the current frame.
     /// </param>
-    void RenderMain(IntPtr drawData);
+    void RenderMain(nint drawData);
 
     /// <summary>
     /// Synchronizes the primary drawable after a platform resize.
@@ -146,7 +146,7 @@ public interface IPlatformImGuiRenderer : IDisposable
     /// </param>
     void RenderViewport(
         PlatformImGuiViewportTarget target,
-        IntPtr drawData
+        nint drawData
     );
 
     /// <summary>

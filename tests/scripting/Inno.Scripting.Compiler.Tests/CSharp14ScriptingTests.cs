@@ -259,53 +259,6 @@ public sealed class CSharp14ScriptingTests
         Assert.DoesNotContain("CS8032", output, StringComparison.Ordinal);
     }
 
-    private static async Task<string> BuildIdeAsync(
-        DotNetSdkDescriptor sdk,
-        string project,
-        string directory
-    ) {
-        using var output = new StringWriter();
-        using var errors = new StringWriter();
-        try
-        {
-            await ToolchainEnvironment.RunAsync(
-                sdk.hostPath,
-                [sdk.cliPath, "build", project, "--disable-build-servers", "-m:1", "-nr:false", "-v:quiet"],
-                directory,
-                CancellationToken.None,
-                DotNetSdkEnvironment.Create(sdk.hostPath),
-                output,
-                errors
-            );
-            return output.ToString();
-        }
-        catch (InvalidOperationException failure)
-        {
-            throw new InvalidOperationException(output + Environment.NewLine + errors, failure);
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static WeakReference InvokePublicSemantics(string assemblyPath)
-    {
-        var lifetime = new AssemblyLoadContext("csharp14-semantics", isCollectible: true);
-        var retired = new WeakReference(lifetime);
-        try
-        {
-            using var stream = new MemoryStream(File.ReadAllBytes(assemblyPath));
-            Assembly assembly = lifetime.LoadFromStream(stream);
-            Func<bool> evaluate = assembly.GetType("LanguageSemantics", throwOnError: true)!
-                .GetMethod("Evaluate", BindingFlags.Public | BindingFlags.Static)!
-                .CreateDelegate<Func<bool>>();
-            Assert.True(evaluate());
-        }
-        finally
-        {
-            lifetime.Unload();
-        }
-        return retired;
-    }
-
     /// <summary>
     /// Invalidates reference and script artifacts when framework bytes change without changing the public contract.
     /// </summary>
@@ -402,14 +355,61 @@ public sealed class CSharp14ScriptingTests
         }
     }
 
+    private static async Task<string> BuildIdeAsync(
+        DotNetSdkDescriptor sdk,
+        string project,
+        string directory
+    ) {
+        using var output = new StringWriter();
+        using var errors = new StringWriter();
+        try
+        {
+            await ToolchainEnvironment.RunAsync(
+                sdk.hostPath,
+                [sdk.cliPath, "build", project, "--disable-build-servers", "-m:1", "-nr:false", "-v:quiet"],
+                directory,
+                CancellationToken.None,
+                DotNetSdkEnvironment.Create(sdk.hostPath),
+                output,
+                errors
+            );
+            return output.ToString();
+        }
+        catch (InvalidOperationException failure)
+        {
+            throw new InvalidOperationException(output + Environment.NewLine + errors, failure);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference InvokePublicSemantics(string assemblyPath)
+    {
+        var lifetime = new AssemblyLoadContext("csharp14-semantics", isCollectible: true);
+        var retired = new WeakReference(lifetime);
+        try
+        {
+            using var stream = new MemoryStream(File.ReadAllBytes(assemblyPath));
+            Assembly assembly = lifetime.LoadFromStream(stream);
+            Func<bool> evaluate = assembly.GetType("LanguageSemantics", throwOnError: true)!
+                .GetMethod("Evaluate", BindingFlags.Public | BindingFlags.Static)!
+                .CreateDelegate<Func<bool>>();
+            Assert.True(evaluate());
+        }
+        finally
+        {
+            lifetime.Unload();
+        }
+        return retired;
+    }
+
     private sealed class MutableCompilationEnvironment : IScriptCompilationEnvironmentProvider
     {
-        internal ScriptCompilationInputs inputs { get; set; } = null!;
-
         public ScriptCompilationInputs Capture(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             return inputs;
         }
+
+        internal ScriptCompilationInputs inputs { get; set; } = null!;
     }
 }

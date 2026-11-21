@@ -25,8 +25,6 @@ public sealed class EditorHistoryTransaction : IDisposable
     /// </summary>
     public string name { get; }
 
-    internal Guid id { get; }
-
     /// <summary>
     /// Commits all recorded child operations as one atomic history entry.
     /// </summary>
@@ -104,6 +102,8 @@ public sealed class EditorHistoryTransaction : IDisposable
             $"Transaction '{name}' lost state integrity while rolling back. The history is faulted: {result.message}"
         );
     }
+
+    internal Guid id { get; }
 
     private EditorHistory GetOwner()
         => !m_completed && m_owner is not null

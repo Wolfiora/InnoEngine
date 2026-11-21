@@ -83,8 +83,19 @@ public sealed class ContentCacheProcessTests
 
     private sealed class Probe(Process process) : IAsyncDisposable
     {
-        internal Process process { get; } = process;
         private readonly Task<string> m_error = process.StandardError.ReadToEndAsync();
+
+        public async ValueTask DisposeAsync()
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+                await process.WaitForExitAsync();
+            }
+            process.Dispose();
+        }
+
+        internal Process process { get; } = process;
 
         internal async Task<string> ReadLineAsync()
             => await process.StandardOutput.ReadLineAsync().WaitAsync(TimeSpan.FromSeconds(30))
@@ -96,16 +107,6 @@ public sealed class ContentCacheProcessTests
             Assert.Equal("010203", await ReadLineAsync());
             await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(30));
             Assert.True(process.ExitCode == 0, await m_error);
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            if (!process.HasExited)
-            {
-                process.Kill(entireProcessTree: true);
-                await process.WaitForExitAsync();
-            }
-            process.Dispose();
         }
     }
 }

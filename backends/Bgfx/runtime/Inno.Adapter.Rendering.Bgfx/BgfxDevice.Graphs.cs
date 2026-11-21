@@ -189,6 +189,16 @@ public sealed unsafe partial class BgfxDevice
         m_activeGraphViewBase = 0;
     }
 
+    private void ReleasePreparedGraphResources()
+    {
+        ReturnTransientGraphResources();
+        m_graphFrameBuffers.Clear();
+        m_graphTextures.Clear();
+        m_graphBuffers.Clear();
+        m_activeGraph = null;
+        m_activeGraphViewBase = 0;
+    }
+
     private static void ApplyViewTransform(
         ushort viewId,
         RenderViewTransform? transform
@@ -206,15 +216,5 @@ public sealed unsafe partial class BgfxDevice
         {
             bgfx.Raw.set_view_transform(viewId, viewPointer, projectionPointer);
         }
-    }
-
-    private void ReleasePreparedGraphResources()
-    {
-        ReturnTransientGraphResources();
-        m_graphFrameBuffers.Clear();
-        m_graphTextures.Clear();
-        m_graphBuffers.Clear();
-        m_activeGraph = null;
-        m_activeGraphViewBase = 0;
     }
 }

@@ -9,6 +9,7 @@ internal sealed class NativeBuildInputState
 {
     private readonly object m_gate = new();
     private readonly NativeInputReadCache m_initialInputs;
+    private readonly Dictionary<string, (long files, long bytes, long reused)> m_phases = new(StringComparer.Ordinal);
     private long m_hashedFiles;
     private long m_hashedBytes;
     private long m_nativeProcesses;
@@ -18,7 +19,6 @@ internal sealed class NativeBuildInputState
     private long m_outputFiles;
     private long m_outputBytes;
     private long m_managedProcesses;
-    private readonly Dictionary<string, (long files, long bytes, long reused)> m_phases = new(StringComparer.Ordinal);
 
     internal NativeBuildInputState()
     {
@@ -115,6 +115,8 @@ internal sealed class NativeBuildInputState
 
     internal void RecordManagedProcess() => Interlocked.Increment(ref m_managedProcesses);
 
+    internal void RecordProcess() => Interlocked.Increment(ref m_nativeProcesses);
+
     private IReadOnlyList<NativeBuildPhaseStatistics> CapturePhases()
     {
         lock (m_gate)
@@ -132,6 +134,4 @@ internal sealed class NativeBuildInputState
             );
         }
     }
-
-    internal void RecordProcess() => Interlocked.Increment(ref m_nativeProcesses);
 }

@@ -162,6 +162,8 @@ public abstract class ProjectSettingComposer<TSetting, TContribution> : ProjectS
     where TSetting : class, ISerializable
     where TContribution : class, ISerializable
 {
+    internal sealed override Type settingType => typeof(TSetting);
+
     /// <summary>
     /// Captures the contribution introduced by the supplied project setting value.
     /// </summary>
@@ -203,8 +205,6 @@ public abstract class ProjectSettingComposer<TSetting, TContribution> : ProjectS
         TSetting target,
         IReadOnlyList<ProjectSettingContribution<TContribution>> contributions
     );
-
-    internal sealed override Type settingType => typeof(TSetting);
 
     internal sealed override bool TryCapture(
         SerializationRegistry serialization,

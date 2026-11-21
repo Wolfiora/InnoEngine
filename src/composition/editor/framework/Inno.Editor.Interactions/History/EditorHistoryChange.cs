@@ -53,16 +53,6 @@ public sealed class EditorHistoryChange : IDisposable
     /// </summary>
     public string? mergeKey { get; }
 
-    internal long residentSize => payload.residentSize;
-
-    internal long diskSize => payload.diskSize;
-
-    internal EditorHistoryChange Retain(
-        EditorHistoryBlobStore store,
-        int inlinePayloadThreshold,
-        bool canStoreOnDisk
-    ) => new(kind, payload.Retain(store, inlinePayloadThreshold, canStoreOnDisk), mergeKey);
-
     /// <summary>
     /// Releases the payload storage owned by this history change.
     /// </summary>
@@ -76,4 +66,14 @@ public sealed class EditorHistoryChange : IDisposable
         payload.Dispose();
         GC.SuppressFinalize(this);
     }
+
+    internal long residentSize => payload.residentSize;
+
+    internal long diskSize => payload.diskSize;
+
+    internal EditorHistoryChange Retain(
+        EditorHistoryBlobStore store,
+        int inlinePayloadThreshold,
+        bool canStoreOnDisk
+    ) => new(kind, payload.Retain(store, inlinePayloadThreshold, canStoreOnDisk), mergeKey);
 }

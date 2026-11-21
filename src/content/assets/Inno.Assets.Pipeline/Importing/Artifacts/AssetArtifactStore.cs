@@ -170,18 +170,6 @@ internal sealed class AssetArtifactStore
         };
     }
 
-    private string ResolveOutput(AssetArtifactInfo artifact)
-    {
-        AssetArtifactManifest manifest = ReadManifest(artifact.key, serialization: null)
-                                         ?? throw new InvalidDataException($"Artifact bundle '{artifact.key}' has no manifest.");
-        AssetArtifactOutputData output = manifest.outputs.Single(value => value.name == artifact.outputName);
-        if (output.length != artifact.length || output.contentHash != artifact.contentHash)
-        {
-            throw new InvalidDataException($"Artifact '{artifact.key}/{artifact.outputName}' changed its metadata.");
-        }
-        return PathBoundary.Resolve(Path.Combine(GetBundlePath(artifact.key), "outputs"), output.fileName);
-    }
-
     internal int Collect(
         IReadOnlySet<string> reachableKeys,
         TimeSpan gracePeriod,
@@ -216,6 +204,41 @@ internal sealed class AssetArtifactStore
             }
         }
         return removed;
+    }
+
+    internal AssetArtifactKey ExportRuntime(
+        AssetArtifactKey key,
+        AssetArtifactStore destination,
+        SerializationGeneration? serialization,
+        CancellationToken cancellationToken
+    ) {
+        AssetArtifactManifest manifest = ReadManifest(key, serialization)
+                                         ?? throw new InvalidDataException($"Artifact bundle '{key}' has no manifest.");
+        var outputs = new Dictionary<string, ReadOnlyMemory<byte>>(StringComparer.Ordinal);
+        foreach (AssetArtifactOutputData output in manifest.outputs)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (output.deploymentScope == AssetDeploymentScope.AuthoringOnly)
+            {
+                continue;
+            }
+            string path = PathBoundary.Resolve(Path.Combine(GetBundlePath(key), "outputs"), output.fileName);
+            byte[] bytes = ReadOutputBytes(new AssetArtifactInfo(key, output.name, output.contentHash, output.length), path);
+            outputs.Add(output.name, bytes);
+        }
+        return destination.Commit("Inno.RuntimeProjection:" + key.value, outputs, serialization: serialization);
+    }
+
+    private string ResolveOutput(AssetArtifactInfo artifact)
+    {
+        AssetArtifactManifest manifest = ReadManifest(artifact.key, serialization: null)
+                                         ?? throw new InvalidDataException($"Artifact bundle '{artifact.key}' has no manifest.");
+        AssetArtifactOutputData output = manifest.outputs.Single(value => value.name == artifact.outputName);
+        if (output.length != artifact.length || output.contentHash != artifact.contentHash)
+        {
+            throw new InvalidDataException($"Artifact '{artifact.key}/{artifact.outputName}' changed its metadata.");
+        }
+        return PathBoundary.Resolve(Path.Combine(GetBundlePath(artifact.key), "outputs"), output.fileName);
     }
 
     private AssetArtifactManifest? ReadManifest(
@@ -341,29 +364,6 @@ internal sealed class AssetArtifactStore
             hash.AppendData(output.Value.Span);
         }
         return new AssetArtifactKey(Convert.ToHexString(hash.GetHashAndReset()));
-    }
-
-    internal AssetArtifactKey ExportRuntime(
-        AssetArtifactKey key,
-        AssetArtifactStore destination,
-        SerializationGeneration? serialization,
-        CancellationToken cancellationToken
-    ) {
-        AssetArtifactManifest manifest = ReadManifest(key, serialization)
-                                         ?? throw new InvalidDataException($"Artifact bundle '{key}' has no manifest.");
-        var outputs = new Dictionary<string, ReadOnlyMemory<byte>>(StringComparer.Ordinal);
-        foreach (AssetArtifactOutputData output in manifest.outputs)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (output.deploymentScope == AssetDeploymentScope.AuthoringOnly)
-            {
-                continue;
-            }
-            string path = PathBoundary.Resolve(Path.Combine(GetBundlePath(key), "outputs"), output.fileName);
-            byte[] bytes = ReadOutputBytes(new AssetArtifactInfo(key, output.name, output.contentHash, output.length), path);
-            outputs.Add(output.name, bytes);
-        }
-        return destination.Commit("Inno.RuntimeProjection:" + key.value, outputs, serialization: serialization);
     }
 
     private static bool IsContentHash(string value)

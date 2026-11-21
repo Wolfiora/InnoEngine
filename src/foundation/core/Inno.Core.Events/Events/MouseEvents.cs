@@ -42,7 +42,7 @@ public abstract class MouseEvent : Event
 /// <summary>
 /// Raised when the cursor moves.
 /// </summary>
-public class MouseMovedEvent : MouseEvent
+public sealed class MouseMovedEvent : MouseEvent
 {
     /// <summary>
     /// Creates a pointer movement in platform-window coordinates.
@@ -61,6 +61,16 @@ public class MouseMovedEvent : MouseEvent
         float x,
         float y
     ) : base(windowId)
+    {
+        this.x = x;
+        this.y = y;
+    }
+
+    private MouseMovedEvent(
+        MouseMovedEvent source,
+        float x,
+        float y
+    ) : base(source)
     {
         this.x = x;
         this.y = y;
@@ -92,16 +102,6 @@ public class MouseMovedEvent : MouseEvent
         float x,
         float y
     ) => new(this, x, y);
-
-    private MouseMovedEvent(
-        MouseMovedEvent source,
-        float x,
-        float y
-    ) : base(source)
-    {
-        this.x = x;
-        this.y = y;
-    }
 }
 
 /// <summary>
@@ -116,7 +116,7 @@ public class MouseMovedEvent : MouseEvent
 /// <param name="offsetY">
 /// The offset y used to initialize this instance.
 /// </param>
-public class MouseScrolledEvent(
+public sealed class MouseScrolledEvent(
     uint windowId,
     float offsetX,
     float offsetY
@@ -162,7 +162,7 @@ public abstract class MouseButtonEvent(
 /// <param name="button">
 /// The button used to initialize this instance.
 /// </param>
-public class MouseButtonPressedEvent(
+public sealed class MouseButtonPressedEvent(
     uint windowId,
     MouseButton button
 ) : MouseButtonEvent(windowId, button);
@@ -176,7 +176,7 @@ public class MouseButtonPressedEvent(
 /// <param name="button">
 /// The button used to initialize this instance.
 /// </param>
-public class MouseButtonReleasedEvent(
+public sealed class MouseButtonReleasedEvent(
     uint windowId,
     MouseButton button
 ) : MouseButtonEvent(windowId, button);

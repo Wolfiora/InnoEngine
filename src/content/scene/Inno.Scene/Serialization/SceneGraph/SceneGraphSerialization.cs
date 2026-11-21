@@ -485,26 +485,6 @@ internal static class SceneGraphSerialization
         SceneGraphReferenceMap references
     ) => RestoreMissingReferenceAliases(graph.missingReferenceAliases, references, graph.missingPlaceholders);
 
-    private static void ValidateSystems(IReadOnlyList<SerializationReader> systemReaders)
-    {
-        var identities = new HashSet<Guid>();
-        foreach (SerializationReader systemReader in systemReaders)
-        {
-            Guid systemId = systemReader.Read<Guid>(C_SYSTEM_ID_KEY);
-            EnsurePersistentId(systemId, $"{systemReader.path}.{C_SYSTEM_ID_KEY}");
-            if (!identities.Add(systemId))
-            {
-                throw new InvalidDataException($"Duplicate GameSystem identity '{systemId}' at '{systemReader.path}'.");
-            }
-            Guid stableTypeId = systemReader.Read<Guid>(C_STABLE_TYPE_ID_KEY);
-            EnsurePersistentId(stableTypeId, $"{systemReader.path}.{C_STABLE_TYPE_ID_KEY}");
-            _ = TryResolveSystemType(stableTypeId, systemReader.context, out _);
-            EnsureTypeName(systemReader.Read<string>(C_TYPE_NAME_KEY), systemReader.path);
-            _ = systemReader.Read<byte[]>(C_STATE_KEY);
-            _ = ReadStateDependencies(systemReader);
-        }
-    }
-
     internal static void ReconcilePrefabConnections(
         GameScene scene,
         SerializationContext context,
@@ -526,33 +506,6 @@ internal static class SceneGraphSerialization
                 continue;
             }
             PrefabOverrideProcessor.Reconcile(roots[i].prefabConnection!, roots[i], context);
-        }
-    }
-
-    private static IEnumerable<GameObject> EnumerateRestoredObjects(
-        GameObject root,
-        bool includeRoot
-    ) {
-        var pending = new Stack<Transform>();
-        if (includeRoot)
-        {
-            pending.Push(root.transform);
-        }
-        else
-        {
-            foreach (Transform child in root.transform.children)
-            {
-                pending.Push(child);
-            }
-        }
-        while (pending.Count != 0)
-        {
-            Transform current = pending.Pop();
-            yield return current.gameObject;
-            foreach (Transform child in current.children)
-            {
-                pending.Push(child);
-            }
         }
     }
 
@@ -655,6 +608,83 @@ internal static class SceneGraphSerialization
         }
     }
 
+    internal static IReadOnlyList<KeyValuePair<Guid, Guid>> ReadMissingReferenceAliases(SerializationReader rootReader)
+    {
+        Guid[] aliases = rootReader.Read<Guid[]>(C_MISSING_REFERENCE_SOURCE_IDS_KEY);
+        Guid[] targets = rootReader.Read<Guid[]>(C_MISSING_REFERENCE_TARGET_IDS_KEY);
+        var result = new KeyValuePair<Guid, Guid>[aliases.Length];
+        for (int i = 0; i < aliases.Length; i++)
+        {
+            result[i] = new KeyValuePair<Guid, Guid>(aliases[i], targets[i]);
+        }
+        return result;
+    }
+
+    internal static void ValidateMissingReferenceAliases(SerializationReader reader)
+    {
+        Guid[] aliases = reader.Read<Guid[]>(C_MISSING_REFERENCE_SOURCE_IDS_KEY);
+        Guid[] targets = reader.Read<Guid[]>(C_MISSING_REFERENCE_TARGET_IDS_KEY);
+        if (aliases.Length != targets.Length)
+        {
+            throw new InvalidDataException($"Missing scene reference alias arrays disagree at '{reader.path}'.");
+        }
+        if (aliases.Any(static value => value == Guid.Empty) || targets.Any(static value => value == Guid.Empty))
+        {
+            throw new InvalidDataException($"Missing scene reference aliases contain an empty identity at '{reader.path}'.");
+        }
+        if (aliases.Distinct().Count() != aliases.Length)
+        {
+            throw new InvalidDataException($"Missing scene reference aliases contain duplicates at '{reader.path}'.");
+        }
+    }
+
+    private static void ValidateSystems(IReadOnlyList<SerializationReader> systemReaders)
+    {
+        var identities = new HashSet<Guid>();
+        foreach (SerializationReader systemReader in systemReaders)
+        {
+            Guid systemId = systemReader.Read<Guid>(C_SYSTEM_ID_KEY);
+            EnsurePersistentId(systemId, $"{systemReader.path}.{C_SYSTEM_ID_KEY}");
+            if (!identities.Add(systemId))
+            {
+                throw new InvalidDataException($"Duplicate GameSystem identity '{systemId}' at '{systemReader.path}'.");
+            }
+            Guid stableTypeId = systemReader.Read<Guid>(C_STABLE_TYPE_ID_KEY);
+            EnsurePersistentId(stableTypeId, $"{systemReader.path}.{C_STABLE_TYPE_ID_KEY}");
+            _ = TryResolveSystemType(stableTypeId, systemReader.context, out _);
+            EnsureTypeName(systemReader.Read<string>(C_TYPE_NAME_KEY), systemReader.path);
+            _ = systemReader.Read<byte[]>(C_STATE_KEY);
+            _ = ReadStateDependencies(systemReader);
+        }
+    }
+
+    private static IEnumerable<GameObject> EnumerateRestoredObjects(
+        GameObject root,
+        bool includeRoot
+    ) {
+        var pending = new Stack<Transform>();
+        if (includeRoot)
+        {
+            pending.Push(root.transform);
+        }
+        else
+        {
+            foreach (Transform child in root.transform.children)
+            {
+                pending.Push(child);
+            }
+        }
+        while (pending.Count != 0)
+        {
+            Transform current = pending.Pop();
+            yield return current.gameObject;
+            foreach (Transform child in current.children)
+            {
+                pending.Push(child);
+            }
+        }
+    }
+
     private static Guid GetSourceId(
         IReadOnlyDictionary<EngineObject, Guid> sourceIds,
         EngineObject engineObject
@@ -714,18 +744,6 @@ internal static class SceneGraphSerialization
         writer.Write(C_MISSING_REFERENCE_TARGET_IDS_KEY, ordered.Select(static pair => pair.Value).ToArray());
     }
 
-    internal static IReadOnlyList<KeyValuePair<Guid, Guid>> ReadMissingReferenceAliases(SerializationReader rootReader)
-    {
-        Guid[] aliases = rootReader.Read<Guid[]>(C_MISSING_REFERENCE_SOURCE_IDS_KEY);
-        Guid[] targets = rootReader.Read<Guid[]>(C_MISSING_REFERENCE_TARGET_IDS_KEY);
-        var result = new KeyValuePair<Guid, Guid>[aliases.Length];
-        for (int i = 0; i < aliases.Length; i++)
-        {
-            result[i] = new KeyValuePair<Guid, Guid>(aliases[i], targets[i]);
-        }
-        return result;
-    }
-
     private static void RestoreMissingReferenceAliases(
         IReadOnlyList<KeyValuePair<Guid, Guid>> aliases,
         SceneGraphReferenceMap references,
@@ -748,24 +766,6 @@ internal static class SceneGraphSerialization
             {
                 system.SetReferenceAliases(retained);
             }
-        }
-    }
-
-    internal static void ValidateMissingReferenceAliases(SerializationReader reader)
-    {
-        Guid[] aliases = reader.Read<Guid[]>(C_MISSING_REFERENCE_SOURCE_IDS_KEY);
-        Guid[] targets = reader.Read<Guid[]>(C_MISSING_REFERENCE_TARGET_IDS_KEY);
-        if (aliases.Length != targets.Length)
-        {
-            throw new InvalidDataException($"Missing scene reference alias arrays disagree at '{reader.path}'.");
-        }
-        if (aliases.Any(static value => value == Guid.Empty) || targets.Any(static value => value == Guid.Empty))
-        {
-            throw new InvalidDataException($"Missing scene reference aliases contain an empty identity at '{reader.path}'.");
-        }
-        if (aliases.Distinct().Count() != aliases.Length)
-        {
-            throw new InvalidDataException($"Missing scene reference aliases contain duplicates at '{reader.path}'.");
         }
     }
 

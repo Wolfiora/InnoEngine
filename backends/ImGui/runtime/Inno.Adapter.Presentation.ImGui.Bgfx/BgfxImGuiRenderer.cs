@@ -182,7 +182,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     /// <param name="drawData">
     /// The draw data consumed by render main; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void RenderMain(IntPtr drawData)
+    public void RenderMain(nint drawData)
     {
         lock (m_sync)
         {
@@ -270,7 +270,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     /// </param>
     public void RenderViewport(
         PlatformImGuiViewportTarget target,
-        IntPtr drawData
+        nint drawData
     ) {
         ArgumentNullException.ThrowIfNull(target);
         lock (m_sync)
@@ -735,11 +735,11 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     }
 
     private DrawPacket? CaptureDrawData(
-        IntPtr address,
+        nint address,
         uint viewportId,
         RenderSurfaceHandle surface
     ) {
-        if (address == IntPtr.Zero)
+        if (address == nint.Zero)
         {
             return null;
         }
@@ -877,6 +877,56 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         }
     }
 
+    private void ReleaseDeviceResources()
+    {
+        foreach (OwnedTexture texture in m_ownedTextures.Values)
+        {
+            m_device.DestroyTexture(texture.handle);
+        }
+
+        if (m_vertexBuffer.isValid)
+        {
+            m_device.DestroyBuffer(m_vertexBuffer);
+        }
+
+        if (m_indexBuffer.isValid)
+        {
+            m_device.DestroyBuffer(m_indexBuffer);
+        }
+
+        if (m_presentationIndices.isValid)
+        {
+            m_device.DestroyBuffer(m_presentationIndices);
+        }
+        if (m_presentationVertices.isValid)
+        {
+            m_device.DestroyBuffer(m_presentationVertices);
+        }
+
+        if (m_pipeline.isValid)
+        {
+            m_device.DestroyGraphicsPipeline(m_pipeline);
+        }
+
+        m_ownedTextures.Clear();
+        m_textures.Clear();
+        m_vertexBuffer = default;
+        m_indexBuffer = default;
+        m_presentationVertices = default;
+        m_presentationIndices = default;
+        m_pipeline = default;
+    }
+
+    private ulong AllocateTextureToken()
+    {
+        if (m_nextTextureToken == 0)
+        {
+            throw new InvalidOperationException("ImGui texture token space was exhausted.");
+        }
+
+        return m_nextTextureToken++;
+    }
+
     private static byte[] CopyTexturePixels(ImTextureData* textureData)
     {
         int sourcePitch = ImGuiNative.Raw.GetPitch(textureData);
@@ -938,56 +988,6 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         context.commands.BindIndexBuffer(packet.indices);
         context.commands.BindTexture(S_TEXTURE_BINDING, packet.source);
         context.commands.DrawIndexed(6);
-    }
-
-    private void ReleaseDeviceResources()
-    {
-        foreach (OwnedTexture texture in m_ownedTextures.Values)
-        {
-            m_device.DestroyTexture(texture.handle);
-        }
-
-        if (m_vertexBuffer.isValid)
-        {
-            m_device.DestroyBuffer(m_vertexBuffer);
-        }
-
-        if (m_indexBuffer.isValid)
-        {
-            m_device.DestroyBuffer(m_indexBuffer);
-        }
-
-        if (m_presentationIndices.isValid)
-        {
-            m_device.DestroyBuffer(m_presentationIndices);
-        }
-        if (m_presentationVertices.isValid)
-        {
-            m_device.DestroyBuffer(m_presentationVertices);
-        }
-
-        if (m_pipeline.isValid)
-        {
-            m_device.DestroyGraphicsPipeline(m_pipeline);
-        }
-
-        m_ownedTextures.Clear();
-        m_textures.Clear();
-        m_vertexBuffer = default;
-        m_indexBuffer = default;
-        m_presentationVertices = default;
-        m_presentationIndices = default;
-        m_pipeline = default;
-    }
-
-    private ulong AllocateTextureToken()
-    {
-        if (m_nextTextureToken == 0)
-        {
-            throw new InvalidOperationException("ImGui texture token space was exhausted.");
-        }
-
-        return m_nextTextureToken++;
     }
 
     private static void ValidatePipelineDescriptor(GraphicsPipelineDescriptor descriptor)

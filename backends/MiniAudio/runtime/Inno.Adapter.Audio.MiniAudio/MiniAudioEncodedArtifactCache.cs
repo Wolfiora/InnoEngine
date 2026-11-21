@@ -16,6 +16,26 @@ internal sealed class MiniAudioEncodedArtifactCache : IDisposable
     private readonly SemaphoreSlim m_slots = new(4);
     private bool m_disposed;
 
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        if (m_disposed)
+        {
+            return;
+        }
+        CancelPreparation();
+        if (m_entries.Count != 0 || m_retiring.Count != 0)
+        {
+            throw new RetirementPendingException("Encoded audio still has clip owners awaiting retirement.");
+        }
+        if (Directory.Exists(m_root))
+        {
+            Directory.Delete(m_root, recursive: false);
+        }
+        m_slots.Dispose();
+        m_disposed = true;
+    }
+
     internal MiniAudioClipSourceLease Acquire(IAudioClipSource source)
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
@@ -77,26 +97,6 @@ internal sealed class MiniAudioEncodedArtifactCache : IDisposable
         {
             entry.Cancel();
         }
-    }
-
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        if (m_disposed)
-        {
-            return;
-        }
-        CancelPreparation();
-        if (m_entries.Count != 0 || m_retiring.Count != 0)
-        {
-            throw new RetirementPendingException("Encoded audio still has clip owners awaiting retirement.");
-        }
-        if (Directory.Exists(m_root))
-        {
-            Directory.Delete(m_root, recursive: false);
-        }
-        m_slots.Dispose();
-        m_disposed = true;
     }
 
     private void RemoveActiveEntry(MiniAudioClipPreparation entry)

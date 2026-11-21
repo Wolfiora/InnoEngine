@@ -8,11 +8,11 @@ namespace Inno.Editor.Panel.Logging;
 
 internal sealed class ConsoleView
 {
+    private readonly Dictionary<string, int> m_indices = new(StringComparer.Ordinal);
     private long m_revision = -1;
     private string m_query = string.Empty;
     private ulong m_levels;
     private bool m_collapsed;
-    private readonly Dictionary<string, int> m_indices = new(StringComparer.Ordinal);
 
     internal IReadOnlyList<Row> rows { get; private set; } = Array.Empty<Row>();
 

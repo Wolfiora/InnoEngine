@@ -13,6 +13,26 @@ namespace Inno.Core.Mathematics;
 public struct Vector2 : IEquatable<Vector2>
 {
     /// <summary>
+    /// A value whose components are all zero.
+    /// </summary>
+    public static readonly Vector2 ZERO = new(0f, 0f);
+
+    /// <summary>
+    /// A value whose components are all one.
+    /// </summary>
+    public static readonly Vector2 ONE = new(1f, 1f);
+
+    /// <summary>
+    /// A unit value aligned with the x axis.
+    /// </summary>
+    public static readonly Vector2 UNIT_X = new(1f, 0f);
+
+    /// <summary>
+    /// A unit value aligned with the y axis.
+    /// </summary>
+    public static readonly Vector2 UNIT_Y = new(0f, 1f);
+
+    /// <summary>
     /// The horizontal or first component.
     /// </summary>
     [DataMember]
@@ -42,24 +62,16 @@ public struct Vector2 : IEquatable<Vector2>
     }
 
     /// <summary>
-    /// A value whose components are all zero.
+    /// Gets a unit-length copy, or the zero value when normalization is undefined.
     /// </summary>
-    public static readonly Vector2 ZERO = new(0f, 0f);
-
-    /// <summary>
-    /// A value whose components are all one.
-    /// </summary>
-    public static readonly Vector2 ONE = new(1f, 1f);
-
-    /// <summary>
-    /// A unit value aligned with the x axis.
-    /// </summary>
-    public static readonly Vector2 UNIT_X = new(1f, 0f);
-
-    /// <summary>
-    /// A unit value aligned with the y axis.
-    /// </summary>
-    public static readonly Vector2 UNIT_Y = new(0f, 1f);
+    public Vector2 normalized
+    {
+        get
+        {
+            float len = Length();
+            return len > 0f ? this / len : ZERO;
+        }
+    }
 
     /// <summary>
     /// Calculates the Euclidean magnitude of this value.
@@ -80,16 +92,42 @@ public struct Vector2 : IEquatable<Vector2>
     public float LengthSquared() => SimdMath.Dot2(x, y, x, y);
 
     /// <summary>
-    /// Gets a unit-length copy, or the zero value when normalization is undefined.
+    /// Determines whether this value and the supplied value represent the same logical state.
     /// </summary>
-    public Vector2 normalized
-    {
-        get
-        {
-            float len = Length();
-            return len > 0f ? this / len : ZERO;
-        }
-    }
+    /// <param name="obj">
+    /// The object compared with this value.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    public override bool Equals(object? obj) => obj is Vector2 other && Equals(other);
+
+    /// <summary>
+    /// Determines whether this value and the supplied value represent the same logical state.
+    /// </summary>
+    /// <param name="other">
+    /// The strongly typed value compared with this value.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    public bool Equals(Vector2 other) => MathHelper.AlmostEquals(x, other.x) && MathHelper.AlmostEquals(y, other.y);
+
+    /// <summary>
+    /// Computes a hash code consistent with the implemented equality contract.
+    /// </summary>
+    /// <returns>
+    /// The scalar result calculated from the supplied inputs.
+    /// </returns>
+    public override int GetHashCode() => HashCode.Combine(x, y);
+
+    /// <summary>
+    /// Formats this value as a human-readable component list.
+    /// </summary>
+    /// <returns>
+    /// The validated text representation owned by the caller.
+    /// </returns>
+    public override string ToString() => $"({x:F2}, {y:F2})";
 
     /// <summary>
     /// Returns a unit-length value while handling degenerate input according to the method contract.
@@ -356,6 +394,18 @@ public struct Vector2 : IEquatable<Vector2>
     /// <summary>
     /// Subtracts or negates the supplied value component by component.
     /// </summary>
+    /// <param name="v">
+    /// The concrete value read or transformed by this operation.
+    /// </param>
+    /// <returns>
+    /// The validated vector2 that represents the completed operation.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Vector2 operator -(Vector2 v) => new Vector2(-v.x, -v.y);
+
+    /// <summary>
+    /// Subtracts or negates the supplied value component by component.
+    /// </summary>
     /// <param name="a">
     /// The first operand or interpolation endpoint.
     /// </param>
@@ -370,18 +420,6 @@ public struct Vector2 : IEquatable<Vector2>
         Vector2 a,
         Vector2 b
     ) => new Vector2(a.x - b.x, a.y - b.y);
-
-    /// <summary>
-    /// Subtracts or negates the supplied value component by component.
-    /// </summary>
-    /// <param name="v">
-    /// The concrete value read or transformed by this operation.
-    /// </param>
-    /// <returns>
-    /// The validated vector2 that represents the completed operation.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2 operator -(Vector2 v) => new Vector2(-v.x, -v.y);
 
     /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
@@ -494,42 +532,4 @@ public struct Vector2 : IEquatable<Vector2>
     /// The validated vector2 that represents the completed operation.
     /// </returns>
     public static implicit operator Vector2(NumericsVector2 v) => new(v.X, v.Y);
-
-    /// <summary>
-    /// Determines whether this value and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="obj">
-    /// The object compared with this value.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public override bool Equals(object? obj) => obj is Vector2 other && Equals(other);
-
-    /// <summary>
-    /// Determines whether this value and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="other">
-    /// The strongly typed value compared with this value.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public bool Equals(Vector2 other) => MathHelper.AlmostEquals(x, other.x) && MathHelper.AlmostEquals(y, other.y);
-
-    /// <summary>
-    /// Computes a hash code consistent with the implemented equality contract.
-    /// </summary>
-    /// <returns>
-    /// The scalar result calculated from the supplied inputs.
-    /// </returns>
-    public override int GetHashCode() => HashCode.Combine(x, y);
-
-    /// <summary>
-    /// Formats this value as a human-readable component list.
-    /// </summary>
-    /// <returns>
-    /// The validated text representation owned by the caller.
-    /// </returns>
-    public override string ToString() => $"({x:F2}, {y:F2})";
 }

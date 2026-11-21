@@ -23,15 +23,15 @@ public sealed class RuntimeSession : IDisposable
 {
     private readonly EngineHost m_host;
     private readonly IdentityAllocator m_identities;
-    private JobScheduler m_jobs = null!;
     private readonly CoroutineScheduler m_coroutines;
     private readonly RuntimeClock m_clock = new();
+    private readonly RetirementBarrier m_retirement;
+    private JobScheduler m_jobs = null!;
     private RuntimeSubsystemPipeline? m_subsystems;
     private SerializationGeneration? m_serialization;
     private SessionLogSink? m_sessionLog;
     private AssetDatabase? m_assets;
     private ReferenceCatalog m_references = ReferenceCatalog.empty;
-    private readonly RetirementBarrier m_retirement;
     private List<Exception>? m_retirementFailures;
     private float m_fixedAccumulator;
     private bool m_disposed;
@@ -47,71 +47,6 @@ public sealed class RuntimeSession : IDisposable
         m_coroutines = new CoroutineScheduler();
         this.events = new EventDispatcher();
         m_retirement = new RetirementBarrier($"Runtime session {sessionId}", host.retirementTimeout);
-    }
-
-    internal void Start()
-    {
-        m_jobs = new JobScheduler(
-            options.jobExecutionMode switch
-            {
-                RuntimeJobExecutionMode.SingleThread => JobExecutionMode.SingleThread,
-                RuntimeJobExecutionMode.WorkerPool => JobExecutionMode.WorkerPool,
-                _ => throw new ArgumentOutOfRangeException(
-                    nameof(options),
-                    options.jobExecutionMode,
-                    "Unknown runtime job execution mode."
-                )
-            },
-            new JobSchedulerOptions
-            {
-                workerCount = options.jobWorkerCount
-            }
-        );
-        scenes = new SceneWorld(m_identities, m_host.types);
-        if (options.createLogSink is not null)
-        {
-            ILogSink sink = options.createLogSink(sessionId)
-                            ?? throw new InvalidOperationException("The session log factory returned no sink.");
-            m_sessionLog = new SessionLogSink(sessionId, sink);
-            m_host.logs.RegisterSink(m_sessionLog);
-        }
-        using IDisposable scope = EnterExecutionScope();
-        if (options.contentStore is not null)
-        {
-            m_serialization = m_host.serialization.CaptureGeneration();
-            m_assets = new AssetDatabase(
-                options.contentStore,
-                m_serialization,
-                m_host.types.current,
-                m_identities,
-                options.assetResidencyBudgetBytes,
-                options.assetPreparationBudgetBytes
-            );
-        }
-        IReferenceResolver[] referenceResolvers = m_assets is IReferenceResolver assetResolver
-                                                  ? [.. options.referenceResolvers, assetResolver]
-                                                  : [.. options.referenceResolvers];
-        IAssetReferenceResolver? prefabAssets = m_assets
-                                                ?? options.referenceResolvers.OfType<IAssetReferenceResolver>().SingleOrDefault();
-        if (prefabAssets is not null)
-        {
-            scenes.ConfigurePrefabInstantiation(m_host.serialization, prefabAssets);
-        }
-        m_references = referenceResolvers.Length == 0
-                       ? ReferenceCatalog.empty
-                       : ReferenceCatalog.Create(1, referenceResolvers);
-        var context = new RuntimeSubsystemContext(
-            events,
-            m_host.diagnostics,
-            m_identities,
-            m_host.types,
-            new LifetimeScope(),
-            RuntimeSubsystemLifetime.Session,
-            options.kind == RuntimeSessionKind.Edit,
-            options.capabilities
-        );
-        m_subsystems = new RuntimeSubsystemPipeline(context, m_host.retirementTimeout, m_host.generations);
-        m_subsystems.Start([new SceneRuntimeSubsystemFactory(scenes, options.kind), .. options.createSubsystems(this)]);
     }
 
     /// <summary>
@@ -328,6 +263,71 @@ public sealed class RuntimeSession : IDisposable
                 m_host.Release(this);
             }
         }
+    }
+
+    internal void Start()
+    {
+        m_jobs = new JobScheduler(
+            options.jobExecutionMode switch
+            {
+                RuntimeJobExecutionMode.SingleThread => JobExecutionMode.SingleThread,
+                RuntimeJobExecutionMode.WorkerPool => JobExecutionMode.WorkerPool,
+                _ => throw new ArgumentOutOfRangeException(
+                    nameof(options),
+                    options.jobExecutionMode,
+                    "Unknown runtime job execution mode."
+                )
+            },
+            new JobSchedulerOptions
+            {
+                workerCount = options.jobWorkerCount
+            }
+        );
+        scenes = new SceneWorld(m_identities, m_host.types);
+        if (options.createLogSink is not null)
+        {
+            ILogSink sink = options.createLogSink(sessionId)
+                            ?? throw new InvalidOperationException("The session log factory returned no sink.");
+            m_sessionLog = new SessionLogSink(sessionId, sink);
+            m_host.logs.RegisterSink(m_sessionLog);
+        }
+        using IDisposable scope = EnterExecutionScope();
+        if (options.contentStore is not null)
+        {
+            m_serialization = m_host.serialization.CaptureGeneration();
+            m_assets = new AssetDatabase(
+                options.contentStore,
+                m_serialization,
+                m_host.types.current,
+                m_identities,
+                options.assetResidencyBudgetBytes,
+                options.assetPreparationBudgetBytes
+            );
+        }
+        IReferenceResolver[] referenceResolvers = m_assets is IReferenceResolver assetResolver
+                                                  ? [.. options.referenceResolvers, assetResolver]
+                                                  : [.. options.referenceResolvers];
+        IAssetReferenceResolver? prefabAssets = m_assets
+                                                ?? options.referenceResolvers.OfType<IAssetReferenceResolver>().SingleOrDefault();
+        if (prefabAssets is not null)
+        {
+            scenes.ConfigurePrefabInstantiation(m_host.serialization, prefabAssets);
+        }
+        m_references = referenceResolvers.Length == 0
+                       ? ReferenceCatalog.empty
+                       : ReferenceCatalog.Create(1, referenceResolvers);
+        var context = new RuntimeSubsystemContext(
+            events,
+            m_host.diagnostics,
+            m_identities,
+            m_host.types,
+            new LifetimeScope(),
+            RuntimeSubsystemLifetime.Session,
+            options.kind == RuntimeSessionKind.Edit,
+            options.capabilities
+        );
+        m_subsystems = new RuntimeSubsystemPipeline(context, m_host.retirementTimeout, m_host.generations);
+        m_subsystems.Start([new SceneRuntimeSubsystemFactory(scenes, options.kind), .. options.createSubsystems(this)]);
     }
 
     internal void DisposeFromHost() => Retire();

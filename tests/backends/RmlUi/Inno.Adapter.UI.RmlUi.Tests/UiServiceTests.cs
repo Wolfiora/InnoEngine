@@ -396,8 +396,6 @@ public sealed class UiServiceTests : IDisposable
     {
         private readonly ArtifactRetention m_retention = new();
 
-        internal IReadOnlyList<AssetArtifactKey> retainedKeys => m_retention.GetRetainedKeys();
-
         public ArtifactLease AcquireArtifact(
             Guid persistentId,
             string outputName
@@ -424,5 +422,7 @@ public sealed class UiServiceTests : IDisposable
             string outputName,
             out AssetArtifactInfo? artifact
         ) => loader.TryGetArtifact(persistentId, outputName, out artifact);
+
+        internal IReadOnlyList<AssetArtifactKey> retainedKeys => m_retention.GetRetainedKeys();
     }
 }

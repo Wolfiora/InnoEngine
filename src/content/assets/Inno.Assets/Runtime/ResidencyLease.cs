@@ -21,17 +21,6 @@ internal sealed class ResidencyLease<TValue> : IDisposable
         m_release = release ?? throw new ArgumentNullException(nameof(release));
     }
 
-    internal TValue value
-    {
-        get
-        {
-            lock (m_sync)
-            {
-                return m_value ?? throw new ObjectDisposedException("Residency lease");
-            }
-        }
-    }
-
     /// <summary>
     /// Serializes release attempts while retaining the callback and value until retirement has a terminal outcome.
     /// </summary>
@@ -82,6 +71,17 @@ internal sealed class ResidencyLease<TValue> : IDisposable
         if (m_completedFailures is { Count: > 0 })
         {
             throw TakeCompletedFailure();
+        }
+    }
+
+    internal TValue value
+    {
+        get
+        {
+            lock (m_sync)
+            {
+                return m_value ?? throw new ObjectDisposedException("Residency lease");
+            }
         }
     }
 

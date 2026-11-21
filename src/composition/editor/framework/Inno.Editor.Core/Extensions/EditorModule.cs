@@ -11,11 +11,11 @@ namespace Inno.Editor.Core;
 /// </summary>
 public abstract class EditorModule : IDisposable
 {
+    private readonly List<Exception> m_retirementFailures = [];
     private bool m_started;
     private bool m_disposed;
     private bool m_active;
     private EditorContext? m_context;
-    private readonly List<Exception> m_retirementFailures = [];
 
     /// <summary>
     /// Gets whether modules ordered after this module must defer their updates for the current frame.
@@ -129,6 +129,49 @@ public abstract class EditorModule : IDisposable
         m_context = null;
     }
 
+    void IDisposable.Dispose()
+    {
+        if (m_disposed)
+        {
+            return;
+        }
+        if (m_context is not null)
+        {
+            try
+            {
+                Stop(m_context);
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                m_retirementFailures.Add(exception);
+            }
+        }
+        try
+        {
+            OnDispose();
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            m_retirementFailures.Add(exception);
+        }
+        m_disposed = true;
+        GC.SuppressFinalize(this);
+        if (m_retirementFailures.Count > 0)
+        {
+            var failure = new AggregateException("Editor module retirement failed.", m_retirementFailures);
+            m_retirementFailures.Clear();
+            throw failure;
+        }
+    }
+
     /// <summary>
     /// Runs after the module generation becomes active and before its first update.
     /// </summary>
@@ -188,47 +231,4 @@ public abstract class EditorModule : IDisposable
     /// generation.
     /// </summary>
     protected virtual void OnDispose() {}
-
-    void IDisposable.Dispose()
-    {
-        if (m_disposed)
-        {
-            return;
-        }
-        if (m_context is not null)
-        {
-            try
-            {
-                Stop(m_context);
-            }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
-            {
-                throw;
-            }
-            catch (Exception exception)
-            {
-                m_retirementFailures.Add(exception);
-            }
-        }
-        try
-        {
-            OnDispose();
-        }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
-        {
-            throw;
-        }
-        catch (Exception exception)
-        {
-            m_retirementFailures.Add(exception);
-        }
-        m_disposed = true;
-        GC.SuppressFinalize(this);
-        if (m_retirementFailures.Count > 0)
-        {
-            var failure = new AggregateException("Editor module retirement failed.", m_retirementFailures);
-            m_retirementFailures.Clear();
-            throw failure;
-        }
-    }
 }

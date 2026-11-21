@@ -25,11 +25,6 @@ internal sealed partial class HierarchyPanel : EditorPanel
     private const nuint C_NAME_BUFFER_SIZE = 512;
 
     private readonly List<RuntimeIdentity> m_visibleSelection = [];
-    private RuntimeIdentity? m_pendingSelection;
-    private RuntimeIdentity? m_keyboardFocus;
-    private RuntimeIdentity? m_requestedKeyboardFocus;
-    private RuntimeIdentity? m_drawKeyboardFocus;
-    private int m_keyboardPageSize = 1;
     private readonly IEditorSceneWorkspace m_workspace;
     private readonly EditorInteractions m_interactions;
     private readonly SceneEdits m_edits;
@@ -39,18 +34,13 @@ internal sealed partial class HierarchyPanel : EditorPanel
     private readonly HashSet<Guid> m_forceOpenIds = [];
     private readonly HashSet<Guid> m_forceOpenSceneIds = [];
     private readonly HashSet<Guid> m_initializedSceneIds = [];
+    private RuntimeIdentity? m_pendingSelection;
+    private RuntimeIdentity? m_keyboardFocus;
+    private RuntimeIdentity? m_requestedKeyboardFocus;
+    private RuntimeIdentity? m_drawKeyboardFocus;
+    private int m_keyboardPageSize = 1;
     private ulong m_lastRevealedSelectionVersion = ulong.MaxValue;
     private int m_visibleRowIndex;
-
-    /// <summary>
-    /// Gets whether use window padding is enabled for this implementation.
-    /// </summary>
-    public override bool useWindowPadding => false;
-
-    /// <summary>
-    /// Lets the hierarchy content child own both scroll directions.
-    /// </summary>
-    public override bool allowScrolling => false;
 
     /// <summary>
     /// Creates the hierarchy panel.
@@ -67,6 +57,16 @@ internal sealed partial class HierarchyPanel : EditorPanel
         m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
         m_selection = new HierarchySelection(workspace, interactions, m_settings);
     }
+
+    /// <summary>
+    /// Gets whether use window padding is enabled for this implementation.
+    /// </summary>
+    public override bool useWindowPadding => false;
+
+    /// <summary>
+    /// Lets the hierarchy content child own both scroll directions.
+    /// </summary>
+    public override bool allowScrolling => false;
 
     /// <summary>
     /// Draws this feature using the current editor presentation context.
@@ -411,8 +411,6 @@ internal sealed partial class HierarchyPanel : EditorPanel
         }
     }
 
-    private static float GetVisibilityButtonWidth() => EditorUI.current.widgets.GetCompactIconSize().X;
-
     private void DrawSceneContextMenu(
         EditorContext context,
         GameScene scene,
@@ -502,4 +500,6 @@ internal sealed partial class HierarchyPanel : EditorPanel
             m_forceOpenIds.Add(gameObject.identity.persistentId);
         }
     }
+
+    private static float GetVisibilityButtonWidth() => EditorUI.current.widgets.GetCompactIconSize().X;
 }

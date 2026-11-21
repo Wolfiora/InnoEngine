@@ -43,18 +43,18 @@ internal sealed partial class ShaderEditorDocuments
         CancelCanvasEdit(draft);
     }
 
+    internal static void CancelCanvasEdit(Draft draft)
+    {
+        draft.pendingMove = null;
+        draft.pointer.Cancel();
+        draft.resizingNode = null;
+    }
+
     private void CompleteCanvasEdits()
     {
         foreach (Draft draft in m_drafts.Values)
         {
             CompleteCanvasEdit(draft);
         }
-    }
-
-    internal static void CancelCanvasEdit(Draft draft)
-    {
-        draft.pendingMove = null;
-        draft.pointer.Cancel();
-        draft.resizingNode = null;
     }
 }

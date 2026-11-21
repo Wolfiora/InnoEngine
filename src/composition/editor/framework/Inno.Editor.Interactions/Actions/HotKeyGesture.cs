@@ -49,30 +49,6 @@ public readonly record struct HotKeyGesture
     public KeyModifier modifiers { get; }
 
     /// <summary>
-    /// Creates a gesture that includes the product-selected primary modifier.
-    /// </summary>
-    /// <param name="key">
-    /// The non-modifier key in the gesture.
-    /// </param>
-    /// <param name="keyboard">
-    /// The product-selected immutable keyboard policy.
-    /// </param>
-    /// <param name="additionalModifiers">
-    /// Additional modifiers combined with the product-selected primary modifier.
-    /// </param>
-    /// <returns>
-    /// A product-resolved keyboard gesture.
-    /// </returns>
-    public static HotKeyGesture Primary(
-        KeyCode key,
-        EditorKeyboardPolicy keyboard,
-        KeyModifier additionalModifiers = KeyModifier.None
-    ) {
-        ArgumentNullException.ThrowIfNull(keyboard);
-        return new(key, keyboard.primaryModifier | additionalModifiers, keyboard.superModifierLabel);
-    }
-
-    /// <summary>
     /// Formats the gesture as a human-readable editor menu shortcut label.
     /// </summary>
     /// <returns>
@@ -101,6 +77,35 @@ public readonly record struct HotKeyGesture
     }
 
     /// <summary>
+    /// Creates a gesture that includes the product-selected primary modifier.
+    /// </summary>
+    /// <param name="key">
+    /// The non-modifier key in the gesture.
+    /// </param>
+    /// <param name="keyboard">
+    /// The product-selected immutable keyboard policy.
+    /// </param>
+    /// <param name="additionalModifiers">
+    /// Additional modifiers combined with the product-selected primary modifier.
+    /// </param>
+    /// <returns>
+    /// A product-resolved keyboard gesture.
+    /// </returns>
+    public static HotKeyGesture Primary(
+        KeyCode key,
+        EditorKeyboardPolicy keyboard,
+        KeyModifier additionalModifiers = KeyModifier.None
+    ) {
+        ArgumentNullException.ThrowIfNull(keyboard);
+        return new(key, keyboard.primaryModifier | additionalModifiers, keyboard.superModifierLabel);
+    }
+
+    /// <summary>
+    /// Gets the normalized modifiers used by generation-owned shortcut indexes.
+    /// </summary>
+    internal KeyModifier normalizedModifiers => Normalize(key, modifiers);
+
+    /// <summary>
     /// Returns whether a non-repeating key event matches this gesture after normalizing
     /// the physical Shift used to type a symbolic Plus key.
     /// </summary>
@@ -114,11 +119,6 @@ public readonly record struct HotKeyGesture
         => !keyEvent.repeat
            && keyEvent.key == key
            && Normalize(key, keyEvent.modifiers) == Normalize(key, modifiers);
-
-    /// <summary>
-    /// Gets the normalized modifiers used by generation-owned shortcut indexes.
-    /// </summary>
-    internal KeyModifier normalizedModifiers => Normalize(key, modifiers);
 
     private static KeyModifier Normalize(
         KeyCode key,

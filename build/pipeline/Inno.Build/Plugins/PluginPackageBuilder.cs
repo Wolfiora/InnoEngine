@@ -288,6 +288,46 @@ internal sealed class PluginPackageBuilder
         );
     }
 
+    private void EnsurePlanUnchanged(PluginPackagePlan plan)
+    {
+        foreach (SourceEntry source in plan.projectEntries)
+        {
+            source.EnsureUnchanged();
+        }
+        foreach (PluginDependencyPlan dependency in plan.dependencies)
+        {
+            foreach (SourceEntry source in dependency.entries)
+            {
+                source.EnsureUnchanged();
+            }
+        }
+        (string pluginId, string contentHash)[] current = m_plugins.activePlugins
+            .Select(static plugin => (plugin.manifest.pluginId, plugin.contentHash))
+            .ToArray();
+        if (!plan.activePlugins.SequenceEqual(current))
+        {
+            throw new InvalidOperationException("The active Plugin generation changed during package creation.");
+        }
+    }
+
+    private void ValidateDestination(string destination)
+    {
+        List<string> protectedRoots = m_assets.sourceMounts
+            .Select(static mount => mount.rootPath)
+            .Append(m_assets.libraryRoot)
+            .ToList();
+        string? projectRoot = Directory.GetParent(m_assets.assetRoot)?.FullName;
+        if (projectRoot is not null)
+        {
+            protectedRoots.Add(Path.Combine(projectRoot, "Plugins"));
+        }
+        string? conflict = protectedRoots.FirstOrDefault(root => IsWithin(root, destination));
+        if (conflict is not null)
+        {
+            throw new InvalidOperationException($"Plugin output cannot be written inside '{Path.GetFullPath(conflict)}'.");
+        }
+    }
+
     private static async ValueTask WriteSourceAsync(
         ZipArchive archive,
         SourceEntry source,
@@ -319,28 +359,6 @@ internal sealed class PluginPackageBuilder
         entry.LastWriteTime = S_ARCHIVE_TIME;
         await using Stream output = entry.Open();
         await output.WriteAsync(bytes, cancellationToken).ConfigureAwait(false);
-    }
-
-    private void EnsurePlanUnchanged(PluginPackagePlan plan)
-    {
-        foreach (SourceEntry source in plan.projectEntries)
-        {
-            source.EnsureUnchanged();
-        }
-        foreach (PluginDependencyPlan dependency in plan.dependencies)
-        {
-            foreach (SourceEntry source in dependency.entries)
-            {
-                source.EnsureUnchanged();
-            }
-        }
-        (string pluginId, string contentHash)[] current = m_plugins.activePlugins
-            .Select(static plugin => (plugin.manifest.pluginId, plugin.contentHash))
-            .ToArray();
-        if (!plan.activePlugins.SequenceEqual(current))
-        {
-            throw new InvalidOperationException("The active Plugin generation changed during package creation.");
-        }
     }
 
     private static void ValidateDependencyGraph(IReadOnlyList<PluginCandidate> plugins)
@@ -395,24 +413,6 @@ internal sealed class PluginPackageBuilder
         return result;
     }
 
-    private void ValidateDestination(string destination)
-    {
-        List<string> protectedRoots = m_assets.sourceMounts
-            .Select(static mount => mount.rootPath)
-            .Append(m_assets.libraryRoot)
-            .ToList();
-        string? projectRoot = Directory.GetParent(m_assets.assetRoot)?.FullName;
-        if (projectRoot is not null)
-        {
-            protectedRoots.Add(Path.Combine(projectRoot, "Plugins"));
-        }
-        string? conflict = protectedRoots.FirstOrDefault(root => IsWithin(root, destination));
-        if (conflict is not null)
-        {
-            throw new InvalidOperationException($"Plugin output cannot be written inside '{Path.GetFullPath(conflict)}'.");
-        }
-    }
-
     private static bool IsWithin(
         string root,
         string candidate
@@ -446,6 +446,15 @@ internal sealed class PluginPackageBuilder
         long length,
         DateTime lastWriteTimeUtc
     ) {
+        internal void EnsureUnchanged()
+        {
+            var info = new FileInfo(sourcePath);
+            if (!info.Exists || info.Length != length || info.LastWriteTimeUtc != lastWriteTimeUtc)
+            {
+                throw new InvalidOperationException($"Plugin source '{sourcePath}' changed during package creation.");
+            }
+        }
+
         internal static SourceEntry Capture(
             string sourcePath,
             string archivePath
@@ -456,15 +465,6 @@ internal sealed class PluginPackageBuilder
                 throw new InvalidOperationException($"Plugin source dependency '{sourcePath}' is missing.");
             }
             return new SourceEntry(info.FullName, archivePath.Replace('\\', '/'), info.Length, info.LastWriteTimeUtc);
-        }
-
-        internal void EnsureUnchanged()
-        {
-            var info = new FileInfo(sourcePath);
-            if (!info.Exists || info.Length != length || info.LastWriteTimeUtc != lastWriteTimeUtc)
-            {
-                throw new InvalidOperationException($"Plugin source '{sourcePath}' changed during package creation.");
-            }
         }
     }
 }

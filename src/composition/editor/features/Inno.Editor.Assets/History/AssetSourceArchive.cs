@@ -70,25 +70,6 @@ internal static class AssetSourceArchive
         return stream.ToArray();
     }
 
-    private static void WriteEntry(
-        ZipArchive archive,
-        string source,
-        string entryName,
-        CancellationToken cancellationToken
-    ) {
-        cancellationToken.ThrowIfCancellationRequested();
-        ZipArchiveEntry entry = archive.CreateEntry(entryName, CompressionLevel.Fastest);
-        using Stream output = entry.Open();
-        using FileStream input = File.OpenRead(source);
-        var buffer = new byte[81_920];
-        int count;
-        while ((count = input.Read(buffer)) != 0)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            output.Write(buffer, 0, count);
-        }
-    }
-
     internal static void Restore(
         AssetPipeline assets,
         string relativePath,
@@ -187,6 +168,25 @@ internal static class AssetSourceArchive
             {
                 Directory.Delete(stagingDirectory, recursive: true);
             }
+        }
+    }
+
+    private static void WriteEntry(
+        ZipArchive archive,
+        string source,
+        string entryName,
+        CancellationToken cancellationToken
+    ) {
+        cancellationToken.ThrowIfCancellationRequested();
+        ZipArchiveEntry entry = archive.CreateEntry(entryName, CompressionLevel.Fastest);
+        using Stream output = entry.Open();
+        using FileStream input = File.OpenRead(source);
+        var buffer = new byte[81_920];
+        int count;
+        while ((count = input.Read(buffer)) != 0)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            output.Write(buffer, 0, count);
         }
     }
 

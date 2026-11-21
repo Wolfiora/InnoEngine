@@ -294,10 +294,10 @@ internal sealed class EditorMenuCatalog(
         int order,
         bool separatorBefore
     ) {
+        internal readonly List<Placement> placements = [];
+        internal readonly Dictionary<string, MutableNode> children = new(StringComparer.Ordinal);
         internal string label = label;
         internal int order = order;
         internal bool separatorBefore = separatorBefore;
-        internal readonly List<Placement> placements = [];
-        internal readonly Dictionary<string, MutableNode> children = new(StringComparer.Ordinal);
     }
 }

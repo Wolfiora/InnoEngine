@@ -119,13 +119,6 @@ public sealed class PackContentStore : IRuntimeContentStore
         }
 
         /// <inheritdoc/>
-        public override int Read(
-            byte[] buffer,
-            int offset,
-            int count
-        ) => Read(buffer.AsSpan(offset, count));
-
-        /// <inheritdoc/>
         public override int Read(Span<byte> buffer)
         {
             lock (m_owner.m_sync)
@@ -133,6 +126,13 @@ public sealed class PackContentStore : IRuntimeContentStore
                 return (m_input ?? throw new ObjectDisposedException(nameof(EntryReadStream))).Read(buffer);
             }
         }
+
+        /// <inheritdoc/>
+        public override int Read(
+            byte[] buffer,
+            int offset,
+            int count
+        ) => Read(buffer.AsSpan(offset, count));
 
         /// <inheritdoc/>
         public override int ReadByte()

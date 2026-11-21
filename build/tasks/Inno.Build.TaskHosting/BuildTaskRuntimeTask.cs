@@ -298,6 +298,43 @@ public sealed class BuildTaskRuntimeTask : Task, ICancelableTask
         }
     }
 
+    private IDictionary FreezeProperties(
+        string artifacts,
+        IReadOnlyList<string> removed
+    ) {
+        var properties = new Hashtable(StringComparer.OrdinalIgnoreCase);
+        if (BuildEngine is IBuildEngine6 engine)
+        {
+            foreach (KeyValuePair<string, string> property in engine.GetGlobalProperties())
+            {
+                if (!removed.Contains(property.Key, StringComparer.OrdinalIgnoreCase))
+                {
+                    properties[property.Key] = property.Value;
+                }
+            }
+        }
+        var explicitNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (string property in Properties)
+        {
+            int separator = property.IndexOf('=');
+            if (separator <= 0 || !explicitNames.Add(property[..separator]))
+            {
+                throw new ArgumentException("Task properties require unique name=value declarations.");
+            }
+            string name = property[..separator];
+            if (string.Equals(name, "ArtifactsPath", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("The task artifact owner cannot be overridden.");
+            }
+            properties[name] = property[(separator + 1)..];
+        }
+        properties["ArtifactsPath"] = artifacts;
+        // The private compiler workspace must not outlive this request in a shared server.
+        properties["UseSharedCompilation"] = "false";
+        properties["ExcludeRestorePackageImports"] = "false";
+        return properties;
+    }
+
     private static FileLease[] AcquireOwnerUses(
         IReadOnlyList<BuildCachePublisher> publishers,
         IBuildEngine4 engine,
@@ -338,43 +375,6 @@ public sealed class BuildTaskRuntimeTask : Task, ICancelableTask
             }
         }
         return activities.ToArray();
-    }
-
-    private IDictionary FreezeProperties(
-        string artifacts,
-        IReadOnlyList<string> removed
-    ) {
-        var properties = new Hashtable(StringComparer.OrdinalIgnoreCase);
-        if (BuildEngine is IBuildEngine6 engine)
-        {
-            foreach (KeyValuePair<string, string> property in engine.GetGlobalProperties())
-            {
-                if (!removed.Contains(property.Key, StringComparer.OrdinalIgnoreCase))
-                {
-                    properties[property.Key] = property.Value;
-                }
-            }
-        }
-        var explicitNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (string property in Properties)
-        {
-            int separator = property.IndexOf('=');
-            if (separator <= 0 || !explicitNames.Add(property[..separator]))
-            {
-                throw new ArgumentException("Task properties require unique name=value declarations.");
-            }
-            string name = property[..separator];
-            if (string.Equals(name, "ArtifactsPath", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("The task artifact owner cannot be overridden.");
-            }
-            properties[name] = property[(separator + 1)..];
-        }
-        properties["ArtifactsPath"] = artifacts;
-        // The private compiler workspace must not outlive this request in a shared server.
-        properties["UseSharedCompilation"] = "false";
-        properties["ExcludeRestorePackageImports"] = "false";
-        return properties;
     }
 
     private static IDictionary RestoreProperties(IDictionary compilationProperties)

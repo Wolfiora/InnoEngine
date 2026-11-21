@@ -71,6 +71,23 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
     /// </summary>
     public AudioStatistics statistics => new(ActiveVoiceCount(), m_clips.Count, 0, 0);
 
+    /// <summary>
+    /// Releases all logical clips, voices, buses, and listeners.
+    /// </summary>
+    public void Dispose()
+    {
+        if (m_disposed)
+        {
+            return;
+        }
+        m_disposed = true;
+        m_clips.Clear();
+        m_voices.Clear();
+        m_buses.Clear();
+        m_listeners.Clear();
+        m_completions.Clear();
+    }
+
     AudioClipHandle IAudioDevice.CreateClip(
         AudioClipDescriptor descriptor,
         IAudioClipSource source
@@ -364,23 +381,6 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
             m_voices.Remove(identity.value);
         }
         return true;
-    }
-
-    /// <summary>
-    /// Releases all logical clips, voices, buses, and listeners.
-    /// </summary>
-    public void Dispose()
-    {
-        if (m_disposed)
-        {
-            return;
-        }
-        m_disposed = true;
-        m_clips.Clear();
-        m_voices.Clear();
-        m_buses.Clear();
-        m_listeners.Clear();
-        m_completions.Clear();
     }
 
     private bool CompleteVoice(

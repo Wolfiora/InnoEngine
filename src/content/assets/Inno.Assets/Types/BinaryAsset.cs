@@ -11,12 +11,6 @@ namespace Inno.Assets;
 public sealed class BinaryAsset : AssetObject
 {
     /// <summary>
-    /// Gets the imported payload length in bytes.
-    /// </summary>
-    [SerializableProperty]
-    public int byteLength { get; private set; }
-
-    /// <summary>
     /// Creates an empty binary asset descriptor.
     /// </summary>
     public BinaryAsset() {}
@@ -31,4 +25,10 @@ public sealed class BinaryAsset : AssetObject
     {
         this.byteLength = byteLength;
     }
+
+    /// <summary>
+    /// Gets the imported payload length in bytes.
+    /// </summary>
+    [SerializableProperty]
+    public int byteLength { get; private set; }
 }

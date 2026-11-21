@@ -414,7 +414,7 @@ public sealed unsafe class ViewportMetricsTests
         public bool supportsViewports => true;
         public bool supportsVertexOffsets { get; init; }
 
-        public void RenderMain(IntPtr drawData) {}
+        public void RenderMain(nint drawData) {}
 
         public void SynchronizeMainOutput(
             int pixelWidth,
@@ -427,7 +427,7 @@ public sealed unsafe class ViewportMetricsTests
 
         public void RenderViewport(
             PlatformImGuiViewportTarget target,
-            IntPtr drawData
+            nint drawData
         ) {}
 
         public void PresentViewport(PlatformImGuiViewportTarget target) {}

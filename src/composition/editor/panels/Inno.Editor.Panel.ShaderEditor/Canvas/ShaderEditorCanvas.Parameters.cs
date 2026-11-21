@@ -345,6 +345,20 @@ internal sealed partial class ShaderEditorCanvas
         }
     }
 
+    private void CommitDefinition(
+        ShaderDefinition definition,
+        string label,
+        bool continuous = false
+    ) {
+        GraphDocument candidate = Controller.document.Clone();
+        candidate.SetMetadata(
+            ShaderGraphDocument.definitionKey,
+            ShaderGraphDocument.Encode(owner.serialization.Serialize(definition, owner.context), owner.serialization, owner.context)
+        );
+        Controller.ReplaceDocument(candidate, label, continuous ? EditorUI.current.widgets.editMergeKey : null);
+        owner.Changed(draft);
+    }
+
     private sealed class ParameterEdits(ShaderEditorCanvas canvas) : IInspectionPropertyEditService
     {
         /// <inheritdoc/>
@@ -360,19 +374,5 @@ internal sealed partial class ShaderEditorCanvas
             mutation();
             return true;
         }
-    }
-
-    private void CommitDefinition(
-        ShaderDefinition definition,
-        string label,
-        bool continuous = false
-    ) {
-        GraphDocument candidate = Controller.document.Clone();
-        candidate.SetMetadata(
-            ShaderGraphDocument.definitionKey,
-            ShaderGraphDocument.Encode(owner.serialization.Serialize(definition, owner.context), owner.serialization, owner.context)
-        );
-        Controller.ReplaceDocument(candidate, label, continuous ? EditorUI.current.widgets.editMergeKey : null);
-        owner.Changed(draft);
     }
 }

@@ -9,21 +9,6 @@ namespace Inno.Editor.Inspection;
 public sealed class PropertyDrawerAttribute : Attribute
 {
     /// <summary>
-    /// Gets the declared property type handled by the drawer.
-    /// </summary>
-    public Type targetType { get; }
-
-    /// <summary>
-    /// Gets whether assignable derived types are accepted.
-    /// </summary>
-    public bool useForChildren { get; }
-
-    /// <summary>
-    /// Gets the tie-breaking registration priority.
-    /// </summary>
-    public int priority { get; }
-
-    /// <summary>
     /// Creates a property drawer registration.
     /// </summary>
     /// <param name="targetType">
@@ -47,4 +32,19 @@ public sealed class PropertyDrawerAttribute : Attribute
         this.useForChildren = useForChildren;
         this.priority = priority;
     }
+
+    /// <summary>
+    /// Gets the declared property type handled by the drawer.
+    /// </summary>
+    public Type targetType { get; }
+
+    /// <summary>
+    /// Gets whether assignable derived types are accepted.
+    /// </summary>
+    public bool useForChildren { get; }
+
+    /// <summary>
+    /// Gets the tie-breaking registration priority.
+    /// </summary>
+    public int priority { get; }
 }

@@ -60,6 +60,40 @@ internal sealed class BuildCommand
 
     internal bool generateIdeProjects => m_values.ContainsKey("ide");
 
+    internal GameBuildRequest CreateGameRequest(BuildProfile profile)
+    {
+        ArgumentNullException.ThrowIfNull(profile);
+        if (m_values.TryGetValue("startup-scene", out string? scene))
+        {
+            profile.startupScene = AssetPath.Parse(scene).ToString();
+        }
+        if (m_values.TryGetValue("target", out string? target))
+        {
+            profile.target = new BuildTargetId(target);
+        }
+        if (m_values.TryGetValue("deployment", out string? deployment))
+        {
+            profile.managedDeployment = new ManagedDeploymentId(deployment);
+        }
+        return new GameBuildRequest
+        {
+            profile = profile,
+            outputDirectory = Require(m_values, "output")
+        };
+    }
+
+    internal PluginBuildRequest CreatePluginRequest(ProjectId projectId)
+        => new()
+    {
+        pluginId = projectId.value,
+        displayName = Require(m_values, "display-name"),
+        outputPath = Require(m_values, "output"),
+        dependencies = m_values.TryGetValue("dependencies", out string? dependencyList)
+                       ? dependencyList.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                       : [],
+        includeDependencies = m_values.ContainsKey("include-dependencies")
+    };
+
     internal static BuildCommand Parse(IReadOnlyList<string> args)
     {
         if (args.Count == 0 || args[0] is "help" or "--help" or "-h")
@@ -118,40 +152,6 @@ internal sealed class BuildCommand
         }
         return new BuildCommand(kind, values);
     }
-
-    internal GameBuildRequest CreateGameRequest(BuildProfile profile)
-    {
-        ArgumentNullException.ThrowIfNull(profile);
-        if (m_values.TryGetValue("startup-scene", out string? scene))
-        {
-            profile.startupScene = AssetPath.Parse(scene).ToString();
-        }
-        if (m_values.TryGetValue("target", out string? target))
-        {
-            profile.target = new BuildTargetId(target);
-        }
-        if (m_values.TryGetValue("deployment", out string? deployment))
-        {
-            profile.managedDeployment = new ManagedDeploymentId(deployment);
-        }
-        return new GameBuildRequest
-        {
-            profile = profile,
-            outputDirectory = Require(m_values, "output")
-        };
-    }
-
-    internal PluginBuildRequest CreatePluginRequest(ProjectId projectId)
-        => new()
-    {
-        pluginId = projectId.value,
-        displayName = Require(m_values, "display-name"),
-        outputPath = Require(m_values, "output"),
-        dependencies = m_values.TryGetValue("dependencies", out string? dependencyList)
-                       ? dependencyList.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-                       : [],
-        includeDependencies = m_values.ContainsKey("include-dependencies")
-    };
 
     private static string Require(
         IReadOnlyDictionary<string, string> values,

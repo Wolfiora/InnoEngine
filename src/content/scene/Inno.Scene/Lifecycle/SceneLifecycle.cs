@@ -25,6 +25,26 @@ internal static class SceneLifecycle
         return PrepareActivation(target, scene);
     }
 
+    internal static void DisableForReload(ISceneLifecycleObject target) => Disable(target);
+
+    internal static void Destroy(ISceneLifecycleObject target)
+    {
+        if (target.lifecycleDestroyCalled)
+        {
+            return;
+        }
+        target.lifecycleDestroyCalled = true;
+        if (target.lifecycleWasEnabled)
+        {
+            target.lifecycleWasEnabled = false;
+            target.DispatchDisable();
+        }
+        if (target.lifecycleAwakeCalled)
+        {
+            target.DispatchDestroy();
+        }
+    }
+
     private static bool PrepareActivation(
         ISceneLifecycleObject target,
         GameScene scene
@@ -52,8 +72,6 @@ internal static class SceneLifecycle
         return true;
     }
 
-    internal static void DisableForReload(ISceneLifecycleObject target) => Disable(target);
-
     private static void Disable(ISceneLifecycleObject target)
     {
         if (!target.lifecycleWasEnabled)
@@ -62,23 +80,5 @@ internal static class SceneLifecycle
         }
         target.lifecycleWasEnabled = false;
         target.DispatchDisable();
-    }
-
-    internal static void Destroy(ISceneLifecycleObject target)
-    {
-        if (target.lifecycleDestroyCalled)
-        {
-            return;
-        }
-        target.lifecycleDestroyCalled = true;
-        if (target.lifecycleWasEnabled)
-        {
-            target.lifecycleWasEnabled = false;
-            target.DispatchDisable();
-        }
-        if (target.lifecycleAwakeCalled)
-        {
-            target.DispatchDestroy();
-        }
     }
 }

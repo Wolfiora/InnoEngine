@@ -106,6 +106,8 @@ public abstract class Layer
     /// </remarks>
     public virtual void OnAfterRender(float deltaTime) {}
 
+    internal bool isAttached => m_events is not null;
+
     /// <summary>
     /// Subscribes to an event for the lifetime of this layer attachment.
     /// </summary>
@@ -179,8 +181,6 @@ public abstract class Layer
         EventHub events = RequireActiveEvents();
         events.Announce(evnt);
     }
-
-    internal bool isAttached => m_events is not null;
 
     internal void Attach(EventHub events)
     {

@@ -90,9 +90,6 @@ internal sealed partial class FileBrowserPanel
         DrawBreadcrumbBar(context, breadcrumbBarHeight);
     }
 
-    private static float GetTreeSplitterWidth(EditorUiLayout style)
-        => MathF.Max(EditorUI.current.widgets.style.splitterMinimumWidth, style.dockingSeparatorSize);
-
     private void DrawTreeSplitter(
         float width,
         float availableWidth,
@@ -121,35 +118,6 @@ internal sealed partial class FileBrowserPanel
         Vector2 max = Ui.GetItemMaximum();
         Vector4 color = active ? EditorPalette.contentAccent : hovered ? EditorPalette.contentBorder : EditorPalette.contentBorderSoft;
         Ui.DrawFilledRectangle(min, max, Ui.ToPackedColor(color), 0f);
-    }
-
-    private static float ClampTreeWidth(
-        float requestedWidth,
-        float availableWidth,
-        float splitterWidth
-    ) {
-        float combinedPaneWidth = MathF.Max(0f, availableWidth - splitterWidth);
-        float minimumPaneWidth = MathF.Min(EditorUI.current.widgets.style.paneMinimumVisibleWidth, combinedPaneWidth * 0.5f);
-        float maximumTreeWidth = MathF.Max(minimumPaneWidth, combinedPaneWidth - minimumPaneWidth);
-        return Math.Clamp(requestedWidth, minimumPaneWidth, maximumTreeWidth);
-    }
-
-    private static float ResolveTreeWidth(
-        float treePaneRatio,
-        float availableWidth,
-        float splitterWidth
-    ) {
-        float combinedPaneWidth = MathF.Max(0f, availableWidth - splitterWidth);
-        return ClampTreeWidth(combinedPaneWidth * Math.Clamp(treePaneRatio, 0f, 1f), availableWidth, splitterWidth);
-    }
-
-    private static float CalculateTreePaneRatio(
-        float treeWidth,
-        float availableWidth,
-        float splitterWidth
-    ) {
-        float combinedPaneWidth = MathF.Max(0f, availableWidth - splitterWidth);
-        return combinedPaneWidth > float.Epsilon ? Math.Clamp(treeWidth / combinedPaneWidth, 0f, 1f) : 0.5f;
     }
 
     private void DrawTreePane(EditorContext context)
@@ -305,6 +273,38 @@ internal sealed partial class FileBrowserPanel
         ) {
             m_navigation.OpenEntry(context, entry, m_tree);
         }
+    }
+
+    private static float GetTreeSplitterWidth(EditorUiLayout style)
+        => MathF.Max(EditorUI.current.widgets.style.splitterMinimumWidth, style.dockingSeparatorSize);
+
+    private static float ClampTreeWidth(
+        float requestedWidth,
+        float availableWidth,
+        float splitterWidth
+    ) {
+        float combinedPaneWidth = MathF.Max(0f, availableWidth - splitterWidth);
+        float minimumPaneWidth = MathF.Min(EditorUI.current.widgets.style.paneMinimumVisibleWidth, combinedPaneWidth * 0.5f);
+        float maximumTreeWidth = MathF.Max(minimumPaneWidth, combinedPaneWidth - minimumPaneWidth);
+        return Math.Clamp(requestedWidth, minimumPaneWidth, maximumTreeWidth);
+    }
+
+    private static float ResolveTreeWidth(
+        float treePaneRatio,
+        float availableWidth,
+        float splitterWidth
+    ) {
+        float combinedPaneWidth = MathF.Max(0f, availableWidth - splitterWidth);
+        return ClampTreeWidth(combinedPaneWidth * Math.Clamp(treePaneRatio, 0f, 1f), availableWidth, splitterWidth);
+    }
+
+    private static float CalculateTreePaneRatio(
+        float treeWidth,
+        float availableWidth,
+        float splitterWidth
+    ) {
+        float combinedPaneWidth = MathF.Max(0f, availableWidth - splitterWidth);
+        return combinedPaneWidth > float.Epsilon ? Math.Clamp(treeWidth / combinedPaneWidth, 0f, 1f) : 0.5f;
     }
 
     private static void DrawFooterTopSplitter()

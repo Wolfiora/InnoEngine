@@ -19,6 +19,32 @@ namespace Inno.Editor.Assets.ImGui;
 public sealed class AssetIconAttribute : Attribute
 {
     /// <summary>
+    /// Creates an icon declaration for files ending with a source extension.
+    /// </summary>
+    /// <param name="extension">
+    /// The simple or compound file extension. A leading period is optional and matching is case-insensitive.
+    /// </param>
+    /// <param name="icon">
+    /// The Editor icon glyph to render.
+    /// </param>
+    /// <param name="priority">
+    /// The tie-breaking priority after extension specificity.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="extension"/> is empty or contains a path separator, or when
+    /// <paramref name="icon"/> is empty.
+    /// </exception>
+    public AssetIconAttribute(
+        string extension,
+        string icon,
+        int priority = 0
+    ) {
+        this.extension = NormalizeExtension(extension);
+        this.icon = ValidateIcon(icon);
+        this.priority = priority;
+    }
+
+    /// <summary>
     /// Creates an icon declaration using a glyph from the Editor icon catalog.
     /// </summary>
     /// <param name="assetType">
@@ -48,32 +74,6 @@ public sealed class AssetIconAttribute : Attribute
         this.assetType = assetType ?? throw new ArgumentNullException(nameof(assetType));
         this.icon = ValidateIcon(icon);
         this.useForChildren = useForChildren;
-        this.priority = priority;
-    }
-
-    /// <summary>
-    /// Creates an icon declaration for files ending with a source extension.
-    /// </summary>
-    /// <param name="extension">
-    /// The simple or compound file extension. A leading period is optional and matching is case-insensitive.
-    /// </param>
-    /// <param name="icon">
-    /// The Editor icon glyph to render.
-    /// </param>
-    /// <param name="priority">
-    /// The tie-breaking priority after extension specificity.
-    /// </param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="extension"/> is empty or contains a path separator, or when
-    /// <paramref name="icon"/> is empty.
-    /// </exception>
-    public AssetIconAttribute(
-        string extension,
-        string icon,
-        int priority = 0
-    ) {
-        this.extension = NormalizeExtension(extension);
-        this.icon = ValidateIcon(icon);
         this.priority = priority;
     }
 

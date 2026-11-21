@@ -22,26 +22,6 @@ public sealed class ShaderGraphLiteral : ISerializable
     public uint[] scalarBits { get; set; } = [0];
 
     /// <summary>
-    /// Creates an explicit zero value for a supported scalar, vector, matrix, structure or array.
-    /// </summary>
-    /// <param name="type">
-    /// Complete numeric or boolean value type; resources and effect tokens are not values.
-    /// </param>
-    /// <returns>
-    /// A detached zero literal with an exact type and component count.
-    /// </returns>
-    /// <exception cref="NotSupportedException">
-    /// The type is opaque or exceeds the bounded literal size.
-    /// </exception>
-    public static ShaderGraphLiteral Zero(ShaderSourceType type)
-    {
-        ArgumentNullException.ThrowIfNull(type);
-        var scalars = new List<string>();
-        Flatten(type, scalars, 0);
-        return new() { type = ShaderGraphType.Capture(type), scalarBits = new uint[scalars.Count] };
-    }
-
-    /// <summary>
     /// Gets the exact scalar type of each stored component for shared Inspector value controls.
     /// </summary>
     /// <returns>
@@ -121,6 +101,26 @@ public sealed class ShaderGraphLiteral : ISerializable
             }
             return builder.Construct(current, values);
         }
+    }
+
+    /// <summary>
+    /// Creates an explicit zero value for a supported scalar, vector, matrix, structure or array.
+    /// </summary>
+    /// <param name="type">
+    /// Complete numeric or boolean value type; resources and effect tokens are not values.
+    /// </param>
+    /// <returns>
+    /// A detached zero literal with an exact type and component count.
+    /// </returns>
+    /// <exception cref="NotSupportedException">
+    /// The type is opaque or exceeds the bounded literal size.
+    /// </exception>
+    public static ShaderGraphLiteral Zero(ShaderSourceType type)
+    {
+        ArgumentNullException.ThrowIfNull(type);
+        var scalars = new List<string>();
+        Flatten(type, scalars, 0);
+        return new() { type = ShaderGraphType.Capture(type), scalarBits = new uint[scalars.Count] };
     }
 
     private static bool IsScalar(string id) => id is "float" or "int" or "uint" or "bool";

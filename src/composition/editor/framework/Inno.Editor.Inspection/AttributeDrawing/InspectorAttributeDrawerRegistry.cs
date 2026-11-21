@@ -39,6 +39,11 @@ public sealed class InspectorAttributeDrawerRegistry : IDisposable
         m_registry = new AttributeTypeRegistry(interactions, types, serialization, drawerServices);
     }
 
+    /// <summary>
+    /// Releases active drawer generations.
+    /// </summary>
+    public void Dispose() => m_registry.Dispose();
+
     internal void Update(
         InspectorAttributeDrawContext context,
         IReadOnlyList<Attribute> attributes
@@ -81,10 +86,22 @@ public sealed class InspectorAttributeDrawerRegistry : IDisposable
         }
     }
 
-    /// <summary>
-    /// Releases active drawer generations.
-    /// </summary>
-    public void Dispose() => m_registry.Dispose();
+    private static void EnsureNoConflict(
+        IReadOnlyList<Registration> registrations,
+        InspectorAttributeDrawerAttribute attribute,
+        Type drawerType
+    ) {
+        foreach (Registration existing in registrations)
+        {
+            if (existing.targetType == attribute.targetType && existing.priority == attribute.priority)
+            {
+                throw new InvalidOperationException(
+                    $"Inspector attribute drawers '{existing.drawerType.FullName}' and '{drawerType.FullName}' "
+                    + $"conflict for '{attribute.targetType.FullName}'."
+                );
+            }
+        }
+    }
 
     private sealed class AttributeTypeRegistry : TypeRegistry<Registration[]>
     {
@@ -108,30 +125,6 @@ public sealed class InspectorAttributeDrawerRegistry : IDisposable
                     nameof(services)
                 )
             )).ToArray();
-        }
-
-        internal IInspectorAttributeDrawer? Resolve(Type attributeType)
-        {
-            Registration? best = null;
-            int bestDistance = int.MaxValue;
-            foreach (Registration registration in current)
-            {
-                if (!DrawerTypeUtility.TryGetDistance(
-                    attributeType,
-                    registration.targetType,
-                    registration.useForChildren,
-                    out int distance
-                )) {
-                    continue;
-                }
-                if (best is null || distance < bestDistance
-                    || distance == bestDistance && registration.priority > best.priority
-                ) {
-                    best = registration;
-                    bestDistance = distance;
-                }
-            }
-            return best?.drawer;
         }
 
         /// <summary>
@@ -182,6 +175,30 @@ public sealed class InspectorAttributeDrawerRegistry : IDisposable
         protected override void DisposeSnapshot(Registration[] snapshot)
             => DisposeExtensions(snapshot.Select(static registration => registration.drawer));
 
+        internal IInspectorAttributeDrawer? Resolve(Type attributeType)
+        {
+            Registration? best = null;
+            int bestDistance = int.MaxValue;
+            foreach (Registration registration in current)
+            {
+                if (!DrawerTypeUtility.TryGetDistance(
+                    attributeType,
+                    registration.targetType,
+                    registration.useForChildren,
+                    out int distance
+                )) {
+                    continue;
+                }
+                if (best is null || distance < bestDistance
+                    || distance == bestDistance && registration.priority > best.priority
+                ) {
+                    best = registration;
+                    bestDistance = distance;
+                }
+            }
+            return best?.drawer;
+        }
+
         private IInspectorAttributeDrawer CreateDrawer(
             Type drawerType,
             TypeCacheSnapshot types
@@ -227,23 +244,6 @@ public sealed class InspectorAttributeDrawerRegistry : IDisposable
                        $"Inspector attribute drawer '{drawerType.FullName}' does not implement "
                        + $"'{typeof(IInspectorAttributeDrawer).FullName}'."
                    );
-        }
-    }
-
-    private static void EnsureNoConflict(
-        IReadOnlyList<Registration> registrations,
-        InspectorAttributeDrawerAttribute attribute,
-        Type drawerType
-    ) {
-        foreach (Registration existing in registrations)
-        {
-            if (existing.targetType == attribute.targetType && existing.priority == attribute.priority)
-            {
-                throw new InvalidOperationException(
-                    $"Inspector attribute drawers '{existing.drawerType.FullName}' and '{drawerType.FullName}' "
-                    + $"conflict for '{attribute.targetType.FullName}'."
-                );
-            }
         }
     }
 

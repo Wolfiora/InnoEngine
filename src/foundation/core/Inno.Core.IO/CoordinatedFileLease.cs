@@ -23,6 +23,26 @@ public sealed class CoordinatedFileLease : IDisposable
     }
 
     /// <summary>
+    /// Releases the leaf before its persistent owner gate; neither file is deleted.
+    /// </summary>
+    public void Dispose()
+    {
+        FileLease? leaf = Interlocked.Exchange(ref m_leaf, null);
+        if (leaf is null)
+        {
+            return;
+        }
+        try
+        {
+            leaf.Dispose();
+        }
+        finally
+        {
+            m_owner.Dispose();
+        }
+    }
+
+    /// <summary>
     /// Acquires owner reading rights before opening or waiting for a leaf lease.
     /// </summary>
     /// <param name="coordinationPath">
@@ -102,25 +122,5 @@ public sealed class CoordinatedFileLease : IDisposable
             => timeout == Timeout.InfiniteTimeSpan
                ? timeout
                : timeout > elapsed.Elapsed ? timeout - elapsed.Elapsed : TimeSpan.Zero;
-    }
-
-    /// <summary>
-    /// Releases the leaf before its persistent owner gate; neither file is deleted.
-    /// </summary>
-    public void Dispose()
-    {
-        FileLease? leaf = Interlocked.Exchange(ref m_leaf, null);
-        if (leaf is null)
-        {
-            return;
-        }
-        try
-        {
-            leaf.Dispose();
-        }
-        finally
-        {
-            m_owner.Dispose();
-        }
     }
 }

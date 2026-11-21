@@ -286,10 +286,6 @@ public sealed partial class AssetLoader
         return string.Join("\n", parts);
     }
 
-    private static string GetImporterImplementationFingerprint(AssetImporter importer)
-        => $"{importer.GetType().Assembly.ManifestModule.ModuleVersionId:D}:"
-           + $"{importer.GetType().FullName}:{importer.deploymentScope}";
-
     private string CreateBuildFingerprint(
         AssetBuildProcessor processor,
         AssetObject definition,
@@ -329,6 +325,97 @@ public sealed partial class AssetLoader
            : throw new ArgumentException($"Asset source mount '{path.source}' is not active.", nameof(path));
 
     private string GetMetaPath(string relativePath) => GetSourcePath(relativePath) + C_META_POSTFIX;
+
+    private bool IsInternalGeneratedPath(string relativePath) => AssetSourcePolicy.IsGeneratedPath(relativePath);
+
+    private byte[]? ReadMetadata(string path)
+        => m_sourceMetadataStage is not null
+           ? m_sourceMetadataStage.Read(path)
+           : IOFile.Exists(path) ? IOFile.ReadAllBytes(path) : null;
+
+    private bool IsStagedMetadata(string path)
+        => m_sourceMetadataStage is not null && path.EndsWith(C_META_POSTFIX, StringComparison.Ordinal);
+
+    private void WriteAtomic(
+        string targetPath,
+        byte[] bytes
+    ) {
+        if (IsStagedMetadata(targetPath))
+        {
+            m_sourceMetadataStage!.Write(targetPath, bytes);
+        }
+        else
+        {
+            AtomicFile.WriteAllBytes(targetPath, bytes);
+        }
+    }
+
+    private FileSnapshot CaptureFile(string path)
+    {
+        byte[]? bytes = IsStagedMetadata(path) ? ReadMetadata(path) : IOFile.Exists(path) ? IOFile.ReadAllBytes(path) : null;
+        return bytes is null ? new FileSnapshot(false, []) : new FileSnapshot(true, bytes);
+    }
+
+    private void RestoreFile(
+        string path,
+        FileSnapshot snapshot
+    ) {
+        if (snapshot.existed)
+        {
+            WriteAtomic(path, snapshot.bytes);
+            return;
+        }
+
+        DeleteIfExists(path);
+    }
+
+    private void MoveGeneratedFile(
+        string sourcePath,
+        string targetPath
+    ) {
+        if (IsStagedMetadata(sourcePath))
+        {
+            byte[]? bytes = ReadMetadata(sourcePath);
+            if (bytes is null)
+            {
+                return;
+            }
+            if (ReadMetadata(targetPath) is not null)
+            {
+                throw new IOException($"Generated metadata target '{targetPath}' already exists.");
+            }
+            m_sourceMetadataStage!.Write(targetPath, bytes);
+            m_sourceMetadataStage.Write(sourcePath, null);
+            return;
+        }
+        if (!IOFile.Exists(sourcePath))
+        {
+            return;
+        }
+        Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
+        if (IOFile.Exists(targetPath))
+        {
+            throw new IOException($"Generated metadata target '{targetPath}' already exists.");
+        }
+        IOFile.Move(sourcePath, targetPath);
+    }
+
+    private void DeleteIfExists(string path)
+    {
+        if (IsStagedMetadata(path))
+        {
+            m_sourceMetadataStage!.Write(path, null);
+            return;
+        }
+        if (IOFile.Exists(path))
+        {
+            IOFile.Delete(path);
+        }
+    }
+
+    private static string GetImporterImplementationFingerprint(AssetImporter importer)
+        => $"{importer.GetType().Assembly.ManifestModule.ModuleVersionId:D}:"
+           + $"{importer.GetType().FullName}:{importer.deploymentScope}";
 
     private static string ReadStableSourceHash(
         string sourcePath,
@@ -422,93 +509,6 @@ public sealed partial class AssetLoader
     }
 
     private static string ComputeSha256Hex(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes));
-
-    private bool IsInternalGeneratedPath(string relativePath) => AssetSourcePolicy.IsGeneratedPath(relativePath);
-
-    private byte[]? ReadMetadata(string path)
-        => m_sourceMetadataStage is not null
-           ? m_sourceMetadataStage.Read(path)
-           : IOFile.Exists(path) ? IOFile.ReadAllBytes(path) : null;
-
-    private bool IsStagedMetadata(string path)
-        => m_sourceMetadataStage is not null && path.EndsWith(C_META_POSTFIX, StringComparison.Ordinal);
-
-    private void WriteAtomic(
-        string targetPath,
-        byte[] bytes
-    ) {
-        if (IsStagedMetadata(targetPath))
-        {
-            m_sourceMetadataStage!.Write(targetPath, bytes);
-        }
-        else
-        {
-            AtomicFile.WriteAllBytes(targetPath, bytes);
-        }
-    }
-
-    private FileSnapshot CaptureFile(string path)
-    {
-        byte[]? bytes = IsStagedMetadata(path) ? ReadMetadata(path) : IOFile.Exists(path) ? IOFile.ReadAllBytes(path) : null;
-        return bytes is null ? new FileSnapshot(false, []) : new FileSnapshot(true, bytes);
-    }
-
-    private void RestoreFile(
-        string path,
-        FileSnapshot snapshot
-    ) {
-        if (snapshot.existed)
-        {
-            WriteAtomic(path, snapshot.bytes);
-            return;
-        }
-
-        DeleteIfExists(path);
-    }
-
-    private void MoveGeneratedFile(
-        string sourcePath,
-        string targetPath
-    ) {
-        if (IsStagedMetadata(sourcePath))
-        {
-            byte[]? bytes = ReadMetadata(sourcePath);
-            if (bytes is null)
-            {
-                return;
-            }
-            if (ReadMetadata(targetPath) is not null)
-            {
-                throw new IOException($"Generated metadata target '{targetPath}' already exists.");
-            }
-            m_sourceMetadataStage!.Write(targetPath, bytes);
-            m_sourceMetadataStage.Write(sourcePath, null);
-            return;
-        }
-        if (!IOFile.Exists(sourcePath))
-        {
-            return;
-        }
-        Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
-        if (IOFile.Exists(targetPath))
-        {
-            throw new IOException($"Generated metadata target '{targetPath}' already exists.");
-        }
-        IOFile.Move(sourcePath, targetPath);
-    }
-
-    private void DeleteIfExists(string path)
-    {
-        if (IsStagedMetadata(path))
-        {
-            m_sourceMetadataStage!.Write(path, null);
-            return;
-        }
-        if (IOFile.Exists(path))
-        {
-            IOFile.Delete(path);
-        }
-    }
 
     private static AssetDependencyData ToData(AssetDependency dependency)
         => new()

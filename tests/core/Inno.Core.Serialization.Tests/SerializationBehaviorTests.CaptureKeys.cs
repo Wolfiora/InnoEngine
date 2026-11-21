@@ -469,10 +469,10 @@ internal sealed class UntrackedCaptureProperties : IdentityObject, ISerializable
 [SerializationRevision("revision")]
 internal sealed class ConvertedCaptureProperties : IdentityObject, ISerializable
 {
-    private ulong? revision => 0;
-
     [SerializableProperty]
     public CaptureConvertedValue value = new() { number = 1 };
+
+    private ulong? revision => 0;
 }
 
 [SerializationRevision("m_revision")]
@@ -501,10 +501,10 @@ internal struct PureCaptureFields
 [SerializationRevision("revision")]
 internal sealed class GetterCaptureProperties : IdentityObject, ISerializable
 {
-    private ulong? revision => 0;
-
     [SerializableProperty]
     public CaptureGetterStruct value = new();
+
+    private ulong? revision => 0;
 }
 
 internal struct CaptureGetterStruct

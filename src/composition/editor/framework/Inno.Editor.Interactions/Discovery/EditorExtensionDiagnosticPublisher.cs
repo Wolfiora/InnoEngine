@@ -12,6 +12,19 @@ internal sealed class EditorExtensionDiagnosticPublisher : IDisposable
     private readonly Dictionary<string, string> m_panelFailures = new(StringComparer.Ordinal);
     private string m_publishedState = string.Empty;
 
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose()
+    {
+        m_panelFailures.Clear();
+        if (!string.IsNullOrEmpty(m_publishedState))
+        {
+            Diagnostics.Clear(C_PANEL_ACTIVATION_GROUP);
+        }
+        m_publishedState = string.Empty;
+    }
+
     internal void ReportPanelFailure(
         string panelId,
         Exception exception
@@ -67,18 +80,5 @@ internal sealed class EditorExtensionDiagnosticPublisher : IDisposable
             ))
         );
         m_publishedState = state;
-    }
-
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose()
-    {
-        m_panelFailures.Clear();
-        if (!string.IsNullOrEmpty(m_publishedState))
-        {
-            Diagnostics.Clear(C_PANEL_ACTIVATION_GROUP);
-        }
-        m_publishedState = string.Empty;
     }
 }

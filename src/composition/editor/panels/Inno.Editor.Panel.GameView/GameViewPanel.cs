@@ -27,7 +27,6 @@ namespace Inno.Editor.Panel.GameView;
 [EditorPanel("rendering.game-view", "Game", order: 220, menuPath: "Viewports")]
 internal sealed class GameViewPanel : EditorPanel
 {
-    private IDisposable? m_settingsSubscription;
     private const string C_VIEWPORT_ID = "game-view";
     private static readonly EditorViewportKindId S_KIND = new("inno.editor.viewport.game");
     private static readonly Vector2 S_UNAVAILABLE_PADDING = new(48f, 32f);
@@ -38,6 +37,7 @@ internal sealed class GameViewPanel : EditorPanel
     private readonly EditorGameInputCapture m_inputCapture;
     private readonly EditorSettings m_editorSettings;
     private readonly ProjectSettingsStore m_projectSettings;
+    private IDisposable? m_settingsSubscription;
     private Vector4 m_backgroundColor;
     private GamePresentationSettings m_presentation = new();
     private long m_presentationRevision = -1;
@@ -227,22 +227,6 @@ internal sealed class GameViewPanel : EditorPanel
         m_presentationRevision = m_projectSettings.revision;
     }
 
-    private static GameViewportLayout CalculateLayout(
-        Vector2 available,
-        GamePresentationSettings presentation,
-        float framebufferScale
-    ) {
-        int availableWidth = Math.Max(1, (int)MathF.Floor(available.X));
-        int availableHeight = Math.Max(1, (int)MathF.Floor(available.Y));
-        GamePresentationViewport viewport = presentation.CalculateViewport(availableWidth, availableHeight);
-        return new GameViewportLayout(
-            new Vector2(viewport.x, viewport.y),
-            new Vector2(viewport.width, viewport.height),
-            Math.Max(1, (int)MathF.Ceiling(viewport.width * framebufferScale)),
-            Math.Max(1, (int)MathF.Ceiling(viewport.height * framebufferScale))
-        );
-    }
-
     private ContentReadScope CreateContentScope() => m_scenePresentation.Capture();
 
     private void DrawUnavailable(
@@ -260,6 +244,22 @@ internal sealed class GameViewPanel : EditorPanel
         {
             Ui.PopStyleColor();
         }
+    }
+
+    private static GameViewportLayout CalculateLayout(
+        Vector2 available,
+        GamePresentationSettings presentation,
+        float framebufferScale
+    ) {
+        int availableWidth = Math.Max(1, (int)MathF.Floor(available.X));
+        int availableHeight = Math.Max(1, (int)MathF.Floor(available.Y));
+        GamePresentationViewport viewport = presentation.CalculateViewport(availableWidth, availableHeight);
+        return new GameViewportLayout(
+            new Vector2(viewport.x, viewport.y),
+            new Vector2(viewport.width, viewport.height),
+            Math.Max(1, (int)MathF.Ceiling(viewport.width * framebufferScale)),
+            Math.Max(1, (int)MathF.Ceiling(viewport.height * framebufferScale))
+        );
     }
 
     private readonly record struct GameViewportLayout(

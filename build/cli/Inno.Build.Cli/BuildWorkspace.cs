@@ -48,6 +48,17 @@ internal sealed class BuildWorkspace : IDisposable
         m_projectDirectory = projectDirectory;
     }
 
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose()
+    {
+        m_plugins.Dispose();
+        m_assets.Dispose();
+        m_settings.Dispose();
+        m_engine.Dispose();
+    }
+
     internal ProjectId projectId => m_settings.projectId;
 
     internal BuildPipeline CreatePipeline(
@@ -166,6 +177,31 @@ internal sealed class BuildWorkspace : IDisposable
         return destination;
     }
 
+    internal BuildProfile LoadGameProfile(
+        string? path,
+        BuildTargetId defaultTarget
+    ) {
+        if (!string.IsNullOrWhiteSpace(path))
+        {
+            string profilePath = Path.GetFullPath(path, m_projectDirectory);
+            BuildProfile profile = new BuildProfileStore(profilePath, m_engine.serialization).Load();
+            profile.applicationId = projectId.value;
+            return profile;
+        }
+
+        BuildSettings defaults = BuildSettings.CreateDefault(
+            Path.GetFileName(Path.TrimEndingDirectorySeparator(m_projectDirectory)),
+            FindDefaultStartupScene(),
+            defaultTarget
+        );
+        var settings = new BuildSettingsStore(
+            Path.Combine(m_projectDirectory, SettingsFileNames.build),
+            m_engine.serialization,
+            defaults
+        );
+        return settings.Load().CreateGameProfile(projectId);
+    }
+
     internal static BuildWorkspace Open(
         string projectDirectory,
         string dotnetHost,
@@ -273,6 +309,21 @@ internal sealed class BuildWorkspace : IDisposable
         }
     }
 
+    private string FindDefaultStartupScene()
+    {
+        foreach (AssetFileEntry entry in m_assets.GetFileSystemEntries(includeDirectories: false)
+            .Where(static entry => entry.source == AssetSourceId.project)
+            .Where(static entry => !AssetSample.IsRuntimeExcluded(entry.assetPath, isDirectory: false))
+            .OrderBy(static entry => entry.assetPath.localPath, StringComparer.Ordinal)
+        ) {
+            if (m_assets.TryGetAssetType(entry.assetPath, out Type? type) && type == typeof(SceneAsset))
+            {
+                return entry.assetPath.ToString();
+            }
+        }
+        return string.Empty;
+    }
+
     private static IModuleSource CreateScriptModuleSource(
         ScriptModuleDeployment deployment,
         string artifactRootDirectory
@@ -313,56 +364,5 @@ internal sealed class BuildWorkspace : IDisposable
             result.moduleDeployments.Select(deployment => CreateScriptModuleSource(deployment, artifactRootDirectory)).ToArray()
         );
         _ = engine.generations.Execute("Build authoring generation", reload, [plugins.CreateReloadChange()]);
-    }
-
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose()
-    {
-        m_plugins.Dispose();
-        m_assets.Dispose();
-        m_settings.Dispose();
-        m_engine.Dispose();
-    }
-
-    internal BuildProfile LoadGameProfile(
-        string? path,
-        BuildTargetId defaultTarget
-    ) {
-        if (!string.IsNullOrWhiteSpace(path))
-        {
-            string profilePath = Path.GetFullPath(path, m_projectDirectory);
-            BuildProfile profile = new BuildProfileStore(profilePath, m_engine.serialization).Load();
-            profile.applicationId = projectId.value;
-            return profile;
-        }
-
-        BuildSettings defaults = BuildSettings.CreateDefault(
-            Path.GetFileName(Path.TrimEndingDirectorySeparator(m_projectDirectory)),
-            FindDefaultStartupScene(),
-            defaultTarget
-        );
-        var settings = new BuildSettingsStore(
-            Path.Combine(m_projectDirectory, SettingsFileNames.build),
-            m_engine.serialization,
-            defaults
-        );
-        return settings.Load().CreateGameProfile(projectId);
-    }
-
-    private string FindDefaultStartupScene()
-    {
-        foreach (AssetFileEntry entry in m_assets.GetFileSystemEntries(includeDirectories: false)
-            .Where(static entry => entry.source == AssetSourceId.project)
-            .Where(static entry => !AssetSample.IsRuntimeExcluded(entry.assetPath, isDirectory: false))
-            .OrderBy(static entry => entry.assetPath.localPath, StringComparer.Ordinal)
-        ) {
-            if (m_assets.TryGetAssetType(entry.assetPath, out Type? type) && type == typeof(SceneAsset))
-            {
-                return entry.assetPath.ToString();
-            }
-        }
-        return string.Empty;
     }
 }

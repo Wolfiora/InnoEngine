@@ -71,42 +71,6 @@ public sealed class TypeCacheTests : IDisposable
         }
     }
 
-    private sealed class CandidateOwnershipRegistry(TypeCatalog types) : TypeRegistry<object[]>(types)
-    {
-        private int m_nextId;
-        internal bool failBuild;
-        internal bool failCleanup;
-        internal List<int> released { get; } = [];
-
-        protected override object[] Build(TypeCacheSnapshot types)
-        {
-            Resource first = OwnCandidateExtension(new Resource(this, ++m_nextId));
-            Resource second = OwnCandidateExtension(new Resource(this, ++m_nextId));
-            if (failBuild)
-            {
-                throw new InvalidOperationException("Expected candidate validation failure.");
-            }
-            return [first, second, first];
-        }
-
-        protected override void DisposeSnapshot(object[] snapshot) => DisposeExtensions(snapshot);
-
-        private sealed class Resource(
-            CandidateOwnershipRegistry owner,
-            int id
-        ) : IDisposable
-        {
-            public void Dispose()
-            {
-                owner.released.Add(id);
-                if (owner.failCleanup)
-                {
-                    throw new InvalidOperationException("Expected extension cleanup failure.");
-                }
-            }
-        }
-    }
-
     [Fact]
     public void QueriesReturnOnlyConcreteMatchingTypes()
     {
@@ -263,6 +227,42 @@ public sealed class TypeCacheTests : IDisposable
         Assert.Throws<InvalidOperationException>(() => m_types.GetSubTypesOf<TestBase>());
     }
 
+    private sealed class CandidateOwnershipRegistry(TypeCatalog types) : TypeRegistry<object[]>(types)
+    {
+        private int m_nextId;
+        internal bool failBuild;
+        internal bool failCleanup;
+        internal List<int> released { get; } = [];
+
+        protected override object[] Build(TypeCacheSnapshot types)
+        {
+            Resource first = OwnCandidateExtension(new Resource(this, ++m_nextId));
+            Resource second = OwnCandidateExtension(new Resource(this, ++m_nextId));
+            if (failBuild)
+            {
+                throw new InvalidOperationException("Expected candidate validation failure.");
+            }
+            return [first, second, first];
+        }
+
+        protected override void DisposeSnapshot(object[] snapshot) => DisposeExtensions(snapshot);
+
+        private sealed class Resource(
+            CandidateOwnershipRegistry owner,
+            int id
+        ) : IDisposable
+        {
+            public void Dispose()
+            {
+                owner.released.Add(id);
+                if (owner.failCleanup)
+                {
+                    throw new InvalidOperationException("Expected extension cleanup failure.");
+                }
+            }
+        }
+    }
+
     private sealed class TransactionalTestRegistry(TypeCatalog types) : TypeRegistry<TransactionalTestRegistry.Snapshot>(types)
     {
         private int m_nextSnapshotId;
@@ -316,6 +316,7 @@ public sealed class TypeCacheTests : IDisposable
     }
 }
 
+// Open: TestDerived and TestAbstractDerived derive from it for the subtype queries.
 public class TestBase;
 
 public sealed class TestDerived : TestBase;

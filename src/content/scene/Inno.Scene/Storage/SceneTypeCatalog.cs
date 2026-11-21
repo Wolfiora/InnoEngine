@@ -20,6 +20,15 @@ internal sealed class SceneTypeCatalog : IDisposable
         m_registry = new SceneTypeRegistry(types);
     }
 
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose() => m_registry.Dispose();
+
+    internal TypeCacheSnapshot snapshot => m_types.current;
+
+    internal long generation => m_registry.snapshot.generation;
+
     internal bool TryGetComponent(
         Type type,
         out SceneComponentTypeDescriptor? descriptor
@@ -78,15 +87,6 @@ internal sealed class SceneTypeCatalog : IDisposable
     internal Type Resolve(TypeRef typeRef) => m_types.Resolve(typeRef);
 
     internal TypeRef GetTypeRef(Type type) => m_types.GetTypeRef(type);
-
-    internal TypeCacheSnapshot snapshot => m_types.current;
-
-    internal long generation => m_registry.snapshot.generation;
-
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose() => m_registry.Dispose();
 
     private sealed class SceneTypeRegistry : TypeRegistry<SceneTypeSnapshot>
     {

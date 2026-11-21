@@ -322,14 +322,13 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
 
     private sealed class ExportLogSink : ILogSink
     {
-        internal List<string> messages { get; } = [];
-
         public void Receive(LogEntry entry) => messages.Add(entry.message);
+
+        internal List<string> messages { get; } = [];
     }
 
     private sealed class ExportLabelTarget : IGameBuildTarget, IGameContentCompiler
     {
-        internal bool reject { get; set; }
         public BuildTargetId id => new("fixture-export");
         public BuildTargetId target => id;
         public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.coreClr;
@@ -348,5 +347,7 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
             GameBuildContentContext context,
             CancellationToken cancellationToken = default
         ) => throw new InvalidOperationException("This presentation fixture cannot compile content.");
+
+        internal bool reject { get; set; }
     }
 }

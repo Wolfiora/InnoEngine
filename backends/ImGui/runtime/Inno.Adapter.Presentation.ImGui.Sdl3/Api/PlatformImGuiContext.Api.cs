@@ -109,7 +109,7 @@ public sealed partial class PlatformImGuiContext : IDisposable
     /// <exception cref="AggregateException">
     /// A callback failed and its owned native frame also failed to retire.
     /// </exception>
-    public partial IntPtr RenderFrame(
+    public partial nint RenderFrame(
         Action drawFrame,
         Action? prepareFrame = null
     );

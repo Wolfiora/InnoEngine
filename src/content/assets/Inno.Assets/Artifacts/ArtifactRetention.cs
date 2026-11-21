@@ -37,15 +37,6 @@ public sealed class ArtifactRetention : AssetResidencyProvider
         return CreateArtifactLease(artifact, () => OpenPinned(artifact.key, openRead), () => Release(artifact.key));
     }
 
-    private void AddPin(AssetArtifactKey key)
-    {
-        lock (m_sync)
-        {
-            m_counts.TryGetValue(key, out int count);
-            m_counts[key] = checked(count + 1);
-        }
-    }
-
     /// <summary>
     /// Captures the keys a collector must preserve regardless of catalog reachability.
     /// </summary>
@@ -57,6 +48,15 @@ public sealed class ArtifactRetention : AssetResidencyProvider
         lock (m_sync)
         {
             return Array.AsReadOnly(m_counts.Keys.ToArray());
+        }
+    }
+
+    private void AddPin(AssetArtifactKey key)
+    {
+        lock (m_sync)
+        {
+            m_counts.TryGetValue(key, out int count);
+            m_counts[key] = checked(count + 1);
         }
     }
 

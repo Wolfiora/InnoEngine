@@ -44,10 +44,10 @@ public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore
     private readonly List<int> m_sparseToDense = [];
     private readonly List<uint> m_generations = [];
     private readonly List<int> m_denseToSlot = [];
-    private Stack<int> m_freeSlots = new();
     private readonly Dictionary<int, IIndexedObjectIndex<T>> m_indexes = [];
     private readonly Dictionary<string, int> m_indexByName = new(StringComparer.Ordinal);
     private readonly ReaderWriterLockSlim m_lock = new(LockRecursionPolicy.NoRecursion);
+    private Stack<int> m_freeSlots = new();
     private int m_nextIndexId = 1;
     private int m_version;
 

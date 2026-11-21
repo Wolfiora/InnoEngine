@@ -18,17 +18,6 @@ public static class Settings
     public static ProjectId projectId => Get<ProjectIdentitySettings>(ProjectIdentitySettings.settingId).id;
 
     /// <summary>
-    /// Creates one complete project identity from a display or local name.
-    /// </summary>
-    /// <param name="name">
-    /// The project-local name.
-    /// </param>
-    /// <returns>
-    /// The canonical <c>projectId.name</c> identity.
-    /// </returns>
-    public static ProjectScopedId QualifyId(string name) => projectId.Qualify(ProjectLocalId.FromName(name));
-
-    /// <summary>
     /// Gets the revision of the settings snapshot active in the current execution context.
     /// </summary>
     /// <exception cref="InvalidOperationException">
@@ -40,6 +29,17 @@ public static class Settings
     /// Gets the current owner's lifetime identity. Pair it with revision when caching an isolated settings snapshot.
     /// </summary>
     public static Guid ownerId => ProjectSettingsExecutionContext.current.ownerId;
+
+    /// <summary>
+    /// Creates one complete project identity from a display or local name.
+    /// </summary>
+    /// <param name="name">
+    /// The project-local name.
+    /// </param>
+    /// <returns>
+    /// The canonical <c>projectId.name</c> identity.
+    /// </returns>
+    public static ProjectScopedId QualifyId(string name) => projectId.Qualify(ProjectLocalId.FromName(name));
 
     /// <summary>
     /// Gets an isolated effective setting from the current extension generation.

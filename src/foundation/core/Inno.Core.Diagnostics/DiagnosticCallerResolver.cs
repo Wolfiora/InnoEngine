@@ -7,11 +7,6 @@ namespace Inno.Core.Diagnostics;
 
 internal static class DiagnosticCallerResolver
 {
-    private sealed class CallerInfo
-    {
-        internal required string sourcePrefix { get; init; }
-    }
-
     private static readonly ConditionalWeakTable<Type, CallerInfo> CALLERS = new();
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -75,5 +70,10 @@ internal static class DiagnosticCallerResolver
             current = current.DeclaringType;
         }
         return current;
+    }
+
+    private sealed class CallerInfo
+    {
+        internal required string sourcePrefix { get; init; }
     }
 }

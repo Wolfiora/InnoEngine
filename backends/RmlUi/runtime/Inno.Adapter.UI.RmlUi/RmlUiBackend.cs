@@ -28,19 +28,9 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         RegexOptions.Compiled | RegexOptions.CultureInvariant
     );
 
-    private InnoUIRmlUiAdapterRuntime* m_runtime;
     private readonly Dictionary<string, string> m_fontAliases = new(StringComparer.OrdinalIgnoreCase);
+    private InnoUIRmlUiAdapterRuntime* m_runtime;
     private bool m_disposed;
-
-    /// <summary>
-    /// Gets the implementation id text used by the current instance.
-    /// </summary>
-    public string implementationId => RmlUiIdentifiers.backend.value;
-
-    /// <summary>
-    /// Gets the immutable feature and limit set reported by the active graphics backend.
-    /// </summary>
-    public UiBackendCapabilities capabilities => S_CAPABILITIES;
 
     /// <summary>
     /// Creates and validates one isolated native UI engine.
@@ -53,6 +43,16 @@ public sealed unsafe class RmlUiBackend : IUiBackend
             throw CreateNativeException("create UI runtime", Result.UnknownError);
         }
     }
+
+    /// <summary>
+    /// Gets the implementation id text used by the current instance.
+    /// </summary>
+    public string implementationId => RmlUiIdentifiers.backend.value;
+
+    /// <summary>
+    /// Gets the immutable feature and limit set reported by the active graphics backend.
+    /// </summary>
+    public UiBackendCapabilities capabilities => S_CAPABILITIES;
 
     /// <summary>
     /// Creates a context using this implementation's validated inputs.
@@ -770,14 +770,6 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         return values;
     }
 
-    private static void EnsureRml(UiDocumentLanguageId language)
-    {
-        if (language != RmlUiIdentifiers.documentLanguage)
-        {
-            throw new NotSupportedException($"RmlUi adapter cannot decode UI language '{language}'.");
-        }
-    }
-
     private string RewriteFontFamilies(string source)
         => S_FONT_FAMILY.Replace(source, match =>
         {
@@ -790,6 +782,16 @@ public sealed unsafe class RmlUiBackend : IUiBackend
             }
             return match.Groups[1].Value + string.Join(", ", resolved);
         });
+
+    private void EnsureActive() => ObjectDisposedException.ThrowIf(m_disposed, this);
+
+    private static void EnsureRml(UiDocumentLanguageId language)
+    {
+        if (language != RmlUiIdentifiers.documentLanguage)
+        {
+            throw new NotSupportedException($"RmlUi adapter cannot decode UI language '{language}'.");
+        }
+    }
 
     private static ulong Require(UiContextHandle context)
         => context.isValid ? context.value : throw new ArgumentException("A valid UI context handle is required.", nameof(context));
@@ -823,6 +825,4 @@ public sealed unsafe class RmlUiBackend : IUiBackend
             };
         return new InvalidOperationException($"Failed to {operation}: {message}.");
     }
-
-    private void EnsureActive() => ObjectDisposedException.ThrowIf(m_disposed, this);
 }

@@ -89,15 +89,6 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
         ApplyLocation(context, m_forwardHistory.Pop());
     }
 
-    private void ApplyLocation(
-        EditorContext context,
-        BrowserLocation location
-    ) {
-        m_historyCurrent = location;
-        assets.browser.SetLocation(location.root, location.directory);
-        assets.browser.Select(context, string.Empty);
-    }
-
     internal void OpenEntry(
         EditorContext context,
         AssetFileEntry entry,
@@ -128,6 +119,15 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
     }
 
     private BrowserLocation CurrentLocation => new(assets.browser.root, NormalizePath(assets.browser.currentDirectory));
+
+    private void ApplyLocation(
+        EditorContext context,
+        BrowserLocation location
+    ) {
+        m_historyCurrent = location;
+        assets.browser.SetLocation(location.root, location.directory);
+        assets.browser.Select(context, string.Empty);
+    }
 
     private readonly record struct BrowserLocation(
         AssetBrowserRoot root,

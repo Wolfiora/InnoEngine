@@ -121,22 +121,6 @@ public sealed partial class SceneEdits
         return true;
     }
 
-    private static SceneObjectPlacement[] CapturePlacements(IReadOnlyList<GameObject> gameObjects)
-    {
-        var placements = new SceneObjectPlacement[gameObjects.Count];
-        for (int i = 0; i < gameObjects.Count; i++)
-        {
-            GameObject gameObject = gameObjects[i];
-            placements[i] = new SceneObjectPlacement(
-                gameObject.scene.identity.persistentId,
-                gameObject.identity.persistentId,
-                gameObject.transform.parent?.gameObject.identity.persistentId,
-                gameObject.transform.siblingIndex
-            );
-        }
-        return placements;
-    }
-
     private void RestorePlacements(IReadOnlyList<SceneObjectPlacement> placements)
     {
         for (int i = 0; i < placements.Count; i++)
@@ -165,5 +149,21 @@ public sealed partial class SceneEdits
             m_workspace.Find<GameObject>(placement.objectId)!
                 .transform.SetSiblingIndex(placement.siblingIndex);
         }
+    }
+
+    private static SceneObjectPlacement[] CapturePlacements(IReadOnlyList<GameObject> gameObjects)
+    {
+        var placements = new SceneObjectPlacement[gameObjects.Count];
+        for (int i = 0; i < gameObjects.Count; i++)
+        {
+            GameObject gameObject = gameObjects[i];
+            placements[i] = new SceneObjectPlacement(
+                gameObject.scene.identity.persistentId,
+                gameObject.identity.persistentId,
+                gameObject.transform.parent?.gameObject.identity.persistentId,
+                gameObject.transform.siblingIndex
+            );
+        }
+        return placements;
     }
 }

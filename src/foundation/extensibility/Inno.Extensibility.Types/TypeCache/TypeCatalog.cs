@@ -61,6 +61,22 @@ public sealed class TypeCatalog : IDisposable
     public bool isInitialized => !m_disposed && m_modules.isInitialized;
 
     /// <summary>
+    /// Gets the current immutable type snapshot after applying pending host assembly changes.
+    /// </summary>
+    public TypeCacheSnapshot current
+    {
+        get
+        {
+            EnsureInitialized();
+            m_modules.Refresh();
+            lock (m_sync)
+            {
+                return m_current;
+            }
+        }
+    }
+
+    /// <summary>
     /// Defers automatic assembly publication until a synchronous typed operation releases its current owners.
     /// </summary>
     /// <param name="operation">
@@ -79,22 +95,6 @@ public sealed class TypeCatalog : IDisposable
     {
         EnsureInitialized();
         return m_modules.generations.AcquireOperation(operation);
-    }
-
-    /// <summary>
-    /// Gets the current immutable type snapshot after applying pending host assembly changes.
-    /// </summary>
-    public TypeCacheSnapshot current
-    {
-        get
-        {
-            EnsureInitialized();
-            m_modules.Refresh();
-            lock (m_sync)
-            {
-                return m_current;
-            }
-        }
     }
 
     /// <summary>

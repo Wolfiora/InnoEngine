@@ -301,13 +301,6 @@ public sealed partial class SceneEdits
         return true;
     }
 
-    private static IReadOnlyList<SerializationPropertySnapshot> OrderPropertySnapshots(
-        IReadOnlyList<SerializationPropertySnapshot> snapshots,
-        string primaryPropertyName
-    ) => snapshots
-        .OrderBy(snapshot => string.Equals(snapshot.name, primaryPropertyName, StringComparison.Ordinal) ? 0 : 1)
-        .ToArray();
-
     private void RestoreSnapshots(
         EngineObject target,
         IReadOnlyList<SerializationPropertySnapshot> snapshots
@@ -373,6 +366,13 @@ public sealed partial class SceneEdits
             throw new InvalidOperationException("Scene property compensation was incomplete.");
         }
     }
+
+    private static IReadOnlyList<SerializationPropertySnapshot> OrderPropertySnapshots(
+        IReadOnlyList<SerializationPropertySnapshot> snapshots,
+        string primaryPropertyName
+    ) => snapshots
+        .OrderBy(snapshot => string.Equals(snapshot.name, primaryPropertyName, StringComparison.Ordinal) ? 0 : 1)
+        .ToArray();
 
     private static void RequireReferenceRestore(SceneReferenceRestoreResult result)
     {

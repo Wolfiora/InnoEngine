@@ -89,11 +89,6 @@ public sealed class DotNetModuleSource : IModuleSource
         return names.OrderBy(static name => name, StringComparer.Ordinal).ToArray();
     }
 
-    private bool HasRequestedClassification(
-        Assembly assembly,
-        AssemblyScope requestedScope
-    ) => assembly.GetInnoAssemblyDomain() == domain && assembly.GetInnoAssemblyScope() == requestedScope;
-
     /// <inheritdoc/>
     public ModuleCatalogContribution Prepare(ModuleSourceContext context)
     {
@@ -221,6 +216,11 @@ public sealed class DotNetModuleSource : IModuleSource
             throw;
         }
     }
+
+    private bool HasRequestedClassification(
+        Assembly assembly,
+        AssemblyScope requestedScope
+    ) => assembly.GetInnoAssemblyDomain() == domain && assembly.GetInnoAssemblyScope() == requestedScope;
 
     private static IReadOnlyDictionary<string, Assembly> BuildSharedAssemblies(
         DotNetModuleSource request,

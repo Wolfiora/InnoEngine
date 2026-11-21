@@ -46,6 +46,36 @@ internal sealed partial class FileBrowserTree
         m_assets = assets;
     }
 
+    internal void PrepareOpenRequests()
+    {
+        BeginNavigation();
+        string currentDirectory = NormalizePath(m_assets.browser.currentDirectory);
+        if (!m_currentDirectoryOpenRequest && !string.Equals(m_lastCurrentDirectoryOpenTarget, currentDirectory, StringComparison.Ordinal))
+        {
+            m_currentDirectoryOpenTarget = currentDirectory;
+            m_currentDirectoryOpenRequest = true;
+            m_lastCurrentDirectoryOpenTarget = currentDirectory;
+        }
+    }
+
+    internal void ClearOpenRequests()
+    {
+        m_rootOpenRequest = false;
+        m_currentDirectoryOpenRequest = false;
+        ClearNavigationFrame();
+    }
+
+    internal void RequestOpenRoot() => m_rootOpenRequest = true;
+
+    internal void RequestOpenTreeToPath(string path)
+    {
+        string normalizedPath = NormalizePath(path);
+        string treePath = IsDirectoryPath(m_assets.edits.pipeline, normalizedPath) ? normalizedPath : GetParentDirectory(normalizedPath);
+        m_currentDirectoryOpenTarget = treePath;
+        m_currentDirectoryOpenRequest = true;
+        m_lastCurrentDirectoryOpenTarget = treePath;
+    }
+
     private void DrawRow(
         EditorContext context,
         BrowserTreeRow row
@@ -134,36 +164,6 @@ internal sealed partial class FileBrowserTree
         EditorUI.current.widgets.IconText(icon, string.Empty, false);
         Ui.SameLine(0f, 0f);
         m_rename.Draw(context, id, relativePath, FileBrowserPresentation.Tree, Ui.GetContentRegionAvailable().X, rowHeight);
-    }
-
-    internal void PrepareOpenRequests()
-    {
-        BeginNavigation();
-        string currentDirectory = NormalizePath(m_assets.browser.currentDirectory);
-        if (!m_currentDirectoryOpenRequest && !string.Equals(m_lastCurrentDirectoryOpenTarget, currentDirectory, StringComparison.Ordinal))
-        {
-            m_currentDirectoryOpenTarget = currentDirectory;
-            m_currentDirectoryOpenRequest = true;
-            m_lastCurrentDirectoryOpenTarget = currentDirectory;
-        }
-    }
-
-    internal void ClearOpenRequests()
-    {
-        m_rootOpenRequest = false;
-        m_currentDirectoryOpenRequest = false;
-        ClearNavigationFrame();
-    }
-
-    internal void RequestOpenRoot() => m_rootOpenRequest = true;
-
-    internal void RequestOpenTreeToPath(string path)
-    {
-        string normalizedPath = NormalizePath(path);
-        string treePath = IsDirectoryPath(m_assets.edits.pipeline, normalizedPath) ? normalizedPath : GetParentDirectory(normalizedPath);
-        m_currentDirectoryOpenTarget = treePath;
-        m_currentDirectoryOpenRequest = true;
-        m_lastCurrentDirectoryOpenTarget = treePath;
     }
 
     private bool ShouldOpenTreeEntry(

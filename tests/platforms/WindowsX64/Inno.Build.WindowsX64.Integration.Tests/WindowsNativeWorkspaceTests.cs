@@ -14,9 +14,6 @@ namespace Inno.Build.WindowsX64.Integration.Tests;
 
 public sealed class WindowsNativeWorkspaceTests : IDisposable
 {
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private delegate int ReadNativeValue();
-
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoWorkspaceTests", Guid.NewGuid().ToString("N"));
     private readonly string m_bindingRoot = Path.Combine(Path.GetTempPath(), "InnoWorkspaceBindings", Guid.NewGuid().ToString("N"));
     private readonly NativeComponentDescriptor m_owner = new("fixture", "native/fixture.csproj", "build/fixture.csproj");
@@ -136,4 +133,7 @@ public sealed class WindowsNativeWorkspaceTests : IDisposable
             NativeLibrary.Free(library);
         }
     }
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int ReadNativeValue();
 }

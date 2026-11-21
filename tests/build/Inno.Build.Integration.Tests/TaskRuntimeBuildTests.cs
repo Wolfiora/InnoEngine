@@ -413,10 +413,10 @@ public sealed class TaskRuntimeBuildTests : IDisposable
     {
         private readonly Func<bool> m_build;
         private readonly ConcurrentDictionary<object, object> m_registry = new();
+        private readonly Action? m_restore;
         internal string outputPath = string.Empty;
         private int m_builds;
         private volatile bool m_yielded;
-        private readonly Action? m_restore;
 
         internal RecordingEngine(
             Func<bool> build,
@@ -426,13 +426,6 @@ public sealed class TaskRuntimeBuildTests : IDisposable
             m_restore = restore;
         }
 
-        internal int builds => m_builds;
-        internal bool yielded => m_yielded;
-        internal bool reacquired { get; private set; }
-        internal IDictionary? properties { get; private set; }
-        internal IList<string>? removed { get; private set; }
-        internal ConcurrentBag<BuildErrorEventArgs> errors { get; } = [];
-        internal List<string> requests { get; } = [];
         public bool ContinueOnError => false;
         public int LineNumberOfTaskNode => 0;
         public int ColumnNumberOfTaskNode => 0;
@@ -477,6 +470,16 @@ public sealed class TaskRuntimeBuildTests : IDisposable
             return new(!returnTargetOutputs || m_build(), [new Dictionary<string, ITaskItem[]> { [targets[^1]] = [output] }]);
         }
 
+        public bool BuildProjectFilesInParallel(
+            string[] projects,
+            string[] targets,
+            IDictionary[] properties,
+            IDictionary[] outputs,
+            string[] toolsVersions,
+            bool useResultsCache,
+            bool unloadProjects
+        ) => throw new NotSupportedException();
+
         public object GetRegisteredTaskObject(
             object key,
             RegisteredTaskObjectLifetime lifetime
@@ -509,14 +512,12 @@ public sealed class TaskRuntimeBuildTests : IDisposable
             string toolsVersion
         ) => throw new NotSupportedException();
 
-        public bool BuildProjectFilesInParallel(
-            string[] projects,
-            string[] targets,
-            IDictionary[] properties,
-            IDictionary[] outputs,
-            string[] toolsVersions,
-            bool useResultsCache,
-            bool unloadProjects
-        ) => throw new NotSupportedException();
+        internal int builds => m_builds;
+        internal bool yielded => m_yielded;
+        internal bool reacquired { get; private set; }
+        internal IDictionary? properties { get; private set; }
+        internal IList<string>? removed { get; private set; }
+        internal ConcurrentBag<BuildErrorEventArgs> errors { get; } = [];
+        internal List<string> requests { get; } = [];
     }
 }

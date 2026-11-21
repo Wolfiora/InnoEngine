@@ -126,6 +126,58 @@ internal sealed class EditorRenderingHostService :
     }
 
     /// <summary>
+    /// Releases one cached preview registration.
+    /// </summary>
+    /// <param name="handle">
+    /// Preview handle to release.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the exact current-generation preview was released.
+    /// </returns>
+    public bool Release(EditorPreviewHandle handle)
+    {
+        if (!handle.isValid || handle.deviceGeneration != deviceGeneration
+            || !m_previewsById.Remove(handle.value, out PreviewState? preview)
+            || preview.handle != handle
+        ) {
+            return false;
+        }
+        if (preview.viewportId is not null)
+        {
+            ReleaseRendered(preview.viewportId);
+        }
+        else
+        {
+            m_previews.Remove(preview.reference);
+            _ = m_presentation.UnregisterTexture(preview.presentationTexture);
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Releases the caller-owned value lifetime and its retained resources.
+    /// </summary>
+    /// <param name="viewportId">
+    /// The viewport id text validated by the release operation.
+    /// </param>
+    public void Release(string viewportId)
+    {
+        ObjectDisposedException.ThrowIf(m_disposed, this);
+        ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
+        if (m_renderedPreviews.Remove(viewportId, out PreviewState? preview))
+        {
+            m_previewsById.Remove(preview.handle.value);
+        }
+        m_runtime.resources.Release(new RenderPersistentResourceId(viewportId));
+        if (!m_viewports.Remove(viewportId, out ViewportState? state))
+        {
+            return;
+        }
+        Unregister(state);
+        m_runtime.targets.Release(state.target);
+    }
+
+    /// <summary>
     /// Prepares frame-owned resources before render graph recording begins.
     /// </summary>
     /// <param name="frameIndex">
@@ -353,51 +405,26 @@ internal sealed class EditorRenderingHostService :
     }
 
     /// <summary>
-    /// Releases one cached preview registration.
+    /// Renders the value presentation for the current editor frame.
     /// </summary>
-    /// <param name="handle">
-    /// Preview handle to release.
+    /// <param name="output">
+    /// The import output writer that receives runtime data and dependency declarations.
     /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the exact current-generation preview was released.
-    /// </returns>
-    public bool Release(EditorPreviewHandle handle)
-    {
-        if (!handle.isValid || handle.deviceGeneration != deviceGeneration
-            || !m_previewsById.Remove(handle.value, out PreviewState? preview)
-            || preview.handle != handle
-        ) {
-            return false;
-        }
-        if (preview.viewportId is not null)
+    /// <param name="logicalSize">
+    /// The logical size consumed by draw; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    public void Draw(
+        EditorViewportOutput output,
+        Vector2 logicalSize
+    ) {
+        ObjectDisposedException.ThrowIf(m_disposed, this);
+        if (!output.isReady)
         {
-            ReleaseRendered(preview.viewportId);
+            throw new InvalidOperationException(
+                $"Editor viewport '{output.viewportId}' has no completed render texture yet."
+            );
         }
-        else
-        {
-            m_previews.Remove(preview.reference);
-            _ = m_presentation.UnregisterTexture(preview.presentationTexture);
-        }
-        return true;
-    }
-
-    /// <summary>
-    /// Releases every cached preview registration.
-    /// </summary>
-    void IEditorPreviewService.ReleaseAll() => ReleaseAllPreviews();
-
-    private void ReleaseAllPreviews()
-    {
-        foreach (string viewportId in new List<string>(m_renderedPreviews.Keys))
-        {
-            ReleaseRendered(viewportId);
-        }
-        foreach (PreviewState preview in m_previews.Values)
-        {
-            _ = m_presentation.UnregisterTexture(preview.presentationTexture);
-        }
-        m_previews.Clear();
-        m_previewsById.Clear();
+        m_presentation.DrawImage(output.texture, logicalSize);
     }
 
     /// <summary>
@@ -468,52 +495,6 @@ internal sealed class EditorRenderingHostService :
     }
 
     /// <summary>
-    /// Renders the value presentation for the current editor frame.
-    /// </summary>
-    /// <param name="output">
-    /// The import output writer that receives runtime data and dependency declarations.
-    /// </param>
-    /// <param name="logicalSize">
-    /// The logical size consumed by draw; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    public void Draw(
-        EditorViewportOutput output,
-        Vector2 logicalSize
-    ) {
-        ObjectDisposedException.ThrowIf(m_disposed, this);
-        if (!output.isReady)
-        {
-            throw new InvalidOperationException(
-                $"Editor viewport '{output.viewportId}' has no completed render texture yet."
-            );
-        }
-        m_presentation.DrawImage(output.texture, logicalSize);
-    }
-
-    /// <summary>
-    /// Releases the caller-owned value lifetime and its retained resources.
-    /// </summary>
-    /// <param name="viewportId">
-    /// The viewport id text validated by the release operation.
-    /// </param>
-    public void Release(string viewportId)
-    {
-        ObjectDisposedException.ThrowIf(m_disposed, this);
-        ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
-        if (m_renderedPreviews.Remove(viewportId, out PreviewState? preview))
-        {
-            m_previewsById.Remove(preview.handle.value);
-        }
-        m_runtime.resources.Release(new RenderPersistentResourceId(viewportId));
-        if (!m_viewports.Remove(viewportId, out ViewportState? state))
-        {
-            return;
-        }
-        Unregister(state);
-        m_runtime.targets.Release(state.target);
-    }
-
-    /// <summary>
     /// Releases the caller-owned all lifetime and its retained resources.
     /// </summary>
     public void ReleaseAll()
@@ -559,6 +540,11 @@ internal sealed class EditorRenderingHostService :
         m_disposed = true;
     }
 
+    /// <summary>
+    /// Releases every cached preview registration.
+    /// </summary>
+    void IEditorPreviewService.ReleaseAll() => ReleaseAllPreviews();
+
     IGenerationChange IEditorReloadParticipant.Capture(AssemblyReloadContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -567,13 +553,19 @@ internal sealed class EditorRenderingHostService :
 
     void IEditorReloadParticipant.RefreshDiagnostics() {}
 
-    private static RenderTextureDescriptor CreateDescriptor(EditorViewportComposition composition)
-        => new(
-            composition.pixelWidth,
-            composition.pixelHeight,
-            composition.targetFormat,
-            RenderTextureUsage.ColorAttachment | RenderTextureUsage.Sampled
-        );
+    private void ReleaseAllPreviews()
+    {
+        foreach (string viewportId in new List<string>(m_renderedPreviews.Keys))
+        {
+            ReleaseRendered(viewportId);
+        }
+        foreach (PreviewState preview in m_previews.Values)
+        {
+            _ = m_presentation.UnregisterTexture(preview.presentationTexture);
+        }
+        m_previews.Clear();
+        m_previewsById.Clear();
+    }
 
     private void Unregister(ViewportState state)
     {
@@ -584,6 +576,14 @@ internal sealed class EditorRenderingHostService :
         state.presentationTexture = default;
         state.residentTexture = default;
     }
+
+    private static RenderTextureDescriptor CreateDescriptor(EditorViewportComposition composition)
+        => new(
+            composition.pixelWidth,
+            composition.pixelHeight,
+            composition.targetFormat,
+            RenderTextureUsage.ColorAttachment | RenderTextureUsage.Sampled
+        );
 
     private sealed class ViewportState(RenderTexture target)
     {

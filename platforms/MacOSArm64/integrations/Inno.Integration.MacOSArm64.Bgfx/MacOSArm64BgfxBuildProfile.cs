@@ -9,12 +9,6 @@ namespace Inno.Integration.MacOSArm64.Bgfx;
 internal sealed class MacOSArm64BgfxBuildProfile : BgfxNativeBuildProfile
 {
     /// <inheritdoc/>
-    public override NativeToolchainSelection SelectTools(
-        NativeBuildContext context,
-        bool includeTools
-    ) => MacOSArm64BgfxToolContribution.Select(context, includeTools);
-
-    /// <inheritdoc/>
     public override string targetId => MacOSArm64BuildModule.target.id.value;
 
     /// <inheritdoc/>
@@ -25,6 +19,12 @@ internal sealed class MacOSArm64BgfxBuildProfile : BgfxNativeBuildProfile
 
     /// <inheritdoc/>
     public override IReadOnlyList<string> bindingCmakeArguments => [];
+
+    /// <inheritdoc/>
+    public override NativeToolchainSelection SelectTools(
+        NativeBuildContext context,
+        bool includeTools
+    ) => MacOSArm64BgfxToolContribution.Select(context, includeTools);
 
     /// <inheritdoc/>
     public override (string reference, IReadOnlyList<string> arguments) CreateBindingLinkSettings(string archivePath)

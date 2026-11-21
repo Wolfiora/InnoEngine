@@ -41,6 +41,30 @@ internal sealed class AssetWatcher : IDisposable
         m_watcher.Error += OnError;
     }
 
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose()
+    {
+        if (m_disposed)
+        {
+            return;
+        }
+        m_disposed = true;
+        m_watcher.EnableRaisingEvents = false;
+        m_watcher.Changed -= OnChanged;
+        m_watcher.Created -= OnChanged;
+        m_watcher.Deleted -= OnChanged;
+        m_watcher.Renamed -= OnRenamed;
+        m_watcher.Error -= OnError;
+        m_watcher.Dispose();
+        lock (m_sync)
+        {
+            m_pending.Clear();
+            m_requiresFullRescan = false;
+        }
+    }
+
     internal bool isWatching => m_watcher.EnableRaisingEvents;
 
     internal void Start()
@@ -101,30 +125,6 @@ internal sealed class AssetWatcher : IDisposable
                 throw new TimeoutException("Timed out waiting for AssetWatcher to become idle.");
             }
             Thread.Sleep(Math.Min(m_flushDelayMs, 20));
-        }
-    }
-
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose()
-    {
-        if (m_disposed)
-        {
-            return;
-        }
-        m_disposed = true;
-        m_watcher.EnableRaisingEvents = false;
-        m_watcher.Changed -= OnChanged;
-        m_watcher.Created -= OnChanged;
-        m_watcher.Deleted -= OnChanged;
-        m_watcher.Renamed -= OnRenamed;
-        m_watcher.Error -= OnError;
-        m_watcher.Dispose();
-        lock (m_sync)
-        {
-            m_pending.Clear();
-            m_requiresFullRescan = false;
         }
     }
 

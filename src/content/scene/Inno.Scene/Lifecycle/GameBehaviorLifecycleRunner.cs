@@ -315,6 +315,8 @@ internal sealed class GameBehaviorLifecycleRunner
         }
     }
 
+    private GameBehaviorLifecyclePhase GetPhases(GameBehavior behavior) => behavior.lifecyclePhases;
+
     private static bool NeedsActivationPreparation(GameBehavior behavior)
     {
         if (behavior.isDestroyed || behavior.lifecycleDestroyCalled)
@@ -324,6 +326,4 @@ internal sealed class GameBehaviorLifecycleRunner
         bool active = behavior.isActiveAndEnabled;
         return (active && !behavior.lifecycleAwakeCalled) || active != behavior.lifecycleWasEnabled;
     }
-
-    private GameBehaviorLifecyclePhase GetPhases(GameBehavior behavior) => behavior.lifecyclePhases;
 }

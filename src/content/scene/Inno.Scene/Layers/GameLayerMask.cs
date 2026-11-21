@@ -9,16 +9,6 @@ namespace Inno.Scene.Layers;
 public readonly struct GameLayerMask : IEquatable<GameLayerMask>
 {
     /// <summary>
-    /// Gets a mask containing no layers.
-    /// </summary>
-    public static GameLayerMask none { get; } = new(0u);
-
-    /// <summary>
-    /// Gets a mask containing every supported layer.
-    /// </summary>
-    public static GameLayerMask everything { get; } = new(uint.MaxValue);
-
-    /// <summary>
     /// Creates a mask from its raw thirty-two-bit representation.
     /// </summary>
     /// <param name="value">
@@ -30,32 +20,19 @@ public readonly struct GameLayerMask : IEquatable<GameLayerMask>
     }
 
     /// <summary>
+    /// Gets a mask containing no layers.
+    /// </summary>
+    public static GameLayerMask none { get; } = new(0u);
+
+    /// <summary>
+    /// Gets a mask containing every supported layer.
+    /// </summary>
+    public static GameLayerMask everything { get; } = new(uint.MaxValue);
+
+    /// <summary>
     /// Gets the raw thirty-two-bit mask value.
     /// </summary>
     public uint value { get; }
-
-    /// <summary>
-    /// Creates a mask containing the supplied layers.
-    /// </summary>
-    /// <param name="layers">
-    /// The layers whose bits should be enabled.
-    /// </param>
-    /// <returns>
-    /// A mask containing every supplied layer.
-    /// </returns>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="layers"/> is <see langword="null"/>.
-    /// </exception>
-    public static GameLayerMask FromLayers(IEnumerable<GameLayer> layers)
-    {
-        ArgumentNullException.ThrowIfNull(layers);
-        uint bits = 0u;
-        foreach (GameLayer layer in layers)
-        {
-            bits |= 1u << layer.index;
-        }
-        return new GameLayerMask(bits);
-    }
 
     /// <summary>
     /// Determines whether the supplied layer is contained in this mask.
@@ -127,6 +104,29 @@ public readonly struct GameLayerMask : IEquatable<GameLayerMask>
     /// The human-readable representation of this value.
     /// </returns>
     public override string ToString() => $"0x{value:X8}";
+
+    /// <summary>
+    /// Creates a mask containing the supplied layers.
+    /// </summary>
+    /// <param name="layers">
+    /// The layers whose bits should be enabled.
+    /// </param>
+    /// <returns>
+    /// A mask containing every supplied layer.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="layers"/> is <see langword="null"/>.
+    /// </exception>
+    public static GameLayerMask FromLayers(IEnumerable<GameLayer> layers)
+    {
+        ArgumentNullException.ThrowIfNull(layers);
+        uint bits = 0u;
+        foreach (GameLayer layer in layers)
+        {
+            bits |= 1u << layer.index;
+        }
+        return new GameLayerMask(bits);
+    }
 
     /// <summary>
     /// Combines the enabled bits from two masks.

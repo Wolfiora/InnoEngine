@@ -431,30 +431,6 @@ public sealed partial class AssetEditingModule : EditorModule
         ) ? moved : throw new InvalidOperationException($"Moved asset '{targetPath}' is unavailable after the transaction.");
     }
 
-    internal bool Delete(AssetEditorContext context)
-    {
-        AssetEditor editor = m_editors.Resolve(context.assetType);
-        AssetOperationValidation validation = editor.ValidateDelete(context);
-        if (!validation.isValid)
-        {
-            m_log.Write(LogLevel.Warn, "Asset delete was rejected for '{0}': {1}", [context.relativePath, validation.message]);
-            return false;
-        }
-
-        string path = context.relativePath;
-        m_pipeline.Delete(AssetPath.Parse(path));
-        try
-        {
-            editor.OnDeleted(context);
-        }
-        catch (Exception exception)
-        {
-            m_log.Write(LogLevel.Error, "Asset editor delete hook failed for '{0}': {1}", [path, exception]);
-        }
-
-        return true;
-    }
-
     /// <summary>
     /// Deletes a source with a recoverable archive and records the committed mutation.
     /// </summary>
@@ -502,36 +478,6 @@ public sealed partial class AssetEditingModule : EditorModule
         }
 
         return true;
-    }
-
-    internal void MoveFromHistory(
-        string sourcePath,
-        string targetPath
-    ) {
-        EditorContext editorContext = m_context ?? throw new InvalidOperationException("Asset editor module is not attached.");
-        if (!TryCreateContext(editorContext, sourcePath, out AssetEditorContext? context) || context is null)
-        {
-            throw new InvalidOperationException($"Asset '{sourcePath}' is no longer available.");
-        }
-        AssetEditor editor = m_editors.Resolve(context.assetType);
-        EditorHistoryResult result = MoveAsset(editor, context, sourcePath, targetPath);
-        if (!result.succeeded)
-        {
-            throw new InvalidOperationException(result.message);
-        }
-    }
-
-    internal void DeleteFromHistory(string relativePath)
-    {
-        EditorContext editorContext = m_context ?? throw new InvalidOperationException("Asset editor module is not attached.");
-        if (!TryCreateContext(editorContext, relativePath, out AssetEditorContext? context) || context is null)
-        {
-            throw new InvalidOperationException($"Asset '{relativePath}' is no longer available.");
-        }
-        if (!Delete(context))
-        {
-            throw new InvalidOperationException($"Asset '{relativePath}' could not be deleted.");
-        }
     }
 
     /// <summary>
@@ -598,6 +544,60 @@ public sealed partial class AssetEditingModule : EditorModule
     {
         m_creations.Dispose();
         m_editors.Dispose();
+    }
+
+    internal bool Delete(AssetEditorContext context)
+    {
+        AssetEditor editor = m_editors.Resolve(context.assetType);
+        AssetOperationValidation validation = editor.ValidateDelete(context);
+        if (!validation.isValid)
+        {
+            m_log.Write(LogLevel.Warn, "Asset delete was rejected for '{0}': {1}", [context.relativePath, validation.message]);
+            return false;
+        }
+
+        string path = context.relativePath;
+        m_pipeline.Delete(AssetPath.Parse(path));
+        try
+        {
+            editor.OnDeleted(context);
+        }
+        catch (Exception exception)
+        {
+            m_log.Write(LogLevel.Error, "Asset editor delete hook failed for '{0}': {1}", [path, exception]);
+        }
+
+        return true;
+    }
+
+    internal void MoveFromHistory(
+        string sourcePath,
+        string targetPath
+    ) {
+        EditorContext editorContext = m_context ?? throw new InvalidOperationException("Asset editor module is not attached.");
+        if (!TryCreateContext(editorContext, sourcePath, out AssetEditorContext? context) || context is null)
+        {
+            throw new InvalidOperationException($"Asset '{sourcePath}' is no longer available.");
+        }
+        AssetEditor editor = m_editors.Resolve(context.assetType);
+        EditorHistoryResult result = MoveAsset(editor, context, sourcePath, targetPath);
+        if (!result.succeeded)
+        {
+            throw new InvalidOperationException(result.message);
+        }
+    }
+
+    internal void DeleteFromHistory(string relativePath)
+    {
+        EditorContext editorContext = m_context ?? throw new InvalidOperationException("Asset editor module is not attached.");
+        if (!TryCreateContext(editorContext, relativePath, out AssetEditorContext? context) || context is null)
+        {
+            throw new InvalidOperationException($"Asset '{relativePath}' is no longer available.");
+        }
+        if (!Delete(context))
+        {
+            throw new InvalidOperationException($"Asset '{relativePath}' could not be deleted.");
+        }
     }
 
     private AssetOperationValidation ValidateRename(

@@ -29,17 +29,6 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
     }
 
     /// <summary>
-    /// Validates the target closure before runtime script compilation.
-    /// </summary>
-    /// <param name="directory">
-    /// The Support Pack directory selected by the build catalog.
-    /// </param>
-    /// <exception cref="System.IO.InvalidDataException">
-    /// The required platform inputs are incomplete or incompatible.
-    /// </exception>
-    public void Validate(string directory) => m_supportPackValidator.Validate(directory);
-
-    /// <summary>
     /// Gets the macOS ARM64 target identity.
     /// </summary>
     public BuildTargetId id => MacOSArm64BuildModule.target.id;
@@ -54,6 +43,17 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
     /// Gets the target name presented by authoring hosts.
     /// </summary>
     public string displayName => "macOS (Apple silicon)";
+
+    /// <summary>
+    /// Validates the target closure before runtime script compilation.
+    /// </summary>
+    /// <param name="directory">
+    /// The Support Pack directory selected by the build catalog.
+    /// </param>
+    /// <exception cref="System.IO.InvalidDataException">
+    /// The required platform inputs are incomplete or incompatible.
+    /// </exception>
+    public void Validate(string directory) => m_supportPackValidator.Validate(directory);
 
     /// <summary>
     /// Composes a macOS application bundle in isolated staging.

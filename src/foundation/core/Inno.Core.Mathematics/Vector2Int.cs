@@ -11,6 +11,28 @@ namespace Inno.Core.Mathematics;
 public struct Vector2Int : IEquatable<Vector2Int>
 {
     /// <summary>
+    /// A value whose components are all zero.
+    /// </summary>
+
+    // Common constants
+    public static readonly Vector2Int ZERO = new(0, 0);
+
+    /// <summary>
+    /// A value whose components are all one.
+    /// </summary>
+    public static readonly Vector2Int ONE  = new(1, 1);
+
+    /// <summary>
+    /// A unit value aligned with the x axis.
+    /// </summary>
+    public static readonly Vector2Int UNIT_X  = new(1, 0);
+
+    /// <summary>
+    /// A unit value aligned with the y axis.
+    /// </summary>
+    public static readonly Vector2Int UNIT_Y  = new(0, 1);
+
+    /// <summary>
     /// The horizontal or first component.
     /// </summary>
     [DataMember]
@@ -40,26 +62,44 @@ public struct Vector2Int : IEquatable<Vector2Int>
     }
 
     /// <summary>
-    /// A value whose components are all zero.
+    /// Determines whether this value and the supplied value represent the same logical state.
     /// </summary>
+    /// <param name="obj">
+    /// The object compared with this value.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
 
-    // Common constants
-    public static readonly Vector2Int ZERO = new(0, 0);
-
-    /// <summary>
-    /// A value whose components are all one.
-    /// </summary>
-    public static readonly Vector2Int ONE  = new(1, 1);
-
-    /// <summary>
-    /// A unit value aligned with the x axis.
-    /// </summary>
-    public static readonly Vector2Int UNIT_X  = new(1, 0);
+    // Equality
+    public override bool Equals(object? obj) => obj is Vector2Int other && Equals(other);
 
     /// <summary>
-    /// A unit value aligned with the y axis.
+    /// Determines whether this value and the supplied value represent the same logical state.
     /// </summary>
-    public static readonly Vector2Int UNIT_Y  = new(0, 1);
+    /// <param name="other">
+    /// The strongly typed value compared with this value.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    public bool Equals(Vector2Int other) => x == other.x && y == other.y;
+
+    /// <summary>
+    /// Computes a hash code consistent with the implemented equality contract.
+    /// </summary>
+    /// <returns>
+    /// The scalar result calculated from the supplied inputs.
+    /// </returns>
+    public override int GetHashCode() => HashCode.Combine(x, y);
+
+    /// <summary>
+    /// Formats this value as a human-readable component list.
+    /// </summary>
+    /// <returns>
+    /// The validated text representation owned by the caller.
+    /// </returns>
+    public override string ToString() => $"({x}, {y})";
 
     /// <summary>
     /// Adds the supplied values component by component.
@@ -84,6 +124,18 @@ public struct Vector2Int : IEquatable<Vector2Int>
     /// <summary>
     /// Subtracts or negates the supplied value component by component.
     /// </summary>
+    /// <param name="v">
+    /// The concrete value read or transformed by this operation.
+    /// </param>
+    /// <returns>
+    /// The validated vector2int that represents the completed operation.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Vector2Int operator -(Vector2Int v) => new(-v.x, -v.y);
+
+    /// <summary>
+    /// Subtracts or negates the supplied value component by component.
+    /// </summary>
     /// <param name="a">
     /// The first operand or interpolation endpoint.
     /// </param>
@@ -98,18 +150,6 @@ public struct Vector2Int : IEquatable<Vector2Int>
         Vector2Int a,
         Vector2Int b
     ) => new(a.x - b.x, a.y - b.y);
-
-    /// <summary>
-    /// Subtracts or negates the supplied value component by component.
-    /// </summary>
-    /// <param name="v">
-    /// The concrete value read or transformed by this operation.
-    /// </param>
-    /// <returns>
-    /// The validated vector2int that represents the completed operation.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2Int operator -(Vector2Int v) => new(-v.x, -v.y);
 
     /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
@@ -226,44 +266,4 @@ public struct Vector2Int : IEquatable<Vector2Int>
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static explicit operator Vector2Int(Vector2 v) => new((int)v.x, (int)v.y);
-
-    /// <summary>
-    /// Determines whether this value and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="obj">
-    /// The object compared with this value.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-
-    // Equality
-    public override bool Equals(object? obj) => obj is Vector2Int other && Equals(other);
-
-    /// <summary>
-    /// Determines whether this value and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="other">
-    /// The strongly typed value compared with this value.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public bool Equals(Vector2Int other) => x == other.x && y == other.y;
-
-    /// <summary>
-    /// Computes a hash code consistent with the implemented equality contract.
-    /// </summary>
-    /// <returns>
-    /// The scalar result calculated from the supplied inputs.
-    /// </returns>
-    public override int GetHashCode() => HashCode.Combine(x, y);
-
-    /// <summary>
-    /// Formats this value as a human-readable component list.
-    /// </summary>
-    /// <returns>
-    /// The validated text representation owned by the caller.
-    /// </returns>
-    public override string ToString() => $"({x}, {y})";
 }

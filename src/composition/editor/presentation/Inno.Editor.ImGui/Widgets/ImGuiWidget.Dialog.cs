@@ -335,26 +335,6 @@ public sealed unsafe partial class ImGuiWidget
         m_previousDialogLayout = default;
     }
 
-    private readonly record struct DialogMeasurementKey(
-        string message,
-        string? details,
-        string? action,
-        Vector2 available,
-        bool progress,
-        uint font,
-        uint baked,
-        int glyphs,
-        int advances,
-        int sources,
-        int nextFont,
-        float fontSize,
-        float density,
-        float fallbackAdvance,
-        float spacing,
-        Vector2 framePadding,
-        float scrollbar
-    );
-
     private static float MeasureDialogBody(
         DialogPresentation presentation,
         float width,
@@ -390,4 +370,24 @@ public sealed unsafe partial class ImGuiWidget
             NativeGui.PopTextWrapPos();
         }
     }
+
+    private readonly record struct DialogMeasurementKey(
+        string message,
+        string? details,
+        string? action,
+        Vector2 available,
+        bool progress,
+        uint font,
+        uint baked,
+        int glyphs,
+        int advances,
+        int sources,
+        int nextFont,
+        float fontSize,
+        float density,
+        float fallbackAdvance,
+        float spacing,
+        Vector2 framePadding,
+        float scrollbar
+    );
 }

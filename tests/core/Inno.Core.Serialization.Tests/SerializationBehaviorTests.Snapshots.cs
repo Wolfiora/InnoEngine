@@ -269,14 +269,15 @@ internal sealed class MutatingPropertyCapture : ISerializable
 
 internal sealed class SnapshotEnvelope : ISerializable
 {
-    internal Dictionary<string, int> fields { get; } = [];
-    internal List<int> items { get; } = [];
-    internal DefaultSample state { get; } = new();
     internal bool omitState;
     internal bool fail;
     internal bool duplicate;
     internal int writeCalls;
     internal long observedTypeGeneration;
+
+    internal Dictionary<string, int> fields { get; } = [];
+    internal List<int> items { get; } = [];
+    internal DefaultSample state { get; } = new();
 }
 
 internal sealed class SnapshotEnvelopeConverter : SerializationConverter<SnapshotEnvelope>

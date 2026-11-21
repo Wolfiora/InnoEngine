@@ -41,8 +41,6 @@ public sealed class ShaderSourceFrontendCatalog
     /// </summary>
     public IReadOnlyList<string> languageIds { get; }
 
-    internal IEnumerable<IShaderSourceFrontend> providers => m_frontends.Values;
-
     /// <summary>
     /// Analyzes source using an explicitly selected language.
     /// </summary>
@@ -162,4 +160,6 @@ public sealed class ShaderSourceFrontendCatalog
         }
         return new(results, diagnostics);
     }
+
+    internal IEnumerable<IShaderSourceFrontend> providers => m_frontends.Values;
 }

@@ -12,8 +12,6 @@ namespace Inno.Editor.Panel.Settings;
 
 internal sealed class SettingsPageView(SettingsEditSession session)
 {
-    private static SettingsStyle settingsStyle => new(EditorUI.current.widgets.style);
-
     internal void Draw(
         SettingsPage page,
         Action<SettingsPage> navigate
@@ -53,6 +51,8 @@ internal sealed class SettingsPageView(SettingsEditSession session)
         }
     }
 
+    private static SettingsStyle settingsStyle => new(EditorUI.current.widgets.style);
+
     private void DrawPageHeader(SettingsPage page)
     {
         ImGuiTableFlags flags = ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings | ImGuiTableFlags.NoPadOuterX;
@@ -86,31 +86,6 @@ internal sealed class SettingsPageView(SettingsEditSession session)
         finally
         {
             Ui.EndTable();
-        }
-    }
-
-    private static void DrawOverview(
-        IReadOnlyList<SettingsPage> children,
-        Action<SettingsPage> navigate
-    ) {
-        if (children.Count == 0)
-        {
-            PushDisabledText();
-            Ui.Text("No settings are currently registered on this page.");
-            Ui.PopStyleColor();
-            return;
-        }
-
-        for (int i = 0; i < children.Count; i++)
-        {
-            SettingsPage child = children[i];
-            bool clicked = EditorUI.current.widgets.HoverText($"settings_overview_{child.path}", child.label);
-            if (clicked)
-            {
-                navigate(child);
-            }
-            EditorUI.current.widgets.DrawItemTooltip(child.description);
-            Ui.Spacing();
         }
     }
 
@@ -190,6 +165,31 @@ internal sealed class SettingsPageView(SettingsEditSession session)
         }
 
         DrawFieldBackgroundGutters(background);
+    }
+
+    private static void DrawOverview(
+        IReadOnlyList<SettingsPage> children,
+        Action<SettingsPage> navigate
+    ) {
+        if (children.Count == 0)
+        {
+            PushDisabledText();
+            Ui.Text("No settings are currently registered on this page.");
+            Ui.PopStyleColor();
+            return;
+        }
+
+        for (int i = 0; i < children.Count; i++)
+        {
+            SettingsPage child = children[i];
+            bool clicked = EditorUI.current.widgets.HoverText($"settings_overview_{child.path}", child.label);
+            if (clicked)
+            {
+                navigate(child);
+            }
+            EditorUI.current.widgets.DrawItemTooltip(child.description);
+            Ui.Spacing();
+        }
     }
 
     private static void DrawFieldBackgroundGutters(uint background)

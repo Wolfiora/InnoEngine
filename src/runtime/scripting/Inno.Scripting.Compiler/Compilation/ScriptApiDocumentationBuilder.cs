@@ -13,11 +13,6 @@ internal static class ScriptApiDocumentationBuilder
 {
     internal const string C_SCHEMA = "inno-script-documentation/2";
 
-    internal sealed record Inputs(
-        string identity,
-        IReadOnlyDictionary<string, byte[]?> documents
-    );
-
     internal static Inputs Capture(IReadOnlyList<ScriptApiTypeExport> exports)
     {
         var documents = new Dictionary<string, byte[]?>(StringComparer.Ordinal);
@@ -236,4 +231,9 @@ internal static class ScriptApiDocumentationBuilder
             )
             .Where(static replacement => !string.Equals(replacement.source, replacement.target, StringComparison.Ordinal))
             .ToArray();
+
+    internal sealed record Inputs(
+        string identity,
+        IReadOnlyDictionary<string, byte[]?> documents
+    );
 }

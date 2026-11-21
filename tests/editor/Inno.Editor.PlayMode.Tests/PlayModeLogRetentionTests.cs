@@ -187,14 +187,6 @@ public sealed class PlayModeLogRetentionTests : IDisposable
 
     private sealed class FakePlayMode : IEditorPlayMode
     {
-        public EditorPlayModeState state { get; private set; }
-
-        public bool isPlaying => state == EditorPlayModeState.Playing;
-
-        public string? lastFailure => null;
-
-        public LogSessionId activeSessionId { get; private set; }
-
         private readonly EventDispatcher m_stateDispatcher = new();
         private readonly EventHub m_stateEvents;
 
@@ -203,13 +195,16 @@ public sealed class PlayModeLogRetentionTests : IDisposable
             m_stateEvents = m_stateDispatcher.CreateHub();
         }
 
+        public EditorPlayModeState state { get; private set; }
+
+        public bool isPlaying => state == EditorPlayModeState.Playing;
+
+        public string? lastFailure => null;
+
+        public LogSessionId activeSessionId { get; private set; }
+
         public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener)
             => m_stateEvents.Listen<StateNotification>(notification => listener(notification.state));
-
-        private sealed class StateNotification(EditorPlayModeState state) : Event
-        {
-            internal EditorPlayModeState state { get; } = state;
-        }
 
         public bool EnterPlayMode() => false;
 
@@ -232,6 +227,11 @@ public sealed class PlayModeLogRetentionTests : IDisposable
         {
             state = value;
             m_stateDispatcher.Emit(new StateNotification(value));
+        }
+
+        private sealed class StateNotification(EditorPlayModeState state) : Event
+        {
+            internal EditorPlayModeState state { get; } = state;
         }
     }
 }

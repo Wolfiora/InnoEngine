@@ -59,88 +59,6 @@ internal sealed class EditorSettingValue : ISerializable
     [SerializableProperty]
     internal bool[] stringArrayNulls = [];
 
-    internal static EditorSettingValue Create<T>(T value)
-    {
-        Type type = typeof(T);
-        if (type == typeof(bool))
-        {
-            return new EditorSettingValue { kind = EditorSettingValueKind.Boolean, booleanValue = (bool)(object)value! };
-        }
-        if (type == typeof(int))
-        {
-            return new EditorSettingValue { kind = EditorSettingValueKind.Int32, int32Value = (int)(object)value! };
-        }
-        if (type == typeof(uint))
-        {
-            return new EditorSettingValue { kind = EditorSettingValueKind.UInt32, uint32Value = (uint)(object)value! };
-        }
-        if (type == typeof(long))
-        {
-            return new EditorSettingValue { kind = EditorSettingValueKind.Int64, int64Value = (long)(object)value! };
-        }
-        if (type == typeof(ulong))
-        {
-            return new EditorSettingValue { kind = EditorSettingValueKind.UInt64, uint64Value = (ulong)(object)value! };
-        }
-        if (type == typeof(float))
-        {
-            return new EditorSettingValue { kind = EditorSettingValueKind.Single, singleValue = (float)(object)value! };
-        }
-        if (type == typeof(double))
-        {
-            return new EditorSettingValue { kind = EditorSettingValueKind.Double, doubleValue = (double)(object)value! };
-        }
-        if (type == typeof(string))
-        {
-            string? text = (string?)(object?)value;
-            return new EditorSettingValue
-            {
-                kind = EditorSettingValueKind.String,
-                hasStringValue = text is not null,
-                stringValue = text ?? string.Empty
-            };
-        }
-        if (type == typeof(bool[]))
-        {
-            return new EditorSettingValue { kind = EditorSettingValueKind.BooleanArray, booleanArrayValue = Clone((bool[])(object)value!) };
-        }
-        if (type == typeof(int[]))
-        {
-            return new EditorSettingValue { kind = EditorSettingValueKind.Int32Array, int32ArrayValue = Clone((int[])(object)value!) };
-        }
-        if (type == typeof(uint[]))
-        {
-            return new EditorSettingValue { kind = EditorSettingValueKind.UInt32Array, uint32ArrayValue = Clone((uint[])(object)value!) };
-        }
-        if (type == typeof(float[]))
-        {
-            return new EditorSettingValue { kind = EditorSettingValueKind.SingleArray, singleArrayValue = Clone((float[])(object)value!) };
-        }
-        if (type == typeof(double[]))
-        {
-            return new EditorSettingValue { kind = EditorSettingValueKind.DoubleArray, doubleArrayValue = Clone((double[])(object)value!) };
-        }
-        if (type == typeof(string[]))
-        {
-            string?[] source = (string?[])(object)value!;
-            var values = new string[source.Length];
-            var nulls = new bool[source.Length];
-            for (int i = 0; i < source.Length; i++)
-            {
-                nulls[i] = source[i] is null;
-                values[i] = source[i] ?? string.Empty;
-            }
-            return new EditorSettingValue
-            {
-                kind = EditorSettingValueKind.StringArray,
-                stringArrayValue = values,
-                stringArrayNulls = nulls
-            };
-        }
-
-        throw new NotSupportedException($"Editor Settings values do not support '{type.FullName}'.");
-    }
-
     internal T Read<T>(
         T defaultValue,
         string propertyName
@@ -296,6 +214,98 @@ internal sealed class EditorSettingValue : ISerializable
         }
     }
 
+    internal static EditorSettingValue Create<T>(T value)
+    {
+        Type type = typeof(T);
+        if (type == typeof(bool))
+        {
+            return new EditorSettingValue { kind = EditorSettingValueKind.Boolean, booleanValue = (bool)(object)value! };
+        }
+        if (type == typeof(int))
+        {
+            return new EditorSettingValue { kind = EditorSettingValueKind.Int32, int32Value = (int)(object)value! };
+        }
+        if (type == typeof(uint))
+        {
+            return new EditorSettingValue { kind = EditorSettingValueKind.UInt32, uint32Value = (uint)(object)value! };
+        }
+        if (type == typeof(long))
+        {
+            return new EditorSettingValue { kind = EditorSettingValueKind.Int64, int64Value = (long)(object)value! };
+        }
+        if (type == typeof(ulong))
+        {
+            return new EditorSettingValue { kind = EditorSettingValueKind.UInt64, uint64Value = (ulong)(object)value! };
+        }
+        if (type == typeof(float))
+        {
+            return new EditorSettingValue { kind = EditorSettingValueKind.Single, singleValue = (float)(object)value! };
+        }
+        if (type == typeof(double))
+        {
+            return new EditorSettingValue { kind = EditorSettingValueKind.Double, doubleValue = (double)(object)value! };
+        }
+        if (type == typeof(string))
+        {
+            string? text = (string?)(object?)value;
+            return new EditorSettingValue
+            {
+                kind = EditorSettingValueKind.String,
+                hasStringValue = text is not null,
+                stringValue = text ?? string.Empty
+            };
+        }
+        if (type == typeof(bool[]))
+        {
+            return new EditorSettingValue { kind = EditorSettingValueKind.BooleanArray, booleanArrayValue = Clone((bool[])(object)value!) };
+        }
+        if (type == typeof(int[]))
+        {
+            return new EditorSettingValue { kind = EditorSettingValueKind.Int32Array, int32ArrayValue = Clone((int[])(object)value!) };
+        }
+        if (type == typeof(uint[]))
+        {
+            return new EditorSettingValue { kind = EditorSettingValueKind.UInt32Array, uint32ArrayValue = Clone((uint[])(object)value!) };
+        }
+        if (type == typeof(float[]))
+        {
+            return new EditorSettingValue { kind = EditorSettingValueKind.SingleArray, singleArrayValue = Clone((float[])(object)value!) };
+        }
+        if (type == typeof(double[]))
+        {
+            return new EditorSettingValue { kind = EditorSettingValueKind.DoubleArray, doubleArrayValue = Clone((double[])(object)value!) };
+        }
+        if (type == typeof(string[]))
+        {
+            string?[] source = (string?[])(object)value!;
+            var values = new string[source.Length];
+            var nulls = new bool[source.Length];
+            for (int i = 0; i < source.Length; i++)
+            {
+                nulls[i] = source[i] is null;
+                values[i] = source[i] ?? string.Empty;
+            }
+            return new EditorSettingValue
+            {
+                kind = EditorSettingValueKind.StringArray,
+                stringArrayValue = values,
+                stringArrayNulls = nulls
+            };
+        }
+
+        throw new NotSupportedException($"Editor Settings values do not support '{type.FullName}'.");
+    }
+
+    private string?[] ReadStringArray()
+    {
+        var result = new string?[stringArrayValue.Length];
+        for (int i = 0; i < result.Length; i++)
+        {
+            result[i] = stringArrayNulls[i] ? null : stringArrayValue[i];
+        }
+        return result;
+    }
+
     private static EditorSettingValueKind GetKind(Type type)
     {
         if (type == typeof(bool))
@@ -355,16 +365,6 @@ internal sealed class EditorSettingValue : ISerializable
             return EditorSettingValueKind.StringArray;
         }
         throw new NotSupportedException($"Editor Settings values do not support '{type.FullName}'.");
-    }
-
-    private string?[] ReadStringArray()
-    {
-        var result = new string?[stringArrayValue.Length];
-        for (int i = 0; i < result.Length; i++)
-        {
-            result[i] = stringArrayNulls[i] ? null : stringArrayValue[i];
-        }
-        return result;
     }
 
     private static T[] Clone<T>(T[] value)

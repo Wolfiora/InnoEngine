@@ -14,9 +14,11 @@ namespace Inno.Extensibility.Types;
 /// </summary>
 internal sealed class TypeIdentityRegistry
 {
+    private const string C_GENERATED_STABLE_TYPE_METADATA_KEY = "Inno.StableTypeId";
+
     // RFC 4122 DNS namespace UUID, used to build deterministic UUIDv5 for auto stable ids.
     private static readonly Guid C_STABLE_NAMESPACE_GUID = Guid.Parse("6ba7b810-9dad-11d1-80b4-00c04fd430c8");
-    private const string C_GENERATED_STABLE_TYPE_METADATA_KEY = "Inno.StableTypeId";
+
     private static int S_NEXT_RUNTIME_TYPE_ID;
 
     private readonly Lock m_sync = new();
@@ -260,6 +262,48 @@ internal sealed class TypeIdentityRegistry
     }
 
     /// <summary>
+    /// Attempts to resolve type without changing state when the operation cannot complete.
+    /// </summary>
+    /// <param name="typeRef">
+    /// The type ref consumed by try resolve type; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="type">
+    /// The type consumed by try resolve type; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    public bool TryResolveType(
+        TypeRef typeRef,
+        out Type? type
+    ) {
+        lock (m_sync)
+        {
+            if (typeRef.stableId == Guid.Empty)
+            {
+                type = null;
+                return false;
+            }
+            if (typeRef.runtimeId > 0
+                && m_typeByRuntime.TryGetValue(typeRef.runtimeId, out Type? runtimeType)
+                && m_stableByType.TryGetValue(runtimeType, out Guid runtimeStableId)
+                && runtimeStableId == typeRef.stableId
+            ) {
+                type = runtimeType;
+                return true;
+            }
+            if (m_typeByStable.TryGetValue(typeRef.stableId, out Type? stableType))
+            {
+                type = stableType;
+                return true;
+            }
+        }
+
+        type = null;
+        return false;
+    }
+
+    /// <summary>
     /// Attempts to get runtime type id without changing state when the operation cannot complete.
     /// </summary>
     /// <param name="type">
@@ -340,58 +384,6 @@ internal sealed class TypeIdentityRegistry
     }
 
     /// <summary>
-    /// Attempts to resolve type without changing state when the operation cannot complete.
-    /// </summary>
-    /// <param name="typeRef">
-    /// The type ref consumed by try resolve type; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <param name="type">
-    /// The type consumed by try resolve type; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public bool TryResolveType(
-        TypeRef typeRef,
-        out Type? type
-    ) {
-        lock (m_sync)
-        {
-            if (typeRef.stableId == Guid.Empty)
-            {
-                type = null;
-                return false;
-            }
-            if (typeRef.runtimeId > 0
-                && m_typeByRuntime.TryGetValue(typeRef.runtimeId, out Type? runtimeType)
-                && m_stableByType.TryGetValue(runtimeType, out Guid runtimeStableId)
-                && runtimeStableId == typeRef.stableId
-            ) {
-                type = runtimeType;
-                return true;
-            }
-            if (m_typeByStable.TryGetValue(typeRef.stableId, out Type? stableType))
-            {
-                type = stableType;
-                return true;
-            }
-        }
-
-        type = null;
-        return false;
-    }
-
-    private static int AllocateRuntimeTypeId()
-    {
-        int runtimeId = Interlocked.Increment(ref S_NEXT_RUNTIME_TYPE_ID);
-        if (runtimeId <= 0)
-        {
-            throw new InvalidOperationException("The process-wide runtime type identity space is exhausted.");
-        }
-        return runtimeId;
-    }
-
-    /// <summary>
     /// Retrieves the requested stable type map snapshot value from current authoritative state.
     /// </summary>
     /// <returns>
@@ -426,6 +418,16 @@ internal sealed class TypeIdentityRegistry
         string assemblyName = type.Assembly.GetName().Name ?? "UnknownAssembly";
         string typeName = type.FullName ?? type.Name;
         return $"{assemblyName}:{typeName}";
+    }
+
+    private static int AllocateRuntimeTypeId()
+    {
+        int runtimeId = Interlocked.Increment(ref S_NEXT_RUNTIME_TYPE_ID);
+        if (runtimeId <= 0)
+        {
+            throw new InvalidOperationException("The process-wide runtime type identity space is exhausted.");
+        }
+        return runtimeId;
     }
 
     private static Guid CreateDeterministicStableId(Type type)

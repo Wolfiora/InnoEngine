@@ -218,7 +218,7 @@ public sealed unsafe class ViewportRetirementTests
         public bool supportsViewports => true;
         public bool supportsVertexOffsets => false;
 
-        public void RenderMain(IntPtr drawData) {}
+        public void RenderMain(nint drawData) {}
 
         public void SynchronizeMainOutput(
             int pixelWidth,
@@ -238,7 +238,7 @@ public sealed unsafe class ViewportRetirementTests
 
         public void RenderViewport(
             PlatformImGuiViewportTarget target,
-            IntPtr drawData
+            nint drawData
         ) {}
 
         public void PresentViewport(PlatformImGuiViewportTarget target) {}

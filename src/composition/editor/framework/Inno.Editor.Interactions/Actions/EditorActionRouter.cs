@@ -305,6 +305,39 @@ internal sealed class EditorActionRouter(
         return false;
     }
 
+    internal IReadOnlyList<EditorMenuItem> BuildUnplacedCommands(
+        EditorActionContext context,
+        IReadOnlySet<string> placed
+    ) {
+        var result = new List<EditorMenuItem>();
+        foreach (string id in Index.Keys)
+        {
+            if (placed.Contains(id))
+            {
+                continue;
+            }
+            EditorActionState state = Query(id, context);
+            if (!state.isVisible)
+            {
+                continue;
+            }
+            string label = state.displayName ?? id;
+            result.Add(new EditorMenuItem(label, id, 0, false, state));
+        }
+
+        result.Sort(static (
+            left,
+            right
+        ) => StringComparer.OrdinalIgnoreCase.Compare(left.label, right.label));
+        return result;
+    }
+
+    private IReadOnlyDictionary<string, EditorExtensionCatalog.ActionRegistration[]> Index
+        => m_byId ??= catalog.extensions.actions.GroupBy(
+            static registration => registration.id,
+            StringComparer.Ordinal
+        ).ToDictionary(static group => group.Key, static group => group.ToArray(), StringComparer.Ordinal);
+
     private bool TryResolveShortcut(
         EditorExtensionCatalog.ActionRegistration? registration,
         string area,
@@ -386,39 +419,6 @@ internal sealed class EditorActionRouter(
         return best is null ? null : new ResolvedAction(best, bestDistance, best.area is not null);
     }
 
-    internal IReadOnlyList<EditorMenuItem> BuildUnplacedCommands(
-        EditorActionContext context,
-        IReadOnlySet<string> placed
-    ) {
-        var result = new List<EditorMenuItem>();
-        foreach (string id in Index.Keys)
-        {
-            if (placed.Contains(id))
-            {
-                continue;
-            }
-            EditorActionState state = Query(id, context);
-            if (!state.isVisible)
-            {
-                continue;
-            }
-            string label = state.displayName ?? id;
-            result.Add(new EditorMenuItem(label, id, 0, false, state));
-        }
-
-        result.Sort(static (
-            left,
-            right
-        ) => StringComparer.OrdinalIgnoreCase.Compare(left.label, right.label));
-        return result;
-    }
-
-    private IReadOnlyDictionary<string, EditorExtensionCatalog.ActionRegistration[]> Index
-        => m_byId ??= catalog.extensions.actions.GroupBy(
-            static registration => registration.id,
-            StringComparer.Ordinal
-        ).ToDictionary(static group => group.Key, static group => group.ToArray(), StringComparer.Ordinal);
-
     private HotKeyGesture CreateGesture(EditorShortcutAttribute shortcut)
         => shortcut.primary
            ? HotKeyGesture.Primary(shortcut.key, editor.keyboard, shortcut.modifiers)
@@ -447,20 +447,6 @@ internal sealed class EditorActionRouter(
         );
     }
 
-    private static bool HasExactShortcut(
-        EditorExtensionCatalog.ActionRegistration registration,
-        string area
-    ) {
-        foreach (EditorShortcutAttribute shortcut in registration.shortcuts)
-        {
-            if (!string.IsNullOrEmpty(shortcut.area) && string.Equals(shortcut.area, area, StringComparison.Ordinal))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void TryCancel(
         EditorAction action,
         string actionId,
@@ -474,6 +460,20 @@ internal sealed class EditorActionRouter(
         {
             log.Write(LogLevel.Error, "Editor action '{0}' failed during {1}: {2}", [actionId, phase, exception]);
         }
+    }
+
+    private static bool HasExactShortcut(
+        EditorExtensionCatalog.ActionRegistration registration,
+        string area
+    ) {
+        foreach (EditorShortcutAttribute shortcut in registration.shortcuts)
+        {
+            if (!string.IsNullOrEmpty(shortcut.area) && string.Equals(shortcut.area, area, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private sealed record PendingAction(

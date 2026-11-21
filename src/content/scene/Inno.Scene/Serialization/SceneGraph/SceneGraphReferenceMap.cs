@@ -22,6 +22,21 @@ internal sealed class SceneGraphReferenceMap : SceneReferenceScope
         m_sourceIdByObject = sourceIds;
     }
 
+    /// <inheritdoc/>
+    protected override bool TryGetSourceId(
+        EngineObject engineObject,
+        out Guid sourceId
+    ) {
+        sourceId = default;
+        return m_sourceIdByObject is not null && m_sourceIdByObject.TryGetValue(engineObject, out sourceId);
+    }
+
+    /// <inheritdoc/>
+    protected override bool TryResolve(
+        Guid sourceId,
+        out EngineObject? engineObject
+    ) => m_objectBySourceId.TryGetValue(sourceId, out engineObject);
+
     internal void Register(
         Guid sourceId,
         EngineObject engineObject
@@ -53,19 +68,4 @@ internal sealed class SceneGraphReferenceMap : SceneReferenceScope
            : throw new InvalidOperationException(
                $"Scene graph reference alias target '{sourceId}' could not be resolved."
            );
-
-    /// <inheritdoc/>
-    protected override bool TryGetSourceId(
-        EngineObject engineObject,
-        out Guid sourceId
-    ) {
-        sourceId = default;
-        return m_sourceIdByObject is not null && m_sourceIdByObject.TryGetValue(engineObject, out sourceId);
-    }
-
-    /// <inheritdoc/>
-    protected override bool TryResolve(
-        Guid sourceId,
-        out EngineObject? engineObject
-    ) => m_objectBySourceId.TryGetValue(sourceId, out engineObject);
 }

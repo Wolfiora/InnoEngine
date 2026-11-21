@@ -8,26 +8,6 @@ namespace Inno.Build.Managed;
 public readonly record struct ManagedDeploymentId
 {
     /// <summary>
-    /// Identifies the desktop CoreCLR publisher.
-    /// </summary>
-    public static ManagedDeploymentId coreClr { get; } = new("coreclr");
-
-    /// <summary>
-    /// Identifies the Mono WebAssembly interpreter publisher.
-    /// </summary>
-    public static ManagedDeploymentId monoWasm { get; } = new("mono-wasm");
-
-    /// <summary>
-    /// Identifies the Mono WebAssembly ahead-of-time publisher.
-    /// </summary>
-    public static ManagedDeploymentId monoWasmAot { get; } = new("mono-wasm-aot");
-
-    /// <summary>
-    /// Identifies the .NET NativeAOT publisher.
-    /// </summary>
-    public static ManagedDeploymentId nativeAot { get; } = new("nativeaot");
-
-    /// <summary>
     /// Validates a stable portable provider identity.
     /// </summary>
     /// <param name="value">
@@ -48,6 +28,26 @@ public readonly record struct ManagedDeploymentId
         }
         this.value = value;
     }
+
+    /// <summary>
+    /// Identifies the desktop CoreCLR publisher.
+    /// </summary>
+    public static ManagedDeploymentId coreClr { get; } = new("coreclr");
+
+    /// <summary>
+    /// Identifies the Mono WebAssembly interpreter publisher.
+    /// </summary>
+    public static ManagedDeploymentId monoWasm { get; } = new("mono-wasm");
+
+    /// <summary>
+    /// Identifies the Mono WebAssembly ahead-of-time publisher.
+    /// </summary>
+    public static ManagedDeploymentId monoWasmAot { get; } = new("mono-wasm-aot");
+
+    /// <summary>
+    /// Identifies the .NET NativeAOT publisher.
+    /// </summary>
+    public static ManagedDeploymentId nativeAot { get; } = new("nativeaot");
 
     /// <summary>
     /// Gets the exact stable provider identity.

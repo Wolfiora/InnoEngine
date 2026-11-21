@@ -34,7 +34,6 @@ namespace Inno.Editor.Panel.SceneView;
 [EditorPanel("rendering.scene-view", "Scene", order: 210, menuPath: "Viewports")]
 internal sealed class SceneViewPanel : EditorPanel
 {
-    private IDisposable? m_settingsSubscription;
     private const string C_VIEWPORT_ID = "scene-view";
     private const string C_GIZMO_CLUSTER_POPUP = "##scene-gizmo-cluster";
     private const int C_MANIPULATION_TOOL_COUNT = 4;
@@ -47,9 +46,10 @@ internal sealed class SceneViewPanel : EditorPanel
     private readonly IEditorGameScenePresentation m_scenePresentation;
     private readonly EditorPlayModeLoop m_playModeLoop;
     private readonly EditorSettings m_settings;
+    private readonly EditorPlanarNavigation m_planarNavigation = new();
+    private IDisposable? m_settingsSubscription;
     private Vector4 m_backgroundColor;
     private NavigationDrag m_navigationDrag;
-    private readonly EditorPlanarNavigation m_planarNavigation = new();
     private ImGuiMouseButton m_navigationDragButton;
     private ImGuizmoOperation m_operation = ImGuizmoOperation.Translate;
     private ImGuizmoMode m_mode = ImGuizmoMode.World;
@@ -410,15 +410,6 @@ internal sealed class SceneViewPanel : EditorPanel
         Ui.EndPopup();
     }
 
-    private static string GizmoIconGlyph(string iconId)
-        => iconId switch
-    {
-        "camera" => ImGuiIcon.Camera,
-        "light" => ImGuiIcon.Lightbulb,
-        "canvas" => ImGuiIcon.VectorSquare,
-        _ => ImGuiIcon.CircleQuestion
-    };
-
     private bool HandleNavigation(
         EditorViewportNavigationProfile profile,
         bool hovered,
@@ -521,6 +512,287 @@ internal sealed class SceneViewPanel : EditorPanel
 
         return ownsPointer;
     }
+
+    private void DrawUnavailable(
+        Vector2 size,
+        string message
+    ) {
+        Vector2 minimum = Ui.GetCursorScreenPosition();
+        Vector2 maximum = minimum + size;
+        EditorDrawList drawList = Ui.GetDrawList();
+        Ui.DrawFilledRectangle(minimum, maximum, Ui.ToPackedColor(m_backgroundColor), 0);
+        Ui.PushStyleColor(ImGuiCol.Text, EditorPalette.textDisabled);
+        try
+        {
+            EditorUI.current.widgets.CenteredWrappedText(message, size, S_UNAVAILABLE_PADDING);
+        }
+        finally
+        {
+            Ui.PopStyleColor();
+        }
+    }
+
+    private bool DrawManipulationToolbar(ManipulationToolbarLayout layout)
+    {
+        EditorDrawList drawList = Ui.GetDrawList();
+        Vector4 background = EditorPalette.targetHeader;
+        background.W = EditorPalette.opacityMedium;
+        Ui.DrawFilledRectangle(layout.minimum, layout.maximum, Ui.ToPackedColor(background), EditorUI.current.widgets.style.frameRounding);
+        float itemX = layout.minimum.X + layout.padding;
+        float itemY = layout.minimum.Y + layout.padding;
+        try
+        {
+            if (DrawManipulationTool(
+                "move",
+                ImGuiIcon.UpDownLeftRight,
+                "Move",
+                new Vector2(itemX, itemY),
+                layout.itemSize,
+                m_operation == ImGuizmoOperation.Translate
+            )) {
+                m_operation = ImGuizmoOperation.Translate;
+            }
+
+            itemY += layout.itemSize.Y + layout.spacing;
+            if (DrawManipulationTool(
+                "rotate",
+                ImGuiIcon.Rotate,
+                "Rotate",
+                new Vector2(itemX, itemY),
+                layout.itemSize,
+                m_operation == ImGuizmoOperation.Rotate
+            )) {
+                m_operation = ImGuizmoOperation.Rotate;
+            }
+
+            itemY += layout.itemSize.Y + layout.spacing;
+            if (DrawManipulationTool(
+                "scale",
+                ImGuiIcon.UpRightAndDownLeftFromCenter,
+                "Scale",
+                new Vector2(itemX, itemY),
+                layout.itemSize,
+                m_operation == ImGuizmoOperation.Scale
+            )) {
+                m_operation = ImGuizmoOperation.Scale;
+            }
+
+            itemY += layout.itemSize.Y + layout.sectionSpacing;
+            float separatorY = itemY - layout.sectionSpacing * 0.5f;
+            Ui.DrawLine(
+                new Vector2(layout.minimum.X + layout.padding, separatorY),
+                new Vector2(layout.maximum.X - layout.padding, separatorY),
+                Ui.ToPackedColor(Vector4.One),
+                EditorUI.current.widgets.style.borderSize
+            );
+            bool supportsCoordinateSpace = m_operation != ImGuizmoOperation.Scale;
+            string modeIcon = supportsCoordinateSpace && m_mode == ImGuizmoMode.World ? ImGuiIcon.Globe : ImGuiIcon.Cube;
+            string modeTooltip = !supportsCoordinateSpace
+                ? "Coordinate Space: Local (Scale is always local)"
+                : m_mode == ImGuizmoMode.Local ? "Coordinate Space: Local (axes follow the selected transform)" : "Coordinate Space: World (axes follow the world)";
+            if (!supportsCoordinateSpace)
+            {
+                Ui.BeginDisabled(true);
+            }
+            bool toggleCoordinateSpace;
+            try
+            {
+                toggleCoordinateSpace = DrawManipulationTool(
+                    "coordinate_space",
+                    modeIcon,
+                    modeTooltip,
+                    new Vector2(itemX, itemY),
+                    layout.itemSize,
+                    selected: false
+                );
+            }
+            finally
+            {
+                if (!supportsCoordinateSpace)
+                {
+                    Ui.EndDisabled();
+                }
+            }
+
+            if (!supportsCoordinateSpace
+                && Ui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)
+                && EditorUI.current.widgets.BeginMenuTooltip()
+            ) {
+                Ui.Text(modeTooltip);
+                EditorUI.current.widgets.EndMenuTooltip();
+            }
+
+            if (toggleCoordinateSpace && supportsCoordinateSpace)
+            {
+                m_mode = m_mode == ImGuizmoMode.Local ? ImGuizmoMode.World : ImGuizmoMode.Local;
+            }
+        }
+        finally
+        {
+            Ui.SetCursorScreenPosition(layout.viewportMaximum);
+            Ui.Dummy(Vector2.Zero);
+        }
+
+        return IsManipulationToolbarHovered(layout);
+    }
+
+    private bool DrawTransformGizmo(
+        Vector2 minimum,
+        Vector2 maximum,
+        bool canInteract
+    ) {
+        if (!m_rendering.TryGetManipulationSpace(C_VIEWPORT_ID, out EditorViewportManipulationSpace manipulationSpace)
+            || !TryGetSelectedTransform(out Transform? selected)
+        ) {
+            return false;
+        }
+
+        if (m_gestureTarget is not null && !EditorUI.current.widgets.IsEditing(C_TRANSFORM_EDIT))
+        {
+            m_gestureTarget = null;
+            m_gestureTargets = [];
+        }
+
+        Transform target = m_gestureTarget is RuntimeIdentity identity
+                           && m_interactions.TryResolveIdentity(identity, out IdentityObject? resolved)
+                           && resolved is Transform active ? active : selected!;
+        EngineMatrix world = target.localToWorldMatrix;
+        ImGuizmoOperation operation = SelectManipulationOperation(manipulationSpace.plane, m_operation);
+        bool planarTranslation = manipulationSpace.plane != EditorViewportManipulationPlane.Spatial
+                                 && m_operation == ImGuizmoOperation.Translate;
+        TransformGizmoResult result = EditorUI.current.widgets.TransformGizmo(
+            world,
+            new TransformGizmoOptions
+            {
+                minimum = minimum,
+                maximum = maximum,
+                view = manipulationSpace.viewMatrix,
+                projection = manipulationSpace.projectionMatrix,
+                orthographic = manipulationSpace.isOrthographic,
+                enabled = canInteract || m_gestureTarget is not null,
+                operation = operation,
+                space = m_operation == ImGuizmoOperation.Scale ? ImGuizmoMode.Local : m_mode,
+                maskX = planarTranslation && manipulationSpace.plane == EditorViewportManipulationPlane.YZ,
+                maskY = planarTranslation && manipulationSpace.plane == EditorViewportManipulationPlane.XZ,
+                maskZ = planarTranslation && manipulationSpace.plane == EditorViewportManipulationPlane.XY
+            }
+        );
+        if (Ui.IsKeyPressed(ImGuiKey.Escape, false) && m_gestureTarget is not null)
+        {
+            EditorUI.current.widgets.CancelEdits();
+            m_gestureTarget = null;
+            m_gestureTargets = [];
+            return true;
+        }
+
+        if (result.isUsing)
+        {
+            if (m_gestureTarget is null)
+            {
+                m_gestureTarget = target.identity.runtimeIdentity;
+                m_gestureTargets = SelectedTransforms().Select(value => value.identity.runtimeIdentity!.Value).ToArray();
+            }
+
+            EditorUI.current.widgets.BeginEdit(m_interactions.history, C_TRANSFORM_EDIT, "Transform Selection");
+        }
+
+        if (result.changed && m_gestureTargets.Length != 0)
+        {
+            try
+            {
+                EngineMatrix delta = result.matrix * EngineMatrix.Invert(world);
+                foreach (RuntimeIdentity current in m_gestureTargets)
+                {
+                    if (!m_interactions.TryResolveIdentity(current, out IdentityObject? value) || value is not Transform transform)
+                    {
+                        throw new InvalidOperationException("A transform gesture target is no longer available.");
+                    }
+                    EngineMatrix next = delta * transform.localToWorldMatrix;
+                    if (!TryReadManipulatedTransform(
+                        next,
+                        transform,
+                        m_operation,
+                        out EngineVector3 position,
+                        out EngineQuaternion rotation,
+                        out EngineVector3 scale
+                    )
+                        || !IsUsable(position, rotation, scale)
+                    ) {
+                        throw new InvalidOperationException("The manipulated transform is not invertible or finite.");
+                    }
+                    _ = m_sceneEdits.ChangeProperty(
+                        transform,
+                        nameof(Transform.localPosition),
+                        () => transform.SetWorldTransform(position, rotation, scale),
+                        "Transform Selection",
+                        EditorUI.current.widgets.editMergeKey
+                    );
+                }
+            }
+            catch
+            {
+                EditorUI.current.widgets.CancelEdits();
+                m_gestureTarget = null;
+                m_gestureTargets = [];
+                throw;
+            }
+        }
+
+        if (!result.isUsing && m_gestureTarget is not null)
+        {
+            CommitGesture();
+        }
+        return result.isUsing || result.isOver;
+    }
+
+    private Transform[] SelectedTransforms()
+    {
+        var selected = new List<EngineObject>();
+        m_interactions.selection.CopyTargets(selected);
+        Transform[] transforms = selected.Select(value => value switch
+        {
+            GameObject gameObject => gameObject.transform,
+            GameComponent component => component.transform,
+            _ => null
+        }).OfType<Transform>().Distinct().ToArray();
+        HashSet<Transform> set = transforms.ToHashSet();
+        return transforms.Where(value => !HasSelectedAncestor(value, set)).ToArray();
+    }
+
+    private bool TryGetSelectedTransform(out Transform? transform)
+    {
+        transform = m_interactions.selection.selectedTarget switch
+        {
+            GameObject gameObject when !gameObject.isDestroyed => gameObject.transform,
+            Transform selectedTransform when !selectedTransform.isDestroyed => selectedTransform,
+            GameComponent component when !component.isDestroyed => component.transform,
+            _ => null
+        };
+        return transform is not null && m_sceneEdits.CanEdit(transform);
+    }
+
+    private void CommitGesture()
+    {
+        if (m_gestureTarget is null)
+        {
+            return;
+        }
+        if (EditorUI.current.widgets.IsEditing(C_TRANSFORM_EDIT))
+        {
+            EditorUI.current.widgets.CommitEdits();
+        }
+        m_gestureTarget = null;
+        m_gestureTargets = [];
+    }
+
+    private static string GizmoIconGlyph(string iconId)
+        => iconId switch
+    {
+        "camera" => ImGuiIcon.Camera,
+        "light" => ImGuiIcon.Lightbulb,
+        "canvas" => ImGuiIcon.VectorSquare,
+        _ => ImGuiIcon.CircleQuestion
+    };
 
     private static void Pan(
         EditorViewportNavigationState navigation,
@@ -715,130 +987,7 @@ internal sealed class SceneViewPanel : EditorPanel
         return EngineVector3.Transform(local, rotation);
     }
 
-    private void DrawUnavailable(
-        Vector2 size,
-        string message
-    ) {
-        Vector2 minimum = Ui.GetCursorScreenPosition();
-        Vector2 maximum = minimum + size;
-        EditorDrawList drawList = Ui.GetDrawList();
-        Ui.DrawFilledRectangle(minimum, maximum, Ui.ToPackedColor(m_backgroundColor), 0);
-        Ui.PushStyleColor(ImGuiCol.Text, EditorPalette.textDisabled);
-        try
-        {
-            EditorUI.current.widgets.CenteredWrappedText(message, size, S_UNAVAILABLE_PADDING);
-        }
-        finally
-        {
-            Ui.PopStyleColor();
-        }
-    }
-
     private static EngineColor ToEngineColor(Vector4 value) => new(value.X, value.Y, value.Z, value.W);
-
-    private bool DrawManipulationToolbar(ManipulationToolbarLayout layout)
-    {
-        EditorDrawList drawList = Ui.GetDrawList();
-        Vector4 background = EditorPalette.targetHeader;
-        background.W = EditorPalette.opacityMedium;
-        Ui.DrawFilledRectangle(layout.minimum, layout.maximum, Ui.ToPackedColor(background), EditorUI.current.widgets.style.frameRounding);
-        float itemX = layout.minimum.X + layout.padding;
-        float itemY = layout.minimum.Y + layout.padding;
-        try
-        {
-            if (DrawManipulationTool(
-                "move",
-                ImGuiIcon.UpDownLeftRight,
-                "Move",
-                new Vector2(itemX, itemY),
-                layout.itemSize,
-                m_operation == ImGuizmoOperation.Translate
-            )) {
-                m_operation = ImGuizmoOperation.Translate;
-            }
-
-            itemY += layout.itemSize.Y + layout.spacing;
-            if (DrawManipulationTool(
-                "rotate",
-                ImGuiIcon.Rotate,
-                "Rotate",
-                new Vector2(itemX, itemY),
-                layout.itemSize,
-                m_operation == ImGuizmoOperation.Rotate
-            )) {
-                m_operation = ImGuizmoOperation.Rotate;
-            }
-
-            itemY += layout.itemSize.Y + layout.spacing;
-            if (DrawManipulationTool(
-                "scale",
-                ImGuiIcon.UpRightAndDownLeftFromCenter,
-                "Scale",
-                new Vector2(itemX, itemY),
-                layout.itemSize,
-                m_operation == ImGuizmoOperation.Scale
-            )) {
-                m_operation = ImGuizmoOperation.Scale;
-            }
-
-            itemY += layout.itemSize.Y + layout.sectionSpacing;
-            float separatorY = itemY - layout.sectionSpacing * 0.5f;
-            Ui.DrawLine(
-                new Vector2(layout.minimum.X + layout.padding, separatorY),
-                new Vector2(layout.maximum.X - layout.padding, separatorY),
-                Ui.ToPackedColor(Vector4.One),
-                EditorUI.current.widgets.style.borderSize
-            );
-            bool supportsCoordinateSpace = m_operation != ImGuizmoOperation.Scale;
-            string modeIcon = supportsCoordinateSpace && m_mode == ImGuizmoMode.World ? ImGuiIcon.Globe : ImGuiIcon.Cube;
-            string modeTooltip = !supportsCoordinateSpace
-                ? "Coordinate Space: Local (Scale is always local)"
-                : m_mode == ImGuizmoMode.Local ? "Coordinate Space: Local (axes follow the selected transform)" : "Coordinate Space: World (axes follow the world)";
-            if (!supportsCoordinateSpace)
-            {
-                Ui.BeginDisabled(true);
-            }
-            bool toggleCoordinateSpace;
-            try
-            {
-                toggleCoordinateSpace = DrawManipulationTool(
-                    "coordinate_space",
-                    modeIcon,
-                    modeTooltip,
-                    new Vector2(itemX, itemY),
-                    layout.itemSize,
-                    selected: false
-                );
-            }
-            finally
-            {
-                if (!supportsCoordinateSpace)
-                {
-                    Ui.EndDisabled();
-                }
-            }
-
-            if (!supportsCoordinateSpace
-                && Ui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)
-                && EditorUI.current.widgets.BeginMenuTooltip()
-            ) {
-                Ui.Text(modeTooltip);
-                EditorUI.current.widgets.EndMenuTooltip();
-            }
-
-            if (toggleCoordinateSpace && supportsCoordinateSpace)
-            {
-                m_mode = m_mode == ImGuizmoMode.Local ? ImGuizmoMode.World : ImGuizmoMode.Local;
-            }
-        }
-        finally
-        {
-            Ui.SetCursorScreenPosition(layout.viewportMaximum);
-            Ui.Dummy(Vector2.Zero);
-        }
-
-        return IsManipulationToolbarHovered(layout);
-    }
 
     private static bool DrawManipulationTool(
         string id,
@@ -912,129 +1061,6 @@ internal sealed class SceneViewPanel : EditorPanel
     private static bool IsManipulationToolbarHovered(ManipulationToolbarLayout layout)
         => Ui.IsWindowHovered(ImGuiHoveredFlags.RootAndChildWindows)
            && Ui.IsMouseHoveringRect(layout.minimum, layout.maximum);
-
-    private bool DrawTransformGizmo(
-        Vector2 minimum,
-        Vector2 maximum,
-        bool canInteract
-    ) {
-        if (!m_rendering.TryGetManipulationSpace(C_VIEWPORT_ID, out EditorViewportManipulationSpace manipulationSpace)
-            || !TryGetSelectedTransform(out Transform? selected)
-        ) {
-            return false;
-        }
-
-        if (m_gestureTarget is not null && !EditorUI.current.widgets.IsEditing(C_TRANSFORM_EDIT))
-        {
-            m_gestureTarget = null;
-            m_gestureTargets = [];
-        }
-
-        Transform target = m_gestureTarget is RuntimeIdentity identity
-                           && m_interactions.TryResolveIdentity(identity, out IdentityObject? resolved)
-                           && resolved is Transform active ? active : selected!;
-        EngineMatrix world = target.localToWorldMatrix;
-        ImGuizmoOperation operation = SelectManipulationOperation(manipulationSpace.plane, m_operation);
-        bool planarTranslation = manipulationSpace.plane != EditorViewportManipulationPlane.Spatial
-                                 && m_operation == ImGuizmoOperation.Translate;
-        TransformGizmoResult result = EditorUI.current.widgets.TransformGizmo(
-            world,
-            new TransformGizmoOptions
-            {
-                minimum = minimum,
-                maximum = maximum,
-                view = manipulationSpace.viewMatrix,
-                projection = manipulationSpace.projectionMatrix,
-                orthographic = manipulationSpace.isOrthographic,
-                enabled = canInteract || m_gestureTarget is not null,
-                operation = operation,
-                space = m_operation == ImGuizmoOperation.Scale ? ImGuizmoMode.Local : m_mode,
-                maskX = planarTranslation && manipulationSpace.plane == EditorViewportManipulationPlane.YZ,
-                maskY = planarTranslation && manipulationSpace.plane == EditorViewportManipulationPlane.XZ,
-                maskZ = planarTranslation && manipulationSpace.plane == EditorViewportManipulationPlane.XY
-            }
-        );
-        if (Ui.IsKeyPressed(ImGuiKey.Escape, false) && m_gestureTarget is not null)
-        {
-            EditorUI.current.widgets.CancelEdits();
-            m_gestureTarget = null;
-            m_gestureTargets = [];
-            return true;
-        }
-
-        if (result.isUsing)
-        {
-            if (m_gestureTarget is null)
-            {
-                m_gestureTarget = target.identity.runtimeIdentity;
-                m_gestureTargets = SelectedTransforms().Select(value => value.identity.runtimeIdentity!.Value).ToArray();
-            }
-
-            EditorUI.current.widgets.BeginEdit(m_interactions.history, C_TRANSFORM_EDIT, "Transform Selection");
-        }
-
-        if (result.changed && m_gestureTargets.Length != 0)
-        {
-            try
-            {
-                EngineMatrix delta = result.matrix * EngineMatrix.Invert(world);
-                foreach (RuntimeIdentity current in m_gestureTargets)
-                {
-                    if (!m_interactions.TryResolveIdentity(current, out IdentityObject? value) || value is not Transform transform)
-                    {
-                        throw new InvalidOperationException("A transform gesture target is no longer available.");
-                    }
-                    EngineMatrix next = delta * transform.localToWorldMatrix;
-                    if (!TryReadManipulatedTransform(
-                        next,
-                        transform,
-                        m_operation,
-                        out EngineVector3 position,
-                        out EngineQuaternion rotation,
-                        out EngineVector3 scale
-                    )
-                        || !IsUsable(position, rotation, scale)
-                    ) {
-                        throw new InvalidOperationException("The manipulated transform is not invertible or finite.");
-                    }
-                    _ = m_sceneEdits.ChangeProperty(
-                        transform,
-                        nameof(Transform.localPosition),
-                        () => transform.SetWorldTransform(position, rotation, scale),
-                        "Transform Selection",
-                        EditorUI.current.widgets.editMergeKey
-                    );
-                }
-            }
-            catch
-            {
-                EditorUI.current.widgets.CancelEdits();
-                m_gestureTarget = null;
-                m_gestureTargets = [];
-                throw;
-            }
-        }
-
-        if (!result.isUsing && m_gestureTarget is not null)
-        {
-            CommitGesture();
-        }
-        return result.isUsing || result.isOver;
-    }
-
-    private Transform[] SelectedTransforms()
-    {
-        var selected = new List<EngineObject>();
-        m_interactions.selection.CopyTargets(selected);
-        Transform[] transforms = selected.Select(value => value switch
-        {
-            GameObject gameObject => gameObject.transform,
-            GameComponent component => component.transform,
-            _ => null
-        }).OfType<Transform>().Distinct().ToArray();
-        HashSet<Transform> set = transforms.ToHashSet();
-        return transforms.Where(value => !HasSelectedAncestor(value, set)).ToArray();
-    }
 
     private static bool HasSelectedAncestor(
         Transform transform,
@@ -1128,32 +1154,6 @@ internal sealed class SceneViewPanel : EditorPanel
     ) {
         float squaredLength = originalX * originalX + originalY * originalY + originalZ * originalZ;
         return squaredLength <= 0.0000000001f ? 1f : (originalX * changedX + originalY * changedY + originalZ * changedZ) / squaredLength;
-    }
-
-    private bool TryGetSelectedTransform(out Transform? transform)
-    {
-        transform = m_interactions.selection.selectedTarget switch
-        {
-            GameObject gameObject when !gameObject.isDestroyed => gameObject.transform,
-            Transform selectedTransform when !selectedTransform.isDestroyed => selectedTransform,
-            GameComponent component when !component.isDestroyed => component.transform,
-            _ => null
-        };
-        return transform is not null && m_sceneEdits.CanEdit(transform);
-    }
-
-    private void CommitGesture()
-    {
-        if (m_gestureTarget is null)
-        {
-            return;
-        }
-        if (EditorUI.current.widgets.IsEditing(C_TRANSFORM_EDIT))
-        {
-            EditorUI.current.widgets.CommitEdits();
-        }
-        m_gestureTarget = null;
-        m_gestureTargets = [];
     }
 
     private static bool IsUsable(

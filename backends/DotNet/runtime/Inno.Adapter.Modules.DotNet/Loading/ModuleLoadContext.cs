@@ -11,8 +11,8 @@ namespace Inno.Adapter.Modules.DotNet;
 internal sealed class ModuleLoadContext : AssemblyLoadContext
 {
     private readonly AssemblyDependencyResolver m_resolver;
-    private IReadOnlyDictionary<string, Assembly> m_sharedAssemblies;
     private readonly IReadOnlyDictionary<string, string> m_moduleAssemblyPaths;
+    private IReadOnlyDictionary<string, Assembly> m_sharedAssemblies;
 
     internal ModuleLoadContext(
         string name,
@@ -60,6 +60,21 @@ internal sealed class ModuleLoadContext : AssemblyLoadContext
         return null;
     }
 
+    /// <summary>
+    /// Loads a native dependency through the module's isolated resolution policy.
+    /// </summary>
+    /// <param name="unmanagedDllName">
+    /// The unmanaged dll name text validated by the load unmanaged dll operation.
+    /// </param>
+    /// <returns>
+    /// The validated int ptr that represents the completed operation.
+    /// </returns>
+    protected override nint LoadUnmanagedDll(string unmanagedDllName)
+    {
+        string? dependencyPath = m_resolver.ResolveUnmanagedDllToPath(unmanagedDllName);
+        return dependencyPath is null ? nint.Zero : LoadUnmanagedDllFromPath(dependencyPath);
+    }
+
     private static void ReleaseSharedAssemblies(AssemblyLoadContext context) =>
         // The runtime retains an unloading context until its loader allocator can retire. Keeping
         // another collectible assembly in this resolver can turn cross-context generic dependencies
@@ -85,20 +100,5 @@ internal sealed class ModuleLoadContext : AssemblyLoadContext
         throw new FileLoadException(
             $"Module dependency '{requested.FullName}' is incompatible with shared engine assembly '{shared.FullName}'."
         );
-    }
-
-    /// <summary>
-    /// Loads a native dependency through the module's isolated resolution policy.
-    /// </summary>
-    /// <param name="unmanagedDllName">
-    /// The unmanaged dll name text validated by the load unmanaged dll operation.
-    /// </param>
-    /// <returns>
-    /// The validated int ptr that represents the completed operation.
-    /// </returns>
-    protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
-    {
-        string? dependencyPath = m_resolver.ResolveUnmanagedDllToPath(unmanagedDllName);
-        return dependencyPath is null ? IntPtr.Zero : LoadUnmanagedDllFromPath(dependencyPath);
     }
 }

@@ -35,24 +35,22 @@ internal sealed class BindingGenerationPublication : IDisposable
         }
     }
 
+    /// <summary>
+    /// Releases unpublished staging directories without replacing completed output trees.
+    /// </summary>
+    public void Dispose()
+    {
+        if (!m_preserveRecovery)
+        {
+            m_owner.Dispose();
+        }
+    }
+
     internal string managedDestination { get; }
     internal string? nativeDestination { get; }
     internal string bgcsCandidate => Path.Combine(m_owner.directory, "Bgcs");
     internal string targetCandidate => m_candidates[managedDestination];
     internal IEnumerable<string> stagingPaths => m_candidates.Values;
-
-    internal static BindingGenerationPublication CreateTarget(
-        string workingRoot,
-        string destination,
-        CancellationToken cancellation
-    ) => new(workingRoot, destination, null, true, cancellation);
-
-    internal static BindingGenerationPublication CreateHost(
-        string workingRoot,
-        string managed,
-        string? native,
-        CancellationToken cancellation
-    ) => new(workingRoot, managed, native, false, cancellation);
 
     internal string GetHostCandidate(string destination) => m_candidates[destination];
 
@@ -127,14 +125,16 @@ internal sealed class BindingGenerationPublication : IDisposable
         }
     }
 
-    /// <summary>
-    /// Releases unpublished staging directories without replacing completed output trees.
-    /// </summary>
-    public void Dispose()
-    {
-        if (!m_preserveRecovery)
-        {
-            m_owner.Dispose();
-        }
-    }
+    internal static BindingGenerationPublication CreateTarget(
+        string workingRoot,
+        string destination,
+        CancellationToken cancellation
+    ) => new(workingRoot, destination, null, true, cancellation);
+
+    internal static BindingGenerationPublication CreateHost(
+        string workingRoot,
+        string managed,
+        string? native,
+        CancellationToken cancellation
+    ) => new(workingRoot, managed, native, false, cancellation);
 }

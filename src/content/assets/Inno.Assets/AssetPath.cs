@@ -10,11 +10,6 @@ namespace Inno.Assets;
 public record struct AssetSourceId
 {
     /// <summary>
-    /// Gets the writable project source identifier.
-    /// </summary>
-    public static AssetSourceId project => new("project");
-
-    /// <summary>
     /// Creates a globally stable source identifier.
     /// </summary>
     /// <param name="value">
@@ -36,6 +31,11 @@ public record struct AssetSourceId
         }
         this.value = normalized;
     }
+
+    /// <summary>
+    /// Gets the writable project source identifier.
+    /// </summary>
+    public static AssetSourceId project => new("project");
 
     /// <summary>
     /// Gets or sets the globally stable source value.
@@ -100,6 +100,17 @@ public record struct AssetPath
     public readonly bool isValid => source.isValid && localPath is not null;
 
     /// <summary>
+    /// Formats this value as a human-readable representation.
+    /// </summary>
+    /// <returns>
+    /// The human-readable representation of this value.
+    /// </returns>
+    public override readonly string ToString()
+        => source == AssetSourceId.project
+           ? localPath ?? string.Empty
+           : $"{source}{C_SOURCE_SEPARATOR}{localPath}";
+
+    /// <summary>
     /// Creates a path in the writable project source.
     /// </summary>
     /// <param name="localPath">
@@ -127,17 +138,6 @@ public record struct AssetPath
                ? Project(value)
                : new AssetPath(new AssetSourceId(value[..separator]), value[(separator + C_SOURCE_SEPARATOR.Length)..]);
     }
-
-    /// <summary>
-    /// Formats this value as a human-readable representation.
-    /// </summary>
-    /// <returns>
-    /// The human-readable representation of this value.
-    /// </returns>
-    public override readonly string ToString()
-        => source == AssetSourceId.project
-           ? localPath ?? string.Empty
-           : $"{source}{C_SOURCE_SEPARATOR}{localPath}";
 
     private static string NormalizeLocalPath(string value)
     {

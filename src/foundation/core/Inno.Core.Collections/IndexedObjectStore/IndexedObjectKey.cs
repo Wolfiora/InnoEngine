@@ -39,6 +39,16 @@ public readonly struct IndexedObjectKey<TKey>
     /// </summary>
     public readonly string name;
 
+    internal IndexedObjectKey(
+        WeakReference<IIndexedObjectStore> storeRef,
+        int id,
+        string name
+    ) {
+        this.storeRef = storeRef;
+        this.id = id;
+        this.name = name;
+    }
+
     /// <summary>
     /// Returns true if the store key is still valid in its owning store.
     /// </summary>
@@ -54,15 +64,5 @@ public readonly struct IndexedObjectKey<TKey>
 
             return store.IsValidKey(id, typeof(TKey));
         }
-    }
-
-    internal IndexedObjectKey(
-        WeakReference<IIndexedObjectStore> storeRef,
-        int id,
-        string name
-    ) {
-        this.storeRef = storeRef;
-        this.id = id;
-        this.name = name;
     }
 }

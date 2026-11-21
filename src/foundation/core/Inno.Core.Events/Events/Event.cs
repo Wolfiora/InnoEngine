@@ -8,11 +8,11 @@ namespace Inno.Core.Events;
 /// </summary>
 public abstract class Event
 {
-    private readonly Event m_consumptionOwner;
-    private int m_globalHandled;
-
     [ThreadStatic]
     private static HubFrameStack? t_hubFrames;
+
+    private readonly Event m_consumptionOwner;
+    private int m_globalHandled;
 
     /// <summary>
     /// Creates an event with an independent global consumption lifetime.

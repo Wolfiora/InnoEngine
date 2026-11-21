@@ -12,10 +12,12 @@ public sealed unsafe partial class Sdl3PlatformWindow
 {
     private readonly Action<Sdl3PlatformWindow> m_onDisposed;
     private readonly int m_ownerThreadId;
-    private SDLWindow* m_window;
     private readonly uint m_windowId;
     private readonly string m_title;
     private readonly bool m_ownsNativeWindow;
+    private readonly PlatformNativeHandles m_nativeHandles;
+    private readonly nint m_sdlWindowHandle;
+    private SDLWindow* m_window;
     private int m_width;
     private int m_height;
     private int m_pixelWidth;
@@ -24,12 +26,7 @@ public sealed unsafe partial class Sdl3PlatformWindow
     private bool m_isFocused;
     private bool m_hidden;
     private bool m_minimized;
-    private readonly PlatformNativeHandles m_nativeHandles;
-    private readonly nint m_sdlWindowHandle;
     private bool m_disposed;
-    internal SDLWindow* sdlWindow => m_window;
-    internal bool ownsNativeWindow => m_ownsNativeWindow;
-    internal bool isVisible => !m_hidden && !m_minimized;
 
     internal Sdl3PlatformWindow(
         SDLWindow* window,
@@ -62,6 +59,41 @@ public sealed unsafe partial class Sdl3PlatformWindow
         m_minimized = (flags & SDLWindowFlags.Minimized) != 0;
         m_nativeHandles = hostIntegration.ResolveNativeSurface(m_sdlWindowHandle);
     }
+
+    /// <summary>
+    /// Queues a close request for processing at the next platform safety point.
+    /// </summary>
+    public partial void RequestClose() => m_isClosed = true;
+
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public partial void Dispose()
+    {
+        if (Environment.CurrentManagedThreadId != m_ownerThreadId)
+        {
+            throw new InvalidOperationException("SDL window disposal must run on its owner thread.");
+        }
+        if (m_disposed)
+        {
+            return;
+        }
+
+        if (m_window is not null && m_ownsNativeWindow)
+        {
+            SDL.Raw.DestroyWindow(m_window);
+        }
+
+        m_window = null;
+        m_isClosed = true;
+        m_isFocused = false;
+        m_disposed = true;
+        m_onDisposed(this);
+    }
+
+    internal SDLWindow* sdlWindow => m_window;
+    internal bool ownsNativeWindow => m_ownsNativeWindow;
+    internal bool isVisible => !m_hidden && !m_minimized;
 
     internal void UpdateLogicalSize(
         int width,
@@ -114,36 +146,5 @@ public sealed unsafe partial class Sdl3PlatformWindow
             throw new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL_GetWindowSizeInPixels failed.");
         }
         UpdatePixelSize(pixelWidth, pixelHeight);
-    }
-
-    /// <summary>
-    /// Queues a close request for processing at the next platform safety point.
-    /// </summary>
-    public partial void RequestClose() => m_isClosed = true;
-
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public partial void Dispose()
-    {
-        if (Environment.CurrentManagedThreadId != m_ownerThreadId)
-        {
-            throw new InvalidOperationException("SDL window disposal must run on its owner thread.");
-        }
-        if (m_disposed)
-        {
-            return;
-        }
-
-        if (m_window is not null && m_ownsNativeWindow)
-        {
-            SDL.Raw.DestroyWindow(m_window);
-        }
-
-        m_window = null;
-        m_isClosed = true;
-        m_isFocused = false;
-        m_disposed = true;
-        m_onDisposed(this);
     }
 }

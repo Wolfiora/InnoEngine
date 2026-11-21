@@ -22,8 +22,8 @@ internal sealed class AssetReferencePropertyDrawer : IPropertyDrawer, IDisposabl
     private const nuint C_SEARCH_BUFFER_SIZE = 256;
     private readonly object m_sync = new();
     private readonly AssetPipeline m_assets;
-    private ConditionalWeakTable<Type, CandidatesBox> m_candidatesByType = new();
     private readonly Dictionary<string, string> m_searchByPath = new(StringComparer.Ordinal);
+    private ConditionalWeakTable<Type, CandidatesBox> m_candidatesByType = new();
 
     internal AssetReferencePropertyDrawer(AssetPipeline assets)
     {
@@ -161,8 +161,6 @@ internal sealed class AssetReferencePropertyDrawer : IPropertyDrawer, IDisposabl
         }
     }
 
-    private static Guid ReadPersistentId(object? reference) => reference is AssetObject asset ? asset.identity.persistentId : Guid.Empty;
-
     private void AssignAsset(
         PropertyDrawContext context,
         Type assetType,
@@ -183,6 +181,8 @@ internal sealed class AssetReferencePropertyDrawer : IPropertyDrawer, IDisposabl
             m_candidatesByType = new ConditionalWeakTable<Type, CandidatesBox>();
         }
     }
+
+    private static Guid ReadPersistentId(object? reference) => reference is AssetObject asset ? asset.identity.persistentId : Guid.Empty;
 
     private sealed record AssetCandidate(
         AssetPath assetPath,

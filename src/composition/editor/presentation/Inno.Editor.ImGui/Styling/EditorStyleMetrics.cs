@@ -61,92 +61,6 @@ public sealed class EditorStyleMetrics
     public float trendHeight => Scale(64f);
 
     /// <summary>
-    /// Requests comfortable or compact density without changing an active session frame.
-    /// </summary>
-    /// <param name="value">
-    /// <see langword="true"/> for compact density.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested density changed; owned drawing applies it at the next frame preparation.
-    /// </returns>
-    /// <exception cref="ObjectDisposedException">
-    /// The owning session has retired or is no longer available.
-    /// </exception>
-    /// <exception cref="InvalidOperationException">
-    /// The caller is not the owning session's thread.
-    /// </exception>
-    public bool SetCompactMode(bool value)
-    {
-        bool defer = ShouldDeferChanges();
-        bool changed = m_requestedCompactMode != value;
-        m_requestedCompactMode = value;
-        if (!defer)
-        {
-            CommitPending();
-        }
-        return changed;
-    }
-
-    /// <summary>
-    /// Requests a bounded zoom without changing metrics partway through an owned native frame.
-    /// </summary>
-    /// <param name="value">
-    /// The requested UI zoom multiplier.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested zoom changed; owned drawing applies it at the next frame preparation.
-    /// </returns>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name="value"/> is not finite.
-    /// </exception>
-    /// <exception cref="ObjectDisposedException">
-    /// The owning session has retired or is no longer available.
-    /// </exception>
-    /// <exception cref="InvalidOperationException">
-    /// The caller is not the owning session's thread.
-    /// </exception>
-    public bool SetZoom(float value)
-    {
-        if (!float.IsFinite(value))
-        {
-            throw new ArgumentOutOfRangeException(nameof(value), value, "UI zoom must be finite.");
-        }
-        bool defer = ShouldDeferChanges();
-        float clamped = Math.Clamp(value, C_MIN_ZOOM, C_MAX_ZOOM);
-        bool changed = MathF.Abs(m_requestedZoom - clamped) >= 0.0001f;
-        m_requestedZoom = clamped;
-        if (!defer)
-        {
-            CommitPending();
-        }
-        return changed;
-    }
-
-    /// <summary>
-    /// Increases editor UI zoom by one bounded increment.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when the requested zoom changed.
-    /// </returns>
-    public bool ZoomIn() => SetZoom(m_requestedZoom + C_ZOOM_STEP);
-
-    /// <summary>
-    /// Decreases editor UI zoom by one bounded increment.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when the requested zoom changed.
-    /// </returns>
-    public bool ZoomOut() => SetZoom(m_requestedZoom - C_ZOOM_STEP);
-
-    /// <summary>
-    /// Restores the baseline editor UI zoom.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when the requested zoom changed.
-    /// </returns>
-    public bool ResetZoom() => SetZoom(1f);
-
-    /// <summary>
     /// Gets global content scale.
     /// </summary>
     public float fontScale => Scale(m_compactMode ? 1.1f : 1.2f);
@@ -501,6 +415,92 @@ public sealed class EditorStyleMetrics
     /// Gets the vertical offset of text decorations from the baseline.
     /// </summary>
     public float textDecorationOffset => Scale(2f);
+
+    /// <summary>
+    /// Requests comfortable or compact density without changing an active session frame.
+    /// </summary>
+    /// <param name="value">
+    /// <see langword="true"/> for compact density.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested density changed; owned drawing applies it at the next frame preparation.
+    /// </returns>
+    /// <exception cref="ObjectDisposedException">
+    /// The owning session has retired or is no longer available.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The caller is not the owning session's thread.
+    /// </exception>
+    public bool SetCompactMode(bool value)
+    {
+        bool defer = ShouldDeferChanges();
+        bool changed = m_requestedCompactMode != value;
+        m_requestedCompactMode = value;
+        if (!defer)
+        {
+            CommitPending();
+        }
+        return changed;
+    }
+
+    /// <summary>
+    /// Requests a bounded zoom without changing metrics partway through an owned native frame.
+    /// </summary>
+    /// <param name="value">
+    /// The requested UI zoom multiplier.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested zoom changed; owned drawing applies it at the next frame preparation.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="value"/> is not finite.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// The owning session has retired or is no longer available.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The caller is not the owning session's thread.
+    /// </exception>
+    public bool SetZoom(float value)
+    {
+        if (!float.IsFinite(value))
+        {
+            throw new ArgumentOutOfRangeException(nameof(value), value, "UI zoom must be finite.");
+        }
+        bool defer = ShouldDeferChanges();
+        float clamped = Math.Clamp(value, C_MIN_ZOOM, C_MAX_ZOOM);
+        bool changed = MathF.Abs(m_requestedZoom - clamped) >= 0.0001f;
+        m_requestedZoom = clamped;
+        if (!defer)
+        {
+            CommitPending();
+        }
+        return changed;
+    }
+
+    /// <summary>
+    /// Increases editor UI zoom by one bounded increment.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> when the requested zoom changed.
+    /// </returns>
+    public bool ZoomIn() => SetZoom(m_requestedZoom + C_ZOOM_STEP);
+
+    /// <summary>
+    /// Decreases editor UI zoom by one bounded increment.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> when the requested zoom changed.
+    /// </returns>
+    public bool ZoomOut() => SetZoom(m_requestedZoom - C_ZOOM_STEP);
+
+    /// <summary>
+    /// Restores the baseline editor UI zoom.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> when the requested zoom changed.
+    /// </returns>
+    public bool ResetZoom() => SetZoom(1f);
 
     internal void CommitPending()
     {

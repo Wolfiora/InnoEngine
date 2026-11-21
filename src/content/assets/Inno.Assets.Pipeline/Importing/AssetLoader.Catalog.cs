@@ -90,20 +90,6 @@ public sealed partial class AssetLoader
         });
     }
 
-    internal void PromoteCatalogTo(string destinationLibraryRoot)
-        => Execute(() =>
-        {
-            if (m_sourceMetadataStage is not null)
-            {
-                m_sourceMetadataStage.Commit(() => m_catalog.PromoteTo(destinationLibraryRoot));
-                m_sourceMetadataStage = null;
-            }
-            else
-            {
-                m_catalog.PromoteTo(destinationLibraryRoot);
-            }
-        });
-
     /// <summary>
     /// Tries to get a catalog snapshot by isolated source path.
     /// </summary>
@@ -220,6 +206,20 @@ public sealed partial class AssetLoader
             .OrderBy(static path => path.source.value, StringComparer.Ordinal)
             .ThenBy(static path => path.localPath, StringComparer.Ordinal)
             .ToArray());
+
+    internal void PromoteCatalogTo(string destinationLibraryRoot)
+        => Execute(() =>
+        {
+            if (m_sourceMetadataStage is not null)
+            {
+                m_sourceMetadataStage.Commit(() => m_catalog.PromoteTo(destinationLibraryRoot));
+                m_sourceMetadataStage = null;
+            }
+            else
+            {
+                m_catalog.PromoteTo(destinationLibraryRoot);
+            }
+        });
 
     private void LoadCatalogLocked()
     {

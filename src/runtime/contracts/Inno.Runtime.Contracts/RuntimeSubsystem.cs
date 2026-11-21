@@ -25,11 +25,6 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
     public bool isStarted => m_started && !m_disposed && !m_stopping;
 
     /// <summary>
-    /// Gets resources and cancellation owned exclusively by this subsystem.
-    /// </summary>
-    protected LifetimeScope lifetime => m_lifetime;
-
-    /// <summary>
     /// Acquires session resources after every dependency has attached.
     /// </summary>
     /// <exception cref="InvalidOperationException">
@@ -234,6 +229,11 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
     }
 
     /// <summary>
+    /// Gets resources and cancellation owned exclusively by this subsystem.
+    /// </summary>
+    protected LifetimeScope lifetime => m_lifetime;
+
+    /// <summary>
     /// Registers a binding that must close even when a frame hook fails.
     /// </summary>
     /// <param name="scope">
@@ -354,20 +354,6 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
         }
     }
 
-    private static void TryRelease(
-        Action release,
-        List<Exception> failures
-    ) {
-        try
-        {
-            release();
-        }
-        catch (Exception exception)
-        {
-            failures.Add(exception);
-        }
-    }
-
     private void TryRetire(Action release)
     {
         try
@@ -381,6 +367,20 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
         catch (Exception exception)
         {
             m_retirementFailures.Add(exception);
+        }
+    }
+
+    private static void TryRelease(
+        Action release,
+        List<Exception> failures
+    ) {
+        try
+        {
+            release();
+        }
+        catch (Exception exception)
+        {
+            failures.Add(exception);
         }
     }
 

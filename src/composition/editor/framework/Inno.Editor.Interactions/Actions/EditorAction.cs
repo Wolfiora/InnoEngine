@@ -23,52 +23,19 @@ public abstract class EditorAction : IDisposable
     /// </summary>
     public virtual Type? targetType => null;
 
-    internal virtual Type? argumentType => null;
-
-    internal EditorActionState QueryInternal(EditorActionContext context)
+    /// <summary>
+    /// Cancels active work and releases this action instance.
+    /// </summary>
+    public void Dispose()
     {
-        ObjectDisposedException.ThrowIf(m_isDisposed, this);
-        return Query(context);
-    }
-
-    internal void ExecuteInternal(EditorActionContext context)
-    {
-        ObjectDisposedException.ThrowIf(m_isDisposed, this);
-        Execute(context);
-    }
-
-    internal bool PresentInternal(EditorActionContext context)
-    {
-        ObjectDisposedException.ThrowIf(m_isDisposed, this);
-        return m_isActive && m_activeTarget is not null && m_activeTarget.Matches(context.interactions, context.target) && Present(context);
-    }
-
-    internal void CancelInternal() => Cancel();
-
-    internal void LosePresentationInternal()
-    {
-        if (!m_isActive)
+        if (m_isDisposed)
         {
             return;
         }
-        try
-        {
-            OnPresentationLost();
-        }
-        finally
-        {
-            if (m_isActive)
-            {
-                Cancel();
-            }
-        }
+        Cancel();
+        m_isDisposed = true;
+        GC.SuppressFinalize(this);
     }
-
-    internal bool IsActiveFor(object? target)
-        => m_isActive
-           && m_activeTarget is not null
-           && m_activeInteractions is not null
-           && m_activeTarget.Matches(m_activeInteractions, target);
 
     /// <summary>
     /// Resolves the active target afresh for this callback; null means the identity is unavailable.
@@ -82,6 +49,8 @@ public abstract class EditorAction : IDisposable
     /// Gets the host-owned passive context of the active operation, or null after completion.
     /// </summary>
     protected EditorContext? activeEditorContext { get; private set; }
+
+    internal virtual Type? argumentType => null;
 
     /// <summary>
     /// Activates this action for a target and cancels any operation it previously owned.
@@ -184,19 +153,50 @@ public abstract class EditorAction : IDisposable
     /// </remarks>
     protected virtual void OnPresentationLost() => Cancel();
 
-    /// <summary>
-    /// Cancels active work and releases this action instance.
-    /// </summary>
-    public void Dispose()
+    internal EditorActionState QueryInternal(EditorActionContext context)
     {
-        if (m_isDisposed)
+        ObjectDisposedException.ThrowIf(m_isDisposed, this);
+        return Query(context);
+    }
+
+    internal void ExecuteInternal(EditorActionContext context)
+    {
+        ObjectDisposedException.ThrowIf(m_isDisposed, this);
+        Execute(context);
+    }
+
+    internal bool PresentInternal(EditorActionContext context)
+    {
+        ObjectDisposedException.ThrowIf(m_isDisposed, this);
+        return m_isActive && m_activeTarget is not null && m_activeTarget.Matches(context.interactions, context.target) && Present(context);
+    }
+
+    internal void CancelInternal() => Cancel();
+
+    internal void LosePresentationInternal()
+    {
+        if (!m_isActive)
         {
             return;
         }
-        Cancel();
-        m_isDisposed = true;
-        GC.SuppressFinalize(this);
+        try
+        {
+            OnPresentationLost();
+        }
+        finally
+        {
+            if (m_isActive)
+            {
+                Cancel();
+            }
+        }
     }
+
+    internal bool IsActiveFor(object? target)
+        => m_isActive
+           && m_activeTarget is not null
+           && m_activeInteractions is not null
+           && m_activeTarget.Matches(m_activeInteractions, target);
 }
 
 /// <summary>
@@ -233,6 +233,17 @@ public abstract class EditorAction<TTarget, TArgument> : EditorAction
         ) ? Query(typed) : EditorActionState.hidden;
 
     /// <summary>
+    /// Evaluates the action for a typed target and argument.
+    /// </summary>
+    /// <param name="context">
+    /// The typed contextual request.
+    /// </param>
+    /// <returns>
+    /// The current presentation and availability state.
+    /// </returns>
+    protected virtual EditorActionState Query(EditorActionContext<TTarget, TArgument> context) => EditorActionState.enabled;
+
+    /// <summary>
     /// Applies the editor action to the supplied interaction context.
     /// </summary>
     /// <param name="context">
@@ -251,6 +262,14 @@ public abstract class EditorAction<TTarget, TArgument> : EditorAction
     }
 
     /// <summary>
+    /// Executes the action for a typed target and argument.
+    /// </summary>
+    /// <param name="context">
+    /// The typed contextual request.
+    /// </param>
+    protected abstract void Execute(EditorActionContext<TTarget, TArgument> context);
+
+    /// <summary>
     /// Presents this action through the current editor interaction surface.
     /// </summary>
     /// <param name="context">
@@ -261,25 +280,6 @@ public abstract class EditorAction<TTarget, TArgument> : EditorAction
     /// </returns>
     protected sealed override bool Present(EditorActionContext context)
         => TryCreate(context, out EditorActionContext<TTarget, TArgument> typed) && Present(typed);
-
-    /// <summary>
-    /// Evaluates the action for a typed target and argument.
-    /// </summary>
-    /// <param name="context">
-    /// The typed contextual request.
-    /// </param>
-    /// <returns>
-    /// The current presentation and availability state.
-    /// </returns>
-    protected virtual EditorActionState Query(EditorActionContext<TTarget, TArgument> context) => EditorActionState.enabled;
-
-    /// <summary>
-    /// Executes the action for a typed target and argument.
-    /// </summary>
-    /// <param name="context">
-    /// The typed contextual request.
-    /// </param>
-    protected abstract void Execute(EditorActionContext<TTarget, TArgument> context);
 
     /// <summary>
     /// Presents an active action for a typed target and argument.
@@ -333,6 +333,17 @@ public abstract class EditorArgumentAction<TArgument> : EditorAction
            : EditorActionState.hidden;
 
     /// <summary>
+    /// Evaluates the action for a typed argument.
+    /// </summary>
+    /// <param name="context">
+    /// The typed contextual request.
+    /// </param>
+    /// <returns>
+    /// The current presentation and availability state.
+    /// </returns>
+    protected virtual EditorActionState Query(EditorActionArgumentContext<TArgument> context) => EditorActionState.enabled;
+
+    /// <summary>
     /// Applies the editor action to the supplied interaction context.
     /// </summary>
     /// <param name="context">
@@ -347,17 +358,6 @@ public abstract class EditorArgumentAction<TArgument> : EditorAction
 
         Execute(new EditorActionArgumentContext<TArgument>(context, argument));
     }
-
-    /// <summary>
-    /// Evaluates the action for a typed argument.
-    /// </summary>
-    /// <param name="context">
-    /// The typed contextual request.
-    /// </param>
-    /// <returns>
-    /// The current presentation and availability state.
-    /// </returns>
-    protected virtual EditorActionState Query(EditorActionArgumentContext<TArgument> context) => EditorActionState.enabled;
 
     /// <summary>
     /// Executes the action for a typed argument.
@@ -433,6 +433,17 @@ public abstract class EditorAction<TTarget> : EditorAction
     }
 
     /// <summary>
+    /// Evaluates the action for a strongly typed target.
+    /// </summary>
+    /// <param name="context">
+    /// The contextual request containing the typed target.
+    /// </param>
+    /// <returns>
+    /// The current presentation and availability state.
+    /// </returns>
+    protected virtual EditorActionState Query(EditorActionContext<TTarget> context) => EditorActionState.enabled;
+
+    /// <summary>
     /// Applies the editor action to the supplied interaction context.
     /// </summary>
     /// <param name="context">
@@ -450,6 +461,14 @@ public abstract class EditorAction<TTarget> : EditorAction
     }
 
     /// <summary>
+    /// Executes the action for a strongly typed target.
+    /// </summary>
+    /// <param name="context">
+    /// The contextual request containing the typed target.
+    /// </param>
+    protected abstract void Execute(EditorActionContext<TTarget> context);
+
+    /// <summary>
     /// Presents this action through the current editor interaction surface.
     /// </summary>
     /// <param name="context">
@@ -463,25 +482,6 @@ public abstract class EditorAction<TTarget> : EditorAction
         ArgumentNullException.ThrowIfNull(context);
         return context.target is TTarget target && Present(new EditorActionContext<TTarget>(context, target));
     }
-
-    /// <summary>
-    /// Evaluates the action for a strongly typed target.
-    /// </summary>
-    /// <param name="context">
-    /// The contextual request containing the typed target.
-    /// </param>
-    /// <returns>
-    /// The current presentation and availability state.
-    /// </returns>
-    protected virtual EditorActionState Query(EditorActionContext<TTarget> context) => EditorActionState.enabled;
-
-    /// <summary>
-    /// Executes the action for a strongly typed target.
-    /// </summary>
-    /// <param name="context">
-    /// The contextual request containing the typed target.
-    /// </param>
-    protected abstract void Execute(EditorActionContext<TTarget> context);
 
     /// <summary>
     /// Presents an active action for a strongly typed target.

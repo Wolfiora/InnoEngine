@@ -158,12 +158,6 @@ public sealed partial class RenderRuntime
         return generation is not null;
     }
 
-    private static bool TryCreateGeneration(
-        RenderExtensionRegistry.Snapshot snapshot,
-        RenderPipelineAsset asset,
-        out RenderPipelineGeneration? generation
-    ) => snapshot.TryCreateGeneration(asset, out generation);
-
     private void EndReloadSession(RenderRuntimeReloadSession session)
     {
         if (ReferenceEquals(m_reloadSession, session))
@@ -270,6 +264,12 @@ public sealed partial class RenderRuntime
         }
     }
 
+    private static bool TryCreateGeneration(
+        RenderExtensionRegistry.Snapshot snapshot,
+        RenderPipelineAsset asset,
+        out RenderPipelineGeneration? generation
+    ) => snapshot.TryCreateGeneration(asset, out generation);
+
     private sealed class GenerationCacheEntry(RenderPipelineAsset asset)
     {
         internal readonly Identity assetIdentity = asset.identity;
@@ -288,13 +288,13 @@ public sealed partial class RenderRuntime
     internal sealed class RenderRuntimeReloadSession : IRenderRuntimeReloadTransaction
     {
         private readonly RenderRuntime m_owner;
+        private readonly Dictionary<RenderPipelineAsset, GenerationState> m_candidates = [];
         private IReadOnlyDictionary<RenderPipelineAsset, GenerationState>? m_previous;
         private RenderExtensionRegistry.RequestProviderGeneration? m_previousRequestProviders;
         private RenderRequest[]? m_previousPendingRequests;
         private RenderRequest[]? m_previousCurrentRequests;
         private CompositionRequest[]? m_previousPendingCompositions;
         private CompositionRequest[]? m_previousCurrentCompositions;
-        private readonly Dictionary<RenderPipelineAsset, GenerationState> m_candidates = [];
         private RenderExtensionRegistry.RequestProviderGeneration? m_candidateRequestProviders;
         private bool m_prepared;
         private bool m_activated;
@@ -318,31 +318,13 @@ public sealed partial class RenderRuntime
             m_previousCurrentCompositions = previousCurrentCompositions;
         }
 
-        internal static RenderRuntimeReloadSession Create(RenderRuntime owner)
-        {
-            // Disposed sessions must not contribute obsolete assets to the next extension generation.
-            owner.PruneRetiredAssets();
-            var previous = new Dictionary<RenderPipelineAsset, GenerationState>();
-            foreach ((RenderPipelineAsset asset, GenerationCacheEntry entry) in owner.m_generations)
-            {
-                previous.Add(
-                    asset,
-                    new GenerationState(entry.attemptedTypeCacheVersion, entry.attemptedFingerprint, entry.lastGood)
-                );
-            }
-            lock (owner.m_requestLock)
-            {
-                return new RenderRuntimeReloadSession(
-                    owner,
-                    previous,
-                    owner.m_requestProviders,
-                    [.. owner.m_pendingRequests],
-                    [.. owner.m_currentRequests],
-                    [.. owner.m_pendingCompositions],
-                    [.. owner.m_currentCompositions]
-                );
-            }
-        }
+        void IRenderRuntimeReloadTransaction.Prepare() => PrepareCandidate();
+
+        void IRenderRuntimeReloadTransaction.Activate() => Activate();
+
+        void IRenderRuntimeReloadTransaction.Complete() => Complete();
+
+        void IRenderRuntimeReloadTransaction.Rollback() => Rollback();
 
         internal void PrepareCandidate()
         {
@@ -501,13 +483,31 @@ public sealed partial class RenderRuntime
             Finish();
         }
 
-        void IRenderRuntimeReloadTransaction.Prepare() => PrepareCandidate();
-
-        void IRenderRuntimeReloadTransaction.Activate() => Activate();
-
-        void IRenderRuntimeReloadTransaction.Complete() => Complete();
-
-        void IRenderRuntimeReloadTransaction.Rollback() => Rollback();
+        internal static RenderRuntimeReloadSession Create(RenderRuntime owner)
+        {
+            // Disposed sessions must not contribute obsolete assets to the next extension generation.
+            owner.PruneRetiredAssets();
+            var previous = new Dictionary<RenderPipelineAsset, GenerationState>();
+            foreach ((RenderPipelineAsset asset, GenerationCacheEntry entry) in owner.m_generations)
+            {
+                previous.Add(
+                    asset,
+                    new GenerationState(entry.attemptedTypeCacheVersion, entry.attemptedFingerprint, entry.lastGood)
+                );
+            }
+            lock (owner.m_requestLock)
+            {
+                return new RenderRuntimeReloadSession(
+                    owner,
+                    previous,
+                    owner.m_requestProviders,
+                    [.. owner.m_pendingRequests],
+                    [.. owner.m_currentRequests],
+                    [.. owner.m_pendingCompositions],
+                    [.. owner.m_currentCompositions]
+                );
+            }
+        }
 
         private void DisposeCandidates()
         {

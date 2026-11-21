@@ -107,43 +107,41 @@ internal sealed class FileBrowserData(AssetBrowserModule assets)
         return false;
     }
 
-    private static FileBrowserDisplayEntry Describe(
-        AssetFileEntry entry,
-        string label,
-        bool pluginRoot = false
-    ) => new(
-        entry.identity.runtimeIdentity ?? throw new InvalidOperationException("A visible asset requires a registered identity."),
-        entry.assetPath,
-        label,
-        entry.extension,
-        entry.isDirectory,
-        pluginRoot
-    );
-
-    private static void ApplyTypeFilter(
-        List<FileBrowserDisplayEntry> entries,
-        FileBrowserEntryTypeFilter typeFilter
-    ) {
-        switch (typeFilter)
+    internal List<AssetFileEntry> SortTreeEntries(IReadOnlyList<AssetFileEntry> entries)
+    {
+        List<AssetFileEntry> sorted = [.. entries];
+        sorted.Sort(static (
+            left,
+            right
+        ) =>
         {
-            case FileBrowserEntryTypeFilter.FoldersOnly:
-                entries.RemoveAll(static item => !item.isDirectory);
-                break;
-            case FileBrowserEntryTypeFilter.FilesOnly:
-                entries.RemoveAll(static item => item.isDirectory);
-                break;
-        }
+            if (left.isDirectory != right.isDirectory)
+            {
+                return left.isDirectory ? -1 : 1;
+            }
+            return string.Compare(left.name, right.name, StringComparison.OrdinalIgnoreCase);
+        });
+        return sorted;
     }
 
-    private static void ApplySearchFilter(
-        List<FileBrowserDisplayEntry> entries,
-        string searchFilter
-    ) {
-        string filter = searchFilter.Trim();
-        if (!string.IsNullOrEmpty(filter))
+    internal IReadOnlyList<AssetFileEntry> GetVisibleChildren(string relativePath)
+    {
+        AssetSourceId source = AssetPath.Parse(relativePath).source;
+        IReadOnlyList<AssetFileEntry> children = assets.edits.pipeline.GetFileSystemChildren(AssetPath.Parse(relativePath));
+        if (children.Count == 0)
         {
-            entries.RemoveAll(item => !item.displayName.Contains(filter, StringComparison.OrdinalIgnoreCase));
+            return children;
         }
+        List<AssetFileEntry> isolated = [];
+        for (int i = 0; i < children.Count; i++)
+        {
+            if (children[i].source == source)
+            {
+                isolated.Add(children[i]);
+            }
+        }
+
+        return isolated;
     }
 
     private void CollectPluginRoots(
@@ -189,41 +187,43 @@ internal sealed class FileBrowserData(AssetBrowserModule assets)
         }
     }
 
-    internal List<AssetFileEntry> SortTreeEntries(IReadOnlyList<AssetFileEntry> entries)
-    {
-        List<AssetFileEntry> sorted = [.. entries];
-        sorted.Sort(static (
-            left,
-            right
-        ) =>
+    private static FileBrowserDisplayEntry Describe(
+        AssetFileEntry entry,
+        string label,
+        bool pluginRoot = false
+    ) => new(
+        entry.identity.runtimeIdentity ?? throw new InvalidOperationException("A visible asset requires a registered identity."),
+        entry.assetPath,
+        label,
+        entry.extension,
+        entry.isDirectory,
+        pluginRoot
+    );
+
+    private static void ApplyTypeFilter(
+        List<FileBrowserDisplayEntry> entries,
+        FileBrowserEntryTypeFilter typeFilter
+    ) {
+        switch (typeFilter)
         {
-            if (left.isDirectory != right.isDirectory)
-            {
-                return left.isDirectory ? -1 : 1;
-            }
-            return string.Compare(left.name, right.name, StringComparison.OrdinalIgnoreCase);
-        });
-        return sorted;
+            case FileBrowserEntryTypeFilter.FoldersOnly:
+                entries.RemoveAll(static item => !item.isDirectory);
+                break;
+            case FileBrowserEntryTypeFilter.FilesOnly:
+                entries.RemoveAll(static item => item.isDirectory);
+                break;
+        }
     }
 
-    internal IReadOnlyList<AssetFileEntry> GetVisibleChildren(string relativePath)
-    {
-        AssetSourceId source = AssetPath.Parse(relativePath).source;
-        IReadOnlyList<AssetFileEntry> children = assets.edits.pipeline.GetFileSystemChildren(AssetPath.Parse(relativePath));
-        if (children.Count == 0)
+    private static void ApplySearchFilter(
+        List<FileBrowserDisplayEntry> entries,
+        string searchFilter
+    ) {
+        string filter = searchFilter.Trim();
+        if (!string.IsNullOrEmpty(filter))
         {
-            return children;
+            entries.RemoveAll(item => !item.displayName.Contains(filter, StringComparison.OrdinalIgnoreCase));
         }
-        List<AssetFileEntry> isolated = [];
-        for (int i = 0; i < children.Count; i++)
-        {
-            if (children[i].source == source)
-            {
-                isolated.Add(children[i]);
-            }
-        }
-
-        return isolated;
     }
 
     private readonly record struct ViewInput(

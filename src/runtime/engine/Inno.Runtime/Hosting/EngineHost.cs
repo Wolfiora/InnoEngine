@@ -217,6 +217,16 @@ public sealed class EngineHost : IDisposable
         }
     }
 
+    internal TimeSpan retirementTimeout { get; }
+
+    internal void Release(RuntimeSession session)
+    {
+        lock (m_sync)
+        {
+            m_sessions.Remove(session);
+        }
+    }
+
     private void DisposeCore()
     {
         RuntimeSession[] sessions;
@@ -304,16 +314,6 @@ public sealed class EngineHost : IDisposable
             throw failure;
         }
         generations.Wait();
-    }
-
-    internal TimeSpan retirementTimeout { get; }
-
-    internal void Release(RuntimeSession session)
-    {
-        lock (m_sync)
-        {
-            m_sessions.Remove(session);
-        }
     }
 
     private void RetireFailedStartup(

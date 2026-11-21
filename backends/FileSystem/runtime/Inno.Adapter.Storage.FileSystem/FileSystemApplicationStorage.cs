@@ -326,6 +326,8 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
         }
     }
 
+    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(m_disposed, this);
+
     private static void RejectLink(FileSystemInfo entry)
     {
         if (entry.LinkTarget is not null || (entry.Attributes & FileAttributes.ReparsePoint) != 0)
@@ -333,6 +335,4 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
             throw new IOException($"Storage sandbox path '{entry.FullName}' contains a symbolic link or reparse point.");
         }
     }
-
-    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(m_disposed, this);
 }

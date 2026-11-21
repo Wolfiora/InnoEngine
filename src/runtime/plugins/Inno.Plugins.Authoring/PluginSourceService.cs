@@ -299,6 +299,67 @@ public sealed class PluginSourceService
         }
     }
 
+    private PluginManifest ReadManifest(ZipArchiveEntry entry)
+    {
+        try
+        {
+            using Stream stream = entry.Open();
+            using var memory = new MemoryStream();
+            stream.CopyTo(memory);
+            return m_serialization.Deserialize<PluginManifest>(memory.ToArray());
+        }
+        catch (Exception exception) when (IsManifestDataFailure(exception))
+        {
+            throw new InvalidDataException("Plugin.inno is malformed or incompatible with the current contract.", exception);
+        }
+    }
+
+    private void ExtractAtomically(
+        ZipArchive archive,
+        IReadOnlyList<ValidatedPackageEntry> entries,
+        string destinationRoot
+    ) {
+        string stagingRoot = Path.Combine(m_cacheRoot, ".staging", Guid.NewGuid().ToString("N"));
+        try
+        {
+            foreach (ValidatedPackageEntry item in entries)
+            {
+                string target = ResolveContainedPath(stagingRoot, item.path.TrimEnd('/'));
+                if (item.path.EndsWith("/", StringComparison.Ordinal))
+                {
+                    Directory.CreateDirectory(target);
+                    continue;
+                }
+                Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+                using Stream source = item.entry.Open();
+                using var output = new FileStream(target, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+                source.CopyTo(output);
+            }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(destinationRoot)!);
+            if (!Directory.Exists(destinationRoot))
+            {
+                try
+                {
+                    AtomicDirectory.Publish(stagingRoot, destinationRoot);
+                }
+                catch (IOException) when (Directory.Exists(destinationRoot))
+                {
+                    // A concurrent publisher may have committed the same immutable snapshot.
+                    // Accept it only after checking its exact files and bytes against this archive.
+                    ValidateMaterializedSnapshot(entries, destinationRoot);
+                }
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(stagingRoot))
+            {
+                Directory.Delete(stagingRoot, recursive: true);
+            }
+        }
+    }
+
     private static void ValidateSourceExtension(string path)
     {
         if (!path.EndsWith("/", StringComparison.Ordinal)
@@ -458,21 +519,6 @@ public sealed class PluginSourceService
         return graph.TopologicalSort().Select(pluginId => byId[pluginId]).ToArray();
     }
 
-    private PluginManifest ReadManifest(ZipArchiveEntry entry)
-    {
-        try
-        {
-            using Stream stream = entry.Open();
-            using var memory = new MemoryStream();
-            stream.CopyTo(memory);
-            return m_serialization.Deserialize<PluginManifest>(memory.ToArray());
-        }
-        catch (Exception exception) when (IsManifestDataFailure(exception))
-        {
-            throw new InvalidDataException("Plugin.inno is malformed or incompatible with the current contract.", exception);
-        }
-    }
-
     private static bool IsManifestDataFailure(Exception exception)
         => exception is InvalidDataException
            or InvalidOperationException
@@ -536,52 +582,6 @@ public sealed class PluginSourceService
     }
 
     private static bool IsSymbolicLink(ZipArchiveEntry entry) => ((entry.ExternalAttributes >> 16) & 0xF000) == 0xA000;
-
-    private void ExtractAtomically(
-        ZipArchive archive,
-        IReadOnlyList<ValidatedPackageEntry> entries,
-        string destinationRoot
-    ) {
-        string stagingRoot = Path.Combine(m_cacheRoot, ".staging", Guid.NewGuid().ToString("N"));
-        try
-        {
-            foreach (ValidatedPackageEntry item in entries)
-            {
-                string target = ResolveContainedPath(stagingRoot, item.path.TrimEnd('/'));
-                if (item.path.EndsWith("/", StringComparison.Ordinal))
-                {
-                    Directory.CreateDirectory(target);
-                    continue;
-                }
-                Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-                using Stream source = item.entry.Open();
-                using var output = new FileStream(target, FileMode.CreateNew, FileAccess.Write, FileShare.None);
-                source.CopyTo(output);
-            }
-
-            Directory.CreateDirectory(Path.GetDirectoryName(destinationRoot)!);
-            if (!Directory.Exists(destinationRoot))
-            {
-                try
-                {
-                    AtomicDirectory.Publish(stagingRoot, destinationRoot);
-                }
-                catch (IOException) when (Directory.Exists(destinationRoot))
-                {
-                    // A concurrent publisher may have committed the same immutable snapshot.
-                    // Accept it only after checking its exact files and bytes against this archive.
-                    ValidateMaterializedSnapshot(entries, destinationRoot);
-                }
-            }
-        }
-        finally
-        {
-            if (Directory.Exists(stagingRoot))
-            {
-                Directory.Delete(stagingRoot, recursive: true);
-            }
-        }
-    }
 
     private static void ValidateMaterializedSnapshot(
         IReadOnlyList<ValidatedPackageEntry> entries,

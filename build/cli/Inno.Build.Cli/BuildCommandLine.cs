@@ -7,6 +7,30 @@ internal sealed class BuildCommandLine
 {
     private readonly Dictionary<string, string> m_values = new(StringComparer.Ordinal);
 
+    internal bool Has(string name) => m_values.ContainsKey(name);
+
+    internal void Validate(params string[] allowed)
+    {
+        var names = new HashSet<string>(allowed, StringComparer.Ordinal);
+        foreach (string key in m_values.Keys)
+        {
+            if (!names.Contains(key))
+            {
+                throw new ArgumentException($"Unknown option '--{key}'.");
+            }
+        }
+    }
+
+    internal string Read(
+        string name,
+        string defaultValue
+    ) => m_values.GetValueOrDefault(name, defaultValue);
+
+    internal string Require(string name)
+        => m_values.TryGetValue(name, out string? value) && !string.IsNullOrWhiteSpace(value)
+           ? value
+           : throw new ArgumentException($"Required option '--{name}' is missing.");
+
     internal static BuildCommandLine Parse(IReadOnlyList<string> arguments)
     {
         var result = new BuildCommandLine();
@@ -34,28 +58,4 @@ internal sealed class BuildCommandLine
         }
         return result;
     }
-
-    internal bool Has(string name) => m_values.ContainsKey(name);
-
-    internal void Validate(params string[] allowed)
-    {
-        var names = new HashSet<string>(allowed, StringComparer.Ordinal);
-        foreach (string key in m_values.Keys)
-        {
-            if (!names.Contains(key))
-            {
-                throw new ArgumentException($"Unknown option '--{key}'.");
-            }
-        }
-    }
-
-    internal string Read(
-        string name,
-        string defaultValue
-    ) => m_values.GetValueOrDefault(name, defaultValue);
-
-    internal string Require(string name)
-        => m_values.TryGetValue(name, out string? value) && !string.IsNullOrWhiteSpace(value)
-           ? value
-           : throw new ArgumentException($"Required option '--{name}' is missing.");
 }

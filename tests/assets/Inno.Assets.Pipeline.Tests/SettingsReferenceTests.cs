@@ -226,14 +226,6 @@ public sealed class SettingsReferenceTests
             );
         }
 
-        internal string root { get; }
-        internal string assetRoot { get; }
-        internal TypeCatalog types { get; }
-        internal SerializationRegistry serialization { get; }
-        internal AssetPipeline assets { get; }
-        internal SerializationContext context { get; }
-        internal ProjectSettingsStore settings { get; }
-
         public void Dispose()
         {
             settings.Dispose();
@@ -245,6 +237,14 @@ public sealed class SettingsReferenceTests
             m_identityScope.Dispose();
             Directory.Delete(root, recursive: true);
         }
+
+        internal string root { get; }
+        internal string assetRoot { get; }
+        internal TypeCatalog types { get; }
+        internal SerializationRegistry serialization { get; }
+        internal AssetPipeline assets { get; }
+        internal SerializationContext context { get; }
+        internal ProjectSettingsStore settings { get; }
     }
 }
 

@@ -6,6 +6,9 @@ namespace Inno.Core.Execution;
 /// <summary>
 /// Reports that cancellation has begun but the owner must retain its dependencies until work drains.
 /// </summary>
+/// <remarks>
+/// More specific retirement failures derive from this class so that callers can catch every pending retirement with one handler.
+/// </remarks>
 public class RetirementPendingException : InvalidOperationException
 {
     /// <summary>

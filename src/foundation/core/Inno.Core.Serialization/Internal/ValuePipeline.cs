@@ -111,95 +111,6 @@ internal static class ValuePipeline
         return node;
     }
 
-    private static SerializationNode WriteValue(
-        object? value,
-        Type declaredType,
-        SerializationOperation operation,
-        string path,
-        bool allowDefaultObject,
-        SerializationNode? previous = null
-    ) {
-        operation.EnsureActive();
-        Type? nullableType = Nullable.GetUnderlyingType(declaredType);
-        Type valueType = nullableType ?? declaredType;
-        if (value is null)
-        {
-            if (valueType.IsValueType && nullableType is null)
-            {
-                throw new InvalidOperationException($"Non-nullable value '{path}' of type '{valueType.FullName}' cannot be null.");
-            }
-            return NullSerializationNode.instance;
-        }
-
-        bool trackReference = !value.GetType().IsValueType && value is not string && value is not byte[];
-        if (trackReference)
-        {
-            operation.EnterCapture(value, path);
-        }
-        try
-        {
-            ConverterInvoker? converter = operation.ResolveConverter(valueType);
-            if (converter is not null)
-            {
-                return converter.Write(operation, path, valueType, value, previous);
-            }
-
-            if (IsPrimitive(valueType))
-            {
-                return SerializationNodeReuse.Scalar(NormalizePrimitive(value, valueType, path), previous);
-            }
-            if (valueType.IsEnum)
-            {
-                return SerializationNodeReuse.Scalar(Convert.ToInt64(value, CultureInfo.InvariantCulture), previous);
-            }
-            if (valueType == typeof(byte[]))
-            {
-                return SerializationNodeReuse.Binary((byte[])value, previous);
-            }
-            if (valueType.IsArray)
-            {
-                return WriteArray((Array)value, valueType, operation, path, previous as ArraySerializationNode);
-            }
-            if (operation.GetMetadata(valueType).collection is { keyType: not null } map)
-            {
-                return WriteMap(value, valueType, map.keyType, map.elementType, operation, path, previous);
-            }
-            if (operation.GetMetadata(valueType).collection is { keyType: null } sequence)
-            {
-                return WriteSequence(value, sequence.elementType, operation, path, previous as ArraySerializationNode);
-            }
-            if (valueType.IsValueType)
-            {
-                return WriteStruct(value, valueType, operation, path, previous as ObjectSerializationNode);
-            }
-
-            if (allowDefaultObject && value is ISerializable serializable)
-            {
-                if (value.GetType() != valueType)
-                {
-                    throw new InvalidOperationException(
-                        $"Default serialization at '{path}' requires exact type '{valueType.FullName}', but the runtime value is '{value.GetType().FullName}'. Register a converter for polymorphic values."
-                    );
-                }
-                EnsureDefaultSerializableType(valueType, operation);
-                var writer = new SerializationWriter(operation, previous as ObjectSerializationNode, path, valueType);
-                WriteProperties(serializable, writer, operation);
-                return writer.Complete();
-            }
-
-            throw new InvalidOperationException(
-                $"Class value '{path}' of type '{valueType.FullName}' requires an explicit SerializationConverter<{valueType.Name}>."
-            );
-        }
-        finally
-        {
-            if (trackReference)
-            {
-                operation.ExitCapture(value);
-            }
-        }
-    }
-
     internal static object? Read(
         SerializationNode node,
         Type declaredType,
@@ -309,6 +220,111 @@ internal static class ValuePipeline
         }
 
         operation.ScheduleRestoredObject(target);
+    }
+
+    internal static bool IsPrimitive(Type type)
+        => type == typeof(bool)
+           || type == typeof(byte)
+           || type == typeof(sbyte)
+           || type == typeof(short)
+           || type == typeof(ushort)
+           || type == typeof(int)
+           || type == typeof(uint)
+           || type == typeof(long)
+           || type == typeof(ulong)
+           || type == typeof(float)
+           || type == typeof(double)
+           || type == typeof(decimal)
+           || type == typeof(string)
+           || type == typeof(Guid);
+
+    private static SerializationNode WriteValue(
+        object? value,
+        Type declaredType,
+        SerializationOperation operation,
+        string path,
+        bool allowDefaultObject,
+        SerializationNode? previous = null
+    ) {
+        operation.EnsureActive();
+        Type? nullableType = Nullable.GetUnderlyingType(declaredType);
+        Type valueType = nullableType ?? declaredType;
+        if (value is null)
+        {
+            if (valueType.IsValueType && nullableType is null)
+            {
+                throw new InvalidOperationException($"Non-nullable value '{path}' of type '{valueType.FullName}' cannot be null.");
+            }
+            return NullSerializationNode.instance;
+        }
+
+        bool trackReference = !value.GetType().IsValueType && value is not string && value is not byte[];
+        if (trackReference)
+        {
+            operation.EnterCapture(value, path);
+        }
+        try
+        {
+            ConverterInvoker? converter = operation.ResolveConverter(valueType);
+            if (converter is not null)
+            {
+                return converter.Write(operation, path, valueType, value, previous);
+            }
+
+            if (IsPrimitive(valueType))
+            {
+                return SerializationNodeReuse.Scalar(NormalizePrimitive(value, valueType, path), previous);
+            }
+            if (valueType.IsEnum)
+            {
+                return SerializationNodeReuse.Scalar(Convert.ToInt64(value, CultureInfo.InvariantCulture), previous);
+            }
+            if (valueType == typeof(byte[]))
+            {
+                return SerializationNodeReuse.Binary((byte[])value, previous);
+            }
+            if (valueType.IsArray)
+            {
+                return WriteArray((Array)value, valueType, operation, path, previous as ArraySerializationNode);
+            }
+            if (operation.GetMetadata(valueType).collection is { keyType: not null } map)
+            {
+                return WriteMap(value, valueType, map.keyType, map.elementType, operation, path, previous);
+            }
+            if (operation.GetMetadata(valueType).collection is { keyType: null } sequence)
+            {
+                return WriteSequence(value, sequence.elementType, operation, path, previous as ArraySerializationNode);
+            }
+            if (valueType.IsValueType)
+            {
+                return WriteStruct(value, valueType, operation, path, previous as ObjectSerializationNode);
+            }
+
+            if (allowDefaultObject && value is ISerializable serializable)
+            {
+                if (value.GetType() != valueType)
+                {
+                    throw new InvalidOperationException(
+                        $"Default serialization at '{path}' requires exact type '{valueType.FullName}', but the runtime value is '{value.GetType().FullName}'. Register a converter for polymorphic values."
+                    );
+                }
+                EnsureDefaultSerializableType(valueType, operation);
+                var writer = new SerializationWriter(operation, previous as ObjectSerializationNode, path, valueType);
+                WriteProperties(serializable, writer, operation);
+                return writer.Complete();
+            }
+
+            throw new InvalidOperationException(
+                $"Class value '{path}' of type '{valueType.FullName}' requires an explicit SerializationConverter<{valueType.Name}>."
+            );
+        }
+        finally
+        {
+            if (trackReference)
+            {
+                operation.ExitCapture(value);
+            }
+        }
     }
 
     private static SerializationNode WriteArray(
@@ -615,22 +631,6 @@ internal static class ValuePipeline
             );
         }
     }
-
-    internal static bool IsPrimitive(Type type)
-        => type == typeof(bool)
-           || type == typeof(byte)
-           || type == typeof(sbyte)
-           || type == typeof(short)
-           || type == typeof(ushort)
-           || type == typeof(int)
-           || type == typeof(uint)
-           || type == typeof(long)
-           || type == typeof(ulong)
-           || type == typeof(float)
-           || type == typeof(double)
-           || type == typeof(decimal)
-           || type == typeof(string)
-           || type == typeof(Guid);
 
     private static InvalidOperationException TypeMismatch(
         string path,

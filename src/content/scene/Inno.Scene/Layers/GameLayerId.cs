@@ -23,20 +23,6 @@ public readonly record struct GameLayerId
         this.value = value.value;
     }
 
-    /// <summary>
-    /// Creates a project-scoped layer identity from its project and local parts.
-    /// </summary>
-    /// <param name="projectId">
-    /// The current project identity.
-    /// </param>
-    /// <param name="name">
-    /// The stable project-local layer identity.
-    /// </param>
-    public GameLayerId(
-        ProjectId projectId,
-        ProjectLocalId name
-    ) : this(projectId.Qualify(name)) {}
-
     internal GameLayerId(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
@@ -58,6 +44,20 @@ public readonly record struct GameLayerId
         }
         this.value = normalized;
     }
+
+    /// <summary>
+    /// Creates a project-scoped layer identity from its project and local parts.
+    /// </summary>
+    /// <param name="projectId">
+    /// The current project identity.
+    /// </param>
+    /// <param name="name">
+    /// The stable project-local layer identity.
+    /// </param>
+    public GameLayerId(
+        ProjectId projectId,
+        ProjectLocalId name
+    ) : this(projectId.Qualify(name)) {}
 
     /// <summary>
     /// Gets the canonical <c>projectId.name</c> identity string.

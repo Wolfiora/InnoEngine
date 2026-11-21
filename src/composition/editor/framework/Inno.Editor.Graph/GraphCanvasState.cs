@@ -156,6 +156,14 @@ public sealed class GraphCanvasState
     }
 
     /// <summary>
+    /// Begins a connection drag from one output endpoint.
+    /// </summary>
+    /// <param name="output">
+    /// Stable output endpoint.
+    /// </param>
+    public void BeginConnection(GraphEndpoint output) => BeginConnection(output, GraphPortDirection.Output);
+
+    /// <summary>
     /// Begins a connection drag from one endpoint.
     /// </summary>
     /// <param name="endpoint">
@@ -171,14 +179,6 @@ public sealed class GraphCanvasState
         pendingConnection = endpoint;
         pendingConnectionDirection = direction;
     }
-
-    /// <summary>
-    /// Begins a connection drag from one output endpoint.
-    /// </summary>
-    /// <param name="output">
-    /// Stable output endpoint.
-    /// </param>
-    public void BeginConnection(GraphEndpoint output) => BeginConnection(output, GraphPortDirection.Output);
 
     /// <summary>
     /// Cancels any active connection drag.

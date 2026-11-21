@@ -665,6 +665,154 @@ public sealed unsafe partial class BgfxDevice
         }
     }
 
+    private bgfx.ShaderHandle CreateShader(
+        ReadOnlySpan<byte> binary,
+        string name
+    ) {
+        bgfx.Memory* memory = Copy(binary);
+        bgfx.ShaderHandle shader = BgfxNativeCalls.CreateShader(memory);
+        EnsureValid(shader.Valid, name);
+        int shaderNameLength = Encoding.UTF8.GetByteCount(name);
+        Span<byte> shaderNameBytes = shaderNameLength < 256
+                                     ? stackalloc byte[256]
+                                     : new byte[checked(shaderNameLength + 1)];
+        Encoding.UTF8.GetBytes(name, shaderNameBytes);
+        shaderNameBytes[shaderNameLength] = 0;
+        fixed (byte* shaderNamePointer = shaderNameBytes)
+        {
+            BgfxNativeCalls.SetShaderName(shader, (sbyte*)shaderNamePointer, shaderNameLength);
+        }
+        return shader;
+    }
+
+    private bgfx.VertexLayout CreateNativeLayout(RenderVertexLayout layout)
+    {
+        bgfx.VertexLayout native = default;
+        bgfx.Raw.vertex_layout_begin(&native, BgfxCapabilityMapper.ToNativeRenderer(capabilities.backend));
+        int currentOffset = 0;
+        foreach (RenderVertexAttribute attribute in layout.attributes)
+        {
+            AddVertexLayoutPadding(&native, attribute.byteOffset - currentOffset);
+            (byte count, bgfx.AttribType type, bool normalized, bool asInteger) = AttributeFormat(attribute.format);
+            bgfx.Raw.vertex_layout_add(
+                &native,
+                ToNativeAttribute(attribute.semantic),
+                count,
+                type,
+                normalized ? (byte)1 : (byte)0,
+                asInteger ? (byte)1 : (byte)0
+            );
+            currentOffset = checked(attribute.byteOffset + attribute.byteSize);
+        }
+
+        AddVertexLayoutPadding(&native, layout.stride - currentOffset);
+
+        bgfx.Raw.vertex_layout_end(&native);
+        if (native.stride != layout.stride)
+        {
+            throw new InvalidOperationException(
+                $"BGFX produced vertex stride {native.stride}, expected {layout.stride}."
+            );
+        }
+
+        return native;
+    }
+
+    private bgfx.VertexLayout CreateSkippedLayout(int stride)
+    {
+        bgfx.VertexLayout native = default;
+        bgfx.Raw.vertex_layout_begin(&native, BgfxCapabilityMapper.ToNativeRenderer(capabilities.backend));
+        int remaining = stride;
+        while (remaining != 0)
+        {
+            byte chunk = checked((byte)Math.Min(remaining, byte.MaxValue));
+            bgfx.Raw.vertex_layout_skip(&native, chunk);
+            remaining -= chunk;
+        }
+
+        bgfx.Raw.vertex_layout_end(&native);
+        return native;
+    }
+
+    private void ValidateBindingSlots(
+        IReadOnlyList<RenderShaderBindingDescriptor> bindings,
+        bool allowStorageResources
+    ) {
+        var storageSlots = new HashSet<int>();
+        foreach (RenderShaderBindingDescriptor binding in bindings)
+        {
+            if (binding.kind is RenderShaderBindingKind.Texture
+                or RenderShaderBindingKind.StorageTexture
+                or RenderShaderBindingKind.StorageBuffer
+                && binding.slot > byte.MaxValue
+            ) {
+                throw new ArgumentOutOfRangeException(
+                    nameof(bindings),
+                    $"Binding '{binding.id.value}' slot exceeds the BGFX byte-sized stage range."
+                );
+            }
+            if (binding.kind is not (RenderShaderBindingKind.StorageTexture or RenderShaderBindingKind.StorageBuffer))
+            {
+                continue;
+            }
+            if (!allowStorageResources)
+            {
+                throw new NotSupportedException(
+                    $"BGFX graphics pipelines cannot bind storage resource '{binding.id.value}'."
+                );
+            }
+            if (!storageSlots.Add(binding.slot))
+            {
+                throw new ArgumentException(
+                    $"Storage binding slot {binding.slot} is declared more than once.",
+                    nameof(bindings)
+                );
+            }
+            GraphicsCapability required = binding.kind == RenderShaderBindingKind.StorageTexture
+                                          ? GraphicsCapability.StorageTexture
+                                          : GraphicsCapability.StorageBuffer;
+            if (!capabilities.Supports(required))
+            {
+                throw new NotSupportedException(
+                    $"The active backend does not support {binding.kind} binding '{binding.id.value}'."
+                );
+            }
+        }
+
+        int storageCount = storageSlots.Count;
+        if (storageCount > capabilities.limits.maxComputeBindings)
+        {
+            throw new NotSupportedException(
+                $"Pipeline requires {storageCount} storage bindings, but the device supports "
+                + $"{capabilities.limits.maxComputeBindings}."
+            );
+        }
+    }
+
+    private void ValidatePersistentHandle(PersistentBufferHandle buffer)
+    {
+        if (!buffer.isValid || GetHandleIdentity(buffer).generation != generation)
+        {
+            throw new ArgumentException("Buffer handle belongs to another device generation.", nameof(buffer));
+        }
+    }
+
+    private void ValidatePersistentHandle(GraphicsPipelineHandle pipeline)
+    {
+        if (!pipeline.isValid || GetHandleIdentity(pipeline).generation != generation)
+        {
+            throw new ArgumentException("Graphics pipeline belongs to another device generation.", nameof(pipeline));
+        }
+    }
+
+    private void ValidatePersistentHandle(ComputePipelineHandle pipeline)
+    {
+        if (!pipeline.isValid || GetHandleIdentity(pipeline).generation != generation)
+        {
+            throw new ArgumentException("Compute pipeline belongs to another device generation.", nameof(pipeline));
+        }
+    }
+
     private static IReadOnlyDictionary<string, BgfxShaderBindingResource> ValidateReflectedBindings(
         IReadOnlyList<RenderShaderBindingDescriptor> declaredBindings,
         IReadOnlyDictionary<string, ReflectedUniform> reflected
@@ -758,59 +906,6 @@ public sealed unsafe partial class BgfxDevice
         return Encoding.UTF8.GetString(terminator >= 0 ? name[..terminator] : name);
     }
 
-    private bgfx.ShaderHandle CreateShader(
-        ReadOnlySpan<byte> binary,
-        string name
-    ) {
-        bgfx.Memory* memory = Copy(binary);
-        bgfx.ShaderHandle shader = BgfxNativeCalls.CreateShader(memory);
-        EnsureValid(shader.Valid, name);
-        int shaderNameLength = Encoding.UTF8.GetByteCount(name);
-        Span<byte> shaderNameBytes = shaderNameLength < 256
-                                     ? stackalloc byte[256]
-                                     : new byte[checked(shaderNameLength + 1)];
-        Encoding.UTF8.GetBytes(name, shaderNameBytes);
-        shaderNameBytes[shaderNameLength] = 0;
-        fixed (byte* shaderNamePointer = shaderNameBytes)
-        {
-            BgfxNativeCalls.SetShaderName(shader, (sbyte*)shaderNamePointer, shaderNameLength);
-        }
-        return shader;
-    }
-
-    private bgfx.VertexLayout CreateNativeLayout(RenderVertexLayout layout)
-    {
-        bgfx.VertexLayout native = default;
-        bgfx.Raw.vertex_layout_begin(&native, BgfxCapabilityMapper.ToNativeRenderer(capabilities.backend));
-        int currentOffset = 0;
-        foreach (RenderVertexAttribute attribute in layout.attributes)
-        {
-            AddVertexLayoutPadding(&native, attribute.byteOffset - currentOffset);
-            (byte count, bgfx.AttribType type, bool normalized, bool asInteger) = AttributeFormat(attribute.format);
-            bgfx.Raw.vertex_layout_add(
-                &native,
-                ToNativeAttribute(attribute.semantic),
-                count,
-                type,
-                normalized ? (byte)1 : (byte)0,
-                asInteger ? (byte)1 : (byte)0
-            );
-            currentOffset = checked(attribute.byteOffset + attribute.byteSize);
-        }
-
-        AddVertexLayoutPadding(&native, layout.stride - currentOffset);
-
-        bgfx.Raw.vertex_layout_end(&native);
-        if (native.stride != layout.stride)
-        {
-            throw new InvalidOperationException(
-                $"BGFX produced vertex stride {native.stride}, expected {layout.stride}."
-            );
-        }
-
-        return native;
-    }
-
     private static void AddVertexLayoutPadding(
         bgfx.VertexLayout* layout,
         int byteCount
@@ -825,22 +920,6 @@ public sealed unsafe partial class BgfxDevice
             bgfx.Raw.vertex_layout_skip(layout, chunk);
             byteCount -= chunk;
         }
-    }
-
-    private bgfx.VertexLayout CreateSkippedLayout(int stride)
-    {
-        bgfx.VertexLayout native = default;
-        bgfx.Raw.vertex_layout_begin(&native, BgfxCapabilityMapper.ToNativeRenderer(capabilities.backend));
-        int remaining = stride;
-        while (remaining != 0)
-        {
-            byte chunk = checked((byte)Math.Min(remaining, byte.MaxValue));
-            bgfx.Raw.vertex_layout_skip(&native, chunk);
-            remaining -= chunk;
-        }
-
-        bgfx.Raw.vertex_layout_end(&native);
-        return native;
     }
 
     private static (byte count, bgfx.AttribType type, bool normalized, bool asInteger) AttributeFormat(RenderVertexFormat format)
@@ -896,61 +975,6 @@ public sealed unsafe partial class BgfxDevice
         RenderUniformType.Matrix4x4 => bgfx.UniformType.Mat4,
         _ => throw new ArgumentOutOfRangeException(nameof(type))
     };
-
-    private void ValidateBindingSlots(
-        IReadOnlyList<RenderShaderBindingDescriptor> bindings,
-        bool allowStorageResources
-    ) {
-        var storageSlots = new HashSet<int>();
-        foreach (RenderShaderBindingDescriptor binding in bindings)
-        {
-            if (binding.kind is RenderShaderBindingKind.Texture
-                or RenderShaderBindingKind.StorageTexture
-                or RenderShaderBindingKind.StorageBuffer
-                && binding.slot > byte.MaxValue
-            ) {
-                throw new ArgumentOutOfRangeException(
-                    nameof(bindings),
-                    $"Binding '{binding.id.value}' slot exceeds the BGFX byte-sized stage range."
-                );
-            }
-            if (binding.kind is not (RenderShaderBindingKind.StorageTexture or RenderShaderBindingKind.StorageBuffer))
-            {
-                continue;
-            }
-            if (!allowStorageResources)
-            {
-                throw new NotSupportedException(
-                    $"BGFX graphics pipelines cannot bind storage resource '{binding.id.value}'."
-                );
-            }
-            if (!storageSlots.Add(binding.slot))
-            {
-                throw new ArgumentException(
-                    $"Storage binding slot {binding.slot} is declared more than once.",
-                    nameof(bindings)
-                );
-            }
-            GraphicsCapability required = binding.kind == RenderShaderBindingKind.StorageTexture
-                                          ? GraphicsCapability.StorageTexture
-                                          : GraphicsCapability.StorageBuffer;
-            if (!capabilities.Supports(required))
-            {
-                throw new NotSupportedException(
-                    $"The active backend does not support {binding.kind} binding '{binding.id.value}'."
-                );
-            }
-        }
-
-        int storageCount = storageSlots.Count;
-        if (storageCount > capabilities.limits.maxComputeBindings)
-        {
-            throw new NotSupportedException(
-                $"Pipeline requires {storageCount} storage bindings, but the device supports "
-                + $"{capabilities.limits.maxComputeBindings}."
-            );
-        }
-    }
 
     private static ushort BufferFlags(
         RenderBufferDescriptor descriptor,
@@ -1031,30 +1055,6 @@ public sealed unsafe partial class BgfxDevice
         if (pipeline.vertexLayoutHandle.Valid)
         {
             bgfx.destroy_vertex_layout(pipeline.vertexLayoutHandle);
-        }
-    }
-
-    private void ValidatePersistentHandle(PersistentBufferHandle buffer)
-    {
-        if (!buffer.isValid || GetHandleIdentity(buffer).generation != generation)
-        {
-            throw new ArgumentException("Buffer handle belongs to another device generation.", nameof(buffer));
-        }
-    }
-
-    private void ValidatePersistentHandle(GraphicsPipelineHandle pipeline)
-    {
-        if (!pipeline.isValid || GetHandleIdentity(pipeline).generation != generation)
-        {
-            throw new ArgumentException("Graphics pipeline belongs to another device generation.", nameof(pipeline));
-        }
-    }
-
-    private void ValidatePersistentHandle(ComputePipelineHandle pipeline)
-    {
-        if (!pipeline.isValid || GetHandleIdentity(pipeline).generation != generation)
-        {
-            throw new ArgumentException("Compute pipeline belongs to another device generation.", nameof(pipeline));
         }
     }
 

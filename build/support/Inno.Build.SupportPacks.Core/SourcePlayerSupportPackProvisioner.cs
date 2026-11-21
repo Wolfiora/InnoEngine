@@ -65,6 +65,40 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
     }
 
     /// <summary>
+    /// Prepares current target inputs and atomically selects their immutable Support Pack.
+    /// </summary>
+    /// <param name="target">
+    /// The target platform and architecture identity.
+    /// </param>
+    /// <param name="supportPackRoot">
+    /// The directory that owns the installed target directories.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels preparation or publication before a new current fingerprint is selected.
+    /// </param>
+    /// <returns>
+    /// An operation that completes after the target Pack has been installed and verified.
+    /// </returns>
+    public async ValueTask ProvisionAsync(
+        BuildTargetId target,
+        string supportPackRoot,
+        CancellationToken cancellationToken = default
+    ) {
+        using PlayerSupportPackPublication installed = await m_publisher.PublishAsync(
+            m_engineRoot,
+            supportPackRoot,
+            target,
+            m_dotnetHost,
+            cancellationToken,
+            m_nativeDependencies
+        ).ConfigureAwait(false);
+        foreach (string diagnostic in installed.diagnostics)
+        {
+            m_reportDiagnostic(diagnostic);
+        }
+    }
+
+    /// <summary>
     /// Finds the checkout that owns the running Editor or build command.
     /// </summary>
     /// <param name="startDirectory">
@@ -120,40 +154,6 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
             }
         }
         return null;
-    }
-
-    /// <summary>
-    /// Prepares current target inputs and atomically selects their immutable Support Pack.
-    /// </summary>
-    /// <param name="target">
-    /// The target platform and architecture identity.
-    /// </param>
-    /// <param name="supportPackRoot">
-    /// The directory that owns the installed target directories.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels preparation or publication before a new current fingerprint is selected.
-    /// </param>
-    /// <returns>
-    /// An operation that completes after the target Pack has been installed and verified.
-    /// </returns>
-    public async ValueTask ProvisionAsync(
-        BuildTargetId target,
-        string supportPackRoot,
-        CancellationToken cancellationToken = default
-    ) {
-        using PlayerSupportPackPublication installed = await m_publisher.PublishAsync(
-            m_engineRoot,
-            supportPackRoot,
-            target,
-            m_dotnetHost,
-            cancellationToken,
-            m_nativeDependencies
-        ).ConfigureAwait(false);
-        foreach (string diagnostic in installed.diagnostics)
-        {
-            m_reportDiagnostic(diagnostic);
-        }
     }
 
     private static bool IsEngineRoot(string path)

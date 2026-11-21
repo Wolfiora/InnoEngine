@@ -187,26 +187,6 @@ public sealed class EditorGameInputCapture
         m_pointerInside = false;
     }
 
-    private static bool IsReleaseFromWindow(
-        Event evnt,
-        uint windowId
-    ) => evnt switch
-    {
-        KeyReleasedEvent key => key.windowId == windowId,
-        MouseButtonReleasedEvent button => button.windowId == windowId,
-        _ => IsWindowExit(evnt, windowId)
-    };
-
-    private static bool IsWindowExit(
-        Event evnt,
-        uint windowId
-    ) => evnt switch
-    {
-        WindowFocusChangedEvent { isFocused: false } focus => focus.windowId == windowId,
-        WindowCloseEvent close => close.windowId == windowId,
-        _ => false
-    };
-
     private Event? RouteMove(MouseMovedEvent moved)
     {
         var local = new Vector2(moved.x - m_origin.X, moved.y - m_origin.Y);
@@ -233,4 +213,24 @@ public sealed class EditorGameInputCapture
     }
 
     private Event? RouteRelease(MouseButtonReleasedEvent released) => m_pressedButtons.Remove(released.button) ? released : null;
+
+    private static bool IsReleaseFromWindow(
+        Event evnt,
+        uint windowId
+    ) => evnt switch
+    {
+        KeyReleasedEvent key => key.windowId == windowId,
+        MouseButtonReleasedEvent button => button.windowId == windowId,
+        _ => IsWindowExit(evnt, windowId)
+    };
+
+    private static bool IsWindowExit(
+        Event evnt,
+        uint windowId
+    ) => evnt switch
+    {
+        WindowFocusChangedEvent { isFocused: false } focus => focus.windowId == windowId,
+        WindowCloseEvent close => close.windowId == windowId,
+        _ => false
+    };
 }

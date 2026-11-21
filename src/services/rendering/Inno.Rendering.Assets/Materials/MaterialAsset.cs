@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// Represents material state keyed by stable shader property identifiers.
 /// </summary>
 [StableTypeId("56f1fdc7-dad9-464a-848f-fcae4c33ecf2")]
-public class MaterialAsset : AssetObject
+public sealed class MaterialAsset : AssetObject
 {
     [SerializableProperty(PropertyVisibility.Hide)]
     private MaterialPropertyEntry[] m_properties = [];

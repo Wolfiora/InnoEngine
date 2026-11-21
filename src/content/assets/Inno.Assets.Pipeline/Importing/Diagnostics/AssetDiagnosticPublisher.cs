@@ -29,6 +29,19 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
         m_diagnostics = diagnostics;
     }
 
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose()
+    {
+        SetActive(false);
+        m_reports.Clear();
+        m_catalogState = string.Empty;
+        m_importStates.Clear();
+        m_buildStates.Clear();
+        m_referenceStates.Clear();
+    }
+
     internal void SynchronizeImports(IReadOnlyList<AssetMeta> entries)
     {
         ArgumentNullException.ThrowIfNull(entries);
@@ -182,19 +195,6 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
         m_catalogState = string.Empty;
     }
 
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose()
-    {
-        SetActive(false);
-        m_reports.Clear();
-        m_catalogState = string.Empty;
-        m_importStates.Clear();
-        m_buildStates.Clear();
-        m_referenceStates.Clear();
-    }
-
     internal void SetActive(bool active)
     {
         if (m_active == active)
@@ -263,11 +263,6 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
         );
     }
 
-    private sealed record Report(
-        DiagnosticSource source,
-        Diagnostic[] diagnostics
-    );
-
     private void ResolveBuild(Guid targetId)
     {
         if (!m_buildStates.Remove(targetId))
@@ -325,4 +320,9 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
         AssetMeta entry,
         IReadOnlyList<Diagnostic> diagnostics
     ) => $"{entry.importStatus}:{entry.relativePath}:{string.Join('\n', diagnostics.Select(static value => value.message))}";
+
+    private sealed record Report(
+        DiagnosticSource source,
+        Diagnostic[] diagnostics
+    );
 }

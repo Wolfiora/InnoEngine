@@ -396,29 +396,6 @@ public sealed class SerializedPropertyRenderer
         DrawContent(context);
     }
 
-    private void DrawContent(PropertyDrawContext context)
-    {
-        Dictionary<string, string> failureStates = m_failureStates.GetOrCreateValue(context.owner);
-        try
-        {
-            IPropertyDrawer drawer = m_drawers.Resolve(context.propertyType);
-            EditorUI.current.widgets.Disabled(context.isReadOnly, () => drawer.Draw(context));
-            EditorUI.current.widgets.CompletePropertyEdit(context.path);
-            failureStates.Remove(context.path);
-        }
-        catch (Exception exception)
-        {
-            EditorUI.current.widgets.ColoredText(EditorPalette.error, $"Error: {exception.Message}");
-            string failureState = $"{exception.GetType().FullName}|{exception.Message}";
-            if (!failureStates.TryGetValue(context.path, out string? previous)
-                || !string.Equals(previous, failureState, StringComparison.Ordinal)
-            ) {
-                m_logger.Write(LogLevel.Error, "Inspector failed to draw property '{0}': {1}", [context.path, exception]);
-                failureStates[context.path] = failureState;
-            }
-        }
-    }
-
     internal bool TryGetTextState(
         object owner,
         string path,
@@ -451,6 +428,29 @@ public sealed class SerializedPropertyRenderer
         if (m_textStates.TryGetValue(owner, out Dictionary<string, string>? states))
         {
             states.Remove(CreateStateKey(path, key));
+        }
+    }
+
+    private void DrawContent(PropertyDrawContext context)
+    {
+        Dictionary<string, string> failureStates = m_failureStates.GetOrCreateValue(context.owner);
+        try
+        {
+            IPropertyDrawer drawer = m_drawers.Resolve(context.propertyType);
+            EditorUI.current.widgets.Disabled(context.isReadOnly, () => drawer.Draw(context));
+            EditorUI.current.widgets.CompletePropertyEdit(context.path);
+            failureStates.Remove(context.path);
+        }
+        catch (Exception exception)
+        {
+            EditorUI.current.widgets.ColoredText(EditorPalette.error, $"Error: {exception.Message}");
+            string failureState = $"{exception.GetType().FullName}|{exception.Message}";
+            if (!failureStates.TryGetValue(context.path, out string? previous)
+                || !string.Equals(previous, failureState, StringComparison.Ordinal)
+            ) {
+                m_logger.Write(LogLevel.Error, "Inspector failed to draw property '{0}': {1}", [context.path, exception]);
+                failureStates[context.path] = failureState;
+            }
         }
     }
 

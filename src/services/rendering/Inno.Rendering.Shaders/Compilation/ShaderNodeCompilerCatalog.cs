@@ -16,7 +16,6 @@ namespace Inno.Rendering.Shaders;
 public sealed class ShaderNodeCompilerCatalog
 {
     private readonly Dictionary<string, IShaderNodeCompiler> m_compilers = new(StringComparer.Ordinal);
-    internal IReadOnlyList<IShaderNodeCompiler> providers { get; }
 
     /// <summary>
     /// Validates a complete generation of node compiler registrations.
@@ -355,4 +354,6 @@ public sealed class ShaderNodeCompilerCatalog
             string? portId = null
         ) => diagnostics.Add(new(code, DiagnosticSeverity.Error, message, nodeId, portId));
     }
+
+    internal IReadOnlyList<IShaderNodeCompiler> providers { get; }
 }

@@ -219,11 +219,6 @@ public sealed class StorageTests
 
     private sealed class PendingStorage : IApplicationStorage, IDisposable
     {
-        internal TaskCompletionSource completion { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        internal CancellationToken token { get; private set; }
-        internal bool disposed { get; private set; }
-        internal ReadOnlyMemory<byte> value { get; private set; }
-
         public ValueTask WriteAsync(
             StorageKey key,
             ReadOnlyMemory<byte> value,
@@ -255,5 +250,10 @@ public sealed class StorageTests
         ) => ValueTask.FromResult<IReadOnlyList<StorageKey>>(Array.Empty<StorageKey>());
 
         public void Dispose() => disposed = true;
+
+        internal TaskCompletionSource completion { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal CancellationToken token { get; private set; }
+        internal bool disposed { get; private set; }
+        internal ReadOnlyMemory<byte> value { get; private set; }
     }
 }

@@ -15,13 +15,9 @@ public sealed class DiagnosticHub
 
     private readonly Dictionary<string, DiagnosticReport> m_reports = new(StringComparer.Ordinal);
     private readonly Dictionary<string, long> m_producerEpochs = new(StringComparer.Ordinal);
-    private long m_nextProducerEpoch;
     private readonly List<IDiagnosticSink> m_sinks = [];
     private readonly object m_sync = new();
-
-    internal static DiagnosticHub current => S_CURRENT_SCOPE.current;
-
-    internal object synchronizationRoot => m_sync;
+    private long m_nextProducerEpoch;
 
     /// <summary>
     /// Occurs when a diagnostic presentation sink fails and is quarantined.
@@ -54,36 +50,6 @@ public sealed class DiagnosticHub
             m_producerEpochs[source.id] = epoch;
             Clear(source);
             return new DiagnosticReporter(this, source, epoch);
-        }
-    }
-
-    internal void SetOwned(
-        DiagnosticSource source,
-        long epoch,
-        IReadOnlyList<Diagnostic> diagnostics
-    ) {
-        lock (m_sync)
-        {
-            if (!m_producerEpochs.TryGetValue(source.id, out long current) || current != epoch)
-            {
-                throw new ObjectDisposedException(nameof(DiagnosticReporter), "The diagnostic producer generation has retired.");
-            }
-            Set(source, diagnostics);
-        }
-    }
-
-    internal void ReleaseOwned(
-        DiagnosticSource source,
-        long epoch
-    ) {
-        lock (m_sync)
-        {
-            if (!m_producerEpochs.TryGetValue(source.id, out long current) || current != epoch)
-            {
-                return;
-            }
-            m_producerEpochs.Remove(source.id);
-            Clear(source);
         }
     }
 
@@ -216,6 +182,40 @@ public sealed class DiagnosticHub
                 sink,
                 value
             ) => sink.Clear(value), report.source);
+        }
+    }
+
+    internal static DiagnosticHub current => S_CURRENT_SCOPE.current;
+
+    internal object synchronizationRoot => m_sync;
+
+    internal void SetOwned(
+        DiagnosticSource source,
+        long epoch,
+        IReadOnlyList<Diagnostic> diagnostics
+    ) {
+        lock (m_sync)
+        {
+            if (!m_producerEpochs.TryGetValue(source.id, out long current) || current != epoch)
+            {
+                throw new ObjectDisposedException(nameof(DiagnosticReporter), "The diagnostic producer generation has retired.");
+            }
+            Set(source, diagnostics);
+        }
+    }
+
+    internal void ReleaseOwned(
+        DiagnosticSource source,
+        long epoch
+    ) {
+        lock (m_sync)
+        {
+            if (!m_producerEpochs.TryGetValue(source.id, out long current) || current != epoch)
+            {
+                return;
+            }
+            m_producerEpochs.Remove(source.id);
+            Clear(source);
         }
     }
 

@@ -137,63 +137,6 @@ public sealed partial class LargePanelPerformanceTests
         }
     }
 
-    private static GameScene LoadInteractionHierarchy(NativeProjectPanelHost host)
-    {
-        string? input = InputDirectory("hierarchy");
-        if (input is not null && Directory.Exists(input))
-        {
-            CopyDirectory(input, Path.Combine(host.projectRoot, "Assets"));
-            host.assets.Rescan();
-            return host.workspace.Open("Untitled Scene.iscene");
-        }
-        GameScene scene = host.CreateScene();
-        for (int index = 0; index < 10_000; index++)
-        {
-            _ = scene.CreateObject("Object " + index.ToString("D5"));
-        }
-        _ = host.workspace.Save(scene, string.Empty);
-        return scene;
-    }
-
-    private static unsafe void FocusAssetSearch(
-        NativeProjectPanelHost host,
-        EditorPanelExtension panel
-    ) {
-        ImGuiWindow* pane = FindInteractionWindow("##ContentPane");
-        Vector2 start = Unsafe.BitCast<NativeVector, Vector2>(pane->DC.CursorStartPos);
-        ImGuiIO* io = NativeGui.Raw.GetIO();
-        // Locate the existing text input using ordinary clicks; no private Panel field is read or changed.
-        for (float offset = 24f; offset <= 64f; offset += 4f)
-        {
-            NativeGui.Raw.AddMousePosEvent(io, pane->Pos.X + pane->Size.X - 70f, start.Y + offset);
-            NativeGui.Raw.AddMouseButtonEvent(io, 0, 1);
-            host.native.DrawPanel(panel);
-            NativeGui.Raw.AddMouseButtonEvent(io, 0, 0);
-            host.native.DrawPanel(panel);
-            ImGuiNativeContext* context = NativeGui.Raw.GetCurrentContext();
-            if (context->InputTextState.ID != 0 && context->ActiveId == context->InputTextState.ID)
-            {
-                return;
-            }
-        }
-        throw new InvalidOperationException("Ordinary pointer input did not focus the existing asset search field.");
-    }
-
-    private static unsafe ImGuiWindow* FindInteractionWindow(string fragment)
-    {
-        ImGuiNativeContext* context = NativeGui.Raw.GetCurrentContext();
-        for (int index = 0; index < context->Windows.Size; index++)
-        {
-            ImGuiWindow* window = context->Windows.Data[index];
-            string? name = Marshal.PtrToStringUTF8((nint)window->Name);
-            if (window->Active != 0 && name?.Contains(fragment, StringComparison.Ordinal) == true)
-            {
-                return window;
-            }
-        }
-        throw new InvalidOperationException("The drawn native input owner is absent: " + fragment);
-    }
-
     private void MeasureInteraction(
         string scenario,
         Action operation
@@ -257,5 +200,62 @@ public sealed partial class LargePanelPerformanceTests
                 sharedInput = InputDirectory(scenario.StartsWith("hierarchy", StringComparison.Ordinal) ? "hierarchy" : "assets")
             })
         );
+    }
+
+    private static GameScene LoadInteractionHierarchy(NativeProjectPanelHost host)
+    {
+        string? input = InputDirectory("hierarchy");
+        if (input is not null && Directory.Exists(input))
+        {
+            CopyDirectory(input, Path.Combine(host.projectRoot, "Assets"));
+            host.assets.Rescan();
+            return host.workspace.Open("Untitled Scene.iscene");
+        }
+        GameScene scene = host.CreateScene();
+        for (int index = 0; index < 10_000; index++)
+        {
+            _ = scene.CreateObject("Object " + index.ToString("D5"));
+        }
+        _ = host.workspace.Save(scene, string.Empty);
+        return scene;
+    }
+
+    private static unsafe void FocusAssetSearch(
+        NativeProjectPanelHost host,
+        EditorPanelExtension panel
+    ) {
+        ImGuiWindow* pane = FindInteractionWindow("##ContentPane");
+        Vector2 start = Unsafe.BitCast<NativeVector, Vector2>(pane->DC.CursorStartPos);
+        ImGuiIO* io = NativeGui.Raw.GetIO();
+        // Locate the existing text input using ordinary clicks; no private Panel field is read or changed.
+        for (float offset = 24f; offset <= 64f; offset += 4f)
+        {
+            NativeGui.Raw.AddMousePosEvent(io, pane->Pos.X + pane->Size.X - 70f, start.Y + offset);
+            NativeGui.Raw.AddMouseButtonEvent(io, 0, 1);
+            host.native.DrawPanel(panel);
+            NativeGui.Raw.AddMouseButtonEvent(io, 0, 0);
+            host.native.DrawPanel(panel);
+            ImGuiNativeContext* context = NativeGui.Raw.GetCurrentContext();
+            if (context->InputTextState.ID != 0 && context->ActiveId == context->InputTextState.ID)
+            {
+                return;
+            }
+        }
+        throw new InvalidOperationException("Ordinary pointer input did not focus the existing asset search field.");
+    }
+
+    private static unsafe ImGuiWindow* FindInteractionWindow(string fragment)
+    {
+        ImGuiNativeContext* context = NativeGui.Raw.GetCurrentContext();
+        for (int index = 0; index < context->Windows.Size; index++)
+        {
+            ImGuiWindow* window = context->Windows.Data[index];
+            string? name = Marshal.PtrToStringUTF8((nint)window->Name);
+            if (window->Active != 0 && name?.Contains(fragment, StringComparison.Ordinal) == true)
+            {
+                return window;
+            }
+        }
+        throw new InvalidOperationException("The drawn native input owner is absent: " + fragment);
     }
 }

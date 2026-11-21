@@ -16,46 +16,6 @@ namespace Inno.Core.Mathematics;
 public struct Vector3 : IEquatable<Vector3>
 {
     /// <summary>
-    /// The horizontal or first component.
-    /// </summary>
-    [DataMember]
-    public float x;
-
-    /// <summary>
-    /// The vertical or second component.
-    /// </summary>
-    [DataMember]
-    public float y;
-
-    /// <summary>
-    /// The depth or third component.
-    /// </summary>
-    [DataMember]
-    public float z;
-
-    /// <summary>
-    /// Creates a vector from explicit component values.
-    /// </summary>
-    /// <param name="x">
-    /// The horizontal or first component.
-    /// </param>
-    /// <param name="y">
-    /// The vertical or second component.
-    /// </param>
-    /// <param name="z">
-    /// The depth or third component.
-    /// </param>
-    public Vector3(
-        float x,
-        float y,
-        float z
-    ) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
-
-    /// <summary>
     /// A value whose components are all zero.
     /// </summary>
 
@@ -98,6 +58,58 @@ public struct Vector3 : IEquatable<Vector3>
     public static readonly Vector3 BACK = new(0, 0, -1);
 
     /// <summary>
+    /// The horizontal or first component.
+    /// </summary>
+    [DataMember]
+    public float x;
+
+    /// <summary>
+    /// The vertical or second component.
+    /// </summary>
+    [DataMember]
+    public float y;
+
+    /// <summary>
+    /// The depth or third component.
+    /// </summary>
+    [DataMember]
+    public float z;
+
+    /// <summary>
+    /// Creates a vector from explicit component values.
+    /// </summary>
+    /// <param name="x">
+    /// The horizontal or first component.
+    /// </param>
+    /// <param name="y">
+    /// The vertical or second component.
+    /// </param>
+    /// <param name="z">
+    /// The depth or third component.
+    /// </param>
+    public Vector3(
+        float x,
+        float y,
+        float z
+    ) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    /// <summary>
+    /// Gets a unit-length copy, or the zero value when normalization is undefined.
+    /// </summary>
+    public Vector3 normalized
+    {
+        get
+        {
+            float len = Length();
+            return len > 0 ? this / len : ZERO;
+        }
+    }
+
+    /// <summary>
     /// Calculates the Euclidean magnitude of this value.
     /// </summary>
     /// <returns>
@@ -118,16 +130,42 @@ public struct Vector3 : IEquatable<Vector3>
     public float LengthSquared() => SimdMath.Dot3(x, y, z, x, y, z);
 
     /// <summary>
-    /// Gets a unit-length copy, or the zero value when normalization is undefined.
+    /// Determines whether this value and the supplied value represent the same logical state.
     /// </summary>
-    public Vector3 normalized
-    {
-        get
-        {
-            float len = Length();
-            return len > 0 ? this / len : ZERO;
-        }
-    }
+    /// <param name="obj">
+    /// The object compared with this value.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    public override bool Equals(object? obj) => obj is Vector3 other && this == other;
+
+    /// <summary>
+    /// Determines whether this value and the supplied value represent the same logical state.
+    /// </summary>
+    /// <param name="other">
+    /// The strongly typed value compared with this value.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    public bool Equals(Vector3 other) => this == other;
+
+    /// <summary>
+    /// Computes a hash code consistent with the implemented equality contract.
+    /// </summary>
+    /// <returns>
+    /// The scalar result calculated from the supplied inputs.
+    /// </returns>
+    public override int GetHashCode() => HashCode.Combine(x, y, z);
+
+    /// <summary>
+    /// Formats this value as a human-readable component list.
+    /// </summary>
+    /// <returns>
+    /// The validated text representation owned by the caller.
+    /// </returns>
+    public override string ToString() => $"({x}, {y}, {z})";
 
     /// <summary>
     /// Returns a unit-length value while handling degenerate input according to the method contract.
@@ -372,42 +410,6 @@ public struct Vector3 : IEquatable<Vector3>
     }
 
     /// <summary>
-    /// Applies the matrix's upper-left 3-by-3 linear transform without translation.
-    /// </summary>
-    /// <param name="normal">
-    /// The surface normal used by the operation.
-    /// </param>
-    /// <param name="matrix">
-    /// The transformation matrix applied to the supplied value.
-    /// </param>
-    /// <returns>
-    /// The transformed components without normalization or an automatically computed inverse transpose.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3 TransformNormal(
-        Vector3 normal,
-        Matrix matrix
-    ) {
-        if (Sse.IsSupported || AdvSimd.IsSupported)
-        {
-            Vector128<float> v = Vector128.Create(normal.x, normal.y, normal.z, 0f);
-            Vector128<float> row1 = Vector128.Create(matrix.m11, matrix.m12, matrix.m13, 0f);
-            Vector128<float> row2 = Vector128.Create(matrix.m21, matrix.m22, matrix.m23, 0f);
-            Vector128<float> row3 = Vector128.Create(matrix.m31, matrix.m32, matrix.m33, 0f);
-
-            float x = SimdMath.Dot4(row1, v);
-            float y = SimdMath.Dot4(row2, v);
-            float z = SimdMath.Dot4(row3, v);
-            return new Vector3(x, y, z);
-        }
-
-        float tx = matrix.m11 * normal.x + matrix.m12 * normal.y + matrix.m13 * normal.z;
-        float ty = matrix.m21 * normal.x + matrix.m22 * normal.y + matrix.m23 * normal.z;
-        float tz = matrix.m31 * normal.x + matrix.m32 * normal.y + matrix.m33 * normal.z;
-        return new Vector3(tx, ty, tz);
-    }
-
-    /// <summary>
     /// Transforms the supplied value by the requested transformation.
     /// </summary>
     /// <param name="value">
@@ -444,6 +446,42 @@ public struct Vector3 : IEquatable<Vector3>
     }
 
     /// <summary>
+    /// Applies the matrix's upper-left 3-by-3 linear transform without translation.
+    /// </summary>
+    /// <param name="normal">
+    /// The surface normal used by the operation.
+    /// </param>
+    /// <param name="matrix">
+    /// The transformation matrix applied to the supplied value.
+    /// </param>
+    /// <returns>
+    /// The transformed components without normalization or an automatically computed inverse transpose.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Vector3 TransformNormal(
+        Vector3 normal,
+        Matrix matrix
+    ) {
+        if (Sse.IsSupported || AdvSimd.IsSupported)
+        {
+            Vector128<float> v = Vector128.Create(normal.x, normal.y, normal.z, 0f);
+            Vector128<float> row1 = Vector128.Create(matrix.m11, matrix.m12, matrix.m13, 0f);
+            Vector128<float> row2 = Vector128.Create(matrix.m21, matrix.m22, matrix.m23, 0f);
+            Vector128<float> row3 = Vector128.Create(matrix.m31, matrix.m32, matrix.m33, 0f);
+
+            float x = SimdMath.Dot4(row1, v);
+            float y = SimdMath.Dot4(row2, v);
+            float z = SimdMath.Dot4(row3, v);
+            return new Vector3(x, y, z);
+        }
+
+        float tx = matrix.m11 * normal.x + matrix.m12 * normal.y + matrix.m13 * normal.z;
+        float ty = matrix.m21 * normal.x + matrix.m22 * normal.y + matrix.m23 * normal.z;
+        float tz = matrix.m31 * normal.x + matrix.m32 * normal.y + matrix.m33 * normal.z;
+        return new Vector3(tx, ty, tz);
+    }
+
+    /// <summary>
     /// Adds the supplied values component by component.
     /// </summary>
     /// <param name="a">
@@ -466,6 +504,18 @@ public struct Vector3 : IEquatable<Vector3>
     /// <summary>
     /// Subtracts or negates the supplied value component by component.
     /// </summary>
+    /// <param name="v">
+    /// The concrete value read or transformed by this operation.
+    /// </param>
+    /// <returns>
+    /// The validated vector3 that represents the completed operation.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Vector3 operator -(Vector3 v) => new(-v.x, -v.y, -v.z);
+
+    /// <summary>
+    /// Subtracts or negates the supplied value component by component.
+    /// </summary>
     /// <param name="a">
     /// The first operand or interpolation endpoint.
     /// </param>
@@ -480,18 +530,6 @@ public struct Vector3 : IEquatable<Vector3>
         Vector3 a,
         Vector3 b
     ) => new(a.x - b.x, a.y - b.y, a.z - b.z);
-
-    /// <summary>
-    /// Subtracts or negates the supplied value component by component.
-    /// </summary>
-    /// <param name="v">
-    /// The concrete value read or transformed by this operation.
-    /// </param>
-    /// <returns>
-    /// The validated vector3 that represents the completed operation.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3 operator -(Vector3 v) => new(-v.x, -v.y, -v.z);
 
     /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
@@ -606,42 +644,4 @@ public struct Vector3 : IEquatable<Vector3>
     /// The validated vector3 that represents the completed operation.
     /// </returns>
     public static implicit operator Vector3(NumericsVector3 v) => new(v.X, v.Y, v.Z);
-
-    /// <summary>
-    /// Determines whether this value and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="obj">
-    /// The object compared with this value.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public override bool Equals(object? obj) => obj is Vector3 other && this == other;
-
-    /// <summary>
-    /// Determines whether this value and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="other">
-    /// The strongly typed value compared with this value.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public bool Equals(Vector3 other) => this == other;
-
-    /// <summary>
-    /// Computes a hash code consistent with the implemented equality contract.
-    /// </summary>
-    /// <returns>
-    /// The scalar result calculated from the supplied inputs.
-    /// </returns>
-    public override int GetHashCode() => HashCode.Combine(x, y, z);
-
-    /// <summary>
-    /// Formats this value as a human-readable component list.
-    /// </summary>
-    /// <returns>
-    /// The validated text representation owned by the caller.
-    /// </returns>
-    public override string ToString() => $"({x}, {y}, {z})";
 }

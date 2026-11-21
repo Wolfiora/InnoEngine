@@ -82,45 +82,6 @@ public sealed class ShaderGraphType : ISerializable
     public bool isArray { get; set; }
 
     /// <summary>
-    /// Captures a full immutable source type as reload-safe authoring data.
-    /// </summary>
-    /// <param name="type">
-    /// Atomic, aggregate or storage type to capture.
-    /// </param>
-    /// <returns>
-    /// A detached descriptor whose reconstructed type has the same complete interface.
-    /// </returns>
-    public static ShaderGraphType Capture(ShaderSourceType type)
-    {
-        ArgumentNullException.ThrowIfNull(type);
-        var result = new ShaderGraphType
-        {
-            id = type.id,
-            element = type.elementType is null ? null : Capture(type.elementType),
-            length = type.elementCount,
-            fieldNames = type.fields.Select(static field => field.name).ToArray(),
-            fieldTypes = type.fields.Select(static field => Capture(field.type)).ToArray()
-        };
-        if (type.storage is ShaderStorageType storage)
-        {
-            result.isStorage = true;
-            result.isImage = storage.isImage;
-            result.access = storage.access;
-            result.dimension = storage.dimension;
-            result.isArray = storage.array;
-            if (storage.isImage)
-            {
-                result.format = storage.format!.Value;
-            }
-            else
-            {
-                result.storageElement = Capture(storage.valueType);
-            }
-        }
-        return result;
-    }
-
-    /// <summary>
     /// Validates and freezes the complete descriptor.
     /// </summary>
     /// <returns>
@@ -168,5 +129,44 @@ public sealed class ShaderGraphType : ISerializable
                        index
                    ) => new ShaderSourceField(name, fieldTypes[index].CreateType())).ToArray()
                );
+    }
+
+    /// <summary>
+    /// Captures a full immutable source type as reload-safe authoring data.
+    /// </summary>
+    /// <param name="type">
+    /// Atomic, aggregate or storage type to capture.
+    /// </param>
+    /// <returns>
+    /// A detached descriptor whose reconstructed type has the same complete interface.
+    /// </returns>
+    public static ShaderGraphType Capture(ShaderSourceType type)
+    {
+        ArgumentNullException.ThrowIfNull(type);
+        var result = new ShaderGraphType
+        {
+            id = type.id,
+            element = type.elementType is null ? null : Capture(type.elementType),
+            length = type.elementCount,
+            fieldNames = type.fields.Select(static field => field.name).ToArray(),
+            fieldTypes = type.fields.Select(static field => Capture(field.type)).ToArray()
+        };
+        if (type.storage is ShaderStorageType storage)
+        {
+            result.isStorage = true;
+            result.isImage = storage.isImage;
+            result.access = storage.access;
+            result.dimension = storage.dimension;
+            result.isArray = storage.array;
+            if (storage.isImage)
+            {
+                result.format = storage.format!.Value;
+            }
+            else
+            {
+                result.storageElement = Capture(storage.valueType);
+            }
+        }
+        return result;
     }
 }

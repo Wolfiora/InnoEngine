@@ -142,17 +142,6 @@ public sealed class AssetCoreTests
         );
     }
 
-    private sealed class PendingResolver : IAssetReferenceResolver
-    {
-        public AssetObject Resolve(
-            Guid persistentId,
-            Guid stableTypeId,
-            string lastKnownPath,
-            Type expectedType,
-            string propertyPath
-        ) => throw new RetirementPendingException("The asset generation is still retiring.");
-    }
-
     [Fact]
     public void ChangeSet_PreservesMoveIdentityAndRevision()
     {
@@ -170,5 +159,16 @@ public sealed class AssetCoreTests
         Assert.Equal(id, set.changes[0].persistentId);
         Assert.Equal(AssetPath.Project("A/value.txt"), set.changes[0].previousAssetPath);
         Assert.Equal(AssetPath.Project("B/value.txt"), set.changes[0].assetPath);
+    }
+
+    private sealed class PendingResolver : IAssetReferenceResolver
+    {
+        public AssetObject Resolve(
+            Guid persistentId,
+            Guid stableTypeId,
+            string lastKnownPath,
+            Type expectedType,
+            string propertyPath
+        ) => throw new RetirementPendingException("The asset generation is still retiring.");
     }
 }

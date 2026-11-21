@@ -107,30 +107,6 @@ public sealed class PluginSceneReloadTests : IDisposable
         Assert.Equal(recovered.identity.runtimeIdentity, recoveredChange.resolution.runtimeIdentity);
     }
 
-    private DotNetModuleSource CreateRequest()
-        => new()
-    {
-        moduleName = "SceneReloadPluginTests",
-        artifactRootDirectory = m_artifactRoot,
-        mainAssemblyPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Modules",
-            "SceneReload",
-            "Inno.Scene.Reload.TestModule.dll"
-        ),
-        domain = AssemblyDomain.InnoPlugin,
-        scope = AssemblyScope.Runtime
-    };
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private (Guid, string) AttachPluginComponent(GameObject owner)
-    {
-        Type type = new TypeRef(S_COMPONENT_TYPE_ID).Resolve(m_types);
-        GameComponent original = owner.AddComponent(type);
-        SetValue(original, 47);
-        return (original.identity.persistentId, type.FullName!);
-    }
-
     [Fact]
     public void ForeignAllocatorFailsBeforeReplacingAnEditComponentAndRollbackRestoresItsState()
     {
@@ -157,6 +133,30 @@ public sealed class PluginSceneReloadTests : IDisposable
         Assert.Same(previous, owner.GetComponents().Single(component => component is not Transform));
         Assert.Equal(previousIdentity, previous.identity);
         Assert.Equal(47, GetValue(previous));
+    }
+
+    private DotNetModuleSource CreateRequest()
+        => new()
+    {
+        moduleName = "SceneReloadPluginTests",
+        artifactRootDirectory = m_artifactRoot,
+        mainAssemblyPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Modules",
+            "SceneReload",
+            "Inno.Scene.Reload.TestModule.dll"
+        ),
+        domain = AssemblyDomain.InnoPlugin,
+        scope = AssemblyScope.Runtime
+    };
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private (Guid, string) AttachPluginComponent(GameObject owner)
+    {
+        Type type = new TypeRef(S_COMPONENT_TYPE_ID).Resolve(m_types);
+        GameComponent original = owner.AddComponent(type);
+        SetValue(original, 47);
+        return (original.identity.persistentId, type.FullName!);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

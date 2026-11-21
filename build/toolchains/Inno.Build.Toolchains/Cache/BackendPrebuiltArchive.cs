@@ -20,20 +20,6 @@ public static class BackendPrebuiltArchive
     private const long C_MAX_BYTES = 8L * 1024 * 1024 * 1024;
     private static readonly DateTimeOffset S_EPOCH = new(1980, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
-    private sealed record FileRecord(
-        string owner,
-        string configuration,
-        string input,
-        string path,
-        string sha256
-    );
-
-    private sealed record Inventory(
-        int version,
-        string target,
-        FileRecord[] files
-    );
-
     /// <summary>
     /// Creates a fresh platform ZIP from an explicit inventory and an owned staging directory.
     /// Additional files in staging are never included. Every selected digest is checked while copying.
@@ -265,4 +251,18 @@ public static class BackendPrebuiltArchive
             throw new InvalidDataException("Backend payload does not match its inventory.");
         }
     }
+
+    private sealed record FileRecord(
+        string owner,
+        string configuration,
+        string input,
+        string path,
+        string sha256
+    );
+
+    private sealed record Inventory(
+        int version,
+        string target,
+        FileRecord[] files
+    );
 }

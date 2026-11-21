@@ -58,109 +58,6 @@ internal sealed class GamePlayerHost : ShellHost
         m_engine.logs.RegisterSink(new ConsoleLogSink(options.consoleColors));
     }
 
-    internal static async Task<GamePlayerHost> CreateAsync(
-        PlayerLaunchOptions options,
-        CancellationToken cancellationToken
-    ) {
-        ArgumentNullException.ThrowIfNull(options);
-        EngineHost engine = new EngineHostBuilder()
-            .UseMetadataSources(options.modules, options.types, options.serializationMetadata)
-            .UseLogDelivery(options.logDeliveryMode)
-            .Build();
-        GamePlayerHost? host = null;
-        IRuntimeContentStore? content = null;
-        try
-        {
-            PlayerContentMetadata metadata = await options.contentSource.ReadMetadataAsync(cancellationToken);
-            using SerializationGeneration serialization = engine.serialization.CaptureGeneration();
-            GameRuntimeManifest manifest = RuntimeManifestEnvelope.Decode(metadata.manifest.Span, serialization);
-            RuntimeContentCatalog catalog = serialization.Deserialize<RuntimeContentCatalog>(metadata.catalog.Span);
-            catalog.Validate();
-            if (catalog.runtimeAssemblyCount != manifest.modules.Sum(static module => module.assemblies.Length))
-            {
-                throw new InvalidDataException("The content catalog and runtime manifest have different code closures.");
-            }
-            ActivateRuntimeModules(
-                options.moduleActivator,
-                engine.modules,
-                GameCodeDeployment.FromManifest(manifest.modules)
-            );
-            var pack = new ContentPackDescriptor(catalog.contentHash, catalog.packFileName);
-            content = await options.contentSource.PrepareAsync(
-                pack,
-                new StorageScope(manifest.applicationId),
-                serialization,
-                cancellationToken
-            );
-            if (content is null)
-            {
-                throw new InvalidOperationException("The Player content source returned no prepared store.");
-            }
-            if (content.descriptor != pack)
-            {
-                throw new InvalidDataException("The prepared Player content store differs from the selected deployment pack.");
-            }
-            cancellationToken.ThrowIfCancellationRequested();
-            host = new GamePlayerHost(
-                options.adapters,
-                new ShellOptions
-                {
-                    adapters = options.adapterSelection,
-                    window = new PlatformWindowOptions
-                    {
-                        title = manifest.productName,
-                        width = manifest.windowWidth,
-                        height = manifest.windowHeight,
-                        resizable = true,
-                        highPixelDensity = true,
-                        visible = options.windowVisible
-                    },
-                    preferredGraphicsApi = options.graphicsApi,
-                    verticalSync = true,
-                    sRgbBackbuffer = true,
-                    forceSingleThreadedRendering = options.renderOnCallingThread,
-                    suspendWhenHidden = options.windowVisible
-                },
-                engine,
-                options
-            );
-            host.m_content = content;
-            content = null;
-            host.InitializeRuntime(manifest, options);
-            return host;
-        }
-        catch
-        {
-            if (host is not null)
-            {
-                host.Dispose();
-            }
-            else
-            {
-                try
-                {
-                    content?.Dispose();
-                }
-                finally
-                {
-                    engine.Dispose();
-                }
-            }
-            throw;
-        }
-    }
-
-    internal async Task<int> RunGameAsync(
-        IShellFrameDriver frameDriver,
-        int? smokeFrameLimit = null,
-        CancellationToken cancellationToken = default
-    ) {
-        using IDisposable scope = settings.EnterExecutionScope();
-        using IDisposable sessionScope = session.EnterExecutionScope();
-        using IDisposable uiScope = session.subsystems.GetRequiredSubsystem<UiRuntime>().EnterExecutionScope();
-        return await RunAsync(frameDriver, smokeFrameLimit, cancellationToken);
-    }
-
     /// <summary>
     /// Routes one backend-neutral platform event into the active game runtime session.
     /// </summary>
@@ -258,6 +155,109 @@ internal sealed class GamePlayerHost : ShellHost
         }
     }
 
+    internal async Task<int> RunGameAsync(
+        IShellFrameDriver frameDriver,
+        int? smokeFrameLimit = null,
+        CancellationToken cancellationToken = default
+    ) {
+        using IDisposable scope = settings.EnterExecutionScope();
+        using IDisposable sessionScope = session.EnterExecutionScope();
+        using IDisposable uiScope = session.subsystems.GetRequiredSubsystem<UiRuntime>().EnterExecutionScope();
+        return await RunAsync(frameDriver, smokeFrameLimit, cancellationToken);
+    }
+
+    internal static async Task<GamePlayerHost> CreateAsync(
+        PlayerLaunchOptions options,
+        CancellationToken cancellationToken
+    ) {
+        ArgumentNullException.ThrowIfNull(options);
+        EngineHost engine = new EngineHostBuilder()
+            .UseMetadataSources(options.modules, options.types, options.serializationMetadata)
+            .UseLogDelivery(options.logDeliveryMode)
+            .Build();
+        GamePlayerHost? host = null;
+        IRuntimeContentStore? content = null;
+        try
+        {
+            PlayerContentMetadata metadata = await options.contentSource.ReadMetadataAsync(cancellationToken);
+            using SerializationGeneration serialization = engine.serialization.CaptureGeneration();
+            GameRuntimeManifest manifest = RuntimeManifestEnvelope.Decode(metadata.manifest.Span, serialization);
+            RuntimeContentCatalog catalog = serialization.Deserialize<RuntimeContentCatalog>(metadata.catalog.Span);
+            catalog.Validate();
+            if (catalog.runtimeAssemblyCount != manifest.modules.Sum(static module => module.assemblies.Length))
+            {
+                throw new InvalidDataException("The content catalog and runtime manifest have different code closures.");
+            }
+            ActivateRuntimeModules(
+                options.moduleActivator,
+                engine.modules,
+                GameCodeDeployment.FromManifest(manifest.modules)
+            );
+            var pack = new ContentPackDescriptor(catalog.contentHash, catalog.packFileName);
+            content = await options.contentSource.PrepareAsync(
+                pack,
+                new StorageScope(manifest.applicationId),
+                serialization,
+                cancellationToken
+            );
+            if (content is null)
+            {
+                throw new InvalidOperationException("The Player content source returned no prepared store.");
+            }
+            if (content.descriptor != pack)
+            {
+                throw new InvalidDataException("The prepared Player content store differs from the selected deployment pack.");
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+            host = new GamePlayerHost(
+                options.adapters,
+                new ShellOptions
+                {
+                    adapters = options.adapterSelection,
+                    window = new PlatformWindowOptions
+                    {
+                        title = manifest.productName,
+                        width = manifest.windowWidth,
+                        height = manifest.windowHeight,
+                        resizable = true,
+                        highPixelDensity = true,
+                        visible = options.windowVisible
+                    },
+                    preferredGraphicsApi = options.graphicsApi,
+                    verticalSync = true,
+                    sRgbBackbuffer = true,
+                    forceSingleThreadedRendering = options.renderOnCallingThread,
+                    suspendWhenHidden = options.windowVisible
+                },
+                engine,
+                options
+            );
+            host.m_content = content;
+            content = null;
+            host.InitializeRuntime(manifest, options);
+            return host;
+        }
+        catch
+        {
+            if (host is not null)
+            {
+                host.Dispose();
+            }
+            else
+            {
+                try
+                {
+                    content?.Dispose();
+                }
+                finally
+                {
+                    engine.Dispose();
+                }
+            }
+            throw;
+        }
+    }
+
     private RuntimeSession session => m_session ?? throw new InvalidOperationException("The Player runtime session is not initialized.");
 
     private ProjectSettingsStore settings
@@ -265,14 +265,6 @@ internal sealed class GamePlayerHost : ShellHost
 
     private RenderRuntime rendering
         => m_rendering ?? throw new InvalidOperationException("The Player rendering runtime is not initialized.");
-
-    private static RenderViewport CreatePresentationViewport(
-        GamePresentationSettings presentation,
-        RenderPresentationSize size
-    ) {
-        GamePresentationViewport viewport = presentation.CalculateViewport(size.width, size.height);
-        return new RenderViewport(viewport.x, viewport.y, viewport.width, viewport.height);
-    }
 
     private void InitializeRuntime(
         GameRuntimeManifest manifest,
@@ -356,6 +348,14 @@ internal sealed class GamePlayerHost : ShellHost
             SceneAsset startupAsset = session.assets.Load<SceneAsset>(AssetPath.Parse(manifest.startupScene));
             session.scenes.LoadScene(startupAsset.Instantiate(m_engine.serialization, session.assets));
         }
+    }
+
+    private static RenderViewport CreatePresentationViewport(
+        GamePresentationSettings presentation,
+        RenderPresentationSize size
+    ) {
+        GamePresentationViewport viewport = presentation.CalculateViewport(size.width, size.height);
+        return new RenderViewport(viewport.x, viewport.y, viewport.width, viewport.height);
     }
 
     private static void ActivateRuntimeModules(

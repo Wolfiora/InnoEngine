@@ -111,6 +111,8 @@ public abstract class EditorSetting
         return boundDefault.ValueEquals(setting);
     }
 
+    internal bool isPageDefinition { get; private set; }
+
     /// <summary>
     /// Draws the field using the staged JSON object owned by the Settings frontend.
     /// A type that does not override this method describes a page.
@@ -119,8 +121,6 @@ public abstract class EditorSetting
     /// The isolated mutable object being edited.
     /// </param>
     protected virtual void OnDraw(EditorSettingObject setting) {}
-
-    internal bool isPageDefinition { get; private set; }
 
     internal EditorSettingObject CreateDefault()
         => m_boundDefaultValue?.Copy()

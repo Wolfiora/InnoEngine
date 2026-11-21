@@ -15,9 +15,6 @@ namespace Inno.Build.WindowsX64.Integration.Tests;
 
 public sealed class WindowsColdPublicationTests : IDisposable
 {
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private delegate int ReadNativeValue();
-
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoNativePublication", Guid.NewGuid().ToString("N"));
 
     [Fact]
@@ -139,6 +136,17 @@ public sealed class WindowsColdPublicationTests : IDisposable
         }
     }
 
+    private NativeBuildContext CreateContext()
+    {
+        Directory.CreateDirectory(m_root);
+        File.WriteAllText(Path.Combine(m_root, "InnoEngine.sln"), string.Empty);
+        string projectName = "Inno.Build.Toolchains";
+        string owner = Path.Combine(m_root, "build", "toolchains", projectName);
+        Directory.CreateDirectory(owner);
+        File.WriteAllText(Path.Combine(owner, projectName + ".csproj"), "<Project />");
+        return new(m_root, "release");
+    }
+
     private static NativeBuildRecipe CreateRecipe(
         NativeBuildContext context,
         NativeComponentDescriptor owner,
@@ -155,14 +163,6 @@ public sealed class WindowsColdPublicationTests : IDisposable
         declarations.Concat(context.toolchain?.declarations ?? [])
     );
 
-    private NativeBuildContext CreateContext()
-    {
-        Directory.CreateDirectory(m_root);
-        File.WriteAllText(Path.Combine(m_root, "InnoEngine.sln"), string.Empty);
-        string projectName = "Inno.Build.Toolchains";
-        string owner = Path.Combine(m_root, "build", "toolchains", projectName);
-        Directory.CreateDirectory(owner);
-        File.WriteAllText(Path.Combine(owner, projectName + ".csproj"), "<Project />");
-        return new(m_root, "release");
-    }
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int ReadNativeValue();
 }

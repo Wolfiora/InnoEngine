@@ -16,16 +16,20 @@ public sealed unsafe partial class ImGuiWidget
     private readonly Dictionary<(string Owner, uint Window), TreeWidgetWindowState> m_treeStatesByWindow = [];
     private bool m_hasNextTreeNodeOpen;
     private bool m_nextTreeNodeOpen;
-    private List<TreeWidgetNodeState> m_treeNodeStack => GetTreeWindowState().treeNodeStack;
-    private List<string> m_lastNodeIdsByDepth => GetTreeWindowState().lastNodeIdsByDepth;
-    private List<TreeWidgetLineSegment> m_lineSegments => GetTreeWindowState().lineSegments;
-    private Dictionary<string, bool> m_hasNextSiblingById => GetTreeWindowState().hasNextSiblingById;
-    private Dictionary<string, bool> m_openStatesById => GetTreeWindowState().openStatesById;
 
-    private int m_lastFrame
+    /// <summary>
+    /// Gets this window and owner's expansion change counter for invalidating neutral flattened views.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// No valid drawing session or native frame is active.
+    /// </exception>
+    public ulong treeExpansionRevision
     {
-        get => GetTreeWindowState().lastFrame;
-        set => GetTreeWindowState().lastFrame = value;
+        get
+        {
+            m_session.EnsureDrawing();
+            return GetTreeWindowState().expansionRevision;
+        }
     }
 
     /// <summary>
@@ -72,21 +76,6 @@ public sealed unsafe partial class ImGuiWidget
             {
                 NativeImGui.Unindent(indentation);
             }
-        }
-    }
-
-    /// <summary>
-    /// Gets this window and owner's expansion change counter for invalidating neutral flattened views.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">
-    /// No valid drawing session or native frame is active.
-    /// </exception>
-    public ulong treeExpansionRevision
-    {
-        get
-        {
-            m_session.EnsureDrawing();
-            return GetTreeWindowState().expansionRevision;
         }
     }
 
@@ -139,6 +128,31 @@ public sealed unsafe partial class ImGuiWidget
         }
         m_openStatesById[id] = open;
         GetTreeWindowState().expansionRevision++;
+    }
+
+    /// <summary>
+    /// Overrides the retained expansion state of the next submitted non-leaf tree row.
+    /// </summary>
+    /// <param name="open">
+    /// Whether the next row should be expanded.
+    /// </param>
+    public void SetNextTreeNodeOpen(bool open)
+    {
+        m_session.EnsureDrawing();
+        m_hasNextTreeNodeOpen = true;
+        m_nextTreeNodeOpen = open;
+    }
+
+    private List<TreeWidgetNodeState> m_treeNodeStack => GetTreeWindowState().treeNodeStack;
+    private List<string> m_lastNodeIdsByDepth => GetTreeWindowState().lastNodeIdsByDepth;
+    private List<TreeWidgetLineSegment> m_lineSegments => GetTreeWindowState().lineSegments;
+    private Dictionary<string, bool> m_hasNextSiblingById => GetTreeWindowState().hasNextSiblingById;
+    private Dictionary<string, bool> m_openStatesById => GetTreeWindowState().openStatesById;
+
+    private int m_lastFrame
+    {
+        get => GetTreeWindowState().lastFrame;
+        set => GetTreeWindowState().lastFrame = value;
     }
 
     private TreeNodeResult DrawTreeRow(
@@ -325,19 +339,6 @@ public sealed unsafe partial class ImGuiWidget
             }
             throw;
         }
-    }
-
-    /// <summary>
-    /// Overrides the retained expansion state of the next submitted non-leaf tree row.
-    /// </summary>
-    /// <param name="open">
-    /// Whether the next row should be expanded.
-    /// </param>
-    public void SetNextTreeNodeOpen(bool open)
-    {
-        m_session.EnsureDrawing();
-        m_hasNextTreeNodeOpen = true;
-        m_nextTreeNodeOpen = open;
     }
 
     private TreeWidgetWindowState GetTreeWindowState()
@@ -695,15 +696,15 @@ public readonly struct TreeNodeResult
 
 internal sealed class TreeWidgetWindowState
 {
-    internal ulong expansionRevision;
-    internal uint activeContentId;
-    internal string? activeContentOwner;
     internal readonly HashSet<uint> navigationItemIds = [];
     internal readonly List<TreeWidgetNodeState> treeNodeStack = [];
     internal readonly List<string> lastNodeIdsByDepth = [];
     internal readonly List<TreeWidgetLineSegment> lineSegments = [];
     internal readonly Dictionary<string, bool> hasNextSiblingById = new(StringComparer.Ordinal);
     internal readonly Dictionary<string, bool> openStatesById = new(StringComparer.Ordinal);
+    internal ulong expansionRevision;
+    internal uint activeContentId;
+    internal string? activeContentOwner;
     internal int lastFrame = -1;
 }
 

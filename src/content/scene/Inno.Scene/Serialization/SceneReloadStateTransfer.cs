@@ -34,6 +34,28 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         m_scenes = scenes;
     }
 
+    void IGenerationChange.PrepareForActivation() => PrepareForActivation();
+
+    void IGenerationChange.Apply() => Apply();
+
+    void IGenerationChange.RollbackStructure() => RollbackStructure();
+
+    void IGenerationChange.RestorePreviousState() => RestorePreviousState();
+
+    void IGenerationChange.Complete() => Complete();
+
+    void IReferenceRecoveryParticipant.Validate(IReadOnlyList<ReferenceRecoveryChange> changes)
+    {
+        foreach (ReferenceRecoveryChange change in changes)
+        {
+            ReferenceResolution resolution = change.resolution;
+            if (resolution.state is ReferenceResolutionState.Invalid or ReferenceResolutionState.TypeMismatch)
+            {
+                throw new InvalidOperationException($"Recovery slot '{change.missingState.key}': {resolution.diagnostic}");
+            }
+        }
+    }
+
     internal IReadOnlyList<object> retiredObjects
         => m_scenes
             .SelectMany(static scene => scene.states)
@@ -42,49 +64,6 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
             .ToArray();
 
     internal IReadOnlyList<SceneReloadDiagnostic> diagnostics => m_diagnostics;
-
-    internal static SceneReloadStateTransfer Capture(
-        SceneWorld world,
-        TypeCacheReloadContext context,
-        SerializationRegistry serialization,
-        IAssetReferenceResolver assets
-    ) {
-        ArgumentNullException.ThrowIfNull(world);
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(serialization);
-        ArgumentNullException.ThrowIfNull(assets);
-        var scenes = new List<SceneState>();
-        foreach (GameScene scene in world.loadedScenes)
-        {
-            SceneStructureSnapshot structure = scene.CaptureStructure();
-            EngineObject[] engineObjects = structure.objects
-                .SelectMany(static entry => entry.components.Cast<EngineObject>().Prepend(entry.gameObject))
-                .Concat(scene.GetSystems())
-                .ToArray();
-            var sourceIds = new Dictionary<EngineObject, Guid>(ReferenceEqualityComparer.Instance);
-            foreach (EngineObject target in engineObjects)
-            {
-                sourceIds.Add(target, target.identity.persistentId);
-            }
-            var references = new SceneGraphReferenceMap(scene, sourceIds);
-            var states = new List<ObjectState>();
-            using (references.Enter())
-            {
-                foreach (GameComponent component in structure.objects.SelectMany(static entry => entry.components))
-                {
-                    states.Add(CaptureState(component, context.previous, serialization, assets));
-                }
-                foreach (GameSystem system in scene.GetSystems())
-                {
-                    states.Add(CaptureState(system, context.previous, serialization, assets));
-                }
-            }
-
-            ValidateMultiplicity(scene, structure, context);
-            scenes.Add(new SceneState(scene, engineObjects, sourceIds, states));
-        }
-        return new SceneReloadStateTransfer(context, serialization, assets, scenes);
-    }
 
     internal void PrepareForActivation()
     {
@@ -296,25 +275,199 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         }
     }
 
-    void IGenerationChange.PrepareForActivation() => PrepareForActivation();
-
-    void IGenerationChange.Apply() => Apply();
-
-    void IGenerationChange.RollbackStructure() => RollbackStructure();
-
-    void IGenerationChange.RestorePreviousState() => RestorePreviousState();
-
-    void IGenerationChange.Complete() => Complete();
-
-    void IReferenceRecoveryParticipant.Validate(IReadOnlyList<ReferenceRecoveryChange> changes)
-    {
-        foreach (ReferenceRecoveryChange change in changes)
+    internal static SceneReloadStateTransfer Capture(
+        SceneWorld world,
+        TypeCacheReloadContext context,
+        SerializationRegistry serialization,
+        IAssetReferenceResolver assets
+    ) {
+        ArgumentNullException.ThrowIfNull(world);
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(serialization);
+        ArgumentNullException.ThrowIfNull(assets);
+        var scenes = new List<SceneState>();
+        foreach (GameScene scene in world.loadedScenes)
         {
-            ReferenceResolution resolution = change.resolution;
-            if (resolution.state is ReferenceResolutionState.Invalid or ReferenceResolutionState.TypeMismatch)
+            SceneStructureSnapshot structure = scene.CaptureStructure();
+            EngineObject[] engineObjects = structure.objects
+                .SelectMany(static entry => entry.components.Cast<EngineObject>().Prepend(entry.gameObject))
+                .Concat(scene.GetSystems())
+                .ToArray();
+            var sourceIds = new Dictionary<EngineObject, Guid>(ReferenceEqualityComparer.Instance);
+            foreach (EngineObject target in engineObjects)
             {
-                throw new InvalidOperationException($"Recovery slot '{change.missingState.key}': {resolution.diagnostic}");
+                sourceIds.Add(target, target.identity.persistentId);
             }
+            var references = new SceneGraphReferenceMap(scene, sourceIds);
+            var states = new List<ObjectState>();
+            using (references.Enter())
+            {
+                foreach (GameComponent component in structure.objects.SelectMany(static entry => entry.components))
+                {
+                    states.Add(CaptureState(component, context.previous, serialization, assets));
+                }
+                foreach (GameSystem system in scene.GetSystems())
+                {
+                    states.Add(CaptureState(system, context.previous, serialization, assets));
+                }
+            }
+
+            ValidateMultiplicity(scene, structure, context);
+            scenes.Add(new SceneState(scene, engineObjects, sourceIds, states));
+        }
+        return new SceneReloadStateTransfer(context, serialization, assets, scenes);
+    }
+
+    private EngineObject CreateReplacement(
+        ObjectState state,
+        Type replacementType
+    ) {
+        if (replacementType == typeof(MissingGameComponent))
+        {
+            return new MissingGameComponent(state.logicalType, state.typeName, state.data, state.dependencies);
+        }
+        if (replacementType == typeof(MissingGameSystem))
+        {
+            return new MissingGameSystem(state.logicalType, state.typeName, state.data, state.dependencies);
+        }
+        try
+        {
+            return state.target is GameComponent
+                   ? ComponentFactory.Create(replacementType, m_context.candidate)
+                   : (EngineObject)m_context.candidate.CreateInstance(replacementType);
+        }
+        catch (Exception exception)
+        {
+            throw new InvalidOperationException(
+                $"Hot-reload replacement '{replacementType.FullName}' requires a parameterless constructor.",
+                exception
+            );
+        }
+    }
+
+    private void RestoreState(
+        SceneState sceneState,
+        bool useCurrentTargets
+    ) {
+        EngineObject[] currentObjects = sceneState.engineObjects
+            .Select(engineObject => (
+                sceneState.states.FirstOrDefault(state => ReferenceEquals(state.target, engineObject))
+                    is ObjectState state
+                ? useCurrentTargets ? state.currentTarget : state.target
+                : engineObject
+            ))
+            .ToArray();
+        var references = new SceneGraphReferenceMap(sceneState.scene);
+        var currentByPersistentId = new Dictionary<Guid, EngineObject>();
+        for (int i = 0; i < currentObjects.Length; i++)
+        {
+            references.Register(sceneState.engineObjects[i].identity.persistentId, currentObjects[i]);
+            currentByPersistentId[currentObjects[i].identity.persistentId] = currentObjects[i];
+        }
+        foreach (ObjectState state in sceneState.states)
+        {
+            IReadOnlyDictionary<Guid, Guid>? aliases = state.target switch
+            {
+                MissingGameComponent component => component.referenceAliases,
+                MissingGameSystem system => system.referenceAliases,
+                _ => null
+            };
+            if (aliases is null)
+            {
+                continue;
+            }
+            foreach ((Guid alias, Guid targetPersistentId) in aliases)
+            {
+                if (!currentByPersistentId.TryGetValue(targetPersistentId, out EngineObject? target))
+                {
+                    throw new InvalidOperationException(
+                        $"Missing scene state reference alias '{alias}' targets unavailable identity '{targetPersistentId}'."
+                    );
+                }
+                references.Register(alias, target);
+            }
+        }
+        List<Exception>? restoreFailures = null;
+        using (references.Enter())
+        {
+            foreach (ObjectState state in sceneState.states)
+            {
+                ISerializable target = (ISerializable)(useCurrentTargets ? state.currentTarget : state.target);
+                if (target is MissingGameComponent or MissingGameSystem)
+                {
+                    continue;
+                }
+                SerializationPropertyRestoreResult result;
+                try
+                {
+                    result = m_serialization.RestorePropertiesData(
+                        target,
+                        state.data,
+                        useCurrentTargets && state.target is not MissingGameComponent and not MissingGameSystem
+                        ? SerializationPropertyRestoreMode.CollectFailures
+                        : SerializationPropertyRestoreMode.Strict,
+                        AssetSerializationContext.Create(m_assets)
+                    );
+                }
+                catch (Exception exception) when (!useCurrentTargets && exception is not RetirementPendingException)
+                {
+                    restoreFailures ??= [];
+                    restoreFailures.Add(
+                        new InvalidOperationException(
+                            $"Previous state restoration failed for '{target.GetType().FullName}'.",
+                            exception
+                        )
+                    );
+                    continue;
+                }
+                if (!useCurrentTargets)
+                {
+                    continue;
+                }
+                if (state.target is MissingGameComponent or MissingGameSystem
+                    && (!result.success || result.ignoredCount != 0)
+                ) {
+                    throw new InvalidOperationException(
+                        $"Missing scene element '{state.target.identity.persistentId}' could not restore its complete preserved state."
+                    );
+                }
+                for (int i = 0; i < result.failures.Count; i++)
+                {
+                    SerializationPropertyRestoreFailure failure = result.failures[i];
+                    string previousType = GetTypeDisplayName(failure.previousPropertyType);
+                    string currentType = GetTypeDisplayName(failure.currentPropertyType);
+                    m_diagnostics.Add(
+                        new SceneReloadDiagnostic(
+                            "INNOHR0001",
+                            DiagnosticSeverity.Warning,
+                            $"Hot reload skipped '{target.GetType().FullName}.{failure.name}' because "
+                            + $"serialized type '{previousType}' is incompatible with '{currentType}'. "
+                            + $"The new member default value was preserved. {failure.message}",
+                            sceneState.scene.identity.persistentId,
+                            ((EngineObject)target).identity.persistentId,
+                            failure.name,
+                            previousType,
+                            currentType
+                        )
+                    );
+                }
+            }
+        }
+        if (restoreFailures is not null)
+        {
+            throw new AggregateException("One or more previous scene objects could not be restored.", restoreFailures);
+        }
+    }
+
+    private IEnumerable<ObjectState> RetiredStates()
+        => m_scenes.SelectMany(static scene => scene.states)
+            .Where(state => m_context.IsRetired(state.activeType));
+
+    private void EnsureActive()
+    {
+        if (m_finished)
+        {
+            throw new InvalidOperationException("Scene hot-reload migration is already finished.");
         }
     }
 
@@ -400,33 +553,6 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
                     )
                 );
             }
-        }
-    }
-
-    private EngineObject CreateReplacement(
-        ObjectState state,
-        Type replacementType
-    ) {
-        if (replacementType == typeof(MissingGameComponent))
-        {
-            return new MissingGameComponent(state.logicalType, state.typeName, state.data, state.dependencies);
-        }
-        if (replacementType == typeof(MissingGameSystem))
-        {
-            return new MissingGameSystem(state.logicalType, state.typeName, state.data, state.dependencies);
-        }
-        try
-        {
-            return state.target is GameComponent
-                   ? ComponentFactory.Create(replacementType, m_context.candidate)
-                   : (EngineObject)m_context.candidate.CreateInstance(replacementType);
-        }
-        catch (Exception exception)
-        {
-            throw new InvalidOperationException(
-                $"Hot-reload replacement '{replacementType.FullName}' requires a parameterless constructor.",
-                exception
-            );
         }
     }
 
@@ -550,131 +676,51 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         return new ActiveTypeInfo(activeTypeRef, activeType.FullName ?? activeType.Name, allowsMultiple);
     }
 
-    private void RestoreState(
-        SceneState sceneState,
-        bool useCurrentTargets
-    ) {
-        EngineObject[] currentObjects = sceneState.engineObjects
-            .Select(engineObject => (
-                sceneState.states.FirstOrDefault(state => ReferenceEquals(state.target, engineObject))
-                    is ObjectState state
-                ? useCurrentTargets ? state.currentTarget : state.target
-                : engineObject
-            ))
-            .ToArray();
-        var references = new SceneGraphReferenceMap(sceneState.scene);
-        var currentByPersistentId = new Dictionary<Guid, EngineObject>();
-        for (int i = 0; i < currentObjects.Length; i++)
-        {
-            references.Register(sceneState.engineObjects[i].identity.persistentId, currentObjects[i]);
-            currentByPersistentId[currentObjects[i].identity.persistentId] = currentObjects[i];
-        }
-        foreach (ObjectState state in sceneState.states)
-        {
-            IReadOnlyDictionary<Guid, Guid>? aliases = state.target switch
-            {
-                MissingGameComponent component => component.referenceAliases,
-                MissingGameSystem system => system.referenceAliases,
-                _ => null
-            };
-            if (aliases is null)
-            {
-                continue;
-            }
-            foreach ((Guid alias, Guid targetPersistentId) in aliases)
-            {
-                if (!currentByPersistentId.TryGetValue(targetPersistentId, out EngineObject? target))
-                {
-                    throw new InvalidOperationException(
-                        $"Missing scene state reference alias '{alias}' targets unavailable identity '{targetPersistentId}'."
-                    );
-                }
-                references.Register(alias, target);
-            }
-        }
-        List<Exception>? restoreFailures = null;
-        using (references.Enter())
-        {
-            foreach (ObjectState state in sceneState.states)
-            {
-                ISerializable target = (ISerializable)(useCurrentTargets ? state.currentTarget : state.target);
-                if (target is MissingGameComponent or MissingGameSystem)
-                {
-                    continue;
-                }
-                SerializationPropertyRestoreResult result;
-                try
-                {
-                    result = m_serialization.RestorePropertiesData(
-                        target,
-                        state.data,
-                        useCurrentTargets && state.target is not MissingGameComponent and not MissingGameSystem
-                        ? SerializationPropertyRestoreMode.CollectFailures
-                        : SerializationPropertyRestoreMode.Strict,
-                        AssetSerializationContext.Create(m_assets)
-                    );
-                }
-                catch (Exception exception) when (!useCurrentTargets && exception is not RetirementPendingException)
-                {
-                    restoreFailures ??= [];
-                    restoreFailures.Add(
-                        new InvalidOperationException(
-                            $"Previous state restoration failed for '{target.GetType().FullName}'.",
-                            exception
-                        )
-                    );
-                    continue;
-                }
-                if (!useCurrentTargets)
-                {
-                    continue;
-                }
-                if (state.target is MissingGameComponent or MissingGameSystem
-                    && (!result.success || result.ignoredCount != 0)
-                ) {
-                    throw new InvalidOperationException(
-                        $"Missing scene element '{state.target.identity.persistentId}' could not restore its complete preserved state."
-                    );
-                }
-                for (int i = 0; i < result.failures.Count; i++)
-                {
-                    SerializationPropertyRestoreFailure failure = result.failures[i];
-                    string previousType = GetTypeDisplayName(failure.previousPropertyType);
-                    string currentType = GetTypeDisplayName(failure.currentPropertyType);
-                    m_diagnostics.Add(
-                        new SceneReloadDiagnostic(
-                            "INNOHR0001",
-                            DiagnosticSeverity.Warning,
-                            $"Hot reload skipped '{target.GetType().FullName}.{failure.name}' because "
-                            + $"serialized type '{previousType}' is incompatible with '{currentType}'. "
-                            + $"The new member default value was preserved. {failure.message}",
-                            sceneState.scene.identity.persistentId,
-                            ((EngineObject)target).identity.persistentId,
-                            failure.name,
-                            previousType,
-                            currentType
-                        )
-                    );
-                }
-            }
-        }
-        if (restoreFailures is not null)
-        {
-            throw new AggregateException("One or more previous scene objects could not be restored.", restoreFailures);
-        }
-    }
-
     private static string GetTypeDisplayName(Type type) => type.FullName ?? type.Name;
 
-    private IEnumerable<ObjectState> RetiredStates()
-        => m_scenes.SelectMany(static scene => scene.states)
-            .Where(state => m_context.IsRetired(state.activeType));
-
-    private void EnsureActive()
-    {
-        if (m_finished)
+    private static Type? ResolveCandidateType(
+        ObjectState state,
+        TypeCacheReloadContext context
+    ) {
+        Type requiredBase = state.target is GameSystem ? typeof(GameSystem) : typeof(GameComponent);
+        Type? candidate = null;
+        if (state.target is MissingGameComponent or MissingGameSystem)
         {
-            throw new InvalidOperationException("Scene hot-reload migration is already finished.");
+            _ = TryResolve(state.logicalType, context.candidate, out candidate);
+        }
+        else if (context.IsRetired(state.activeType)
+                 && context.TryResolveReplacement(state.activeType, out TypeRef replacement)
+        ) {
+            candidate = replacement.Resolve(context.candidate);
+        }
+        if (candidate is null)
+        {
+            return null;
+        }
+        if (!requiredBase.IsAssignableFrom(candidate) || candidate.IsAbstract
+            || candidate == typeof(MissingGameComponent) || candidate == typeof(MissingGameSystem)
+        ) {
+            throw new InvalidOperationException(
+                $"Stable type id '{state.logicalType.stableId:D}' resolves to invalid replacement '{candidate.FullName}'."
+            );
+        }
+        return candidate;
+    }
+
+    private static bool TryResolve(
+        TypeRef typeRef,
+        TypeCacheSnapshot snapshot,
+        out Type? type
+    ) {
+        try
+        {
+            type = typeRef.Resolve(snapshot);
+            return true;
+        }
+        catch (InvalidOperationException)
+        {
+            type = null;
+            return false;
         }
     }
 
@@ -727,50 +773,4 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         string displayName,
         bool allowsMultiple
     );
-
-    private static Type? ResolveCandidateType(
-        ObjectState state,
-        TypeCacheReloadContext context
-    ) {
-        Type requiredBase = state.target is GameSystem ? typeof(GameSystem) : typeof(GameComponent);
-        Type? candidate = null;
-        if (state.target is MissingGameComponent or MissingGameSystem)
-        {
-            _ = TryResolve(state.logicalType, context.candidate, out candidate);
-        }
-        else if (context.IsRetired(state.activeType)
-                 && context.TryResolveReplacement(state.activeType, out TypeRef replacement)
-        ) {
-            candidate = replacement.Resolve(context.candidate);
-        }
-        if (candidate is null)
-        {
-            return null;
-        }
-        if (!requiredBase.IsAssignableFrom(candidate) || candidate.IsAbstract
-            || candidate == typeof(MissingGameComponent) || candidate == typeof(MissingGameSystem)
-        ) {
-            throw new InvalidOperationException(
-                $"Stable type id '{state.logicalType.stableId:D}' resolves to invalid replacement '{candidate.FullName}'."
-            );
-        }
-        return candidate;
-    }
-
-    private static bool TryResolve(
-        TypeRef typeRef,
-        TypeCacheSnapshot snapshot,
-        out Type? type
-    ) {
-        try
-        {
-            type = typeRef.Resolve(snapshot);
-            return true;
-        }
-        catch (InvalidOperationException)
-        {
-            type = null;
-            return false;
-        }
-    }
 }

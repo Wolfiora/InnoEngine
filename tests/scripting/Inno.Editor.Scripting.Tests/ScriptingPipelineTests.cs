@@ -136,26 +136,6 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         );
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static AssetPath InvokePublicPathProbe(string assemblyPath)
-    {
-        var lifetime = new AssemblyLoadContext("source-local-path-test", isCollectible: true);
-        try
-        {
-            using var stream = new MemoryStream(File.ReadAllBytes(assemblyPath));
-            Assembly assembly = lifetime.LoadFromStream(stream);
-            Func<AssetPath> resolve = assembly.GetType("SourceLocalPathProbe", throwOnError: true)!.GetMethod(
-                "Resolve",
-                BindingFlags.Public | BindingFlags.Static
-            )!.CreateDelegate<Func<AssetPath>>();
-            return resolve();
-        }
-        finally
-        {
-            lifetime.Unload();
-        }
-    }
-
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -1332,15 +1312,6 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         }
     }
 
-    private static AssetSampleImportTransaction PrepareSample(
-        ScriptingFixture fixture,
-        AssetPath source
-    ) {
-        AssetSampleImportTransaction import = fixture.assets.PrepareSampleImport(source);
-        Assert.True(SpinWait.SpinUntil(() => import.Advance(), 15_000));
-        return import;
-    }
-
     [Fact]
     public void IdeProjectionUsesPluginMetadataReferencesWithoutExtraProjects()
     {
@@ -1596,19 +1567,6 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         }
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void AssertRecoveredAvailability(AvailabilitySceneState state)
-    {
-        GameComponent recoveredPlugin = state.pluginOwner.GetComponents().Single(component => component is not Transform);
-        GameComponent recoveredScript = state.scriptOwner.GetComponents().Single(component => component is not Transform);
-        Assert.IsNotType<MissingGameComponent>(recoveredPlugin);
-        Assert.IsNotType<MissingGameComponent>(recoveredScript);
-        Assert.Equal(state.pluginComponentId, recoveredPlugin.identity.persistentId);
-        Assert.Equal(state.scriptComponentId, recoveredScript.identity.persistentId);
-        Assert.Equal(47, recoveredPlugin.GetType().GetProperty("retained")!.GetValue(recoveredPlugin));
-        Assert.Equal(73, recoveredScript.GetType().GetProperty("retained")!.GetValue(recoveredScript));
-    }
-
     [Fact]
     public void NeutralSettingsCacheDoesNotPinRetiredScriptTypesWithoutAnExplicitRebuild()
     {
@@ -1646,14 +1604,6 @@ public sealed partial class ScriptingPipelineTests : IDisposable
                     [SerializableProperty] public int value { get; set; } = {{value}};
                 }
                 """);
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static WeakReference CaptureCachedSettingType(ProjectSettingsStore settings)
-    {
-        Assert.True(settings.TryClone(new ProjectSettingId("tests.detached.setting"), out ISerializable? value));
-        Assert.NotNull(value);
-        return new WeakReference(value.GetType());
     }
 
     [Fact]
@@ -1823,24 +1773,6 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         );
         Assert.True(missing.isMissing);
         Assert.Equal(persistentId, missing.identity.persistentId);
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static (Guid persistentId, Guid stableTypeId) LoadScriptAssetAndUnloadScripts(ScriptingFixture fixture)
-    {
-        using ScriptReloadHost reload = fixture.CreateReloadHost(new EditorReloadCoordinator());
-        reload.Start();
-        ScriptCompilationResult compilation = fixture.CompilePending(reload);
-        Assert.True(compilation.success, FormatDiagnostics(compilation));
-        Assert.True(reload.ApplyPendingReload());
-        Type assetType = fixture.ResolveActiveType("ShutdownAsset");
-        AssetObject loaded = fixture.assets.Load(AssetPath.Project("Content/value.shutdownasset"), assetType);
-        Assert.True(fixture.assets.TryGetInfo(loaded.identity.persistentId, out AssetInfo? imported));
-        Assert.Equal(AssetImportStatus.Imported, imported!.status);
-        Guid persistentId = loaded.identity.persistentId;
-        Guid stableTypeId = imported.stableAssetTypeId;
-        reload.Dispose();
-        return (persistentId, stableTypeId);
     }
 
     [Fact]
@@ -2029,16 +1961,106 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         Assert.Equal(3, ReadLatestVersion(fixture));
     }
 
+    [Fact]
+    public void NewCompilationTicketSupersedesTheExactPreviousRequest()
+    {
+        using EditorInteractionRuntime runtime = m_fixture.CreateEditorRuntime();
+        runtime.Start();
+        _ = runtime.panelCount;
+        IEditorScriptCompilation scripting = Assert.IsAssignableFrom<IEditorScriptCompilation>(ScriptingCompilationProbe.compilation);
+        IScriptCompilationTicket first = scripting.RequestCompilation();
+        IScriptCompilationTicket second = scripting.RequestCompilation();
+        Assert.Equal(ScriptCompilationTicketState.Superseded, first.state);
+        Assert.True(first.isCompleted);
+        Assert.True(second.requestId > first.requestId);
+        Assert.Same(second, scripting.currentTicket);
+        Assert.Equal(ScriptCompilationTicketState.Queued, second.state);
+    }
+
+    [Fact]
+    public void FailedResultHasNoActivationOrRuntimeArtifacts()
+    {
+        ScriptCompilationResult result = ScriptCompilationResult.Failure(
+            new ScriptDiagnostic("INNO-TEST", DiagnosticSeverity.Error, "Injected compilation failure.", filePath: null, line: 0, column: 0)
+        );
+        Assert.False(result.success);
+        Assert.Null(result.outputDirectory);
+        Assert.Empty(result.moduleDeployments);
+        Assert.Empty(result.runtimeAssemblyPaths);
+        Assert.Empty(result.compiledAssemblyNames);
+        Assert.Empty(result.reusedAssemblyNames);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static AssetPath InvokePublicPathProbe(string assemblyPath)
+    {
+        var lifetime = new AssemblyLoadContext("source-local-path-test", isCollectible: true);
+        try
+        {
+            using var stream = new MemoryStream(File.ReadAllBytes(assemblyPath));
+            Assembly assembly = lifetime.LoadFromStream(stream);
+            Func<AssetPath> resolve = assembly.GetType("SourceLocalPathProbe", throwOnError: true)!.GetMethod(
+                "Resolve",
+                BindingFlags.Public | BindingFlags.Static
+            )!.CreateDelegate<Func<AssetPath>>();
+            return resolve();
+        }
+        finally
+        {
+            lifetime.Unload();
+        }
+    }
+
+    private static AssetSampleImportTransaction PrepareSample(
+        ScriptingFixture fixture,
+        AssetPath source
+    ) {
+        AssetSampleImportTransaction import = fixture.assets.PrepareSampleImport(source);
+        Assert.True(SpinWait.SpinUntil(() => import.Advance(), 15_000));
+        return import;
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void AssertRecoveredAvailability(AvailabilitySceneState state)
+    {
+        GameComponent recoveredPlugin = state.pluginOwner.GetComponents().Single(component => component is not Transform);
+        GameComponent recoveredScript = state.scriptOwner.GetComponents().Single(component => component is not Transform);
+        Assert.IsNotType<MissingGameComponent>(recoveredPlugin);
+        Assert.IsNotType<MissingGameComponent>(recoveredScript);
+        Assert.Equal(state.pluginComponentId, recoveredPlugin.identity.persistentId);
+        Assert.Equal(state.scriptComponentId, recoveredScript.identity.persistentId);
+        Assert.Equal(47, recoveredPlugin.GetType().GetProperty("retained")!.GetValue(recoveredPlugin));
+        Assert.Equal(73, recoveredScript.GetType().GetProperty("retained")!.GetValue(recoveredScript));
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference CaptureCachedSettingType(ProjectSettingsStore settings)
+    {
+        Assert.True(settings.TryClone(new ProjectSettingId("tests.detached.setting"), out ISerializable? value));
+        Assert.NotNull(value);
+        return new WeakReference(value.GetType());
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static (Guid persistentId, Guid stableTypeId) LoadScriptAssetAndUnloadScripts(ScriptingFixture fixture)
+    {
+        using ScriptReloadHost reload = fixture.CreateReloadHost(new EditorReloadCoordinator());
+        reload.Start();
+        ScriptCompilationResult compilation = fixture.CompilePending(reload);
+        Assert.True(compilation.success, FormatDiagnostics(compilation));
+        Assert.True(reload.ApplyPendingReload());
+        Type assetType = fixture.ResolveActiveType("ShutdownAsset");
+        AssetObject loaded = fixture.assets.Load(AssetPath.Project("Content/value.shutdownasset"), assetType);
+        Assert.True(fixture.assets.TryGetInfo(loaded.identity.persistentId, out AssetInfo? imported));
+        Assert.Equal(AssetImportStatus.Imported, imported!.status);
+        Guid persistentId = loaded.identity.persistentId;
+        Guid stableTypeId = imported.stableAssetTypeId;
+        reload.Dispose();
+        return (persistentId, stableTypeId);
+    }
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static int ReadLatestVersion(ScriptingFixture fixture) => ReadVersion(fixture.ResolveActiveType("VersionedBehavior"));
-
-    private sealed class DeferredReloadGuard : IEditorReloadGuard
-    {
-        internal bool isBlocked { get; set; } = true;
-        public bool canRequestReload => !isBlocked;
-        public bool canActivateReload => !isBlocked;
-        public string? blockingReason => isBlocked ? "Waiting for fixture active Play to retire." : null;
-    }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static List<Type> RetainActiveScriptType(ScriptingFixture fixture) => [fixture.ResolveActiveType("VersionedBehavior")];
@@ -2092,36 +2114,6 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             }
             Thread.Sleep(5);
         }
-    }
-
-    [Fact]
-    public void NewCompilationTicketSupersedesTheExactPreviousRequest()
-    {
-        using EditorInteractionRuntime runtime = m_fixture.CreateEditorRuntime();
-        runtime.Start();
-        _ = runtime.panelCount;
-        IEditorScriptCompilation scripting = Assert.IsAssignableFrom<IEditorScriptCompilation>(ScriptingCompilationProbe.compilation);
-        IScriptCompilationTicket first = scripting.RequestCompilation();
-        IScriptCompilationTicket second = scripting.RequestCompilation();
-        Assert.Equal(ScriptCompilationTicketState.Superseded, first.state);
-        Assert.True(first.isCompleted);
-        Assert.True(second.requestId > first.requestId);
-        Assert.Same(second, scripting.currentTicket);
-        Assert.Equal(ScriptCompilationTicketState.Queued, second.state);
-    }
-
-    [Fact]
-    public void FailedResultHasNoActivationOrRuntimeArtifacts()
-    {
-        ScriptCompilationResult result = ScriptCompilationResult.Failure(
-            new ScriptDiagnostic("INNO-TEST", DiagnosticSeverity.Error, "Injected compilation failure.", filePath: null, line: 0, column: 0)
-        );
-        Assert.False(result.success);
-        Assert.Null(result.outputDirectory);
-        Assert.Empty(result.moduleDeployments);
-        Assert.Empty(result.runtimeAssemblyPaths);
-        Assert.Empty(result.compiledAssemblyNames);
-        Assert.Empty(result.reusedAssemblyNames);
     }
 
     private static int ReadVersion(Type type) => (int)type.GetProperty("version")!.GetValue(Activator.CreateInstance(type))!;
@@ -2229,25 +2221,6 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         GC.WaitForPendingFinalizers();
         GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
     }
-
-    private readonly record struct MissingGenerationExpectation(
-        GameObject owner,
-        Guid componentId,
-        WeakReference retiredComponent,
-        WeakReference retiredType
-    );
-
-    private readonly record struct RetiredScriptObject(
-        WeakReference type,
-        WeakReference component
-    );
-
-    private readonly record struct AvailabilitySceneState(
-        GameObject pluginOwner,
-        GameObject scriptOwner,
-        Guid pluginComponentId,
-        Guid scriptComponentId
-    );
 
     private static void WriteProjectionPlugin(
         string projectRoot,
@@ -2441,12 +2414,36 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         };
     }
 
+    private sealed class DeferredReloadGuard : IEditorReloadGuard
+    {
+        public bool canRequestReload => !isBlocked;
+        public bool canActivateReload => !isBlocked;
+        public string? blockingReason => isBlocked ? "Waiting for fixture active Play to retire." : null;
+
+        internal bool isBlocked { get; set; } = true;
+    }
+
+    private readonly record struct MissingGenerationExpectation(
+        GameObject owner,
+        Guid componentId,
+        WeakReference retiredComponent,
+        WeakReference retiredType
+    );
+
+    private readonly record struct RetiredScriptObject(
+        WeakReference type,
+        WeakReference component
+    );
+
+    private readonly record struct AvailabilitySceneState(
+        GameObject pluginOwner,
+        GameObject scriptOwner,
+        Guid pluginComponentId,
+        Guid scriptComponentId
+    );
+
     private sealed class CompilationGate : IProgress<ScriptCompilationProgress>, IDisposable
     {
-        internal ManualResetEventSlim started { get; } = new();
-        internal ManualResetEventSlim release { get; } = new();
-        internal int workerThread { get; private set; }
-
         /// <summary>
         /// Suspends reference preparation to verify that no Editor frame waits for the compiler.
         /// </summary>
@@ -2475,19 +2472,21 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             started.Dispose();
             release.Dispose();
         }
+
+        internal ManualResetEventSlim started { get; } = new();
+        internal ManualResetEventSlim release { get; } = new();
+        internal int workerThread { get; private set; }
     }
 
     private sealed class ProgressRecorder : IProgress<ScriptCompilationProgress>
     {
-        internal List<ScriptCompilationProgress> values { get; } = [];
-
         public void Report(ScriptCompilationProgress value) => values.Add(value);
+
+        internal List<ScriptCompilationProgress> values { get; } = [];
     }
 
     private sealed class PluginPlayScene(ScriptingFixture fixture) : IEditorScenePlayMode
     {
-        internal int restoreCount { get; private set; }
-
         public IDisposable BeginPlayMode(RuntimeSession runtimeSession)
         {
             var scene = new GameScene("Plugin Play Reload");
@@ -2496,6 +2495,8 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             runtimeSession.scenes.LoadScene(scene);
             return new RestoreLease(this);
         }
+
+        internal int restoreCount { get; private set; }
 
         private sealed class RestoreLease(PluginPlayScene owner) : IDisposable
         {
@@ -2515,9 +2516,9 @@ public sealed partial class ScriptingPipelineTests : IDisposable
 
     private sealed class CountingHistoryIsolation : IEditorHistoryIsolation
     {
-        internal int disposeCount { get; private set; }
-
         public IDisposable BeginHistoryIsolation() => new HistoryLease(this);
+
+        internal int disposeCount { get; private set; }
 
         private sealed class HistoryLease(CountingHistoryIsolation owner) : IDisposable
         {
@@ -2537,18 +2538,18 @@ public sealed partial class ScriptingPipelineTests : IDisposable
 
     private sealed class ReadyScriptCompilation : IEditorScriptCompilation
     {
-        public bool requiresExclusiveProgress => false;
-        public EditorScriptCompilationProgress progress => new(0, 0f, "Test script status.", false);
-
-        public void CancelCompilation(long operationId) {}
-
         private readonly ReadyCompilationTicket m_ticket = new();
 
-        public IScriptCompilationTicket RequestCompilation() => m_ticket;
+        public bool requiresExclusiveProgress => false;
+        public EditorScriptCompilationProgress progress => new(0, 0f, "Test script status.", false);
 
         public IScriptCompilationTicket? currentTicket => m_ticket;
         public EditorScriptCompilationState state => EditorScriptCompilationState.Ready;
         public ScriptCompilationResult? lastCompilation => null;
+
+        public void CancelCompilation(long operationId) {}
+
+        public IScriptCompilationTicket RequestCompilation() => m_ticket;
 
         private sealed class ReadyCompilationTicket : IScriptCompilationTicket
         {
@@ -2652,6 +2653,26 @@ internal sealed class ScriptingFixture : IDisposable
         );
     }
 
+    public void Dispose()
+    {
+        if (m_disposed)
+        {
+            return;
+        }
+        m_disposed = true;
+        m_editorSession?.Dispose();
+        m_plugins.Dispose();
+        assets.Dispose();
+        m_settings.Dispose();
+        m_diagnosticScope.Dispose();
+        host.Dispose();
+        m_identityScope.Dispose();
+        if (Directory.Exists(projectRoot))
+        {
+            Directory.Delete(projectRoot, recursive: true);
+        }
+    }
+
     internal string projectRoot { get; }
     internal EngineHost host { get; }
     internal AssetPipeline assets { get; }
@@ -2728,20 +2749,6 @@ internal sealed class ScriptingFixture : IDisposable
 
         return directory;
     }
-
-    private IModuleSource CreateScriptModuleSource(ScriptModuleDeployment deployment)
-        => new DotNetModuleSource
-    {
-        artifactRootDirectory = Path.Combine(projectRoot, "Library", "Assemblies"),
-        moduleName = deployment.moduleName,
-        mainAssemblyPath = deployment.mainAssemblyPath,
-        domain = deployment.domain,
-        scope = deployment.scope,
-        preloadAssemblyPaths = deployment.preloadAssemblyPaths,
-        upstreamModuleNames = deployment.upstreamModuleNames,
-        assemblyScopes = deployment.assemblyScopes,
-        collectible = true
-    };
 
     internal ScriptReloadHost CreateReloadHost(
         EditorReloadCoordinator? reloads = null,
@@ -2828,25 +2835,19 @@ internal sealed class ScriptingFixture : IDisposable
         return m_editorSession;
     }
 
-    public void Dispose()
+    private IModuleSource CreateScriptModuleSource(ScriptModuleDeployment deployment)
+        => new DotNetModuleSource
     {
-        if (m_disposed)
-        {
-            return;
-        }
-        m_disposed = true;
-        m_editorSession?.Dispose();
-        m_plugins.Dispose();
-        assets.Dispose();
-        m_settings.Dispose();
-        m_diagnosticScope.Dispose();
-        host.Dispose();
-        m_identityScope.Dispose();
-        if (Directory.Exists(projectRoot))
-        {
-            Directory.Delete(projectRoot, recursive: true);
-        }
-    }
+        artifactRootDirectory = Path.Combine(projectRoot, "Library", "Assemblies"),
+        moduleName = deployment.moduleName,
+        mainAssemblyPath = deployment.mainAssemblyPath,
+        domain = deployment.domain,
+        scope = deployment.scope,
+        preloadAssemblyPaths = deployment.preloadAssemblyPaths,
+        upstreamModuleNames = deployment.upstreamModuleNames,
+        assemblyScopes = deployment.assemblyScopes,
+        collectible = true
+    };
 }
 
 internal sealed class SampleIdentitySettings : ISerializable

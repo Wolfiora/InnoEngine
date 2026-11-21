@@ -35,6 +35,9 @@ internal sealed class ManagedInputEvaluation : IDisposable
 
     internal IReadOnlyDictionary<string, string> properties { get; }
 
+    internal void Complete(CancellationToken cancellation)
+        => m_cache?.Record(m_directory, m_directory + ".lock", [], null, m_targetId, cancellation);
+
     internal static async ValueTask<ManagedInputEvaluation> OpenAsync(
         NativeBuildContext context,
         DotNetSdkDescriptor sdk,
@@ -92,7 +95,4 @@ internal sealed class ManagedInputEvaluation : IDisposable
             throw;
         }
     }
-
-    internal void Complete(CancellationToken cancellation)
-        => m_cache?.Record(m_directory, m_directory + ".lock", [], null, m_targetId, cancellation);
 }

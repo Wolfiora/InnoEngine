@@ -156,21 +156,6 @@ internal sealed partial class ShaderEditorDocuments
            ? nodeInterface!
            : throw new InvalidOperationException("Graph node Shader is unavailable or has import diagnostics.");
 
-    private bool TryLoadGraphNodeInterface(
-        Guid id,
-        out ShaderGraphNodeInterface? nodeInterface
-    ) {
-        nodeInterface = null;
-        if (!assets.TryGetInfo(id, out AssetInfo? info) || info is null || info.status != AssetImportStatus.Imported
-            || !assets.TryLoad(id, out ShaderAsset? shader) || shader is null || shader.isMissing
-        ) {
-            return false;
-        }
-        GraphDocument graph = ShaderGraphArtifact.ReadDocument(ShaderGraphArtifact.Read(shader, assets), serialization);
-        nodeInterface = ShaderGraphNodes.ReadInterface(graph, serialization, context);
-        return true;
-    }
-
     internal ShaderNodePort? CompatibleInput(
         Draft draft,
         GraphNodeRecord node
@@ -244,5 +229,20 @@ internal sealed partial class ShaderEditorDocuments
         draft.createFromPort = null;
         draft.canvas.SelectNodes([node.id]);
         Changed(draft);
+    }
+
+    private bool TryLoadGraphNodeInterface(
+        Guid id,
+        out ShaderGraphNodeInterface? nodeInterface
+    ) {
+        nodeInterface = null;
+        if (!assets.TryGetInfo(id, out AssetInfo? info) || info is null || info.status != AssetImportStatus.Imported
+            || !assets.TryLoad(id, out ShaderAsset? shader) || shader is null || shader.isMissing
+        ) {
+            return false;
+        }
+        GraphDocument graph = ShaderGraphArtifact.ReadDocument(ShaderGraphArtifact.Read(shader, assets), serialization);
+        nodeInterface = ShaderGraphNodes.ReadInterface(graph, serialization, context);
+        return true;
     }
 }

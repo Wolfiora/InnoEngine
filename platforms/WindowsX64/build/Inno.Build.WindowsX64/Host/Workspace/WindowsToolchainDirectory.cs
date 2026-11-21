@@ -21,6 +21,17 @@ internal sealed class WindowsToolchainDirectory : IDisposable
         this.toolPath = toolPath;
     }
 
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        if (toolPath == m_physicalPath || !Directory.Exists(toolPath))
+        {
+            return;
+        }
+        ValidateAlias(toolPath, m_physicalPath);
+        Directory.Delete(toolPath, recursive: false);
+    }
+
     internal string toolPath { get; }
 
     internal static WindowsToolchainDirectory Create(string physicalPath)
@@ -70,17 +81,6 @@ internal sealed class WindowsToolchainDirectory : IDisposable
             Directory.Delete(alias, recursive: false);
             throw;
         }
-    }
-
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        if (toolPath == m_physicalPath || !Directory.Exists(toolPath))
-        {
-            return;
-        }
-        ValidateAlias(toolPath, m_physicalPath);
-        Directory.Delete(toolPath, recursive: false);
     }
 
     private static void ValidateAlias(

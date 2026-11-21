@@ -54,6 +54,35 @@ public sealed class GameCodeDeployment
     public IReadOnlyList<GameCodeModule> modules { get; }
 
     /// <summary>
+    /// Rejects a manifest that differs from the code closure linked by the build.
+    /// </summary>
+    /// <param name="expected">
+    /// The independently frozen deployment to compare with this closure.
+    /// </param>
+    /// <exception cref="InvalidDataException">
+    /// Module ordering, ownership, dependencies, code names or fingerprints differ.
+    /// </exception>
+    public void ValidateMatches(GameCodeDeployment expected)
+    {
+        ArgumentNullException.ThrowIfNull(expected);
+        if (modules.Count != expected.modules.Count)
+        {
+            throw new InvalidDataException("The deployed code module count differs from the linked composition.");
+        }
+        for (int index = 0; index < modules.Count; index++)
+        {
+            GameCodeModule actual = modules[index];
+            GameCodeModule linked = expected.modules[index];
+            if (actual.name != linked.name || actual.domain != linked.domain
+                || !actual.dependencies.SequenceEqual(linked.dependencies, StringComparer.Ordinal)
+                || !actual.assemblies.SequenceEqual(linked.assemblies)
+            ) {
+                throw new InvalidDataException($"Code module '{actual.name}' differs from the linked composition.");
+            }
+        }
+    }
+
+    /// <summary>
     /// Freezes validated manifest declarations without retaining their mutable arrays or entries.
     /// </summary>
     /// <param name="modules">
@@ -87,34 +116,5 @@ public sealed class GameCodeDeployment
                 );
             }).ToArray()
         );
-    }
-
-    /// <summary>
-    /// Rejects a manifest that differs from the code closure linked by the build.
-    /// </summary>
-    /// <param name="expected">
-    /// The independently frozen deployment to compare with this closure.
-    /// </param>
-    /// <exception cref="InvalidDataException">
-    /// Module ordering, ownership, dependencies, code names or fingerprints differ.
-    /// </exception>
-    public void ValidateMatches(GameCodeDeployment expected)
-    {
-        ArgumentNullException.ThrowIfNull(expected);
-        if (modules.Count != expected.modules.Count)
-        {
-            throw new InvalidDataException("The deployed code module count differs from the linked composition.");
-        }
-        for (int index = 0; index < modules.Count; index++)
-        {
-            GameCodeModule actual = modules[index];
-            GameCodeModule linked = expected.modules[index];
-            if (actual.name != linked.name || actual.domain != linked.domain
-                || !actual.dependencies.SequenceEqual(linked.dependencies, StringComparer.Ordinal)
-                || !actual.assemblies.SequenceEqual(linked.assemblies)
-            ) {
-                throw new InvalidDataException($"Code module '{actual.name}' differs from the linked composition.");
-            }
-        }
     }
 }

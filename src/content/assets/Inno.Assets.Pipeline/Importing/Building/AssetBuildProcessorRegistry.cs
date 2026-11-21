@@ -17,8 +17,6 @@ internal sealed class AssetBuildProcessorRegistry : TypeRegistry<AssetBuildProce
         m_types = types;
     }
 
-    internal AssetBuildProcessor? Find(Type definitionType) => current.byDefinitionType.GetValueOrDefault(definitionType);
-
     internal long snapshotVersion
     {
         get
@@ -83,6 +81,8 @@ internal sealed class AssetBuildProcessorRegistry : TypeRegistry<AssetBuildProce
     /// The immutable state snapshot consumed by this operation.
     /// </param>
     protected override void DisposeSnapshot(Snapshot snapshot) => DisposeExtensions(snapshot.byDefinitionType.Values);
+
+    internal AssetBuildProcessor? Find(Type definitionType) => current.byDefinitionType.GetValueOrDefault(definitionType);
 
     internal sealed record Snapshot(FrozenDictionary<Type, AssetBuildProcessor> byDefinitionType);
 }

@@ -17,6 +17,7 @@ public sealed class EditorInteractionRuntime : EditorRuntime
 {
     private readonly EditorInteractions m_interactions;
     private readonly EditorExtensionCatalog m_catalog;
+    private readonly List<Exception> m_shutdownFailures = [];
     private EditorExtensionCatalog.Snapshot? m_describedSnapshot;
     private EditorPanelExtension[] m_panels = [];
     private EditorModalExtension[] m_modals = [];
@@ -25,7 +26,27 @@ public sealed class EditorInteractionRuntime : EditorRuntime
     private bool m_stopping;
     private int m_shutdownStage;
     private EditorExtensionCatalog.ActionRegistration[] m_shutdownActions = [];
-    private readonly List<Exception> m_shutdownFailures = [];
+
+    /// <summary>
+    /// Creates an interaction runtime for an existing passive editor context.
+    /// </summary>
+    /// <param name="context">
+    /// The passive editor context shared with the presentation backend.
+    /// </param>
+    /// <param name="types">
+    /// The type catalog that owns editor extension generations.
+    /// </param>
+    /// <param name="logs">
+    /// The host-owned logging router used by editor infrastructure.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="context"/> or <paramref name="logs"/> is <see langword="null"/>.
+    /// </exception>
+    public EditorInteractionRuntime(
+        EditorContext context,
+        TypeCatalog types,
+        LogRouter logs
+    ) : this(context, types, logs, Array.Empty<object>()) {}
 
     /// <summary>
     /// Creates an interaction runtime for one project.
@@ -48,27 +69,6 @@ public sealed class EditorInteractionRuntime : EditorRuntime
         LogRouter logs,
         EditorKeyboardPolicy keyboard
     ) : this(new EditorContext(projectDirectory, keyboard), types, logs) {}
-
-    /// <summary>
-    /// Creates an interaction runtime for an existing passive editor context.
-    /// </summary>
-    /// <param name="context">
-    /// The passive editor context shared with the presentation backend.
-    /// </param>
-    /// <param name="types">
-    /// The type catalog that owns editor extension generations.
-    /// </param>
-    /// <param name="logs">
-    /// The host-owned logging router used by editor infrastructure.
-    /// </param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="context"/> or <paramref name="logs"/> is <see langword="null"/>.
-    /// </exception>
-    public EditorInteractionRuntime(
-        EditorContext context,
-        TypeCatalog types,
-        LogRouter logs
-    ) : this(context, types, logs, Array.Empty<object>()) {}
 
     /// <summary>
     /// Creates an interaction runtime with stable host-owned extension services.

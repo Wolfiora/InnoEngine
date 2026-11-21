@@ -176,6 +176,18 @@ public sealed partial class SerializationBehaviorTests
         Assert.Equal(payload, restored.bytes);
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static (SerializationContext, WeakReference) ReplaceContextService(bool nested)
+    {
+        var replaced = new object();
+        SerializationContext context = SerializationContext.empty.With(replaced);
+        if (nested)
+        {
+            context = context.With("marker").With<IReadOnlyList<int>>(new[] { 1, 2 });
+        }
+        return (context.With(new object()), new WeakReference(replaced));
+    }
+
     private sealed class SelectiveCaptureSample : ISerializable
     {
         private int m_unrelatedReads;
@@ -196,17 +208,5 @@ public sealed partial class SerializationBehaviorTests
 
         public int ignored { get; set; }
         public int unrelatedReadCount => m_unrelatedReads;
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static (SerializationContext, WeakReference) ReplaceContextService(bool nested)
-    {
-        var replaced = new object();
-        SerializationContext context = SerializationContext.empty.With(replaced);
-        if (nested)
-        {
-            context = context.With("marker").With<IReadOnlyList<int>>(new[] { 1, 2 });
-        }
-        return (context.With(new object()), new WeakReference(replaced));
     }
 }

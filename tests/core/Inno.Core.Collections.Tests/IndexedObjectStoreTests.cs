@@ -8,20 +8,6 @@ namespace Inno.Core.Collections.Tests;
 
 public sealed class IndexedObjectStoreTests
 {
-    private sealed class Item
-    {
-        public string name { get; }
-        public int Category { get; }
-
-        public Item(
-            string name,
-            int category
-        ) {
-            this.name = name;
-            this.Category = category;
-        }
-    }
-
     [Fact]
     public void Add_Remove_Count_Clear()
     {
@@ -339,5 +325,19 @@ public sealed class IndexedObjectStoreTests
         store.Add(new Item("C", 3));
 
         Assert.Throws<InvalidOperationException>(() => enumerator.MoveNext());
+    }
+
+    private sealed class Item
+    {
+        public Item(
+            string name,
+            int category
+        ) {
+            this.name = name;
+            this.Category = category;
+        }
+
+        public string name { get; }
+        public int Category { get; }
     }
 }

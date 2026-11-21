@@ -154,6 +154,22 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
     }
 
     /// <summary>
+    /// Removes retained logs while keeping currently reported issues visible until their owners resolve them.
+    /// </summary>
+    public void Clear()
+    {
+        lock (m_sync)
+        {
+            if (m_logs.Count == 0)
+            {
+                return;
+            }
+            m_logs.Clear();
+            m_revision++;
+        }
+    }
+
+    /// <summary>
     /// Removes the current diagnostic report for one producer.
     /// </summary>
     /// <param name="source">
@@ -190,22 +206,6 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
                 .OrderBy(static group => group.latest.sequence)
                 .ToArray();
             return new EditorConsoleSnapshot(m_revision, occurrences, groups);
-        }
-    }
-
-    /// <summary>
-    /// Removes retained logs while keeping currently reported issues visible until their owners resolve them.
-    /// </summary>
-    public void Clear()
-    {
-        lock (m_sync)
-        {
-            if (m_logs.Count == 0)
-            {
-                return;
-            }
-            m_logs.Clear();
-            m_revision++;
         }
     }
 
@@ -248,6 +248,16 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
             }
             m_logs.Clear();
             m_revision++;
+        }
+    }
+
+    private long NextSequence() => Interlocked.Increment(ref m_nextSequence);
+
+    private void TrimLogsUnsafe()
+    {
+        while (m_logs.Count > m_capacity)
+        {
+            _ = m_logs.Dequeue();
         }
     }
 
@@ -299,15 +309,5 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
             string.Empty,
             LogSessionId.none
         );
-    }
-
-    private long NextSequence() => Interlocked.Increment(ref m_nextSequence);
-
-    private void TrimLogsUnsafe()
-    {
-        while (m_logs.Count > m_capacity)
-        {
-            _ = m_logs.Dequeue();
-        }
     }
 }

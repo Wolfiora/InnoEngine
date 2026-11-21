@@ -13,9 +13,9 @@ public sealed class RetirementBarrier
     private readonly string m_owner;
     private readonly TimeSpan m_timeout;
     private readonly int m_ownerThread = Environment.CurrentManagedThreadId;
+    private readonly List<Exception> m_completedFailures = [];
     private Stopwatch? m_elapsed;
     private Exception? m_failure;
-    private readonly List<Exception> m_completedFailures = [];
     private bool m_completed;
 
     /// <summary>

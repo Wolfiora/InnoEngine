@@ -82,15 +82,6 @@ internal static class TaskRuntimePreparation
         );
     }
 
-    private static ITaskItem[] CreateOutputs(IReadOnlyList<RuntimeFile> files)
-        => files.Select(file =>
-        {
-            var item = new TaskItem(file.source);
-            item.SetMetadata("RelativePath", file.relative);
-            item.SetMetadata("FileHash", file.hash);
-            return (ITaskItem)item;
-        }).ToArray();
-
     internal static string Fingerprint(IReadOnlyList<RuntimeFile> files)
         => Convert.ToHexString(
             SHA256.HashData(
@@ -293,6 +284,15 @@ internal static class TaskRuntimePreparation
             BuildCacheArtifactRole.ProcessWorkingDirectory
         ).RecordProcessUse(operation, operation + ".lock", []);
     }
+
+    private static ITaskItem[] CreateOutputs(IReadOnlyList<RuntimeFile> files)
+        => files.Select(file =>
+        {
+            var item = new TaskItem(file.source);
+            item.SetMetadata("RelativePath", file.relative);
+            item.SetMetadata("FileHash", file.hash);
+            return (ITaskItem)item;
+        }).ToArray();
 
     internal sealed record RuntimeFile(
         string source,

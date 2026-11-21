@@ -112,6 +112,16 @@ internal sealed class SceneInspectionModule : EditorModule
         );
     }
 
+    /// <summary>
+    /// Releases resources retained by this feature after it has stopped.
+    /// </summary>
+    protected override void OnDispose()
+    {
+        m_inspectors.Dispose();
+        m_attributes.Dispose();
+        m_properties.Dispose();
+    }
+
     internal bool TryResolve(
         EditorContext editorContext,
         object target,
@@ -126,15 +136,5 @@ internal sealed class SceneInspectionModule : EditorModule
             return true;
         }
         return m_inspectors.TryResolve(editorContext, target, m_renderer, out drawer, out drawContext);
-    }
-
-    /// <summary>
-    /// Releases resources retained by this feature after it has stopped.
-    /// </summary>
-    protected override void OnDispose()
-    {
-        m_inspectors.Dispose();
-        m_attributes.Dispose();
-        m_properties.Dispose();
     }
 }

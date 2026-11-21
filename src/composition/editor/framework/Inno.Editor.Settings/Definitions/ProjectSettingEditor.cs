@@ -92,17 +92,17 @@ public abstract class ProjectSettingEditor
 
     internal abstract Type valueType { get; }
 
+    internal SerializationRegistry serialization
+        => m_serialization ?? throw new InvalidOperationException(
+            $"Project setting editor '{GetType().FullName}' has not been bound to a serialization registry."
+        );
+
     internal abstract bool DrawValue(ISerializable value);
 
     internal abstract bool ValueEquals(
         ISerializable left,
         ISerializable right
     );
-
-    internal SerializationRegistry serialization
-        => m_serialization ?? throw new InvalidOperationException(
-            $"Project setting editor '{GetType().FullName}' has not been bound to a serialization registry."
-        );
 
     internal void BindSerialization(SerializationRegistry serializationRegistry)
     {
@@ -184,6 +184,8 @@ public abstract class ProjectSettingEditor<TSetting> : ProjectSettingEditor
 {
     private readonly ConditionalWeakTable<TSetting, Baseline> m_baselines = new();
 
+    internal sealed override Type valueType => typeof(TSetting);
+
     /// <summary>
     /// Draws the isolated staged value. Mutations remain local until the Settings frontend applies them.
     /// </summary>
@@ -191,8 +193,6 @@ public abstract class ProjectSettingEditor<TSetting> : ProjectSettingEditor
     /// The isolated current-generation setting snapshot.
     /// </param>
     protected abstract void OnDraw(TSetting setting);
-
-    internal sealed override Type valueType => typeof(TSetting);
 
     internal sealed override bool DrawValue(ISerializable value)
     {

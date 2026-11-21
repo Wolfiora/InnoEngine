@@ -121,14 +121,6 @@ internal sealed class GroupShaderNodes(ShaderEditorDocuments documents) : Shader
 {
     internal const string C_GROUPS = "inno.editor.shader.groups";
 
-    internal static ShaderCanvasGroup[] Read(
-        ShaderEditorDocuments documents,
-        GraphDocument graph
-    ) => graph.metadata.TryGetValue(
-        C_GROUPS,
-        out GraphSerializedValue? value
-    ) ? ShaderGraphDocument.Decode<ShaderCanvasGroup[]>(value, documents.serialization, documents.context) : [];
-
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.
     /// </summary>
@@ -155,6 +147,14 @@ internal sealed class GroupShaderNodes(ShaderEditorDocuments documents) : Shader
         draft.selectedGroupId = groups[^1].id;
         documents.Changed(draft);
     }
+
+    internal static ShaderCanvasGroup[] Read(
+        ShaderEditorDocuments documents,
+        GraphDocument graph
+    ) => graph.metadata.TryGetValue(
+        C_GROUPS,
+        out GraphSerializedValue? value
+    ) ? ShaderGraphDocument.Decode<ShaderCanvasGroup[]>(value, documents.serialization, documents.context) : [];
 }
 
 [EditorAction("shader/ungroup", ShaderEditorCanvas.C_AREA)]

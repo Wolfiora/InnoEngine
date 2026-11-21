@@ -30,8 +30,15 @@ internal sealed class AssemblyUnloadMonitor : IAssemblyUnloadProbe
     private readonly WeakReference? m_loadContext;
     private readonly string? m_shadowDirectory;
     private readonly AssemblyUnloadMonitor[]? m_children;
-    private bool m_isShadowDirectoryCleaned;
     private readonly string m_description;
+    private bool m_isShadowDirectoryCleaned;
+
+    internal AssemblyUnloadMonitor(IReadOnlyList<AssemblyUnloadMonitor> children)
+    {
+        ArgumentNullException.ThrowIfNull(children);
+        m_children = children.ToArray();
+        m_description = string.Join(", ", m_children.Select(static child => child.description));
+    }
 
     internal AssemblyUnloadMonitor(
         WeakReference? loadContext,
@@ -41,13 +48,6 @@ internal sealed class AssemblyUnloadMonitor : IAssemblyUnloadProbe
         m_loadContext = loadContext;
         m_shadowDirectory = shadowDirectory;
         m_description = description ?? "non-collectible assembly generation";
-    }
-
-    internal AssemblyUnloadMonitor(IReadOnlyList<AssemblyUnloadMonitor> children)
-    {
-        ArgumentNullException.ThrowIfNull(children);
-        m_children = children.ToArray();
-        m_description = string.Join(", ", m_children.Select(static child => child.description));
     }
 
     /// <summary>

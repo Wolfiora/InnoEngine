@@ -19,52 +19,6 @@ namespace Inno.Core.Collections;
 public sealed class DependencyGraph<TKey>
     where TKey : notnull
 {
-    private sealed class Node
-    {
-        internal required long order;
-        internal HashSet<TKey> dependencies = null!;
-        internal HashSet<TKey> dependents = null!;
-    }
-
-    private sealed class NodePriorityComparer(IComparer<TKey>? orderingComparer) : IComparer<NodePriority>
-    {
-        /// <summary>
-        /// Compares two values according to the deterministic ordering used by this collection.
-        /// </summary>
-        /// <param name="x">
-        /// The horizontal or first component.
-        /// </param>
-        /// <param name="y">
-        /// The vertical or second component.
-        /// </param>
-        /// <returns>
-        /// The scalar result calculated from the supplied inputs.
-        /// </returns>
-        public int Compare(
-            NodePriority x,
-            NodePriority y
-        ) {
-            if (orderingComparer is not null)
-            {
-                int keyComparison = orderingComparer.Compare(x.key, y.key);
-                if (keyComparison != 0)
-                {
-                    return keyComparison;
-                }
-            }
-
-            return x.order.CompareTo(y.order);
-        }
-    }
-
-    private readonly struct NodePriority(
-        TKey key,
-        long order
-    ) {
-        internal TKey key { get; } = key;
-        internal long order { get; } = order;
-    }
-
     private readonly Dictionary<TKey, Node> m_nodes;
     private readonly IEqualityComparer<TKey> m_equalityComparer;
     private readonly IComparer<TKey>? m_orderingComparer;
@@ -754,5 +708,51 @@ public sealed class DependencyGraph<TKey>
             }
         }
         return m_nodes[left].order.CompareTo(m_nodes[right].order);
+    }
+
+    private sealed class Node
+    {
+        internal required long order;
+        internal HashSet<TKey> dependencies = null!;
+        internal HashSet<TKey> dependents = null!;
+    }
+
+    private sealed class NodePriorityComparer(IComparer<TKey>? orderingComparer) : IComparer<NodePriority>
+    {
+        /// <summary>
+        /// Compares two values according to the deterministic ordering used by this collection.
+        /// </summary>
+        /// <param name="x">
+        /// The horizontal or first component.
+        /// </param>
+        /// <param name="y">
+        /// The vertical or second component.
+        /// </param>
+        /// <returns>
+        /// The scalar result calculated from the supplied inputs.
+        /// </returns>
+        public int Compare(
+            NodePriority x,
+            NodePriority y
+        ) {
+            if (orderingComparer is not null)
+            {
+                int keyComparison = orderingComparer.Compare(x.key, y.key);
+                if (keyComparison != 0)
+                {
+                    return keyComparison;
+                }
+            }
+
+            return x.order.CompareTo(y.order);
+        }
+    }
+
+    private readonly struct NodePriority(
+        TKey key,
+        long order
+    ) {
+        internal TKey key { get; } = key;
+        internal long order { get; } = order;
     }
 }

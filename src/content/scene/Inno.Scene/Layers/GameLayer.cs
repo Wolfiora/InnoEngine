@@ -14,11 +14,6 @@ public readonly struct GameLayer : IEquatable<GameLayer>, IComparable<GameLayer>
     public const int C_MAX_COUNT = 32;
 
     /// <summary>
-    /// Gets the built-in default layer stored in slot zero.
-    /// </summary>
-    public static GameLayer defaultLayer { get; } = new(0);
-
-    /// <summary>
     /// Creates a layer identifier from a zero-based layer index.
     /// </summary>
     /// <param name="index">
@@ -35,6 +30,11 @@ public readonly struct GameLayer : IEquatable<GameLayer>, IComparable<GameLayer>
         }
         this.index = index;
     }
+
+    /// <summary>
+    /// Gets the built-in default layer stored in slot zero.
+    /// </summary>
+    public static GameLayer defaultLayer { get; } = new(0);
 
     /// <summary>
     /// Gets the zero-based layer index.

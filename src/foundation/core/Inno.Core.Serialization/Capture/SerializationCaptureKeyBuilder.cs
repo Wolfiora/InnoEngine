@@ -35,6 +35,15 @@ public sealed class SerializationCaptureKeyBuilder
 
     internal SerializationCaptureKeyBuilder(
         SerializationOperation operation,
+        SerializationCaptureKey? previous
+    ) {
+        m_operation = operation;
+        m_previous = previous;
+        Add(new(C_GUARD, default, 0, operation.converters.captureIdentity, null));
+    }
+
+    internal SerializationCaptureKeyBuilder(
+        SerializationOperation operation,
         Type rootType,
         CoreIdentity source,
         SerializationCaptureKey? previous
@@ -47,15 +56,6 @@ public sealed class SerializationCaptureKeyBuilder
         }
         Add(new(C_GUARD, identity, 0, operation.GetMetadata(rootType).captureIdentity, null));
         AddIdentity(new(source, identity));
-    }
-
-    internal SerializationCaptureKeyBuilder(
-        SerializationOperation operation,
-        SerializationCaptureKey? previous
-    ) {
-        m_operation = operation;
-        m_previous = previous;
-        Add(new(C_GUARD, default, 0, operation.converters.captureIdentity, null));
     }
 
     /// <summary>
@@ -334,6 +334,28 @@ internal readonly record struct SerializationCaptureAttempt(
 ) {
     internal static readonly SerializationCaptureAttempt empty = new(null, []);
 
+    internal SerializationCaptureKey? Verify(SerializationCaptureAttempt after)
+    {
+        if (key is null || after.key is null || !key.HasSameInputs(after.key))
+        {
+            throw new InvalidOperationException("The declared serialization capture inputs changed during the write.");
+        }
+        // Fresh equivalent metadata preserves ordinary capture without publishing a reusable hint.
+        return ReferenceEquals(after.key, key) ? key : null;
+    }
+
+    internal void ValidateIdentities()
+    {
+        if (identities is null)
+        {
+            return;
+        }
+        foreach (SerializationCaptureIdentity identity in identities)
+        {
+            identity.Validate();
+        }
+    }
+
     internal static SerializationCaptureAttempt Capture<T>(
         SerializationOperation operation,
         Type valueType,
@@ -367,28 +389,6 @@ internal readonly record struct SerializationCaptureAttempt(
         finally
         {
             builder.Retire();
-        }
-    }
-
-    internal SerializationCaptureKey? Verify(SerializationCaptureAttempt after)
-    {
-        if (key is null || after.key is null || !key.HasSameInputs(after.key))
-        {
-            throw new InvalidOperationException("The declared serialization capture inputs changed during the write.");
-        }
-        // Fresh equivalent metadata preserves ordinary capture without publishing a reusable hint.
-        return ReferenceEquals(after.key, key) ? key : null;
-    }
-
-    internal void ValidateIdentities()
-    {
-        if (identities is null)
-        {
-            return;
-        }
-        foreach (SerializationCaptureIdentity identity in identities)
-        {
-            identity.Validate();
         }
     }
 }

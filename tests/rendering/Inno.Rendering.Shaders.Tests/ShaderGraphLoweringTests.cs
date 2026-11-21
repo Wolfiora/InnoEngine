@@ -152,6 +152,14 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
         Assert.True(restored.succeeded, Errors(restored));
     }
 
+    public void Dispose()
+    {
+        m_serialization.Dispose();
+        m_types.Dispose();
+        m_modules.Dispose();
+        if (Directory.Exists(m_root)) Directory.Delete(m_root, true);
+    }
+
     private GraphDocument Graph(
         out GraphNodeRecord constant,
         out GraphNodeRecord extension,
@@ -172,6 +180,12 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
         return graph;
     }
 
+    private void Set<T>(
+        GraphNodeRecord node,
+        string property,
+        T value
+    ) => node.SetValue(property, new(m_serialization.Encode(writer => writer.Write("value", value), SerializationContext.empty)));
+
     private static ShaderNodeCompilerCatalog Catalog(params IShaderNodeCompiler[] extra)
         => new(
             new IShaderNodeCompiler[]
@@ -184,12 +198,6 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
                 new ShaderSourceNodeCompiler()
             }.Concat(extra)
         );
-
-    private void Set<T>(
-        GraphNodeRecord node,
-        string property,
-        T value
-    ) => node.SetValue(property, new(m_serialization.Encode(writer => writer.Write("value", value), SerializationContext.empty)));
 
     private static GraphNodeRecord Add(
         GraphDocument graph,
@@ -223,14 +231,6 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
 
     private static string Errors(ShaderGraphLoweringResult result)
         => string.Join("\n", result.diagnostics.Select(static diagnostic => diagnostic.message));
-
-    public void Dispose()
-    {
-        m_serialization.Dispose();
-        m_types.Dispose();
-        m_modules.Dispose();
-        if (Directory.Exists(m_root)) Directory.Delete(m_root, true);
-    }
 
     private sealed class NoIncludes : IShaderSourceResolver
     {

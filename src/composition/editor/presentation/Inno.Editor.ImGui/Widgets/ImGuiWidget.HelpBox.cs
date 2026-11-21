@@ -14,6 +14,15 @@ public sealed unsafe partial class ImGuiWidget
     private SectionLayoutState? m_sectionLayout;
 
     /// <summary>
+    /// Gets whether content belonging to the current Inspector section should be drawn.
+    /// </summary>
+    /// <remarks>
+    /// Attribute-driven drawers use this value to skip properties until the next section header
+    /// when the current section is collapsed.
+    /// </remarks>
+    public bool isSectionContentVisible => m_sectionLayout?.contentVisible ?? true;
+
+    /// <summary>
     /// Draws a wrapped contextual message with a semantic icon and a subdued status surface.
     /// </summary>
     /// <param name="text">
@@ -149,15 +158,6 @@ public sealed unsafe partial class ImGuiWidget
             m_sectionLayout = parent;
         }
     }
-
-    /// <summary>
-    /// Gets whether content belonging to the current Inspector section should be drawn.
-    /// </summary>
-    /// <remarks>
-    /// Attribute-driven drawers use this value to skip properties until the next section header
-    /// when the current section is collapsed.
-    /// </remarks>
-    public bool isSectionContentVisible => m_sectionLayout?.contentVisible ?? true;
 
     /// <summary>
     /// Ensures that subsequently drawn default properties belong to a framed section.

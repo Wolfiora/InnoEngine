@@ -14,34 +14,6 @@ internal sealed class AssetEditorRegistry : TypeRegistry<AssetEditorRegistry.Sna
     internal AssetEditorRegistry(TypeCatalog types)
         : base(types) {}
 
-    internal AssetEditor Resolve(Type? assetType)
-    {
-        if (assetType is null)
-        {
-            return S_DEFAULT_EDITOR;
-        }
-        Registration? best = null;
-        int bestDistance = int.MaxValue;
-        foreach (Registration registration in current.registrations)
-        {
-            if (!EditorTypeSpecificity.TryGet(assetType, registration.assetType, out int distance))
-            {
-                continue;
-            }
-            if (distance > 0 && !registration.useForChildren)
-            {
-                continue;
-            }
-            if (best is null || distance < bestDistance || distance == bestDistance && registration.priority > best.priority)
-            {
-                best = registration;
-                bestDistance = distance;
-            }
-        }
-
-        return best?.editor ?? S_DEFAULT_EDITOR;
-    }
-
     /// <summary>
     /// Builds a validated result from the current immutable input snapshot.
     /// </summary>
@@ -90,6 +62,34 @@ internal sealed class AssetEditorRegistry : TypeRegistry<AssetEditorRegistry.Sna
     /// </param>
     protected override void DisposeSnapshot(Snapshot snapshot)
         => DisposeExtensions(snapshot.registrations.Select(static registration => registration.editor));
+
+    internal AssetEditor Resolve(Type? assetType)
+    {
+        if (assetType is null)
+        {
+            return S_DEFAULT_EDITOR;
+        }
+        Registration? best = null;
+        int bestDistance = int.MaxValue;
+        foreach (Registration registration in current.registrations)
+        {
+            if (!EditorTypeSpecificity.TryGet(assetType, registration.assetType, out int distance))
+            {
+                continue;
+            }
+            if (distance > 0 && !registration.useForChildren)
+            {
+                continue;
+            }
+            if (best is null || distance < bestDistance || distance == bestDistance && registration.priority > best.priority)
+            {
+                best = registration;
+                bestDistance = distance;
+            }
+        }
+
+        return best?.editor ?? S_DEFAULT_EDITOR;
+    }
 
     internal sealed record Snapshot(Registration[] registrations);
 

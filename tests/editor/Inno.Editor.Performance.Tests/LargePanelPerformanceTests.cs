@@ -187,50 +187,6 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
         Measure(host, panel, "10000-asset-directory-rows");
     }
 
-    private static GameScene LoadSavedHierarchy(NativeProjectPanelHost host)
-    {
-        string? input = InputDirectory("hierarchy");
-        GameScene scene;
-        if (input is not null && Directory.Exists(input))
-        {
-            CopyDirectory(input, Path.Combine(host.projectRoot, "Assets"));
-            host.assets.Rescan();
-            scene = host.workspace.Open("Untitled Scene.iscene");
-        }
-        else
-        {
-            scene = host.CreateScene();
-            for (int index = 0; index < 10_000; index++)
-            {
-                _ = scene.CreateObject("Object " + index.ToString("D5"));
-            }
-            _ = host.workspace.Save(scene, string.Empty);
-        }
-        Assert.Equal(10_000, scene.GetObjects().Count);
-        return scene;
-    }
-
-    private static string? InputDirectory(string workload)
-    {
-        string? owner = Environment.GetEnvironmentVariable("INNO_UI_PERFORMANCE_INPUT_ROOT");
-        return owner is null ? null : Path.Combine(Path.GetFullPath(owner), workload);
-    }
-
-    private static void CopyDirectory(
-        string source,
-        string destination
-    ) {
-        Directory.CreateDirectory(destination);
-        foreach (string directory in Directory.EnumerateDirectories(source, "*", SearchOption.AllDirectories))
-        {
-            Directory.CreateDirectory(Path.Combine(destination, Path.GetRelativePath(source, directory)));
-        }
-        foreach (string file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
-        {
-            File.Copy(file, Path.Combine(destination, Path.GetRelativePath(source, file)), overwrite: false);
-        }
-    }
-
     private void Measure(
         NativeProjectPanelHost host,
         EditorPanelExtension? panel,
@@ -305,6 +261,50 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
         if (panel is not null)
         {
             Assert.True(panel.isOpen);
+        }
+    }
+
+    private static GameScene LoadSavedHierarchy(NativeProjectPanelHost host)
+    {
+        string? input = InputDirectory("hierarchy");
+        GameScene scene;
+        if (input is not null && Directory.Exists(input))
+        {
+            CopyDirectory(input, Path.Combine(host.projectRoot, "Assets"));
+            host.assets.Rescan();
+            scene = host.workspace.Open("Untitled Scene.iscene");
+        }
+        else
+        {
+            scene = host.CreateScene();
+            for (int index = 0; index < 10_000; index++)
+            {
+                _ = scene.CreateObject("Object " + index.ToString("D5"));
+            }
+            _ = host.workspace.Save(scene, string.Empty);
+        }
+        Assert.Equal(10_000, scene.GetObjects().Count);
+        return scene;
+    }
+
+    private static string? InputDirectory(string workload)
+    {
+        string? owner = Environment.GetEnvironmentVariable("INNO_UI_PERFORMANCE_INPUT_ROOT");
+        return owner is null ? null : Path.Combine(Path.GetFullPath(owner), workload);
+    }
+
+    private static void CopyDirectory(
+        string source,
+        string destination
+    ) {
+        Directory.CreateDirectory(destination);
+        foreach (string directory in Directory.EnumerateDirectories(source, "*", SearchOption.AllDirectories))
+        {
+            Directory.CreateDirectory(Path.Combine(destination, Path.GetRelativePath(source, directory)));
+        }
+        foreach (string file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
+        {
+            File.Copy(file, Path.Combine(destination, Path.GetRelativePath(source, file)), overwrite: false);
         }
     }
 }

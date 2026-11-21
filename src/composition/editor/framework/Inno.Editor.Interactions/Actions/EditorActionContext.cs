@@ -6,6 +6,9 @@ namespace Inno.Editor.Interactions;
 /// <summary>
 /// Provides contextual state to an editor action.
 /// </summary>
+/// <remarks>
+/// The typed action contexts derive from this class to add a strongly typed target or argument. It has no overridable members.
+/// </remarks>
 public class EditorActionContext
 {
     /// <summary>

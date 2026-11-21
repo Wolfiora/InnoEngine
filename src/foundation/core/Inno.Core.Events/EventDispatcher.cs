@@ -13,21 +13,11 @@ public sealed class EventDispatcher
 {
     private readonly ConcurrentQueue<Event> m_queue = new();
     private readonly Lock m_hubsGate = new();
-    private EventHub[] m_hubsSnapshot = [];
-    private long m_nextHubSequence;
     private readonly int m_queueCapacity;
     private readonly int m_flushBudget;
+    private EventHub[] m_hubsSnapshot = [];
+    private long m_nextHubSequence;
     private int m_pendingCount;
-
-    /// <summary>
-    /// Observes an event after its ordered hub dispatch has completed, including globally consumed events.
-    /// </summary>
-    /// <remarks>
-    /// Observers run synchronously on the dispatching thread and do not participate in consumption.
-    /// They must not change consumption or call HandleInHub. Observer failures propagate to the caller.
-    /// Owners must unsubscribe before retiring their callbacks or extensions.
-    /// </remarks>
-    public event Action<Event>? dispatched;
 
     /// <summary>
     /// Creates a dispatcher with bounded pending work and a finite per-flush budget.
@@ -61,6 +51,16 @@ public sealed class EventDispatcher
     /// Gets the number of pending events, including producer reservations.
     /// </summary>
     public int pendingCount => Volatile.Read(ref m_pendingCount);
+
+    /// <summary>
+    /// Observes an event after its ordered hub dispatch has completed, including globally consumed events.
+    /// </summary>
+    /// <remarks>
+    /// Observers run synchronously on the dispatching thread and do not participate in consumption.
+    /// They must not change consumption or call HandleInHub. Observer failures propagate to the caller.
+    /// Owners must unsubscribe before retiring their callbacks or extensions.
+    /// </remarks>
+    public event Action<Event>? dispatched;
 
     /// <summary>
     /// Creates a new hub attached to this dispatcher.

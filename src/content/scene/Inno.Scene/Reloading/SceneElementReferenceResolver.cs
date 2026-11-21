@@ -9,8 +9,6 @@ internal sealed class SceneElementReferenceResolver(
     TypeCacheSnapshot types
 ) : IReferenceResolver
 {
-    internal static ReferenceKindId id { get; } = new("inno.reference.scene-element");
-
     ReferenceKindId IReferenceResolver.kindId => id;
 
     ReferenceResolution IReferenceResolver.Resolve(ReferenceDescriptor descriptor)
@@ -35,4 +33,6 @@ internal sealed class SceneElementReferenceResolver(
         }
         return new ReferenceResolution(descriptor, ReferenceResolutionState.Resolved, target.identity.runtimeIdentity);
     }
+
+    internal static ReferenceKindId id { get; } = new("inno.reference.scene-element");
 }

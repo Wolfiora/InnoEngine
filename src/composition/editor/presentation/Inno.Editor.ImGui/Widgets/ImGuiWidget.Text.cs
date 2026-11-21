@@ -91,83 +91,6 @@ public sealed unsafe partial class ImGuiWidget
     }
 
     /// <summary>
-    /// Gets the visible bounds of the first glyph in a string at a requested font size.
-    /// </summary>
-    /// <param name="font">
-    /// Font that owns the glyph.
-    /// </param>
-    /// <param name="fontSize">
-    /// Requested baked font size.
-    /// </param>
-    /// <param name="text">
-    /// Text whose first Unicode scalar identifies the glyph.
-    /// </param>
-    /// <returns>
-    /// A vector containing the glyph's left, top, right, and bottom offsets relative to the
-    /// text drawing origin.
-    /// </returns>
-    /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="text"/> is empty.
-    /// </exception>
-    private Vector4 GetGlyphVisualBoundsNative(
-        ImFont* font,
-        float fontSize,
-        string text
-    ) {
-        m_session.EnsureDrawing();
-        if (string.IsNullOrEmpty(text))
-        {
-            throw new ArgumentException("Glyph text cannot be empty.", nameof(text));
-        }
-        int codepoint = char.ConvertToUtf32(text, 0);
-        ImFontBaked* baked = NativeImGui.Raw.GetFontBaked(font, fontSize, -1f);
-        ImFontGlyph* glyph = codepoint <= ushort.MaxValue ? NativeImGui.Raw.FindGlyph(baked, (ushort)codepoint) : null;
-        if (glyph is not null)
-        {
-            return new Vector4(glyph->X0, glyph->Y0, glyph->X1, glyph->Y1);
-        }
-        NativeImGui.Raw.PushFont(font, fontSize);
-        Vector2 fallbackSize = NativeImGui.CalcTextSize(text);
-        NativeImGui.PopFont();
-        return new Vector4(0f, 0f, fallbackSize.X, fallbackSize.Y);
-    }
-
-    /// <summary>
-    /// Draws one glyph so the center of its visible bounds matches a requested point.
-    /// </summary>
-    /// <param name="drawList">
-    /// Draw list that receives the glyph.
-    /// </param>
-    /// <param name="font">
-    /// Font that owns the glyph.
-    /// </param>
-    /// <param name="fontSize">
-    /// Requested baked font size.
-    /// </param>
-    /// <param name="text">
-    /// Text containing the glyph to draw.
-    /// </param>
-    /// <param name="center">
-    /// Target center in screen coordinates.
-    /// </param>
-    /// <param name="color">
-    /// Packed ImGui text color.
-    /// </param>
-    private void AddGlyphCenteredNative(
-        ImDrawList* drawList,
-        ImFont* font,
-        float fontSize,
-        string text,
-        Vector2 center,
-        uint color
-    ) {
-        m_session.EnsureDrawing();
-        Vector4 bounds = GetGlyphVisualBoundsNative(font, fontSize, text);
-        var visibleCenterOffset = new Vector2((bounds.X + bounds.Z) * 0.5f, (bounds.Y + bounds.W) * 0.5f);
-        ImGui.DrawNativeText(drawList, font, fontSize, center - visibleCenterOffset, color, text);
-    }
-
-    /// <summary>
     /// Draws clickable text without a persistent or hovered background.
     /// </summary>
     /// <param name="id">
@@ -193,6 +116,62 @@ public sealed unsafe partial class ImGuiWidget
         string text,
         string? tooltip = null
     ) => ClickableText(id, text, GetCompactClickableTextSize(), tooltip);
+
+    /// <summary>
+    /// Draws clickable text centered inside an explicitly sized transparent interaction area.
+    /// </summary>
+    /// <param name="id">
+    /// Stable identifier used by ImGui to track the interaction.
+    /// </param>
+    /// <param name="text">
+    /// Visible text or icon glyph.
+    /// </param>
+    /// <param name="controlSize">
+    /// Size of the transparent interaction area.
+    /// </param>
+    /// <param name="tooltip">
+    /// Optional tooltip displayed while the interaction is hovered.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the text is pressed.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="id"/> is empty.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="text"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when either component of <paramref name="controlSize"/> is not positive.
+    /// </exception>
+    public bool ClickableText(
+        string id,
+        string text,
+        Vector2 controlSize,
+        string? tooltip = null
+    ) {
+        m_session.EnsureDrawing();
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        ArgumentNullException.ThrowIfNull(text);
+        if (controlSize.X <= 0f || controlSize.Y <= 0f)
+        {
+            throw new ArgumentOutOfRangeException(nameof(controlSize), controlSize, "Clickable text size must be positive.");
+        }
+
+        Vector2 textSize = NativeImGui.CalcTextSize(text);
+        Vector2 cursor = NativeImGui.GetCursorScreenPos();
+        bool pressed = NativeImGui.InvisibleButton($"##clickable_text_{id}", controlSize);
+        bool hovered = NativeImGui.IsItemHovered();
+        bool active = NativeImGui.IsItemActive();
+        DrawClickableTextPresentation(NativeImGui.Raw.GetWindowDrawList(), cursor, controlSize, text, textSize, hovered, active);
+        if (!string.IsNullOrWhiteSpace(tooltip) && hovered && BeginMenuTooltip())
+        {
+            NativeImGui.TextUnformatted(tooltip);
+            EndMenuTooltip();
+        }
+
+        return pressed;
+    }
 
     /// <summary>
     /// Draws a text link with no button background and highlights it only through text presentation.
@@ -289,62 +268,6 @@ public sealed unsafe partial class ImGuiWidget
             cursor + controlSize * 0.5f,
             color
         );
-        if (!string.IsNullOrWhiteSpace(tooltip) && hovered && BeginMenuTooltip())
-        {
-            NativeImGui.TextUnformatted(tooltip);
-            EndMenuTooltip();
-        }
-
-        return pressed;
-    }
-
-    /// <summary>
-    /// Draws clickable text centered inside an explicitly sized transparent interaction area.
-    /// </summary>
-    /// <param name="id">
-    /// Stable identifier used by ImGui to track the interaction.
-    /// </param>
-    /// <param name="text">
-    /// Visible text or icon glyph.
-    /// </param>
-    /// <param name="controlSize">
-    /// Size of the transparent interaction area.
-    /// </param>
-    /// <param name="tooltip">
-    /// Optional tooltip displayed while the interaction is hovered.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the text is pressed.
-    /// </returns>
-    /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="id"/> is empty.
-    /// </exception>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="text"/> is <see langword="null"/>.
-    /// </exception>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when either component of <paramref name="controlSize"/> is not positive.
-    /// </exception>
-    public bool ClickableText(
-        string id,
-        string text,
-        Vector2 controlSize,
-        string? tooltip = null
-    ) {
-        m_session.EnsureDrawing();
-        ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        ArgumentNullException.ThrowIfNull(text);
-        if (controlSize.X <= 0f || controlSize.Y <= 0f)
-        {
-            throw new ArgumentOutOfRangeException(nameof(controlSize), controlSize, "Clickable text size must be positive.");
-        }
-
-        Vector2 textSize = NativeImGui.CalcTextSize(text);
-        Vector2 cursor = NativeImGui.GetCursorScreenPos();
-        bool pressed = NativeImGui.InvisibleButton($"##clickable_text_{id}", controlSize);
-        bool hovered = NativeImGui.IsItemHovered();
-        bool active = NativeImGui.IsItemActive();
-        DrawClickableTextPresentation(NativeImGui.Raw.GetWindowDrawList(), cursor, controlSize, text, textSize, hovered, active);
         if (!string.IsNullOrWhiteSpace(tooltip) && hovered && BeginMenuTooltip())
         {
             NativeImGui.TextUnformatted(tooltip);
@@ -545,21 +468,6 @@ public sealed unsafe partial class ImGuiWidget
         DrawWrappedText(text, wrapWidth);
     }
 
-    private static void DrawWrappedText(
-        string text,
-        float wrapWidth
-    ) {
-        NativeImGui.PushTextWrapPos(NativeImGui.GetCursorPosX() + wrapWidth);
-        try
-        {
-            NativeImGui.TextUnformatted(text);
-        }
-        finally
-        {
-            NativeImGui.PopTextWrapPos();
-        }
-    }
-
     /// <summary>
     /// Calculates a clickable text area from visible text and requested inner padding.
     /// </summary>
@@ -617,21 +525,6 @@ public sealed unsafe partial class ImGuiWidget
         m_session.EnsureDrawing();
         float iconSlotSize = NativeImGui.GetFontSize();
         return new Vector2(iconSlotSize);
-    }
-
-    private void DrawClickableTextPresentation(
-        ImDrawList* drawList,
-        Vector2 minimum,
-        Vector2 controlSize,
-        string text,
-        Vector2 textSize,
-        bool hovered,
-        bool active
-    ) {
-        uint color = hovered || active
-                     ? NativeImGui.ColorConvertFloat4ToU32(EditorPalette.compactControlHovered)
-                     : NativeImGui.GetColorU32((int)(ImGuiCol.Text));
-        ImGui.DrawNativeText(drawList, minimum + (controlSize - textSize) * 0.5f, color, text);
     }
 
     /// <summary>
@@ -696,6 +589,98 @@ public sealed unsafe partial class ImGuiWidget
         }
     }
 
+    /// <summary>
+    /// Gets the visible bounds of the first glyph in a string at a requested font size.
+    /// </summary>
+    /// <param name="font">
+    /// Font that owns the glyph.
+    /// </param>
+    /// <param name="fontSize">
+    /// Requested baked font size.
+    /// </param>
+    /// <param name="text">
+    /// Text whose first Unicode scalar identifies the glyph.
+    /// </param>
+    /// <returns>
+    /// A vector containing the glyph's left, top, right, and bottom offsets relative to the
+    /// text drawing origin.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="text"/> is empty.
+    /// </exception>
+    private Vector4 GetGlyphVisualBoundsNative(
+        ImFont* font,
+        float fontSize,
+        string text
+    ) {
+        m_session.EnsureDrawing();
+        if (string.IsNullOrEmpty(text))
+        {
+            throw new ArgumentException("Glyph text cannot be empty.", nameof(text));
+        }
+        int codepoint = char.ConvertToUtf32(text, 0);
+        ImFontBaked* baked = NativeImGui.Raw.GetFontBaked(font, fontSize, -1f);
+        ImFontGlyph* glyph = codepoint <= ushort.MaxValue ? NativeImGui.Raw.FindGlyph(baked, (ushort)codepoint) : null;
+        if (glyph is not null)
+        {
+            return new Vector4(glyph->X0, glyph->Y0, glyph->X1, glyph->Y1);
+        }
+        NativeImGui.Raw.PushFont(font, fontSize);
+        Vector2 fallbackSize = NativeImGui.CalcTextSize(text);
+        NativeImGui.PopFont();
+        return new Vector4(0f, 0f, fallbackSize.X, fallbackSize.Y);
+    }
+
+    /// <summary>
+    /// Draws one glyph so the center of its visible bounds matches a requested point.
+    /// </summary>
+    /// <param name="drawList">
+    /// Draw list that receives the glyph.
+    /// </param>
+    /// <param name="font">
+    /// Font that owns the glyph.
+    /// </param>
+    /// <param name="fontSize">
+    /// Requested baked font size.
+    /// </param>
+    /// <param name="text">
+    /// Text containing the glyph to draw.
+    /// </param>
+    /// <param name="center">
+    /// Target center in screen coordinates.
+    /// </param>
+    /// <param name="color">
+    /// Packed ImGui text color.
+    /// </param>
+    private void AddGlyphCenteredNative(
+        ImDrawList* drawList,
+        ImFont* font,
+        float fontSize,
+        string text,
+        Vector2 center,
+        uint color
+    ) {
+        m_session.EnsureDrawing();
+        Vector4 bounds = GetGlyphVisualBoundsNative(font, fontSize, text);
+        var visibleCenterOffset = new Vector2((bounds.X + bounds.Z) * 0.5f, (bounds.Y + bounds.W) * 0.5f);
+        ImGui.DrawNativeText(drawList, font, fontSize, center - visibleCenterOffset, color, text);
+    }
+
+    private void DrawClickableTextPresentation(
+        ImDrawList* drawList,
+        Vector2 minimum,
+        Vector2 controlSize,
+        string text,
+        Vector2 textSize,
+        bool hovered,
+        bool active
+    ) {
+        uint color = hovered || active
+                     ? NativeImGui.ColorConvertFloat4ToU32(EditorPalette.compactControlHovered)
+                     : NativeImGui.GetColorU32((int)(ImGuiCol.Text));
+        ImGui.DrawNativeText(drawList, minimum + (controlSize - textSize) * 0.5f, color, text);
+    }
+
     private void IconTextAt(
         Vector2 screenPos,
         string icon,
@@ -705,5 +690,20 @@ public sealed unsafe partial class ImGuiWidget
         float offsetFromWindowStart = screenPos.X - NativeImGui.GetWindowPos().X;
         NativeImGui.SameLine(offsetFromWindowStart, 0f);
         IconText(icon, text, highlight);
+    }
+
+    private static void DrawWrappedText(
+        string text,
+        float wrapWidth
+    ) {
+        NativeImGui.PushTextWrapPos(NativeImGui.GetCursorPosX() + wrapWidth);
+        try
+        {
+            NativeImGui.TextUnformatted(text);
+        }
+        finally
+        {
+            NativeImGui.PopTextWrapPos();
+        }
     }
 }

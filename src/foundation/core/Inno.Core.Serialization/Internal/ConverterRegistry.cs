@@ -22,8 +22,6 @@ internal sealed class ConverterRegistry : IDisposable
         m_registry.Refresh();
     }
 
-    internal void Refresh() => RequireRegistry().Refresh();
-
     /// <summary>
     /// Releases the resources owned by this instance.
     /// </summary>
@@ -36,6 +34,8 @@ internal sealed class ConverterRegistry : IDisposable
         m_disposed = true;
         m_registry.Dispose();
     }
+
+    internal void Refresh() => RequireRegistry().Refresh();
 
     internal ConverterInvoker? Resolve(Type valueType)
     {
@@ -78,6 +78,11 @@ internal sealed class ConverterRegistry : IDisposable
 
         return best[0].invoker;
     }
+
+    private ConverterTypeRegistry RequireRegistry()
+        => !m_disposed
+           ? m_registry
+           : throw new ObjectDisposedException(nameof(ConverterRegistry));
 
     private static bool TryCreateCandidate(
         ConverterRegistrySnapshot snapshot,
@@ -268,18 +273,6 @@ internal sealed class ConverterRegistry : IDisposable
         internal ConverterTypeRegistry(TypeCatalog types)
             : base(types) {}
 
-        internal ConverterRegistryLease Capture()
-        {
-            while (true)
-            {
-                ConverterRegistrySnapshot snapshot = current;
-                if (snapshot.TryAcquire())
-                {
-                    return new ConverterRegistryLease(snapshot);
-                }
-            }
-        }
-
         /// <summary>
         /// Builds a validated result from the current immutable input snapshot.
         /// </summary>
@@ -316,22 +309,29 @@ internal sealed class ConverterRegistry : IDisposable
         /// The immutable state snapshot consumed by this operation.
         /// </param>
         protected override void DisposeSnapshot(ConverterRegistrySnapshot snapshot) => snapshot.Release();
-    }
 
-    private ConverterTypeRegistry RequireRegistry()
-        => !m_disposed
-           ? m_registry
-           : throw new ObjectDisposedException(nameof(ConverterRegistry));
+        internal ConverterRegistryLease Capture()
+        {
+            while (true)
+            {
+                ConverterRegistrySnapshot snapshot = current;
+                if (snapshot.TryAcquire())
+                {
+                    return new ConverterRegistryLease(snapshot);
+                }
+            }
+        }
+    }
 
     internal sealed class ConverterRegistrySnapshot(
         IReadOnlyList<Type> registrations,
         TypeCacheSnapshot types
     ) {
-        private TypeCacheSnapshot? m_types = types;
         internal readonly Guid captureIdentity = Guid.NewGuid();
         internal readonly Lock sync = new();
         internal readonly ConcurrentDictionary<Type, ConverterInvoker?> cache = new();
         internal readonly Dictionary<Type, object> converterInstances = [];
+        private TypeCacheSnapshot? m_types = types;
         internal IReadOnlyList<Type> registrations = registrations;
         private int m_referenceCount = 1;
 
@@ -413,6 +413,16 @@ internal sealed class ConverterRegistryLease : IDisposable
     internal ConverterRegistryLease(ConverterRegistry.ConverterRegistrySnapshot snapshot)
     {
         m_snapshot = snapshot;
+    }
+
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose()
+    {
+        ConverterRegistry.ConverterRegistrySnapshot? snapshot = Interlocked.Exchange(ref m_snapshot, null);
+        m_revisionPlans?.Clear();
+        snapshot?.Release();
     }
 
     internal TypeCacheSnapshot types => (m_snapshot ?? throw new ObjectDisposedException(nameof(ConverterRegistryLease))).types;
@@ -502,16 +512,6 @@ internal sealed class ConverterRegistryLease : IDisposable
             }
             return resolved;
         }
-    }
-
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose()
-    {
-        ConverterRegistry.ConverterRegistrySnapshot? snapshot = Interlocked.Exchange(ref m_snapshot, null);
-        m_revisionPlans?.Clear();
-        snapshot?.Release();
     }
 
     private bool IsKnownDefault(Type type)

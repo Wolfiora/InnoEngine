@@ -162,8 +162,8 @@ public sealed class StaticTypeCatalogSource : ITypeCatalogSource
         internal readonly Dictionary<Type, Func<object>?> factories = [];
         internal readonly Dictionary<Type, TypeCatalogMetadata> metadata = [];
         internal readonly Dictionary<Type, List<Type[]>> rejectedConstructions = [];
-        private bool m_sealed;
         private readonly int m_ownerThread = Environment.CurrentManagedThreadId;
+        private bool m_sealed;
 
         /// <inheritdoc/>
         public void Register(

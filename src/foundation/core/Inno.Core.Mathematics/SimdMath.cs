@@ -43,6 +43,66 @@ internal static class SimdMath
     }
 
     /// <summary>
+    /// Calculates a four-component scalar dot product.
+    /// </summary>
+    /// <param name="ax">
+    /// The ax consumed by dot4; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="ay">
+    /// The ay consumed by dot4; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="az">
+    /// The az consumed by dot4; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="aw">
+    /// The aw consumed by dot4; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="bx">
+    /// The bx consumed by dot4; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="by">
+    /// The by consumed by dot4; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="bz">
+    /// The bz consumed by dot4; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="bw">
+    /// The bw consumed by dot4; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <returns>
+    /// The scalar result calculated from the supplied inputs.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static float Dot4(
+        float ax,
+        float ay,
+        float az,
+        float aw,
+        float bx,
+        float by,
+        float bz,
+        float bw
+    ) {
+        if (Sse.IsSupported)
+        {
+            Vector128<float> a = Vector128.Create(ax, ay, az, aw);
+            Vector128<float> b = Vector128.Create(bx, by, bz, bw);
+            Vector128<float> mul = Sse.Multiply(a, b);
+            return mul.GetElement(0) + mul.GetElement(1) + mul.GetElement(2) + mul.GetElement(3);
+        }
+
+        if (AdvSimd.IsSupported)
+        {
+            Vector128<float> a = Vector128.Create(ax, ay, az, aw);
+            Vector128<float> b = Vector128.Create(bx, by, bz, bw);
+            Vector128<float> mul = AdvSimd.Multiply(a, b);
+            return mul.GetElement(0) + mul.GetElement(1) + mul.GetElement(2) + mul.GetElement(3);
+        }
+
+        return (ax * bx) + (ay * by) + (az * bz) + (aw * bw);
+    }
+
+    /// <summary>
     /// Calculates a two-component scalar dot product.
     /// </summary>
     /// <param name="ax">
@@ -136,65 +196,5 @@ internal static class SimdMath
         }
 
         return (ax * bx) + (ay * by) + (az * bz);
-    }
-
-    /// <summary>
-    /// Calculates a four-component scalar dot product.
-    /// </summary>
-    /// <param name="ax">
-    /// The ax consumed by dot4; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <param name="ay">
-    /// The ay consumed by dot4; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <param name="az">
-    /// The az consumed by dot4; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <param name="aw">
-    /// The aw consumed by dot4; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <param name="bx">
-    /// The bx consumed by dot4; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <param name="by">
-    /// The by consumed by dot4; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <param name="bz">
-    /// The bz consumed by dot4; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <param name="bw">
-    /// The bw consumed by dot4; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <returns>
-    /// The scalar result calculated from the supplied inputs.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float Dot4(
-        float ax,
-        float ay,
-        float az,
-        float aw,
-        float bx,
-        float by,
-        float bz,
-        float bw
-    ) {
-        if (Sse.IsSupported)
-        {
-            Vector128<float> a = Vector128.Create(ax, ay, az, aw);
-            Vector128<float> b = Vector128.Create(bx, by, bz, bw);
-            Vector128<float> mul = Sse.Multiply(a, b);
-            return mul.GetElement(0) + mul.GetElement(1) + mul.GetElement(2) + mul.GetElement(3);
-        }
-
-        if (AdvSimd.IsSupported)
-        {
-            Vector128<float> a = Vector128.Create(ax, ay, az, aw);
-            Vector128<float> b = Vector128.Create(bx, by, bz, bw);
-            Vector128<float> mul = AdvSimd.Multiply(a, b);
-            return mul.GetElement(0) + mul.GetElement(1) + mul.GetElement(2) + mul.GetElement(3);
-        }
-
-        return (ax * bx) + (ay * by) + (az * bz) + (aw * bw);
     }
 }

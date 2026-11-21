@@ -14,7 +14,6 @@ internal sealed class AudioVoiceOwner
     private readonly Queue<AudioVoiceHandle> m_terminalVoiceOrder = [];
     private readonly Dictionary<AudioVoiceHandle, VoiceRecord> m_voices = [];
     private readonly AudioVoiceAllocator m_voiceAllocator = new();
-    private long m_nextVoiceSequence;
     private readonly IAudioDevice m_device;
     private readonly IAssetArtifactLookup m_artifacts;
     private readonly AudioClipCache m_clipCache;
@@ -23,8 +22,9 @@ internal sealed class AudioVoiceOwner
     private readonly IDiagnosticReporter m_diagnostics;
     private readonly AudioRuntimeOptions m_options;
     private readonly Action<Action> m_retireResources;
-    private long m_stolenVoiceCount;
     private readonly List<Exception> m_retirementFailures = [];
+    private long m_nextVoiceSequence;
+    private long m_stolenVoiceCount;
 
     internal AudioVoiceOwner(
         IAudioDevice device,
@@ -212,25 +212,6 @@ internal sealed class AudioVoiceOwner
         return handle;
     }
 
-    private void StealVoice()
-    {
-        VoiceRecord victim = m_voices.Values
-            .OrderBy(static voice => voice.options.priority)
-            .ThenBy(static voice => voice.sequence)
-            .First();
-        if (victim.finishingReason is AudioCompletionReason finishingReason)
-        {
-            FinishVoice(victim, finishingReason);
-            return;
-        }
-        if (victim.backendVoice.isValid)
-        {
-            _ = m_device.Stop(victim.backendVoice);
-        }
-        m_stolenVoiceCount++;
-        FinishVoice(victim, AudioCompletionReason.Stolen);
-    }
-
     internal void PrepareVoices()
     {
         foreach (VoiceRecord voice in m_voices.Values.Where(static voice => (
@@ -299,41 +280,6 @@ internal sealed class AudioVoiceOwner
         }
     }
 
-    private void FinishVoice(
-        VoiceRecord voice,
-        AudioCompletionReason reason
-    ) {
-        if (!m_voices.ContainsKey(voice.handle))
-        {
-            return;
-        }
-        voice.finishingReason ??= reason;
-        voice.clip.Dispose();
-        if (voice.clipCache is not null)
-        {
-            if (!voice.cacheReferenceReleased)
-            {
-                voice.clipCache.voiceReferences--;
-                voice.cacheReferenceReleased = true;
-            }
-            m_clipCache.TryReleaseClip(voice.clipCache);
-            voice.clipCache = null;
-        }
-        m_events.Enqueue(new AudioVoiceCompletedEvent(voice.handle, voice.finishingReason.Value));
-        m_voices.Remove(voice.handle);
-        if (m_terminalVoices.Add(voice.handle))
-        {
-            m_terminalVoiceOrder.Enqueue(voice.handle);
-        }
-        int terminalCapacity = m_options.maxVoices > int.MaxValue / 2
-                               ? int.MaxValue
-                               : Math.Max(64, m_options.maxVoices * 2);
-        while (m_terminalVoiceOrder.Count > terminalCapacity)
-        {
-            m_terminalVoices.Remove(m_terminalVoiceOrder.Dequeue());
-        }
-    }
-
     internal void DrainCompletions()
     {
         foreach (VoiceRecord pending in m_voices.Values.Where(static voice => voice.finishingReason is not null).ToArray())
@@ -349,18 +295,6 @@ internal sealed class AudioVoiceOwner
                 continue;
             }
             FinishVoice(voice, voice.completionOverride ?? completion.reason);
-        }
-    }
-
-    private void UpdateVoiceState(VoiceRecord voice)
-    {
-        if (!voice.backendVoice.isValid)
-        {
-            return;
-        }
-        if (m_device.TryGetVoiceState(voice.backendVoice, out AudioPlaybackState state))
-        {
-            voice.state = state;
         }
     }
 
@@ -405,6 +339,79 @@ internal sealed class AudioVoiceOwner
         throw new AggregateException("Audio voice retirement failed after every voice was attempted.", failures);
     }
 
+    private void StealVoice()
+    {
+        VoiceRecord victim = m_voices.Values
+            .OrderBy(static voice => voice.options.priority)
+            .ThenBy(static voice => voice.sequence)
+            .First();
+        if (victim.finishingReason is AudioCompletionReason finishingReason)
+        {
+            FinishVoice(victim, finishingReason);
+            return;
+        }
+        if (victim.backendVoice.isValid)
+        {
+            _ = m_device.Stop(victim.backendVoice);
+        }
+        m_stolenVoiceCount++;
+        FinishVoice(victim, AudioCompletionReason.Stolen);
+    }
+
+    private void FinishVoice(
+        VoiceRecord voice,
+        AudioCompletionReason reason
+    ) {
+        if (!m_voices.ContainsKey(voice.handle))
+        {
+            return;
+        }
+        voice.finishingReason ??= reason;
+        voice.clip.Dispose();
+        if (voice.clipCache is not null)
+        {
+            if (!voice.cacheReferenceReleased)
+            {
+                voice.clipCache.voiceReferences--;
+                voice.cacheReferenceReleased = true;
+            }
+            m_clipCache.TryReleaseClip(voice.clipCache);
+            voice.clipCache = null;
+        }
+        m_events.Enqueue(new AudioVoiceCompletedEvent(voice.handle, voice.finishingReason.Value));
+        m_voices.Remove(voice.handle);
+        if (m_terminalVoices.Add(voice.handle))
+        {
+            m_terminalVoiceOrder.Enqueue(voice.handle);
+        }
+        int terminalCapacity = m_options.maxVoices > int.MaxValue / 2
+                               ? int.MaxValue
+                               : Math.Max(64, m_options.maxVoices * 2);
+        while (m_terminalVoiceOrder.Count > terminalCapacity)
+        {
+            m_terminalVoices.Remove(m_terminalVoiceOrder.Dequeue());
+        }
+    }
+
+    private void UpdateVoiceState(VoiceRecord voice)
+    {
+        if (!voice.backendVoice.isValid)
+        {
+            return;
+        }
+        if (m_device.TryGetVoiceState(voice.backendVoice, out AudioPlaybackState state))
+        {
+            voice.state = state;
+        }
+    }
+
+    private void Publish(
+        string code,
+        string message,
+        DiagnosticSeverity severity,
+        string? source
+    ) => m_diagnostics.Publish(new Diagnostic(code, message, severity, source));
+
     private sealed class VoiceRecord
     {
         internal VoiceRecord(
@@ -438,11 +445,4 @@ internal sealed class AudioVoiceOwner
         internal AudioCompletionReason? finishingReason { get; set; }
         internal bool cacheReferenceReleased { get; set; }
     }
-
-    private void Publish(
-        string code,
-        string message,
-        DiagnosticSeverity severity,
-        string? source
-    ) => m_diagnostics.Publish(new Diagnostic(code, message, severity, source));
 }

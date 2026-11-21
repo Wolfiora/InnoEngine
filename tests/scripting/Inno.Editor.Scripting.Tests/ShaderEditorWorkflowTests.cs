@@ -65,10 +65,10 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
     private readonly DiagnosticReporter m_reporter;
     private readonly AssetPipeline m_assets;
     private readonly EditorRenderTargetArtifactProvider m_artifacts;
-    private EditorInteractionRuntime m_runtime;
     private readonly WorkflowSink m_sink = new();
     private readonly ShaderGraphSourceStore m_source;
     private readonly unsafe ImGuiNativeContext* m_imgui;
+    private EditorInteractionRuntime m_runtime;
     private Vector2 m_canvasMinimum;
     private Vector2 m_canvasMaximum;
     private Vector2 m_probeOffset;
@@ -276,28 +276,6 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         );
     }
 
-    private AssetPath CreateFunction(params string[] exports)
-    {
-        if (exports.Length == 0)
-        {
-            exports = ["Evaluate"];
-        }
-        AssetPath path = AssetPath.Project("Function.ishadersource");
-        File.WriteAllText(
-            Path.Combine(m_root, "Assets", path.localPath),
-            string.Join("\n", exports.Select(static function => $"float {function}(float input) {{ return input; }}"))
-        );
-        _ = m_assets.Import(path);
-        var settings = new ShaderSourceImportSettings
-        {
-            languageId = "inno.shader-language.bgfx-sc",
-            implementationId = "bgfx",
-            exports = exports
-        };
-        Assert.True(m_assets.SaveImportSettings(path, settings, m_assets.GetImportSettings(path).fingerprint));
-        return path;
-    }
-
     [Fact]
     public void FileSelectionOpensOnlyTheShaderCanvasAndNonShaderSelectionKeepsItsDocument()
     {
@@ -503,28 +481,6 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         Assert.Equal(before, GraphDocumentCodec.Encode(controller.document, m_serialization));
     }
 
-    private unsafe void DragProbe(Vector2 distance)
-    {
-        BeginDragProbe(distance);
-        ImGuiApi.Raw.AddMouseButtonEvent(ImGuiApi.Raw.GetIO(), 0, 0);
-        Draw();
-        Tick();
-        m_probeOffset += distance;
-    }
-
-    private unsafe void BeginDragProbe(Vector2 distance)
-    {
-        // A single framed summary-only node is centered in the canvas (82 px tall).
-        Vector2 start = (m_canvasMinimum + m_canvasMaximum) * 0.5f + new Vector2(0, -25) + m_probeOffset;
-        Assert.True(start.X > 0 && start.Y > 0);
-        ImGuiApi.Raw.AddMousePosEvent(ImGuiApi.Raw.GetIO(), start.X, start.Y);
-        Draw();
-        ImGuiApi.Raw.AddMouseButtonEvent(ImGuiApi.Raw.GetIO(), 0, (true ? (byte)1 : (byte)0));
-        Draw();
-        ImGuiApi.Raw.AddMousePosEvent(ImGuiApi.Raw.GetIO(), start.X + distance.X, start.Y + distance.Y);
-        Draw();
-    }
-
     [Fact]
     public unsafe void SaveDuringANativeDragCompletesOneDomainEditBeforeWriting()
     {
@@ -591,20 +547,6 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         Assert.NotNull(Controller(entry).document.FindNode(pending));
         Assert.True(Assert.Single(m_runtime.interactions.documents.documents).isDirty);
         Assert.True(File.Exists(Path.Combine(m_assets.libraryRoot, "Editor", "ShaderRecovery", AssetId(entry).ToString("N") + ".inno")));
-    }
-
-    private AssetFileEntry Create(string name)
-    {
-        File.WriteAllBytes(
-            Path.Combine(m_root, "Assets", name),
-            GraphDocumentCodec.Encode(
-                ShaderGraphTemplates.CreateRaster(m_serialization, AssetSerializationContext.Create(m_assets)),
-                m_serialization
-            )
-        );
-        Assert.True(m_assets.Import(AssetPath.Project(name)));
-        Assert.True(m_assets.TryGetFileSystemEntry(AssetPath.Project(name), out AssetFileEntry entry));
-        return entry;
     }
 
     [Theory]
@@ -1048,40 +990,6 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         compilation.ReleaseDraft(previewId);
     }
 
-    private EditorInteractionRuntime CreateRuntime()
-    {
-        RenderTextureFormat[] formats = Enum.GetValues<RenderTextureFormat>();
-        var capabilities = new GraphicsCapabilities(
-            GraphicsApi.Metal,
-            GraphicsCapability.None,
-            new(256, 8, 8192, 16),
-            formats,
-            formats,
-            formats,
-            formats,
-            false,
-            false
-        );
-        var runtime = new EditorInteractionRuntime(
-            new EditorContext(m_root, new EditorKeyboardPolicy(KeyModifier.Control, "Super")),
-            m_types,
-            m_logs,
-            [
-                m_types,
-                m_serialization,
-                m_identities,
-                m_assets,
-                m_sink,
-                m_ui,
-                new EditorReloadCoordinator(),
-                new EditorShaderCompilation(m_artifacts, capabilities),
-                new EmptyPreviews()
-            ]
-        );
-        runtime.Start();
-        return runtime;
-    }
-
     [Fact]
     public void MaterialGesturesAreIndependentAndOnlySavePublishesTheDraft()
     {
@@ -1401,14 +1309,113 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         Assert.Empty(sources.Decode<RenderPipelineAsset>(sources.Read(path).bytes).features);
     }
 
-    [StableTypeId("8c096b6f-92c3-48ed-917e-955858d6a65c")]
-    public sealed unsafe class WorkflowPipelineSettings : ISerializable
+    public unsafe void Dispose()
     {
-        [SerializableProperty]
-        public MaterialAsset? material { get; set; }
+        m_runtime.Dispose();
+        m_ui.Dispose();
+        ImGuiApi.Raw.DestroyContext(m_imgui);
+        m_artifacts.Dispose();
+        m_assets.Dispose();
+        m_reporter.Dispose();
+        m_serialization.Dispose();
+        m_types.Dispose();
+        m_modules.Dispose();
+        m_logs.Dispose();
+        m_diagnosticScope.Dispose();
+        m_identityScope.Dispose();
+        Directory.Delete(m_root, true);
+    }
 
-        [SerializableProperty]
-        public float exposure { get; set; }
+    private AssetPath CreateFunction(params string[] exports)
+    {
+        if (exports.Length == 0)
+        {
+            exports = ["Evaluate"];
+        }
+        AssetPath path = AssetPath.Project("Function.ishadersource");
+        File.WriteAllText(
+            Path.Combine(m_root, "Assets", path.localPath),
+            string.Join("\n", exports.Select(static function => $"float {function}(float input) {{ return input; }}"))
+        );
+        _ = m_assets.Import(path);
+        var settings = new ShaderSourceImportSettings
+        {
+            languageId = "inno.shader-language.bgfx-sc",
+            implementationId = "bgfx",
+            exports = exports
+        };
+        Assert.True(m_assets.SaveImportSettings(path, settings, m_assets.GetImportSettings(path).fingerprint));
+        return path;
+    }
+
+    private unsafe void DragProbe(Vector2 distance)
+    {
+        BeginDragProbe(distance);
+        ImGuiApi.Raw.AddMouseButtonEvent(ImGuiApi.Raw.GetIO(), 0, 0);
+        Draw();
+        Tick();
+        m_probeOffset += distance;
+    }
+
+    private unsafe void BeginDragProbe(Vector2 distance)
+    {
+        // A single framed summary-only node is centered in the canvas (82 px tall).
+        Vector2 start = (m_canvasMinimum + m_canvasMaximum) * 0.5f + new Vector2(0, -25) + m_probeOffset;
+        Assert.True(start.X > 0 && start.Y > 0);
+        ImGuiApi.Raw.AddMousePosEvent(ImGuiApi.Raw.GetIO(), start.X, start.Y);
+        Draw();
+        ImGuiApi.Raw.AddMouseButtonEvent(ImGuiApi.Raw.GetIO(), 0, (true ? (byte)1 : (byte)0));
+        Draw();
+        ImGuiApi.Raw.AddMousePosEvent(ImGuiApi.Raw.GetIO(), start.X + distance.X, start.Y + distance.Y);
+        Draw();
+    }
+
+    private AssetFileEntry Create(string name)
+    {
+        File.WriteAllBytes(
+            Path.Combine(m_root, "Assets", name),
+            GraphDocumentCodec.Encode(
+                ShaderGraphTemplates.CreateRaster(m_serialization, AssetSerializationContext.Create(m_assets)),
+                m_serialization
+            )
+        );
+        Assert.True(m_assets.Import(AssetPath.Project(name)));
+        Assert.True(m_assets.TryGetFileSystemEntry(AssetPath.Project(name), out AssetFileEntry entry));
+        return entry;
+    }
+
+    private EditorInteractionRuntime CreateRuntime()
+    {
+        RenderTextureFormat[] formats = Enum.GetValues<RenderTextureFormat>();
+        var capabilities = new GraphicsCapabilities(
+            GraphicsApi.Metal,
+            GraphicsCapability.None,
+            new(256, 8, 8192, 16),
+            formats,
+            formats,
+            formats,
+            formats,
+            false,
+            false
+        );
+        var runtime = new EditorInteractionRuntime(
+            new EditorContext(m_root, new EditorKeyboardPolicy(KeyModifier.Control, "Super")),
+            m_types,
+            m_logs,
+            [
+                m_types,
+                m_serialization,
+                m_identities,
+                m_assets,
+                m_sink,
+                m_ui,
+                new EditorReloadCoordinator(),
+                new EditorShaderCompilation(m_artifacts, capabilities),
+                new EmptyPreviews()
+            ]
+        );
+        runtime.Start();
+        return runtime;
     }
 
     private (AssetPath, ShaderPropertyId) CreateMaterial()
@@ -1476,21 +1483,14 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         }
     }
 
-    public unsafe void Dispose()
+    [StableTypeId("8c096b6f-92c3-48ed-917e-955858d6a65c")]
+    public sealed unsafe class WorkflowPipelineSettings : ISerializable
     {
-        m_runtime.Dispose();
-        m_ui.Dispose();
-        ImGuiApi.Raw.DestroyContext(m_imgui);
-        m_artifacts.Dispose();
-        m_assets.Dispose();
-        m_reporter.Dispose();
-        m_serialization.Dispose();
-        m_types.Dispose();
-        m_modules.Dispose();
-        m_logs.Dispose();
-        m_diagnosticScope.Dispose();
-        m_identityScope.Dispose();
-        Directory.Delete(m_root, true);
+        [SerializableProperty]
+        public MaterialAsset? material { get; set; }
+
+        [SerializableProperty]
+        public float exposure { get; set; }
     }
 
     public sealed unsafe class WorkflowSink
@@ -1572,6 +1572,8 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
 
     private sealed class EmptyPreviews : IEditorPreviewService
     {
+        public uint deviceGeneration => 1;
+
         public bool TryRender(
             EditorViewportComposition composition,
             out EditorPreviewHandle handle
@@ -1581,8 +1583,6 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         }
 
         public void ReleaseRendered(string viewportId) {}
-
-        public uint deviceGeneration => 1;
 
         public bool TryGetTexture(
             TextureAsset texture,

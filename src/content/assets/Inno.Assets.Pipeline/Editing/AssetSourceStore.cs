@@ -114,6 +114,16 @@ public sealed class AssetSourceStore
         return Hash(bytes);
     }
 
+    private AssetSourceMount Mount(AssetPath path)
+    {
+        if (!path.isValid)
+        {
+            throw new ArgumentException("A valid mounted asset path is required.", nameof(path));
+        }
+        return m_assets.sourceMounts.SingleOrDefault(mount => mount.id == path.source)
+               ?? throw new InvalidOperationException($"Asset source mount '{path.source}' is unavailable.");
+    }
+
     private static void ReplaceExisting(
         string destination,
         byte[] bytes,
@@ -143,16 +153,6 @@ public sealed class AssetSourceStore
                 File.Delete(candidate);
             }
         }
-    }
-
-    private AssetSourceMount Mount(AssetPath path)
-    {
-        if (!path.isValid)
-        {
-            throw new ArgumentException("A valid mounted asset path is required.", nameof(path));
-        }
-        return m_assets.sourceMounts.SingleOrDefault(mount => mount.id == path.source)
-               ?? throw new InvalidOperationException($"Asset source mount '{path.source}' is unavailable.");
     }
 
     private static string Hash(ReadOnlySpan<byte> bytes) => Convert.ToHexString(SHA256.HashData(bytes));

@@ -30,6 +30,41 @@ internal sealed class AudioClipCache : IDisposable
         m_retireResources = retireResources;
     }
 
+    /// <summary>
+    /// Cancels waiters and releases every native clip and immutable artifact owned by this device cache.
+    /// </summary>
+    public void Dispose()
+    {
+        foreach (PendingPreload preload in m_preloads)
+        {
+            preload.completion.TrySetCanceled();
+        }
+        m_preloads.Clear();
+        foreach (ClipCacheEntry clip in m_clips.Values.ToArray())
+        {
+            try
+            {
+                clip.Dispose();
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                m_retirementFailures.Add(exception);
+            }
+            m_clips.Remove(clip.key);
+        }
+        m_clips.Clear();
+        if (m_retirementFailures.Count > 0)
+        {
+            Exception[] failures = m_retirementFailures.ToArray();
+            m_retirementFailures.Clear();
+            throw new AggregateException("Audio cache retirement failed after every clip and artifact was attempted.", failures);
+        }
+    }
+
     internal int count => m_clips.Count;
     internal long decodedBytes => m_clips.Values.Sum(static clip => clip.decodedByteLength);
 
@@ -223,41 +258,6 @@ internal sealed class AudioClipCache : IDisposable
             m_preloads.RemoveAt(index);
         }
         DrainRetiringClips();
-    }
-
-    /// <summary>
-    /// Cancels waiters and releases every native clip and immutable artifact owned by this device cache.
-    /// </summary>
-    public void Dispose()
-    {
-        foreach (PendingPreload preload in m_preloads)
-        {
-            preload.completion.TrySetCanceled();
-        }
-        m_preloads.Clear();
-        foreach (ClipCacheEntry clip in m_clips.Values.ToArray())
-        {
-            try
-            {
-                clip.Dispose();
-            }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
-            {
-                throw;
-            }
-            catch (Exception exception)
-            {
-                m_retirementFailures.Add(exception);
-            }
-            m_clips.Remove(clip.key);
-        }
-        m_clips.Clear();
-        if (m_retirementFailures.Count > 0)
-        {
-            Exception[] failures = m_retirementFailures.ToArray();
-            m_retirementFailures.Clear();
-            throw new AggregateException("Audio cache retirement failed after every clip and artifact was attempted.", failures);
-        }
     }
 
     private ValueTask PreparePreload(

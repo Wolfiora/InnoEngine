@@ -165,10 +165,10 @@ public sealed partial class EditorRenderTargetArtifactProvider
 
     private sealed class DraftEntry
     {
+        internal readonly ShaderEntry compilation = new();
         internal bool attempted;
         internal ulong revision;
         internal long assetRevision;
         internal string targetVariant = string.Empty;
-        internal readonly ShaderEntry compilation = new();
     }
 }

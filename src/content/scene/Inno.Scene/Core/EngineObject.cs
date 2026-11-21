@@ -17,6 +17,25 @@ public abstract class EngineObject : IdentityObject
     public bool isDestroyed => m_isDestroyed;
 
     /// <summary>
+    /// Compares this instance to another object using reference identity.
+    /// </summary>
+    /// <param name="obj">
+    /// The object to compare with this instance.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when <paramref name="obj"/> is this instance.
+    /// </returns>
+    public override bool Equals(object? obj) => ReferenceEquals(this, obj);
+
+    /// <summary>
+    /// Returns a stable runtime reference hash code.
+    /// </summary>
+    /// <returns>
+    /// The reference hash code.
+    /// </returns>
+    public override int GetHashCode() => RuntimeHelpers.GetHashCode(this);
+
+    /// <summary>
     /// Compares engine objects using reference identity and destroyed-object null semantics.
     /// </summary>
     /// <param name="left">
@@ -63,25 +82,6 @@ public abstract class EngineObject : IdentityObject
         EngineObject? left,
         EngineObject? right
     ) => !(left == right);
-
-    /// <summary>
-    /// Compares this instance to another object using reference identity.
-    /// </summary>
-    /// <param name="obj">
-    /// The object to compare with this instance.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when <paramref name="obj"/> is this instance.
-    /// </returns>
-    public override bool Equals(object? obj) => ReferenceEquals(this, obj);
-
-    /// <summary>
-    /// Returns a stable runtime reference hash code.
-    /// </summary>
-    /// <returns>
-    /// The reference hash code.
-    /// </returns>
-    public override int GetHashCode() => RuntimeHelpers.GetHashCode(this);
 
     internal void RegisterIdentity(Guid? persistentId = null)
     {

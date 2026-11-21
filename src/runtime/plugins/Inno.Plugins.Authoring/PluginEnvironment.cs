@@ -45,51 +45,6 @@ public sealed class PluginEnvironment : IDisposable
     private PendingActivation? m_pending;
 
     /// <summary>
-    /// Occurs after a validated Plugin generation is staged for script compilation but before it becomes active.
-    /// </summary>
-    [ScriptingApiIgnore]
-    public event Action? ActivationCandidateChanged;
-
-    /// <summary>
-    /// Gets whether project Plugin management is initialized.
-    /// </summary>
-    [ScriptingApiIgnore]
-    public bool isInitialized
-    {
-        get
-        {
-            lock (m_sync)
-            {
-                return m_sources is not null;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Gets the dependency-ordered active Plugin generation.
-    /// </summary>
-    public IReadOnlyList<PluginCandidate> activePlugins => m_catalog.activePlugins;
-
-    /// <summary>
-    /// Gets the monotonic identity of the active Plugin generation.
-    /// </summary>
-    public long revision => m_catalog.revision;
-
-    /// <summary>
-    /// Gets the latest installed Plugin discovery and isolated diagnostics.
-    /// </summary>
-    public PluginScanResult discovery => m_catalog.discovery;
-
-    /// <summary>
-    /// Occurs after discovery diagnostics or the active Plugin generation changes.
-    /// </summary>
-    public event Action? Changed
-    {
-        add => m_catalog.Changed += value;
-        remove => m_catalog.Changed -= value;
-    }
-
-    /// <summary>
     /// Creates automatic Plugin discovery around one asset pipeline and project settings store.
     /// </summary>
     /// <param name="assets">
@@ -150,6 +105,98 @@ public sealed class PluginEnvironment : IDisposable
             m_activeFingerprint = ComputeActiveFingerprint(activeScan);
             m_watcher = CreateWatcher(m_pluginRoot);
         }
+    }
+
+    /// <summary>
+    /// Gets whether project Plugin management is initialized.
+    /// </summary>
+    [ScriptingApiIgnore]
+    public bool isInitialized
+    {
+        get
+        {
+            lock (m_sync)
+            {
+                return m_sources is not null;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the dependency-ordered active Plugin generation.
+    /// </summary>
+    public IReadOnlyList<PluginCandidate> activePlugins => m_catalog.activePlugins;
+
+    /// <summary>
+    /// Gets the monotonic identity of the active Plugin generation.
+    /// </summary>
+    public long revision => m_catalog.revision;
+
+    /// <summary>
+    /// Gets the latest installed Plugin discovery and isolated diagnostics.
+    /// </summary>
+    public PluginScanResult discovery => m_catalog.discovery;
+
+    /// <summary>
+    /// Gets whether a source-mount candidate is waiting for successful script generation activation.
+    /// </summary>
+    [ScriptingApiIgnore]
+    public bool hasPendingActivation
+    {
+        get
+        {
+            lock (m_sync)
+            {
+                return m_pending is not null;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the isolated Asset candidate used by the next Plugin script compilation.
+    /// </summary>
+    [ScriptingApiIgnore]
+    public AssetSourceMountTransaction? compilationAssets
+    {
+        get
+        {
+            lock (m_sync)
+            {
+                return m_pending?.assets;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the Plugin candidates visible to the next script compilation.
+    /// </summary>
+    [ScriptingApiIgnore]
+    public IReadOnlyList<PluginCandidate> compilationPlugins
+    {
+        get
+        {
+            lock (m_sync)
+            {
+                return m_pending is null
+                       ? m_catalog.activePlugins
+                       : PluginSourceService.GetActivatableCandidates(m_pending.candidateScan).ToArray();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Occurs after a validated Plugin generation is staged for script compilation but before it becomes active.
+    /// </summary>
+    [ScriptingApiIgnore]
+    public event Action? ActivationCandidateChanged;
+
+    /// <summary>
+    /// Occurs after discovery diagnostics or the active Plugin generation changes.
+    /// </summary>
+    public event Action? Changed
+    {
+        add => m_catalog.Changed += value;
+        remove => m_catalog.Changed -= value;
     }
 
     /// <summary>
@@ -324,53 +371,6 @@ public sealed class PluginEnvironment : IDisposable
     /// </exception>
     [ScriptingApiIgnore]
     public void ApplyPendingChange() => m_generations.Execute("Plugin availability", new AvailabilityPublication(), [CreateReloadChange()]);
-
-    /// <summary>
-    /// Gets whether a source-mount candidate is waiting for successful script generation activation.
-    /// </summary>
-    [ScriptingApiIgnore]
-    public bool hasPendingActivation
-    {
-        get
-        {
-            lock (m_sync)
-            {
-                return m_pending is not null;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Gets the isolated Asset candidate used by the next Plugin script compilation.
-    /// </summary>
-    [ScriptingApiIgnore]
-    public AssetSourceMountTransaction? compilationAssets
-    {
-        get
-        {
-            lock (m_sync)
-            {
-                return m_pending?.assets;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Gets the Plugin candidates visible to the next script compilation.
-    /// </summary>
-    [ScriptingApiIgnore]
-    public IReadOnlyList<PluginCandidate> compilationPlugins
-    {
-        get
-        {
-            lock (m_sync)
-            {
-                return m_pending is null
-                       ? m_catalog.activePlugins
-                       : PluginSourceService.GetActivatableCandidates(m_pending.candidateScan).ToArray();
-            }
-        }
-    }
 
     /// <summary>
     /// Resolves a Plugin owned by the active or pending script-compilation generation.

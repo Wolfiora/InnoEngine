@@ -16,6 +16,23 @@ public sealed class InspectionDrawContext
     private readonly InspectionDrawerRegistry m_drawers;
     private readonly IReadOnlyList<SerializedProperty> m_serializedProperties;
 
+    internal InspectionDrawContext(
+        EditorContext editorContext,
+        EditorInteractions interactions,
+        object target,
+        SerializedPropertyRenderer properties,
+        InspectionDrawerRegistry drawers,
+        IReadOnlyList<SerializedProperty> serializedProperties
+    ) {
+        this.editorContext = editorContext ?? throw new ArgumentNullException(nameof(editorContext));
+        this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
+        this.target = target ?? throw new ArgumentNullException(nameof(target));
+        this.properties = properties ?? throw new ArgumentNullException(nameof(properties));
+        m_drawers = drawers ?? throw new ArgumentNullException(nameof(drawers));
+        m_serializedProperties = serializedProperties
+                                 ?? throw new ArgumentNullException(nameof(serializedProperties));
+    }
+
     /// <summary>
     /// Gets the shared editor context.
     /// </summary>
@@ -145,22 +162,5 @@ public sealed class InspectionDrawContext
                ?? throw new InvalidOperationException(
                    $"Target '{target.GetType().FullName}' has no visible serialized property '{propertyName}'."
                );
-    }
-
-    internal InspectionDrawContext(
-        EditorContext editorContext,
-        EditorInteractions interactions,
-        object target,
-        SerializedPropertyRenderer properties,
-        InspectionDrawerRegistry drawers,
-        IReadOnlyList<SerializedProperty> serializedProperties
-    ) {
-        this.editorContext = editorContext ?? throw new ArgumentNullException(nameof(editorContext));
-        this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-        this.target = target ?? throw new ArgumentNullException(nameof(target));
-        this.properties = properties ?? throw new ArgumentNullException(nameof(properties));
-        m_drawers = drawers ?? throw new ArgumentNullException(nameof(drawers));
-        m_serializedProperties = serializedProperties
-                                 ?? throw new ArgumentNullException(nameof(serializedProperties));
     }
 }

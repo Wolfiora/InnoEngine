@@ -89,6 +89,8 @@ internal sealed class EditorSettingsStore
     private byte[] Serialize(IReadOnlyDictionary<string, EditorSettingObject> values)
         => m_documents.Capture(new EditorSettingsDocument { values = Copy(values) });
 
+    private void Write(ReadOnlySpan<byte> document) => m_documents.Restore(document);
+
     private static Dictionary<string, EditorSettingObject> ValidateAndCopy(IReadOnlyDictionary<string, EditorSettingObject> values)
     {
         ArgumentNullException.ThrowIfNull(values);
@@ -127,8 +129,6 @@ internal sealed class EditorSettingsStore
         }
         return result;
     }
-
-    private void Write(ReadOnlySpan<byte> document) => m_documents.Restore(document);
 
     private static void ValidateDocumentValue(EditorSettingsDocument document)
     {

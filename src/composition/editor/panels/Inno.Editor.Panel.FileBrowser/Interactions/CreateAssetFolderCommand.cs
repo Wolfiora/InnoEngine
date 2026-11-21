@@ -39,13 +39,6 @@ internal sealed class CreateAssetFolderCommand(AssetBrowserModule assets) : Edit
         _ = interaction.Execute(FileBrowserInteractionIds.C_RENAME);
     }
 
-    private static string Combine(
-        string parent,
-        string name
-    ) => string.IsNullOrEmpty(parent) ? name : $"{parent}/{name}";
-
-    private static string Normalize(string? path) => string.IsNullOrWhiteSpace(path) ? string.Empty : path.Replace('\\', '/').Trim('/');
-
     private bool IsWritableDirectory(string relativePath)
     {
         string normalized = Normalize(relativePath);
@@ -59,4 +52,11 @@ internal sealed class CreateAssetFolderCommand(AssetBrowserModule assets) : Edit
                || assets.edits.pipeline.TryGetFileSystemEntry(AssetPath.Parse(normalized), out AssetFileEntry entry)
                   && entry.isDirectory;
     }
+
+    private static string Combine(
+        string parent,
+        string name
+    ) => string.IsNullOrEmpty(parent) ? name : $"{parent}/{name}";
+
+    private static string Normalize(string? path) => string.IsNullOrWhiteSpace(path) ? string.Empty : path.Replace('\\', '/').Trim('/');
 }

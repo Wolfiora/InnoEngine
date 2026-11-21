@@ -12,13 +12,13 @@ public sealed class RenderTargetStore : IDisposable
 {
     private readonly IRenderDevice m_device;
     private readonly int m_capacity;
-    private int m_frameAllocations;
-    private long m_rejected;
-    private RenderRetirementQueue? m_frameRetirement;
     private readonly Dictionary<RenderTexture, TargetEntry> m_targets = [];
     private readonly HashSet<RenderTexture> m_pendingReleases = [];
     private readonly List<PersistentTextureHandle> m_retireNextFrame = [];
     private readonly List<PersistentTextureHandle> m_retireFollowingFrame = [];
+    private int m_frameAllocations;
+    private long m_rejected;
+    private RenderRetirementQueue? m_frameRetirement;
     private bool m_disposed;
     private RenderRetirementQueue? m_retirement;
 
@@ -119,25 +119,6 @@ public sealed class RenderTargetStore : IDisposable
 
         texture = default;
         return false;
-    }
-
-    /// <summary>
-    /// Publishes target availability only after the backend recorded a graph write to its active revision.
-    /// </summary>
-    /// <param name="graph">
-    /// The graph whose backend command recording completed without an exception.
-    /// </param>
-    internal void MarkWrittenOutputs(CompiledRenderGraph graph)
-    {
-        ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
-        ArgumentNullException.ThrowIfNull(graph);
-        foreach (TargetEntry entry in m_targets.Values)
-        {
-            if (!entry.hasWritten && WritesTarget(graph, entry.handle))
-            {
-                entry.hasWritten = true;
-            }
-        }
     }
 
     /// <summary>
@@ -254,6 +235,42 @@ public sealed class RenderTargetStore : IDisposable
         CompleteRetirement();
     }
 
+    /// <summary>
+    /// Publishes target availability only after the backend recorded a graph write to its active revision.
+    /// </summary>
+    /// <param name="graph">
+    /// The graph whose backend command recording completed without an exception.
+    /// </param>
+    internal void MarkWrittenOutputs(CompiledRenderGraph graph)
+    {
+        ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
+        ArgumentNullException.ThrowIfNull(graph);
+        foreach (TargetEntry entry in m_targets.Values)
+        {
+            if (!entry.hasWritten && WritesTarget(graph, entry.handle))
+            {
+                entry.hasWritten = true;
+            }
+        }
+    }
+
+    private void CompleteRetirement()
+    {
+        m_targets.Clear();
+        m_pendingReleases.Clear();
+        m_retireNextFrame.Clear();
+        m_retireFollowingFrame.Clear();
+        m_disposed = true;
+    }
+
+    private void Retire(PersistentTextureHandle texture)
+    {
+        if (texture.isValid)
+        {
+            m_retireNextFrame.Add(texture);
+        }
+    }
+
     private static bool WritesTarget(
         CompiledRenderGraph graph,
         PersistentTextureHandle handle
@@ -276,23 +293,6 @@ public sealed class RenderTargetStore : IDisposable
             }
         }
         return false;
-    }
-
-    private void CompleteRetirement()
-    {
-        m_targets.Clear();
-        m_pendingReleases.Clear();
-        m_retireNextFrame.Clear();
-        m_retireFollowingFrame.Clear();
-        m_disposed = true;
-    }
-
-    private void Retire(PersistentTextureHandle texture)
-    {
-        if (texture.isValid)
-        {
-            m_retireNextFrame.Add(texture);
-        }
     }
 
     private sealed record TargetEntry(

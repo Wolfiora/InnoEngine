@@ -50,6 +50,50 @@ internal sealed class AudioMixerOwner : IDisposable
         }
     }
 
+    /// <summary>
+    /// Retires the active graph and all retained graph generations after their voices have stopped.
+    /// </summary>
+    public void Dispose()
+    {
+        try
+        {
+            DestroyBusSet(m_device, m_buses);
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
+        catch (Exception error)
+        {
+            m_retirementFailures.Add(error);
+        }
+        while (m_retiredBuses.Count > 0)
+        {
+            try
+            {
+                DestroyBusSet(m_device, m_retiredBuses[^1]);
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
+            catch (Exception error)
+            {
+                m_retirementFailures.Add(error);
+            }
+            m_retiredBuses.RemoveAt(m_retiredBuses.Count - 1);
+        }
+        m_busControls.Clear();
+        m_retiredMasterPauses.Clear();
+        if (m_retirementFailures.Count == 0)
+        {
+            return;
+        }
+        Exception[] failures = m_retirementFailures.ToArray();
+        m_retirementFailures.Clear();
+        throw new AggregateException("Audio mixer retirement failed after every graph was attempted.", failures);
+    }
+
     internal AudioMixerOwner PrepareReplacement(IAudioDevice device)
         => new(device, m_activeMixer, m_busControls, m_suspended, m_retirementFailed, m_retire);
 
@@ -195,50 +239,6 @@ internal sealed class AudioMixerOwner : IDisposable
                 throw;
             }
         }
-    }
-
-    /// <summary>
-    /// Retires the active graph and all retained graph generations after their voices have stopped.
-    /// </summary>
-    public void Dispose()
-    {
-        try
-        {
-            DestroyBusSet(m_device, m_buses);
-        }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
-        {
-            throw;
-        }
-        catch (Exception error)
-        {
-            m_retirementFailures.Add(error);
-        }
-        while (m_retiredBuses.Count > 0)
-        {
-            try
-            {
-                DestroyBusSet(m_device, m_retiredBuses[^1]);
-            }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
-            {
-                throw;
-            }
-            catch (Exception error)
-            {
-                m_retirementFailures.Add(error);
-            }
-            m_retiredBuses.RemoveAt(m_retiredBuses.Count - 1);
-        }
-        m_busControls.Clear();
-        m_retiredMasterPauses.Clear();
-        if (m_retirementFailures.Count == 0)
-        {
-            return;
-        }
-        Exception[] failures = m_retirementFailures.ToArray();
-        m_retirementFailures.Clear();
-        throw new AggregateException("Audio mixer retirement failed after every graph was attempted.", failures);
     }
 
     private IReadOnlyDictionary<AudioBusId, AudioBusHandle> CreateBusSet(

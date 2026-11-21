@@ -28,8 +28,6 @@ internal sealed class IdentityRegistry
         this.domainId = domainId;
     }
 
-    internal IdentityDomainId domainId { get; }
-
     /// <summary>
     /// Gets the number of values in the current immutable view.
     /// </summary>
@@ -307,6 +305,8 @@ internal sealed class IdentityRegistry
         }
         return result;
     }
+
+    internal IdentityDomainId domainId { get; }
 
     internal bool TryGetRuntimeId(
         in Identity identity,

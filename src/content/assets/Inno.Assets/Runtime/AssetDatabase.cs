@@ -36,49 +36,15 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     private readonly Dictionary<AssetObject, AssetObject[]> m_dependencyRetention = [];
     private readonly SerializationGeneration m_serialization;
     private readonly SerializationContext m_serializationContext;
-    private TypeCacheSnapshot? m_types;
     private readonly IdentityAllocator m_identities;
     private readonly IRuntimeContentStore m_content;
     private readonly long m_residencyBudgetBytes;
     private readonly long m_preparationBudgetBytes;
+    private TypeCacheSnapshot? m_types;
     private long m_accessSequence;
     private long m_residentBytes;
     private bool m_disposed;
     private LifetimeScope? m_retirement;
-
-    /// <summary>
-    /// Restores serialized properties to the existing asset object.
-    /// </summary>
-    /// <typeparam name="TValue">
-    /// Serialized asset object type receiving restored properties.
-    /// </typeparam>
-    /// <param name="stableTypeId">
-    /// The stable type id consumed by restore properties; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <param name="propertyData">
-    /// The property data consumed by restore properties; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <param name="target">
-    /// The existing target that receives the validated result.
-    /// </param>
-    public void RestoreProperties<TValue>(
-        Guid stableTypeId,
-        byte[] propertyData,
-        TValue target
-    ) where TValue : class, ISerializable
-    {
-        ObjectDisposedException.ThrowIf(m_disposed, this);
-        ArgumentNullException.ThrowIfNull(target);
-        if (m_types!.GetTypeRef(target.GetType()).stableId != stableTypeId)
-        {
-            throw new InvalidOperationException("The asset property payload has an incompatible stable type identity.");
-        }
-        m_serialization.Decode(propertyData, reader =>
-        {
-            reader.RestoreProperties(target);
-            return true;
-        }, m_serializationContext);
-    }
 
     /// <summary>
     /// Creates a read-only runtime asset database from one verified immutable content store.
@@ -159,6 +125,59 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
             }
             ValidateArtifactBundle(record);
         }
+    }
+
+    /// <summary>
+    /// Gets current materialized asset count, payload bytes, and the configured budget.
+    /// </summary>
+    public AssetResidencyStatistics residencyStatistics
+    {
+        get
+        {
+            lock (m_sync)
+            {
+                EnsureActive();
+                return new AssetResidencyStatistics(
+                    m_recordsByPath.Values.Count(static record => record.asset is not null),
+                    m_residentBytes,
+                    m_residencyBudgetBytes
+                );
+            }
+        }
+    }
+
+    /// <summary>
+    /// Restores serialized properties to the existing asset object.
+    /// </summary>
+    /// <typeparam name="TValue">
+    /// Serialized asset object type receiving restored properties.
+    /// </typeparam>
+    /// <param name="stableTypeId">
+    /// The stable type id consumed by restore properties; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="propertyData">
+    /// The property data consumed by restore properties; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="target">
+    /// The existing target that receives the validated result.
+    /// </param>
+    public void RestoreProperties<TValue>(
+        Guid stableTypeId,
+        byte[] propertyData,
+        TValue target
+    ) where TValue : class, ISerializable
+    {
+        ObjectDisposedException.ThrowIf(m_disposed, this);
+        ArgumentNullException.ThrowIfNull(target);
+        if (m_types!.GetTypeRef(target.GetType()).stableId != stableTypeId)
+        {
+            throw new InvalidOperationException("The asset property payload has an incompatible stable type identity.");
+        }
+        m_serialization.Decode(propertyData, reader =>
+        {
+            reader.RestoreProperties(target);
+            return true;
+        }, m_serializationContext);
     }
 
     /// <summary>
@@ -300,25 +319,6 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
             }
             asset = LoadRecord<TAsset>(record, pin: true);
             return true;
-        }
-    }
-
-    /// <summary>
-    /// Gets current materialized asset count, payload bytes, and the configured budget.
-    /// </summary>
-    public AssetResidencyStatistics residencyStatistics
-    {
-        get
-        {
-            lock (m_sync)
-            {
-                EnsureActive();
-                return new AssetResidencyStatistics(
-                    m_recordsByPath.Values.Count(static record => record.asset is not null),
-                    m_residentBytes,
-                    m_residencyBudgetBytes
-                );
-            }
         }
     }
 
@@ -561,6 +561,14 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         }
     }
 
+    AssetObject IAssetReferenceResolver.Resolve(
+        Guid persistentId,
+        Guid stableTypeId,
+        string lastKnownPath,
+        Type expectedType,
+        string propertyPath
+    ) => ResolveReference(persistentId, stableTypeId, expectedType, propertyPath, requirePrepared: false);
+
     private void FinishRetirement()
     {
         m_dependencyRetention.Clear();
@@ -799,14 +807,6 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         }
     }
 
-    AssetObject IAssetReferenceResolver.Resolve(
-        Guid persistentId,
-        Guid stableTypeId,
-        string lastKnownPath,
-        Type expectedType,
-        string propertyPath
-    ) => ResolveReference(persistentId, stableTypeId, expectedType, propertyPath, requirePrepared: false);
-
     private AssetObject ResolveReference(
         Guid persistentId,
         Guid stableTypeId,
@@ -958,9 +958,6 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         return key;
     }
 
-    private static string GetBundleRoot(string key)
-        => "Artifacts/" + key[..2].ToLowerInvariant() + "/" + key[2..4].ToLowerInvariant() + "/" + key;
-
     private byte[] ReadContent(ContentKey key)
     {
         using ContentReadLease lease = m_content.Acquire(key);
@@ -982,6 +979,9 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     }
 
     private void EnsureActive() => ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
+
+    private static string GetBundleRoot(string key)
+        => "Artifacts/" + key[..2].ToLowerInvariant() + "/" + key[2..4].ToLowerInvariant() + "/" + key;
 
     private sealed class PreparedAssetResolver(AssetDatabase owner) : IAssetReferenceResolver
     {

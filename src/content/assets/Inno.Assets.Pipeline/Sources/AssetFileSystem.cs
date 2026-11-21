@@ -30,23 +30,6 @@ public sealed class AssetFileSystem : IDisposable
     private bool m_identitiesActive;
     private bool m_disposed;
 
-    private readonly record struct SourceEntry(
-        AssetPath path,
-        Guid persistentId,
-        bool isReadOnly,
-        bool isDirectory
-    );
-
-    /// <summary>
-    /// Gets the absolute source asset root.
-    /// </summary>
-    public string assetRoot { get; }
-
-    /// <summary>
-    /// Gets whether source file watching is active.
-    /// </summary>
-    public bool isWatching => m_watcher.isWatching;
-
     /// <summary>
     /// Creates an indexed source file system.
     /// </summary>
@@ -174,6 +157,16 @@ public sealed class AssetFileSystem : IDisposable
             m_watcher.Start();
         }
     }
+
+    /// <summary>
+    /// Gets the absolute source asset root.
+    /// </summary>
+    public string assetRoot { get; }
+
+    /// <summary>
+    /// Gets whether source file watching is active.
+    /// </summary>
+    public bool isWatching => m_watcher.isWatching;
 
     /// <summary>
     /// Starts source file watching.
@@ -596,6 +589,37 @@ public sealed class AssetFileSystem : IDisposable
             .Set(m_extensionKey, existing.extension);
     }
 
+    private void UnregisterEntries()
+    {
+        foreach (AssetFileEntry entry in m_entries.All())
+        {
+            _ = m_identities.Unregister(entry);
+        }
+    }
+
+    private void DeactivateIdentitiesLocked()
+    {
+        if (!m_identitiesActive)
+        {
+            return;
+        }
+        UnregisterEntries();
+        m_identitiesActive = false;
+    }
+
+    private string NormalizeAssetPath(AssetPath path)
+    {
+        if (!path.isValid)
+        {
+            throw new ArgumentException("An isolated asset path is required.", nameof(path));
+        }
+        if (!m_mounts.ContainsKey(path.source))
+        {
+            throw new ArgumentException($"Asset source mount '{path.source}' is not indexed.", nameof(path));
+        }
+        return path.ToString();
+    }
+
     private static Guid CreateFallbackPersistentId(string path)
     {
         byte[] pathBytes = Encoding.UTF8.GetBytes(path);
@@ -617,24 +641,6 @@ public sealed class AssetFileSystem : IDisposable
         return new Guid(hash[..16]);
     }
 
-    private void UnregisterEntries()
-    {
-        foreach (AssetFileEntry entry in m_entries.All())
-        {
-            _ = m_identities.Unregister(entry);
-        }
-    }
-
-    private void DeactivateIdentitiesLocked()
-    {
-        if (!m_identitiesActive)
-        {
-            return;
-        }
-        UnregisterEntries();
-        m_identitiesActive = false;
-    }
-
     private static string GetParentPath(string relativePath)
     {
         AssetPath path = AssetPath.Parse(relativePath ?? string.Empty);
@@ -654,19 +660,13 @@ public sealed class AssetFileSystem : IDisposable
         string b
     ) => NormalizeLocalPath(Path.Combine(NormalizeLocalPath(a), NormalizeLocalPath(b)));
 
-    private string NormalizeAssetPath(AssetPath path)
-    {
-        if (!path.isValid)
-        {
-            throw new ArgumentException("An isolated asset path is required.", nameof(path));
-        }
-        if (!m_mounts.ContainsKey(path.source))
-        {
-            throw new ArgumentException($"Asset source mount '{path.source}' is not indexed.", nameof(path));
-        }
-        return path.ToString();
-    }
-
     private static string NormalizeLocalPath(string relativePath)
         => new AssetPath(AssetSourceId.project, relativePath ?? string.Empty).localPath;
+
+    private readonly record struct SourceEntry(
+        AssetPath path,
+        Guid persistentId,
+        bool isReadOnly,
+        bool isDirectory
+    );
 }

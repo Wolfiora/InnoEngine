@@ -40,6 +40,11 @@ public abstract class EditorRuntime : IDisposable
     public abstract void Update(EditorFrame frame);
 
     /// <summary>
+    /// Stops the runtime and releases active extensions.
+    /// </summary>
+    public abstract void Dispose();
+
+    /// <summary>
     /// Advances frame-scoped data and publishes the latest immutable frame.
     /// </summary>
     /// <param name="frame">
@@ -50,9 +55,4 @@ public abstract class EditorRuntime : IDisposable
         context.statistics.AdvanceFrame();
         context.frame = frame;
     }
-
-    /// <summary>
-    /// Stops the runtime and releases active extensions.
-    /// </summary>
-    public abstract void Dispose();
 }

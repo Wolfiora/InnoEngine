@@ -89,35 +89,6 @@ internal sealed class EditorHost : ShellHost
     /// </summary>
     public string projectDirectory { get; }
 
-    internal static EditorHost Create(EditorLaunchOptions launch)
-    {
-        IAuthoringAdapterCatalog adapterCatalog = launch.adapterCatalog;
-        AdapterSelection adapterSelection = launch.shell.adapters;
-        if (!adapterSelection.rendering.isValid
-            || !adapterCatalog.rendering.supportedBackends.Contains(adapterSelection.rendering)
-            || !adapterCatalog.renderingAuthoring.supportedBackends.Contains(adapterSelection.rendering)
-        ) {
-            throw new NotSupportedException(
-                $"Rendering backend '{adapterSelection.rendering}' requires paired runtime and authoring providers."
-            );
-        }
-        string normalizedProject = PrepareProjectDirectory(launch.projectDirectory);
-        string logDirectory = Path.Combine(normalizedProject, C_LOG_DIRECTORY_NAME);
-        Directory.CreateDirectory(logDirectory);
-        string bootLogPath = Path.Combine(logDirectory, C_BOOT_LOG_FILE_NAME);
-        var host = new EditorHost(launch, normalizedProject, bootLogPath);
-        try
-        {
-            host.Initialize();
-            return host;
-        }
-        catch
-        {
-            host.Dispose();
-            throw;
-        }
-    }
-
     /// <summary>
     /// Records that the shared composition run loop is starting.
     /// </summary>
@@ -280,6 +251,35 @@ internal sealed class EditorHost : ShellHost
     /// Records completion only after the application has released the common Shell adapters.
     /// </summary>
     internal void ReportShutdownCompleted() => BootLog("Dispose end.");
+
+    internal static EditorHost Create(EditorLaunchOptions launch)
+    {
+        IAuthoringAdapterCatalog adapterCatalog = launch.adapterCatalog;
+        AdapterSelection adapterSelection = launch.shell.adapters;
+        if (!adapterSelection.rendering.isValid
+            || !adapterCatalog.rendering.supportedBackends.Contains(adapterSelection.rendering)
+            || !adapterCatalog.renderingAuthoring.supportedBackends.Contains(adapterSelection.rendering)
+        ) {
+            throw new NotSupportedException(
+                $"Rendering backend '{adapterSelection.rendering}' requires paired runtime and authoring providers."
+            );
+        }
+        string normalizedProject = PrepareProjectDirectory(launch.projectDirectory);
+        string logDirectory = Path.Combine(normalizedProject, C_LOG_DIRECTORY_NAME);
+        Directory.CreateDirectory(logDirectory);
+        string bootLogPath = Path.Combine(logDirectory, C_BOOT_LOG_FILE_NAME);
+        var host = new EditorHost(launch, normalizedProject, bootLogPath);
+        try
+        {
+            host.Initialize();
+            return host;
+        }
+        catch
+        {
+            host.Dispose();
+            throw;
+        }
+    }
 
     private RuntimeSession editSession
         => m_editSession ?? throw new InvalidOperationException("The Editor runtime session is not initialized.");
@@ -586,36 +586,6 @@ internal sealed class EditorHost : ShellHost
         );
     }
 
-    private static string PrepareProjectDirectory(string projectDirectory)
-    {
-        if (string.IsNullOrWhiteSpace(projectDirectory))
-        {
-            throw new ArgumentException("Project directory is required.", nameof(projectDirectory));
-        }
-        string normalizedPath = Path.GetFullPath(projectDirectory);
-        if (File.Exists(normalizedPath))
-        {
-            throw new IOException($"Project directory '{normalizedPath}' points to a file.");
-        }
-        Directory.CreateDirectory(normalizedPath);
-        return normalizedPath;
-    }
-
-    private static string FindDefaultStartupScene(AssetPipeline assets)
-    {
-        foreach (AssetFileEntry entry in assets.GetFileSystemEntries(includeDirectories: false)
-            .Where(static entry => entry.source == AssetSourceId.project)
-            .Where(static entry => !AssetSample.IsRuntimeExcluded(entry.assetPath, isDirectory: false))
-            .OrderBy(static entry => entry.assetPath.localPath, StringComparer.Ordinal)
-        ) {
-            if (assets.TryGetAssetType(entry.assetPath, out Type? type) && type == typeof(SceneAsset))
-            {
-                return entry.assetPath.ToString();
-            }
-        }
-        return string.Empty;
-    }
-
     private void RouteGameInput(Event evnt)
     {
         Event? gameEvent = m_gameInputCapture?.Route(evnt);
@@ -661,6 +631,36 @@ internal sealed class EditorHost : ShellHost
     }
 
     private void BootLog(string message) => AppendBootLog(m_bootLogPath, message);
+
+    private static string PrepareProjectDirectory(string projectDirectory)
+    {
+        if (string.IsNullOrWhiteSpace(projectDirectory))
+        {
+            throw new ArgumentException("Project directory is required.", nameof(projectDirectory));
+        }
+        string normalizedPath = Path.GetFullPath(projectDirectory);
+        if (File.Exists(normalizedPath))
+        {
+            throw new IOException($"Project directory '{normalizedPath}' points to a file.");
+        }
+        Directory.CreateDirectory(normalizedPath);
+        return normalizedPath;
+    }
+
+    private static string FindDefaultStartupScene(AssetPipeline assets)
+    {
+        foreach (AssetFileEntry entry in assets.GetFileSystemEntries(includeDirectories: false)
+            .Where(static entry => entry.source == AssetSourceId.project)
+            .Where(static entry => !AssetSample.IsRuntimeExcluded(entry.assetPath, isDirectory: false))
+            .OrderBy(static entry => entry.assetPath.localPath, StringComparer.Ordinal)
+        ) {
+            if (assets.TryGetAssetType(entry.assetPath, out Type? type) && type == typeof(SceneAsset))
+            {
+                return entry.assetPath.ToString();
+            }
+        }
+        return string.Empty;
+    }
 
     private static void AppendBootLog(
         string bootLogPath,

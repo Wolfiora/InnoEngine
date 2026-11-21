@@ -251,16 +251,6 @@ public sealed class ReferenceRecoveryTransaction : IGenerationChange
         }
     }
 
-    private static void ThrowFailures(
-        List<Exception> failures,
-        string message
-    ) {
-        if (failures.Count > 0)
-        {
-            throw new AggregateException(message, failures);
-        }
-    }
-
     private void RequirePhase(Phase phase)
     {
         EnsureOwner();
@@ -279,6 +269,16 @@ public sealed class ReferenceRecoveryTransaction : IGenerationChange
         if (m_retirementFailure is not null)
         {
             throw m_retirementFailure;
+        }
+    }
+
+    private static void ThrowFailures(
+        List<Exception> failures,
+        string message
+    ) {
+        if (failures.Count > 0)
+        {
+            throw new AggregateException(message, failures);
         }
     }
 

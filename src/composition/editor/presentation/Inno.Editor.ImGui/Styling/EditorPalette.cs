@@ -375,28 +375,6 @@ public static unsafe class EditorPalette
     public static Vector4 contentAccent { get; } = new(0.5f, 0.45f, 0.62f, opacityOpaque);
 
     /// <summary>
-    /// Gets a hover treatment derived from a base theme color.
-    /// </summary>
-    /// <param name="color">
-    /// The color consumed by get hovered; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <returns>
-    /// The base color blended toward the palette text color using the standard hover amount.
-    /// </returns>
-    public static Vector4 GetHovered(Vector4 color) => Lerp(color, text, 0.16f);
-
-    /// <summary>
-    /// Gets an active treatment derived from a base theme color.
-    /// </summary>
-    /// <param name="color">
-    /// The color consumed by get active; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <returns>
-    /// The base color blended toward the palette text color using the standard active amount.
-    /// </returns>
-    public static Vector4 GetActive(Vector4 color) => Lerp(color, text, 0.24f);
-
-    /// <summary>
     /// Gets the guide color of reusable tree controls.
     /// </summary>
     public static Vector4 treeGuide { get; } = new(0.62f, 0.62f, 0.66f, opacityOpaque);
@@ -420,6 +398,28 @@ public static unsafe class EditorPalette
     /// Gets W axis color.
     /// </summary>
     public static Vector4 axisW { get; } = new(0.48f, 0.48f, 0.5f, opacityOpaque);
+
+    /// <summary>
+    /// Gets a hover treatment derived from a base theme color.
+    /// </summary>
+    /// <param name="color">
+    /// The color consumed by get hovered; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <returns>
+    /// The base color blended toward the palette text color using the standard hover amount.
+    /// </returns>
+    public static Vector4 GetHovered(Vector4 color) => Lerp(color, text, 0.16f);
+
+    /// <summary>
+    /// Gets an active treatment derived from a base theme color.
+    /// </summary>
+    /// <param name="color">
+    /// The color consumed by get active; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <returns>
+    /// The base color blended toward the palette text color using the standard active amount.
+    /// </returns>
+    public static Vector4 GetActive(Vector4 color) => Lerp(color, text, 0.24f);
 
     /// <summary>
     /// Linearly interpolates two palette colors using a clamped amount.
@@ -449,6 +449,23 @@ public static unsafe class EditorPalette
             from.W + (to.W - from.W) * value
         );
     }
+
+    /// <summary>
+    /// Returns a theme color with a caller-selected opacity, normally one of the shared opacity levels.
+    /// </summary>
+    /// <param name="color">
+    /// Base RGB color.
+    /// </param>
+    /// <param name="opacity">
+    /// Replacement alpha in the inclusive zero-to-one range.
+    /// </param>
+    /// <returns>
+    /// The validated vector4 that represents the completed operation.
+    /// </returns>
+    public static Vector4 WithOpacity(
+        Vector4 color,
+        float opacity
+    ) => new(color.X, color.Y, color.Z, Math.Clamp(opacity, opacityNone, opacityOpaque));
 
     internal static void Apply(ImGuiStyle* style)
     {
@@ -507,21 +524,4 @@ public static unsafe class EditorPalette
         style->Colors[(int)ImGuiCol.ModalWindowDimBg] = ImGui.ToNative(modalDim);
         style->Colors[(int)ImGuiCol.DockingPreview] = ImGui.ToNative(accentActive);
     }
-
-    /// <summary>
-    /// Returns a theme color with a caller-selected opacity, normally one of the shared opacity levels.
-    /// </summary>
-    /// <param name="color">
-    /// Base RGB color.
-    /// </param>
-    /// <param name="opacity">
-    /// Replacement alpha in the inclusive zero-to-one range.
-    /// </param>
-    /// <returns>
-    /// The validated vector4 that represents the completed operation.
-    /// </returns>
-    public static Vector4 WithOpacity(
-        Vector4 color,
-        float opacity
-    ) => new(color.X, color.Y, color.Z, Math.Clamp(opacity, opacityNone, opacityOpaque));
 }

@@ -18,23 +18,6 @@ internal sealed partial class ShaderEditorCanvas
     private const float C_MINI_MAP_PADDING = 9f;
     private readonly Dictionary<GraphNodeId, MiniMapNodeGeometry> m_miniMapGeometry = [];
 
-    private readonly record struct MiniMapNodeGeometry(
-        Vector2 minimum,
-        Vector2 maximum
-    ) {
-        internal Vector2 center => (minimum + maximum) * 0.5f;
-    }
-
-    private readonly record struct MiniMapLayout(
-        Vector2 worldMinimum,
-        Vector2 screenOrigin,
-        float scale
-    ) {
-        internal Vector2 ToScreen(Vector2 position) => screenOrigin + (position - worldMinimum) * scale;
-
-        internal Vector2 ToWorld(Vector2 position) => worldMinimum + (position - screenOrigin) / scale;
-    }
-
     private bool MiniMapContains(Vector2 point)
     {
         if (!TryGetMiniMapBounds(out Vector2 minimum, out Vector2 maximum))
@@ -168,5 +151,22 @@ internal sealed partial class ShaderEditorCanvas
         Vector2 screenMaximum = layout.ToScreen(viewMaximum);
         draw.FilledRectangle(screenMinimum, screenMaximum, Color(0.65f, 0.47f, 0.88f, 0.1f), 0, false);
         draw.Rectangle(screenMinimum, screenMaximum, Color(0.76f, 0.62f, 0.95f), 0f, 1.5f);
+    }
+
+    private readonly record struct MiniMapNodeGeometry(
+        Vector2 minimum,
+        Vector2 maximum
+    ) {
+        internal Vector2 center => (minimum + maximum) * 0.5f;
+    }
+
+    private readonly record struct MiniMapLayout(
+        Vector2 worldMinimum,
+        Vector2 screenOrigin,
+        float scale
+    ) {
+        internal Vector2 ToScreen(Vector2 position) => screenOrigin + (position - worldMinimum) * scale;
+
+        internal Vector2 ToWorld(Vector2 position) => worldMinimum + (position - screenOrigin) / scale;
     }
 }

@@ -51,6 +51,26 @@ public sealed partial class AssetLoader
     }
 
     /// <summary>
+    /// Loads a canonical asset by persistent identity.
+    /// </summary>
+    /// <param name="persistentId">
+    /// The persistent asset identity.
+    /// </param>
+    /// <param name="requestedAssetType">
+    /// The required assignable asset type.
+    /// </param>
+    /// <returns>
+    /// The canonical asset, or <see langword="null"/> when unavailable or incompatible.
+    /// </returns>
+    public AssetObject? Load(
+        Guid persistentId,
+        Type requestedAssetType
+    ) {
+        ArgumentNullException.ThrowIfNull(requestedAssetType);
+        return Execute(() => LoadIdLocked(persistentId, requestedAssetType));
+    }
+
+    /// <summary>
     /// Tries to load a canonical asset by isolated source path.
     /// </summary>
     /// <param name="path">
@@ -72,26 +92,6 @@ public sealed partial class AssetLoader
     ) {
         asset = Load(path, requestedAssetType);
         return asset is not null;
-    }
-
-    /// <summary>
-    /// Loads a canonical asset by persistent identity.
-    /// </summary>
-    /// <param name="persistentId">
-    /// The persistent asset identity.
-    /// </param>
-    /// <param name="requestedAssetType">
-    /// The required assignable asset type.
-    /// </param>
-    /// <returns>
-    /// The canonical asset, or <see langword="null"/> when unavailable or incompatible.
-    /// </returns>
-    public AssetObject? Load(
-        Guid persistentId,
-        Type requestedAssetType
-    ) {
-        ArgumentNullException.ThrowIfNull(requestedAssetType);
-        return Execute(() => LoadIdLocked(persistentId, requestedAssetType));
     }
 
     /// <summary>
@@ -554,15 +554,6 @@ public sealed partial class AssetLoader
             return 0;
         });
 
-    private static async ValueTask<AssetObject?> AwaitSharedLoad(
-        Task<AssetObject?> operation,
-        Type requestedAssetType,
-        CancellationToken cancellationToken
-    ) {
-        AssetObject? asset = await operation.WaitAsync(cancellationToken).ConfigureAwait(false);
-        return asset is not null && requestedAssetType.IsInstanceOfType(asset) ? asset : null;
-    }
-
     private void RemovePathOperation(
         string relativePath,
         Task<AssetObject?> operation
@@ -589,6 +580,15 @@ public sealed partial class AssetLoader
                 m_inFlightIdLoads.Remove(persistentId);
             }
         }
+    }
+
+    private static async ValueTask<AssetObject?> AwaitSharedLoad(
+        Task<AssetObject?> operation,
+        Type requestedAssetType,
+        CancellationToken cancellationToken
+    ) {
+        AssetObject? asset = await operation.WaitAsync(cancellationToken).ConfigureAwait(false);
+        return asset is not null && requestedAssetType.IsInstanceOfType(asset) ? asset : null;
     }
 
     private sealed class AssetLoadTransaction

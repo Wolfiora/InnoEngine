@@ -265,11 +265,6 @@ public sealed class VectorMatrixTests
         Assert.True(MathF.Abs(q.w - q2.w) < epsilon);
     }
 
-    private static float Dot(
-        Quaternion a,
-        Quaternion b
-    ) => a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
-
     [Fact]
     public void MathHelper_Clamp_Saturate_IsFinite()
     {
@@ -279,4 +274,9 @@ public sealed class VectorMatrixTests
         Assert.True(MathHelper.IsFinite(1f));
         Assert.False(MathHelper.IsFinite(float.PositiveInfinity));
     }
+
+    private static float Dot(
+        Quaternion a,
+        Quaternion b
+    ) => a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
 }

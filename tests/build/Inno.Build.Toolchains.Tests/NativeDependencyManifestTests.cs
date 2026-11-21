@@ -257,6 +257,19 @@ public sealed class NativeDependencyManifestTests : IDisposable
         Assert.Equal(1, m_productions);
     }
 
+    public void Dispose()
+    {
+        if (!Directory.Exists(m_root))
+        {
+            return;
+        }
+        foreach (string file in Directory.EnumerateFiles(m_root, "*", SearchOption.AllDirectories))
+        {
+            File.SetAttributes(file, FileAttributes.Normal);
+        }
+        Directory.Delete(m_root, recursive: true);
+    }
+
     private async Task<(string consumer, string selection, ProductNativeBuildPlan plan)> PrepareAsync(
         bool aggregate = false,
         bool submodule = false
@@ -370,17 +383,4 @@ public sealed class NativeDependencyManifestTests : IDisposable
         string root,
         params string[] arguments
     ) => ToolchainEnvironment.CaptureOutputAsync("git", arguments, root, CancellationToken.None);
-
-    public void Dispose()
-    {
-        if (!Directory.Exists(m_root))
-        {
-            return;
-        }
-        foreach (string file in Directory.EnumerateFiles(m_root, "*", SearchOption.AllDirectories))
-        {
-            File.SetAttributes(file, FileAttributes.Normal);
-        }
-        Directory.Delete(m_root, recursive: true);
-    }
 }

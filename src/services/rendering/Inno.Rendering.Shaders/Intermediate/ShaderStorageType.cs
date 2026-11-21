@@ -57,6 +57,19 @@ public sealed class ShaderStorageType
     public bool isImage => format.HasValue;
 
     /// <summary>
+    /// Compares complete access, format, shape and element layout contracts.
+    /// </summary>
+    /// <param name="other">
+    /// Candidate resource description.
+    /// </param>
+    /// <returns>
+    /// True only when both bindings permit exactly the same operations and values.
+    /// </returns>
+    public bool IsEquivalentTo(ShaderStorageType? other)
+        => other is not null && access == other.access && format == other.format && dimension == other.dimension
+           && array == other.array && valueType.IsEquivalentTo(other.valueType);
+
+    /// <summary>
     /// Creates a structured storage buffer with an explicit element layout.
     /// </summary>
     /// <param name="element">
@@ -119,19 +132,6 @@ public sealed class ShaderStorageType
         }
         return new(ShaderSourceType.Atomic("float4"), access, format, dimension, array);
     }
-
-    /// <summary>
-    /// Compares complete access, format, shape and element layout contracts.
-    /// </summary>
-    /// <param name="other">
-    /// Candidate resource description.
-    /// </param>
-    /// <returns>
-    /// True only when both bindings permit exactly the same operations and values.
-    /// </returns>
-    public bool IsEquivalentTo(ShaderStorageType? other)
-        => other is not null && access == other.access && format == other.format && dimension == other.dimension
-           && array == other.array && valueType.IsEquivalentTo(other.valueType);
 
     private static void ValidateElement(ShaderSourceType type)
     {

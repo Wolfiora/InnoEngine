@@ -13,6 +13,17 @@ internal sealed class EditorExtensionStateDiagnosticPublisher : IDisposable
 
     private readonly Dictionary<string, string> m_states = new(StringComparer.Ordinal);
 
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose()
+    {
+        foreach (string group in m_states.Keys.ToArray())
+        {
+            Resolve(group);
+        }
+    }
+
     internal bool PublishCapture(IReadOnlyList<string> messages) => Publish(C_CAPTURE_GROUP, "EDITOR-STATE-CAPTURE", messages);
 
     internal bool PublishRestore(IReadOnlyList<string> messages) => Publish(C_RESTORE_GROUP, "EDITOR-STATE-RESTORE", messages);
@@ -24,17 +35,6 @@ internal sealed class EditorExtensionStateDiagnosticPublisher : IDisposable
     }
 
     internal void ResolveSave() => Resolve(C_SAVE_GROUP);
-
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose()
-    {
-        foreach (string group in m_states.Keys.ToArray())
-        {
-            Resolve(group);
-        }
-    }
 
     private bool Publish(
         string group,

@@ -73,6 +73,16 @@ internal readonly struct ConsoleStyle
     internal static Vector4 toggleActive { get; } = new(0.8156863f, 0.77254903f, 0.9647059f, EditorPalette.opacityMedium);
 
     /// <summary>
+    /// Gets the distance from the bottom treated as auto-scroll.
+    /// </summary>
+    internal float autoScrollTolerance => m_zoom;
+
+    /// <summary>
+    /// Gets log disclosure padding.
+    /// </summary>
+    internal Vector2 disclosurePadding => new Vector2(6f, 1f) * m_zoom;
+
+    /// <summary>
     /// Gets the expanded log card background derived from a severity color.
     /// </summary>
     /// <param name="severityColor">
@@ -104,14 +114,4 @@ internal readonly struct ConsoleStyle
     /// The card color blended toward the shared text color.
     /// </returns>
     internal static Vector4 GetSeparator(Vector4 cardColor) => EditorPalette.Lerp(cardColor, EditorPalette.text, 0.12f);
-
-    /// <summary>
-    /// Gets the distance from the bottom treated as auto-scroll.
-    /// </summary>
-    internal float autoScrollTolerance => m_zoom;
-
-    /// <summary>
-    /// Gets log disclosure padding.
-    /// </summary>
-    internal Vector2 disclosurePadding => new Vector2(6f, 1f) * m_zoom;
 }

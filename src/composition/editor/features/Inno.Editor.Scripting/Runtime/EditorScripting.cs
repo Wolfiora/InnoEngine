@@ -65,24 +65,8 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     /// </summary>
     public override bool blocksFollowingUpdates => m_blockFollowingUpdates;
 
-    /// <summary>
-    /// Gets whether script compilation is currently active.
-    /// </summary>
-    internal bool isCompiling
-        => m_manager?.isFaulted != true
-           && (m_showCompilation
-               || m_compilation is not null
-               || m_pendingCompletion is not null
-               || m_manager?.isCompiling == true
-               || m_manager?.isUnloadVerificationPending == true
-               || m_manager?.isCompilationPending == true);
-
-    internal bool isAvailable => m_manager is not null;
-
     /// <inheritdoc/>
     public bool requiresExclusiveProgress => isCompiling && m_reloads.CanActivateReload(out _);
-
-    internal bool canReload => m_manager is not null && !isCompiling && !m_manager.isFaulted && m_reloads.CanRequestReload(out _);
 
     /// <summary>
     /// Gets the current lifecycle state observed by callers.
@@ -148,6 +132,11 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     public ScriptCompilationResult? lastCompilation => m_manager?.lastCompilation;
 
     /// <summary>
+    /// Gets the ticket for the newest accepted compilation, or null when idle; rejected requests do not replace it.
+    /// </summary>
+    public IScriptCompilationTicket? currentTicket => m_currentTicket;
+
+    /// <summary>
     /// Creates a compilation ticket for the newest observable source generation.
     /// </summary>
     /// <returns>
@@ -178,27 +167,6 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
         return ticket;
     }
 
-    /// <summary>
-    /// Gets the ticket for the newest accepted compilation, or null when idle; rejected requests do not replace it.
-    /// </summary>
-    public IScriptCompilationTicket? currentTicket => m_currentTicket;
-
-    internal void ReloadScripting()
-    {
-        if (canReload)
-        {
-            QueueReload(static manager => manager.RecompileScripting(), supersedeCurrentTicket: true);
-        }
-    }
-
-    internal void ReloadPlugins()
-    {
-        if (canReload)
-        {
-            QueueReload(static manager => manager.ReloadPlugins(), supersedeCurrentTicket: true);
-        }
-    }
-
     /// <param name="operationId">
     /// The observed request identity; stale actions are ignored.
     /// </param>
@@ -210,6 +178,22 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
             m_manager.CancelCompilation(operationId);
         }
     }
+
+    /// <summary>
+    /// Gets whether script compilation is currently active.
+    /// </summary>
+    internal bool isCompiling
+        => m_manager?.isFaulted != true
+           && (m_showCompilation
+               || m_compilation is not null
+               || m_pendingCompletion is not null
+               || m_manager?.isCompiling == true
+               || m_manager?.isUnloadVerificationPending == true
+               || m_manager?.isCompilationPending == true);
+
+    internal bool isAvailable => m_manager is not null;
+
+    internal bool canReload => m_manager is not null && !isCompiling && !m_manager.isFaulted && m_reloads.CanRequestReload(out _);
 
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.
@@ -311,6 +295,22 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     /// Releases resources retained by this feature after it has stopped.
     /// </summary>
     protected override void OnDispose() => DisposeManager();
+
+    internal void ReloadScripting()
+    {
+        if (canReload)
+        {
+            QueueReload(static manager => manager.RecompileScripting(), supersedeCurrentTicket: true);
+        }
+    }
+
+    internal void ReloadPlugins()
+    {
+        if (canReload)
+        {
+            QueueReload(static manager => manager.ReloadPlugins(), supersedeCurrentTicket: true);
+        }
+    }
 
     private void CompleteCompilation()
     {

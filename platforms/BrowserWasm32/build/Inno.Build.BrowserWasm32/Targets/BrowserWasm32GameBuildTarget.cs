@@ -29,17 +29,6 @@ public sealed class BrowserWasm32GameBuildTarget : IGameBuildTarget
     }
 
     /// <summary>
-    /// Validates the target closure before runtime script compilation.
-    /// </summary>
-    /// <param name="directory">
-    /// The Support Pack directory selected by the build catalog.
-    /// </param>
-    /// <exception cref="System.IO.InvalidDataException">
-    /// The required platform inputs are incomplete or incompatible.
-    /// </exception>
-    public void Validate(string directory) => m_supportPackValidator.Validate(directory);
-
-    /// <summary>
     /// Gets the browser WebAssembly target identity.
     /// </summary>
     public BuildTargetId id => BrowserWasm32BuildModule.target.id;
@@ -54,6 +43,17 @@ public sealed class BrowserWasm32GameBuildTarget : IGameBuildTarget
     /// Gets the name shown by authoring hosts.
     /// </summary>
     public string displayName => "Web (WebGL 2)";
+
+    /// <summary>
+    /// Validates the target closure before runtime script compilation.
+    /// </summary>
+    /// <param name="directory">
+    /// The Support Pack directory selected by the build catalog.
+    /// </param>
+    /// <exception cref="System.IO.InvalidDataException">
+    /// The required platform inputs are incomplete or incompatible.
+    /// </exception>
+    public void Validate(string directory) => m_supportPackValidator.Validate(directory);
 
     /// <summary>
     /// Composes an independently hostable site from a verified browser Support Pack and content pack.

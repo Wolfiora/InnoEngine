@@ -331,22 +331,6 @@ public sealed partial class RenderRuntimeGenerationTests
         return shader;
     }
 
-    private static ShaderDefinition PublicationDefinition(params string[] passes)
-        => new(
-            "Publication",
-            [],
-            [],
-            passes.Select(name => new ShaderPassDefinition(name, ShaderProgramKind.Raster)),
-            [new(
-                new("default"),
-                new("test.publication"),
-                passes.Select((
-                    name,
-                    index
-                ) => new ShaderTechniquePass(new(index == 0 ? "draw" : name), name))
-            )]
-        );
-
     private RenderShaderArtifact Publication(params string[] passes) => Publication(passes, 1);
 
     private RenderShaderArtifact Publication(
@@ -366,6 +350,22 @@ public sealed partial class RenderRuntimeGenerationTests
         )).ToArray(),
         m_serialization.Serialize(PublicationDefinition(passes), SerializationContext.empty)
     );
+
+    private static ShaderDefinition PublicationDefinition(params string[] passes)
+        => new(
+            "Publication",
+            [],
+            [],
+            passes.Select(name => new ShaderPassDefinition(name, ShaderProgramKind.Raster)),
+            [new(
+                new("default"),
+                new("test.publication"),
+                passes.Select((
+                    name,
+                    index
+                ) => new ShaderTechniquePass(new(index == 0 ? "draw" : name), name))
+            )]
+        );
 
     private sealed class PublicationProvider(SerializationRegistry serialization) : IRenderTargetArtifactProvider
     {

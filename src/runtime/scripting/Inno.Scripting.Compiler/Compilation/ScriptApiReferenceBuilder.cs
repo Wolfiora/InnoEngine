@@ -45,6 +45,20 @@ internal static class ScriptApiReferenceBuilder
         }
     }
 
+    internal static string[] GetImplementationPaths(
+        ScriptApiProfile profile,
+        ScriptCompilationEnvironment environment
+    ) {
+        IReadOnlySet<string> frameworkAssemblyNames = environment.frameworkAssemblyNames;
+        return profile.implementationAssemblies
+            .Where(assembly => !frameworkAssemblyNames.Contains(assembly.GetName().Name ?? string.Empty))
+            .Select(static assembly => assembly.Location)
+            .Where(static path => !string.IsNullOrWhiteSpace(path))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static path => path, StringComparer.Ordinal)
+            .ToArray();
+    }
+
     private static ScriptApiReferenceSet BuildLocked(
         ScriptCompilerOptions options,
         ScriptApiProfile profile,
@@ -425,19 +439,5 @@ internal static class ScriptApiReferenceBuilder
         }
         byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()));
         return Convert.ToHexStringLower(hash);
-    }
-
-    internal static string[] GetImplementationPaths(
-        ScriptApiProfile profile,
-        ScriptCompilationEnvironment environment
-    ) {
-        IReadOnlySet<string> frameworkAssemblyNames = environment.frameworkAssemblyNames;
-        return profile.implementationAssemblies
-            .Where(assembly => !frameworkAssemblyNames.Contains(assembly.GetName().Name ?? string.Empty))
-            .Select(static assembly => assembly.Location)
-            .Where(static path => !string.IsNullOrWhiteSpace(path))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(static path => path, StringComparer.Ordinal)
-            .ToArray();
     }
 }

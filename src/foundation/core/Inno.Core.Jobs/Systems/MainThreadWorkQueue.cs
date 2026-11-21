@@ -10,9 +10,9 @@ internal sealed class MainThreadWorkQueue(
 ) {
     private readonly object m_sync = new();
     private readonly Queue<Action> m_actions = [];
+    private readonly List<Exception> m_failures = [];
     private bool m_closed;
     private bool m_executing;
-    private readonly List<Exception> m_failures = [];
     private Action? m_pending;
     private RetirementBarrier? m_barrier;
     private int m_peak;

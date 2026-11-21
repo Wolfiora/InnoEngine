@@ -231,59 +231,6 @@ public sealed partial class AssetDatabase
         }
     }
 
-    private static async Task<byte[]> ReadPayloadAsync(
-        PayloadRead read,
-        ContentReadLease lease,
-        CancellationToken token,
-        SemaphoreSlim slots
-    ) {
-        await slots.WaitAsync(token).ConfigureAwait(false);
-        try
-        {
-            return await ReadPayloadContentAsync(read, lease, token).ConfigureAwait(false);
-        }
-        finally
-        {
-            slots.Release();
-        }
-    }
-
-    private static async Task<byte[]> ReadPayloadContentAsync(
-        PayloadRead read,
-        ContentReadLease lease,
-        CancellationToken token
-    ) {
-        using Stream stream = lease.OpenRead();
-        var bytes = new byte[checked((int)read.length)];
-        await stream.ReadExactlyAsync(bytes, token).ConfigureAwait(false);
-        token.ThrowIfCancellationRequested();
-        if (stream.ReadByte() != -1 || bytes.LongLength != read.length
-            || !string.Equals(Convert.ToHexString(SHA256.HashData(bytes)), read.hash, StringComparison.OrdinalIgnoreCase)
-        ) {
-            throw new InvalidDataException($"Runtime payload '{read.id:D}' failed integrity verification.");
-        }
-        return bytes;
-    }
-
-    private static Task<Dictionary<Guid, byte[]>> StartPayloadPreparation(SharedPayload[] reads)
-    {
-        if (ExecutionContext.IsFlowSuppressed())
-        {
-            return AssemblePayloadsAsync(reads);
-        }
-        using (ExecutionContext.SuppressFlow())
-        {
-            return AssemblePayloadsAsync(reads);
-        }
-    }
-
-    private static async Task<Dictionary<Guid, byte[]>> AssemblePayloadsAsync(SharedPayload[] reads)
-    {
-        // WhenAll observes every shared IO task before a failed closure relinquishes its reservations.
-        await Task.WhenAll(reads.Select(static read => read.preparation)).ConfigureAwait(false);
-        return reads.ToDictionary(static read => read.read.id, static read => read.preparation.GetAwaiter().GetResult());
-    }
-
     private void CancelPendingLoads()
     {
         foreach (SharedPayload preparation in m_payloadReads.Values)
@@ -335,6 +282,59 @@ public sealed partial class AssetDatabase
         {
             throw new InvalidOperationException("Runtime asset acquisition and publication require the database owner thread.");
         }
+    }
+
+    private static async Task<byte[]> ReadPayloadAsync(
+        PayloadRead read,
+        ContentReadLease lease,
+        CancellationToken token,
+        SemaphoreSlim slots
+    ) {
+        await slots.WaitAsync(token).ConfigureAwait(false);
+        try
+        {
+            return await ReadPayloadContentAsync(read, lease, token).ConfigureAwait(false);
+        }
+        finally
+        {
+            slots.Release();
+        }
+    }
+
+    private static async Task<byte[]> ReadPayloadContentAsync(
+        PayloadRead read,
+        ContentReadLease lease,
+        CancellationToken token
+    ) {
+        using Stream stream = lease.OpenRead();
+        var bytes = new byte[checked((int)read.length)];
+        await stream.ReadExactlyAsync(bytes, token).ConfigureAwait(false);
+        token.ThrowIfCancellationRequested();
+        if (stream.ReadByte() != -1 || bytes.LongLength != read.length
+            || !string.Equals(Convert.ToHexString(SHA256.HashData(bytes)), read.hash, StringComparison.OrdinalIgnoreCase)
+        ) {
+            throw new InvalidDataException($"Runtime payload '{read.id:D}' failed integrity verification.");
+        }
+        return bytes;
+    }
+
+    private static Task<Dictionary<Guid, byte[]>> StartPayloadPreparation(SharedPayload[] reads)
+    {
+        if (ExecutionContext.IsFlowSuppressed())
+        {
+            return AssemblePayloadsAsync(reads);
+        }
+        using (ExecutionContext.SuppressFlow())
+        {
+            return AssemblePayloadsAsync(reads);
+        }
+    }
+
+    private static async Task<Dictionary<Guid, byte[]>> AssemblePayloadsAsync(SharedPayload[] reads)
+    {
+        // WhenAll observes every shared IO task before a failed closure relinquishes its reservations.
+        await Task.WhenAll(reads.Select(static read => read.preparation)).ConfigureAwait(false);
+        return reads.ToDictionary(static read => read.read.id, static read => read.preparation.GetAwaiter().GetResult());
     }
 
     private sealed record PayloadRead(

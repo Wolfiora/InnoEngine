@@ -59,7 +59,7 @@ public sealed class BgfxDeviceTests
         m_device.BeginFrame();
 
         Assert.Throws<NotSupportedException>(() => m_device.CreateWindowSurface(
-            new PlatformNativeHandles(new IntPtr(1), handleKind: default),
+            new PlatformNativeHandles(new nint(1), handleKind: default),
             32,
             32,
             "Unsupported"

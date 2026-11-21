@@ -124,6 +124,8 @@ public sealed class ProductNativeBuildResult : IReadOnlyList<NativeBuildProduct>
         Release(m_products, m_bindings);
     }
 
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
     internal static void Release(
         IReadOnlyList<NativeBuildProduct> products,
         NativeBindingGenerationResult bindings
@@ -153,6 +155,4 @@ public sealed class ProductNativeBuildResult : IReadOnlyList<NativeBuildProduct>
             throw new AggregateException("Native product reading ownership could not be completely released.", failures);
         }
     }
-
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

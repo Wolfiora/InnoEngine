@@ -52,17 +52,6 @@ public enum RenderSamplerAddressMode
 public struct RenderSamplerState : IEquatable<RenderSamplerState>
 {
     /// <summary>
-    /// Gets linear filtering with clamped addressing.
-    /// </summary>
-    public static RenderSamplerState linearClamp
-        => new(
-            RenderSamplerFilter.Linear,
-            RenderSamplerAddressMode.Clamp,
-            RenderSamplerAddressMode.Clamp,
-            RenderSamplerAddressMode.Clamp
-        );
-
-    /// <summary>
     /// Creates a sampler state.
     /// </summary>
     /// <param name="filter">
@@ -88,6 +77,17 @@ public struct RenderSamplerState : IEquatable<RenderSamplerState>
         this.addressV = addressV;
         this.addressW = addressW;
     }
+
+    /// <summary>
+    /// Gets linear filtering with clamped addressing.
+    /// </summary>
+    public static RenderSamplerState linearClamp
+        => new(
+            RenderSamplerFilter.Linear,
+            RenderSamplerAddressMode.Clamp,
+            RenderSamplerAddressMode.Clamp,
+            RenderSamplerAddressMode.Clamp
+        );
 
     /// <summary>
     /// Gets the filter contract.

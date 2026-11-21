@@ -32,16 +32,6 @@ public sealed class LogRouter : IDisposable
     private ILogSink[] m_sinkSnapshot = [];
 
     /// <summary>
-    /// Occurs after a failing sink has been quarantined from this router.
-    /// </summary>
-    /// <remarks>
-    /// Quarantine removes the sink from delivery but does not dispose it. The host must retain
-    /// responsibility for safely releasing a removed sink. Observers run within delivery and
-    /// must not flush or dispose this router from their callback.
-    /// </remarks>
-    public event Action<ILogSink, Exception>? sinkFailed;
-
-    /// <summary>
     /// Creates an isolated logging router with an explicit delivery policy.
     /// </summary>
     /// <param name="queueCapacity">
@@ -80,7 +70,15 @@ public sealed class LogRouter : IDisposable
         }
     }
 
-    internal static LogRouter current => S_CURRENT_SCOPE.current;
+    /// <summary>
+    /// Occurs after a failing sink has been quarantined from this router.
+    /// </summary>
+    /// <remarks>
+    /// Quarantine removes the sink from delivery but does not dispose it. The host must retain
+    /// responsibility for safely releasing a removed sink. Observers run within delivery and
+    /// must not flush or dispose this router from their callback.
+    /// </remarks>
+    public event Action<ILogSink, Exception>? sinkFailed;
 
     /// <summary>
     /// Binds this router to the current asynchronous execution context.
@@ -294,6 +292,8 @@ public sealed class LogRouter : IDisposable
             DisposeCore();
         }
     }
+
+    internal static LogRouter current => S_CURRENT_SCOPE.current;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool IsEnabled(LogLevel level) => level >= m_minimumLevel;

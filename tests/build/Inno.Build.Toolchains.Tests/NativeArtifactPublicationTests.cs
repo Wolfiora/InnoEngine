@@ -584,6 +584,17 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         }
     }
 
+    private NativeBuildContext CreateContext()
+    {
+        Directory.CreateDirectory(m_root);
+        File.WriteAllText(Path.Combine(m_root, "InnoEngine.sln"), string.Empty);
+        string projectName = "Inno.Build.Toolchains";
+        string owner = Path.Combine(m_root, "build", "toolchains", projectName);
+        Directory.CreateDirectory(owner);
+        File.WriteAllText(Path.Combine(owner, projectName + ".csproj"), "<Project />");
+        return new(m_root, "release");
+    }
+
     private static NativeBuildRecipe CreateRecipe(
         NativeBuildContext context,
         NativeComponentDescriptor owner,
@@ -622,16 +633,5 @@ public sealed class NativeArtifactPublicationTests : IDisposable
             Path.GetDirectoryName(path)!,
             CancellationToken.None
         );
-    }
-
-    private NativeBuildContext CreateContext()
-    {
-        Directory.CreateDirectory(m_root);
-        File.WriteAllText(Path.Combine(m_root, "InnoEngine.sln"), string.Empty);
-        string projectName = "Inno.Build.Toolchains";
-        string owner = Path.Combine(m_root, "build", "toolchains", projectName);
-        Directory.CreateDirectory(owner);
-        File.WriteAllText(Path.Combine(owner, projectName + ".csproj"), "<Project />");
-        return new(m_root, "release");
     }
 }

@@ -29,17 +29,6 @@ public sealed class BuildProfileTests : IDisposable
         Directory.Delete(m_projectRoot, recursive: true);
     }
 
-    private static BuildProfile CreateProfile(
-        BuildTargetId target,
-        string productName = "Test Game"
-    ) => new()
-    {
-        applicationId = "tests.game",
-        productName = productName,
-        startupScene = "Scenes/Startup.iscene",
-        target = target
-    };
-
     [Theory]
     [InlineData("../other-game")]
     [InlineData("C:/absolute")]
@@ -112,4 +101,15 @@ public sealed class BuildProfileTests : IDisposable
 
         Assert.Contains("current-format", failure.Message, StringComparison.Ordinal);
     }
+
+    private static BuildProfile CreateProfile(
+        BuildTargetId target,
+        string productName = "Test Game"
+    ) => new()
+    {
+        applicationId = "tests.game",
+        productName = productName,
+        startupScene = "Scenes/Startup.iscene",
+        target = target
+    };
 }

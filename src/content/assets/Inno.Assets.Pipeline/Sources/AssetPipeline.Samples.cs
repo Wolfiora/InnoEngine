@@ -21,10 +21,6 @@ public sealed partial class AssetPipeline
     private AssetSampleImportTransaction? m_sampleImport;
     private bool m_reconcileSampleImport;
 
-    internal bool isSampleImportFaulted => m_generations.state == GenerationState.Faulted;
-
-    internal void FaultSampleImport(Exception failure) => m_generations.Fault(failure);
-
     /// <summary>
     /// Starts a private background sample clone without waiting for file copying or transformation.
     /// </summary>
@@ -116,6 +112,10 @@ public sealed partial class AssetPipeline
             throw;
         }
     }
+
+    internal bool isSampleImportFaulted => m_generations.state == GenerationState.Faulted;
+
+    internal void FaultSampleImport(Exception failure) => m_generations.Fault(failure);
 
     internal void EnsureSampleImportOwner(AssetSampleImportTransaction transaction)
     {

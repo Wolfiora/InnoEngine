@@ -785,15 +785,6 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         ReleaseNow(id);
     }
 
-    private void ReleaseNow(RenderPersistentResourceId id)
-    {
-        m_materials.ReleaseScope(id.value);
-        m_graphicsPipelines.Release(id);
-        m_computePipelines.Release(id);
-        m_buffers.Release(id);
-        m_textures.Release(id);
-    }
-
     /// <summary>
     /// Releases the resources owned by this instance.
     /// </summary>
@@ -833,8 +824,6 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         }
         CompleteRetirement();
     }
-
-    private void CompleteRetirement() => m_disposed = true;
 
     internal RenderResourceStatistics statistics
         => new()
@@ -897,20 +886,16 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         m_textures.Sweep(entry => entry.lastUsedFrame < oldest);
     }
 
-    private static bool BufferDescriptorsEqual(
-        PersistentBufferDescriptor left,
-        PersistentBufferDescriptor right
-    ) => left.buffer.Equals(right.buffer)
-         && Equals(left.vertexLayout, right.vertexLayout)
-         && left.indexFormat == right.indexFormat;
-
-    private static void RequireId(RenderPersistentResourceId id)
+    private void ReleaseNow(RenderPersistentResourceId id)
     {
-        if (!id.isValid)
-        {
-            throw new ArgumentException("A persistent render resource ID must be valid.", nameof(id));
-        }
+        m_materials.ReleaseScope(id.value);
+        m_graphicsPipelines.Release(id);
+        m_computePipelines.Release(id);
+        m_buffers.Release(id);
+        m_textures.Release(id);
     }
+
+    private void CompleteRetirement() => m_disposed = true;
 
     private void Publish(
         string code,
@@ -949,6 +934,21 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
             throw new AggregateException("GPU allocation and retirement failed.", failure, retirement);
         }
         m_failedAllocation = null;
+    }
+
+    private static bool BufferDescriptorsEqual(
+        PersistentBufferDescriptor left,
+        PersistentBufferDescriptor right
+    ) => left.buffer.Equals(right.buffer)
+         && Equals(left.vertexLayout, right.vertexLayout)
+         && left.indexFormat == right.indexFormat;
+
+    private static void RequireId(RenderPersistentResourceId id)
+    {
+        if (!id.isValid)
+        {
+            throw new ArgumentException("A persistent render resource ID must be valid.", nameof(id));
+        }
     }
 
     private enum TextureEntryKind

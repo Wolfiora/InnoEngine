@@ -152,26 +152,6 @@ public sealed class GraphDocumentControllerTests : IDisposable
         }
     }
 
-    private sealed class RejectionParticipant(bool reject) : IEditorReloadParticipant, IGenerationChange
-    {
-        public IGenerationChange Capture(AssemblyReloadContext context) => this;
-
-        public void RefreshDiagnostics() {}
-
-        public void PrepareForActivation() {}
-
-        public void Apply()
-        {
-            if (reject) throw new InvalidOperationException("Later recovery participant rejected the candidate.");
-        }
-
-        public void Complete() {}
-
-        public void RollbackStructure() {}
-
-        public void RestorePreviousState() {}
-    }
-
     [Fact]
     public void MissingGraphHistoryRecoversWithoutLosingDirtyStateOrReusingStaleController()
     {
@@ -330,6 +310,26 @@ public sealed class GraphDocumentControllerTests : IDisposable
             remap
         ) => throw new InvalidOperationException("Rejected node remapping")));
         Assert.Equal(before, GraphDocumentCodec.Encode(controller.document, m_serialization));
+    }
+
+    private sealed class RejectionParticipant(bool reject) : IEditorReloadParticipant, IGenerationChange
+    {
+        public IGenerationChange Capture(AssemblyReloadContext context) => this;
+
+        public void RefreshDiagnostics() {}
+
+        public void PrepareForActivation() {}
+
+        public void Apply()
+        {
+            if (reject) throw new InvalidOperationException("Later recovery participant rejected the candidate.");
+        }
+
+        public void Complete() {}
+
+        public void RollbackStructure() {}
+
+        public void RestorePreviousState() {}
     }
 
     private sealed class RecordingHistory : IEditorHistory

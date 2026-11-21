@@ -11,8 +11,6 @@ namespace Inno.Runtime;
 /// </summary>
 public static class RuntimeManifestEnvelope
 {
-    private static ReadOnlySpan<byte> magic => "INNORTM\0"u8;
-
     /// <summary>
     /// Encodes a validated runtime manifest into the strict deployment envelope.
     /// </summary>
@@ -140,6 +138,32 @@ public static class RuntimeManifestEnvelope
         return manifest;
     }
 
+    internal static void ValidatePersistentDataPath(string persistentDataPath)
+    {
+        if (persistentDataPath is null)
+        {
+            throw new InvalidDataException("Runtime manifest requires a persistent data path value.");
+        }
+        if (persistentDataPath.Length == 0)
+        {
+            return;
+        }
+        foreach (string segment in persistentDataPath.Split('/'))
+        {
+            string stem = segment.Split('.', 2)[0];
+            if (segment is "." or ".." || string.IsNullOrEmpty(segment) || segment.EndsWith('.')
+                || stem is "con" or "prn" or "aux" or "nul"
+                || (stem.Length == 4 && (stem.StartsWith("com", StringComparison.Ordinal)
+                                         || stem.StartsWith("lpt", StringComparison.Ordinal)) && stem[3] is >= '1' and <= '9')
+            ) {
+                throw new InvalidDataException("Runtime manifest contains an invalid persistent data folder.");
+            }
+            ValidateApplicationId(segment);
+        }
+    }
+
+    private static ReadOnlySpan<byte> magic => "INNORTM\0"u8;
+
     private static void Parse(
         ReadOnlySpan<byte> data,
         out string applicationId,
@@ -206,30 +230,6 @@ public static class RuntimeManifestEnvelope
             ) {
                 throw new InvalidDataException("Runtime manifest contains an invalid application identity.");
             }
-        }
-    }
-
-    internal static void ValidatePersistentDataPath(string persistentDataPath)
-    {
-        if (persistentDataPath is null)
-        {
-            throw new InvalidDataException("Runtime manifest requires a persistent data path value.");
-        }
-        if (persistentDataPath.Length == 0)
-        {
-            return;
-        }
-        foreach (string segment in persistentDataPath.Split('/'))
-        {
-            string stem = segment.Split('.', 2)[0];
-            if (segment is "." or ".." || string.IsNullOrEmpty(segment) || segment.EndsWith('.')
-                || stem is "con" or "prn" or "aux" or "nul"
-                || (stem.Length == 4 && (stem.StartsWith("com", StringComparison.Ordinal)
-                                         || stem.StartsWith("lpt", StringComparison.Ordinal)) && stem[3] is >= '1' and <= '9')
-            ) {
-                throw new InvalidDataException("Runtime manifest contains an invalid persistent data folder.");
-            }
-            ValidateApplicationId(segment);
         }
     }
 }

@@ -40,6 +40,30 @@ public sealed class ShaderBuildInputs
     public string fingerprint { get; }
 
     /// <summary>
+    /// Rechecks the complete current inventory and bytes against this operation's captured identity.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// Cancels discovery and complete content verification.
+    /// </param>
+    /// <exception cref="InvalidDataException">
+    /// A source or permanent metadata file was added, removed or changed.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// The source tree cannot be safely inspected or read.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// Verification was canceled.
+    /// </exception>
+    public void VerifyUnchanged(CancellationToken cancellationToken = default)
+    {
+        string actual = ComputeFingerprint(Discover(m_sourceRoot, cancellationToken), cancellationToken);
+        if (!string.Equals(actual, fingerprint, StringComparison.Ordinal))
+        {
+            throw new InvalidDataException("Shader authoring inputs changed during compilation; the candidate cannot be published.");
+        }
+    }
+
+    /// <summary>
     /// Captures permanent authoring files and their import metadata without consuming temporary publications.
     /// </summary>
     /// <param name="assetRoot">
@@ -67,30 +91,6 @@ public sealed class ShaderBuildInputs
         ArgumentException.ThrowIfNullOrWhiteSpace(assetRoot);
         string root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(assetRoot));
         return new ShaderBuildInputs(root, Discover(root, cancellationToken), cancellationToken);
-    }
-
-    /// <summary>
-    /// Rechecks the complete current inventory and bytes against this operation's captured identity.
-    /// </summary>
-    /// <param name="cancellationToken">
-    /// Cancels discovery and complete content verification.
-    /// </param>
-    /// <exception cref="InvalidDataException">
-    /// A source or permanent metadata file was added, removed or changed.
-    /// </exception>
-    /// <exception cref="IOException">
-    /// The source tree cannot be safely inspected or read.
-    /// </exception>
-    /// <exception cref="OperationCanceledException">
-    /// Verification was canceled.
-    /// </exception>
-    public void VerifyUnchanged(CancellationToken cancellationToken = default)
-    {
-        string actual = ComputeFingerprint(Discover(m_sourceRoot, cancellationToken), cancellationToken);
-        if (!string.Equals(actual, fingerprint, StringComparison.Ordinal))
-        {
-            throw new InvalidDataException("Shader authoring inputs changed during compilation; the candidate cannot be published.");
-        }
     }
 
     internal string Materialize(

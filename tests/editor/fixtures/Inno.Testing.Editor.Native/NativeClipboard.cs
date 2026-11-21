@@ -24,8 +24,6 @@ internal sealed unsafe class NativeClipboard : IDisposable
         m_text = Marshal.StringToCoTaskMemUTF8(string.Empty);
     }
 
-    internal void ThrowIfFaulted() => m_failure?.Throw();
-
     public void Dispose()
     {
         if (!m_handle.IsAllocated)
@@ -36,6 +34,8 @@ internal sealed unsafe class NativeClipboard : IDisposable
         m_text = 0;
         m_handle.Free();
     }
+
+    internal void ThrowIfFaulted() => m_failure?.Throw();
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static sbyte* Read(ImGuiNativeContext* context)

@@ -13,121 +13,6 @@ namespace Inno.Core.Mathematics;
 public struct Color : IEquatable<Color>
 {
     /// <summary>
-    /// The red color component.
-    /// </summary>
-    public float r;
-
-    /// <summary>
-    /// The green color component.
-    /// </summary>
-    public float g;
-
-    /// <summary>
-    /// The blue color component.
-    /// </summary>
-    public float b;
-
-    /// <summary>
-    /// The alpha color component.
-    /// </summary>
-    public float a;
-
-    /// <summary>
-    /// Creates a color by clamping each supplied channel to [0, 1].
-    /// </summary>
-    /// <param name="r">
-    /// The red channel.
-    /// </param>
-    /// <param name="g">
-    /// The green channel.
-    /// </param>
-    /// <param name="b">
-    /// The blue channel.
-    /// </param>
-    /// <param name="a">
-    /// The alpha channel; one is opaque.
-    /// </param>
-    public Color(
-        float r,
-        float g,
-        float b,
-        float a = 1f
-    ) {
-        this.r = Math.Clamp(r, 0f, 1f);
-        this.g = Math.Clamp(g, 0f, 1f);
-        this.b = Math.Clamp(b, 0f, 1f);
-        this.a = Math.Clamp(a, 0f, 1f);
-    }
-
-    /// <summary>
-    /// Creates a normalized color from byte channel values.
-    /// </summary>
-    /// <param name="r">
-    /// The red byte channel.
-    /// </param>
-    /// <param name="g">
-    /// The green byte channel.
-    /// </param>
-    /// <param name="b">
-    /// The blue byte channel.
-    /// </param>
-    /// <param name="a">
-    /// The alpha byte channel; 255 is opaque.
-    /// </param>
-    /// <returns>
-    /// A color with each byte channel divided by 255.
-    /// </returns>
-    public static Color FromBytes(
-        byte r,
-        byte g,
-        byte b,
-        byte a = 255
-    ) => new Color(r / 255f, g / 255f, b / 255f, a / 255f);
-
-    /// <summary>
-    /// Converts normalized color channels to bytes by multiplying by 255 and truncating.
-    /// </summary>
-    /// <returns>
-    /// Red, green, blue and alpha bytes. Inputs must already be finite and in [0, 1]; conversion does not clamp field writes.
-    /// </returns>
-    public (byte R, byte G, byte B, byte A) ToBytes()
-        => (
-                (byte)(r * 255),
-                (byte)(g * 255),
-                (byte)(b * 255),
-                (byte)(a * 255)
-            );
-
-    /// <summary>
-    /// Packs normalized channels into the existing unsigned 0xAABBGGRR representation.
-    /// </summary>
-    /// <returns>
-    /// Alpha in bits 24-31, blue in 16-23, green in 8-15 and red in 0-7.
-    /// </returns>
-    /// <remarks>
-    /// Despite this member's name, the current numeric layout is ABGR. It yields RGBA bytes on a little-endian host.
-    /// Channels must already be finite and normalized; no color-space conversion or premultiplication is performed.
-    /// </remarks>
-    public uint ToUInt32ARGB()
-    {
-        byte red = (byte)(r * 255);
-        byte green = (byte)(g * 255);
-        byte blue = (byte)(b * 255);
-        byte alpha = (byte)(a * 255);
-
-        return (uint)((alpha << 24) | (blue << 16) | (green << 8) | red);
-    }
-
-    /// <summary>
-    /// Formats this value as a human-readable component list.
-    /// </summary>
-    /// <returns>
-    /// The validated text representation owned by the caller.
-    /// </returns>
-
-    public override string ToString() => $"Color({r:F2}, {g:F2}, {b:F2}, {a:F2})";
-
-    /// <summary>
     /// The transparent value used as part of this type's public representation.
     /// </summary>
     public static readonly Color TRANSPARENT = new(0, 0, 0, 0);
@@ -213,6 +98,151 @@ public struct Color : IEquatable<Color>
     public static readonly Color CORNFLOWERBLUE = FromBytes(100, 149, 237);
 
     /// <summary>
+    /// The red color component.
+    /// </summary>
+    public float r;
+
+    /// <summary>
+    /// The green color component.
+    /// </summary>
+    public float g;
+
+    /// <summary>
+    /// The blue color component.
+    /// </summary>
+    public float b;
+
+    /// <summary>
+    /// The alpha color component.
+    /// </summary>
+    public float a;
+
+    /// <summary>
+    /// Creates a color by clamping each supplied channel to [0, 1].
+    /// </summary>
+    /// <param name="r">
+    /// The red channel.
+    /// </param>
+    /// <param name="g">
+    /// The green channel.
+    /// </param>
+    /// <param name="b">
+    /// The blue channel.
+    /// </param>
+    /// <param name="a">
+    /// The alpha channel; one is opaque.
+    /// </param>
+    public Color(
+        float r,
+        float g,
+        float b,
+        float a = 1f
+    ) {
+        this.r = Math.Clamp(r, 0f, 1f);
+        this.g = Math.Clamp(g, 0f, 1f);
+        this.b = Math.Clamp(b, 0f, 1f);
+        this.a = Math.Clamp(a, 0f, 1f);
+    }
+
+    /// <summary>
+    /// Converts normalized color channels to bytes by multiplying by 255 and truncating.
+    /// </summary>
+    /// <returns>
+    /// Red, green, blue and alpha bytes. Inputs must already be finite and in [0, 1]; conversion does not clamp field writes.
+    /// </returns>
+    public (byte R, byte G, byte B, byte A) ToBytes()
+        => (
+                (byte)(r * 255),
+                (byte)(g * 255),
+                (byte)(b * 255),
+                (byte)(a * 255)
+            );
+
+    /// <summary>
+    /// Packs normalized channels into the existing unsigned 0xAABBGGRR representation.
+    /// </summary>
+    /// <returns>
+    /// Alpha in bits 24-31, blue in 16-23, green in 8-15 and red in 0-7.
+    /// </returns>
+    /// <remarks>
+    /// Despite this member's name, the current numeric layout is ABGR. It yields RGBA bytes on a little-endian host.
+    /// Channels must already be finite and normalized; no color-space conversion or premultiplication is performed.
+    /// </remarks>
+    public uint ToUInt32ARGB()
+    {
+        byte red = (byte)(r * 255);
+        byte green = (byte)(g * 255);
+        byte blue = (byte)(b * 255);
+        byte alpha = (byte)(a * 255);
+
+        return (uint)((alpha << 24) | (blue << 16) | (green << 8) | red);
+    }
+
+    /// <summary>
+    /// Formats this value as a human-readable component list.
+    /// </summary>
+    /// <returns>
+    /// The validated text representation owned by the caller.
+    /// </returns>
+
+    public override string ToString() => $"Color({r:F2}, {g:F2}, {b:F2}, {a:F2})";
+
+    /// <summary>
+    /// Determines whether this value and the supplied value represent the same logical state.
+    /// </summary>
+    /// <param name="obj">
+    /// The object compared with this value.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    public override bool Equals(object? obj) => obj is Color other && Equals(other);
+
+    /// <summary>
+    /// Determines whether this value and the supplied value represent the same logical state.
+    /// </summary>
+    /// <param name="other">
+    /// The strongly typed value compared with this value.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    public bool Equals(Color other) => this == other;
+
+    /// <summary>
+    /// Computes a hash code consistent with the implemented equality contract.
+    /// </summary>
+    /// <returns>
+    /// The scalar result calculated from the supplied inputs.
+    /// </returns>
+    public override int GetHashCode() => HashCode.Combine(r, g, b, a);
+
+    /// <summary>
+    /// Creates a normalized color from byte channel values.
+    /// </summary>
+    /// <param name="r">
+    /// The red byte channel.
+    /// </param>
+    /// <param name="g">
+    /// The green byte channel.
+    /// </param>
+    /// <param name="b">
+    /// The blue byte channel.
+    /// </param>
+    /// <param name="a">
+    /// The alpha byte channel; 255 is opaque.
+    /// </param>
+    /// <returns>
+    /// A color with each byte channel divided by 255.
+    /// </returns>
+    public static Color FromBytes(
+        byte r,
+        byte g,
+        byte b,
+        byte a = 255
+    ) => new Color(r / 255f, g / 255f, b / 255f, a / 255f);
+
+    /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
     /// </summary>
     /// <param name="c">
@@ -267,34 +297,4 @@ public struct Color : IEquatable<Color>
         Color a,
         Color b
     ) => !(a == b);
-
-    /// <summary>
-    /// Determines whether this value and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="obj">
-    /// The object compared with this value.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public override bool Equals(object? obj) => obj is Color other && Equals(other);
-
-    /// <summary>
-    /// Determines whether this value and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="other">
-    /// The strongly typed value compared with this value.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public bool Equals(Color other) => this == other;
-
-    /// <summary>
-    /// Computes a hash code consistent with the implemented equality contract.
-    /// </summary>
-    /// <returns>
-    /// The scalar result calculated from the supplied inputs.
-    /// </returns>
-    public override int GetHashCode() => HashCode.Combine(r, g, b, a);
 }

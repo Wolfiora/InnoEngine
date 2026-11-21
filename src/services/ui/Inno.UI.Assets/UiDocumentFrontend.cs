@@ -174,8 +174,6 @@ public sealed class UiDocumentFrontendCatalog
     /// </summary>
     public IReadOnlyList<UiDocumentLanguageId> languageIds { get; }
 
-    internal IEnumerable<IUiDocumentFrontend> providers => m_frontends.Values;
-
     /// <summary>
     /// Analyzes source using an explicit language.
     /// </summary>
@@ -194,6 +192,8 @@ public sealed class UiDocumentFrontendCatalog
     ) => m_frontends.TryGetValue(language, out IUiDocumentFrontend? frontend)
          ? frontend.Analyze(source) ?? throw new InvalidOperationException($"UI language '{language}' returned no analysis.")
          : throw new NotSupportedException($"UI document language '{language}' is unavailable.");
+
+    internal IEnumerable<IUiDocumentFrontend> providers => m_frontends.Values;
 }
 
 /// <summary>

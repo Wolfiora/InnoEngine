@@ -70,58 +70,6 @@ public sealed partial class IndexedObjectStore<T>
         }
     }
 
-    private IEnumerable<T> EnumerateFind<TKey>(
-        IndexedObjectIndex<T, TKey> index,
-        TKey value
-    ) where TKey : notnull
-    {
-        int version = Volatile.Read(ref m_version);
-        if ((index.flags & IndexedObjectKeyFlags.Unique) != 0 && index.TryGetSingle(value, out T? single) && single is not null)
-        {
-            EnsureVersion(version);
-            yield return single;
-            yield break;
-        }
-
-        HashSet<T>? set = index.FindUnsafe(value);
-        if (set is null || set.Count == 0)
-        {
-            yield break;
-        }
-
-        foreach (T item in set)
-        {
-            EnsureVersion(version);
-            yield return item;
-        }
-    }
-
-    private List<T> BuildFindSnapshot<TKey>(
-        IndexedObjectIndex<T, TKey> index,
-        TKey value
-    ) where TKey : notnull
-    {
-        var result = new List<T>();
-        if ((index.flags & IndexedObjectKeyFlags.Unique) != 0 && index.TryGetSingle(value, out T? single) && single is not null)
-        {
-            result.Add(single);
-            return result;
-        }
-
-        HashSet<T>? set = index.FindUnsafe(value);
-        if (set is null || set.Count == 0)
-        {
-            return result;
-        }
-
-        foreach (T item in set)
-        {
-            result.Add(item);
-        }
-
-        return result;
-    }
-
     /// <summary>
     /// Returns the first item by key or null if none exists.
     /// </summary>
@@ -309,6 +257,154 @@ public sealed partial class IndexedObjectStore<T>
         }
     }
 
+    internal T? ExecuteFirst(List<IIndexedObjectQueryCondition<T>> conditions)
+    {
+        m_lock.EnterReadLock();
+        try
+        {
+            if (conditions.Count == 0)
+            {
+                return m_activeList.Count > 0 ? m_activeList[0] : null;
+            }
+
+            int seedIndex = 0;
+            int seedCount = conditions[0].GetCandidateCount(this);
+
+            for (int i = 1; i < conditions.Count; i++)
+            {
+                int candidateCount = conditions[i].GetCandidateCount(this);
+                if (candidateCount < seedCount)
+                {
+                    seedCount = candidateCount;
+                    seedIndex = i;
+                }
+            }
+
+            if (seedCount == 0)
+            {
+                return null;
+            }
+
+            if (seedCount == 1 && conditions[seedIndex].TryGetSingle(this, out T single))
+            {
+                for (int i = 0; i < conditions.Count; i++)
+                {
+                    if (!conditions[i].Validate(this, single))
+                    {
+                        return null;
+                    }
+                }
+
+                return single;
+            }
+
+            HashSet<T>? seed = conditions[seedIndex].GetSet(this);
+            if (seed is null)
+            {
+                foreach (T item in m_activeList)
+                {
+                    bool ok = true;
+                    for (int i = 0; i < conditions.Count; i++)
+                    {
+                        if (!conditions[i].Validate(this, item))
+                        {
+                            ok = false;
+                            break;
+                        }
+                    }
+
+                    if (ok)
+                    {
+                        return item;
+                    }
+                }
+
+                return null;
+            }
+
+            if (seed.Count == 0)
+            {
+                return null;
+            }
+
+            foreach (T item in seed)
+            {
+                bool ok = true;
+                for (int i = 0; i < conditions.Count; i++)
+                {
+                    if (!conditions[i].Validate(this, item))
+                    {
+                        ok = false;
+                        break;
+                    }
+                }
+
+                if (ok)
+                {
+                    return item;
+                }
+            }
+
+            return null;
+        }
+        finally
+        {
+            m_lock.ExitReadLock();
+        }
+    }
+
+    private IEnumerable<T> EnumerateFind<TKey>(
+        IndexedObjectIndex<T, TKey> index,
+        TKey value
+    ) where TKey : notnull
+    {
+        int version = Volatile.Read(ref m_version);
+        if ((index.flags & IndexedObjectKeyFlags.Unique) != 0 && index.TryGetSingle(value, out T? single) && single is not null)
+        {
+            EnsureVersion(version);
+            yield return single;
+            yield break;
+        }
+
+        HashSet<T>? set = index.FindUnsafe(value);
+        if (set is null || set.Count == 0)
+        {
+            yield break;
+        }
+
+        foreach (T item in set)
+        {
+            EnsureVersion(version);
+            yield return item;
+        }
+    }
+
+    private List<T> BuildFindSnapshot<TKey>(
+        IndexedObjectIndex<T, TKey> index,
+        TKey value
+    ) where TKey : notnull
+    {
+        var result = new List<T>();
+        if ((index.flags & IndexedObjectKeyFlags.Unique) != 0 && index.TryGetSingle(value, out T? single) && single is not null)
+        {
+            result.Add(single);
+            return result;
+        }
+
+        HashSet<T>? set = index.FindUnsafe(value);
+        if (set is null || set.Count == 0)
+        {
+            return result;
+        }
+
+        foreach (T item in set)
+        {
+            result.Add(item);
+        }
+
+        return result;
+    }
+
     private IEnumerable<T> EnumerateQuery(List<IIndexedObjectQueryCondition<T>> conditions)
     {
         int version = Volatile.Read(ref m_version);
@@ -407,102 +503,6 @@ public sealed partial class IndexedObjectStore<T>
                 EnsureVersion(version);
                 yield return item;
             }
-        }
-    }
-
-    internal T? ExecuteFirst(List<IIndexedObjectQueryCondition<T>> conditions)
-    {
-        m_lock.EnterReadLock();
-        try
-        {
-            if (conditions.Count == 0)
-            {
-                return m_activeList.Count > 0 ? m_activeList[0] : null;
-            }
-
-            int seedIndex = 0;
-            int seedCount = conditions[0].GetCandidateCount(this);
-
-            for (int i = 1; i < conditions.Count; i++)
-            {
-                int candidateCount = conditions[i].GetCandidateCount(this);
-                if (candidateCount < seedCount)
-                {
-                    seedCount = candidateCount;
-                    seedIndex = i;
-                }
-            }
-
-            if (seedCount == 0)
-            {
-                return null;
-            }
-
-            if (seedCount == 1 && conditions[seedIndex].TryGetSingle(this, out T single))
-            {
-                for (int i = 0; i < conditions.Count; i++)
-                {
-                    if (!conditions[i].Validate(this, single))
-                    {
-                        return null;
-                    }
-                }
-
-                return single;
-            }
-
-            HashSet<T>? seed = conditions[seedIndex].GetSet(this);
-            if (seed is null)
-            {
-                foreach (T item in m_activeList)
-                {
-                    bool ok = true;
-                    for (int i = 0; i < conditions.Count; i++)
-                    {
-                        if (!conditions[i].Validate(this, item))
-                        {
-                            ok = false;
-                            break;
-                        }
-                    }
-
-                    if (ok)
-                    {
-                        return item;
-                    }
-                }
-
-                return null;
-            }
-
-            if (seed.Count == 0)
-            {
-                return null;
-            }
-
-            foreach (T item in seed)
-            {
-                bool ok = true;
-                for (int i = 0; i < conditions.Count; i++)
-                {
-                    if (!conditions[i].Validate(this, item))
-                    {
-                        ok = false;
-                        break;
-                    }
-                }
-
-                if (ok)
-                {
-                    return item;
-                }
-            }
-
-            return null;
-        }
-        finally
-        {
-            m_lock.ExitReadLock();
         }
     }
 

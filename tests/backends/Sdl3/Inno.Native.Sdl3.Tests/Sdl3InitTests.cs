@@ -6,19 +6,19 @@ namespace Inno.Native.Sdl3.Tests;
 
 public sealed class Sdl3InitTests
 {
+    private readonly ITestOutputHelper output;
+
+    public Sdl3InitTests(ITestOutputHelper output)
+    {
+        this.output = output;
+    }
+
     [Fact]
     public unsafe void GeneratedFlagWidthsMatchSdlHeaders()
     {
         Assert.Equal(8, sizeof(SDLWindowFlags));
         Assert.Equal(4, sizeof(SDLMouseButtonFlags));
         Assert.Equal(2, sizeof(SDLKeymod));
-    }
-
-    private readonly ITestOutputHelper output;
-
-    public Sdl3InitTests(ITestOutputHelper output)
-    {
-        this.output = output;
     }
 
     [Fact]

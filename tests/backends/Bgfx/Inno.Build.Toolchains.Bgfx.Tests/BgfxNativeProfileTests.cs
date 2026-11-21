@@ -120,16 +120,16 @@ public sealed class BgfxNativeProfileTests : IDisposable
 
     private sealed class FixtureProfile(string target) : BgfxNativeBuildProfile
     {
-        public override NativeToolchainSelection SelectTools(
-            NativeBuildContext context,
-            bool includeTools
-        ) => context.RequireToolchain();
-
         public int invocationCount { get; private set; }
         public override string targetId => target;
         public override IReadOnlyList<string> generatorArguments => ["fixture-generator"];
         public override string artifactPathToken => "/fixture-cpu/bin/";
         public override IReadOnlyList<string> bindingCmakeArguments => [];
+
+        public override NativeToolchainSelection SelectTools(
+            NativeBuildContext context,
+            bool includeTools
+        ) => context.RequireToolchain();
 
         public override (string reference, IReadOnlyList<string> arguments) CreateBindingLinkSettings(string archivePath)
             => (archivePath, []);

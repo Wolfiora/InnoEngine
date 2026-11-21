@@ -123,20 +123,6 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
     public string ArtifactOwnerDirectory { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Cancels owned work before retiring the task cancellation source.
-    /// </summary>
-    public void Cancel()
-    {
-        lock (m_lifecycle)
-        {
-            if (!m_completed)
-            {
-                m_cancellation.Cancel();
-            }
-        }
-    }
-
-    /// <summary>
     /// Gets or sets an exact dependency selection; selected bindings are imported without generation.
     /// </summary>
     public string NativeDependencyManifestPath { get; set; } = string.Empty;
@@ -150,6 +136,20 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
     /// Gets or sets the configuration required by the consuming managed build.
     /// </summary>
     public string Configuration { get; set; } = "release";
+
+    /// <summary>
+    /// Cancels owned work before retiring the task cancellation source.
+    /// </summary>
+    public void Cancel()
+    {
+        lock (m_lifecycle)
+        {
+            if (!m_completed)
+            {
+                m_cancellation.Cancel();
+            }
+        }
+    }
 
     /// <summary>
     /// Executes one explicit component request and publishes task outputs only after success.

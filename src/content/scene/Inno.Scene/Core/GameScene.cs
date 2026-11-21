@@ -75,9 +75,6 @@ public sealed class GameScene : EngineObject, ISerializable
     /// </remarks>
     public ulong hierarchyRevision => m_hierarchy.revision;
 
-    internal SceneTypeCatalog typeCatalog => m_types;
-    internal long structureRevision => m_store.structureRevision;
-
     /// <summary>
     /// Creates a game object with a mandatory transform component.
     /// </summary>
@@ -416,6 +413,11 @@ public sealed class GameScene : EngineObject, ISerializable
         m_systems.SetIndex(system, systemIndex);
     }
 
+    internal SceneTypeCatalog typeCatalog => m_types;
+    internal long structureRevision => m_store.structureRevision;
+
+    internal bool canDispatch => m_isLoaded && !m_isUnloading && !isDestroyed;
+
     internal GameSystem AddSystem(
         Type systemType,
         Guid? persistentId,
@@ -603,10 +605,21 @@ public sealed class GameScene : EngineObject, ISerializable
         component.DispatchReset();
     }
 
+    internal IReadOnlyList<TComponent> GetComponents<TComponent>()
+        where TComponent : GameComponent
+            => m_store.GetComponents<TComponent>(m_types.GetComponent(typeof(TComponent)));
+
     internal IReadOnlyList<GameComponent> GetComponents(GameObject owner)
     {
         EnsureOwned(owner);
         return m_store.GetComponents(owner);
+    }
+
+    internal IReadOnlyList<TComponent> GetComponents<TComponent>(GameObject owner)
+        where TComponent : GameComponent
+    {
+        EnsureOwned(owner);
+        return m_store.GetComponents<TComponent>(owner, m_types.GetComponent(typeof(TComponent)));
     }
 
     internal int GetComponentIndex(
@@ -625,17 +638,6 @@ public sealed class GameScene : EngineObject, ISerializable
         EnsureOwned(owner);
         m_store.SetComponentIndex(owner, component, componentIndex);
     }
-
-    internal IReadOnlyList<TComponent> GetComponents<TComponent>(GameObject owner)
-        where TComponent : GameComponent
-    {
-        EnsureOwned(owner);
-        return m_store.GetComponents<TComponent>(owner, m_types.GetComponent(typeof(TComponent)));
-    }
-
-    internal IReadOnlyList<TComponent> GetComponents<TComponent>()
-        where TComponent : GameComponent
-            => m_store.GetComponents<TComponent>(m_types.GetComponent(typeof(TComponent)));
 
     internal bool TryGetComponent<TComponent>(
         GameObject owner,
@@ -782,8 +784,6 @@ public sealed class GameScene : EngineObject, ISerializable
         GameSystem replacement,
         int replacementRuntimeTypeId
     ) => m_systems.ReplaceForReload(previous, replacement, replacementRuntimeTypeId);
-
-    internal bool canDispatch => m_isLoaded && !m_isUnloading && !isDestroyed;
 
     internal void SetSourceAsset(AssetObject sourceAsset)
     {

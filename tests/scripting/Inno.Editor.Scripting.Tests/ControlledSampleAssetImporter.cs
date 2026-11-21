@@ -17,16 +17,16 @@ internal sealed class ControlledSampleAssetImporter : AssetImporter<TextAsset>
     /// </summary>
     public ControlledSampleAssetImporter() {}
 
+    /// <summary>
+    /// Gets the unique source extension used by the real importer cancellation test.
+    /// </summary>
+    public override IReadOnlyList<string> supportedExtensions { get; } = [".samplebusy"];
+
     internal static Control? current
     {
         get => m_current.Value;
         set => m_current.Value = value;
     }
-
-    /// <summary>
-    /// Gets the unique source extension used by the real importer cancellation test.
-    /// </summary>
-    public override IReadOnlyList<string> supportedExtensions { get; } = [".samplebusy"];
 
     /// <summary>
     /// Suspends a Project clone until the transaction's cancellation reaches its importer.
@@ -62,10 +62,6 @@ internal sealed class ControlledSampleAssetImporter : AssetImporter<TextAsset>
 
     internal sealed class Control : IDisposable
     {
-        internal ManualResetEventSlim started { get; } = new();
-        internal ManualResetEventSlim canceled { get; } = new();
-        internal int workerThread { get; set; }
-
         /// <summary>
         /// Releases the test-owned synchronization handles after the importer drains.
         /// </summary>
@@ -74,5 +70,9 @@ internal sealed class ControlledSampleAssetImporter : AssetImporter<TextAsset>
             started.Dispose();
             canceled.Dispose();
         }
+
+        internal ManualResetEventSlim started { get; } = new();
+        internal ManualResetEventSlim canceled { get; } = new();
+        internal int workerThread { get; set; }
     }
 }

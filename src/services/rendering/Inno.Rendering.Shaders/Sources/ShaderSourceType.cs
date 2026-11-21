@@ -50,6 +50,40 @@ public sealed class ShaderSourceType
     public ShaderStorageType? storage { get; }
 
     /// <summary>
+    /// Checks both nominal identity and complete aggregate layout.
+    /// </summary>
+    /// <param name="other">
+    /// Candidate type from another implementation.
+    /// </param>
+    /// <returns>
+    /// True only when both descriptors express the same function interface.
+    /// </returns>
+    public bool IsEquivalentTo(ShaderSourceType? other)
+    {
+        if (other is null || id != other.id || elementCount != other.elementCount || fields.Count != other.fields.Count)
+        {
+            return false;
+        }
+        if ((storage is null) != (other.storage is null) || storage is not null && !storage.IsEquivalentTo(other.storage))
+        {
+            return false;
+        }
+        if ((elementType is null) != (other.elementType is null)
+            || elementType is not null && !elementType.IsEquivalentTo(other.elementType)
+        ) {
+            return false;
+        }
+        for (int i = 0; i < fields.Count; i++)
+        {
+            if (fields[i].name != other.fields[i].name || !fields[i].type.IsEquivalentTo(other.fields[i].type))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// <summary>
     /// Creates an opaque storage binding value with a complete element, format and access contract.
     /// </summary>
     /// <param name="storage">
@@ -131,40 +165,6 @@ public sealed class ShaderSourceType
             throw new ArgumentException("A structure requires unique named fields.", nameof(fields));
         }
         return new(id, null, 0, snapshot);
-    }
-
-    /// <summary>
-    /// Checks both nominal identity and complete aggregate layout.
-    /// </summary>
-    /// <param name="other">
-    /// Candidate type from another implementation.
-    /// </param>
-    /// <returns>
-    /// True only when both descriptors express the same function interface.
-    /// </returns>
-    public bool IsEquivalentTo(ShaderSourceType? other)
-    {
-        if (other is null || id != other.id || elementCount != other.elementCount || fields.Count != other.fields.Count)
-        {
-            return false;
-        }
-        if ((storage is null) != (other.storage is null) || storage is not null && !storage.IsEquivalentTo(other.storage))
-        {
-            return false;
-        }
-        if ((elementType is null) != (other.elementType is null)
-            || elementType is not null && !elementType.IsEquivalentTo(other.elementType)
-        ) {
-            return false;
-        }
-        for (int i = 0; i < fields.Count; i++)
-        {
-            if (fields[i].name != other.fields[i].name || !fields[i].type.IsEquivalentTo(other.fields[i].type))
-            {
-                return false;
-            }
-        }
-        return true;
     }
 }
 

@@ -8,6 +8,18 @@ namespace Inno.Editor.ImGui;
 /// </summary>
 public readonly struct EditorUiLayout
 {
+    internal unsafe EditorUiLayout(ImGuiStyle* style)
+    {
+        this.itemSpacing = ImGui.FromNative(style->ItemSpacing);
+        this.windowPadding = ImGui.FromNative(style->WindowPadding);
+        this.cellPadding = ImGui.FromNative(style->CellPadding);
+        this.itemInnerSpacing = ImGui.FromNative(style->ItemInnerSpacing);
+        this.framePadding = ImGui.FromNative(style->FramePadding);
+        this.dockingSeparatorSize = style->DockingSeparatorSize;
+        this.scrollbarSize = style->ScrollbarSize;
+        this.frameRounding = style->FrameRounding;
+    }
+
     /// <summary>
     /// Gets spacing between neighboring controls.
     /// </summary>
@@ -47,16 +59,4 @@ public readonly struct EditorUiLayout
     /// Gets control corner radius.
     /// </summary>
     public float frameRounding { get; }
-
-    internal unsafe EditorUiLayout(ImGuiStyle* style)
-    {
-        this.itemSpacing = ImGui.FromNative(style->ItemSpacing);
-        this.windowPadding = ImGui.FromNative(style->WindowPadding);
-        this.cellPadding = ImGui.FromNative(style->CellPadding);
-        this.itemInnerSpacing = ImGui.FromNative(style->ItemInnerSpacing);
-        this.framePadding = ImGui.FromNative(style->FramePadding);
-        this.dockingSeparatorSize = style->DockingSeparatorSize;
-        this.scrollbarSize = style->ScrollbarSize;
-        this.frameRounding = style->FrameRounding;
-    }
 }

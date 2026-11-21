@@ -13,12 +13,12 @@ namespace Inno.Editor.Graph;
 /// </summary>
 public sealed class GraphClipboardData
 {
+    private readonly GraphDocument m_fragment;
+
     internal GraphClipboardData(GraphDocument fragment)
     {
         m_fragment = fragment;
     }
-
-    private readonly GraphDocument m_fragment;
 
     /// <summary>
     /// Gets the copied node count.
@@ -39,11 +39,6 @@ public sealed class GraphClipboardData
 public sealed class GraphDocumentController
 {
     private readonly Identity m_identity;
-
-    private GraphDocumentSession session
-        => m_identity.Resolve<GraphDocumentSession>()
-           ?? throw new InvalidOperationException("The Graph document controller belongs to a closed identity generation.");
-
     private readonly IEditorHistory m_history;
     private readonly SerializationRegistry m_serialization;
 
@@ -413,6 +408,10 @@ public sealed class GraphDocumentController
         });
         return fragment.nodes.Select(node => remap[node.id]).ToArray();
     }
+
+    private GraphDocumentSession session
+        => m_identity.Resolve<GraphDocumentSession>()
+           ?? throw new InvalidOperationException("The Graph document controller belongs to a closed identity generation.");
 
     private void Mutate(
         string name,

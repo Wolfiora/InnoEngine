@@ -42,6 +42,49 @@ public abstract class GameBehavior : GameComponent, ISceneLifecycleObject
     /// </summary>
     public bool isActiveAndEnabled => !isDestroyed && ownerOrNull is { activeInHierarchy: true } && m_enabled;
 
+    bool ISceneLifecycleObject.lifecycleAwakeCalled
+    {
+        get => lifecycleAwakeCalled;
+        set => lifecycleAwakeCalled = value;
+    }
+
+    bool ISceneLifecycleObject.lifecycleStartCalled
+    {
+        get => lifecycleStartCalled;
+        set => lifecycleStartCalled = value;
+    }
+
+    bool ISceneLifecycleObject.lifecycleDestroyCalled
+    {
+        get => lifecycleDestroyCalled;
+        set => lifecycleDestroyCalled = value;
+    }
+
+    bool ISceneLifecycleObject.lifecycleIsActive => isActiveAndEnabled;
+    bool ISceneLifecycleObject.lifecycleIsDestroyed => isDestroyed;
+
+    bool ISceneLifecycleObject.lifecycleWasEnabled
+    {
+        get => lifecycleWasEnabled;
+        set => lifecycleWasEnabled = value;
+    }
+
+    void ISceneLifecycleObject.DispatchAwake() => Awake();
+
+    void ISceneLifecycleObject.DispatchStart() => Start();
+
+    void ISceneLifecycleObject.DispatchEnable() => OnEnable();
+
+    void ISceneLifecycleObject.DispatchDisable() => OnDisable();
+
+    void ISceneLifecycleObject.DispatchDestroy() => OnDestroy();
+
+    internal bool lifecycleAwakeCalled { get; set; }
+    internal bool lifecycleStartCalled { get; set; }
+    internal bool lifecycleWasEnabled { get; set; }
+    internal bool lifecycleDestroyCalled { get; set; }
+    internal GameBehaviorLifecyclePhase lifecyclePhases { get; set; }
+
     /// <summary>
     /// Called once before this behavior first becomes active.
     /// </summary>
@@ -82,12 +125,6 @@ public abstract class GameBehavior : GameComponent, ISceneLifecycleObject
     /// </summary>
     protected virtual void OnDestroy() {}
 
-    internal bool lifecycleAwakeCalled { get; set; }
-    internal bool lifecycleStartCalled { get; set; }
-    internal bool lifecycleWasEnabled { get; set; }
-    internal bool lifecycleDestroyCalled { get; set; }
-    internal GameBehaviorLifecyclePhase lifecyclePhases { get; set; }
-
     internal void DispatchAwake() => Awake();
 
     internal void DispatchStart() => Start();
@@ -103,41 +140,4 @@ public abstract class GameBehavior : GameComponent, ISceneLifecycleObject
     internal void DispatchLateUpdate() => LateUpdate();
 
     internal void DispatchDestroy() => OnDestroy();
-
-    bool ISceneLifecycleObject.lifecycleAwakeCalled
-    {
-        get => lifecycleAwakeCalled;
-        set => lifecycleAwakeCalled = value;
-    }
-
-    bool ISceneLifecycleObject.lifecycleStartCalled
-    {
-        get => lifecycleStartCalled;
-        set => lifecycleStartCalled = value;
-    }
-
-    bool ISceneLifecycleObject.lifecycleDestroyCalled
-    {
-        get => lifecycleDestroyCalled;
-        set => lifecycleDestroyCalled = value;
-    }
-
-    bool ISceneLifecycleObject.lifecycleIsActive => isActiveAndEnabled;
-    bool ISceneLifecycleObject.lifecycleIsDestroyed => isDestroyed;
-
-    bool ISceneLifecycleObject.lifecycleWasEnabled
-    {
-        get => lifecycleWasEnabled;
-        set => lifecycleWasEnabled = value;
-    }
-
-    void ISceneLifecycleObject.DispatchAwake() => Awake();
-
-    void ISceneLifecycleObject.DispatchStart() => Start();
-
-    void ISceneLifecycleObject.DispatchEnable() => OnEnable();
-
-    void ISceneLifecycleObject.DispatchDisable() => OnDisable();
-
-    void ISceneLifecycleObject.DispatchDestroy() => OnDestroy();
 }

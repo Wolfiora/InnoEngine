@@ -17,32 +17,6 @@ namespace Inno.Adapter.Presentation.ImGui;
 
 internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
 {
-    private sealed class ViewportWindowData
-    {
-        internal required PlatformImGuiViewportBackend owner;
-        internal required Sdl3PlatformWindow registeredWindow;
-        internal ImGuiViewport* viewport;
-        internal bool drawable;
-        internal Task? retirement;
-        internal bool detached;
-        internal SDLWindow* window;
-        internal SDLRenderer* renderer;
-        internal IPlatformImGuiRenderer? externalRenderer;
-        internal PlatformImGuiViewportTarget? externalTarget;
-        internal SDLTexture* fontTexture;
-        internal int fontTextureWidth;
-        internal int fontTextureHeight;
-        internal nint fontPixelsPtr;
-        internal int fontTexturePitch;
-        internal int fontTextureUniqueId = -1;
-        internal ImTextureRect fontUsedRect;
-        internal ImTextureRect fontUpdateRect;
-        internal uint windowId;
-        internal GCHandle gcHandle;
-        internal SDLVertex[] vertexScratch = [];
-        internal int[] indexScratch = [];
-    }
-
     private static readonly ImGuiPlatformIoNative.PlatformGetWindowPosCallback s_platformGetWindowPos = PlatformGetWindowPosOutCallback;
     private static readonly ImGuiPlatformIoNative.PlatformGetWindowSizeCallback s_platformGetWindowSize = PlatformGetWindowSizeOutCallback;
 
@@ -132,6 +106,57 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
             mainViewport->PlatformHandleRaw = null;
             throw;
         }
+    }
+
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose()
+    {
+        if (m_disposed)
+        {
+            return;
+        }
+
+        foreach (KeyValuePair<uint, ViewportWindowData> kv in m_viewportsById)
+        {
+            DestroyViewportWindow(kv.Value);
+        }
+
+        m_viewportsById.Clear();
+        m_windowToViewport.Clear();
+        if (m_retiringViewports.Count != 0)
+        {
+            m_renderer.DrainViewportRetirements();
+        }
+        ProcessRetirements();
+        if (m_retiringViewports.Count != 0)
+        {
+            throw new RetirementPendingException("Detached ImGui windows are still borrowed by their renderer.");
+        }
+
+        ImGuiPlatformIO* platformIo = ImGuiNative.Raw.GetPlatformIO();
+        ImGuiPlatformIoNative.DestroyWindowCallbacks(m_windowCallbacks);
+        m_windowCallbacks = null;
+        ImGuiNative.Raw.ClearPlatformHandlers(platformIo);
+        ImGuiNative.Raw.ClearRendererHandlers(platformIo);
+
+        ImGuiViewport* mainViewport = ImGuiNative.Raw.GetMainViewport();
+        if (mainViewport is not null)
+        {
+            mainViewport->PlatformHandle = null;
+            mainViewport->PlatformHandleRaw = null;
+        }
+
+        lock (S_CONTEXT_SYNC)
+        {
+            if (S_BACKENDS_BY_CONTEXT.TryGetValue(m_contextKey, out PlatformImGuiViewportBackend? registered)
+                && ReferenceEquals(registered, this)
+            ) {
+                S_BACKENDS_BY_CONTEXT.Remove(m_contextKey);
+            }
+        }
+        m_disposed = true;
     }
 
     internal bool OwnsWindow(uint windowId) => m_windowToViewport.ContainsKey(windowId);
@@ -263,56 +288,10 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         }
     }
 
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose()
-    {
-        if (m_disposed)
-        {
-            return;
-        }
-
-        foreach (KeyValuePair<uint, ViewportWindowData> kv in m_viewportsById)
-        {
-            DestroyViewportWindow(kv.Value);
-        }
-
-        m_viewportsById.Clear();
-        m_windowToViewport.Clear();
-        if (m_retiringViewports.Count != 0)
-        {
-            m_renderer.DrainViewportRetirements();
-        }
-        ProcessRetirements();
-        if (m_retiringViewports.Count != 0)
-        {
-            throw new RetirementPendingException("Detached ImGui windows are still borrowed by their renderer.");
-        }
-
-        ImGuiPlatformIO* platformIo = ImGuiNative.Raw.GetPlatformIO();
-        ImGuiPlatformIoNative.DestroyWindowCallbacks(m_windowCallbacks);
-        m_windowCallbacks = null;
-        ImGuiNative.Raw.ClearPlatformHandlers(platformIo);
-        ImGuiNative.Raw.ClearRendererHandlers(platformIo);
-
-        ImGuiViewport* mainViewport = ImGuiNative.Raw.GetMainViewport();
-        if (mainViewport is not null)
-        {
-            mainViewport->PlatformHandle = null;
-            mainViewport->PlatformHandleRaw = null;
-        }
-
-        lock (S_CONTEXT_SYNC)
-        {
-            if (S_BACKENDS_BY_CONTEXT.TryGetValue(m_contextKey, out PlatformImGuiViewportBackend? registered)
-                && ReferenceEquals(registered, this)
-            ) {
-                S_BACKENDS_BY_CONTEXT.Remove(m_contextKey);
-            }
-        }
-        m_disposed = true;
-    }
+    private void RecordCallbackFailure(Exception failure)
+        => m_callbackFailure = m_callbackFailure is null
+        ? failure
+        : new AggregateException("Multiple native viewport callbacks failed in the same frame.", m_callbackFailure, failure);
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static void PlatformCreateWindowCallback(ImGuiViewport* viewport)
@@ -698,7 +677,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
 
             if (data.externalRenderer is not null && data.externalTarget is not null)
             {
-                data.externalRenderer.RenderViewport(data.externalTarget, (IntPtr)viewport->DrawData);
+                data.externalRenderer.RenderViewport(data.externalTarget, (nint)viewport->DrawData);
             }
             else
             {
@@ -756,7 +735,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
             return false;
         }
 
-        GCHandle handle = GCHandle.FromIntPtr((IntPtr)viewport->PlatformUserData);
+        GCHandle handle = GCHandle.FromIntPtr((nint)viewport->PlatformUserData);
         if (!handle.IsAllocated || handle.Target is not ViewportWindowData windowData)
         {
             data = null!;
@@ -1112,8 +1091,29 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
          && a.W == b.W
          && a.H == b.H;
 
-    private void RecordCallbackFailure(Exception failure)
-        => m_callbackFailure = m_callbackFailure is null
-        ? failure
-        : new AggregateException("Multiple native viewport callbacks failed in the same frame.", m_callbackFailure, failure);
+    private sealed class ViewportWindowData
+    {
+        internal required PlatformImGuiViewportBackend owner;
+        internal required Sdl3PlatformWindow registeredWindow;
+        internal ImGuiViewport* viewport;
+        internal bool drawable;
+        internal Task? retirement;
+        internal bool detached;
+        internal SDLWindow* window;
+        internal SDLRenderer* renderer;
+        internal IPlatformImGuiRenderer? externalRenderer;
+        internal PlatformImGuiViewportTarget? externalTarget;
+        internal SDLTexture* fontTexture;
+        internal int fontTextureWidth;
+        internal int fontTextureHeight;
+        internal nint fontPixelsPtr;
+        internal int fontTexturePitch;
+        internal int fontTextureUniqueId = -1;
+        internal ImTextureRect fontUsedRect;
+        internal ImTextureRect fontUpdateRect;
+        internal uint windowId;
+        internal GCHandle gcHandle;
+        internal SDLVertex[] vertexScratch = [];
+        internal int[] indexScratch = [];
+    }
 }

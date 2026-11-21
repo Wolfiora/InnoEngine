@@ -166,6 +166,19 @@ internal static partial class MeshSourceParser
         }
     }
 
+    internal static Vector4 ToTangent(
+        Vector3 value,
+        float handedness
+    ) {
+        Vector3 normalized = Vector3.NormalizeSafe(value);
+        if (normalized.LengthSquared() <= 1e-8f)
+        {
+            normalized = Vector3.RIGHT;
+        }
+
+        return new Vector4(normalized.x, normalized.y, normalized.z, handedness < 0f ? -1f : 1f);
+    }
+
     private static uint ResolveObjVertex(
         string token,
         string sourcePath,
@@ -255,19 +268,6 @@ internal static partial class MeshSourceParser
             sections.Add(new GeometrySection(subMeshStart, currentIndexCount - subMeshStart));
             subMeshStart = currentIndexCount;
         }
-    }
-
-    internal static Vector4 ToTangent(
-        Vector3 value,
-        float handedness
-    ) {
-        Vector3 normalized = Vector3.NormalizeSafe(value);
-        if (normalized.LengthSquared() <= 1e-8f)
-        {
-            normalized = Vector3.RIGHT;
-        }
-
-        return new Vector4(normalized.x, normalized.y, normalized.z, handedness < 0f ? -1f : 1f);
     }
 
     private static RenderingAssetFormatException Error(

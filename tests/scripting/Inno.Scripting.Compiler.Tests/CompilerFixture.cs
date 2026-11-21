@@ -96,10 +96,6 @@ internal sealed class CompilerFixture : IDisposable
         );
     }
 
-    internal string projectRoot { get; }
-
-    internal ScriptCompiler compiler { get; }
-
     /// <inheritdoc/>
     public void Dispose()
     {
@@ -111,6 +107,10 @@ internal sealed class CompilerFixture : IDisposable
         m_identityScope.Dispose();
         Directory.Delete(projectRoot, recursive: true);
     }
+
+    internal string projectRoot { get; }
+
+    internal ScriptCompiler compiler { get; }
 
     internal void Write(
         string relativePath,

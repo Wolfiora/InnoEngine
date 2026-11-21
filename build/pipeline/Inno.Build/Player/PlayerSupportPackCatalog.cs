@@ -290,6 +290,32 @@ public sealed class PlayerSupportPackCatalog
         }
     }
 
+    internal async ValueTask<PlayerSupportPackLease> ResolveOrProvisionAsync(
+        BuildTargetId target,
+        IPlayerSupportPackValidator validator,
+        IPlayerSupportPackProvisioner? provisioner,
+        CancellationToken cancellationToken
+    ) {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (provisioner is null)
+        {
+            return Acquire(target, validator, cancellationToken);
+        }
+
+        SemaphoreSlim gate = m_provisionGates.GetOrAdd(target, static _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            // The source provider checks its current SDK, code and native inputs before selecting a pack.
+            await provisioner.ProvisionAsync(target, m_root, cancellationToken).ConfigureAwait(false);
+            return Acquire(target, validator, cancellationToken);
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
     private static void SelectCurrent(
         string targetRoot,
         string fingerprint
@@ -391,32 +417,6 @@ public sealed class PlayerSupportPackCatalog
             throw new InvalidDataException($"Player Support Pack '{target}' has no target compilation references.");
         }
         validator.Validate(directory);
-    }
-
-    internal async ValueTask<PlayerSupportPackLease> ResolveOrProvisionAsync(
-        BuildTargetId target,
-        IPlayerSupportPackValidator validator,
-        IPlayerSupportPackProvisioner? provisioner,
-        CancellationToken cancellationToken
-    ) {
-        cancellationToken.ThrowIfCancellationRequested();
-        if (provisioner is null)
-        {
-            return Acquire(target, validator, cancellationToken);
-        }
-
-        SemaphoreSlim gate = m_provisionGates.GetOrAdd(target, static _ => new SemaphoreSlim(1, 1));
-        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            // The source provider checks its current SDK, code and native inputs before selecting a pack.
-            await provisioner.ProvisionAsync(target, m_root, cancellationToken).ConfigureAwait(false);
-            return Acquire(target, validator, cancellationToken);
-        }
-        finally
-        {
-            gate.Release();
-        }
     }
 
     private static string ComputeFingerprint(

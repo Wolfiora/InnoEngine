@@ -16,11 +16,40 @@ internal sealed class RenderResourceCache<TKey, TEntry>(
 {
     private readonly Dictionary<TKey, TEntry> m_entries = [];
     private readonly Queue<TEntry> m_retiring = [];
+    private readonly List<Exception> m_failures = [];
     private RetirementBarrier? m_barrier;
     private bool m_stopping;
     private long m_rejected;
     private int m_peak;
-    private readonly List<Exception> m_failures = [];
+
+    /// <summary>
+    /// Releases the resources owned by this implementation.
+    /// </summary>
+    public void Dispose()
+    {
+        if (!m_stopping)
+        {
+            m_stopping = true;
+            foreach (TEntry entry in m_entries.Values)
+            {
+                m_retiring.Enqueue(entry);
+            }
+            m_entries.Clear();
+        }
+        Drain();
+    }
+
+    /// <summary>
+    /// Gets an enumerator required by the implemented contract.
+    /// </summary>
+    /// <returns>
+    /// The validated ienumeratorkey value pairtkey, tentry that represents the completed operation.
+    /// </returns>
+    public Dictionary<TKey, TEntry>.Enumerator GetEnumerator() => m_entries.GetEnumerator();
+
+    IEnumerator<KeyValuePair<TKey, TEntry>> IEnumerable<KeyValuePair<TKey, TEntry>>.GetEnumerator() => GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     internal IEnumerable<TEntry> Values => m_entries.Values;
     internal int Count => m_entries.Count;
@@ -109,33 +138,4 @@ internal sealed class RenderResourceCache<TKey, TEntry>(
             throw failure;
         }
     }
-
-    /// <summary>
-    /// Releases the resources owned by this implementation.
-    /// </summary>
-    public void Dispose()
-    {
-        if (!m_stopping)
-        {
-            m_stopping = true;
-            foreach (TEntry entry in m_entries.Values)
-            {
-                m_retiring.Enqueue(entry);
-            }
-            m_entries.Clear();
-        }
-        Drain();
-    }
-
-    /// <summary>
-    /// Gets an enumerator required by the implemented contract.
-    /// </summary>
-    /// <returns>
-    /// The validated ienumeratorkey value pairtkey, tentry that represents the completed operation.
-    /// </returns>
-    public Dictionary<TKey, TEntry>.Enumerator GetEnumerator() => m_entries.GetEnumerator();
-
-    IEnumerator<KeyValuePair<TKey, TEntry>> IEnumerable<KeyValuePair<TKey, TEntry>>.GetEnumerator() => GetEnumerator();
-
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

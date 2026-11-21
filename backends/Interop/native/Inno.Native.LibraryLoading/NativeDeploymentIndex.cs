@@ -83,41 +83,6 @@ public sealed class NativeDeploymentIndex
     }
 
     /// <summary>
-    /// Reads only the current index format and validates its complete path mappings.
-    /// </summary>
-    /// <param name="bytes">
-    /// Complete encoded bytes borrowed for this call.
-    /// </param>
-    /// <returns>
-    /// An immutable layout; malformed or incomplete input is rejected.
-    /// </returns>
-    /// <exception cref="InvalidDataException">
-    /// The index is malformed, incomplete or contains invalid mappings.
-    /// </exception>
-    public static NativeDeploymentIndex Decode(ReadOnlySpan<byte> bytes)
-    {
-        try
-        {
-            using JsonDocument document = JsonDocument.Parse(bytes.ToArray());
-            JsonElement root = document.RootElement;
-            string[] names = root.EnumerateObject().Select(static entry => entry.Name).Order(StringComparer.Ordinal).ToArray();
-            if (!names.SequenceEqual(["files", "libraries", "targetId"], StringComparer.Ordinal))
-            {
-                throw new InvalidDataException("The native deployment index must contain its exact current fields.");
-            }
-            return new(
-                root.GetProperty("targetId").GetString()!,
-                ReadMapping(root.GetProperty("libraries")),
-                ReadMapping(root.GetProperty("files"))
-            );
-        }
-        catch (Exception failure) when (failure is JsonException or ArgumentException or InvalidOperationException)
-        {
-            throw new InvalidDataException("The native deployment index is malformed or incomplete.", failure);
-        }
-    }
-
-    /// <summary>
     /// Resolves a selected library without scanning directories or guessing suffixes.
     /// </summary>
     /// <param name="nativeDirectory">
@@ -166,6 +131,41 @@ public sealed class NativeDeploymentIndex
         string nativeDirectory,
         string name
     ) => Resolve(nativeDirectory, name, files);
+
+    /// <summary>
+    /// Reads only the current index format and validates its complete path mappings.
+    /// </summary>
+    /// <param name="bytes">
+    /// Complete encoded bytes borrowed for this call.
+    /// </param>
+    /// <returns>
+    /// An immutable layout; malformed or incomplete input is rejected.
+    /// </returns>
+    /// <exception cref="InvalidDataException">
+    /// The index is malformed, incomplete or contains invalid mappings.
+    /// </exception>
+    public static NativeDeploymentIndex Decode(ReadOnlySpan<byte> bytes)
+    {
+        try
+        {
+            using JsonDocument document = JsonDocument.Parse(bytes.ToArray());
+            JsonElement root = document.RootElement;
+            string[] names = root.EnumerateObject().Select(static entry => entry.Name).Order(StringComparer.Ordinal).ToArray();
+            if (!names.SequenceEqual(["files", "libraries", "targetId"], StringComparer.Ordinal))
+            {
+                throw new InvalidDataException("The native deployment index must contain its exact current fields.");
+            }
+            return new(
+                root.GetProperty("targetId").GetString()!,
+                ReadMapping(root.GetProperty("libraries")),
+                ReadMapping(root.GetProperty("files"))
+            );
+        }
+        catch (Exception failure) when (failure is JsonException or ArgumentException or InvalidOperationException)
+        {
+            throw new InvalidDataException("The native deployment index is malformed or incomplete.", failure);
+        }
+    }
 
     private static IReadOnlyDictionary<string, string> Freeze(IReadOnlyDictionary<string, string> mapping)
     {

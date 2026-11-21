@@ -23,12 +23,12 @@ public sealed class AssetImportHealthSnapshot
         m_failures = failures;
     }
 
-    internal IReadOnlySet<AssetImportFailureFingerprint> failures => m_failures;
-
     /// <summary>
     /// Gets the immutable snapshot used when no Asset Pipeline generation is active.
     /// </summary>
     public static AssetImportHealthSnapshot empty => S_EMPTY;
+
+    internal IReadOnlySet<AssetImportFailureFingerprint> failures => m_failures;
 }
 
 /// <summary>

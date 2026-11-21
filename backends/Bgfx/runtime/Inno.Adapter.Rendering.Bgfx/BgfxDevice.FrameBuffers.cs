@@ -223,6 +223,20 @@ public sealed unsafe partial class BgfxDevice
         }
     }
 
+    private static bgfx.ClearFlags ColorDiscardFlag(int slot)
+        => slot switch
+    {
+        0 => bgfx.ClearFlags.DiscardColor0,
+        1 => bgfx.ClearFlags.DiscardColor1,
+        2 => bgfx.ClearFlags.DiscardColor2,
+        3 => bgfx.ClearFlags.DiscardColor3,
+        4 => bgfx.ClearFlags.DiscardColor4,
+        5 => bgfx.ClearFlags.DiscardColor5,
+        6 => bgfx.ClearFlags.DiscardColor6,
+        7 => bgfx.ClearFlags.DiscardColor7,
+        _ => throw new ArgumentOutOfRangeException(nameof(slot))
+    };
+
     private readonly record struct GraphAttachmentSignature(
         ushort textureIndex,
         int slot,
@@ -255,18 +269,4 @@ public sealed unsafe partial class BgfxDevice
             return false;
         }
     }
-
-    private static bgfx.ClearFlags ColorDiscardFlag(int slot)
-        => slot switch
-    {
-        0 => bgfx.ClearFlags.DiscardColor0,
-        1 => bgfx.ClearFlags.DiscardColor1,
-        2 => bgfx.ClearFlags.DiscardColor2,
-        3 => bgfx.ClearFlags.DiscardColor3,
-        4 => bgfx.ClearFlags.DiscardColor4,
-        5 => bgfx.ClearFlags.DiscardColor5,
-        6 => bgfx.ClearFlags.DiscardColor6,
-        7 => bgfx.ClearFlags.DiscardColor7,
-        _ => throw new ArgumentOutOfRangeException(nameof(slot))
-    };
 }

@@ -261,9 +261,6 @@ internal sealed class ShaderSourceSnapshotResolver : IShaderSourceResolver
         m_files.Add(request.source.assetPath, request.source);
     }
 
-    internal IEnumerable<ShaderSourceFile> files => m_files.Values;
-    internal IEnumerable<ShaderSourceInclude> includes => m_includes.Values;
-
     /// <summary>
     /// Reads and validates the include value from its authoritative source.
     /// </summary>
@@ -300,4 +297,7 @@ public ShaderSourceFile ReadInclude(
         m_files[file.assetPath] = file;
         return file;
     }
+
+    internal IEnumerable<ShaderSourceFile> files => m_files.Values;
+    internal IEnumerable<ShaderSourceInclude> includes => m_includes.Values;
 }

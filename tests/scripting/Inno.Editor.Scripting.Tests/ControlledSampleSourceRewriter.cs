@@ -15,12 +15,6 @@ internal sealed class ControlledSampleSourceRewriter : IAssetSampleSourceRewrite
     /// </summary>
     public ControlledSampleSourceRewriter() {}
 
-    internal static Control? current
-    {
-        get => m_current.Value;
-        set => m_current.Value = value;
-    }
-
     /// <inheritdoc/>
     public void Transform(AssetSampleTransformContext context)
     {
@@ -38,13 +32,14 @@ internal sealed class ControlledSampleSourceRewriter : IAssetSampleSourceRewrite
         context.cancellationToken.ThrowIfCancellationRequested();
     }
 
+    internal static Control? current
+    {
+        get => m_current.Value;
+        set => m_current.Value = value;
+    }
+
     internal sealed class Control : IDisposable
     {
-        internal ManualResetEventSlim started { get; } = new();
-        internal ManualResetEventSlim release { get; } = new();
-        internal ManualResetEventSlim canceled { get; } = new();
-        internal int workerThread { get; set; }
-
         /// <inheritdoc/>
         public void Dispose()
         {
@@ -52,5 +47,10 @@ internal sealed class ControlledSampleSourceRewriter : IAssetSampleSourceRewrite
             release.Dispose();
             canceled.Dispose();
         }
+
+        internal ManualResetEventSlim started { get; } = new();
+        internal ManualResetEventSlim release { get; } = new();
+        internal ManualResetEventSlim canceled { get; } = new();
+        internal int workerThread { get; set; }
     }
 }

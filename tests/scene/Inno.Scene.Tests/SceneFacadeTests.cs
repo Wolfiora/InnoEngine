@@ -11,6 +11,13 @@ namespace Inno.Scene.Tests;
 [Collection(SceneTestsCollection.NAME)]
 public sealed class SceneFacadeTests : IDisposable
 {
+    private readonly IDisposable m_sceneScope;
+
+    public SceneFacadeTests(SceneTestsFixture fixture)
+    {
+        m_sceneScope = fixture.world.EnterScope();
+    }
+
     [Fact]
     public void RootSiblingPositionsStayAuthoritativeAcrossHierarchyMutations()
     {
@@ -96,13 +103,6 @@ public sealed class SceneFacadeTests : IDisposable
         before = scene.hierarchyRevision;
         second.SetSiblingIndex(0);
         Assert.Equal(before, scene.hierarchyRevision);
-    }
-
-    private readonly IDisposable m_sceneScope;
-
-    public SceneFacadeTests(SceneTestsFixture fixture)
-    {
-        m_sceneScope = fixture.world.EnterScope();
     }
 
     public void Dispose()
@@ -406,6 +406,7 @@ public sealed class SceneFacadeTests : IDisposable
         protected override void LateUpdate() => lateUpdateCount++;
     }
 
+    // Open: DerivedResetComponent derives from it.
     private class BaseResetComponent : GameComponent
     {
         public int baseResetCount;

@@ -305,10 +305,6 @@ public sealed class EditorHistoryTests
             runtime.Start();
         }
 
-        internal TypeCatalog types { get; }
-        internal EditorInteractionRuntime runtime { get; }
-        internal IEditorHistory history => runtime.interactions.history;
-
         public void Dispose()
         {
             runtime.Dispose();
@@ -320,6 +316,10 @@ public sealed class EditorHistoryTests
                 Directory.Delete(m_projectRoot, recursive: true);
             }
         }
+
+        internal TypeCatalog types { get; }
+        internal EditorInteractionRuntime runtime { get; }
+        internal IEditorHistory history => runtime.interactions.history;
     }
 }
 

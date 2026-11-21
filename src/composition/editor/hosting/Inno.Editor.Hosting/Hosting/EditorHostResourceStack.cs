@@ -15,25 +15,6 @@ internal sealed class EditorHostResourceStack(Action<Exception> reportCleanupFai
     private readonly List<Action> m_cleanup = [];
     private bool m_disposed;
 
-    internal T Acquire<T>(
-        Func<T> factory,
-        Action<T> cleanup
-    ) {
-        ArgumentNullException.ThrowIfNull(factory);
-        ArgumentNullException.ThrowIfNull(cleanup);
-        ObjectDisposedException.ThrowIf(m_disposed, this);
-        T resource = factory();
-        m_cleanup.Add(() => cleanup(resource));
-        return resource;
-    }
-
-    internal void Register(Action cleanup)
-    {
-        ArgumentNullException.ThrowIfNull(cleanup);
-        ObjectDisposedException.ThrowIf(m_disposed, this);
-        m_cleanup.Add(cleanup);
-    }
-
     /// <summary>
     /// Releases the resources owned by this instance.
     /// </summary>
@@ -75,5 +56,24 @@ internal sealed class EditorHostResourceStack(Action<Exception> reportCleanupFai
         {
             throw new AggregateException("Editor resources could not all retire cleanly.", failures);
         }
+    }
+
+    internal T Acquire<T>(
+        Func<T> factory,
+        Action<T> cleanup
+    ) {
+        ArgumentNullException.ThrowIfNull(factory);
+        ArgumentNullException.ThrowIfNull(cleanup);
+        ObjectDisposedException.ThrowIf(m_disposed, this);
+        T resource = factory();
+        m_cleanup.Add(() => cleanup(resource));
+        return resource;
+    }
+
+    internal void Register(Action cleanup)
+    {
+        ArgumentNullException.ThrowIfNull(cleanup);
+        ObjectDisposedException.ThrowIf(m_disposed, this);
+        m_cleanup.Add(cleanup);
     }
 }

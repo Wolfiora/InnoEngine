@@ -164,8 +164,6 @@ internal sealed class AssetCatalogStore
         return IOFile.Exists(m_snapshotPath) ? m_snapshotPath : null;
     }
 
-    private static string GetDatabaseRoot(string libraryRoot) => Path.Combine(Path.GetFullPath(libraryRoot), "AssetDatabase");
-
     private byte[][] SerializeEntries(AssetMeta[] entries)
     {
         var result = new byte[entries.Length][];
@@ -197,4 +195,6 @@ internal sealed class AssetCatalogStore
             => m_serializationGeneration is null
                ? m_serialization!.Deserialize<T>(bytes)
                : m_serializationGeneration.Deserialize<T>(bytes);
+
+    private static string GetDatabaseRoot(string libraryRoot) => Path.Combine(Path.GetFullPath(libraryRoot), "AssetDatabase");
 }

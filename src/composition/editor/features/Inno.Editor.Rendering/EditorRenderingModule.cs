@@ -922,11 +922,6 @@ public sealed class EditorRenderingModule : EditorModule
         }
     }
 
-    private sealed record AcceptedContribution(
-        EditorViewportContributorRegistry.Registration registration,
-        EditorViewportContribution contribution
-    );
-
     private static string GetDisplayName(string identifier)
     {
         char[] characters = identifier.Replace('-', ' ').Replace('_', ' ').ToCharArray();
@@ -947,4 +942,9 @@ public sealed class EditorRenderingModule : EditorModule
         }
         return new string(characters);
     }
+
+    private sealed record AcceptedContribution(
+        EditorViewportContributorRegistry.Registration registration,
+        EditorViewportContribution contribution
+    );
 }

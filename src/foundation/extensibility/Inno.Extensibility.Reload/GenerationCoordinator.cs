@@ -504,6 +504,18 @@ public sealed class GenerationCoordinator
         }
     }
 
+    private void RetainFailedRetirement(
+        Exception failure,
+        object transaction
+    ) {
+        lock (m_sync)
+        {
+            m_retainedTransaction = transaction;
+        }
+        Fault(failure);
+        GC.KeepAlive(m_retainedTransaction);
+    }
+
     private static void Attempt(
         Action operation,
         ICollection<Exception> failures
@@ -527,18 +539,6 @@ public sealed class GenerationCoordinator
         {
             failures.Add(exception);
         }
-    }
-
-    private void RetainFailedRetirement(
-        Exception failure,
-        object transaction
-    ) {
-        lock (m_sync)
-        {
-            m_retainedTransaction = transaction;
-        }
-        Fault(failure);
-        GC.KeepAlive(m_retainedTransaction);
     }
 
     private sealed class ChangeReservation(GenerationCoordinator owner) : IDisposable

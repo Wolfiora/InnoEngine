@@ -534,6 +534,18 @@ public sealed class EditorPlayModeTests : IDisposable
         Assert.Throws<ObjectDisposedException>(() => playing.GetValues<GameScene>());
     }
 
+    private RuntimeSessionOptions CreateSessionOptions(RuntimeSessionKind kind)
+    {
+        string applicationId = kind == RuntimeSessionKind.Edit ? "inno.tests.edit" : "inno.tests.play";
+        return new RuntimeSessionOptions
+        {
+            kind = kind,
+            applicationId = applicationId,
+            createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(m_projectRoot, "PersistentData", applicationId), "Logs")),
+            jobExecutionMode = RuntimeJobExecutionMode.SingleThread
+        };
+    }
+
     public sealed class CountingSystem : GameSystem
     {
         public int fixedCount { get; private set; }
@@ -583,32 +595,23 @@ public sealed class EditorPlayModeTests : IDisposable
             );
         }
 
+        public void Dispose() => m_controller.Dispose();
+
         internal IEditorPlayMode playMode => m_controller;
         internal FakeHistoryIsolation history => m_history;
 
         internal void Update() => m_controller.AdvanceTransition();
 
         internal void Simulate(float deltaTime) => m_controller.Tick(deltaTime);
-
-        public void Dispose() => m_controller.Dispose();
     }
 
     private sealed class FakeScriptCompilation(EditorScriptCompilationState initialState) : IEditorScriptCompilation
     {
-        public bool requiresExclusiveProgress => false;
-        public EditorScriptCompilationProgress progress => new(0, 0f, "Test script status.", false);
-
-        public void CancelCompilation(long operationId) {}
-
         private EditorScriptCompilationState m_state = initialState;
         private FakeCompilationTicket? m_ticket;
 
-        public IScriptCompilationTicket RequestCompilation()
-        {
-            m_ticket = new FakeCompilationTicket();
-            m_ticket.SetState(m_state);
-            return m_ticket;
-        }
+        public bool requiresExclusiveProgress => false;
+        public EditorScriptCompilationProgress progress => new(0, 0f, "Test script status.", false);
 
         public IScriptCompilationTicket? currentTicket => m_ticket;
 
@@ -623,6 +626,15 @@ public sealed class EditorPlayModeTests : IDisposable
         }
 
         public ScriptCompilationResult? lastCompilation => null;
+
+        public void CancelCompilation(long operationId) {}
+
+        public IScriptCompilationTicket RequestCompilation()
+        {
+            m_ticket = new FakeCompilationTicket();
+            m_ticket.SetState(m_state);
+            return m_ticket;
+        }
     }
 
     private sealed class PendingPlayFactory(PendingPlaySubsystem subsystem) : IRuntimeSubsystemFactory
@@ -634,9 +646,9 @@ public sealed class EditorPlayModeTests : IDisposable
 
     private sealed class PendingPlaySubsystem : RuntimeSubsystem
     {
-        internal TaskCompletionSource work { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-
         internal bool stopped;
+
+        internal TaskCompletionSource work { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         protected override void OnStart() => lifetime.Track(work.Task);
 
@@ -667,15 +679,15 @@ public sealed class EditorPlayModeTests : IDisposable
 
     private sealed class FakeScenePlayMode(Action<SceneWorld>? populate = null) : IEditorScenePlayMode
     {
-        internal int beginCount { get; private set; }
-        internal int restoreCount { get; private set; }
-
         public IDisposable BeginPlayMode(RuntimeSession runtimeSession)
         {
             beginCount++;
             populate?.Invoke(runtimeSession.scenes);
             return new Session(this);
         }
+
+        internal int beginCount { get; private set; }
+        internal int restoreCount { get; private set; }
 
         private sealed class Session(FakeScenePlayMode owner) : IDisposable
         {
@@ -695,23 +707,23 @@ public sealed class EditorPlayModeTests : IDisposable
 
     private sealed class FakeSelectionCoordinator : IEditorSelectionCoordinator
     {
-        public IDisposable RegisterIdentityDomain(IdentityAllocator allocator) => new LifetimeScope();
-
         public object? selectedTarget { get; private set; }
+
+        public IDisposable RegisterIdentityDomain(IdentityAllocator allocator) => new LifetimeScope();
 
         public void SetSelection(object? target) => selectedTarget = target;
     }
 
     private sealed class FakeHistoryIsolation : IEditorHistoryIsolation
     {
-        internal int beginCount { get; private set; }
-        internal int disposeCount { get; private set; }
-
         public IDisposable BeginHistoryIsolation()
         {
             beginCount++;
             return new Lease(this);
         }
+
+        internal int beginCount { get; private set; }
+        internal int disposeCount { get; private set; }
 
         private sealed class Lease(FakeHistoryIsolation owner) : IDisposable
         {
@@ -727,18 +739,6 @@ public sealed class EditorPlayModeTests : IDisposable
                 owner.disposeCount++;
             }
         }
-    }
-
-    private RuntimeSessionOptions CreateSessionOptions(RuntimeSessionKind kind)
-    {
-        string applicationId = kind == RuntimeSessionKind.Edit ? "inno.tests.edit" : "inno.tests.play";
-        return new RuntimeSessionOptions
-        {
-            kind = kind,
-            applicationId = applicationId,
-            createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(m_projectRoot, "PersistentData", applicationId), "Logs")),
-            jobExecutionMode = RuntimeJobExecutionMode.SingleThread
-        };
     }
 }
 

@@ -199,6 +199,14 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
         return true;
     }
 
+    private void Unregister(Guid registrationId)
+    {
+        lock (m_sync)
+        {
+            m_participants.RemoveAll(reference => reference.id == registrationId);
+        }
+    }
+
     private sealed class EditorPublication(
         AssemblyReloadSession reload,
         IGenerationChange? external
@@ -220,16 +228,6 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
         /// The weak monitor for the retired assembly generation.
         /// </returns>
         public IAssemblyUnloadProbe Complete() => reload.Complete();
-
-        void IGenerationChange.PrepareForActivation() => external?.PrepareForActivation();
-
-        void IGenerationChange.Apply() {}
-
-        void IGenerationChange.Complete() => external?.Complete();
-
-        void IGenerationChange.RollbackStructure() => external?.RollbackStructure();
-
-        void IGenerationChange.RestorePreviousState() {}
 
         /// <summary>
         /// Restores old assemblies and external resolvers before domains restore their previous property values.
@@ -266,6 +264,16 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
                 throw new AggregateException("Editor publication rollback was incomplete.", failures);
             }
         }
+
+        void IGenerationChange.PrepareForActivation() => external?.PrepareForActivation();
+
+        void IGenerationChange.Apply() {}
+
+        void IGenerationChange.Complete() => external?.Complete();
+
+        void IGenerationChange.RollbackStructure() => external?.RollbackStructure();
+
+        void IGenerationChange.RestorePreviousState() {}
     }
 
     private sealed class ParticipantChange(
@@ -314,14 +322,6 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
         }
     }
 
-    private void Unregister(Guid registrationId)
-    {
-        lock (m_sync)
-        {
-            m_participants.RemoveAll(reference => reference.id == registrationId);
-        }
-    }
-
     private readonly record struct ParticipantReference(
         Guid id,
         WeakReference<IEditorReloadParticipant> participant
@@ -340,8 +340,6 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
     {
         private IEditorReloadGuard? m_guard = guard;
 
-        internal Guid id { get; } = id;
-
         /// <inheritdoc/>
         public void Dispose()
         {
@@ -357,6 +355,8 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
             m_guard = null;
             GC.KeepAlive(retained);
         }
+
+        internal Guid id { get; } = id;
     }
 
     private sealed class Registration : IDisposable
@@ -375,8 +375,6 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
             m_participant = participant;
         }
 
-        internal Guid id { get; }
-
         /// <summary>
         /// Releases the resources owned by this instance.
         /// </summary>
@@ -392,5 +390,7 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
             m_owner.Unregister(id);
             GC.KeepAlive(participant);
         }
+
+        internal Guid id { get; }
     }
 }

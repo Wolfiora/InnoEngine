@@ -19,6 +19,11 @@ internal sealed class RenderPipelineGeneration : IDisposable
         this.features = new ReadOnlyDictionary<string, RenderPipelineFeature>(m_features);
     }
 
+    /// <summary>
+    /// Retires features before their pipeline, preserving the remaining ownership while work is pending.
+    /// </summary>
+    public void Dispose() => m_lifetime.Dispose();
+
     internal long typeCacheVersion { get; }
     internal RenderPipeline pipeline { get; }
     internal IReadOnlyDictionary<string, RenderPipelineFeature> features { get; }
@@ -33,9 +38,4 @@ internal sealed class RenderPipelineGeneration : IDisposable
         }
         m_features.Add(id, feature);
     }
-
-    /// <summary>
-    /// Retires features before their pipeline, preserving the remaining ownership while work is pending.
-    /// </summary>
-    public void Dispose() => m_lifetime.Dispose();
 }

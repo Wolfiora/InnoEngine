@@ -125,11 +125,6 @@ public sealed class ToolchainWorkingDirectoryTests : IDisposable
         Assert.Equal("retained", File.ReadAllText(Path.Combine(physical, "output.txt")));
     }
 
-    private static IToolchainWorkspaceProvider CreateProvider()
-        => OperatingSystem.IsWindows()
-           ? new WindowsToolchainWorkspaceProvider()
-           : new PhysicalToolchainWorkspaceProvider();
-
     public void Dispose()
     {
         if (Directory.Exists(m_root))
@@ -137,4 +132,9 @@ public sealed class ToolchainWorkingDirectoryTests : IDisposable
             Directory.Delete(m_root, recursive: true);
         }
     }
+
+    private static IToolchainWorkspaceProvider CreateProvider()
+        => OperatingSystem.IsWindows()
+           ? new WindowsToolchainWorkspaceProvider()
+           : new PhysicalToolchainWorkspaceProvider();
 }

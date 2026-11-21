@@ -134,25 +134,6 @@ public sealed class EditorViewportContext
         this.input = input;
     }
 
-    internal EditorViewportContext ForLayer(RenderOutputLayer layer)
-    {
-        ArgumentNullException.ThrowIfNull(layer);
-        return new EditorViewportContext(
-            editor,
-            interactions,
-            kind,
-            viewportId,
-            pixelWidth,
-            pixelHeight,
-            navigation,
-            content,
-            presentation,
-            new SelectedViewContentCollector(viewContent, layer.sourceIds),
-            frameIndex,
-            input
-        );
-    }
-
     /// <summary>
     /// Gets the current Editor context.
     /// </summary>
@@ -212,6 +193,25 @@ public sealed class EditorViewportContext
     /// Gets input located in this viewport's physical pixels.
     /// </summary>
     public RenderOutputInput input { get; }
+
+    internal EditorViewportContext ForLayer(RenderOutputLayer layer)
+    {
+        ArgumentNullException.ThrowIfNull(layer);
+        return new EditorViewportContext(
+            editor,
+            interactions,
+            kind,
+            viewportId,
+            pixelWidth,
+            pixelHeight,
+            navigation,
+            content,
+            presentation,
+            new SelectedViewContentCollector(viewContent, layer.sourceIds),
+            frameIndex,
+            input
+        );
+    }
 }
 
 /// <summary>

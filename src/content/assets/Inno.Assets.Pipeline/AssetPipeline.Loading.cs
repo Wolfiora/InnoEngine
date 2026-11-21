@@ -42,6 +42,30 @@ public sealed partial class AssetPipeline
     }
 
     /// <summary>
+    /// Loads a canonical asset by persistent identity.
+    /// </summary>
+    /// <typeparam name="TAsset">
+    /// The required asset type.
+    /// </typeparam>
+    /// <param name="persistentId">
+    /// The persistent asset identity.
+    /// </param>
+    /// <returns>
+    /// The canonical asset instance.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no compatible asset can be loaded.
+    /// </exception>
+    public TAsset Load<TAsset>(Guid persistentId)
+        where TAsset : AssetObject
+    {
+        AssetObject? asset = GetLoader().Load(persistentId, typeof(TAsset));
+        return asset as TAsset ?? throw new InvalidOperationException(
+            $"Asset '{persistentId}' cannot be loaded as '{typeof(TAsset).FullName}'."
+        );
+    }
+
+    /// <summary>
     /// Loads a canonical asset using a runtime asset type selected by an authoring workflow.
     /// </summary>
     /// <param name="path">
@@ -77,30 +101,6 @@ public sealed partial class AssetPipeline
         }
         return GetLoader().Load(path, assetType) ?? throw new InvalidOperationException(
             $"Asset '{path}' cannot be loaded as '{assetType.FullName}'."
-        );
-    }
-
-    /// <summary>
-    /// Loads a canonical asset by persistent identity.
-    /// </summary>
-    /// <typeparam name="TAsset">
-    /// The required asset type.
-    /// </typeparam>
-    /// <param name="persistentId">
-    /// The persistent asset identity.
-    /// </param>
-    /// <returns>
-    /// The canonical asset instance.
-    /// </returns>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown when no compatible asset can be loaded.
-    /// </exception>
-    public TAsset Load<TAsset>(Guid persistentId)
-        where TAsset : AssetObject
-    {
-        AssetObject? asset = GetLoader().Load(persistentId, typeof(TAsset));
-        return asset as TAsset ?? throw new InvalidOperationException(
-            $"Asset '{persistentId}' cannot be loaded as '{typeof(TAsset).FullName}'."
         );
     }
 
@@ -260,27 +260,6 @@ public sealed partial class AssetPipeline
         return CreateAssetLease(asset, static () => {});
     }
 
-    AssetObject IAssetReferenceResolver.Resolve(
-        Guid persistentId,
-        Guid stableTypeId,
-        string lastKnownPath,
-        Type expectedType,
-        string propertyPath
-    ) {
-        try
-        {
-            return GetLoader().ResolveReference(persistentId, stableTypeId, lastKnownPath, expectedType);
-        }
-        catch (Exception exception)
-        {
-            throw new InvalidOperationException(
-                $"Asset reference '{persistentId:D}' at '{propertyPath}' cannot be resolved as "
-                + $"'{expectedType.FullName}'.",
-                exception
-            );
-        }
-    }
-
     /// <summary>
     /// Gets isolated source paths for all canonical loaded assets.
     /// </summary>
@@ -333,6 +312,27 @@ public sealed partial class AssetPipeline
     /// The reference diagnostic snapshot.
     /// </returns>
     public AssetReferenceInfo GetReferenceInfo(AssetObject asset) => GetLoader().GetReferenceInfo(asset);
+
+    AssetObject IAssetReferenceResolver.Resolve(
+        Guid persistentId,
+        Guid stableTypeId,
+        string lastKnownPath,
+        Type expectedType,
+        string propertyPath
+    ) {
+        try
+        {
+            return GetLoader().ResolveReference(persistentId, stableTypeId, lastKnownPath, expectedType);
+        }
+        catch (Exception exception)
+        {
+            throw new InvalidOperationException(
+                $"Asset reference '{persistentId:D}' at '{propertyPath}' cannot be resolved as "
+                + $"'{expectedType.FullName}'.",
+                exception
+            );
+        }
+    }
 
     private AssetLoader GetLoader()
     {

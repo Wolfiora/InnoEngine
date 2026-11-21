@@ -35,30 +35,6 @@ public sealed class GraphSerializedValue
     public ReadOnlyMemory<byte> data => m_data;
 
     /// <summary>
-    /// Serializes a neutral graph property through the common Inno serializer.
-    /// </summary>
-    /// <typeparam name="T">
-    /// Declared serializable value type.
-    /// </typeparam>
-    /// <param name="value">
-    /// Value to serialize.
-    /// </param>
-    /// <param name="serialization">
-    /// The serialization registry that owns the converter generation for this operation.
-    /// </param>
-    /// <returns>
-    /// A detached graph value containing native serialization bytes.
-    /// </returns>
-    [ScriptingApiIgnore]
-    public static GraphSerializedValue From<T>(
-        T value,
-        SerializationRegistry serialization
-    ) {
-        ArgumentNullException.ThrowIfNull(serialization);
-        return new GraphSerializedValue(serialization.Encode(writer => writer.Write("value", value)));
-    }
-
-    /// <summary>
     /// Deserializes this value through the common Inno serializer.
     /// </summary>
     /// <typeparam name="T">
@@ -92,4 +68,28 @@ public sealed class GraphSerializedValue
     /// A new byte array containing the complete native value.
     /// </returns>
     public byte[] ToArray() => (byte[])m_data.Clone();
+
+    /// <summary>
+    /// Serializes a neutral graph property through the common Inno serializer.
+    /// </summary>
+    /// <typeparam name="T">
+    /// Declared serializable value type.
+    /// </typeparam>
+    /// <param name="value">
+    /// Value to serialize.
+    /// </param>
+    /// <param name="serialization">
+    /// The serialization registry that owns the converter generation for this operation.
+    /// </param>
+    /// <returns>
+    /// A detached graph value containing native serialization bytes.
+    /// </returns>
+    [ScriptingApiIgnore]
+    public static GraphSerializedValue From<T>(
+        T value,
+        SerializationRegistry serialization
+    ) {
+        ArgumentNullException.ThrowIfNull(serialization);
+        return new GraphSerializedValue(serialization.Encode(writer => writer.Write("value", value)));
+    }
 }

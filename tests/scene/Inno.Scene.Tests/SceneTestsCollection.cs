@@ -27,16 +27,6 @@ public sealed class SceneTestsFixture : IDisposable
         Guid.NewGuid().ToString("N")
     );
 
-    public ModuleHost modules { get; }
-    public TypeCatalog types { get; }
-    public SerializationRegistry serialization { get; }
-    public IAssetReferenceResolver assets { get; }
-    public IdentityAllocator identities { get; } = new();
-    public DiagnosticHub diagnostics { get; } = new();
-    public LogRouter logs { get; } = new();
-    public SceneWorld world { get; }
-    public SerializationContext serializationContext { get; }
-
     public SceneTestsFixture()
     {
         _ = typeof(SceneAsset);
@@ -50,6 +40,16 @@ public sealed class SceneTestsFixture : IDisposable
         this.assets = new RejectingAssetReferenceResolver();
         this.serializationContext = AssetSerializationContext.Create(assets);
     }
+
+    public ModuleHost modules { get; }
+    public TypeCatalog types { get; }
+    public SerializationRegistry serialization { get; }
+    public IAssetReferenceResolver assets { get; }
+    public IdentityAllocator identities { get; } = new();
+    public DiagnosticHub diagnostics { get; } = new();
+    public LogRouter logs { get; } = new();
+    public SceneWorld world { get; }
+    public SerializationContext serializationContext { get; }
 
     public void Dispose()
     {

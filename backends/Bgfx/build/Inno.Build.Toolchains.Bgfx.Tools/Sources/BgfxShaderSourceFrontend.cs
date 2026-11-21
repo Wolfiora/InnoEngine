@@ -430,16 +430,6 @@ internal sealed class BgfxSourceDeclarationParser(
         }
     }
 
-    private static bool IsImplicitStageName(string name)
-        => name.StartsWith("gl_", StringComparison.Ordinal) || name.StartsWith("inno_", StringComparison.Ordinal)
-           || name.StartsWith("u_inno_", StringComparison.Ordinal) || name.StartsWith("s_inno_", StringComparison.Ordinal)
-           || name.StartsWith("v_texcoord", StringComparison.Ordinal) || name.StartsWith("v_color", StringComparison.Ordinal)
-           || name.StartsWith("i_data", StringComparison.Ordinal) || name.StartsWith("a_texcoord", StringComparison.Ordinal)
-           || name.StartsWith("a_color", StringComparison.Ordinal)
-           || name is "a_position" or "a_normal" or "a_tangent" or "a_bitangent" or "a_weight" or "a_indices"
-              or "u_viewRect" or "u_viewTexel" or "u_view" or "u_invView" or "u_proj" or "u_invProj" or "u_viewProj"
-              or "u_invViewProj" or "u_model" or "u_modelView" or "u_invModelView" or "u_modelViewProj" or "u_alphaRef4";
-
     private BgfxSourceToken ReadIdentifier()
     {
         BgfxSourceToken token = Next();
@@ -490,6 +480,16 @@ internal sealed class BgfxSourceDeclarationParser(
             Fail($"Expected '{value}'.", Current());
         }
     }
+
+    private static bool IsImplicitStageName(string name)
+        => name.StartsWith("gl_", StringComparison.Ordinal) || name.StartsWith("inno_", StringComparison.Ordinal)
+           || name.StartsWith("u_inno_", StringComparison.Ordinal) || name.StartsWith("s_inno_", StringComparison.Ordinal)
+           || name.StartsWith("v_texcoord", StringComparison.Ordinal) || name.StartsWith("v_color", StringComparison.Ordinal)
+           || name.StartsWith("i_data", StringComparison.Ordinal) || name.StartsWith("a_texcoord", StringComparison.Ordinal)
+           || name.StartsWith("a_color", StringComparison.Ordinal)
+           || name is "a_position" or "a_normal" or "a_tangent" or "a_bitangent" or "a_weight" or "a_indices"
+              or "u_viewRect" or "u_viewTexel" or "u_view" or "u_invView" or "u_proj" or "u_invProj" or "u_viewProj"
+              or "u_invViewProj" or "u_model" or "u_modelView" or "u_invModelView" or "u_modelViewProj" or "u_alphaRef4";
 
     private static bool IsQualifier(string value) => value is "const" or "static" or "inline" or "highp" or "mediump" or "lowp";
 

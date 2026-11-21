@@ -119,6 +119,42 @@ public sealed class AudioContentProviderContext : IDisposable
     public int capacity { get; }
 
     /// <summary>
+    /// Gets a frozen copy of submitted source state in provider order.
+    /// </summary>
+    /// <exception cref="ObjectDisposedException">
+    /// This provider invocation has ended.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The contribution was rejected or access occurs off the owning control thread.
+    /// </exception>
+    public IReadOnlyList<AudioEmitterSnapshot> emitters
+    {
+        get
+        {
+            EnsureActive();
+            return Array.AsReadOnly(m_emitters.ToArray());
+        }
+    }
+
+    /// <summary>
+    /// Gets a frozen copy of submitted listener state in provider order.
+    /// </summary>
+    /// <exception cref="ObjectDisposedException">
+    /// This provider invocation has ended.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The contribution was rejected or access occurs off the owning control thread.
+    /// </exception>
+    public IReadOnlyList<AudioListenerSnapshot> listeners
+    {
+        get
+        {
+            EnsureActive();
+            return Array.AsReadOnly(m_listeners.ToArray());
+        }
+    }
+
+    /// <summary>
     /// Submits one immutable emitter snapshot for runtime synchronization.
     /// </summary>
     /// <param name="emitter">
@@ -165,42 +201,6 @@ public sealed class AudioContentProviderContext : IDisposable
         EnsureActive();
         Admit(listener.id);
         m_listeners.Add(listener);
-    }
-
-    /// <summary>
-    /// Gets a frozen copy of submitted source state in provider order.
-    /// </summary>
-    /// <exception cref="ObjectDisposedException">
-    /// This provider invocation has ended.
-    /// </exception>
-    /// <exception cref="InvalidOperationException">
-    /// The contribution was rejected or access occurs off the owning control thread.
-    /// </exception>
-    public IReadOnlyList<AudioEmitterSnapshot> emitters
-    {
-        get
-        {
-            EnsureActive();
-            return Array.AsReadOnly(m_emitters.ToArray());
-        }
-    }
-
-    /// <summary>
-    /// Gets a frozen copy of submitted listener state in provider order.
-    /// </summary>
-    /// <exception cref="ObjectDisposedException">
-    /// This provider invocation has ended.
-    /// </exception>
-    /// <exception cref="InvalidOperationException">
-    /// The contribution was rejected or access occurs off the owning control thread.
-    /// </exception>
-    public IReadOnlyList<AudioListenerSnapshot> listeners
-    {
-        get
-        {
-            EnsureActive();
-            return Array.AsReadOnly(m_listeners.ToArray());
-        }
     }
 
     /// <summary>

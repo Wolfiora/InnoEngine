@@ -30,12 +30,12 @@ public abstract class GameComponent : EngineObject, ISerializable
     /// </exception>
     public Transform transform => gameObject.transform;
 
+    internal GameObject? ownerOrNull => m_gameObject;
+
     /// <summary>
     /// Restores this component to its default state when it is added or explicitly reset.
     /// </summary>
     protected virtual void Reset() {}
-
-    internal GameObject? ownerOrNull => m_gameObject;
 
     internal void Attach(GameObject owner)
     {

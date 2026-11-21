@@ -19,50 +19,6 @@ public sealed unsafe partial class PlatformImGuiContext
 
     private nint m_clipboardText;
 
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static sbyte* PlatformGetClipboardTextCallback(ImGuiNativeContext* context)
-    {
-        try
-        {
-            PlatformImGuiContext? owner = FindClipboardContext(context);
-            return owner is null ? null : owner.GetClipboardText();
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static void PlatformSetClipboardTextCallback(
-        ImGuiNativeContext* context,
-        sbyte* text
-    ) {
-        try
-        {
-            if (text is not null && FindClipboardContext(context) is not null)
-            {
-                _ = SDL.Raw.SetClipboardText(text);
-            }
-        }
-        catch
-        {
-            // Exceptions must not cross Dear ImGui's unmanaged callback boundary.
-        }
-    }
-
-    private static PlatformImGuiContext? FindClipboardContext(ImGuiNativeContext* context)
-    {
-        if (context is null)
-        {
-            return null;
-        }
-        lock (S_CLIPBOARD_CONTEXT_SYNC)
-        {
-            return S_CLIPBOARD_CONTEXTS.GetValueOrDefault((nuint)context);
-        }
-    }
-
     private sbyte* GetClipboardText()
     {
         ReleaseClipboardText();
@@ -110,5 +66,49 @@ public sealed unsafe partial class PlatformImGuiContext
         }
         SDL.Raw.Free((void*)m_clipboardText);
         m_clipboardText = 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static sbyte* PlatformGetClipboardTextCallback(ImGuiNativeContext* context)
+    {
+        try
+        {
+            PlatformImGuiContext? owner = FindClipboardContext(context);
+            return owner is null ? null : owner.GetClipboardText();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static void PlatformSetClipboardTextCallback(
+        ImGuiNativeContext* context,
+        sbyte* text
+    ) {
+        try
+        {
+            if (text is not null && FindClipboardContext(context) is not null)
+            {
+                _ = SDL.Raw.SetClipboardText(text);
+            }
+        }
+        catch
+        {
+            // Exceptions must not cross Dear ImGui's unmanaged callback boundary.
+        }
+    }
+
+    private static PlatformImGuiContext? FindClipboardContext(ImGuiNativeContext* context)
+    {
+        if (context is null)
+        {
+            return null;
+        }
+        lock (S_CLIPBOARD_CONTEXT_SYNC)
+        {
+            return S_CLIPBOARD_CONTEXTS.GetValueOrDefault((nuint)context);
+        }
     }
 }

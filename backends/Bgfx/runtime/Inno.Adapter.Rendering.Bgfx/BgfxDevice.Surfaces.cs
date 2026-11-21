@@ -294,18 +294,6 @@ public sealed unsafe partial class BgfxDevice
         return frame;
     }
 
-    private static bgfx.FrameBufferHandle CreateNativeWindowSurface(
-        BgfxSurfaceDescriptor descriptor,
-        int width,
-        int height
-    ) => BgfxNativeCalls.CreateFrameBufferFromNwh(
-        descriptor.windowHandle.ToPointer(),
-        checked((ushort)width),
-        checked((ushort)height),
-        bgfx.TextureFormat.BGRA8,
-        bgfx.TextureFormat.D24s8
-    );
-
     private BgfxWindowSurfaceResource ResolveSurface(RenderSurfaceHandle surface)
     {
         ValidatePersistentHandle(surface);
@@ -328,6 +316,18 @@ public sealed unsafe partial class BgfxDevice
             );
         }
     }
+
+    private static bgfx.FrameBufferHandle CreateNativeWindowSurface(
+        BgfxSurfaceDescriptor descriptor,
+        int width,
+        int height
+    ) => BgfxNativeCalls.CreateFrameBufferFromNwh(
+        descriptor.windowHandle.ToPointer(),
+        checked((ushort)width),
+        checked((ushort)height),
+        bgfx.TextureFormat.BGRA8,
+        bgfx.TextureFormat.D24s8
+    );
 
     private sealed class BgfxWindowSurfaceResource
     {
@@ -368,8 +368,6 @@ public sealed unsafe partial class BgfxDevice
         /// </summary>
         public bgfx.FrameBufferHandle frameBuffer { get; set; }
 
-        internal BgfxSurfaceRetirement retirement { get; } = new();
-
         /// <summary>
         /// Gets the scalar measurement or identity associated with the current state.
         /// </summary>
@@ -389,5 +387,7 @@ public sealed unsafe partial class BgfxDevice
         /// Gets the human-readable name used for presentation and diagnostics.
         /// </summary>
         public string name { get; }
+
+        internal BgfxSurfaceRetirement retirement { get; } = new();
     }
 }

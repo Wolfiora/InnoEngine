@@ -82,6 +82,8 @@ public abstract class AssetObject : IdentityObject, ISerializable
         owner.RestoreProperties(stableTypeId, propertyData, target);
     }
 
+    internal string sourceHash => m_sourceHash;
+
     /// <summary>
     /// Called after a new runtime payload has been committed to this instance.
     /// </summary>
@@ -107,8 +109,6 @@ public abstract class AssetObject : IdentityObject, ISerializable
     /// this hook; completed steps must not be repeated. Other failures are terminal and are reported by the owner.
     /// </remarks>
     protected virtual void OnUnloading() {}
-
-    internal string sourceHash => m_sourceHash;
 
     internal void ClaimRuntimeOwner(
         object authority,

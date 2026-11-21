@@ -39,21 +39,6 @@ public sealed class EditorHistoryPayload : IDisposable
     /// </summary>
     public bool isStoredOnDisk => m_path is not null;
 
-    internal long residentSize => m_inlineBytes?.LongLength ?? 0L;
-
-    internal long diskSize => m_path is null ? 0L : length;
-
-    /// <summary>
-    /// Creates an immutable history payload by copying the supplied bytes.
-    /// </summary>
-    /// <param name="bytes">
-    /// The neutral bytes to retain for future Undo and Redo transitions.
-    /// </param>
-    /// <returns>
-    /// A new independently owned payload.
-    /// </returns>
-    public static EditorHistoryPayload FromBytes(ReadOnlySpan<byte> bytes) => new(bytes.ToArray());
-
     /// <summary>
     /// Reads the complete immutable payload into a newly allocated byte array.
     /// </summary>
@@ -71,21 +56,6 @@ public sealed class EditorHistoryPayload : IDisposable
             return (byte[])m_inlineBytes.Clone();
         }
         return File.ReadAllBytes(m_path!);
-    }
-
-    internal EditorHistoryPayload Retain(
-        EditorHistoryBlobStore store,
-        int inlinePayloadThreshold,
-        bool canStoreOnDisk
-    ) {
-        ObjectDisposedException.ThrowIf(m_disposed, this);
-        byte[] bytes = ReadBytes();
-        if (!canStoreOnDisk || bytes.Length < inlinePayloadThreshold)
-        {
-            return new EditorHistoryPayload(bytes);
-        }
-        string path = store.Retain(bytes);
-        return new EditorHistoryPayload(store, path, bytes.LongLength);
     }
 
     /// <summary>
@@ -106,5 +76,35 @@ public sealed class EditorHistoryPayload : IDisposable
         m_store = null;
         m_path = null;
         GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Creates an immutable history payload by copying the supplied bytes.
+    /// </summary>
+    /// <param name="bytes">
+    /// The neutral bytes to retain for future Undo and Redo transitions.
+    /// </param>
+    /// <returns>
+    /// A new independently owned payload.
+    /// </returns>
+    public static EditorHistoryPayload FromBytes(ReadOnlySpan<byte> bytes) => new(bytes.ToArray());
+
+    internal long residentSize => m_inlineBytes?.LongLength ?? 0L;
+
+    internal long diskSize => m_path is null ? 0L : length;
+
+    internal EditorHistoryPayload Retain(
+        EditorHistoryBlobStore store,
+        int inlinePayloadThreshold,
+        bool canStoreOnDisk
+    ) {
+        ObjectDisposedException.ThrowIf(m_disposed, this);
+        byte[] bytes = ReadBytes();
+        if (!canStoreOnDisk || bytes.Length < inlinePayloadThreshold)
+        {
+            return new EditorHistoryPayload(bytes);
+        }
+        string path = store.Retain(bytes);
+        return new EditorHistoryPayload(store, path, bytes.LongLength);
     }
 }

@@ -226,6 +226,20 @@ public sealed class NativeArtifactImportTests : IDisposable
         Assert.Empty(Directory.GetFiles(Path.GetDirectoryName(archive)!, "*.staging-*"));
     }
 
+    public void Dispose()
+    {
+        string parent = Path.Combine(new PhysicalPathResolver().Resolve(Path.GetTempPath()), "InnoNativeImport")
+                        + Path.DirectorySeparatorChar;
+        if (!Path.GetFullPath(m_root).StartsWith(parent, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("The import fixture escaped its owner.");
+        }
+        if (Directory.Exists(m_root))
+        {
+            Directory.Delete(m_root, recursive: true);
+        }
+    }
+
     private string Prepare(string name)
     {
         string root = Path.Combine(m_root, name);
@@ -272,19 +286,5 @@ public sealed class NativeArtifactImportTests : IDisposable
             File.Copy(file, target);
         }
         return destination;
-    }
-
-    public void Dispose()
-    {
-        string parent = Path.Combine(new PhysicalPathResolver().Resolve(Path.GetTempPath()), "InnoNativeImport")
-                        + Path.DirectorySeparatorChar;
-        if (!Path.GetFullPath(m_root).StartsWith(parent, StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidOperationException("The import fixture escaped its owner.");
-        }
-        if (Directory.Exists(m_root))
-        {
-            Directory.Delete(m_root, recursive: true);
-        }
     }
 }

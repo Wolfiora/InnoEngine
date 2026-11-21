@@ -112,8 +112,6 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
         Assert.Equal(GraphicsCapability.Compute, definition.passes[0].requiredFeatures);
     }
 
-    private GraphDocument Template() => ShaderGraphTemplates.CreateRaster(m_serialization, SerializationContext.empty);
-
     [Fact]
     public void RenamingAnExposedInputAtomicallyChangesItsParameterAndPreservesTheDefault()
     {
@@ -154,15 +152,6 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
         Assert.False(Lower(changed).succeeded);
         Assert.NotEmpty(GraphDocumentCodec.Encode(changed, m_serialization));
     }
-
-    private ShaderGraphProgramResult Lower(GraphDocument graph)
-        => new ShaderGraphProgramCompiler(m_nodes).Lower(
-            graph,
-            "bgfx",
-            new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis>(),
-            m_serialization,
-            SerializationContext.empty
-        );
 
     [Fact]
     public void RemovingLastParameterInputRemovesItsDeclarationWithoutMutatingTheOriginal()
@@ -221,4 +210,15 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
         m_modules.Dispose();
         if (Directory.Exists(m_root)) Directory.Delete(m_root, true);
     }
+
+    private GraphDocument Template() => ShaderGraphTemplates.CreateRaster(m_serialization, SerializationContext.empty);
+
+    private ShaderGraphProgramResult Lower(GraphDocument graph)
+        => new ShaderGraphProgramCompiler(m_nodes).Lower(
+            graph,
+            "bgfx",
+            new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis>(),
+            m_serialization,
+            SerializationContext.empty
+        );
 }

@@ -207,12 +207,12 @@ public sealed class ParallelCommandRecordingTests
 
     private sealed class CommandInputs
     {
+        internal readonly RenderRasterState raster = new();
+        internal readonly RenderStencilState stencil = new();
         internal RenderTextureHandle source;
         internal RenderTextureHandle destination;
         internal RenderBufferHandle buffer;
         internal RenderBufferHandle otherBuffer;
-        internal readonly RenderRasterState raster = new();
-        internal readonly RenderStencilState stencil = new();
     }
 
     private sealed class ReferenceInputs(string phase)

@@ -226,11 +226,11 @@ public sealed class DiagnosticHubTests : IDisposable
     {
         private readonly Dictionary<string, DiagnosticReport> m_reports = new(StringComparer.Ordinal);
 
-        internal IReadOnlyList<DiagnosticReport> reports => m_reports.Values.ToArray();
-
         public void Replace(DiagnosticReport report) => m_reports[report.source.id] = report;
 
         public void Clear(DiagnosticSource source) => m_reports.Remove(source.id);
+
+        internal IReadOnlyList<DiagnosticReport> reports => m_reports.Values.ToArray();
     }
 
     private sealed class FailingSink : IDiagnosticSink
@@ -242,11 +242,11 @@ public sealed class DiagnosticHubTests : IDisposable
 
     private sealed class CountingSink : IDiagnosticSink
     {
-        internal int replaceCount { get; private set; }
-
         public void Replace(DiagnosticReport report) => replaceCount++;
 
         public void Clear(DiagnosticSource source) {}
+
+        internal int replaceCount { get; private set; }
     }
 
     private static class OtherProducer

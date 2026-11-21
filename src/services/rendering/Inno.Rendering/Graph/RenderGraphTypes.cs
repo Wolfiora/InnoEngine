@@ -266,8 +266,6 @@ internal sealed record RenderAttachment(
 
 internal sealed class RenderPassRecord
 {
-    internal required int index { get; init; }
-
     /// <summary>
     /// Gets the human-readable name used for presentation and diagnostics.
     /// </summary>
@@ -337,6 +335,8 @@ internal sealed class RenderPassRecord
     /// Gets whether the pass records graphics, compute, or transfer commands.
     /// </summary>
     public RenderPassRecordingMode recordingMode { get; set; }
+
+    internal required int index { get; init; }
 }
 
 internal sealed record RenderTextureRecord(

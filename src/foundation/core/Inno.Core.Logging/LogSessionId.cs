@@ -25,18 +25,18 @@ public readonly record struct LogSessionId
     public bool isAssigned => m_value != Guid.Empty;
 
     /// <summary>
-    /// Creates a unique identifier for a new isolated runtime session.
-    /// </summary>
-    /// <returns>
-    /// A newly allocated non-empty session identifier.
-    /// </returns>
-    public static LogSessionId Create() => new(Guid.NewGuid());
-
-    /// <summary>
     /// Returns the stable textual representation used by diagnostics and persisted logs.
     /// </summary>
     /// <returns>
     /// The lowercase hexadecimal identifier, or an empty string for process-level work.
     /// </returns>
     public override string ToString() => m_value == Guid.Empty ? string.Empty : m_value.ToString("N");
+
+    /// <summary>
+    /// Creates a unique identifier for a new isolated runtime session.
+    /// </summary>
+    /// <returns>
+    /// A newly allocated non-empty session identifier.
+    /// </returns>
+    public static LogSessionId Create() => new(Guid.NewGuid());
 }

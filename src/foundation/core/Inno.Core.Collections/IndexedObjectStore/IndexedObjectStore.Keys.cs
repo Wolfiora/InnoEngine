@@ -148,6 +148,17 @@ public sealed partial class IndexedObjectStore<T>
         }
     }
 
+    /// <summary>
+    /// Gets all defined key names as a lazy enumerable.
+    /// </summary>
+    /// <returns>
+    /// Lazy enumerable of key names.
+    /// </returns>
+    /// <remarks>
+    /// Enumeration is fail-fast and throws if the store is modified during iteration.
+    /// </remarks>
+    public IEnumerable<string> GetAllKeys() => EnumerateKeys();
+
     bool IIndexedObjectStore.IsValidKey(
         int id,
         Type keyType
@@ -163,52 +174,10 @@ public sealed partial class IndexedObjectStore<T>
         }
     }
 
-    /// <summary>
-    /// Gets all defined key names as a lazy enumerable.
-    /// </summary>
-    /// <returns>
-    /// Lazy enumerable of key names.
-    /// </returns>
-    /// <remarks>
-    /// Enumeration is fail-fast and throws if the store is modified during iteration.
-    /// </remarks>
-    public IEnumerable<string> GetAllKeys() => EnumerateKeys();
-
-    private IEnumerable<string> EnumerateKeys()
-    {
-        int version = Volatile.Read(ref m_version);
-        foreach (string name in m_indexByName.Keys)
-        {
-            EnsureVersion(version);
-            yield return name;
-        }
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool IsOrderedKey<TKey>(IndexedObjectKey<TKey> key)
         where TKey : notnull
             => (GetIndex(key).flags & IndexedObjectKeyFlags.Ordered) != 0;
-
-    private IndexedObjectIndex<T, TKey> GetIndex<TKey>(IndexedObjectKey<TKey> handle)
-        where TKey : notnull
-    {
-        if (handle.storeRef is null || !handle.storeRef.TryGetTarget(out IIndexedObjectStore? owner) || !ReferenceEquals(owner, this))
-        {
-            throw new InvalidOperationException($"Key '{handle.name}' does not belong to this store.");
-        }
-
-        if (!m_indexes.TryGetValue(handle.id, out IIndexedObjectIndex<T>? index))
-        {
-            throw new InvalidOperationException($"Key '{handle.name}' not found.");
-        }
-
-        if (index.keyType != typeof(TKey))
-        {
-            throw new InvalidOperationException($"Key '{handle.name}' type mismatch.");
-        }
-
-        return (IndexedObjectIndex<T, TKey>)index;
-    }
 
     internal void SetKey<TKey>(
         T item,
@@ -258,4 +227,35 @@ public sealed partial class IndexedObjectStore<T>
         TKey value,
         T item
     ) where TKey : notnull => GetIndex(key).Contains(value, item);
+
+    private IEnumerable<string> EnumerateKeys()
+    {
+        int version = Volatile.Read(ref m_version);
+        foreach (string name in m_indexByName.Keys)
+        {
+            EnsureVersion(version);
+            yield return name;
+        }
+    }
+
+    private IndexedObjectIndex<T, TKey> GetIndex<TKey>(IndexedObjectKey<TKey> handle)
+        where TKey : notnull
+    {
+        if (handle.storeRef is null || !handle.storeRef.TryGetTarget(out IIndexedObjectStore? owner) || !ReferenceEquals(owner, this))
+        {
+            throw new InvalidOperationException($"Key '{handle.name}' does not belong to this store.");
+        }
+
+        if (!m_indexes.TryGetValue(handle.id, out IIndexedObjectIndex<T>? index))
+        {
+            throw new InvalidOperationException($"Key '{handle.name}' not found.");
+        }
+
+        if (index.keyType != typeof(TKey))
+        {
+            throw new InvalidOperationException($"Key '{handle.name}' type mismatch.");
+        }
+
+        return (IndexedObjectIndex<T, TKey>)index;
+    }
 }

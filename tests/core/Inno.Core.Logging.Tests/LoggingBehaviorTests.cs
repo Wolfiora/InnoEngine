@@ -343,14 +343,14 @@ public sealed class LoggingBehaviorTests : IDisposable
 
     private sealed class FailingSink : ILogSink
     {
-        internal int receiveCount { get; private set; }
-
         public void Receive(LogEntry entry)
         {
             _ = entry;
             receiveCount++;
             throw new InvalidOperationException("Expected sink failure.");
         }
+
+        internal int receiveCount { get; private set; }
     }
 
     private static class StaticLogSource;

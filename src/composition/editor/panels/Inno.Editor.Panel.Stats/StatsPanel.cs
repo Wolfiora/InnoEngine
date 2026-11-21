@@ -25,14 +25,14 @@ internal sealed class StatsPanel : EditorPanel
     private (string label, string value)[] m_frameValues = [];
 
     /// <summary>
-    /// Gets whether use window padding is active for the current instance.
-    /// </summary>
-    public override bool useWindowPadding => false;
-
-    /// <summary>
     /// Creates the panel.
     /// </summary>
     internal StatsPanel() {}
+
+    /// <summary>
+    /// Gets whether use window padding is active for the current instance.
+    /// </summary>
+    public override bool useWindowPadding => false;
 
     /// <summary>
     /// Draws this feature using the current editor presentation context.

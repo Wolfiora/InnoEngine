@@ -16,8 +16,6 @@ namespace Inno.Extensibility.Types;
 /// </remarks>
 public sealed class TypeCacheSnapshot
 {
-    internal static TypeCacheSnapshot empty { get; } = CreateEmpty();
-
     private readonly ITypeCatalogSource? m_source;
     private readonly Dictionary<Type, TypeCatalogMetadata> m_metadata;
     private readonly Type[] m_types;
@@ -227,6 +225,8 @@ public sealed class TypeCacheSnapshot
             .OfType<TAttribute>()
             .SingleOrDefault();
     }
+
+    internal static TypeCacheSnapshot empty { get; } = CreateEmpty();
 
     internal IReadOnlyList<Type> runtimeTypes => m_types;
 

@@ -216,6 +216,16 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
         }
     }
 
+    private GameObject ResolveObject(Guid objectId)
+        => m_workspace.Find<GameObject>(objectId) is { isRuntimeValid: true } gameObject
+           ? gameObject
+           : throw new InvalidOperationException($"GameObject '{objectId}' is no longer available.");
+
+    private GameScene? ResolveScene(Guid sceneId)
+        => m_workspace.Find<GameScene>(sceneId) is { isLoaded: true, isDestroyed: false } scene
+           ? scene
+           : null;
+
     private static bool IsDescendantOf(
         Transform transform,
         Transform possibleAncestor
@@ -239,14 +249,4 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
         }
         return depth;
     }
-
-    private GameObject ResolveObject(Guid objectId)
-        => m_workspace.Find<GameObject>(objectId) is { isRuntimeValid: true } gameObject
-           ? gameObject
-           : throw new InvalidOperationException($"GameObject '{objectId}' is no longer available.");
-
-    private GameScene? ResolveScene(Guid sceneId)
-        => m_workspace.Find<GameScene>(sceneId) is { isLoaded: true, isDestroyed: false } scene
-           ? scene
-           : null;
 }

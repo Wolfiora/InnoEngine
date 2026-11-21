@@ -57,221 +57,6 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         }
     }
 
-    internal bool TryGetModule<TModule>(out TModule? module)
-        where TModule : EditorModule
-    {
-        Snapshot? snapshot = m_active;
-        if (snapshot is not null)
-        {
-            foreach (ModuleRegistration registration in snapshot.modules)
-            {
-                if (registration.module is TModule candidate
-                    && snapshot.startedModules.Contains(candidate)
-                    && !snapshot.quarantinedModules.Contains(candidate)
-                ) {
-                    module = candidate;
-                    return true;
-                }
-            }
-        }
-
-        module = null;
-        return false;
-    }
-
-    internal void UpdateModules()
-    {
-        Snapshot snapshot = extensions;
-        for (int i = 0; i < snapshot.modules.Length; i++)
-        {
-            ModuleRegistration registration = snapshot.modules[i];
-            if (snapshot.quarantinedModules.Contains(registration.module))
-            {
-                continue;
-            }
-            try
-            {
-                registration.module.Update(m_context);
-                if (registration.module.blocksFollowingUpdates)
-                {
-                    break;
-                }
-            }
-            catch (Exception exception)
-            {
-                snapshot.quarantinedModules.Add(registration.module);
-                LogError("Editor module '{0}' failed to update and was quarantined: {1}", registration.attribute.id, exception);
-                continue;
-            }
-        }
-
-        m_state.Update(m_context.frame.totalTime, GetAvailableState(snapshot), GetAvailablePanels(snapshot));
-    }
-
-    internal void SaveState()
-    {
-        if (m_active is not null)
-        {
-            m_state.Save(GetAvailableState(m_active), GetAvailablePanels(m_active));
-        }
-    }
-
-    internal bool TryTogglePanel(string panelId)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
-        Snapshot snapshot = extensions;
-        for (int i = 0; i < snapshot.panels.Length; i++)
-        {
-            PanelRegistration registration = snapshot.panels[i];
-            if (!string.Equals(registration.attribute.id, panelId, StringComparison.Ordinal)
-                || snapshot.quarantinedPanels.Contains(registration.panel)
-            ) {
-                continue;
-            }
-
-            registration.panel.isOpen = !registration.panel.isOpen;
-            if (registration.panel.isOpen)
-            {
-                m_pendingPanelFocus.Add(panelId);
-            }
-            else
-            {
-                m_pendingPanelFocus.Remove(panelId);
-            }
-            return true;
-        }
-
-        return false;
-    }
-
-    internal IReadOnlyList<EditorPanelAttribute> GetPanelDeclarations() => extensions.panelDeclarations;
-
-    internal bool TryGetPanelState(
-        string panelId,
-        out bool isOpen
-    ) {
-        Snapshot snapshot = extensions;
-        foreach (PanelRegistration registration in snapshot.panels)
-        {
-            if (registration.attribute.id != panelId || snapshot.quarantinedPanels.Contains(registration.panel))
-            {
-                continue;
-            }
-            isOpen = registration.panel.isOpen;
-            return true;
-        }
-
-        isOpen = false;
-        return false;
-    }
-
-    internal bool TryOpenPanel(string panelId)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
-        Snapshot snapshot = extensions;
-        for (int i = 0; i < snapshot.panels.Length; i++)
-        {
-            PanelRegistration registration = snapshot.panels[i];
-            if (!string.Equals(registration.attribute.id, panelId, StringComparison.Ordinal)
-                || snapshot.quarantinedPanels.Contains(registration.panel)
-            ) {
-                continue;
-            }
-
-            registration.panel.isOpen = true;
-            m_pendingPanelFocus.Add(panelId);
-            return true;
-        }
-
-        return false;
-    }
-
-    internal bool TryClosePanel(string panelId)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
-        Snapshot snapshot = extensions;
-        for (int i = 0; i < snapshot.panels.Length; i++)
-        {
-            PanelRegistration registration = snapshot.panels[i];
-            if (!string.Equals(registration.attribute.id, panelId, StringComparison.Ordinal)
-                || snapshot.quarantinedPanels.Contains(registration.panel)
-            ) {
-                continue;
-            }
-
-            registration.panel.isOpen = false;
-            m_pendingPanelFocus.Remove(panelId);
-            return true;
-        }
-
-        return false;
-    }
-
-    internal bool TakePanelFocusRequest(string panelId) => m_pendingPanelFocus.Remove(panelId);
-
-    internal void PrepareShutdown()
-    {
-        if (m_active is not null)
-        {
-            m_state.PrepareShutdown(GetAvailableState(m_active), GetAvailablePanels(m_active));
-        }
-    }
-
-    internal ActionRegistration[] GetActionsForShutdown() => m_active?.actions ?? [];
-
-    internal void QuarantinePanel(
-        Snapshot snapshot,
-        PanelRegistration registration,
-        Exception exception
-    ) {
-        ArgumentNullException.ThrowIfNull(snapshot);
-        ArgumentNullException.ThrowIfNull(registration);
-        ArgumentNullException.ThrowIfNull(exception);
-        if (!ReferenceEquals(snapshot, m_active) || !snapshot.quarantinedPanels.Add(registration.panel))
-        {
-            return;
-        }
-        registration.panel.isOpen = false;
-        m_diagnostics.ReportPanelFailure(registration.attribute.id, exception);
-        m_diagnostics.Commit();
-        LogError("Editor panel '{0}' failed to draw and was quarantined: {1}", registration.attribute.id, exception);
-    }
-
-    internal void QuarantineModal(
-        Snapshot snapshot,
-        ModalRegistration registration,
-        Exception exception
-    ) {
-        ArgumentNullException.ThrowIfNull(snapshot);
-        ArgumentNullException.ThrowIfNull(registration);
-        ArgumentNullException.ThrowIfNull(exception);
-        if (!ReferenceEquals(snapshot, m_active) || !snapshot.quarantinedModals.Add(registration.modal))
-        {
-            return;
-        }
-        LogError("Editor modal '{0}' failed and was quarantined: {1}", registration.attribute.id, exception);
-    }
-
-    internal void Shutdown(bool saveState = true)
-    {
-        List<Exception> failures = [];
-        if (m_active is not null)
-        {
-            Snapshot active = m_active;
-            if (saveState)
-            {
-                AttemptCleanup(() => m_state.PrepareShutdown(GetAvailableState(active), GetAvailablePanels(active)), failures);
-            }
-            AttemptCleanup(() => Deactivate(active), failures);
-        }
-
-        m_active = null;
-        NotifyExtensionsChanged();
-        m_diagnostics.Dispose();
-        m_state.ClearDiagnostics();
-        ThrowCleanupFailures(failures);
-    }
-
     /// <summary>
     /// Builds a validated result from the current immutable input snapshot.
     /// </summary>
@@ -556,6 +341,221 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         DisposeExtensions(snapshot.instances.Where(instance => retained?.Contains(instance) != true));
     }
 
+    internal bool TryGetModule<TModule>(out TModule? module)
+        where TModule : EditorModule
+    {
+        Snapshot? snapshot = m_active;
+        if (snapshot is not null)
+        {
+            foreach (ModuleRegistration registration in snapshot.modules)
+            {
+                if (registration.module is TModule candidate
+                    && snapshot.startedModules.Contains(candidate)
+                    && !snapshot.quarantinedModules.Contains(candidate)
+                ) {
+                    module = candidate;
+                    return true;
+                }
+            }
+        }
+
+        module = null;
+        return false;
+    }
+
+    internal void UpdateModules()
+    {
+        Snapshot snapshot = extensions;
+        for (int i = 0; i < snapshot.modules.Length; i++)
+        {
+            ModuleRegistration registration = snapshot.modules[i];
+            if (snapshot.quarantinedModules.Contains(registration.module))
+            {
+                continue;
+            }
+            try
+            {
+                registration.module.Update(m_context);
+                if (registration.module.blocksFollowingUpdates)
+                {
+                    break;
+                }
+            }
+            catch (Exception exception)
+            {
+                snapshot.quarantinedModules.Add(registration.module);
+                LogError("Editor module '{0}' failed to update and was quarantined: {1}", registration.attribute.id, exception);
+                continue;
+            }
+        }
+
+        m_state.Update(m_context.frame.totalTime, GetAvailableState(snapshot), GetAvailablePanels(snapshot));
+    }
+
+    internal void SaveState()
+    {
+        if (m_active is not null)
+        {
+            m_state.Save(GetAvailableState(m_active), GetAvailablePanels(m_active));
+        }
+    }
+
+    internal bool TryTogglePanel(string panelId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
+        Snapshot snapshot = extensions;
+        for (int i = 0; i < snapshot.panels.Length; i++)
+        {
+            PanelRegistration registration = snapshot.panels[i];
+            if (!string.Equals(registration.attribute.id, panelId, StringComparison.Ordinal)
+                || snapshot.quarantinedPanels.Contains(registration.panel)
+            ) {
+                continue;
+            }
+
+            registration.panel.isOpen = !registration.panel.isOpen;
+            if (registration.panel.isOpen)
+            {
+                m_pendingPanelFocus.Add(panelId);
+            }
+            else
+            {
+                m_pendingPanelFocus.Remove(panelId);
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    internal IReadOnlyList<EditorPanelAttribute> GetPanelDeclarations() => extensions.panelDeclarations;
+
+    internal bool TryGetPanelState(
+        string panelId,
+        out bool isOpen
+    ) {
+        Snapshot snapshot = extensions;
+        foreach (PanelRegistration registration in snapshot.panels)
+        {
+            if (registration.attribute.id != panelId || snapshot.quarantinedPanels.Contains(registration.panel))
+            {
+                continue;
+            }
+            isOpen = registration.panel.isOpen;
+            return true;
+        }
+
+        isOpen = false;
+        return false;
+    }
+
+    internal bool TryOpenPanel(string panelId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
+        Snapshot snapshot = extensions;
+        for (int i = 0; i < snapshot.panels.Length; i++)
+        {
+            PanelRegistration registration = snapshot.panels[i];
+            if (!string.Equals(registration.attribute.id, panelId, StringComparison.Ordinal)
+                || snapshot.quarantinedPanels.Contains(registration.panel)
+            ) {
+                continue;
+            }
+
+            registration.panel.isOpen = true;
+            m_pendingPanelFocus.Add(panelId);
+            return true;
+        }
+
+        return false;
+    }
+
+    internal bool TryClosePanel(string panelId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
+        Snapshot snapshot = extensions;
+        for (int i = 0; i < snapshot.panels.Length; i++)
+        {
+            PanelRegistration registration = snapshot.panels[i];
+            if (!string.Equals(registration.attribute.id, panelId, StringComparison.Ordinal)
+                || snapshot.quarantinedPanels.Contains(registration.panel)
+            ) {
+                continue;
+            }
+
+            registration.panel.isOpen = false;
+            m_pendingPanelFocus.Remove(panelId);
+            return true;
+        }
+
+        return false;
+    }
+
+    internal bool TakePanelFocusRequest(string panelId) => m_pendingPanelFocus.Remove(panelId);
+
+    internal void PrepareShutdown()
+    {
+        if (m_active is not null)
+        {
+            m_state.PrepareShutdown(GetAvailableState(m_active), GetAvailablePanels(m_active));
+        }
+    }
+
+    internal ActionRegistration[] GetActionsForShutdown() => m_active?.actions ?? [];
+
+    internal void QuarantinePanel(
+        Snapshot snapshot,
+        PanelRegistration registration,
+        Exception exception
+    ) {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        ArgumentNullException.ThrowIfNull(registration);
+        ArgumentNullException.ThrowIfNull(exception);
+        if (!ReferenceEquals(snapshot, m_active) || !snapshot.quarantinedPanels.Add(registration.panel))
+        {
+            return;
+        }
+        registration.panel.isOpen = false;
+        m_diagnostics.ReportPanelFailure(registration.attribute.id, exception);
+        m_diagnostics.Commit();
+        LogError("Editor panel '{0}' failed to draw and was quarantined: {1}", registration.attribute.id, exception);
+    }
+
+    internal void QuarantineModal(
+        Snapshot snapshot,
+        ModalRegistration registration,
+        Exception exception
+    ) {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        ArgumentNullException.ThrowIfNull(registration);
+        ArgumentNullException.ThrowIfNull(exception);
+        if (!ReferenceEquals(snapshot, m_active) || !snapshot.quarantinedModals.Add(registration.modal))
+        {
+            return;
+        }
+        LogError("Editor modal '{0}' failed and was quarantined: {1}", registration.attribute.id, exception);
+    }
+
+    internal void Shutdown(bool saveState = true)
+    {
+        List<Exception> failures = [];
+        if (m_active is not null)
+        {
+            Snapshot active = m_active;
+            if (saveState)
+            {
+                AttemptCleanup(() => m_state.PrepareShutdown(GetAvailableState(active), GetAvailablePanels(active)), failures);
+            }
+            AttemptCleanup(() => Deactivate(active), failures);
+        }
+
+        m_active = null;
+        NotifyExtensionsChanged();
+        m_diagnostics.Dispose();
+        m_state.ClearDiagnostics();
+        ThrowCleanupFailures(failures);
+    }
+
     private void Deactivate(Snapshot snapshot)
     {
         List<Exception> failures = [];
@@ -683,25 +683,6 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         }
     }
 
-    private static StateRegistration[] GetAvailableState(Snapshot snapshot)
-        => snapshot.state
-            .Where(
-                registration => (
-                    registration.kind != StateOwnerKind.Panel
-                    || !snapshot.quarantinedPanels.Contains((EditorPanel)registration.owner)
-                )
-            )
-            .Where(
-                registration => (
-                    registration.kind != StateOwnerKind.Module
-                    || !snapshot.quarantinedModules.Contains((EditorModule)registration.owner)
-                )
-            )
-            .ToArray();
-
-    private static PanelRegistration[] GetAvailablePanels(Snapshot snapshot)
-        => snapshot.panels.Where(registration => !snapshot.quarantinedPanels.Contains(registration.panel)).ToArray();
-
     private void StopModule(
         ModuleRegistration registration,
         string phase
@@ -731,24 +712,6 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
             LogError("Editor panel '{0}' failed during {1}: {2}", registration.attribute.id, phase, exception);
             ReportRetirementFailure(exception);
             throw;
-        }
-    }
-
-    private static void AttemptCleanup(
-        Action action,
-        List<Exception> failures
-    ) {
-        try
-        {
-            action();
-        }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
-        {
-            throw;
-        }
-        catch (Exception exception)
-        {
-            failures.Add(exception);
         }
     }
 
@@ -792,28 +755,6 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         params object? [] arguments
     ) => m_log.Write(LogLevel.Error, message, arguments);
 
-    private static IEnumerable<MenuSourceRegistration> CreateMenuSourceRegistrations(
-        Type type,
-        EditorExtensionActivator activator
-    ) {
-        EditorMenuSource source = activator.CreateExtension<EditorMenuSource>(type);
-        return type
-            .GetCustomAttributes<EditorMenuSourceAttribute>(false)
-            .Select(attribute => new MenuSourceRegistration(attribute.area, attribute.priority, type, source));
-    }
-
-    private static IEnumerable<DropRegistration> CreateDropRegistrations(
-        Type type,
-        EditorExtensionActivator activator
-    ) {
-        EditorDrop drop = activator.CreateExtension<EditorDrop>(type);
-        Type sourceType = drop.sourceType;
-        Type targetType = drop.targetType;
-        return type
-            .GetCustomAttributes<EditorDropAttribute>(false)
-            .Select(attribute => new DropRegistration(sourceType, targetType, attribute.area, attribute.priority, type, drop));
-    }
-
     private PanelRegistration CreatePanelRegistration(
         Type type,
         EditorExtensionActivator activator
@@ -834,32 +775,6 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         }
 
         return new PanelRegistration(attribute, type, panel);
-    }
-
-    private static ModalRegistration CreateModalRegistration(
-        Type type,
-        EditorExtensionActivator activator
-    ) => new(type.GetCustomAttribute<EditorModalAttribute>(false)!, type, activator.CreateExtension<EditorModal>(type));
-
-    private static HistoryHandlerRegistration CreateHistoryHandlerRegistration(
-        Type type,
-        EditorExtensionActivator activator
-    ) => new(type.GetCustomAttribute<EditorHistoryHandlerAttribute>(false)!, type, activator.CreateExtension<EditorHistoryHandler>(type));
-
-    private static void ValidateActions(ActionRegistration[] actions)
-    {
-        foreach (IGrouping<(string Action, string Area, Type? Target, int Priority), ActionRegistration> group in actions.GroupBy(
-            static value => (value.attribute.action, value.attribute.area, value.targetType, value.attribute.priority)
-        )) {
-            if (group.Count() > 1)
-            {
-                throw new InvalidOperationException(
-                    $"Editor action '{group.Key.Action}' has conflicting registrations for area "
-                    + $"'{(string.IsNullOrEmpty(group.Key.Area) ? "*" : group.Key.Area)}' and target "
-                    + $"'{group.Key.Target?.FullName ?? "*"}'."
-                );
-            }
-        }
     }
 
     private void ValidateShortcuts(ActionRegistration[] actions)
@@ -916,6 +831,96 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         }
     }
 
+    private HotKeyGesture CreateShortcutGesture(EditorShortcutAttribute shortcut)
+        => shortcut.primary
+           ? HotKeyGesture.Primary(shortcut.key, m_context.keyboard, shortcut.modifiers)
+           : new HotKeyGesture(shortcut.key, shortcut.modifiers, m_context.keyboard.superModifierLabel);
+
+    private static StateRegistration[] GetAvailableState(Snapshot snapshot)
+        => snapshot.state
+            .Where(
+                registration => (
+                    registration.kind != StateOwnerKind.Panel
+                    || !snapshot.quarantinedPanels.Contains((EditorPanel)registration.owner)
+                )
+            )
+            .Where(
+                registration => (
+                    registration.kind != StateOwnerKind.Module
+                    || !snapshot.quarantinedModules.Contains((EditorModule)registration.owner)
+                )
+            )
+            .ToArray();
+
+    private static PanelRegistration[] GetAvailablePanels(Snapshot snapshot)
+        => snapshot.panels.Where(registration => !snapshot.quarantinedPanels.Contains(registration.panel)).ToArray();
+
+    private static void AttemptCleanup(
+        Action action,
+        List<Exception> failures
+    ) {
+        try
+        {
+            action();
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            failures.Add(exception);
+        }
+    }
+
+    private static IEnumerable<MenuSourceRegistration> CreateMenuSourceRegistrations(
+        Type type,
+        EditorExtensionActivator activator
+    ) {
+        EditorMenuSource source = activator.CreateExtension<EditorMenuSource>(type);
+        return type
+            .GetCustomAttributes<EditorMenuSourceAttribute>(false)
+            .Select(attribute => new MenuSourceRegistration(attribute.area, attribute.priority, type, source));
+    }
+
+    private static IEnumerable<DropRegistration> CreateDropRegistrations(
+        Type type,
+        EditorExtensionActivator activator
+    ) {
+        EditorDrop drop = activator.CreateExtension<EditorDrop>(type);
+        Type sourceType = drop.sourceType;
+        Type targetType = drop.targetType;
+        return type
+            .GetCustomAttributes<EditorDropAttribute>(false)
+            .Select(attribute => new DropRegistration(sourceType, targetType, attribute.area, attribute.priority, type, drop));
+    }
+
+    private static ModalRegistration CreateModalRegistration(
+        Type type,
+        EditorExtensionActivator activator
+    ) => new(type.GetCustomAttribute<EditorModalAttribute>(false)!, type, activator.CreateExtension<EditorModal>(type));
+
+    private static HistoryHandlerRegistration CreateHistoryHandlerRegistration(
+        Type type,
+        EditorExtensionActivator activator
+    ) => new(type.GetCustomAttribute<EditorHistoryHandlerAttribute>(false)!, type, activator.CreateExtension<EditorHistoryHandler>(type));
+
+    private static void ValidateActions(ActionRegistration[] actions)
+    {
+        foreach (IGrouping<(string Action, string Area, Type? Target, int Priority), ActionRegistration> group in actions.GroupBy(
+            static value => (value.attribute.action, value.attribute.area, value.targetType, value.attribute.priority)
+        )) {
+            if (group.Count() > 1)
+            {
+                throw new InvalidOperationException(
+                    $"Editor action '{group.Key.Action}' has conflicting registrations for area "
+                    + $"'{(string.IsNullOrEmpty(group.Key.Area) ? "*" : group.Key.Area)}' and target "
+                    + $"'{group.Key.Target?.FullName ?? "*"}'."
+                );
+            }
+        }
+    }
+
     private static bool MayHaveEqualTargetSpecificity(
         Type? left,
         Type? right
@@ -967,11 +972,6 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
             throw new InvalidOperationException($"Editor action '{duplicate.Key.id}' has duplicate toolbar placements.");
         }
     }
-
-    private HotKeyGesture CreateShortcutGesture(EditorShortcutAttribute shortcut)
-        => shortcut.primary
-           ? HotKeyGesture.Primary(shortcut.key, m_context.keyboard, shortcut.modifiers)
-           : new HotKeyGesture(shortcut.key, shortcut.modifiers, m_context.keyboard.superModifierLabel);
 
     private static void ValidateDrops(DropRegistration[] drops)
     {

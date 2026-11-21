@@ -25,6 +25,35 @@ public readonly record struct ProjectId
     }
 
     /// <summary>
+    /// Gets the canonical identifier text.
+    /// </summary>
+    public string value { get; }
+
+    /// <summary>
+    /// Gets whether the value contains a usable identifier.
+    /// </summary>
+    public bool isValid => !string.IsNullOrEmpty(value);
+
+    /// <summary>
+    /// Qualifies a local project name beneath this project namespace.
+    /// </summary>
+    /// <param name="name">
+    /// The portable local name.
+    /// </param>
+    /// <returns>
+    /// The complete project-scoped identity.
+    /// </returns>
+    public ProjectScopedId Qualify(ProjectLocalId name) => new(this, name);
+
+    /// <summary>
+    /// Formats the canonical identifier.
+    /// </summary>
+    /// <returns>
+    /// The canonical identifier text.
+    /// </returns>
+    public override string ToString() => value ?? string.Empty;
+
+    /// <summary>
     /// Creates a portable initial project identifier from a user-facing project name.
     /// </summary>
     /// <param name="name">
@@ -66,35 +95,6 @@ public readonly record struct ProjectId
             builder.Append(character);
         }
     }
-
-    /// <summary>
-    /// Gets the canonical identifier text.
-    /// </summary>
-    public string value { get; }
-
-    /// <summary>
-    /// Gets whether the value contains a usable identifier.
-    /// </summary>
-    public bool isValid => !string.IsNullOrEmpty(value);
-
-    /// <summary>
-    /// Qualifies a local project name beneath this project namespace.
-    /// </summary>
-    /// <param name="name">
-    /// The portable local name.
-    /// </param>
-    /// <returns>
-    /// The complete project-scoped identity.
-    /// </returns>
-    public ProjectScopedId Qualify(ProjectLocalId name) => new(this, name);
-
-    /// <summary>
-    /// Formats the canonical identifier.
-    /// </summary>
-    /// <returns>
-    /// The canonical identifier text.
-    /// </returns>
-    public override string ToString() => value ?? string.Empty;
 
     internal static void ValidatePortable(
         string value,
@@ -155,6 +155,14 @@ public readonly record struct ProjectLocalId
     public string value { get; }
 
     /// <summary>
+    /// Formats the canonical local identity.
+    /// </summary>
+    /// <returns>
+    /// The canonical local identity text.
+    /// </returns>
+    public override string ToString() => value ?? string.Empty;
+
+    /// <summary>
     /// Creates a deterministic portable local identity from a display name.
     /// </summary>
     /// <param name="name">
@@ -198,14 +206,6 @@ public readonly record struct ProjectLocalId
         }
         return new ProjectLocalId(builder.ToString());
     }
-
-    /// <summary>
-    /// Formats the canonical local identity.
-    /// </summary>
-    /// <returns>
-    /// The canonical local identity text.
-    /// </returns>
-    public override string ToString() => value ?? string.Empty;
 
     private static void AppendSeparator(
         StringBuilder builder,

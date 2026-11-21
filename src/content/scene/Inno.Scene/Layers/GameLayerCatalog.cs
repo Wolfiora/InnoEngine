@@ -33,11 +33,6 @@ public sealed class GameLayerCatalog : ISerializable
     private uint[] m_interactionMasks;
 
     /// <summary>
-    /// Gets the stable project setting protocol for the project-wide layer catalog.
-    /// </summary>
-    public static ProjectSettingId settingId => new(settingProtocolId);
-
-    /// <summary>
     /// Creates a layer stack containing the immutable default layer.
     /// </summary>
     public GameLayerCatalog()
@@ -48,6 +43,11 @@ public sealed class GameLayerCatalog : ISerializable
         m_names[GameLayer.defaultLayer.index] = C_DEFAULT_LAYER_NAME;
         m_interactionMasks = Enumerable.Repeat(uint.MaxValue, GameLayer.C_MAX_COUNT).ToArray();
     }
+
+    /// <summary>
+    /// Gets the stable project setting protocol for the project-wide layer catalog.
+    /// </summary>
+    public static ProjectSettingId settingId => new(settingProtocolId);
 
     /// <summary>
     /// Gets the number of currently named layer slots.
@@ -182,6 +182,37 @@ public sealed class GameLayerCatalog : ISerializable
     }
 
     /// <summary>
+    /// Tries to resolve an ordinal layer name to its compact slot.
+    /// </summary>
+    /// <param name="name">
+    /// The layer name to find.
+    /// </param>
+    /// <param name="layer">
+    /// The resolved layer.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when a matching layer exists.
+    /// </returns>
+    public bool TryGetLayer(
+        string name,
+        out GameLayer layer
+    ) {
+        string normalized = NormalizeName(name);
+        ValidateState();
+        for (int index = 0; index < m_names.Length; index++)
+        {
+            if (!string.Equals(m_names[index], normalized, StringComparison.Ordinal))
+            {
+                continue;
+            }
+            layer = new GameLayer(index);
+            return true;
+        }
+        layer = default;
+        return false;
+    }
+
+    /// <summary>
     /// Tries to resolve a qualified identity to its compact runtime slot.
     /// </summary>
     /// <param name="projectId">
@@ -214,37 +245,6 @@ public sealed class GameLayerCatalog : ISerializable
             }
             var candidate = new GameLayerId(projectId, new ProjectLocalId(local));
             if (candidate != id)
-            {
-                continue;
-            }
-            layer = new GameLayer(index);
-            return true;
-        }
-        layer = default;
-        return false;
-    }
-
-    /// <summary>
-    /// Tries to resolve an ordinal layer name to its compact slot.
-    /// </summary>
-    /// <param name="name">
-    /// The layer name to find.
-    /// </param>
-    /// <param name="layer">
-    /// The resolved layer.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when a matching layer exists.
-    /// </returns>
-    public bool TryGetLayer(
-        string name,
-        out GameLayer layer
-    ) {
-        string normalized = NormalizeName(name);
-        ValidateState();
-        for (int index = 0; index < m_names.Length; index++)
-        {
-            if (!string.Equals(m_names[index], normalized, StringComparison.Ordinal))
             {
                 continue;
             }
@@ -309,46 +309,6 @@ public sealed class GameLayerCatalog : ISerializable
         ProjectLocalId localId = GetLocalId(layer)
                                  ?? new ProjectLocalId($"layer.{layer.index.ToString("00", CultureInfo.InvariantCulture)}");
         DefineLocal(layer, localId, name);
-    }
-
-    internal void DefineLocal(
-        GameLayer layer,
-        ProjectLocalId localId,
-        string name
-    ) {
-        if (string.IsNullOrEmpty(localId.value))
-        {
-            throw new ArgumentException("A valid project-local layer ID is required.", nameof(localId));
-        }
-        string normalized = NormalizeName(name);
-        ValidateState();
-        for (int index = 0; index < m_names.Length; index++)
-        {
-            if (index != layer.index
-                && string.Equals(m_localIds[index], localId.value, StringComparison.Ordinal)
-            ) {
-                throw new ArgumentException(
-                    $"GameLayer local ID '{localId}' is already assigned to slot {index}.",
-                    nameof(localId)
-                );
-            }
-            if (index != layer.index
-                && string.Equals(m_names[index], normalized, StringComparison.Ordinal)
-            ) {
-                throw new ArgumentException(
-                    $"GameLayer name '{normalized}' is already assigned to slot {index}.",
-                    nameof(name)
-                );
-            }
-        }
-        if (layer == GameLayer.defaultLayer
-            && (localId != new ProjectLocalId("default")
-                || !string.Equals(normalized, C_DEFAULT_LAYER_NAME, StringComparison.Ordinal))
-        ) {
-            throw new ArgumentException("The built-in default layer cannot be replaced.", nameof(layer));
-        }
-        m_localIds[layer.index] = localId.value;
-        m_names[layer.index] = normalized;
     }
 
     /// <summary>
@@ -460,15 +420,44 @@ public sealed class GameLayerCatalog : ISerializable
         };
     }
 
-    internal static string NormalizeName(string name)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        string normalized = name.Trim();
-        if (normalized.Contains('\r') || normalized.Contains('\n'))
+    internal void DefineLocal(
+        GameLayer layer,
+        ProjectLocalId localId,
+        string name
+    ) {
+        if (string.IsNullOrEmpty(localId.value))
         {
-            throw new ArgumentException("GameLayer names cannot contain line breaks.", nameof(name));
+            throw new ArgumentException("A valid project-local layer ID is required.", nameof(localId));
         }
-        return normalized;
+        string normalized = NormalizeName(name);
+        ValidateState();
+        for (int index = 0; index < m_names.Length; index++)
+        {
+            if (index != layer.index
+                && string.Equals(m_localIds[index], localId.value, StringComparison.Ordinal)
+            ) {
+                throw new ArgumentException(
+                    $"GameLayer local ID '{localId}' is already assigned to slot {index}.",
+                    nameof(localId)
+                );
+            }
+            if (index != layer.index
+                && string.Equals(m_names[index], normalized, StringComparison.Ordinal)
+            ) {
+                throw new ArgumentException(
+                    $"GameLayer name '{normalized}' is already assigned to slot {index}.",
+                    nameof(name)
+                );
+            }
+        }
+        if (layer == GameLayer.defaultLayer
+            && (localId != new ProjectLocalId("default")
+                || !string.Equals(normalized, C_DEFAULT_LAYER_NAME, StringComparison.Ordinal))
+        ) {
+            throw new ArgumentException("The built-in default layer cannot be replaced.", nameof(layer));
+        }
+        m_localIds[layer.index] = localId.value;
+        m_names[layer.index] = normalized;
     }
 
     internal string?[] CaptureLocalIds()
@@ -487,6 +476,17 @@ public sealed class GameLayerCatalog : ISerializable
     {
         ValidateState();
         return (uint[])m_interactionMasks.Clone();
+    }
+
+    internal static string NormalizeName(string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        string normalized = name.Trim();
+        if (normalized.Contains('\r') || normalized.Contains('\n'))
+        {
+            throw new ArgumentException("GameLayer names cannot contain line breaks.", nameof(name));
+        }
+        return normalized;
     }
 
     internal static GameLayerCatalog Restore(

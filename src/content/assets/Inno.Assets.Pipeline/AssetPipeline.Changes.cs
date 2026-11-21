@@ -182,6 +182,25 @@ public sealed partial class AssetPipeline
 
     private void OnAssetReloaded(AssetObject asset) => InvokeObservers(AssetReloaded, asset);
 
+    private void InvokeObservers(Action? handlers)
+    {
+        if (handlers is null)
+        {
+            return;
+        }
+        foreach (Delegate handler in handlers.GetInvocationList())
+        {
+            try
+            {
+                ((Action)handler)();
+            }
+            catch
+            {
+                // Observer failures cannot roll back committed manager state.
+            }
+        }
+    }
+
     private void InvokeObservers<T>(
         Action<T>? handlers,
         T value
@@ -195,25 +214,6 @@ public sealed partial class AssetPipeline
             try
             {
                 ((Action<T>)handler)(value);
-            }
-            catch
-            {
-                // Observer failures cannot roll back committed manager state.
-            }
-        }
-    }
-
-    private void InvokeObservers(Action? handlers)
-    {
-        if (handlers is null)
-        {
-            return;
-        }
-        foreach (Delegate handler in handlers.GetInvocationList())
-        {
-            try
-            {
-                ((Action)handler)();
             }
             catch
             {

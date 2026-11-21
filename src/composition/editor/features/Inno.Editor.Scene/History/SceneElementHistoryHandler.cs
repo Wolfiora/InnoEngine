@@ -309,48 +309,6 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
         _ => throw new InvalidOperationException($"Unsupported scene element kind '{data.elementKind}'.")
     };
 
-    private static bool Remove(
-        SceneElementHistoryData data,
-        GameScene scene,
-        EngineObject current
-    ) => data.elementKind switch
-    {
-        SceneElementKind.Component when current is GameComponent component =>
-            component.gameObject.RemoveComponent(component),
-        SceneElementKind.System when current is GameSystem system => scene.RemoveSystem(system),
-        _ => false
-    };
-
-    private static void SetIndex(
-        SceneElementHistoryData data,
-        GameScene scene,
-        EngineObject current,
-        int index
-    ) {
-        if (data.elementKind == SceneElementKind.Component && current is GameComponent component)
-        {
-            component.gameObject.SetComponentIndex(component, index);
-        }
-        else if (data.elementKind == SceneElementKind.System && current is GameSystem system)
-        {
-            scene.SetSystemIndex(system, index);
-        }
-    }
-
-    private static int GetIndex(
-        SceneElementHistoryData data,
-        GameScene scene,
-        EngineObject current
-    ) => data.elementKind switch
-    {
-        SceneElementKind.Component when current is GameComponent component =>
-            component.gameObject.GetComponentIndex(component),
-        SceneElementKind.System when current is GameSystem system => scene.GetSystemIndex(system),
-        _ => throw new InvalidOperationException(
-            $"Scene element '{data.elementId}' does not match history kind '{data.elementKind}'."
-        )
-    };
-
     private EditorHistoryResult RollbackExisting(
         SceneElementHistoryData data,
         GameScene scene,
@@ -396,6 +354,48 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                    $"Scene element transition failed: {failure} Rollback failed: {string.Join("; ", failures)}"
                );
     }
+
+    private static bool Remove(
+        SceneElementHistoryData data,
+        GameScene scene,
+        EngineObject current
+    ) => data.elementKind switch
+    {
+        SceneElementKind.Component when current is GameComponent component =>
+            component.gameObject.RemoveComponent(component),
+        SceneElementKind.System when current is GameSystem system => scene.RemoveSystem(system),
+        _ => false
+    };
+
+    private static void SetIndex(
+        SceneElementHistoryData data,
+        GameScene scene,
+        EngineObject current,
+        int index
+    ) {
+        if (data.elementKind == SceneElementKind.Component && current is GameComponent component)
+        {
+            component.gameObject.SetComponentIndex(component, index);
+        }
+        else if (data.elementKind == SceneElementKind.System && current is GameSystem system)
+        {
+            scene.SetSystemIndex(system, index);
+        }
+    }
+
+    private static int GetIndex(
+        SceneElementHistoryData data,
+        GameScene scene,
+        EngineObject current
+    ) => data.elementKind switch
+    {
+        SceneElementKind.Component when current is GameComponent component =>
+            component.gameObject.GetComponentIndex(component),
+        SceneElementKind.System when current is GameSystem system => scene.GetSystemIndex(system),
+        _ => throw new InvalidOperationException(
+            $"Scene element '{data.elementId}' does not match history kind '{data.elementKind}'."
+        )
+    };
 
     private static string JoinFailures(
         string failure,

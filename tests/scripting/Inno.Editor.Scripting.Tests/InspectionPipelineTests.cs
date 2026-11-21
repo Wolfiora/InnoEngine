@@ -327,8 +327,6 @@ internal sealed record TextStateValue(string id);
 
 internal sealed class AttributeOwner : ISerializable
 {
-    internal bool showValue { get; set; }
-
     [SerializableProperty]
     [Header("Presentation", "Decorators are composed before the property row.")]
     [Text("Persistent decorator text remains visible.")]
@@ -338,6 +336,8 @@ internal sealed class AttributeOwner : ISerializable
     [ShowIf(nameof(showValue))]
     [ProbeInspector]
     public AttributeValue value { get; set; } = new();
+
+    internal bool showValue { get; set; }
 }
 
 internal sealed class AttributeValue;
@@ -348,8 +348,6 @@ internal sealed class ProbeInspectorAttribute : InspectorPresentationAttribute;
 [InspectorAttributeDrawer(typeof(ProbeInspectorAttribute), priority: 10_000)]
 internal sealed class ProbeInspectorAttributeDrawer : IInspectorAttributeDrawer
 {
-    internal static List<string> observations { get; } = [];
-
     public void Update(InspectorAttributeDrawContext context)
         => observations.Add($"update:{context.label}:{context.isReadOnly}:{context.minimum}:{context.maximum}");
 
@@ -364,22 +362,22 @@ internal sealed class ProbeInspectorAttributeDrawer : IInspectorAttributeDrawer
         _ = context;
         observations.Add("after");
     }
+
+    internal static List<string> observations { get; } = [];
 }
 
 [PropertyDrawer(typeof(AttributeValue), priority: 10_000)]
 internal sealed class AttributeValueDrawer : IPropertyDrawer
 {
-    internal static List<string> observations { get; } = [];
-
     public void Draw(PropertyDrawContext context)
         => observations.Add($"{context.label}:{context.isReadOnly}:{context.minimum}:{context.maximum}");
+
+    internal static List<string> observations { get; } = [];
 }
 
 [PropertyDrawer(typeof(TextStateValue), priority: 10_000)]
 internal sealed class TextStateDrawer : IPropertyDrawer
 {
-    internal static List<string> observations { get; } = [];
-
     public void Draw(PropertyDrawContext context)
     {
         TextStateValue value = (TextStateValue)context.GetValue()!;
@@ -387,6 +385,8 @@ internal sealed class TextStateDrawer : IPropertyDrawer
         observations.Add($"{value.id}:{(hasState ? state : "<new>")}");
         context.SetTextState("editing", value.id);
     }
+
+    internal static List<string> observations { get; } = [];
 }
 
 [PropertyDrawer(typeof(InlineParent), priority: 10_000)]

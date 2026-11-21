@@ -162,6 +162,8 @@ public sealed partial class BgfxShadercToolchain : IShaderCompilerToolchain
         }
     }
 
+    private string ResolveBgfxShaderInclude() => m_tools.ResolveShaderInclude("bgfx_shader.sh");
+
     private static string ToShadercStage(ShaderStage stage)
         => stage switch
     {
@@ -170,8 +172,6 @@ public sealed partial class BgfxShadercToolchain : IShaderCompilerToolchain
         ShaderStage.Compute => "compute",
         _ => throw new ArgumentOutOfRangeException(nameof(stage), stage, "A single shader stage is required.")
     };
-
-    private string ResolveBgfxShaderInclude() => m_tools.ResolveShaderInclude("bgfx_shader.sh");
 }
 
 internal sealed record BgfxShadercResult(

@@ -19,6 +19,11 @@ public sealed class BuildArtifactWriteLease : IDisposable
     }
 
     /// <summary>
+    /// Ends exclusive access without removing the persistent coordination file.
+    /// </summary>
+    public void Dispose() => Interlocked.Exchange(ref m_lease, null)?.Dispose();
+
+    /// <summary>
     /// Waits for all readers before allowing mutation of one immutable artifact directory.
     /// </summary>
     /// <param name="directory">
@@ -62,9 +67,4 @@ public sealed class BuildArtifactWriteLease : IDisposable
             ).ConfigureAwait(false)
         );
     }
-
-    /// <summary>
-    /// Ends exclusive access without removing the persistent coordination file.
-    /// </summary>
-    public void Dispose() => Interlocked.Exchange(ref m_lease, null)?.Dispose();
 }

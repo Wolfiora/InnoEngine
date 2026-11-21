@@ -561,58 +561,6 @@ internal static class ScriptCompilerEngine
         return new CompilationResult(emit.Success, diagnostics);
     }
 
-    private sealed class CompilationProgress
-    {
-        private readonly Action<float, string>? m_report;
-        private readonly List<ScriptCompilationStageTiming> m_timings = [];
-        private readonly Stopwatch m_stageStopwatch = new();
-        private readonly int m_total;
-        private string? m_stage;
-        private int m_completed;
-
-        internal CompilationProgress(
-            int total,
-            Action<float, string>? report,
-            int initialCompleted = 0
-        ) {
-            m_total = Math.Max(1, total);
-            m_report = report;
-            m_completed = Math.Clamp(initialCompleted, 0, m_total);
-        }
-
-        internal void Begin(string status)
-        {
-            FinishCurrentStage();
-            m_stage = status;
-            m_stageStopwatch.Restart();
-            m_report?.Invoke((float)m_completed / m_total, status);
-        }
-
-        internal void Complete(string status)
-        {
-            FinishCurrentStage();
-            m_completed++;
-            m_report?.Invoke(Math.Min(1f, (float)m_completed / m_total), status);
-        }
-
-        internal IReadOnlyList<ScriptCompilationStageTiming> Snapshot()
-        {
-            FinishCurrentStage();
-            return m_timings.ToArray();
-        }
-
-        private void FinishCurrentStage()
-        {
-            if (m_stage is null)
-            {
-                return;
-            }
-            m_stageStopwatch.Stop();
-            m_timings.Add(new ScriptCompilationStageTiming(m_stage, m_stageStopwatch.Elapsed));
-            m_stage = null;
-        }
-    }
-
     private static string ComputeAssemblyBuildKey(
         ScriptAssemblyInput assembly,
         ScriptApiReferenceSet api,
@@ -911,23 +859,6 @@ internal static class ScriptCompilerEngine
         }
     }
 
-    private sealed class TemporaryDirectory : IDisposable
-    {
-        internal TemporaryDirectory(string root)
-        {
-            Directory.CreateDirectory(root);
-            this.path = Path.Combine(root, Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(path);
-        }
-
-        internal string path { get; }
-
-        /// <summary>
-        /// Releases the resources owned by this instance.
-        /// </summary>
-        public void Dispose() => DeleteStagingDirectory(path);
-    }
-
     private static string GetDiagnosticsPath(string outputDirectory) => Path.Combine(outputDirectory, "diagnostics.cache");
 
     private static string GetTypeManifestPath(string assemblyPath) => Path.ChangeExtension(assemblyPath, ".types.cache");
@@ -1085,6 +1016,75 @@ internal static class ScriptCompilerEngine
             location.IsValid ? location.StartLinePosition.Line + 1 : 0,
             location.IsValid ? location.StartLinePosition.Character + 1 : 0
         );
+    }
+
+    private sealed class CompilationProgress
+    {
+        private readonly Action<float, string>? m_report;
+        private readonly List<ScriptCompilationStageTiming> m_timings = [];
+        private readonly Stopwatch m_stageStopwatch = new();
+        private readonly int m_total;
+        private string? m_stage;
+        private int m_completed;
+
+        internal CompilationProgress(
+            int total,
+            Action<float, string>? report,
+            int initialCompleted = 0
+        ) {
+            m_total = Math.Max(1, total);
+            m_report = report;
+            m_completed = Math.Clamp(initialCompleted, 0, m_total);
+        }
+
+        internal void Begin(string status)
+        {
+            FinishCurrentStage();
+            m_stage = status;
+            m_stageStopwatch.Restart();
+            m_report?.Invoke((float)m_completed / m_total, status);
+        }
+
+        internal void Complete(string status)
+        {
+            FinishCurrentStage();
+            m_completed++;
+            m_report?.Invoke(Math.Min(1f, (float)m_completed / m_total), status);
+        }
+
+        internal IReadOnlyList<ScriptCompilationStageTiming> Snapshot()
+        {
+            FinishCurrentStage();
+            return m_timings.ToArray();
+        }
+
+        private void FinishCurrentStage()
+        {
+            if (m_stage is null)
+            {
+                return;
+            }
+            m_stageStopwatch.Stop();
+            m_timings.Add(new ScriptCompilationStageTiming(m_stage, m_stageStopwatch.Elapsed));
+            m_stage = null;
+        }
+    }
+
+    private sealed class TemporaryDirectory : IDisposable
+    {
+        internal TemporaryDirectory(string root)
+        {
+            Directory.CreateDirectory(root);
+            this.path = Path.Combine(root, Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(path);
+        }
+
+        /// <summary>
+        /// Releases the resources owned by this instance.
+        /// </summary>
+        public void Dispose() => DeleteStagingDirectory(path);
+
+        internal string path { get; }
     }
 
     private sealed record CompilationResult(

@@ -193,6 +193,31 @@ public sealed class UiRenderFrame
     public static UiRenderFrame empty { get; } = new([], [], [], [], []);
 
     /// <summary>
+    /// Gets created or replaced mesh generations.
+    /// </summary>
+    public IReadOnlyList<UiMeshUpdate> meshUpdates => m_meshUpdates;
+
+    /// <summary>
+    /// Gets mesh generations that must be retired.
+    /// </summary>
+    public IReadOnlyList<UiMeshHandle> releasedMeshes => m_releasedMeshes;
+
+    /// <summary>
+    /// Gets created or replaced texture generations.
+    /// </summary>
+    public IReadOnlyList<UiTextureUpdate> textureUpdates => m_textureUpdates;
+
+    /// <summary>
+    /// Gets texture generations that must be retired.
+    /// </summary>
+    public IReadOnlyList<UiTextureHandle> releasedTextures => m_releasedTextures;
+
+    /// <summary>
+    /// Gets ordered draws referencing published resources.
+    /// </summary>
+    public IReadOnlyList<UiDrawCommand> commands => m_commands;
+
+    /// <summary>
     /// Creates a command-free frame that deterministically retires plugin-owned resources.
     /// </summary>
     /// <param name="meshes">
@@ -220,31 +245,6 @@ public sealed class UiRenderFrame
         }
         return new([], (UiMeshHandle[])meshes.Clone(), [], (UiTextureHandle[])textures.Clone(), []);
     }
-
-    /// <summary>
-    /// Gets created or replaced mesh generations.
-    /// </summary>
-    public IReadOnlyList<UiMeshUpdate> meshUpdates => m_meshUpdates;
-
-    /// <summary>
-    /// Gets mesh generations that must be retired.
-    /// </summary>
-    public IReadOnlyList<UiMeshHandle> releasedMeshes => m_releasedMeshes;
-
-    /// <summary>
-    /// Gets created or replaced texture generations.
-    /// </summary>
-    public IReadOnlyList<UiTextureUpdate> textureUpdates => m_textureUpdates;
-
-    /// <summary>
-    /// Gets texture generations that must be retired.
-    /// </summary>
-    public IReadOnlyList<UiTextureHandle> releasedTextures => m_releasedTextures;
-
-    /// <summary>
-    /// Gets ordered draws referencing published resources.
-    /// </summary>
-    public IReadOnlyList<UiDrawCommand> commands => m_commands;
 }
 
 /// <summary>

@@ -31,6 +31,33 @@ public struct RectInt : IEquatable<RectInt>
     public int height;
 
     /// <summary>
+    /// Creates a validated rect int instance.
+    /// </summary>
+    /// <param name="x">
+    /// The horizontal or first component.
+    /// </param>
+    /// <param name="y">
+    /// The vertical or second component.
+    /// </param>
+    /// <param name="width">
+    /// The width in logical units or pixels required by this operation.
+    /// </param>
+    /// <param name="height">
+    /// The height in logical units or pixels required by this operation.
+    /// </param>
+    public RectInt(
+        int x,
+        int y,
+        int width,
+        int height
+    ) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
+
+    /// <summary>
     /// Gets the scalar measurement or identity associated with the current state.
     /// </summary>
     public int left => x;
@@ -71,33 +98,6 @@ public struct RectInt : IEquatable<RectInt>
     public Vector2Int center => new(x + width / 2, y + height / 2);
 
     /// <summary>
-    /// Creates a validated rect int instance.
-    /// </summary>
-    /// <param name="x">
-    /// The horizontal or first component.
-    /// </param>
-    /// <param name="y">
-    /// The vertical or second component.
-    /// </param>
-    /// <param name="width">
-    /// The width in logical units or pixels required by this operation.
-    /// </param>
-    /// <param name="height">
-    /// The height in logical units or pixels required by this operation.
-    /// </param>
-    public RectInt(
-        int x,
-        int y,
-        int width,
-        int height
-    ) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-    }
-
-    /// <summary>
     /// Checks if this rectangle overlaps another rectangle.
     /// </summary>
     /// <param name="other">
@@ -128,6 +128,18 @@ public struct RectInt : IEquatable<RectInt>
                                            && bottom >= other.bottom;
 
     /// <summary>
+    /// Determines whether current state contains the requested value value.
+    /// </summary>
+    /// <param name="p">
+    /// The p consumed by contains; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool Contains(Vector2Int p) => Contains(p.x, p.y);
+
+    /// <summary>
     /// Checks if this rectangle contains a point.
     /// </summary>
     /// <param name="px">
@@ -147,16 +159,42 @@ public struct RectInt : IEquatable<RectInt>
          && py >= top && py < bottom;
 
     /// <summary>
-    /// Determines whether current state contains the requested value value.
+    /// Determines whether this value and the supplied value represent the same logical state.
     /// </summary>
-    /// <param name="p">
-    /// The p consumed by contains; ownership remains with the caller unless explicitly stated otherwise.
+    /// <param name="obj">
+    /// The object compared with this value.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Contains(Vector2Int p) => Contains(p.x, p.y);
+    public override bool Equals(object? obj) => obj is RectInt r && Equals(r);
+
+    /// <summary>
+    /// Determines whether this value and the supplied value represent the same logical state.
+    /// </summary>
+    /// <param name="other">
+    /// The strongly typed value compared with this value.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    public bool Equals(RectInt other) => x == other.x && y == other.y && width == other.width && height == other.height;
+
+    /// <summary>
+    /// Computes a hash code consistent with the implemented equality contract.
+    /// </summary>
+    /// <returns>
+    /// The scalar result calculated from the supplied inputs.
+    /// </returns>
+    public override int GetHashCode() => HashCode.Combine(x, y, width, height);
+
+    /// <summary>
+    /// Formats this value as a human-readable component list.
+    /// </summary>
+    /// <returns>
+    /// The validated text representation owned by the caller.
+    /// </returns>
+    public override string ToString() => $"({x}, {y}, {width}, {height})";
 
     /// <summary>
     /// Creates a rectangle from minimum and maximum boundaries; point containment excludes the maximum boundary.
@@ -355,42 +393,4 @@ public struct RectInt : IEquatable<RectInt>
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator RectInt(Vector4Int v) => new RectInt(v.x, v.y, v.z, v.w);
-
-    /// <summary>
-    /// Determines whether this value and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="obj">
-    /// The object compared with this value.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public override bool Equals(object? obj) => obj is RectInt r && Equals(r);
-
-    /// <summary>
-    /// Determines whether this value and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="other">
-    /// The strongly typed value compared with this value.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public bool Equals(RectInt other) => x == other.x && y == other.y && width == other.width && height == other.height;
-
-    /// <summary>
-    /// Computes a hash code consistent with the implemented equality contract.
-    /// </summary>
-    /// <returns>
-    /// The scalar result calculated from the supplied inputs.
-    /// </returns>
-    public override int GetHashCode() => HashCode.Combine(x, y, width, height);
-
-    /// <summary>
-    /// Formats this value as a human-readable component list.
-    /// </summary>
-    /// <returns>
-    /// The validated text representation owned by the caller.
-    /// </returns>
-    public override string ToString() => $"({x}, {y}, {width}, {height})";
 }

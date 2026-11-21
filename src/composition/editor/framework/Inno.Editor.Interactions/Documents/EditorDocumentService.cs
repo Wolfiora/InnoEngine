@@ -344,17 +344,6 @@ internal sealed class EditorDocumentService : IEditorDocumentService
         }
     }
 
-    private static string NormalizePath(string assetPath)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(assetPath);
-        string normalized = assetPath.Replace('\\', '/').Trim();
-        while (normalized.StartsWith("./", StringComparison.Ordinal))
-        {
-            normalized = normalized[2..];
-        }
-        return normalized;
-    }
-
     private void Unregister(EditorDocumentProvider provider)
     {
         if (!m_providers.TryGetValue(provider.id, out EditorDocumentProvider? registered) || !ReferenceEquals(provider, registered))
@@ -367,6 +356,17 @@ internal sealed class EditorDocumentService : IEditorDocumentService
         {
             document.isProviderAvailable = false;
         }
+    }
+
+    private static string NormalizePath(string assetPath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(assetPath);
+        string normalized = assetPath.Replace('\\', '/').Trim();
+        while (normalized.StartsWith("./", StringComparison.Ordinal))
+        {
+            normalized = normalized[2..];
+        }
+        return normalized;
     }
 
     private sealed class ProviderLease(

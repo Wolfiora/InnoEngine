@@ -14,14 +14,14 @@ namespace Inno.Build.Toolchains;
 public sealed class NativeBuildContext
 {
     private readonly NativeBuildInputState m_inputState;
-    private INativeBindingGenerator? m_bindingGenerator;
-    private NativeInputVerificationScope? m_verification;
-    private NativeComponentDescriptor? m_component;
-    private NativeComponentBuildOptions? m_componentOptions;
     private readonly string? m_buildOwner;
     private readonly string? m_targetId;
     private readonly string? m_fingerprint;
     private readonly string? m_toolDirectory;
+    private INativeBindingGenerator? m_bindingGenerator;
+    private NativeInputVerificationScope? m_verification;
+    private NativeComponentDescriptor? m_component;
+    private NativeComponentBuildOptions? m_componentOptions;
 
     private IReadOnlyDictionary<string, NativeBindingGenerationDescriptor> m_bindings =
         new ReadOnlyDictionary<string, NativeBindingGenerationDescriptor>(new Dictionary<string, NativeBindingGenerationDescriptor>());
@@ -50,40 +50,6 @@ public sealed class NativeBuildContext
     ) : this(ResolveRoot(engineRoot, configuration), configuration, new NativeBuildInputState()) {}
 
     private NativeBuildContext(
-        string engineRoot,
-        string configuration,
-        NativeBuildInputState inputState
-    ) {
-        ToolchainEnvironment.ValidateConfiguration(configuration);
-        this.engineRoot = engineRoot;
-        if (!File.Exists(Path.Combine(this.engineRoot, ToolchainLayout.C_REPOSITORY_MARKER_FILE)))
-        {
-            throw new DirectoryNotFoundException($"Engine checkout is unavailable at '{this.engineRoot}'.");
-        }
-        this.configuration = configuration;
-        m_inputState = inputState;
-    }
-
-    private NativeBuildContext(
-        NativeBuildContext origin,
-        string buildOwner,
-        string targetId,
-        string fingerprint
-    ) : this(origin.engineRoot, origin.configuration, origin.m_inputState)
-    {
-        this.sourcePreparation = origin.sourcePreparation;
-        m_bindingGenerator = origin.m_bindingGenerator;
-        m_verification = origin.m_verification;
-        m_component = origin.m_component;
-        m_componentOptions = origin.m_componentOptions;
-        m_buildOwner = buildOwner;
-        m_targetId = targetId;
-        m_fingerprint = fingerprint;
-        this.toolchain = origin.toolchain;
-        m_bindings = origin.m_bindings;
-    }
-
-    private NativeBuildContext(
         NativeBuildContext origin,
         NativeToolchainSelection toolchain
     ) : this(origin.engineRoot, origin.configuration, origin.m_inputState)
@@ -99,6 +65,39 @@ public sealed class NativeBuildContext
         m_targetId = origin.m_targetId;
         m_fingerprint = origin.m_fingerprint;
         m_toolDirectory = origin.m_toolDirectory;
+    }
+
+    private NativeBuildContext(
+        NativeBuildContext origin,
+        string? toolDirectory
+    ) : this(origin.engineRoot, origin.configuration, origin.m_inputState)
+    {
+        this.sourcePreparation = origin.sourcePreparation;
+        m_bindingGenerator = origin.m_bindingGenerator;
+        m_verification = origin.m_verification;
+        m_component = origin.m_component;
+        m_componentOptions = origin.m_componentOptions;
+        m_buildOwner = origin.m_buildOwner;
+        m_targetId = origin.m_targetId;
+        m_fingerprint = origin.m_fingerprint;
+        this.toolchain = origin.toolchain;
+        m_toolDirectory = toolDirectory;
+        m_bindings = origin.m_bindings;
+    }
+
+    private NativeBuildContext(
+        string engineRoot,
+        string configuration,
+        NativeBuildInputState inputState
+    ) {
+        ToolchainEnvironment.ValidateConfiguration(configuration);
+        this.engineRoot = engineRoot;
+        if (!File.Exists(Path.Combine(this.engineRoot, ToolchainLayout.C_REPOSITORY_MARKER_FILE)))
+        {
+            throw new DirectoryNotFoundException($"Engine checkout is unavailable at '{this.engineRoot}'.");
+        }
+        this.configuration = configuration;
+        m_inputState = inputState;
     }
 
     private NativeBuildContext(
@@ -137,7 +136,9 @@ public sealed class NativeBuildContext
 
     private NativeBuildContext(
         NativeBuildContext origin,
-        string? toolDirectory
+        string buildOwner,
+        string targetId,
+        string fingerprint
     ) : this(origin.engineRoot, origin.configuration, origin.m_inputState)
     {
         this.sourcePreparation = origin.sourcePreparation;
@@ -145,11 +146,10 @@ public sealed class NativeBuildContext
         m_verification = origin.m_verification;
         m_component = origin.m_component;
         m_componentOptions = origin.m_componentOptions;
-        m_buildOwner = origin.m_buildOwner;
-        m_targetId = origin.m_targetId;
-        m_fingerprint = origin.m_fingerprint;
+        m_buildOwner = buildOwner;
+        m_targetId = targetId;
+        m_fingerprint = fingerprint;
         this.toolchain = origin.toolchain;
-        m_toolDirectory = toolDirectory;
         m_bindings = origin.m_bindings;
     }
 
@@ -168,6 +168,11 @@ public sealed class NativeBuildContext
     /// Browser toolchains resolve their own workload-specific SDK independently.
     /// </summary>
     public NativeToolchainSelection? toolchain { get; }
+
+    /// <summary>
+    /// Gets actual hashing and native execution work accumulated by this operation and its scoped contexts.
+    /// </summary>
+    public NativeBuildStatistics statistics => m_inputState.statistics;
 
     /// <summary>
     /// Resolves native intermediates under the owning toolchain project in this checkout.
@@ -208,17 +213,6 @@ public sealed class NativeBuildContext
     }
 
     /// <summary>
-    /// Gets actual hashing and native execution work accumulated by this operation and its scoped contexts.
-    /// </summary>
-    public NativeBuildStatistics statistics => m_inputState.statistics;
-
-    internal NativeBuildInputState inputState => m_inputState;
-
-    internal IReadOnlyDictionary<string, NativeBindingGenerationDescriptor> selectedBindings => m_bindings;
-
-    internal NativeCMakeSource.Preparation? sourcePreparation { get; private set; }
-
-    /// <summary>
     /// Records one complete binding batch executed by the borrowed provider.
     /// </summary>
     public void RecordBindingBatch() => m_inputState.RecordBindingBatch();
@@ -240,12 +234,6 @@ public sealed class NativeBuildContext
     /// Records a managed SDK process owned by generator extension preparation.
     /// </summary>
     public void RecordManagedProcess() => m_inputState.RecordManagedProcess();
-
-    internal NativeBuildContext WithIdentity(
-        NativeComponentDescriptor owner,
-        string targetId,
-        string fingerprint
-    ) => new(this, owner.toolchainProject, targetId, fingerprint);
 
     /// <summary>
     /// Attaches a provider's immutable tool selection while preserving this operation's input ownership.
@@ -423,6 +411,18 @@ public sealed class NativeBuildContext
         scoped.m_verification = new NativeInputVerificationScope(m_inputState, phase);
         return scoped;
     }
+
+    internal NativeBuildInputState inputState => m_inputState;
+
+    internal IReadOnlyDictionary<string, NativeBindingGenerationDescriptor> selectedBindings => m_bindings;
+
+    internal NativeCMakeSource.Preparation? sourcePreparation { get; private set; }
+
+    internal NativeBuildContext WithIdentity(
+        NativeComponentDescriptor owner,
+        string targetId,
+        string fingerprint
+    ) => new(this, owner.toolchainProject, targetId, fingerprint);
 
     internal NativeInputSnapshot CaptureInputs(
         IEnumerable<NativeBuildInput> inputs,
