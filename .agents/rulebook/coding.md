@@ -6,12 +6,12 @@ Load complete rule units. The [registry](coverage.json) owns routing and provena
 <a id="naming"></a>
 ## 2. Naming
 - Match filenames to their primary type.
-- By default, match namespaces to directory hierarchy. `src/composition/editor` uses the project-level namespace rules in section 13.
+- A namespace equals the assembly name of its owning project; directories inside a project do not add namespace segments. `src/composition/editor` uses the project-level namespace rules in section 13.
 - Use PascalCase for type names.
 - Prefix interfaces with I.
 - Use meaningful camelCase for member parameters.
 - Prefix private fields with m_.
-- Constants use a C_ prefix, such as C_MAX_COUNT, or clearly meaningful readonly static names.
+- Constants use a C_ prefix, such as C_MAX_COUNT. Static readonly fields use UPPER_SNAKE names without a prefix, such as DEFAULT_OPTIONS.
 - Keep existing Unity-style API names, such as transform, scene, active and name, consistent with surrounding code.
 <!-- /rule-unit: naming -->
 
@@ -97,7 +97,7 @@ These requirements apply to handwritten C# source. Generated code and third-part
 ## 1. Design and responsibility
 
 - Prioritize architectural clarity, dependency direction, ownership, encapsulation and low coupling.
-- Match filenames to primary types. Directories express independently understandable capabilities; namespaces follow their owning directory or project convention.
+- Match filenames to primary types. Directories express independently understandable capabilities; namespaces follow their owning project.
 - Public APIs expose the smallest complete contracts needed for external composition. Prefer composition and supply dependencies through constructor parameters or explicit composition entries.
 - Check existing repository events, identity, serialization, mathematics and diagnostics first. Reuse them and avoid parallel management systems.
 - Interfaces or base classes express extension behavior; immutable discovery metadata is declared once. Replaceable boundaries isolate platforms, storage, compilers and presentation.
@@ -115,10 +115,10 @@ These requirements apply to handwritten C# source. Generated code and third-part
 | --- | --- | --- |
 | Types, methods, enum members | PascalCase | GenerationRequest, TryResolve, Borrowed |
 | Interfaces | I prefix | IOutputTransaction |
-| Properties, parameters, locals | camelCase | targetId, outputDirectory |
+| Properties, parameters, locals | camelCase | targetID, outputDirectory |
 | Private fields | m_ prefix | m_generation |
 | Constants | C_ prefix | C_MAX_COUNT |
-| Static readonly members | Clear semantic names | DefaultOptions |
+| Static readonly fields | UPPER_SNAKE without a prefix | DEFAULT_OPTIONS |
 
 - External interface implementations, overrides, special CLR members and external protocol signatures follow their contracts.
 - The corresponding generator configuration declares generated binding names.
@@ -154,12 +154,12 @@ internal sealed class CommandSet
     private readonly Dictionary<string, Action> m_commands = new(StringComparer.Ordinal);
 
     internal void Register(
-        string commandId,
+        string commandID,
         Action command
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(commandId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(commandID);
         ArgumentNullException.ThrowIfNull(command);
-        m_commands.Add(commandId, command);
+        m_commands.Add(commandID, command);
     }
 }
 ```

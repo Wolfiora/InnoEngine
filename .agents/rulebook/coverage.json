@@ -3122,6 +3122,22 @@
             "sourceHash": "779100086672741a3bd94e2b881aa35d8217edd739afdd017731e3983cff3a3f",
             "targetHash": "aa807bb8015d7800fe77d0bada936898d50c066e8adb761d41f493812f0c4453"
           }
+        ],
+        "amendments": [
+          {
+            "ordinal": 3,
+            "previousHash": "93840a0814cc3a178726e86b61586d956121c64a4d595b91a60420ed80470b3b",
+            "currentHash": "d4f1f0c0003033b2daa7ef05b263d0cd3942ae18da7e97f075cebb6930495b3d",
+            "approval": "User-approved InnoEngine C# code style rulebook, 2026-11-21",
+            "review": ".agents/records/decisions/CSHARP_STYLE_RULEBOOK.md"
+          },
+          {
+            "ordinal": 8,
+            "previousHash": "91ea145a10ba903fb71233bc29bc0a1edff9378d31569b1b5cc5e889e041a351",
+            "currentHash": "6e1c308fcb9476541b9d05ec0e1d1229bf66412bf8729f1c0fdea297e2a49821",
+            "approval": "User-approved InnoEngine C# code style rulebook, 2026-11-21",
+            "review": ".agents/records/decisions/CSHARP_STYLE_RULEBOOK.md"
+          }
         ]
       }
     },
@@ -4862,6 +4878,15 @@
             "sourceHash": "36132fa3b63f3460abdb38ffba3fa44c161e713f1778bc7098b5035f0d0d4979",
             "targetHash": "76828e0fe061b761c00c0afee82e308909dc0a93a5dc7fc75218d37362c2b61b"
           }
+        ],
+        "amendments": [
+          {
+            "ordinal": 3,
+            "previousHash": "805254701ebf725180887414b642cf5e776d5259d41745703749de26000d1622",
+            "currentHash": "e15f9052327e9ba5e8a73585e66062b5c9f6220a36e24773d0ded57db77f3ce0",
+            "approval": "User-approved InnoEngine C# code style rulebook, 2026-11-21",
+            "review": ".agents/records/decisions/CSHARP_STYLE_RULEBOOK.md"
+          }
         ]
       }
     },
@@ -4948,6 +4973,22 @@
             "ordinal": 13,
             "sourceHash": "f664f1d02435ef0cc33073dc7e99243f89fa35f277f14670d35d1d1fa60652bd",
             "targetHash": "326a3d166f7f239af5e4343769a8bd7cdc16df6eaba52a089ed215e726ead1f4"
+          }
+        ],
+        "amendments": [
+          {
+            "ordinal": 6,
+            "previousHash": "56d0aaa53ebcc644f9ff8e3084a166d11bab6d2d309f039f6d2845eec14c08d5",
+            "currentHash": "d63742aef216fbb6640f07b4e2ec5c944bced33774d352a95ed47d1807f758ef",
+            "approval": "User-approved InnoEngine C# code style rulebook, 2026-11-21",
+            "review": ".agents/records/decisions/CSHARP_STYLE_RULEBOOK.md"
+          },
+          {
+            "ordinal": 9,
+            "previousHash": "516b102cbcd19e64756bad14c8f563fbdee107f8603527b1a32fac07a90781a0",
+            "currentHash": "5dd04a005b5b03678533a5a5f6bc198c9412255b28c0b6d0cc15ec5a85c27c36",
+            "approval": "User-approved InnoEngine C# code style rulebook, 2026-11-21",
+            "review": ".agents/records/decisions/CSHARP_STYLE_RULEBOOK.md"
           }
         ]
       }
@@ -5122,6 +5163,29 @@
             "ordinal": 24,
             "sourceHash": "f1b901847390b0ed7e374e7c1e464ec17b46a427c487a5ad6cbd2906405083d5",
             "targetHash": "f1b901847390b0ed7e374e7c1e464ec17b46a427c487a5ad6cbd2906405083d5"
+          }
+        ],
+        "amendments": [
+          {
+            "ordinal": 16,
+            "previousHash": "1939dcba42b25000ce9c4da51afabcfe974a692854c93acdd82e049643e1537b",
+            "currentHash": "76a70ad6442ba71c8cf0285318dca9eee29ae4de77ac6e1e6cb65c4c0b5b5932",
+            "approval": "User-approved InnoEngine C# code style rulebook, 2026-11-21",
+            "review": ".agents/records/decisions/CSHARP_STYLE_RULEBOOK.md"
+          },
+          {
+            "ordinal": 19,
+            "previousHash": "f5303ae6a3201ea52e30701cabe7f1bb4a4a0d66c2bb299f83981c8f77ac8b54",
+            "currentHash": "267c6ff223c302caecd3d34911f6f80c6c6b31e20210394a1be7bf740a8bb92a",
+            "approval": "User-approved InnoEngine C# code style rulebook, 2026-11-21",
+            "review": ".agents/records/decisions/CSHARP_STYLE_RULEBOOK.md"
+          },
+          {
+            "ordinal": 21,
+            "previousHash": "e0ac073295c3369afb71ba1437a0357153a4216453a8014091267b720f7370b7",
+            "currentHash": "33c9de50e08ac72e31c6772dc9ddec81e5e3c706a57238e97ebde48d8b881403",
+            "approval": "User-approved InnoEngine C# code style rulebook, 2026-11-21",
+            "review": ".agents/records/decisions/CSHARP_STYLE_RULEBOOK.md"
           }
         ]
       }
@@ -5610,6 +5674,319 @@
           }
         ]
       }
+    },
+    {
+      "id": "csharp-style",
+      "path": ".agents/rulebook/csharp-style.md",
+      "anchor": "csharp-style",
+      "source": "17a0ed43536ba049cbcd3ca418205f2d6e4b91f2:.agents/rulebook/csharp-style.md",
+      "sourceSection": 0,
+      "sourceHash": "dd9d051caac7083966bc9ac53561090a4c65d96f318edba0038ec4018cdbc86a",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "csharp-style"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-style-files",
+      "path": ".agents/rulebook/csharp-style.md",
+      "anchor": "csharp-style-files",
+      "source": "17a0ed43536ba049cbcd3ca418205f2d6e4b91f2:.agents/rulebook/csharp-style.md",
+      "sourceSection": 1,
+      "sourceHash": "db7b9649a9e34ed2cd39f3ba1711a6aa66c1ed8a7a6a16854243721b4a895f4e",
+      "requires": [
+        "csharp-style"
+      ],
+      "paths": [],
+      "tags": [
+        "csharp-style",
+        "formatting"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-style-namespaces",
+      "path": ".agents/rulebook/csharp-style.md",
+      "anchor": "csharp-style-namespaces",
+      "source": "17a0ed43536ba049cbcd3ca418205f2d6e4b91f2:.agents/rulebook/csharp-style.md",
+      "sourceSection": 2,
+      "sourceHash": "79c4f4fe907c212d1adde45f51a17c774e07107203b218757b34b63957f25b82",
+      "requires": [
+        "csharp-style"
+      ],
+      "paths": [],
+      "tags": [
+        "csharp-style"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-style-naming",
+      "path": ".agents/rulebook/csharp-style.md",
+      "anchor": "csharp-style-naming",
+      "source": "17a0ed43536ba049cbcd3ca418205f2d6e4b91f2:.agents/rulebook/csharp-style.md",
+      "sourceSection": 3,
+      "sourceHash": "7d43b7e400d26ede576e0077137e93555403cea369c0edcfcbf42cf2a279856a",
+      "requires": [
+        "csharp-style"
+      ],
+      "paths": [],
+      "tags": [
+        "csharp-style",
+        "naming"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-style-types",
+      "path": ".agents/rulebook/csharp-style.md",
+      "anchor": "csharp-style-types",
+      "source": "17a0ed43536ba049cbcd3ca418205f2d6e4b91f2:.agents/rulebook/csharp-style.md",
+      "sourceSection": 4,
+      "sourceHash": "ec8201e76922cd821115e9842f216140a258ba74b869d1a9cb07077e25b8bff9",
+      "requires": [
+        "csharp-style"
+      ],
+      "paths": [],
+      "tags": [
+        "csharp-style"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-style-members",
+      "path": ".agents/rulebook/csharp-style.md",
+      "anchor": "csharp-style-members",
+      "source": "17a0ed43536ba049cbcd3ca418205f2d6e4b91f2:.agents/rulebook/csharp-style.md",
+      "sourceSection": 5,
+      "sourceHash": "2e289b06e2175c79774465dbe0192069172307d7ae128962ff9a4e2a81ad27af",
+      "requires": [
+        "csharp-style"
+      ],
+      "paths": [],
+      "tags": [
+        "csharp-style"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-style-member-order",
+      "path": ".agents/rulebook/csharp-style.md",
+      "anchor": "csharp-style-member-order",
+      "source": "17a0ed43536ba049cbcd3ca418205f2d6e4b91f2:.agents/rulebook/csharp-style.md",
+      "sourceSection": 6,
+      "sourceHash": "b6faf59f653f2ae7ff4bc6e1d782313e6950f49c498d8a207febadc92df8152c",
+      "requires": [
+        "csharp-style"
+      ],
+      "paths": [],
+      "tags": [
+        "csharp-style",
+        "members"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-style-braces",
+      "path": ".agents/rulebook/csharp-style.md",
+      "anchor": "csharp-style-braces",
+      "source": "17a0ed43536ba049cbcd3ca418205f2d6e4b91f2:.agents/rulebook/csharp-style.md",
+      "sourceSection": 7,
+      "sourceHash": "53e32f3e52a0e98fe9056a1546441db560105aad7efd3a71f08fdaa1b3af72b7",
+      "requires": [
+        "csharp-style"
+      ],
+      "paths": [],
+      "tags": [
+        "csharp-style",
+        "formatting"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-style-parameters",
+      "path": ".agents/rulebook/csharp-style.md",
+      "anchor": "csharp-style-parameters",
+      "source": "17a0ed43536ba049cbcd3ca418205f2d6e4b91f2:.agents/rulebook/csharp-style.md",
+      "sourceSection": 8,
+      "sourceHash": "57e0429afe24fd0ee80b2b08b5581c3338b4294e9d8b3a3f740dd4fe89a08e36",
+      "requires": [
+        "csharp-style"
+      ],
+      "paths": [],
+      "tags": [
+        "csharp-style",
+        "formatting"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-style-line-breaks",
+      "path": ".agents/rulebook/csharp-style.md",
+      "anchor": "csharp-style-line-breaks",
+      "source": "17a0ed43536ba049cbcd3ca418205f2d6e4b91f2:.agents/rulebook/csharp-style.md",
+      "sourceSection": 9,
+      "sourceHash": "b4e2c50e733f8ff3ae98d4b2b7ca0ca27f0c520c3c0585cd131ecf411c5e7204",
+      "requires": [
+        "csharp-style"
+      ],
+      "paths": [],
+      "tags": [
+        "csharp-style",
+        "formatting"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-style-initializers",
+      "path": ".agents/rulebook/csharp-style.md",
+      "anchor": "csharp-style-initializers",
+      "source": "17a0ed43536ba049cbcd3ca418205f2d6e4b91f2:.agents/rulebook/csharp-style.md",
+      "sourceSection": 10,
+      "sourceHash": "c129cc1ffac6fd3030fb27b03af8bf2eded74d1cc50b0598488d29da62f19197",
+      "requires": [
+        "csharp-style"
+      ],
+      "paths": [],
+      "tags": [
+        "csharp-style",
+        "formatting"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-style-spacing",
+      "path": ".agents/rulebook/csharp-style.md",
+      "anchor": "csharp-style-spacing",
+      "source": "17a0ed43536ba049cbcd3ca418205f2d6e4b91f2:.agents/rulebook/csharp-style.md",
+      "sourceSection": 11,
+      "sourceHash": "5508d9b2b32c93600f61cb1adcdec35608156c235063a01944f27938d56560ff",
+      "requires": [
+        "csharp-style"
+      ],
+      "paths": [],
+      "tags": [
+        "csharp-style",
+        "formatting"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-style-idioms",
+      "path": ".agents/rulebook/csharp-style.md",
+      "anchor": "csharp-style-idioms",
+      "source": "17a0ed43536ba049cbcd3ca418205f2d6e4b91f2:.agents/rulebook/csharp-style.md",
+      "sourceSection": 12,
+      "sourceHash": "af1a07ca4615f20c706d65877ac916071665be1085f86c8fbe0b58fbd5422dc2",
+      "requires": [
+        "csharp-style"
+      ],
+      "paths": [],
+      "tags": [
+        "csharp-style"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-style-control-flow",
+      "path": ".agents/rulebook/csharp-style.md",
+      "anchor": "csharp-style-control-flow",
+      "source": "17a0ed43536ba049cbcd3ca418205f2d6e4b91f2:.agents/rulebook/csharp-style.md",
+      "sourceSection": 13,
+      "sourceHash": "a6631442ed62387c7841b3ca9bc518044832a0be107569491919868c04070028",
+      "requires": [
+        "csharp-style"
+      ],
+      "paths": [],
+      "tags": [
+        "csharp-style"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-style-comments",
+      "path": ".agents/rulebook/csharp-style.md",
+      "anchor": "csharp-style-comments",
+      "source": "17a0ed43536ba049cbcd3ca418205f2d6e4b91f2:.agents/rulebook/csharp-style.md",
+      "sourceSection": 14,
+      "sourceHash": "5704764651ff68d88eafe37a269de30039b0d60a3f6703863188c2daf53bef3a",
+      "requires": [
+        "csharp-style"
+      ],
+      "paths": [],
+      "tags": [
+        "csharp-style",
+        "xml"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-style-tests",
+      "path": ".agents/rulebook/csharp-style.md",
+      "anchor": "csharp-style-tests",
+      "source": "17a0ed43536ba049cbcd3ca418205f2d6e4b91f2:.agents/rulebook/csharp-style.md",
+      "sourceSection": 15,
+      "sourceHash": "c0fbf18f3133ed5f75bafeacbfd3da9784f00e08d0aaa32e33f80b5c939b1f43",
+      "requires": [
+        "csharp-style"
+      ],
+      "paths": [],
+      "tags": [
+        "csharp-style"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-style-exceptions",
+      "path": ".agents/rulebook/csharp-style.md",
+      "anchor": "csharp-style-exceptions",
+      "source": "17a0ed43536ba049cbcd3ca418205f2d6e4b91f2:.agents/rulebook/csharp-style.md",
+      "sourceSection": 16,
+      "sourceHash": "c39c03791d13c10e6b6dbd7afdc8c79006320374a95b9d3fab8635352a262cf7",
+      "requires": [
+        "csharp-style"
+      ],
+      "paths": [],
+      "tags": [
+        "csharp-style"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-style-example",
+      "path": ".agents/rulebook/csharp-style.md",
+      "anchor": "csharp-style-example",
+      "source": "17a0ed43536ba049cbcd3ca418205f2d6e4b91f2:.agents/rulebook/csharp-style.md",
+      "sourceSection": 17,
+      "sourceHash": "bbbe47646a9fbf0085c7cc8f94f9e69ff7e8f91fe6b8b39458bec09e5325469a",
+      "requires": [
+        "csharp-style"
+      ],
+      "paths": [],
+      "tags": [
+        "csharp-style"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
     },
     {
       "id": "documentation-standard-0",
@@ -6460,7 +6837,25 @@
         "csharp-standard-0",
         "csharp-standard-5",
         "csharp-standard-8",
-        "csharp-standard-9"
+        "csharp-standard-9",
+        "csharp-style",
+        "csharp-style-files",
+        "csharp-style-namespaces",
+        "csharp-style-naming",
+        "csharp-style-types",
+        "csharp-style-members",
+        "csharp-style-member-order",
+        "csharp-style-braces",
+        "csharp-style-parameters",
+        "csharp-style-line-breaks",
+        "csharp-style-initializers",
+        "csharp-style-spacing",
+        "csharp-style-idioms",
+        "csharp-style-control-flow",
+        "csharp-style-comments",
+        "csharp-style-tests",
+        "csharp-style-exceptions",
+        "csharp-style-example"
       ]
     },
     {
