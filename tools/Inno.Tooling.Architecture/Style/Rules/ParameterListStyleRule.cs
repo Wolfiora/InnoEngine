@@ -62,7 +62,11 @@ internal sealed class ParameterListStyleRule : StyleRule
         foreach (ParameterListSyntax parameters in source.root.DescendantNodes().OfType<ParameterListSyntax>())
         {
             if (parameters.OpenParenToken.IsMissing || parameters.CloseParenToken.IsMissing) continue;
-            var list = new StyleList(parameters.OpenParenToken, parameters.CloseParenToken, parameters.Parameters.ToArray<SyntaxNode>());
+            var list = new StyleList(
+                parameters.OpenParenToken,
+                parameters.CloseParenToken,
+                parameters.Parameters.ToArray<SyntaxNode>()
+            );
             bool multiLine = source.LineNumber(list.open.SpanStart) != source.LineNumber(list.close.SpanStart);
             if (list.items.Count >= 2)
             {

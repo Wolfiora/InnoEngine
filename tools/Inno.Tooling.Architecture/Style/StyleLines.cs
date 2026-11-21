@@ -24,7 +24,7 @@ internal static class StyleLines
         int line
     ) {
         TextLine textLine = source.text.Lines[line];
-        return new(textLine.Start, textLine.EndIncludingLineBreak, "");
+        return new(textLine.Start, textLine.EndIncludingLineBreak, string.Empty);
     }
 
     internal static StyleEdit InsertBefore(

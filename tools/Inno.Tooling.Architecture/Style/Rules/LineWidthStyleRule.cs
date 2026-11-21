@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -97,7 +98,11 @@ internal sealed class LineWidthStyleRule : StyleRule
                 continue;
             }
             if (parameters.SpanStart < line.Start || parameters.Span.End > line.End) continue;
-            var list = new StyleList(parameters.OpenParenToken, parameters.CloseParenToken, parameters.Parameters.ToArray<SyntaxNode>());
+            var list = new StyleList(
+                parameters.OpenParenToken,
+                parameters.CloseParenToken,
+                parameters.Parameters.ToArray<SyntaxNode>()
+            );
             return StyleLayout.Expand(source, list, protectedSpans);
         }
 
@@ -258,7 +263,7 @@ internal sealed class LineWidthStyleRule : StyleRule
             SyntaxTrivia trivia = source.root.FindTrivia(position);
             if (trivia.Span.Length > 0 && !trivia.IsKind(SyntaxKind.WhitespaceTrivia))
             {
-                longest = System.Math.Max(longest, System.Math.Min(trivia.Span.End, line.End) - position);
+                longest = Math.Max(longest, Math.Min(trivia.Span.End, line.End) - position);
                 position = trivia.Span.End;
                 continue;
             }
@@ -274,8 +279,8 @@ internal sealed class LineWidthStyleRule : StyleRule
                 static node => node is InterpolatedStringExpressionSyntax or LiteralExpressionSyntax
             );
             int end = literal is null ? token.Span.End : literal.Span.End;
-            if (literal is not null) longest = System.Math.Max(longest, System.Math.Min(end, line.End) - position);
-            position = System.Math.Max(end, position + 1);
+            if (literal is not null) longest = Math.Max(longest, Math.Min(end, line.End) - position);
+            position = Math.Max(end, position + 1);
         }
 
         return line.End - line.Start - longest <= StyleLayout.C_HARD_WIDTH - 20;

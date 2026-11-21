@@ -734,6 +734,337 @@ public sealed class StyleCommandTests
                 }
                 """
             )
+        },
+        {
+            "E-01",
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    internal void Run()
+                    {
+                        Probe value = new Probe();
+                    }
+                }
+                """
+            ),
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    internal void Run()
+                    {
+                        var value = new Probe();
+                    }
+                }
+                """
+            )
+        },
+        {
+            "M-04",
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    private readonly List<int> m_values = new List<int>();
+                    private int m_first = 1, m_second = 2;
+                }
+                """
+            ),
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    private readonly List<int> m_values = new();
+                    private int m_first = 1;
+                    private int m_second = 2;
+                }
+                """
+            )
+        },
+        {
+            "E-07",
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    internal string Run(string value = "")
+                    {
+                        string text = "";
+                        return text + value;
+                    }
+                }
+                """
+            ),
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    internal string Run(string value = "")
+                    {
+                        string text = string.Empty;
+                        return text + value;
+                    }
+                }
+                """
+            )
+        },
+        {
+            "E-11",
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    internal void Run()
+                    {
+                        Func<int, int> twice = (value) => value * 2;
+                    }
+                }
+                """
+            ),
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    internal void Run()
+                    {
+                        Func<int, int> twice = value => value * 2;
+                    }
+                }
+                """
+            )
+        },
+        {
+            "E-10",
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    internal void Run()
+                    {
+                        float ratio = 1.0F;
+                        uint mask = 0XFFu;
+                        int count = 1000000;
+                    }
+                }
+                """
+            ),
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    internal void Run()
+                    {
+                        float ratio = 1f;
+                        uint mask = 0xFFu;
+                        int count = 1_000_000;
+                    }
+                }
+                """
+            )
+        },
+        {
+            "M-05",
+            Source(
+                """
+                [Serializable, Obsolete()]
+                internal sealed class Probe
+                {
+                    [ObsoleteAttribute] internal void Run() {}
+                }
+                """
+            ),
+            Source(
+                """
+                [Serializable]
+                [Obsolete]
+                internal sealed class Probe
+                {
+                    [Obsolete]
+                    internal void Run() {}
+                }
+                """
+            )
+        },
+        {
+            "D-02",
+            Source(
+                """
+                /// <summary>Runs the probe.</summary>
+                internal sealed class Probe
+                {
+                    /// <returns>The value.</returns>
+                    /// <param name="value">The input.</param>
+                    ///
+                    /// <summary>
+                    /// Returns <c>null</c>.
+                    /// </summary>
+                    internal object Run(object value) => null;
+                }
+                """
+            ),
+            Source(
+                """
+                /// <summary>
+                /// Runs the probe.
+                /// </summary>
+                internal sealed class Probe
+                {
+                    /// <summary>
+                    /// Returns <see langword="null"/>.
+                    /// </summary>
+                    /// <param name="value">
+                    /// The input.
+                    /// </param>
+                    /// <returns>
+                    /// The value.
+                    /// </returns>
+                    internal object Run(object value) => null;
+                }
+                """
+            )
+        },
+        {
+            "D-05",
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    internal void Run()
+                    {
+                        int value = 1; //The first value.
+                        Use(value);
+                    }
+                }
+                """
+            ),
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    internal void Run()
+                    {
+                        // The first value.
+                        int value = 1;
+                        Use(value);
+                    }
+                }
+                """
+            )
+        },
+        {
+            "B-09",
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    internal void Run(int kind)
+                    {
+                        int first = 1; int second = 2;
+                        switch (kind)
+                        {
+                            case 0: Use(first); break;
+                            default: Use(second); break;
+                        }
+                    }
+                }
+                """
+            ),
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    internal void Run(int kind)
+                    {
+                        int first = 1;
+                        int second = 2;
+                        switch (kind)
+                        {
+                            case 0:
+                                Use(first);
+                                break;
+                            default:
+                                Use(second);
+                                break;
+                        }
+                    }
+                }
+                """
+            )
+        }
+    };
+
+    public static TheoryData<string, string> Kept()
+        => new()
+    {
+        {
+            "B-09",
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    internal Probe(
+                        float m11,
+                        float m12,
+                        float m21,
+                        float m22
+                    ) {
+                        this.m11 = m11; this.m12 = m12;
+                        this.m21 = m21; this.m22 = m22;
+                    }
+                }
+                """
+            )
+        },
+        {
+            "E-01",
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    internal void Run()
+                    {
+                        var pair = new { name = "probe", count = 1 };
+                        var values = new int[4];
+                        int count = values.Length;
+                    }
+                }
+                """
+            )
+        },
+        {
+            "E-07",
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    private const string C_NONE = "";
+
+                    internal string Run(string value = "")
+                        => value switch
+                    {
+                        "" => C_NONE,
+                        _ => value
+                    };
+                }
+                """
+            )
+        },
+        {
+            "E-10",
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    internal void Run()
+                    {
+                        decimal price = 1.50m;
+                        double ratio = 1.0;
+                        int year = 2026;
+                    }
+                }
+                """
+            )
         }
     };
 
@@ -758,6 +1089,28 @@ public sealed class StyleCommandTests
             Assert.Equal(0, StyleCommand.Execute(["fix", root]));
             Assert.Equal(after, File.ReadAllText(path));
             Assert.Equal(0, StyleCommand.Execute(["check", root]));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(Kept))]
+    public void ExemptConstructsAreNeitherReportedNorRewritten(
+        string rule,
+        string text
+    ) {
+        string root = CreateRoot();
+        try
+        {
+            string path = Path.Combine(root, "src", "Probe.cs");
+            File.WriteAllText(path, text);
+
+            Assert.Equal(0, StyleCommand.Execute(["check", root, "--rule", rule]));
+            Assert.Equal(0, StyleCommand.Execute(["fix", root]));
+            Assert.Equal(text, File.ReadAllText(path));
         }
         finally
         {
@@ -882,10 +1235,9 @@ public sealed class StyleCommandTests
     [InlineData("format", ".")]
     [InlineData("check", ".", "--rule")]
     [InlineData("check", ".", "--unknown", "value")]
-    public void InvalidArgumentsAreRejected(params string[] arguments)
-    {
-        Assert.Throws<ArgumentException>(() => StyleCommand.Execute(arguments));
-    }
+    public void InvalidArgumentsAreRejected(params string[] arguments) => Assert.Throws<ArgumentException>(
+        () => StyleCommand.Execute(arguments)
+    );
 
     private static string CreateRoot()
     {

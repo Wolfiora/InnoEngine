@@ -80,7 +80,7 @@ internal sealed class ParameterCloseStyleRule : StyleRule
         switch (next.Kind())
         {
             case SyntaxKind.SemicolonToken:
-                return "";
+                return string.Empty;
             case SyntaxKind.EqualsGreaterThanToken:
             case SyntaxKind.WhereKeyword:
                 return " ";

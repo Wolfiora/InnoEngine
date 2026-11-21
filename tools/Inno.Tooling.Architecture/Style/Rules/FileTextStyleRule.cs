@@ -37,7 +37,7 @@ internal sealed class FileTextStyleRule : StyleRule
         var violations = new List<Violation>();
         if (content.Length > 0 && content[0] == '\uFEFF')
         {
-            violations.Add(new(0, 1, "Remove the byte order mark.", ""));
+            violations.Add(new(0, 1, "Remove the byte order mark.", string.Empty));
         }
 
         int blankRun = 0;
@@ -52,7 +52,7 @@ internal sealed class FileTextStyleRule : StyleRule
             if (textEnd > lineStart && content[textEnd - 1] == '\r')
             {
                 textEnd--;
-                AddUnlessProtected(textEnd, textEnd + 1, "Use LF line endings.", "");
+                AddUnlessProtected(textEnd, textEnd + 1, "Use LF line endings.", string.Empty);
             }
 
             int indentEnd = lineStart;
@@ -68,11 +68,11 @@ internal sealed class FileTextStyleRule : StyleRule
                 // The whole surplus line is removed, including its line break.
                 if (blankRun > 1 && next > lineStart)
                 {
-                    AddUnlessProtected(lineStart, next, "Keep at most one consecutive blank line.", "");
+                    AddUnlessProtected(lineStart, next, "Keep at most one consecutive blank line.", string.Empty);
                 }
                 else if (textEnd > lineStart)
                 {
-                    AddUnlessProtected(lineStart, textEnd, "Remove trailing whitespace.", "");
+                    AddUnlessProtected(lineStart, textEnd, "Remove trailing whitespace.", string.Empty);
                 }
             }
             else
@@ -92,7 +92,7 @@ internal sealed class FileTextStyleRule : StyleRule
 
                 if (trimmedEnd < textEnd)
                 {
-                    AddUnlessProtected(trimmedEnd, textEnd, "Remove trailing whitespace.", "");
+                    AddUnlessProtected(trimmedEnd, textEnd, "Remove trailing whitespace.", string.Empty);
                 }
             }
 

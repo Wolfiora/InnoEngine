@@ -85,7 +85,7 @@ internal sealed class ChainStyleRule : StyleRule
                 if (index == 0 || !IsCall(links[index - 1]))
                 {
                     // The first call keeps the statement line unless its own arguments are broken and calls follow it.
-                    var arguments = ((InvocationExpressionSyntax)links[index].Parent!).ArgumentList;
+                    ArgumentListSyntax arguments = ((InvocationExpressionSyntax)links[index].Parent!).ArgumentList;
                     bool isSplit = source.LineNumber(arguments.OpenParenToken.SpanStart) != source.LineNumber(
                         arguments.CloseParenToken.SpanStart
                     );

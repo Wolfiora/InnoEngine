@@ -35,7 +35,7 @@ internal sealed class EmbeddedBraceStyleRule : StyleRule
         {
             // Innermost bodies first: an outer body is braced once its content has settled.
             if (violations.Any(other => other.body != body && body.Span.Contains(other.body.Span))) continue;
-            string indent = new(' ', source.Indentation(owner.GetFirstToken().SpanStart));
+            var indent = new string(' ', source.Indentation(owner.GetFirstToken().SpanStart));
             SyntaxToken previous = body.GetFirstToken().GetPreviousToken();
             SyntaxToken last = body.GetLastToken();
             SyntaxToken next = last.GetNextToken();

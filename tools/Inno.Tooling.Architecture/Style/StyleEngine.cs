@@ -42,6 +42,7 @@ internal static class StyleEngine
         new LeadingOperatorStyleRule(),
         new ChainStyleRule(),
         new SingleLineBlockStyleRule(),
+        new StatementLineStyleRule(),
         new BraceListStyleRule(),
         new BraceStyleRule(),
         new EmptyBodyStyleRule(),
@@ -50,7 +51,15 @@ internal static class StyleEngine
         new EmbeddedBraceStyleRule(),
         new LambdaBodyStyleRule(),
         new OperatorAlignmentStyleRule(),
-        new TrailingCommaStyleRule()
+        new TrailingCommaStyleRule(),
+        new LocalTypeStyleRule(),
+        new FieldInitializerStyleRule(),
+        new EmptyStringStyleRule(),
+        new LambdaParameterStyleRule(),
+        new NumericLiteralStyleRule(),
+        new AttributeStyleRule(),
+        new DocumentationLayoutStyleRule(),
+        new CommentStyleRule()
     ];
 
     internal static IEnumerable<string> EnumerateSources(string root)

@@ -55,7 +55,7 @@ internal sealed class UsingOrderStyleRule : StyleRule
         foreach (UsingDirectiveSyntax directive in usings.OrderBy(Group).ThenBy(Tier).ThenBy(Key, StringComparer.Ordinal))
         {
             int group = Group(directive);
-            if (previousGroup >= 0 && group != previousGroup) lines.Add("");
+            if (previousGroup >= 0 && group != previousGroup) lines.Add(string.Empty);
             lines.Add(source.content[directive.SpanStart..directive.Span.End]);
             previousGroup = group;
         }

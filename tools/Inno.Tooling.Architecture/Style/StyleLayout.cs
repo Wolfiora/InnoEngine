@@ -82,7 +82,7 @@ internal static class StyleLayout
     ) {
         string content = source.content;
         int indentation = source.Indentation(list.open.SpanStart);
-        string argumentIndent = new(' ', indentation + C_INDENT);
+        var argumentIndent = new string(' ', indentation + C_INDENT);
         var edits = new List<StyleEdit>();
         int previousEnd = list.open.Span.End;
         foreach (SyntaxNode argument in list.items)
@@ -175,7 +175,7 @@ internal static class StyleLayout
             if (!IsBlank(gap, 0, gap.Length)) return null;
             if (gap.Contains('\n'))
             {
-                gap = Glues(token, next) ? "" : " ";
+                gap = Glues(token, next) ? string.Empty : " ";
             }
 
             builder.Append(gap);

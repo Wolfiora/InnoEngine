@@ -29,7 +29,7 @@ internal sealed class TrailingCommaStyleRule : StyleRule
         var edits = new List<StyleEdit>();
         foreach (SyntaxToken comma in TrailingCommas(source.root))
         {
-            edits.Add(new(comma.SpanStart, comma.Span.End, ""));
+            edits.Add(new(comma.SpanStart, comma.Span.End, string.Empty));
         }
 
         return edits;
