@@ -7,7 +7,7 @@
 - docs 保存产品设计、原理、用法、API 与使用边界；rulebook 保存修改要求；四个标准 SKILL.md 保存工作流；records 保存计划、决策和证据。
 - [598 项迁移清单](../plans/docs-agent-migration.json) 覆盖全部基线文件；72 份原始附件哈希不变；[434 页审查登记](../plans/docs-agent-page-review.json) 覆盖全量分类、链接、包含和迁移发现。
 - 246 个实际项目均有唯一同名入口，测试与 fixture 页统一位于 development/testing；59 个长入口按完整 API 章节拆分，Native .Api 分片仍由原入口纳入覆盖。
-- [规则登记](../../rulebook/coverage.json) 保留 241 条原规则和 26 个补充来源章节，形成 58 个完整加载单元。根 AGENTS 为 3268 字节；每阶段包含根指令并受 16 KiB 预算约束，不截断规则。
+- 规则登记（`.agents/rulebook/coverage.json`） 保留 241 条原规则和 26 个补充来源章节，形成 58 个完整加载单元。根 AGENTS 为 3268 字节；每阶段包含根指令并受 16 KiB 预算约束，不截断规则。
 - 规则、skill 与记录不进入默认 docs 查询；记录修改不进入 Native 配方或全部测试的政策输入。未知可执行 Agent 输入仍保守扩大验证范围。
 - 引擎运行逻辑、公开产品 API、第三方、生成绑定和相邻仓库未修改。
 

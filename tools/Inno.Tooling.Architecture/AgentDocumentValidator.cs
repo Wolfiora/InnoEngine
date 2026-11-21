@@ -15,6 +15,8 @@ internal static class AgentDocumentValidator
         AgentLinkValidator.Validate(root, failures, ".agents");
         foreach (string entry in new[] { "AGENTS.md", "CONTRIBUTING.md", "README.md" })
             AgentLinkValidator.Validate(root, failures, entry);
+        string instructionPath = Path.Combine(root, "AGENTS.md");
+        string instructions = File.Exists(instructionPath) ? File.ReadAllText(instructionPath) : string.Empty;
         foreach (string skill in RepositorySourceInventory.Files(Path.Combine(root, ".agents", "skills"), "SKILL.md"))
         {
             string text = File.ReadAllText(skill).Replace("\r\n", "\n");
@@ -22,6 +24,10 @@ internal static class AgentDocumentValidator
             if (!text.StartsWith("---\n", StringComparison.Ordinal) || !text.Contains("\nname: " + name + "\n", StringComparison.Ordinal)
                 || !Regex.IsMatch(text, @"(?m)^description: \S.+$") || text.IndexOf("\n---\n", 4, StringComparison.Ordinal) < 0)
                 failures.Add("Invalid skill metadata: " + Path.GetRelativePath(root, skill));
+            if (!instructions.Contains("(.agents/skills/" + name + "/SKILL.md)", StringComparison.Ordinal))
+            {
+                failures.Add("Skill is not listed in AGENTS.md: " + name);
+            }
         }
         foreach (string category in new[] { "rulebook", "records", "records/plans", "records/decisions", "records/acceptance", "records/history" })
             if (!File.Exists(Path.Combine(root, ".agents", category, "README.md")))

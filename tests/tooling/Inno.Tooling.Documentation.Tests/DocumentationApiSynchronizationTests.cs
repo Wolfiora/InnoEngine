@@ -74,6 +74,74 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Equal("Preserve this unrelated guide.", File.ReadAllText(Path.Combine(m_root, "content/en/manual/keep.md")));
     }
 
+    [Fact]
+    public async Task NewProjectsReceiveSynchronizedGuidesBesideTheirOwnerKind()
+    {
+        const string C_AUTHORED = "content/en/contributing/testing/projects/authored.md";
+        const string C_AUTHORED_TEXT = "---\nuid: project.authored\ntitle: Authored\nkind: project\nowners:\n  - Inno.Authored.Tests\n---\n# Authored\n";
+        WriteGuideRegistry();
+        Write(C_AUTHORED, C_AUTHORED_TEXT);
+        SetProjects(("Inno.Probe", "src/Inno.Probe.csproj"), ("Inno.Probe.Tests", "tests/Inno.Probe.Tests/Inno.Probe.Tests.csproj"),
+            ("Inno.Adapter.Probe", "backends/Probe/Inno.Adapter.Probe.csproj"), ("Inno.Platform.Probe", "platforms/Probe/Inno.Platform.Probe.csproj"),
+            ("Inno.Authored.Tests", "tests/Inno.Authored.Tests/Inno.Authored.Tests.csproj"));
+        await Sync();
+        string source = File.ReadAllText(Path.Combine(m_root, "content/en/architecture/projects/inno-probe.md"));
+        Assert.Contains("uid: project.inno-probe\nsymbol: project:Inno.Probe\ntitle: Inno.Probe\nkind: project\nowners:\n- Inno.Probe\n", source);
+        Assert.Contains("source: xml", source);
+        Assert.Contains("The value contract.", source);
+        Assert.Contains("source: xml", File.ReadAllText(Path.Combine(m_root, "content/en/contributing/testing/projects/inno-probe-tests.md")));
+        Assert.Contains("source: xml", File.ReadAllText(Path.Combine(m_root, "content/en/backends/projects/inno-adapter-probe.md")));
+        string[] expected = ["content/en/architecture/projects/inno-probe.md", "content/en/backends/projects/inno-adapter-probe.md",
+            "content/en/contributing/testing/projects/inno-probe-tests.md"];
+        Assert.Equal(expected, GuideRegistry());
+        Assert.Equal(C_AUTHORED_TEXT, File.ReadAllText(Path.Combine(m_root, C_AUTHORED)));
+        Assert.Single(Directory.GetFiles(Path.Combine(m_root, "content/en/contributing/testing/projects")), path => path.EndsWith("inno-probe-tests.md", StringComparison.Ordinal));
+        Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-check", "--docs-root", m_root]));
+        string cache = Path.Combine(m_root, "artifacts/project-query");
+        var indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
+        using var snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
+        Assert.Contains("[!SYNCED]", (await snapshot.ExportCatalogAsync()).pages.Single(page => page.id == "project.inno-probe-tests").markdown);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RemovedProjectsDeleteSynchronizedGuidesAndPreserveAuthoredGuides(bool manual)
+    {
+        const string C_PAGE = "content/en/architecture/projects/inno-retired.md";
+        WriteGuideRegistry();
+        SetProjects(("Inno.Probe", "src/Inno.Probe.csproj"), ("Inno.Retired", "tools/Inno.Retired/Inno.Retired.csproj"));
+        await Sync();
+        string path = Path.Combine(m_root, C_PAGE);
+        if (manual) File.WriteAllText(path, File.ReadAllText(path).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal) + "\nRetained guidance.\n");
+        SetProjects(("Inno.Probe", "src/Inno.Probe.csproj"));
+        await Sync();
+        Assert.Equal(manual, File.Exists(path));
+        Assert.Equal(manual, GuideRegistry().Contains(C_PAGE));
+        if (manual) Assert.Contains("Retained guidance.", File.ReadAllText(path));
+        Assert.Contains("content/en/architecture/projects/inno-probe.md", GuideRegistry());
+        Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-check", "--docs-root", m_root]));
+    }
+
+    [Fact]
+    public async Task NewProjectGuidesCannotOverwriteUnregisteredFiles()
+    {
+        const string C_PAGE = "content/en/architecture/projects/inno-probe.md";
+        WriteGuideRegistry();
+        Write(C_PAGE, "Preserve this unregistered page.");
+        await Assert.ThrowsAsync<InvalidDataException>(() => Sync(CancellationToken.None));
+        Assert.Equal("Preserve this unregistered page.", File.ReadAllText(Path.Combine(m_root, C_PAGE)));
+        Assert.Empty(GuideRegistry());
+    }
+
+    [Fact]
+    public async Task CheckoutsWithoutAGuideRegistryDoNotManageProjectGuides()
+    {
+        await Sync();
+        Assert.False(File.Exists(Path.Combine(m_root, "reference/projects/content.json")));
+        Assert.False(Directory.Exists(Path.Combine(m_root, "content/en/architecture/projects")));
+    }
+
     [Theory]
     [InlineData("T:Inno.Probe.Value`1", "public class Inno.Probe.Value<TValue>", "Value<TValue>")]
     [InlineData("T:Inno.Probe.Value`2", "public class Inno.Probe.Value<TTarget, TArgument>", "Value<TTarget, TArgument>")]
@@ -1012,6 +1080,27 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Write("reference/api/probe.json", text);
         JsonNode binding = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/engine.lock.json")))!;
         binding["apiManifests"]![0]!["sha256"] = Hash(text);
+        Write("reference/engine.lock.json", binding.ToJsonString());
+    }
+
+    private void WriteGuideRegistry()
+        => Write("reference/projects/content.json", JsonSerializer.Serialize(new { schema = "inno-project-guides/1", entries = Array.Empty<object>() }));
+
+    private string[] GuideRegistry()
+    {
+        using JsonDocument registry = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(m_root, "reference/projects/content.json")));
+        return registry.RootElement.GetProperty("entries").EnumerateArray().Select(entry => entry.GetProperty("path").GetString()!).ToArray();
+    }
+
+    private void SetProjects(params (string name, string path)[] projects)
+    {
+        string inventory = JsonSerializer.Serialize(projects.Select(project => new
+        {
+            project.name, project.path, surfaces = new[] { "source-clr" }, isTest = project.path.StartsWith("tests/", StringComparison.Ordinal)
+        }));
+        Write("reference/projects/catalog.json", inventory);
+        JsonNode binding = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/engine.lock.json")))!;
+        binding["projectManifestIdentity"] = Hash(inventory);
         Write("reference/engine.lock.json", binding.ToJsonString());
     }
 
