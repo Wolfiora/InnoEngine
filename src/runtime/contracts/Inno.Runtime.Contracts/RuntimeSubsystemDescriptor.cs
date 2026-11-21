@@ -42,21 +42,35 @@ public sealed class RuntimeSubsystemDescriptor
         IReadOnlyList<RuntimeCapabilityId>? requiredCapabilities = null
     ) {
         if (!id.isValid)
+        {
             throw new ArgumentException("A runtime subsystem requires a valid ID.", nameof(id));
+        }
         if (!Enum.IsDefined(lifetime))
+        {
             throw new ArgumentOutOfRangeException(nameof(lifetime));
+        }
         if (!Enum.IsDefined(requirement))
+        {
             throw new ArgumentOutOfRangeException(nameof(requirement));
+        }
         RuntimeCapabilityId[] capabilities = requiredCapabilities?.ToArray() ?? [];
         if (capabilities.Any(static capability => !capability.isValid) || capabilities.Distinct().Count() != capabilities.Length)
+        {
             throw new ArgumentException("Required capabilities must be valid and unique.", nameof(requiredCapabilities));
+        }
         RuntimeSubsystemId[] dependencySnapshot = dependencies?.ToArray() ?? [];
         if (dependencySnapshot.Any(static dependency => !dependency.isValid))
+        {
             throw new ArgumentException("Runtime subsystem dependencies must be valid.", nameof(dependencies));
+        }
         if (dependencySnapshot.Contains(id))
+        {
             throw new ArgumentException("A runtime subsystem cannot depend on itself.", nameof(dependencies));
+        }
         if (dependencySnapshot.Distinct().Count() != dependencySnapshot.Length)
+        {
             throw new ArgumentException("Runtime subsystem dependencies must be unique.", nameof(dependencies));
+        }
         this.id = id;
         this.order = order;
         this.dependencies = Array.AsReadOnly(dependencySnapshot);

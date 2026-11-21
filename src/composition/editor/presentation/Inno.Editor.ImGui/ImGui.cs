@@ -2,9 +2,11 @@ using System;
 using System.Numerics;
 using BGCS.Runtime;
 using Inno.Native.ImGui;
+
 using RawImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Exposes a script-safe, pointer-free subset of Dear ImGui for custom Editor tools.
 /// Every call is valid only while an Editor drawing callback is active.
@@ -311,11 +313,15 @@ public static unsafe partial class ImGui
         ImGuiColorEditFlags flags = ImGuiColorEditFlags.None
     ) {
         if ((flags & ImGuiColorEditFlags.InputHsv) != 0)
+        {
             throw new ArgumentException("Linear RGBA editing requires RGB input storage.", nameof(flags));
+        }
         Vector4 display = new(LinearToSrgb(value.X), LinearToSrgb(value.Y), LinearToSrgb(value.Z), value.W);
         Vector4 original = display;
         if (!ColorEdit4(label, ref display, flags | ImGuiColorEditFlags.InputRgb))
+        {
             return false;
+        }
         value = new Vector4(
             display.X == original.X ? value.X : SrgbToLinear(display.X),
             display.Y == original.Y ? value.Y : SrgbToLinear(display.Y),
@@ -1077,7 +1083,9 @@ public static unsafe partial class ImGui
         EditorUiSession.current.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(text);
         if (!float.IsFinite(wrapWidth) || wrapWidth <= 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(wrapWidth));
+        }
         return ImGuiUtf8Buffer.MeasureText(text, wrapWidth);
     }
 
@@ -1310,20 +1318,26 @@ public static unsafe partial class ImGui
         ImGui.DrawNativeText(RawImGui.Raw.GetWindowDrawList(), position, color, text);
     }
 
-    internal static ImVec2C ToNative(Vector2 value) => new()
+    internal static ImVec2C ToNative(Vector2 value)
+        => new()
     {
         X = value.X,
         Y = value.Y
     };
-    internal static ImVec4C ToNative(Vector4 value) => new()
+
+    internal static ImVec4C ToNative(Vector4 value)
+        => new()
     {
         X = value.X,
         Y = value.Y,
         Z = value.Z,
         W = value.W
     };
+
     internal static Vector2 FromNative(ImVec2C value) => new(value.X, value.Y);
+
     internal static Vector4 FromNative(ImVec4C value) => new(value.X, value.Y, value.Z, value.W);
+
     internal static void DrawNativeLine(
         ImDrawList* drawList,
         Vector2 start,
@@ -1446,7 +1460,9 @@ public static unsafe partial class ImGui
         bool modal
     ) {
         using NativeStringLease nativeLabel = Utf8Codec.EncodeNullTerminated(label, allowsNull: false);
-        return (modal ? RawImGui.Raw.BeginPopupModal((sbyte*)nativeLabel.pointer, null, (int)flags) : RawImGui.Raw.Begin((sbyte*)nativeLabel.pointer, null, (int)flags)) != 0;
+        return (modal
+                ? RawImGui.Raw.BeginPopupModal((sbyte*)nativeLabel.pointer, null, (int)flags)
+                : RawImGui.Raw.Begin((sbyte*)nativeLabel.pointer, null, (int)flags)) != 0;
     }
 
     internal static uint HashNativeId(
@@ -1458,5 +1474,6 @@ public static unsafe partial class ImGui
     }
 
     private static float LinearToSrgb(float value) => value <= 0.0031308f ? value * 12.92f : 1.055f * MathF.Pow(value, 1f / 2.4f) - 0.055f;
+
     private static float SrgbToLinear(float value) => value <= 0.04045f ? value / 12.92f : MathF.Pow((value + 0.055f) / 1.055f, 2.4f);
 }

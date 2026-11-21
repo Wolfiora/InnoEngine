@@ -43,7 +43,7 @@ public static class OwnerThreadExecution
         try
         {
             Task<TResult> completion = operation()
-                ?? throw new InvalidOperationException("The owned operation returned a null task.");
+                                       ?? throw new InvalidOperationException("The owned operation returned a null task.");
             context.Pump(completion);
             return completion.GetAwaiter().GetResult();
         }
@@ -108,11 +108,17 @@ public static class OwnerThreadExecution
         internal void Pump(Task completion)
         {
             bool notified = false;
-            Task notification = completion.ContinueWith(_ => m_callbacks.Add(() => notified = true),
-                CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+            Task notification = completion.ContinueWith(
+                _ => m_callbacks.Add(() => notified = true),
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default
+            );
             // Observe completion on the owner, after the wake-up item has actually been consumed.
             while (!notified || m_callbacks.Count != 0)
+            {
                 m_callbacks.Take()();
+            }
             notification.GetAwaiter().GetResult();
         }
     }

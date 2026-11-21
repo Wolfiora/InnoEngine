@@ -1,10 +1,8 @@
 using System;
-
+using Xunit;
 using Inno.Core.Mathematics;
 using Inno.Scene;
 using Inno.Scene.Components;
-
-using Xunit;
 
 namespace Inno.Scene.Tests;
 
@@ -156,10 +154,13 @@ public sealed class TransformTests : IDisposable
         child.localScale = new Vector3(2f, 1.5f, 1f);
         var localPoint = new Vector3(0.3f, -0.6f, 0f);
 
-        Vector3 expected = Vector3.Transform(localPoint, parent.localToWorldMatrix
+        Vector3 expected = Vector3.Transform(
+            localPoint,
+            parent.localToWorldMatrix
             * Matrix.CreateTranslation(child.localPosition)
             * Matrix.CreateFromQuaternion(child.localRotation)
-            * Matrix.CreateScale(child.localScale));
+            * Matrix.CreateScale(child.localScale)
+        );
         Vector3 actual = child.TransformPoint(localPoint);
 
         AssertEqualWithTolerance(expected, actual, 1e-5f);
@@ -197,8 +198,11 @@ public sealed class TransformTests : IDisposable
         Assert.Throws<InvalidOperationException>(() => transform.InverseTransformPoint(Vector3.ONE));
     }
 
-    private static void AssertEqualWithTolerance(Vector3 expected, Vector3 actual, float tolerance)
-    {
+    private static void AssertEqualWithTolerance(
+        Vector3 expected,
+        Vector3 actual,
+        float tolerance
+    ) {
         float deltaX = expected.x - actual.x;
         float deltaY = expected.y - actual.y;
         float deltaZ = expected.z - actual.z;
@@ -207,8 +211,11 @@ public sealed class TransformTests : IDisposable
         Assert.True(distance <= tolerance);
     }
 
-    private static void AssertEqualWithTolerance(Quaternion expected, Quaternion actual, float tolerance)
-    {
+    private static void AssertEqualWithTolerance(
+        Quaternion expected,
+        Quaternion actual,
+        float tolerance
+    ) {
         float deltaX = expected.x - actual.x;
         float deltaY = expected.y - actual.y;
         float deltaZ = expected.z - actual.z;

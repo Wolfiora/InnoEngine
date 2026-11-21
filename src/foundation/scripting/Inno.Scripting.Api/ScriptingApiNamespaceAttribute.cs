@@ -32,9 +32,13 @@ public sealed class ScriptingApiNamespaceAttribute : Attribute
         ScriptingApiScope scope
     ) {
         if (string.IsNullOrWhiteSpace(name))
+        {
             throw new ArgumentException("A script API namespace is required.", nameof(name));
+        }
         if (string.IsNullOrWhiteSpace(implementationNamespace))
+        {
             throw new ArgumentException("An implementation namespace is required.", nameof(implementationNamespace));
+        }
         this.name = name;
         this.implementationNamespace = implementationNamespace;
         this.scope = scope;

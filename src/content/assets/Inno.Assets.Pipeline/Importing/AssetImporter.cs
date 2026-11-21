@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Core.Serialization;
 
@@ -42,9 +41,11 @@ public abstract class AssetImporter
     /// <summary>
     /// Gets the stable importer implementation identifier.
     /// </summary>
-    public string importerId => m_importerId
-        ?? throw new InvalidOperationException(
-            $"Asset importer '{GetType().FullName}' has not been bound to discovery metadata.");
+    public string importerId
+        => m_importerId
+           ?? throw new InvalidOperationException(
+               $"Asset importer '{GetType().FullName}' has not been bound to discovery metadata."
+           );
 
     /// <summary>
     /// Gets whether imported assets are deployed or retained only for authoring workflows.
@@ -74,6 +75,7 @@ public abstract class AssetImporter
         AssetImportContext context,
         CancellationToken cancellationToken
     );
+
     internal abstract ValueTask<ReadOnlyMemory<byte>?> ExportInternalAsync(
         AssetExportContext context,
         AssetObject asset,
@@ -86,7 +88,8 @@ public abstract class AssetImporter
         if (m_importerId is not null && !string.Equals(m_importerId, id, StringComparison.Ordinal))
         {
             throw new InvalidOperationException(
-                $"Asset importer '{GetType().FullName}' cannot be bound to more than one protocol ID.");
+                $"Asset importer '{GetType().FullName}' cannot be bound to more than one protocol ID."
+            );
         }
         m_importerId = id;
     }
@@ -98,7 +101,8 @@ public abstract class AssetImporter
 /// <typeparam name="TAsset">
 /// The concrete imported asset type.
 /// </typeparam>
-public abstract class AssetImporter<TAsset> : AssetImporter where TAsset : AssetObject
+public abstract class AssetImporter<TAsset> : AssetImporter
+    where TAsset : AssetObject
 {
     /// <summary>
     /// Gets the runtime asset type accepted by this importer implementation.
@@ -145,8 +149,7 @@ public abstract class AssetImporter<TAsset> : AssetImporter where TAsset : Asset
         AssetExportContext context,
         TAsset asset,
         CancellationToken cancellationToken
-    )
-        => ValueTask.FromResult<ReadOnlyMemory<byte>?>(null);
+    ) => ValueTask.FromResult<ReadOnlyMemory<byte>?>(null);
 
     internal sealed override async ValueTask<AssetImportProduct> ImportInternalAsync(
         AssetImportContext context,
@@ -163,7 +166,9 @@ public abstract class AssetImporter<TAsset> : AssetImporter where TAsset : Asset
         CancellationToken cancellationToken
     ) {
         if (asset is TAsset typed)
+        {
             return ExportAsync(context, typed, cancellationToken);
+        }
         return ValueTask.FromResult<ReadOnlyMemory<byte>?>(null);
     }
 }
@@ -183,6 +188,6 @@ internal readonly struct AssetImportProduct(
 
     internal ReadOnlyMemory<byte> runtimePayload
         => outputs.TryGetValue("runtime", out ReadOnlyMemory<byte> bytes)
-            ? bytes
-            : ReadOnlyMemory<byte>.Empty;
+           ? bytes
+           : ReadOnlyMemory<byte>.Empty;
 }

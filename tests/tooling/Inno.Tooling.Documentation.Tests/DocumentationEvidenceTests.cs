@@ -7,14 +7,19 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Core.IO;
 using Xunit;
+using Inno.Core.IO;
 
 namespace Inno.Tooling.Documentation.Tests;
 
 public sealed class DocumentationEvidenceTests : IDisposable
 {
-    private readonly string m_root = Path.Combine(new PhysicalPathResolver().Resolve(Path.GetTempPath()), "InnoDocumentationEvidence", Guid.NewGuid().ToString("N"));
+    private readonly string m_root = Path.Combine(
+        new PhysicalPathResolver().Resolve(Path.GetTempPath()),
+        "InnoDocumentationEvidence",
+        Guid.NewGuid().ToString("N")
+    );
+
     private string cache => Path.Combine(m_root, "cache");
     private string source => Path.Combine(m_root, "source");
 
@@ -38,7 +43,9 @@ public sealed class DocumentationEvidenceTests : IDisposable
         byte[] original = File.ReadAllBytes(manifest);
         File.WriteAllText(Path.Combine(source, "content/en/probe.md"), "Mutable authoring changes are not read by a prepared session.");
         File.WriteAllText(Path.Combine(m_root, "certificate.json"), "The imported immutable value does not retain a file dependency.");
-        DocumentationResult[] results = await Task.WhenAll(Enumerable.Range(0, 8).Select(_ => verified.QueryAsync(new("search", "ownership"))));
+        DocumentationResult[] results = await Task.WhenAll(
+            Enumerable.Range(0, 8).Select(_ => verified.QueryAsync(new("search", "ownership")))
+        );
         Assert.All(results, result =>
         {
             Assert.Equal("Verified", result.sourceApiStatus);
@@ -51,7 +58,11 @@ public sealed class DocumentationEvidenceTests : IDisposable
         using DocumentationSnapshot prose = await DocumentationStore.OpenAsync(cache, sourceEvidence: evidence);
         Assert.NotEqual(raw.identity, prose.identity);
         Assert.Equal("Verified", (await prose.ExportCatalogAsync()).sourceApiStatus);
-        using DocumentationSnapshot mismatch = await DocumentationStore.OpenAsync(cache, expectedSourceTree: new string('c', 40), sourceEvidence: evidence);
+        using DocumentationSnapshot mismatch = await DocumentationStore.OpenAsync(
+            cache,
+            expectedSourceTree: new string('c', 40),
+            sourceEvidence: evidence
+        );
         Assert.Equal("Mismatched", (await mismatch.QueryAsync(new("status"))).status);
         Assert.Equal("Unverified", (await mismatch.QueryAsync(new("status"))).sourceApiStatus);
     }
@@ -69,17 +80,32 @@ public sealed class DocumentationEvidenceTests : IDisposable
     public async Task MatchingDigestCannotCertifyDifferentSourceOrReferenceCoverage(string change)
     {
         JsonNode certificate = await PrepareAsync();
-        if (change == "repository") certificate[change] = "https://example.invalid/other";
-        else if (change == "sourceTree") certificate[change] = new string('c', 40);
-        else if (change == "projectManifestIdentity") certificate[change] = new string('c', 64);
+        if (change == "repository")
+        {
+            certificate[change] = "https://example.invalid/other";
+        }
+        else if (change == "sourceTree")
+        {
+            certificate[change] = new string('c', 40);
+        }
+        else if (change == "projectManifestIdentity")
+        {
+            certificate[change] = new string('c', 64);
+        }
         else if (change == "extra-reference")
         {
             JsonNode extra = certificate["references"]![0]!.DeepClone();
             extra["path"] = "reference/api/extra.json";
             certificate["references"]!.AsArray().Add(extra);
         }
-        else if (change == "projects") certificate["references"]![0]![change] = new JsonArray("Other");
-        else certificate["references"]![0]![change] = change == "identity" ? new string('c', 64) : "different";
+        else if (change == "projects")
+        {
+            certificate["references"]![0]![change] = new JsonArray("Other");
+        }
+        else
+        {
+            certificate["references"]![0]![change] = change == "identity" ? new string('c', 64) : "different";
+        }
         DocumentationEvidence evidence = await ReadAsync(certificate);
         await Assert.ThrowsAsync<InvalidDataException>(() => DocumentationStore.OpenAsync(cache, sourceEvidence: evidence));
         using DocumentationSnapshot retained = await DocumentationStore.OpenAsync(cache);
@@ -120,9 +146,23 @@ public sealed class DocumentationEvidenceTests : IDisposable
             case "escaping-source-file": certificate["sourceFiles"]![0]!["path"] = "../secret"; break;
             case "missing-input-group":
             case "different-input-group":
-                certificate["examples"] = JsonSerializer.SerializeToNode(new[] { new { contexts = new[] {
-                    new { platform = "foreign", configuration = "Debug", target = (string?)null,
-                        reportIdentity = new string('d', 64), inputGroup = change == "missing-input-group" ? 9 : 0 } } } });
+                certificate["examples"] = JsonSerializer.SerializeToNode(new[]
+                {
+                    new
+                    {
+                        contexts = new[]
+                        {
+                            new
+                            {
+                                platform = "foreign",
+                                configuration = "Debug",
+                                target = (string?)null,
+                                reportIdentity = new string('d', 64),
+                                inputGroup = change == "missing-input-group" ? 9 : 0
+                            }
+                        }
+                    }
+                });
                 break;
         }
         await Assert.ThrowsAsync<InvalidDataException>(() => ReadAsync(certificate));
@@ -138,10 +178,21 @@ public sealed class DocumentationEvidenceTests : IDisposable
         await Assert.ThrowsAsync<InvalidDataException>(() => DocumentationEvidence.ReadAsync(file, evidence.identity));
         using var canceled = new CancellationTokenSource();
         canceled.Cancel();
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => DocumentationEvidence.ReadAsync(file, Hash(File.ReadAllBytes(file)), canceled.Token));
-        await Assert.ThrowsAsync<ArgumentException>(() => DocumentationCommand.ExecuteAsync(["status", "--cache-root", cache, "--evidence-file", file]));
-        await Assert.ThrowsAsync<ArgumentException>(() => DocumentationCommand.ExecuteAsync(["index", "--docs-root", source,
-            "--evidence-file", file, "--evidence-sha256", evidence.identity]));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => DocumentationEvidence.ReadAsync(file, Hash(File.ReadAllBytes(file)), canceled.Token)
+        );
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => DocumentationCommand.ExecuteAsync(["status", "--cache-root", cache, "--evidence-file", file])
+        );
+        await Assert.ThrowsAsync<ArgumentException>(() => DocumentationCommand.ExecuteAsync([
+            "index",
+            "--docs-root",
+            source,
+            "--evidence-file",
+            file,
+            "--evidence-sha256",
+            evidence.identity
+        ]));
     }
 
     [Theory]
@@ -164,31 +215,82 @@ public sealed class DocumentationEvidenceTests : IDisposable
 
     private async Task<JsonNode> PrepareAsync()
     {
-        byte[] projects = JsonSerializer.SerializeToUtf8Bytes(new[] { new { name = "Probe", path = "src/Probe.csproj", surfaces = new[] { "source-clr" } } });
-        byte[] api = JsonSerializer.SerializeToUtf8Bytes(new { model = "source-clr", configuration = "Debug", target = (string?)null,
-            projects = new[] { new { name = "Probe", project = "src/Probe.csproj", symbols = Array.Empty<object>() } } });
+        byte[] projects = JsonSerializer.SerializeToUtf8Bytes(
+            new[] { new { name = "Probe", path = "src/Probe.csproj", surfaces = new[] { "source-clr" } } }
+        );
+        byte[] api = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            model = "source-clr",
+            configuration = "Debug",
+            target = (string?)null,
+            projects = new[] { new { name = "Probe", project = "src/Probe.csproj", symbols = Array.Empty<object>() } }
+        });
         Write("reference/projects/catalog.json", Encoding.UTF8.GetString(projects));
         Write("reference/api/probe.json", Encoding.UTF8.GetString(api));
-        Write("reference/engine.lock.json", JsonSerializer.Serialize(new
-        {
-            repository = "https://github.com/Wolfiora/InnoEngine", revision = new string('a', 40), sourceTree = new string('b', 40),
-            toolingRevision = new string('a', 40), projectManifest = "reference/projects/catalog.json", projectManifestIdentity = Hash(projects),
-            apiManifests = new[] { new { path = "reference/api/probe.json", sha256 = Hash(api), model = "source-clr", configuration = "Debug",
-                target = (string?)null, sourceRevision = new string('a', 40), sourceTree = new string('b', 40) } }
-        }));
-        Write("content/en/probe.md", "---\nuid: probe\nkind: project\nowners: [Probe]\n---\n# Ownership task\n\nThe caller owns the result.\n");
+        Write(
+            "reference/engine.lock.json",
+            JsonSerializer.Serialize(new
+            {
+                repository = "https://github.com/Wolfiora/InnoEngine",
+                revision = new string('a', 40),
+                sourceTree = new string('b', 40),
+                toolingRevision = new string('a', 40),
+                projectManifest = "reference/projects/catalog.json",
+                projectManifestIdentity = Hash(projects),
+                apiManifests = new[]
+                {
+                    new
+                    {
+                        path = "reference/api/probe.json",
+                        sha256 = Hash(api),
+                        model = "source-clr",
+                        configuration = "Debug",
+                        target = (string?)null,
+                        sourceRevision = new string('a', 40),
+                        sourceTree = new string('b', 40)
+                    }
+                }
+            })
+        );
+        Write(
+            "content/en/probe.md",
+            "---\nuid: probe\nkind: project\nowners: [Probe]\n---\n# Ownership task\n\nThe caller owns the result.\n"
+        );
         await DocumentationStore.IndexAsync(m_root, source, cache);
         return JsonSerializer.SerializeToNode(new
         {
-            format = "inno-documentation-source/2", repository = "https://github.com/Wolfiora/InnoEngine", sourceTree = new string('b', 40),
+            format = "inno-documentation-source/2",
+            repository = "https://github.com/Wolfiora/InnoEngine",
+            sourceTree = new string('b', 40),
             projectManifestIdentity = Hash(projects),
             sourceFiles = new[] { new { path = "src/Probe.cs", identity = new string('a', 64) } },
             sourceSets = new[] { new[] { 0 } },
-            inputGroups = new[] { new { platform = "fixture", configuration = "Debug", target = (string?)null,
-                reportIdentity = new string('d', 64), inputs = new[] { new { sourceSet = 0 } } } },
-            inputs = new[] { new { sourceSet = 0 } }, examples = Array.Empty<object>(), scriptReferences = Array.Empty<object>(),
-            references = new[] { new { path = "reference/api/probe.json", identity = Hash(api), model = "source-clr", configuration = "Debug",
-                target = (string?)null, projects = new[] { "Probe" } } },
+            inputGroups = new[]
+            {
+                new
+                {
+                    platform = "fixture",
+                    configuration = "Debug",
+                    target = (string?)null,
+                    reportIdentity = new string('d', 64),
+                    inputs = new[] { new { sourceSet = 0 } }
+                }
+            },
+            inputs = new[] { new { sourceSet = 0 } },
+            examples = Array.Empty<object>(),
+            scriptReferences = Array.Empty<object>(),
+            references = new[]
+            {
+                new
+                {
+                    path = "reference/api/probe.json",
+                    identity = Hash(api),
+                    model = "source-clr",
+                    configuration = "Debug",
+                    target = (string?)null,
+                    projects = new[] { "Probe" }
+                }
+            },
             producers = new[] { new { origin = "fixture://reconciled-local-producer", receiptIdentity = new string('d', 64) } }
         })!;
     }
@@ -201,8 +303,10 @@ public sealed class DocumentationEvidenceTests : IDisposable
         return DocumentationEvidence.ReadAsync(file, Hash(bytes));
     }
 
-    private void Write(string relative, string content)
-    {
+    private void Write(
+        string relative,
+        string content
+    ) {
         string file = Path.Combine(source, relative);
         Directory.CreateDirectory(Path.GetDirectoryName(file)!);
         File.WriteAllText(file, content);

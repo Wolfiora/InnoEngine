@@ -25,9 +25,13 @@ internal sealed class SettingsNavigation
     {
         ArgumentNullException.ThrowIfNull(path);
         if (string.Equals(currentPath, path, StringComparison.Ordinal))
+        {
             return;
+        }
         if (!string.IsNullOrEmpty(currentPath))
+        {
             m_back.Push(currentPath);
+        }
         currentPath = path;
         m_forward.Clear();
     }
@@ -41,18 +45,26 @@ internal sealed class SettingsNavigation
     internal void GoBack()
     {
         if (!m_back.TryPop(out string? path))
+        {
             return;
+        }
         if (!string.IsNullOrEmpty(currentPath))
+        {
             m_forward.Push(currentPath);
+        }
         currentPath = path;
     }
 
     internal void GoForward()
     {
         if (!m_forward.TryPop(out string? path))
+        {
             return;
+        }
         if (!string.IsNullOrEmpty(currentPath))
+        {
             m_back.Push(currentPath);
+        }
         currentPath = path;
     }
 }

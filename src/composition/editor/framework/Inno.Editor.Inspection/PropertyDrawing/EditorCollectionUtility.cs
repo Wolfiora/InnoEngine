@@ -36,9 +36,9 @@ internal static class EditorCollectionUtility
             }
 
             Type candidateElementType = candidate.GetGenericArguments()[0];
-            if (candidateElementType.IsGenericType &&
-                candidateElementType.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
-            {
+            if (candidateElementType.IsGenericType
+                && candidateElementType.GetGenericTypeDefinition() == typeof(KeyValuePair<,>)
+            ) {
                 continue;
             }
 
@@ -184,7 +184,8 @@ internal static class EditorCollectionUtility
         ConstructorInfo? constructor = FindSingleArgumentConstructor(
             targetType,
             listType,
-            typeof(IEnumerable<>).MakeGenericType(elementType));
+            typeof(IEnumerable<>).MakeGenericType(elementType)
+        );
         if (constructor is not null)
         {
             return constructor.Invoke([list]);
@@ -199,7 +200,7 @@ internal static class EditorCollectionUtility
         if (!targetType.IsAbstract && ResolveSequenceAddMethod(targetType, elementType) is MethodInfo addMethod)
         {
             object instance = Activator.CreateInstance(targetType, nonPublic: true)
-                ?? throw new InvalidOperationException($"Cannot create sequence type '{targetType.FullName}'.");
+                              ?? throw new InvalidOperationException($"Cannot create sequence type '{targetType.FullName}'.");
             for (int i = 0; i < values.Count; i++)
             {
                 addMethod.Invoke(instance, [values[i]]);
@@ -209,7 +210,8 @@ internal static class EditorCollectionUtility
         }
 
         throw new InvalidOperationException(
-            $"Cannot construct sequence type '{targetType.FullName}'. Provide ctor(IEnumerable<T>), static CreateRange/Create, or Add(T).");
+            $"Cannot construct sequence type '{targetType.FullName}'. Provide ctor(IEnumerable<T>), static CreateRange/Create, or Add(T)."
+        );
     }
 
     internal static object BuildMap(
@@ -231,7 +233,8 @@ internal static class EditorCollectionUtility
         ConstructorInfo? constructor = FindSingleArgumentConstructor(
             targetType,
             pairListType,
-            typeof(IEnumerable<>).MakeGenericType(pairType));
+            typeof(IEnumerable<>).MakeGenericType(pairType)
+        );
         if (constructor is not null)
         {
             return constructor.Invoke([pairList]);
@@ -246,7 +249,7 @@ internal static class EditorCollectionUtility
         if (!targetType.IsAbstract && ResolveMapAddMethod(targetType, keyType, valueType) is MethodInfo addMethod)
         {
             object instance = Activator.CreateInstance(targetType, nonPublic: true)
-                ?? throw new InvalidOperationException($"Cannot create map type '{targetType.FullName}'.");
+                              ?? throw new InvalidOperationException($"Cannot create map type '{targetType.FullName}'.");
             for (int i = 0; i < entries.Count; i++)
             {
                 KeyValuePair<object?, object?> entry = entries[i];
@@ -257,7 +260,8 @@ internal static class EditorCollectionUtility
         }
 
         throw new InvalidOperationException(
-            $"Cannot construct map type '{targetType.FullName}'. Provide ctor(IEnumerable<KeyValuePair<K,V>>), static CreateRange/Create, or Add(K,V).");
+            $"Cannot construct map type '{targetType.FullName}'. Provide ctor(IEnumerable<KeyValuePair<K,V>>), static CreateRange/Create, or Add(K,V)."
+        );
     }
 
     private static object BuildTypedList(
@@ -282,9 +286,7 @@ internal static class EditorCollectionUtility
         for (int i = 0; i < entries.Count; i++)
         {
             KeyValuePair<object?, object?> entry = entries[i];
-            dictionary.Add(
-                entry.Key ?? throw new InvalidOperationException("Map keys cannot be null."),
-                entry.Value);
+            dictionary.Add(entry.Key ?? throw new InvalidOperationException("Map keys cannot be null."), entry.Value);
         }
 
         return dictionary;
@@ -310,7 +312,8 @@ internal static class EditorCollectionUtility
         params Type[] candidateArgumentTypes
     ) {
         ConstructorInfo[] constructors = targetType.GetConstructors(
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+        );
         for (int i = 0; i < constructors.Length; i++)
         {
             ParameterInfo[] parameters = constructors[i].GetParameters();
@@ -337,11 +340,12 @@ internal static class EditorCollectionUtility
     ) {
         return targetType
             .GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-            .FirstOrDefault(method =>
-                (method.Name == "CreateRange" || method.Name == "Create") &&
-                targetType.IsAssignableFrom(method.ReturnType) &&
-                method.GetParameters().Length == 1 &&
-                method.GetParameters()[0].ParameterType.IsAssignableFrom(argumentType));
+            .FirstOrDefault(method => (
+                (method.Name == "CreateRange" || method.Name == "Create")
+                && targetType.IsAssignableFrom(method.ReturnType)
+                && method.GetParameters().Length == 1
+                && method.GetParameters()[0].ParameterType.IsAssignableFrom(argumentType)
+            ));
     }
 
     private static MethodInfo? ResolveSequenceAddMethod(
@@ -353,7 +357,8 @@ internal static class EditorCollectionUtility
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
             binder: null,
             types: [elementType],
-            modifiers: null);
+            modifiers: null
+        );
         if (direct is not null)
         {
             return direct;
@@ -361,8 +366,8 @@ internal static class EditorCollectionUtility
 
         Type collectionInterface = typeof(ICollection<>).MakeGenericType(elementType);
         return collectionInterface.IsAssignableFrom(targetType)
-            ? collectionInterface.GetMethod("Add", [elementType])
-            : null;
+               ? collectionInterface.GetMethod("Add", [elementType])
+               : null;
     }
 
     private static MethodInfo? ResolveMapAddMethod(
@@ -375,7 +380,8 @@ internal static class EditorCollectionUtility
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
             binder: null,
             types: [keyType, valueType],
-            modifiers: null);
+            modifiers: null
+        );
         if (direct is not null)
         {
             return direct;
@@ -383,8 +389,8 @@ internal static class EditorCollectionUtility
 
         Type dictionaryInterface = typeof(IDictionary<,>).MakeGenericType(keyType, valueType);
         return dictionaryInterface.IsAssignableFrom(targetType)
-            ? dictionaryInterface.GetMethod("Add", [keyType, valueType])
-            : null;
+               ? dictionaryInterface.GetMethod("Add", [keyType, valueType])
+               : null;
     }
 
     private static IEnumerable<Type> EnumerateSelfAndInterfaces(Type type)

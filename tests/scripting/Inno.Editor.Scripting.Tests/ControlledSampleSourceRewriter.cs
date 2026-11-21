@@ -1,6 +1,5 @@
 using System;
 using System.Threading;
-
 using Inno.Assets.Pipeline;
 
 namespace Inno.Editor.Scripting.Tests;
@@ -14,22 +13,28 @@ internal sealed class ControlledSampleSourceRewriter : IAssetSampleSourceRewrite
     /// <summary>
     /// Captures the current test-owned control through the real source rewriter discovery contract.
     /// </summary>
-    public ControlledSampleSourceRewriter()
-    {
-    }
+    public ControlledSampleSourceRewriter() {}
 
-    internal static Control? current { get => m_current.Value; set => m_current.Value = value; }
+    internal static Control? current
+    {
+        get => m_current.Value;
+        set => m_current.Value = value;
+    }
 
     /// <inheritdoc />
     public void Transform(AssetSampleTransformContext context)
     {
         if (m_control is null)
+        {
             return;
+        }
         m_control.workerThread = Environment.CurrentManagedThreadId;
         m_control.started.Set();
         using CancellationTokenRegistration cancellation = context.cancellationToken.Register(m_control.canceled.Set);
         if (!m_control.release.Wait(TimeSpan.FromSeconds(15)))
+        {
             throw new TimeoutException("The test-owned source rewriter was not released.");
+        }
         context.cancellationToken.ThrowIfCancellationRequested();
     }
 

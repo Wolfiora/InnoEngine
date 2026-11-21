@@ -5,10 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Inno.Core.Logging;
-
 using Xunit;
+using Inno.Core.Logging;
 
 namespace Inno.Core.Logging.Tests;
 
@@ -63,7 +61,6 @@ public sealed class LoggingBehaviorTests : IDisposable
         m_router.UnregisterSink(sink);
     }
 
-
     [Fact]
     public void UnknownDeliveryPoliciesFailAtConstruction()
     {
@@ -104,8 +101,14 @@ public sealed class LoggingBehaviorTests : IDisposable
         int reported = 0;
         if (failingObserver)
         {
-            router.sinkFailed += (_, _) => throw new InvalidOperationException("Expected observer failure.");
-            router.sinkFailed += (_, _) => reported++;
+            router.sinkFailed += (
+                _,
+                _
+            ) => throw new InvalidOperationException("Expected observer failure.");
+            router.sinkFailed += (
+                _,
+                _
+            ) => reported++;
         }
         router.RegisterSink(failing);
         router.RegisterSink(healthy);
@@ -243,7 +246,10 @@ public sealed class LoggingBehaviorTests : IDisposable
         using var healthy = new ProbeSink();
         ILogSink? reportedSink = null;
         Exception? reportedFailure = null;
-        m_router.sinkFailed += (sink, failure) =>
+        m_router.sinkFailed += (
+            sink,
+            failure
+        ) =>
         {
             reportedSink = sink;
             reportedFailure = failure;
@@ -272,7 +278,9 @@ public sealed class LoggingBehaviorTests : IDisposable
         m_router.RegisterSink(sink);
 
         for (var i = 0; i < 80; i++)
+        {
             Log.Warn(typeof(LoggingBehaviorTests), "line-{0}", [i]);
+        }
 
         m_router.Flush();
         m_router.UnregisterSink(sink);
@@ -304,13 +312,17 @@ public sealed class LoggingBehaviorTests : IDisposable
             m_signal.Set();
         }
 
-        public bool WaitForCount(int count, TimeSpan timeout)
-        {
+        public bool WaitForCount(
+            int count,
+            TimeSpan timeout
+        ) {
             var deadline = DateTime.UtcNow + timeout;
             while (DateTime.UtcNow < deadline)
             {
                 if (m_entries.Count >= count)
+                {
                     return true;
+                }
 
                 m_signal.Wait(TimeSpan.FromMilliseconds(20));
                 m_signal.Reset();

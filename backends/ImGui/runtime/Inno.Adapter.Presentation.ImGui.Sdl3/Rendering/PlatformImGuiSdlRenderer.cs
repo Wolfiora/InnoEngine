@@ -1,11 +1,11 @@
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using System;
 using System.Numerics;
-
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Inno.Adapter.Platform.Sdl3;
-using Inno.Native.Sdl3;
 using Inno.Native.ImGui;
+using Inno.Native.Sdl3;
+
 using ImGuiNative = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Adapter.Presentation.ImGui;
@@ -78,7 +78,7 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-    public void ResizeViewport(PlatformImGuiViewportTarget target) { }
+    public void ResizeViewport(PlatformImGuiViewportTarget target) {}
 
     /// <summary>
     /// Records ImGui draw data for the supplied auxiliary viewport.
@@ -92,7 +92,7 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
     public void RenderViewport(
         PlatformImGuiViewportTarget target,
         IntPtr drawData
-    ) { }
+    ) {}
 
     /// <summary>
     /// Presents the completed frame for the supplied auxiliary viewport.
@@ -100,7 +100,7 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-    public void PresentViewport(PlatformImGuiViewportTarget target) { }
+    public void PresentViewport(PlatformImGuiViewportTarget target) {}
 
     /// <summary>
     /// Destroys the auxiliary viewport and releases its rendering resources.
@@ -114,7 +114,7 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
     public Task RetireViewport(PlatformImGuiViewportTarget target) => Task.CompletedTask;
 
     /// <inheritdoc />
-    public void DrainViewportRetirements() { }
+    public void DrainViewportRetirements() {}
 
     internal void Render(ImDrawData* drawData)
     {
@@ -176,8 +176,10 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
 
                 var clipRect = new SDLRect
                 {
-                    X = (int)clipRectX, Y = (int)clipRectY,
-                    W = (int)(clipRectZ - clipRectX), H = (int)(clipRectW - clipRectY)
+                    X = (int)clipRectX,
+                    Y = (int)clipRectY,
+                    W = (int)(clipRectZ - clipRectX),
+                    H = (int)(clipRectW - clipRectY)
                 };
 
                 if (SDL.Raw.SetRenderClipRect(m_renderer, &clipRect) == 0)
@@ -211,13 +213,7 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
                 fixed (SDLVertex* pVertices = m_vertexScratch)
                 fixed (int* pIndices = m_indexScratch)
                 {
-                    _ = SDL.Raw.RenderGeometry(
-                        m_renderer,
-                        texture,
-                        pVertices,
-                        vertexCount,
-                        pIndices,
-                        elemCount);
+                    _ = SDL.Raw.RenderGeometry(m_renderer, texture, pVertices, vertexCount, pIndices, elemCount);
                 }
             }
         }
@@ -239,11 +235,7 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
         // A macOS live-resize expose callback can run before SDL's renderer event watcher has
         // consumed the matching pixel-size event. Re-applying the disabled presentation mode
         // makes SDL query the native drawable immediately instead of clipping to its old size.
-        _ = SDL.Raw.SetRenderLogicalPresentation(
-            m_renderer,
-            0,
-            0,
-            SDLRendererLogicalPresentation.Disabled);
+        _ = SDL.Raw.SetRenderLogicalPresentation(m_renderer, 0, 0, SDLRendererLogicalPresentation.Disabled);
         _ = SDL.Raw.SetRenderViewport(m_renderer, null);
         _ = SDL.Raw.SetRenderClipRect(m_renderer, null);
     }

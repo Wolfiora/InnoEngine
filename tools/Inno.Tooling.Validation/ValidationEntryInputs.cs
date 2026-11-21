@@ -32,11 +32,19 @@ internal sealed class ValidationEntryInputs
                 {
                     JsonElement properties = instance.GetProperty("GlobalProperties");
                     bool entry = ValidationCompiledGraph.SameProperties(snapshot.GetProperty("GlobalProperties"), properties);
-                    if (entry ? index != 0 : !variant.GetProperty("EquivalentGlobalProperties").EnumerateArray()
-                        .Any(candidate => ValidationCompiledGraph.SameProperties(candidate, properties)))
+                    if (entry ? index != 0 : !variant.GetProperty("EquivalentGlobalProperties")
+                        .EnumerateArray()
+                        .Any(candidate => ValidationCompiledGraph.SameProperties(candidate, properties))
+                    ) {
                         continue;
-                    m_nodes.Add(instance.GetProperty("Identity").GetString()!, (key, variant, instance.GetProperty("References")
-                        .EnumerateArray().Select(static item => item.GetString()!).ToArray()));
+                    }
+                    m_nodes.Add(
+                        instance.GetProperty("Identity").GetString()!,
+                        (key, variant, instance.GetProperty("References")
+                            .EnumerateArray()
+                            .Select(static item => item.GetString()!)
+                            .ToArray())
+                    );
                 }
             }
         }
@@ -55,11 +63,15 @@ internal sealed class ValidationEntryInputs
         while (pending.TryPop(out string? id))
         {
             if (!visited.Add(id))
+            {
                 continue;
+            }
             var node = m_nodes[id];
             keys.Add(node.key);
             foreach (string reference in node.references)
+            {
                 pending.Push(reference);
+            }
         }
         return keys.Order(StringComparer.Ordinal).ToArray();
     }

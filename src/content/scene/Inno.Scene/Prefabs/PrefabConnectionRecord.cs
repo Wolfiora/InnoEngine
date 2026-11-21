@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Assets;
 
 namespace Inno.Scene;
@@ -46,5 +45,6 @@ internal sealed class PrefabConnectionRecord
     }
 
     internal void RemoveObject(Guid sourceId) => m_objectIdentities.Remove(sourceId);
+
     internal void RemoveComponent(Guid sourceId) => m_componentIdentities.Remove(sourceId);
 }

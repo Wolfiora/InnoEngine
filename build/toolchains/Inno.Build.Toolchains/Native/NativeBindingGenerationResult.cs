@@ -40,7 +40,9 @@ public sealed class NativeBindingGenerationResult : IReadOnlyDictionary<string, 
         var copy = new Dictionary<string, NativeBindingGenerationDescriptor>(generations, StringComparer.Ordinal);
         IDisposable[] owners = ownership.ToArray();
         if (copy.Values.Any(static value => value is null) || owners.Any(static value => value is null))
+        {
             throw new ArgumentException("Generation and ownership entries must be non-null.");
+        }
         m_generations = new ReadOnlyDictionary<string, NativeBindingGenerationDescriptor>(copy);
         m_ownership = owners;
     }
@@ -123,7 +125,9 @@ public sealed class NativeBindingGenerationResult : IReadOnlyDictionary<string, 
     {
         IDisposable[]? owners = Interlocked.Exchange(ref m_ownership, null);
         if (owners is null)
+        {
             return;
+        }
         List<Exception> failures = [];
         for (int index = owners.Length - 1; index >= 0; index--)
         {
@@ -137,7 +141,9 @@ public sealed class NativeBindingGenerationResult : IReadOnlyDictionary<string, 
             }
         }
         if (failures.Count != 0)
+        {
             throw new AggregateException("Binding reading ownership could not be completely released.", failures);
+        }
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

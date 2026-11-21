@@ -1,8 +1,10 @@
 using System;
 using Inno.Native.ImGui;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
+
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
@@ -76,11 +78,17 @@ public sealed partial class ImGuiWidget
         m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         if (width < 0f)
+        {
             width = style.searchPopupWidth;
+        }
         if (!BeginMenuPopup(id))
+        {
             return false;
+        }
         if (NativeImGui.IsWindowAppearing())
+        {
             NativeImGui.SetKeyboardFocusHere();
+        }
         _ = SearchInput(id, hint, ref query, capacity, width);
         NativeImGui.Separator();
         return true;

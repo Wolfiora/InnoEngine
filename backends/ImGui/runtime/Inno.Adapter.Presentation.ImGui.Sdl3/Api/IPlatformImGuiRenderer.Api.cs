@@ -1,6 +1,6 @@
+using System;
 using System.Threading.Tasks;
 using Inno.Adapter.Platform;
-using System;
 using Inno.Platform;
 
 namespace Inno.Adapter.Presentation.ImGui;

@@ -3,10 +3,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Core.IO;
 using Inno.Core.Input;
 using Inno.Editor.Core;
-using Xunit;
 
 namespace Inno.Editor.PlayMode.Tests;
 
@@ -108,8 +108,8 @@ public sealed class EditorLayoutInitializationTests : IDisposable
 
     public void Dispose() => Directory.Delete(PathBoundary.RequireUnlinkedPath(m_owner, m_root), recursive: true);
 
-    private EditorContext CreateContext(string? initialDocument) => new(
-        m_root, new EditorKeyboardPolicy(KeyModifier.Control, "Ctrl"), initialDocument);
+    private EditorContext CreateContext(string? initialDocument)
+        => new(m_root, new EditorKeyboardPolicy(KeyModifier.Control, "Ctrl"), initialDocument);
 
     private static string ReadTemplate() => File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "DefaultEditorLayout.ini"));
 }

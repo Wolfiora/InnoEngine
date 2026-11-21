@@ -26,11 +26,15 @@ public sealed class FileContentCacheOptions
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(applicationCacheRoot);
         if (!Path.IsPathFullyQualified(applicationCacheRoot))
+        {
             throw new ArgumentException("Content caches require an absolute host-selected root.", nameof(applicationCacheRoot));
+        }
         this.applicationCacheRoot = Path.GetFullPath(applicationCacheRoot);
         this.lockTimeout = lockTimeout ?? TimeSpan.FromSeconds(30);
         if (this.lockTimeout < TimeSpan.Zero)
+        {
             throw new ArgumentOutOfRangeException(nameof(lockTimeout));
+        }
     }
 
     /// <summary>

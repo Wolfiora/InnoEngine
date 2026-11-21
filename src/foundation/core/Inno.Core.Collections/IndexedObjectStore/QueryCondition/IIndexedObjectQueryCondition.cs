@@ -8,7 +8,8 @@ namespace Inno.Core.Collections;
 /// <typeparam name="T">
 /// The stored reference type.
 /// </typeparam>
-public interface IIndexedObjectQueryCondition<T> where T : class
+public interface IIndexedObjectQueryCondition<T>
+    where T : class
 {
     /// <summary>
     /// Returns the estimated match count for this condition.

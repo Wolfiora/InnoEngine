@@ -7,14 +7,15 @@ using System.Text;
 using System.Xml.Linq;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Plugins.Authoring;
 using Inno.Extensibility.Modules;
+using Inno.Plugins.Authoring;
 
 namespace Inno.Scripting.Compiler;
 
 internal static class ScriptProjectGenerator
 {
     private const string C_EDITOR_COMPILATION_SYMBOL = "INNO_EDITOR";
+
     private static readonly IReadOnlyList<string> C_IDE_CONTENT_FILE_EXTENSIONS =
     [
         ".ishadersource"
@@ -40,9 +41,14 @@ internal static class ScriptProjectGenerator
             editorApi,
             environment,
             runtimeApi,
-            runtimeApiReferences);
+            runtimeApiReferences
+        );
         IReadOnlyDictionary<string, string> pluginReferences = ScriptIdePluginReferenceBuilder.Build(
-            options, sources, runtimeApiReferences, editorApiReferences);
+            options,
+            sources,
+            runtimeApiReferences,
+            editorApiReferences
+        );
         string apiMapDirectory = Path.Combine(options.ideDirectory, "ScriptApiMaps");
         Directory.CreateDirectory(apiMapDirectory);
         string codeAnalysisPath = CopyCodeAnalysisAssembly(options.ideDirectory);
@@ -51,40 +57,39 @@ internal static class ScriptProjectGenerator
             bool editor = assembly.scope == ScriptAssemblyScope.Editor;
             ScriptApiProfile api = editor ? editorApi : runtimeApi;
             ScriptApiReferenceSet references = editor ? editorApiReferences : runtimeApiReferences;
-            string apiMapPath = Path.Combine(
-                apiMapDirectory,
-                assembly.name + ScriptApiMapBuilder.C_FILE_EXTENSION);
+            string apiMapPath = Path.Combine(apiMapDirectory, assembly.name + ScriptApiMapBuilder.C_FILE_EXTENSION);
             File.WriteAllText(apiMapPath, ScriptApiMapBuilder.Build(api));
             CreateProject(
-                    assembly.name,
-                    ToProjectRelativePaths(
-                        options,
-                        assembly.sources.Select(static source => source.sourcePath).ToArray()),
-                    api,
-                    references,
-                    ResolvePluginReferences(sources, assembly, pluginReferences),
-                    apiMapPath,
-                    codeAnalysisPath,
-                    assembly.references
-                        .Where(reference => userAssemblies.Any(candidate => string.Equals(
-                            candidate.name,
-                            reference,
-                            StringComparison.OrdinalIgnoreCase)))
-                        .Select(static reference => reference + ".csproj")
-                        .ToArray(),
-                    assembly.defines
-                        .Concat(editor ? [C_EDITOR_COMPILATION_SYMBOL] : [])
-                        .Distinct(StringComparer.Ordinal)
-                        .OrderBy(static value => value, StringComparer.Ordinal)
-                        .ToArray(),
-                    assembly.nullable,
-                    assembly.allowUnsafe,
-                    ScriptSourceLocations.CreateProjectPathMap(assembly.sources))
+                assembly.name,
+                ToProjectRelativePaths(options, assembly.sources.Select(static source => source.sourcePath).ToArray()),
+                api,
+                references,
+                ResolvePluginReferences(sources, assembly, pluginReferences),
+                apiMapPath,
+                codeAnalysisPath,
+                assembly.references
+                    .Where(reference => userAssemblies.Any(candidate => string.Equals(
+                        candidate.name,
+                        reference,
+                        StringComparison.OrdinalIgnoreCase
+                    )))
+                    .Select(static reference => reference + ".csproj")
+                    .ToArray(),
+                assembly.defines
+                    .Concat(editor ? [C_EDITOR_COMPILATION_SYMBOL] : [])
+                    .Distinct(StringComparer.Ordinal)
+                    .OrderBy(static value => value, StringComparer.Ordinal)
+                    .ToArray(),
+                assembly.nullable,
+                assembly.allowUnsafe,
+                ScriptSourceLocations.CreateProjectPathMap(assembly.sources)
+            )
                 .Save(Path.Combine(options.projectRootDirectory, assembly.name + ".csproj"));
         }
         File.WriteAllText(
             Path.Combine(options.projectRootDirectory, "InnoProject.sln"),
-            CreateSolution(userAssemblies));
+            CreateSolution(userAssemblies)
+        );
     }
 
     private static string[] ResolvePluginReferences(
@@ -94,7 +99,8 @@ internal static class ScriptProjectGenerator
     ) {
         IReadOnlyDictionary<string, ScriptAssemblyInput> assemblies = sources.assemblies.ToDictionary(
             static assembly => assembly.name,
-            StringComparer.OrdinalIgnoreCase);
+            StringComparer.OrdinalIgnoreCase
+        );
         var pending = new Queue<string>(userAssembly.references);
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var references = new List<string>();
@@ -102,13 +108,21 @@ internal static class ScriptProjectGenerator
         {
             string name = pending.Dequeue();
             if (!visited.Add(name) || !assemblies.TryGetValue(name, out ScriptAssemblyInput? dependency))
+            {
                 continue;
+            }
             foreach (string transitiveReference in dependency.references)
+            {
                 pending.Enqueue(transitiveReference);
+            }
             if (dependency.domain != AssemblyDomain.InnoPlugin)
+            {
                 continue;
+            }
             if (!pluginReferences.TryGetValue(dependency.name, out string? path))
+            {
                 throw new InvalidDataException($"IDE Plugin reference '{dependency.name}' was not generated.");
+            }
             references.Add(path);
         }
         return references
@@ -120,20 +134,22 @@ internal static class ScriptProjectGenerator
     private static void RemoveStalePluginProjectionFiles(ScriptCompilerOptions options)
     {
         foreach (string path in Directory.EnumerateFiles(
-                     options.projectRootDirectory,
-                     "Inno.Plugin.*.csproj",
-                     SearchOption.TopDirectoryOnly))
-        {
+            options.projectRootDirectory,
+            "Inno.Plugin.*.csproj",
+            SearchOption.TopDirectoryOnly
+        )) {
             File.Delete(path);
         }
         string apiMapDirectory = Path.Combine(options.ideDirectory, "ScriptApiMaps");
         if (!Directory.Exists(apiMapDirectory))
-            return;
-        foreach (string path in Directory.EnumerateFiles(
-                     apiMapDirectory,
-                     "Inno.Plugin.*" + ScriptApiMapBuilder.C_FILE_EXTENSION,
-                     SearchOption.TopDirectoryOnly))
         {
+            return;
+        }
+        foreach (string path in Directory.EnumerateFiles(
+            apiMapDirectory,
+            "Inno.Plugin.*" + ScriptApiMapBuilder.C_FILE_EXTENSION,
+            SearchOption.TopDirectoryOnly
+        )) {
             File.Delete(path);
         }
     }
@@ -162,15 +178,21 @@ internal static class ScriptProjectGenerator
         bool allowUnsafe,
         string sourcePathMap
     ) {
-        string frozenDefines = string.Join(";", defines.Concat(apiReferences.environment.inputs.predefinedSymbols).Distinct(StringComparer.Ordinal));
-        var earlyPropertyGroup = new XElement("PropertyGroup",
+        string frozenDefines = string.Join(
+            ";",
+            defines.Concat(apiReferences.environment.inputs.predefinedSymbols).Distinct(StringComparer.Ordinal)
+        );
+        var earlyPropertyGroup = new XElement(
+            "PropertyGroup",
             new XElement("ImportDirectoryBuildProps", "false"),
             new XElement("ImportDirectoryBuildTargets", "false"),
             new XElement("BaseOutputPath", "Library/IDE/bin/" + assemblyName + "/"),
             new XElement("BaseIntermediateOutputPath", "Library/IDE/obj/" + assemblyName + "/"),
             new XElement("MSBuildProjectExtensionsPath", "Library/IDE/obj/" + assemblyName + "/"),
-            new XElement("RestoreOutputPath", "Library/IDE/obj/" + assemblyName + "/"));
-        var propertyGroup = new XElement("PropertyGroup",
+            new XElement("RestoreOutputPath", "Library/IDE/obj/" + assemblyName + "/")
+        );
+        var propertyGroup = new XElement(
+            "PropertyGroup",
             new XElement("TargetFramework", ScriptCompilationEnvironment.C_TARGET_FRAMEWORK),
             new XElement("AssemblyName", assemblyName),
             new XElement("DefaultItemExcludes", "$(DefaultItemExcludes);Library/**"),
@@ -185,100 +207,138 @@ internal static class ScriptProjectGenerator
             new XElement("NoStdLib", "true"),
             new XElement("DefineConstants", frozenDefines),
             new XElement("PathMap", sourcePathMap),
-            new XElement("LangVersion", ScriptCompilationEnvironment.C_LANGUAGE_VERSION));
+            new XElement("LangVersion", ScriptCompilationEnvironment.C_LANGUAGE_VERSION)
+        );
         var compileGroup = new XElement(
             "ItemGroup",
-            sourcePaths.Select(static path =>
-                new XElement("Compile", new XAttribute("Include", path))));
+            sourcePaths.Select(static path => new XElement("Compile", new XAttribute("Include", path)))
+        );
         var contentGroup = new XElement(
             "ItemGroup",
             C_IDE_CONTENT_FILE_EXTENSIONS.Select(static extension =>
-                new XElement("None", new XAttribute("Include", $"Assets/**/*{extension}"))));
+                new XElement("None", new XAttribute("Include", $"Assets/**/*{extension}")))
+        );
 
         var referenceGroup = new XElement("ItemGroup");
         foreach (string path in apiReferences.ideReferencePaths.Concat(apiReferences.environment.inputs.frameworkReferences))
-            AddReference(referenceGroup, path);
-        foreach (string path in plugins
-                     .Distinct(StringComparer.OrdinalIgnoreCase)
-                     .OrderBy(static value => value, StringComparer.Ordinal))
         {
             AddReference(referenceGroup, path);
         }
+        foreach (string path in plugins
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static value => value, StringComparer.Ordinal)
+        ) {
+            AddReference(referenceGroup, path);
+        }
 
-        var folderGroup = new XElement("ItemGroup",
-            new XElement("Folder", new XAttribute("Include", "Assets/")));
-        var codeAnalysisGroup = new XElement("ItemGroup",
-            new XElement("Analyzer",
-                new XAttribute("Include", codeAnalysisPath),
-                new XElement("Visible", "false")),
-            new XElement("AdditionalFiles",
-                new XAttribute("Include", apiMapPath),
-                new XElement("Visible", "false")));
-        var project = new XElement("Project",
+        var folderGroup = new XElement("ItemGroup", new XElement("Folder", new XAttribute("Include", "Assets/")));
+        var codeAnalysisGroup = new XElement(
+            "ItemGroup",
+            new XElement("Analyzer", new XAttribute("Include", codeAnalysisPath), new XElement("Visible", "false")),
+            new XElement("AdditionalFiles", new XAttribute("Include", apiMapPath), new XElement("Visible", "false"))
+        );
+        var project = new XElement(
+            "Project",
             earlyPropertyGroup,
-            new XElement("Import",
-                new XAttribute("Project", "Sdk.props"),
-                new XAttribute("Sdk", "Microsoft.NET.Sdk")),
+            new XElement("Import", new XAttribute("Project", "Sdk.props"), new XAttribute("Sdk", "Microsoft.NET.Sdk")),
             propertyGroup,
             compileGroup,
             contentGroup,
             referenceGroup,
-            codeAnalysisGroup);
-        project.Add(new XElement("Target", new XAttribute("Name", "ValidateInnoScriptSdk"),
-            new XAttribute("BeforeTargets", "ResolveReferences"),
-            new XElement("Error", new XAttribute("Condition", "'$(NETCoreSdkVersion)' != '" + apiReferences.environment.inputs.sdkIdentity + "'"),
-                new XAttribute("Text", "The IDE selected a different SDK from the active script compilation. Regenerate project files with the intended SDK selection."))));
+            codeAnalysisGroup
+        );
+        project.Add(
+            new XElement(
+                "Target",
+                new XAttribute("Name", "ValidateInnoScriptSdk"),
+                new XAttribute("BeforeTargets", "ResolveReferences"),
+                new XElement(
+                    "Error",
+                    new XAttribute(
+                        "Condition",
+                        "'$(NETCoreSdkVersion)' != '" + apiReferences.environment.inputs.sdkIdentity + "'"
+                    ),
+                    new XAttribute(
+                        "Text",
+                        "The IDE selected a different SDK from the active script compilation. Regenerate project files with the intended SDK selection."
+                    )
+                )
+            )
+        );
         XElement validation = project.Elements("Target").Single();
         foreach ((string property, string expected) in new[]
         {
             ("TargetFramework", ScriptCompilationEnvironment.C_TARGET_FRAMEWORK),
             ("LangVersion", ScriptCompilationEnvironment.C_LANGUAGE_VERSION),
-            ("ImplicitUsings", "disable"), ("DisableImplicitFrameworkReferences", "true"),
-            ("DisableImplicitFrameworkDefines", "true"), ("NoStdLib", "true"),
+            ("ImplicitUsings", "disable"),
+            ("DisableImplicitFrameworkReferences", "true"),
+            ("DisableImplicitFrameworkDefines", "true"),
+            ("NoStdLib", "true"),
             ("DisableImplicitConfigurationDefines", "true"),
-            ("Nullable", nullable ? "enable" : "disable"), ("AllowUnsafeBlocks", allowUnsafe ? "true" : "false"),
+            ("Nullable", nullable ? "enable" : "disable"),
+            ("AllowUnsafeBlocks", allowUnsafe ? "true" : "false"),
             ("DefineConstants", frozenDefines)
-        })
-        {
+        }) {
             string condition = property == "DefineConstants"
-                ? "$([System.String]::CompareOrdinal('$(DefineConstants)', '" + expected + "')) != 0"
-                : "'$(" + property + ")' != '" + expected + "'";
-            validation.Add(new XElement("Error", new XAttribute("Condition", condition),
-                new XAttribute("Text", "The IDE compiler input '" + property + "' differs from the active script contract. Actual: '$(" + property + ")'. Expected: '" + expected + "'. Regenerate project files instead of overriding derived compiler inputs.")));
+                               ? "$([System.String]::CompareOrdinal('$(DefineConstants)', '" + expected + "')) != 0"
+                               : "'$(" + property + ")' != '" + expected + "'";
+            validation.Add(
+                new XElement(
+                    "Error",
+                    new XAttribute("Condition", condition),
+                    new XAttribute(
+                        "Text",
+                        "The IDE compiler input '"
+                        + property
+                        + "' differs from the active script contract. Actual: '$("
+                        + property
+                        + ")'. Expected: '"
+                        + expected
+                        + "'. Regenerate project files instead of overriding derived compiler inputs."
+                    )
+                )
+            );
         }
         project.Add(folderGroup);
         if (projectReferences.Count > 0)
         {
-            project.Add(new XElement("ItemGroup",
-                projectReferences.Select(static reference =>
-                    new XElement("ProjectReference", new XAttribute("Include", reference)))));
+            project.Add(
+                new XElement(
+                    "ItemGroup",
+                    projectReferences.Select(static reference =>
+                        new XElement("ProjectReference", new XAttribute("Include", reference)))
+                )
+            );
         }
-        project.Add(new XElement("Import",
-            new XAttribute("Project", "Sdk.targets"),
-            new XAttribute("Sdk", "Microsoft.NET.Sdk")));
+        project.Add(
+            new XElement("Import", new XAttribute("Project", "Sdk.targets"), new XAttribute("Sdk", "Microsoft.NET.Sdk"))
+        );
         return new XDocument(project);
     }
 
     private static string[] ToProjectRelativePaths(
         ScriptCompilerOptions options,
         IReadOnlyList<string> absolutePaths
-    )
-        => absolutePaths
-            .Select(path => Path.GetRelativePath(options.projectRootDirectory, path).Replace('\\', '/'))
-            .OrderBy(static path => path, StringComparer.Ordinal)
-            .ToArray();
+    ) => absolutePaths
+        .Select(path => Path.GetRelativePath(options.projectRootDirectory, path).Replace('\\', '/'))
+        .OrderBy(static path => path, StringComparer.Ordinal)
+        .ToArray();
 
     private static void AddReference(
         XElement group,
         string path
     ) {
-        var reference = new XElement("Reference",
+        var reference = new XElement(
+            "Reference",
             new XAttribute("Include", Path.GetFileNameWithoutExtension(path)),
             new XElement("HintPath", path),
-            new XElement("Private", "false"));
+            new XElement("Private", "false")
+        );
         string documentationPath = Path.ChangeExtension(path, ".xml");
         if (File.Exists(documentationPath))
+        {
             reference.Add(new XElement("DocumentationFile", documentationPath));
+        }
         group.Add(reference);
     }
 
@@ -293,8 +353,9 @@ internal static class ScriptProjectGenerator
         {
             string id = FormatProjectId(assembly.name);
             builder.AppendLine(
-                $"Project(\"{{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}}\") = " +
-                $"\"{assembly.name}\", \"{assembly.name}.csproj\", \"{id}\"");
+                $"Project(\"{{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}}\") = "
+                + $"\"{assembly.name}\", \"{assembly.name}.csproj\", \"{id}\""
+            );
             builder.AppendLine("EndProject");
         }
         builder.AppendLine("Global");

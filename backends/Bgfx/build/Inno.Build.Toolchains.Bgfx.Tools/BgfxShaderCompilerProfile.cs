@@ -55,8 +55,10 @@ public sealed class BgfxShaderCompilerProfile
         ArgumentNullException.ThrowIfNull(computeProfile);
         string[] snapshot = defines?.ToArray() ?? [];
         if (snapshot.Any(string.IsNullOrWhiteSpace) || capabilities.backend == GraphicsApi.Noop
-            || capabilities.Supports(GraphicsCapability.Compute) != !string.IsNullOrWhiteSpace(computeProfile))
+            || capabilities.Supports(GraphicsCapability.Compute) != !string.IsNullOrWhiteSpace(computeProfile)
+        ) {
             throw new ArgumentException("A shader profile requires valid defines, a renderer and consistent compute support.");
+        }
         this.capabilities = capabilities;
         this.shadercPlatform = shadercPlatform;
         this.vertexProfile = vertexProfile;
@@ -101,7 +103,8 @@ public sealed class BgfxShaderCompilerProfile
     /// </summary>
     public string key { get; }
 
-    internal string GetStageProfile(ShaderStage stage) => stage switch
+    internal string GetStageProfile(ShaderStage stage)
+        => stage switch
     {
         ShaderStage.Vertex => vertexProfile,
         ShaderStage.Fragment => fragmentProfile,
@@ -121,7 +124,9 @@ public sealed class BgfxShaderCompilerProfile
             writer.Write(computeProfile);
             writer.Write(defines.Count);
             foreach (string define in defines)
+            {
                 writer.Write(define);
+            }
             writer.Write(requested.backend.value);
             writer.Write((int)requested.features);
             writer.Write(requested.limits.maxViews);

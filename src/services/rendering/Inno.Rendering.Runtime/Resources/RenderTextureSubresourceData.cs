@@ -1,11 +1,11 @@
-using Inno.Core.Diagnostics;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.Diagnostics;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 
@@ -37,7 +37,9 @@ public sealed class RenderTextureSubresourceData
         ArgumentOutOfRangeException.ThrowIfNegative(mipLevel);
         ArgumentOutOfRangeException.ThrowIfNegative(arrayLayer);
         if (data.IsEmpty)
+        {
             throw new ArgumentException("A texture subresource upload cannot be empty.", nameof(data));
+        }
         this.mipLevel = mipLevel;
         this.arrayLayer = arrayLayer;
         m_data = data.ToArray();
@@ -58,4 +60,3 @@ public sealed class RenderTextureSubresourceData
     /// </summary>
     public ReadOnlyMemory<byte> data => m_data;
 }
-

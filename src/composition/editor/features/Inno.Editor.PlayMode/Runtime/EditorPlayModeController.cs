@@ -1,20 +1,19 @@
-using Inno.Core.Diagnostics;
-using Inno.Core.Execution;
-using Inno.Extensibility.Reload;
 using System;
-using Inno.Core.Events;
 using System.Collections.Generic;
-
+using Inno.Core.Diagnostics;
+using Inno.Core.Events;
+using Inno.Core.Execution;
 using Inno.Core.Logging;
-using Inno.Extensibility.Modules;
-using Inno.Scripting.Api;
 using Inno.Editor.Audio;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
 using Inno.Editor.Scripting;
-using Inno.Scripting.Compiler;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
 using Inno.Runtime;
+using Inno.Scripting.Api;
+using Inno.Scripting.Compiler;
 using Inno.UI.Runtime;
 
 namespace Inno.Editor.PlayMode;
@@ -99,7 +98,8 @@ public sealed class EditorPlayModeController :
         {
             throw new ArgumentException(
                 "Editor Play Mode requires RuntimeSessionKind.Play options.",
-                nameof(runtimeOptions));
+                nameof(runtimeOptions)
+            );
         }
         m_scenes = scenes ?? throw new ArgumentNullException(nameof(scenes));
         m_scripting = scripting ?? throw new ArgumentNullException(nameof(scripting));
@@ -124,13 +124,16 @@ public sealed class EditorPlayModeController :
     bool IEditorReloadGuard.canRequestReload => !m_disposed && m_state == EditorPlayModeState.Editing;
 
     /// <inheritdoc />
-    bool IEditorReloadGuard.canActivateReload => !m_disposed
-        && m_state is EditorPlayModeState.Editing or EditorPlayModeState.Compiling
-        && m_runtimeSession is null && m_sceneLease is null && m_generationLease is null;
+    bool IEditorReloadGuard.canActivateReload
+        => !m_disposed
+           && m_state is EditorPlayModeState.Editing or EditorPlayModeState.Compiling
+           && m_runtimeSession is null && m_sceneLease is null && m_generationLease is null;
 
     /// <inheritdoc />
-    string? IEditorReloadGuard.blockingReason => m_state == EditorPlayModeState.Editing
-        ? null : "Stop Play Mode and wait for its runtime session to retire before reloading scripts or Plugins.";
+    string? IEditorReloadGuard.blockingReason
+        => m_state == EditorPlayModeState.Editing
+           ? null
+           : "Stop Play Mode and wait for its runtime session to retire before reloading scripts or Plugins.";
 
     /// <summary>
     /// Gets the most recent transition or simulation failure.
@@ -173,7 +176,9 @@ public sealed class EditorPlayModeController :
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_state is not (EditorPlayModeState.Editing or EditorPlayModeState.Failed))
+        {
             return false;
+        }
         m_engineHost.generations.EnsureReady("enter Play Mode");
         m_entryFailed = false;
         m_retirement = null;
@@ -251,7 +256,8 @@ public sealed class EditorPlayModeController :
                 m_playTime += Math.Max(0f, deltaTime);
                 session.Tick(deltaTime);
             },
-            "frame update");
+            "frame update"
+        );
 
     /// <summary>
     /// Releases the isolated runtime session and history scope owned by this controller.
@@ -259,16 +265,24 @@ public sealed class EditorPlayModeController :
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         if (m_startupRetirementFailure is not null)
+        {
             throw m_startupRetirementFailure;
+        }
         try
         {
             if (m_runtimeSession is not null)
+            {
                 SetState(EditorPlayModeState.Stopping);
+            }
             ReleasePlayResources();
             if (m_state != EditorPlayModeState.Editing)
+            {
                 CompleteEditingTransition();
+            }
         }
         catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
         {
@@ -304,7 +318,9 @@ public sealed class EditorPlayModeController :
                 return;
             case ScriptCompilationTicketState.Canceled:
             case ScriptCompilationTicketState.Superseded:
-                Fail($"Play Mode did not start because its script request was {ticket.state.ToString().ToLowerInvariant()}. {ticket.status}");
+                Fail(
+                    $"Play Mode did not start because its script request was {ticket.state.ToString().ToLowerInvariant()}. {ticket.status}"
+                );
                 return;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -319,7 +335,9 @@ public sealed class EditorPlayModeController :
             m_runtimeSession = m_engineHost.CreateSession(m_runtimeOptions);
             m_generationLease = m_engineHost.generations.AcquireRead("active Play Mode session");
             using (m_runtimeSession.EnterExecutionScope())
+            {
                 m_sceneLease = m_scenes.BeginPlayMode(m_runtimeSession);
+            }
             m_activeSessionId = m_runtimeSession.sessionId;
             m_playTime = 0f;
             SetState(EditorPlayModeState.Playing);
@@ -345,9 +363,13 @@ public sealed class EditorPlayModeController :
         {
             ReleasePlayResources();
             if (m_entryFailed)
+            {
                 SetState(EditorPlayModeState.Failed);
+            }
             else
+            {
                 CompleteEditingTransition();
+            }
         }
         catch (Exception failure) when (RetirementPendingException.Find(failure) is RetirementTimeoutException)
         {
@@ -368,20 +390,28 @@ public sealed class EditorPlayModeController :
     private void ReleasePlayResources()
     {
         if (m_startupRetirementFailure is not null)
+        {
             throw m_startupRetirementFailure;
+        }
         // The owner thread hands admission to the retirement reservation before it can process another frame.
         m_generationLease?.Dispose();
         m_generationLease = null;
         if (m_sceneLease is null && m_runtimeSession is null && m_historyIsolation is null)
+        {
             return;
+        }
         if (m_retirementReservation is null && m_engineHost.generations.state == GenerationState.Ready)
         {
             if (!m_engineHost.generations.TryAcquireChange("retire Play Mode", out m_retirementReservation))
+            {
                 throw new RetirementPendingException("Play Mode retirement is waiting for the active generation reader.");
+            }
         }
         m_retirement ??= new RetirementBarrier("Editor Play Mode");
         if (!m_retirement.TryComplete(ReleasePlayResourcesCore))
+        {
             throw new RetirementPendingException("Play Mode is still draining its runtime session.");
+        }
         m_retirementReservation?.Dispose();
         m_retirementReservation = null;
     }
@@ -402,7 +432,9 @@ public sealed class EditorPlayModeController :
     internal void Quiesce()
     {
         if (m_disposed)
+        {
             return;
+        }
         SetState(EditorPlayModeState.Stopping);
         List<Exception>? failures = null;
         try
@@ -413,7 +445,9 @@ public sealed class EditorPlayModeController :
         {
             m_engineHost.generations.Fault(exception);
             if (RetirementPendingException.Find(exception) is not null)
+            {
                 throw;
+            }
             failures = [exception];
             m_lastFailure = $"Play Mode could not release its runtime generation: {exception.Message}";
         }
@@ -431,7 +465,8 @@ public sealed class EditorPlayModeController :
         {
             throw new InvalidOperationException(
                 "Assembly reload cannot continue because Play Mode still owns generation-bound runtime state.",
-                new AggregateException(failures));
+                new AggregateException(failures)
+            );
         }
     }
 
@@ -440,9 +475,11 @@ public sealed class EditorPlayModeController :
         string phase
     ) {
         if (m_state != EditorPlayModeState.Playing)
+        {
             return;
+        }
         RuntimeSession session = m_runtimeSession
-            ?? throw new InvalidOperationException("Playing state has no active runtime session.");
+                                 ?? throw new InvalidOperationException("Playing state has no active runtime session.");
         try
         {
             callback(session);
@@ -453,7 +490,8 @@ public sealed class EditorPlayModeController :
             m_log.Write(
                 LogLevel.Error,
                 "Play Mode {0} failed; isolated runtime disposal was requested: {1}",
-                [phase, exception]);
+                [phase, exception]
+            );
             SetState(EditorPlayModeState.Stopping);
         }
     }
@@ -461,7 +499,9 @@ public sealed class EditorPlayModeController :
     internal IDisposable? EnterPresentationScope()
     {
         if (m_state != EditorPlayModeState.Playing || m_runtimeSession is not RuntimeSession session)
+        {
             return null;
+        }
         IDisposable? sessionScope = null;
         IDisposable? audioScope = null;
         IDisposable? uiScope = null;
@@ -500,12 +540,16 @@ public sealed class EditorPlayModeController :
     {
         ScriptCompilationResult? compilation = ticket.result;
         if (compilation is null)
+        {
             return $"Play Mode requires a valid script generation. {ticket.status}";
+        }
         for (int i = 0; i < compilation.diagnostics.Count; i++)
         {
             ScriptDiagnostic diagnostic = compilation.diagnostics[i];
             if (diagnostic.severity == DiagnosticSeverity.Error)
+            {
                 return $"Play Mode is unavailable because scripts did not compile: {diagnostic.message}";
+            }
         }
         return "Play Mode is unavailable because the active script compilation failed.";
     }
@@ -513,12 +557,16 @@ public sealed class EditorPlayModeController :
     private void SetState(EditorPlayModeState value)
     {
         if (m_state == value)
+        {
             return;
+        }
         m_state = value;
         var notification = new StateTransitionEvent(value);
         m_stateDispatcher.Emit(notification);
         if (notification.failures.Count != 0)
+        {
             throw new AggregateException("One or more Play Mode state observers failed.", notification.failures);
+        }
     }
 
     private sealed class StateTransitionEvent(EditorPlayModeState state) : Event
@@ -530,12 +578,13 @@ public sealed class EditorPlayModeController :
     private static void DisposeResource<T>(
         ref T? resource,
         ref List<Exception>? failures
-    )
-        where T : class, IDisposable
+    ) where T : class, IDisposable
     {
         T? owned = resource;
         if (owned is null)
+        {
             return;
+        }
         try
         {
             owned.Dispose();

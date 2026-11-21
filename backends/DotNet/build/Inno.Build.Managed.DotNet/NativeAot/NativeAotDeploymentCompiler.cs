@@ -41,8 +41,12 @@ public sealed class NativeAotDeploymentCompiler : IManagedDeploymentCompiler
         ArgumentNullException.ThrowIfNull(workspaces);
         m_hostPath = hostPath;
         m_workspaces = workspaces;
-        capabilities = new ManagedDeploymentCapabilities(runtimeIdentifiers,
-            dynamicCode: false, aheadOfTime: true, nativeStaticLinking: true);
+        capabilities = new ManagedDeploymentCapabilities(
+            runtimeIdentifiers,
+            dynamicCode: false,
+            aheadOfTime: true,
+            nativeStaticLinking: true
+        );
     }
 
     /// <inheritdoc />
@@ -55,6 +59,13 @@ public sealed class NativeAotDeploymentCompiler : IManagedDeploymentCompiler
     public ValueTask<ManagedDeploymentResult> CompileAsync(
         ManagedDeploymentRequest request,
         CancellationToken cancellationToken = default
-    ) => DotNetDeploymentPublisher.PublishAsync(id, capabilities, m_hostPath, m_workspaces, request,
-        ["SelfContained=true", "PublishAot=true", "PublishTrimmed=true", "TrimMode=full"], cancellationToken);
+    ) => DotNetDeploymentPublisher.PublishAsync(
+        id,
+        capabilities,
+        m_hostPath,
+        m_workspaces,
+        request,
+        ["SelfContained=true", "PublishAot=true", "PublishTrimmed=true", "TrimMode=full"],
+        cancellationToken
+    );
 }

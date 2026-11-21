@@ -1,8 +1,7 @@
 using System;
-using Inno.Core.Execution;
 using System.Collections.Generic;
 using System.Linq;
-
+using Inno.Core.Execution;
 using Inno.Rendering;
 
 namespace Inno.Rendering.Runtime;
@@ -56,14 +55,14 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
     ) {
         ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
         if (!m_frameOpen)
+        {
             throw new InvalidOperationException("Frame uploads are only accepted during an open render frame.");
+        }
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         if (data.IsEmpty || data.Length % descriptor.elementStride != 0)
         {
-            throw new ArgumentException(
-                "Upload data must contain one or more complete elements.",
-                nameof(data));
+            throw new ArgumentException("Upload data must contain one or more complete elements.", nameof(data));
         }
 
         DrainSweep();
@@ -77,7 +76,8 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
             descriptor.elementStride,
             descriptor.usage,
             descriptor.vertexLayout,
-            descriptor.indexFormat);
+            descriptor.indexFormat
+        );
         if (!m_pools.TryGetValue(key, out UploadPool? pool))
         {
             pool = new UploadPool();
@@ -85,10 +85,8 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
 
         bool requiresDedicatedPage = (descriptor.usage & RenderBufferUsage.Storage) != 0;
         UploadPage? page = requiresDedicatedPage
-            ? pool.pages.FirstOrDefault(candidate =>
-                !candidate.usedThisFrame && candidate.capacity >= elementCount)
-            : pool.pages.FirstOrDefault(candidate =>
-                candidate.capacity - candidate.writeOffset >= elementCount);
+                           ? pool.pages.FirstOrDefault(candidate => !candidate.usedThisFrame && candidate.capacity >= elementCount)
+                           : pool.pages.FirstOrDefault(candidate => candidate.capacity - candidate.writeOffset >= elementCount);
         if (page is null)
         {
             int capacity = NextPowerOfTwo(Math.Max(C_MINIMUM_PAGE_ELEMENTS, elementCount));
@@ -102,11 +100,13 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
             var bufferDescriptor = new PersistentBufferDescriptor(
                 new RenderBufferDescriptor(capacity, descriptor.elementStride, usage),
                 descriptor.vertexLayout,
-                descriptor.indexFormat);
+                descriptor.indexFormat
+            );
             PersistentBufferHandle handle = m_device.CreateBuffer(
                 bufferDescriptor,
                 ReadOnlySpan<byte>.Empty,
-                $"{name}/FrameUpload[{pool.pages.Count}]");
+                $"{name}/FrameUpload[{pool.pages.Count}]"
+            );
             page = new UploadPage(handle, capacity, bytes);
             pool.pages.Add(page);
             m_pools[key] = pool;
@@ -121,12 +121,7 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
         page.writeOffset = checked(firstElement + elementCount);
         page.usedThisFrame = true;
         page.lastUsedFrame = m_frameIndex;
-        return CreateBufferSlice(
-            page.handle,
-            firstElement,
-            elementCount,
-            descriptor.usage,
-            m_frameIndex);
+        return CreateBufferSlice(page.handle, firstElement, elementCount, descriptor.usage, m_frameIndex);
     }
 
     internal void BeginFrame(ulong frameIndex)
@@ -146,23 +141,27 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
     internal void EndFrame()
     {
         if (!m_disposed)
+        {
             m_frameOpen = false;
+        }
     }
 
     internal void SweepUnused()
     {
         ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
         if (m_frameIndex < C_UNUSED_FRAME_LIMIT)
+        {
             return;
+        }
         DrainSweep();
         ulong oldest = m_frameIndex - C_UNUSED_FRAME_LIMIT;
         foreach (UploadPageKey key in m_pools.Keys.ToArray())
         {
             UploadPool pool = m_pools[key];
             foreach (UploadPage page in pool.pages
-                         .Where(candidate => candidate.lastUsedFrame < oldest)
-                         .ToArray())
-            {
+                .Where(candidate => candidate.lastUsedFrame < oldest)
+                .ToArray()
+            ) {
                 m_sweep ??= new RenderRetirementQueue();
                 m_sweep.Add(() => m_device.DestroyBuffer(page.handle));
                 m_sweep.Add(() =>
@@ -173,7 +172,9 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
                 pool.pages.Remove(page);
             }
             if (pool.pages.Count == 0)
+            {
                 m_pools.Remove(key);
+            }
         }
         DrainSweep();
     }
@@ -184,15 +185,21 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_frameOpen = false;
         if (m_retirement is null)
         {
             m_retirement = new RenderRetirementQueue();
             if (m_sweep is not null)
+            {
                 m_retirement.Add(m_sweep.Dispose);
+            }
             foreach (UploadPage page in m_pools.Values.SelectMany(static pool => pool.pages))
+            {
                 m_retirement.Add(() => m_device.DestroyBuffer(page.handle));
+            }
         }
         try
         {
@@ -225,7 +232,9 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
     private void DrainSweep()
     {
         if (m_sweep is null)
+        {
             return;
+        }
         try
         {
             m_sweep.Dispose();
@@ -246,7 +255,9 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
     {
         int result = 1;
         while (result < value)
+        {
             result = checked(result * 2);
+        }
         return result;
     }
 

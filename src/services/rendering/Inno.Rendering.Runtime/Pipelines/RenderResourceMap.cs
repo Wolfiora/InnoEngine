@@ -1,10 +1,10 @@
+using System;
+using System.Collections.Generic;
 using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
 using Inno.Core.Serialization;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
-using System;
-using System.Collections.Generic;
 
 namespace Inno.Rendering.Runtime;
 
@@ -31,9 +31,13 @@ public sealed class RenderResourceMap
         RenderTextureHandle texture
     ) {
         if (!id.isValid)
+        {
             throw new ArgumentException("A render resource identifier must be valid.", nameof(id));
+        }
         if (!texture.isValid)
+        {
             throw new ArgumentException("A published texture must be valid.", nameof(texture));
+        }
         m_textures[id] = texture;
     }
 
@@ -51,9 +55,13 @@ public sealed class RenderResourceMap
         RenderBufferHandle buffer
     ) {
         if (!id.isValid)
+        {
             throw new ArgumentException("A render resource identifier must be valid.", nameof(id));
+        }
         if (!buffer.isValid)
+        {
             throw new ArgumentException("A published buffer must be valid.", nameof(buffer));
+        }
         m_buffers[id] = buffer;
     }
 
@@ -91,4 +99,3 @@ public sealed class RenderResourceMap
         out RenderBufferHandle buffer
     ) => m_buffers.TryGetValue(id, out buffer);
 }
-

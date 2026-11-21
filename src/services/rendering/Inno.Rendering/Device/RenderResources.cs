@@ -207,11 +207,10 @@ public sealed class RenderTextureDescriptor : IEquatable<RenderTextureDescriptor
             case RenderTextureDimension.Texture3D when arrayLayers != 1:
                 throw new ArgumentException(
                     "A three-dimensional texture cannot also declare array layers.",
-                    nameof(arrayLayers));
+                    nameof(arrayLayers)
+                );
             case RenderTextureDimension.Texture3D when sampleCount != 1:
-                throw new ArgumentException(
-                    "A three-dimensional texture cannot be multisampled.",
-                    nameof(sampleCount));
+                throw new ArgumentException("A three-dimensional texture cannot be multisampled.", nameof(sampleCount));
             case RenderTextureDimension.Cube when width != height:
                 throw new ArgumentException("Cubemap width and height must be equal.", nameof(height));
             case RenderTextureDimension.Cube when depth != 1:
@@ -294,7 +293,9 @@ public sealed class RenderTextureDescriptor : IEquatable<RenderTextureDescriptor
     public int GetSubresourceLayerCount(int mipLevel)
     {
         if ((uint)mipLevel >= (uint)mipCount)
+        {
             throw new ArgumentOutOfRangeException(nameof(mipLevel));
+        }
         return dimension switch
         {
             RenderTextureDimension.Texture2D => arrayLayers,
@@ -315,15 +316,15 @@ public sealed class RenderTextureDescriptor : IEquatable<RenderTextureDescriptor
     /// </returns>
     public bool Equals(RenderTextureDescriptor? other)
         => other is not null
-            && width == other.width
-            && height == other.height
-            && format == other.format
-            && usage == other.usage
-            && mipCount == other.mipCount
-            && arrayLayers == other.arrayLayers
-            && sampleCount == other.sampleCount
-            && dimension == other.dimension
-            && depth == other.depth;
+           && width == other.width
+           && height == other.height
+           && format == other.format
+           && usage == other.usage
+           && mipCount == other.mipCount
+           && arrayLayers == other.arrayLayers
+           && sampleCount == other.sampleCount
+           && dimension == other.dimension
+           && depth == other.depth;
 
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.
@@ -413,9 +414,9 @@ public sealed class RenderBufferDescriptor : IEquatable<RenderBufferDescriptor>
     /// </returns>
     public bool Equals(RenderBufferDescriptor? other)
         => other is not null
-            && elementCount == other.elementCount
-            && elementStride == other.elementStride
-            && usage == other.usage;
+           && elementCount == other.elementCount
+           && elementStride == other.elementStride
+           && usage == other.usage;
 
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.

@@ -1,12 +1,13 @@
 using System;
+using Xunit;
 using Inno.Core.Identity;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Scene;
 using Inno.Scene.Components;
-using Xunit;
 
 namespace Inno.Editor.Interactions.Tests;
+
 public sealed partial class SceneHistoryTests
 {
     [Fact]
@@ -38,13 +39,29 @@ public sealed partial class SceneHistoryTests
         var second = scene.CreateObject("Second").transform;
         first.localPosition = new(1, 2, 3);
         second.localPosition = new(4, 5, 6);
-        Assert.True(m_edits.ChangeProperties([first, second], "localPosition", () => first.localPosition = new(9, 2, 3), "Edit X", componentName: "x"));
+        Assert.True(
+            m_edits.ChangeProperties(
+                [first, second],
+                "localPosition",
+                () => first.localPosition = new(9, 2, 3),
+                "Edit X",
+                componentName: "x"
+            )
+        );
         Assert.Equal(new Inno.Core.Mathematics.Vector3(9, 5, 6), second.localPosition);
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
         Assert.Equal(new Inno.Core.Mathematics.Vector3(4, 5, 6), second.localPosition);
-        Assert.True(m_edits.ChangeProperties([first, second], "localPosition", () => { }, "Use Primary X", componentName: "x"));
+        Assert.True(m_edits.ChangeProperties([first, second], "localPosition", () => {}, "Use Primary X", componentName: "x"));
         Assert.Equal(new Inno.Core.Mathematics.Vector3(1, 5, 6), second.localPosition);
-        Assert.Throws<ArgumentException>(() => m_edits.ChangeProperties([first, second], "localPosition", () => first.localPosition = default, "Rejected Component", componentName: "notAComponent"));
+        Assert.Throws<ArgumentException>(
+            () => m_edits.ChangeProperties(
+                [first, second],
+                "localPosition",
+                () => first.localPosition = default,
+                "Rejected Component",
+                componentName: "notAComponent"
+            )
+        );
         Assert.Equal(new Inno.Core.Mathematics.Vector3(1, 2, 3), first.localPosition);
     }
 
@@ -126,6 +143,8 @@ internal sealed class BatchValidationComponent : GameComponent
     private void Validate()
     {
         if (rejectAnswer && value == 42)
+        {
             throw new InvalidOperationException("The current owner rejected this batch value.");
+        }
     }
 }

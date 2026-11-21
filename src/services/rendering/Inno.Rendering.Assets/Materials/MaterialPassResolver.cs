@@ -1,11 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
@@ -78,26 +78,38 @@ public static class MaterialPassResolver
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(capabilities);
         if (!contractId.isValid)
+        {
             throw new ArgumentException("A shader contract ID must be valid.", nameof(contractId));
+        }
         if (!passRoleId.isValid)
+        {
             throw new ArgumentException("A shader pass role ID must be valid.", nameof(passRoleId));
+        }
 
         foreach (ShaderTechniqueDefinition technique in definition.techniques)
         {
             if (technique.contract != contractId || !capabilities.Supports(technique.requiredFeatures)
-                || techniqueId.isValid && technique.id != techniqueId)
+                || techniqueId.isValid && technique.id != techniqueId
+            ) {
                     continue;
+            }
             foreach (ShaderTechniquePass mapping in technique.passes)
             {
                 if (mapping.role != passRoleId)
+                {
                     continue;
+                }
                 foreach (ShaderPassDefinition pass in definition.passes)
-                    if (string.Equals(pass.name, mapping.passName, StringComparison.Ordinal) && capabilities.Supports(pass.requiredFeatures))
+                {
+                    if (string.Equals(pass.name, mapping.passName, StringComparison.Ordinal)
+                        && capabilities.Supports(pass.requiredFeatures)
+                    ) {
                         return new MaterialPassResolution(technique, pass);
+                    }
+                }
             }
         }
 
         return null;
     }
 }
-

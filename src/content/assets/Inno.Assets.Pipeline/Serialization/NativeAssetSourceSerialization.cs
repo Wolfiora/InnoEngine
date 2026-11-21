@@ -30,17 +30,14 @@ public static partial class NativeAssetSourceSerialization
     public static byte[] Export<TAsset>(
         TAsset asset,
         AssetSerializationServices services
-    )
-        where TAsset : AssetObject
+    ) where TAsset : AssetObject
     {
         ArgumentNullException.ThrowIfNull(asset);
         ArgumentNullException.ThrowIfNull(services);
         TypeRef type = services.types.GetTypeRef(asset.GetType());
         var dependencies = new AssetDependencyCollection();
         SerializationContext context = services.context.With(dependencies);
-        byte[] propertyData = services.serialization.Encode(
-            writer => writer.WriteProperties(asset),
-            context);
+        byte[] propertyData = services.serialization.Encode(writer => writer.WriteProperties(asset), context);
         return services.serialization.Serialize(new NativeAssetSourceDocument
         {
             stableAssetTypeId = type.stableId,
@@ -74,8 +71,7 @@ public static partial class NativeAssetSourceSerialization
         ReadOnlySpan<byte> bytes,
         AssetSerializationServices services,
         out IReadOnlyList<AssetDependency> dependencies
-    )
-        where TAsset : AssetObject
+    ) where TAsset : AssetObject
     {
         ArgumentNullException.ThrowIfNull(services);
         NativeAssetSourceDocument document = services.serialization.Deserialize<NativeAssetSourceDocument>(bytes);
@@ -83,11 +79,12 @@ public static partial class NativeAssetSourceSerialization
         if (document.stableAssetTypeId != expectedType.stableId)
         {
             throw new InvalidOperationException(
-                $"Native asset source type '{document.stableAssetTypeId:D}' does not match " +
-                $"'{expectedType.stableId:D}'.");
+                $"Native asset source type '{document.stableAssetTypeId:D}' does not match "
+                + $"'{expectedType.stableId:D}'."
+            );
         }
         var asset = (TAsset)(Activator.CreateInstance(typeof(TAsset), nonPublic: true)
-            ?? throw new InvalidOperationException($"Asset type '{typeof(TAsset).FullName}' could not be created."));
+                             ?? throw new InvalidOperationException($"Asset type '{typeof(TAsset).FullName}' could not be created."));
         SerializationContext context = AssetSerializationContext.Create(services.references);
         _ = services.serialization.Decode(document.propertyData, reader =>
         {

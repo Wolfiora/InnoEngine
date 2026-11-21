@@ -9,19 +9,18 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Inno.Assets;
-using Inno.Assets.Pipeline;
-using Inno.Plugins.Authoring;
-using Inno.Extensibility.Modules;
-using Inno.Runtime.Generators;
-using Inno.Core.IO;
-using Inno.Core.Serialization.Generators;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
+using Inno.Assets;
+using Inno.Assets.Pipeline;
+using Inno.Core.IO;
+using Inno.Core.Serialization.Generators;
+using Inno.Extensibility.Modules;
+using Inno.Plugins.Authoring;
+using Inno.Runtime.Generators;
 
 namespace Inno.Scripting.Compiler;
 
@@ -48,16 +47,25 @@ internal static class ScriptCompilerEngine
         {
             throw new ArgumentException(
                 includeEditor
-                    ? "Authoring compilation cannot bind to a Player runtime."
-                    : "Runtime deployment compilation requires a target Player runtime directory.",
-                nameof(targetRuntimeDirectory));
+                ? "Authoring compilation cannot bind to a Player runtime."
+                : "Runtime deployment compilation requires a target Player runtime directory.",
+                nameof(targetRuntimeDirectory)
+            );
         }
         cancellationToken.ThrowIfCancellationRequested();
         reportProgress?.Invoke(0f, "Discovering project scripts...");
         ScriptSourceSet sources = ScriptSourceSet.Discover(assets, plugins, includeEditor, sourceSnapshot);
-        return await Task.Run(() => CompileCapturedAsync(
-            options, sources, includeEditor, targetRuntimeDirectory, reportProgress, cancellationToken).AsTask(),
-            cancellationToken).ConfigureAwait(false);
+        return await Task.Run(
+            () => CompileCapturedAsync(
+                options,
+                sources,
+                includeEditor,
+                targetRuntimeDirectory,
+                reportProgress,
+                cancellationToken
+            ).AsTask(),
+            cancellationToken
+        ).ConfigureAwait(false);
     }
 
     private static async ValueTask<ScriptCompilationResult> CompileCapturedAsync(
@@ -70,32 +78,38 @@ internal static class ScriptCompilerEngine
     ) {
         cancellationToken.ThrowIfCancellationRequested();
         var progress = new CompilationProgress(
-            sources.assemblies.Sum(static assembly => assembly.sources.Count) +
-            sources.assemblies.Count * 6 +
-            8,
+            sources.assemblies.Sum(static assembly => assembly.sources.Count)
+            + sources.assemblies.Count * 6
+            + 8,
             reportProgress,
-            initialCompleted: 1);
+            initialCompleted: 1
+        );
         progress.Complete("Project scripts discovered.");
 
         progress.Begin("Building the script API profile...");
         ScriptApiProfile runtimeApi = ScriptApiCatalog.Build(includeEditor: false);
         ScriptApiProfile? editorApi = includeEditor
-            ? ScriptApiCatalog.Build(includeEditor: true)
-            : null;
+                                      ? ScriptApiCatalog.Build(includeEditor: true)
+                                      : null;
         progress.Complete("Script API profile built.");
         progress.Begin("Resolving script references...");
         ScriptCompilationEnvironment environment = FrameworkReferenceResolver.Resolve(options.compilationEnvironment, cancellationToken);
         ScriptApiReferenceSet runtimeApiReferences = ScriptApiReferenceBuilder.Build(
-            options, runtimeApi, environment, cancellationToken: cancellationToken);
+            options,
+            runtimeApi,
+            environment,
+            cancellationToken: cancellationToken
+        );
         ScriptApiReferenceSet? editorApiReferences = editorApi is null
-            ? null
-            : ScriptApiReferenceBuilder.Build(
-                options,
-                editorApi,
-                environment,
-                runtimeApi,
-                runtimeApiReferences,
-                cancellationToken);
+                                                     ? null
+                                                     : ScriptApiReferenceBuilder.Build(
+                                                         options,
+                                                         editorApi,
+                                                         environment,
+                                                         runtimeApi,
+                                                         runtimeApiReferences,
+                                                         cancellationToken
+                                                     );
         progress.Complete("Script references resolved.");
         ScriptDeploymentReferenceSet? deploymentReferences = null;
         if (!includeEditor)
@@ -108,25 +122,19 @@ internal static class ScriptCompilerEngine
         foreach (ScriptAssemblyInput assembly in sources.assemblies)
         {
             ScriptApiReferenceSet api = assembly.scope == ScriptAssemblyScope.Editor
-                ? editorApiReferences ?? throw new InvalidOperationException(
-                    "A runtime deployment cannot contain an editor script assembly.")
-                : runtimeApiReferences;
+                                        ? editorApiReferences ?? throw new InvalidOperationException(
+                                            "A runtime deployment cannot contain an editor script assembly."
+                                        )
+                                        : runtimeApiReferences;
             IReadOnlyList<string> defines = GetCompilationDefines(assembly, includeEditor, environment.inputs.predefinedSymbols);
             assemblyKeys.Add(
                 assembly.name,
-                ComputeAssemblyBuildKey(
-                    assembly,
-                    api,
-                    deploymentReferences?.fingerprint,
-                    assemblyKeys,
-                    defines));
+                ComputeAssemblyBuildKey(assembly, api, deploymentReferences?.fingerprint, assemblyKeys, defines)
+            );
         }
         string buildKey = ComputeGenerationBuildKey(sources, assemblyKeys);
         string outputDirectory = Path.Combine(options.outputDirectory, buildKey);
-        if (TryCreateCachedResult(
-                outputDirectory,
-                sources,
-                out ScriptCompilationResult? cachedResult))
+        if (TryCreateCachedResult(outputDirectory, sources, out ScriptCompilationResult? cachedResult))
         {
             progress.Complete("Reused cached script assembly artifact.");
             return new ScriptCompilationResult(
@@ -136,7 +144,8 @@ internal static class ScriptCompilerEngine
                 cachedResult.moduleDeployments,
                 compiledAssemblies: [],
                 reusedAssemblies: sources.assemblies.Select(static assembly => assembly.name).ToArray(),
-                stageTimings: progress.Snapshot());
+                stageTimings: progress.Snapshot()
+            );
         }
 
         IReadOnlyList<MetadataReference> platformReferences = environment.frameworkReferences;
@@ -155,24 +164,27 @@ internal static class ScriptCompilerEngine
         {
             bool editor = assembly.scope == ScriptAssemblyScope.Editor;
             ScriptApiProfile api = editor
-                ? editorApi ?? throw new InvalidOperationException(
-                    "A runtime deployment cannot contain an editor script assembly.")
-                : runtimeApi;
+                                   ? editorApi ?? throw new InvalidOperationException(
+                                       "A runtime deployment cannot contain an editor script assembly."
+                                   )
+                                   : runtimeApi;
             ScriptApiReferenceSet apiReferences = editor
-                ? editorApiReferences ?? throw new InvalidOperationException(
-                    "A runtime deployment cannot contain editor API references.")
-                : runtimeApiReferences;
+                                                  ? editorApiReferences ?? throw new InvalidOperationException(
+                                                      "A runtime deployment cannot contain editor API references."
+                                                  )
+                                                  : runtimeApiReferences;
             string assemblyPath = Path.Combine(stagingDirectory, assembly.name + ".dll");
             string assemblyCacheDirectory = Path.Combine(
                 options.outputDirectory,
                 ".assemblies",
-                assemblyKeys[assembly.name]);
+                assemblyKeys[assembly.name]
+            );
             if (TryCopyCachedAssembly(
-                    assemblyCacheDirectory,
-                    assembly.name,
-                    stagingDirectory,
-                    out ScriptDiagnostic[] cachedDiagnostics))
-            {
+                assemblyCacheDirectory,
+                assembly.name,
+                stagingDirectory,
+                out ScriptDiagnostic[] cachedDiagnostics
+            )) {
                 diagnostics.AddRange(cachedDiagnostics);
                 compiledPaths.Add(assembly.name, assemblyPath);
                 reusedAssemblies.Add(assembly.name);
@@ -198,13 +210,14 @@ internal static class ScriptCompilerEngine
                 assembly.scope,
                 assembly.domain,
                 string.IsNullOrEmpty(assembly.ownerPluginId)
-                    ? AssetSourceId.project.value
-                    : assembly.ownerPluginId,
+                ? AssetSourceId.project.value
+                : assembly.ownerPluginId,
                 GetCompilationDefines(assembly, includeEditor, environment.inputs.predefinedSymbols),
                 assembly.nullable,
                 assembly.allowUnsafe,
                 progress,
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken
+            ).ConfigureAwait(false);
             diagnostics.AddRange(result.diagnostics);
             if (!result.success)
             {
@@ -215,21 +228,15 @@ internal static class ScriptCompilerEngine
                     diagnostics,
                     outputDirectory: null,
                     moduleDeployments: null,
-                    stageTimings: progress.Snapshot());
+                    stageTimings: progress.Snapshot()
+                );
             }
             File.WriteAllBytes(
                 GetDiagnosticsPath(assemblyStagingDirectory),
-                ScriptCompilerCacheSerialization.EncodeDiagnostics(result.diagnostics));
-            CommitAssemblyCache(
-                assemblyStagingDirectory,
-                assemblyCacheDirectory,
-                assembly.name,
-                cancellationToken);
-            if (!TryCopyCachedAssembly(
-                    assemblyCacheDirectory,
-                    assembly.name,
-                    stagingDirectory,
-                    out _))
+                ScriptCompilerCacheSerialization.EncodeDiagnostics(result.diagnostics)
+            );
+            CommitAssemblyCache(assemblyStagingDirectory, assemblyCacheDirectory, assembly.name, cancellationToken);
+            if (!TryCopyCachedAssembly(assemblyCacheDirectory, assembly.name, stagingDirectory, out _))
             {
                 DeleteStagingDirectory(stagingDirectory);
                 throw new IOException($"Committed script assembly cache '{assembly.name}' is incomplete.");
@@ -240,13 +247,12 @@ internal static class ScriptCompilerEngine
 
         File.WriteAllBytes(
             GetDiagnosticsPath(stagingDirectory),
-            ScriptCompilerCacheSerialization.EncodeDiagnostics(diagnostics));
+            ScriptCompilerCacheSerialization.EncodeDiagnostics(diagnostics)
+        );
         CommitGenerationCache(stagingDirectory, outputDirectory, sources, cancellationToken);
 
         progress.Begin("Preparing the script reload...");
-        IReadOnlyList<ScriptModuleDeployment> requests = CreateModuleDeployments(
-            outputDirectory,
-            sources);
+        IReadOnlyList<ScriptModuleDeployment> requests = CreateModuleDeployments(outputDirectory, sources);
         progress.Complete("Script reload prepared.");
         return new ScriptCompilationResult(
             true,
@@ -255,7 +261,8 @@ internal static class ScriptCompilerEngine
             requests,
             compiledAssemblies,
             reusedAssemblies,
-            progress.Snapshot());
+            progress.Snapshot()
+        );
     }
 
     private static async ValueTask<CompilationResult> CompileAssemblyAsync(
@@ -282,7 +289,8 @@ internal static class ScriptCompilerEngine
             preprocessorSymbols: defines
                 .Concat(["DEBUG", "TRACE"])
                 .Distinct(StringComparer.Ordinal)
-                .OrderBy(static value => value, StringComparer.Ordinal));
+                .OrderBy(static value => value, StringComparer.Ordinal)
+        );
         var syntaxTrees = new List<SyntaxTree>(sources.Count + 1);
         for (int sourceIndex = 0; sourceIndex < sources.Count; sourceIndex++)
         {
@@ -290,35 +298,42 @@ internal static class ScriptCompilerEngine
             progress.Begin($"Parsing {assemblyName} sources ({sourceIndex + 1}/{sources.Count})...");
             cancellationToken.ThrowIfCancellationRequested();
             string source = sourceInput.snapshotSource;
-            syntaxTrees.Add(CSharpSyntaxTree.ParseText(
-                SourceText.From(source, Encoding.UTF8),
-                parseOptions,
-                sourceInput.sourcePath,
-                cancellationToken));
+            syntaxTrees.Add(
+                CSharpSyntaxTree.ParseText(
+                    SourceText.From(source, Encoding.UTF8),
+                    parseOptions,
+                    sourceInput.sourcePath,
+                    cancellationToken
+                )
+            );
             progress.Complete($"Parsed {assemblyName} source {sourceIndex + 1}/{sources.Count}.");
         }
         progress.Begin($"Preparing generated {assemblyName} sources...");
-        syntaxTrees.Add(CSharpSyntaxTree.ParseText(
-            SourceText.From(
-                CreateGeneratedSource(
-                    assemblyName,
-                    scope == ScriptAssemblyScope.Editor,
-                    domain,
-                    assetSourceId),
-                Encoding.UTF8),
-            parseOptions,
-            $"<{assemblyName}.Generated.g.cs>",
-            cancellationToken));
+        syntaxTrees.Add(
+            CSharpSyntaxTree.ParseText(
+                SourceText.From(
+                    CreateGeneratedSource(assemblyName, scope == ScriptAssemblyScope.Editor, domain, assetSourceId),
+                    Encoding.UTF8
+                ),
+                parseOptions,
+                $"<{assemblyName}.Generated.g.cs>",
+                cancellationToken
+            )
+        );
         progress.Complete($"Prepared generated {assemblyName} sources.");
 
         var validationReferences = new Dictionary<string, MetadataReference>(StringComparer.OrdinalIgnoreCase);
         foreach (MetadataReference reference in platformReferences)
         {
             if (!string.IsNullOrWhiteSpace(reference.Display))
+            {
                 validationReferences[reference.Display!] = reference;
+            }
         }
         foreach (string referencePath in apiReferences.runtimeReferencePaths)
+        {
             validationReferences[referencePath] = MetadataReference.CreateFromFile(referencePath);
+        }
 
         var validationCompilation = CSharpCompilation.Create(
             assemblyName,
@@ -332,13 +347,19 @@ internal static class ScriptCompilerEngine
                 deterministic: true,
                 concurrentBuild: false,
                 sourceReferenceResolver: new SourceFileResolver(
-                    [], Environment.CurrentDirectory, ScriptSourceLocations.CreatePathMap(sources)),
+                    [],
+                    Environment.CurrentDirectory,
+                    ScriptSourceLocations.CreatePathMap(sources)
+                ),
                 nullableContextOptions: nullable
-                    ? NullableContextOptions.Enable
-                    : NullableContextOptions.Disable));
+                                        ? NullableContextOptions.Enable
+                                        : NullableContextOptions.Disable
+            )
+        );
         var apiMapFile = new InMemoryAdditionalText(
             assemblyName + ScriptApiMapBuilder.C_FILE_EXTENSION,
-            ScriptApiMapBuilder.Build(api));
+            ScriptApiMapBuilder.Build(api)
+        );
         var analyzerOptions = new AnalyzerOptions(ImmutableArray.Create<AdditionalText>(apiMapFile));
         var analyzers = ImmutableArray.Create<DiagnosticAnalyzer>(new LogicalScriptingApiAnalyzer());
         progress.Begin($"Validating the {assemblyName} API surface...");
@@ -354,33 +375,51 @@ internal static class ScriptCompilerEngine
                 analyzerDiagnostics
                     .Where(static diagnostic => diagnostic.Severity != DiagnosticSeverity.Hidden)
                     .Select(ToDiagnostic)
-                    .ToArray());
+                    .ToArray()
+            );
         }
 
         var usingRewriter = new ScriptApiUsingRewriter(api.namespaceMappings, api.typeMappings);
         var propertyOrderRewriter = new SerializablePropertyOrderRewriter();
         var logicalReferences = new Dictionary<string, MetadataReference>(StringComparer.OrdinalIgnoreCase);
         foreach (MetadataReference reference in platformReferences)
+        {
             if (!string.IsNullOrWhiteSpace(reference.Display))
+            {
                 logicalReferences[reference.Display!] = reference;
+            }
+        }
         foreach (string referencePath in apiReferences.ideReferencePaths)
+        {
             logicalReferences[referencePath] = MetadataReference.CreateFromFile(referencePath);
+        }
         var logicalBindings = CSharpCompilation.Create(assemblyName, syntaxTrees, logicalReferences.Values, validationCompilation.Options);
         SyntaxTree[] runtimeTrees = syntaxTrees
             .Select(tree => CSharpSyntaxTree.Create(
                 (CSharpSyntaxNode)usingRewriter.Visit(
-                    propertyOrderRewriter.Visit(new ScriptStaticMemberRewriter(logicalBindings.GetSemanticModel(tree))
-                        .Visit(tree.GetRoot(cancellationToken))))!,
+                    propertyOrderRewriter.Visit(
+                        new ScriptStaticMemberRewriter(logicalBindings.GetSemanticModel(tree))
+                            .Visit(tree.GetRoot(cancellationToken))
+                    )
+                )!,
                 parseOptions,
                 tree.FilePath,
-                Encoding.UTF8))
+                Encoding.UTF8
+            ))
             .ToArray();
         var contractCompilation = CSharpCompilation.Create(
-            assemblyName, runtimeTrees, validationReferences.Values, validationCompilation.Options);
+            assemblyName,
+            runtimeTrees,
+            validationReferences.Values,
+            validationCompilation.Options
+        );
         Diagnostic[] contractErrors = contractCompilation.GetDiagnostics(cancellationToken)
-            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).ToArray();
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
         if (contractErrors.Length > 0)
+        {
             return new CompilationResult(false, contractErrors.Select(ToDiagnostic).ToArray());
+        }
 
         IReadOnlyCollection<MetadataReference> runtimeReferences;
         if (deploymentReferences is null)
@@ -388,9 +427,13 @@ internal static class ScriptCompilerEngine
             // User code has passed the same trimmed contract used by IDE projects.
             // Generated registration alone needs the owning assemblies' implementation metadata.
             var implementationReferences = platformReferences.ToDictionary(
-                static reference => reference.Display!, StringComparer.OrdinalIgnoreCase);
+                static reference => reference.Display!,
+                StringComparer.OrdinalIgnoreCase
+            );
             foreach (string path in ScriptApiReferenceBuilder.GetImplementationPaths(api, apiReferences.environment))
+            {
                 implementationReferences[path] = MetadataReference.CreateFromFile(path);
+            }
             runtimeReferences = implementationReferences.Values;
         }
         else
@@ -400,17 +443,22 @@ internal static class ScriptCompilerEngine
             foreach (MetadataReference reference in platformReferences)
             {
                 if (!string.IsNullOrWhiteSpace(reference.Display))
+                {
                     targetReferences[reference.Display!] = reference;
+                }
             }
             foreach (string referencePath in deploymentReferences.paths)
+            {
                 targetReferences[referencePath] = MetadataReference.CreateFromFile(referencePath);
+            }
             runtimeReferences = targetReferences.Values;
         }
         var runtimeCompilation = CSharpCompilation.Create(
             assemblyName,
             runtimeTrees,
             runtimeReferences,
-            validationCompilation.Options);
+            validationCompilation.Options
+        );
         progress.Begin($"Resolving {assemblyName} script type identities...");
         ScriptTypeAnalysisResult typeAnalysis = ScriptTypeAnalyzer.Analyze(
             runtimeCompilation,
@@ -418,31 +466,41 @@ internal static class ScriptCompilerEngine
             api.attachableTypes.ToDictionary(
                 static value => value.implementationName,
                 static value => value.kind,
-                StringComparer.Ordinal),
-            cancellationToken);
+                StringComparer.Ordinal
+            ),
+            cancellationToken
+        );
         if (typeAnalysis.mappings.Count > 0)
         {
             SyntaxTree mappingTree = CSharpSyntaxTree.ParseText(
-                SourceText.From(
-                    ScriptTypeAnalyzer.CreateMappingSource(typeAnalysis.mappings),
-                    Encoding.UTF8),
+                SourceText.From(ScriptTypeAnalyzer.CreateMappingSource(typeAnalysis.mappings), Encoding.UTF8),
                 parseOptions,
                 $"<{assemblyName}.ScriptTypeIds.g.cs>",
-                cancellationToken);
+                cancellationToken
+            );
             runtimeCompilation = runtimeCompilation.AddSyntaxTrees(mappingTree);
         }
         progress.Complete($"Resolved {assemblyName} script type identities.");
-        if (typeAnalysis.diagnostics.Any(static diagnostic =>
-                diagnostic.severity == Inno.Core.Diagnostics.DiagnosticSeverity.Error))
-        {
+        if (typeAnalysis.diagnostics.Any(static diagnostic => (
+            diagnostic.severity == Inno.Core.Diagnostics.DiagnosticSeverity.Error
+        ))
+        ) {
             return new CompilationResult(false, typeAnalysis.diagnostics);
         }
         GeneratorDriver registration = CSharpGeneratorDriver.Create(
-            [new RuntimeModuleCatalogGenerator().AsSourceGenerator(),
-                new SerializationConverterGenerator().AsSourceGenerator(), new SerializationMetadataGenerator().AsSourceGenerator()],
-            parseOptions: parseOptions);
-        registration.RunGeneratorsAndUpdateCompilation(runtimeCompilation, out Compilation registeredCompilation,
-            out ImmutableArray<Diagnostic> registrationDiagnostics, cancellationToken);
+            [
+                new RuntimeModuleCatalogGenerator().AsSourceGenerator(),
+                new SerializationConverterGenerator().AsSourceGenerator(),
+                new SerializationMetadataGenerator().AsSourceGenerator()
+            ],
+            parseOptions: parseOptions
+        );
+        registration.RunGeneratorsAndUpdateCompilation(
+            runtimeCompilation,
+            out Compilation registeredCompilation,
+            out ImmutableArray<Diagnostic> registrationDiagnostics,
+            cancellationToken
+        );
         runtimeCompilation = (CSharpCompilation)registeredCompilation;
         progress.Begin($"Checking {assemblyName} compilation diagnostics...");
         Diagnostic[] preEmitDiagnostics = runtimeCompilation
@@ -459,7 +517,8 @@ internal static class ScriptCompilerEngine
                 false,
                 typeAnalysis.diagnostics
                     .Concat(preEmitDiagnostics.Select(ToDiagnostic))
-                    .ToArray());
+                    .ToArray()
+            );
         }
 
         string pdbPath = Path.ChangeExtension(outputPath, ".pdb");
@@ -473,21 +532,25 @@ internal static class ScriptCompilerEngine
             pdbStream,
             xmlDocumentationStream: documentationStream,
             options: new EmitOptions(debugInformationFormat: DebugInformationFormat.PortablePdb),
-            cancellationToken: cancellationToken);
+            cancellationToken: cancellationToken
+        );
         if (emit.Success)
         {
             await File.WriteAllBytesAsync(
                 GetTypeManifestPath(outputPath),
                 ScriptCompilerCacheSerialization.EncodeTypeManifest(typeAnalysis.manifest),
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken
+            ).ConfigureAwait(false);
         }
         progress.Complete($"Emitted {assemblyName}.");
         ScriptDiagnostic[] diagnostics = typeAnalysis.diagnostics
-            .Concat(preEmitDiagnostics
-                .Concat(emit.Diagnostics)
-                .Where(static diagnostic => diagnostic.Severity != DiagnosticSeverity.Hidden)
-                .Distinct(DiagnosticComparer.Instance)
-                .Select(ToDiagnostic))
+            .Concat(
+                preEmitDiagnostics
+                    .Concat(emit.Diagnostics)
+                    .Where(static diagnostic => diagnostic.Severity != DiagnosticSeverity.Hidden)
+                    .Distinct(DiagnosticComparer.Instance)
+                    .Select(ToDiagnostic)
+            )
             .ToArray();
         return new CompilationResult(emit.Success, diagnostics);
     }
@@ -535,7 +598,9 @@ internal static class ScriptCompilerEngine
         private void FinishCurrentStage()
         {
             if (m_stage is null)
+            {
                 return;
+            }
             m_stageStopwatch.Stop();
             m_timings.Add(new ScriptCompilationStageTiming(m_stage, m_stageStopwatch.Elapsed));
             m_stage = null;
@@ -564,7 +629,9 @@ internal static class ScriptCompilerEngine
         AppendHash(hash, assembly.nullable.ToString());
         AppendHash(hash, assembly.allowUnsafe.ToString());
         foreach (string define in defines.OrderBy(static value => value, StringComparer.Ordinal))
+        {
             AppendHash(hash, define);
+        }
         foreach (ScriptSourceInput source in assembly.sources.OrderBy(static value => value.relativePath, StringComparer.Ordinal))
         {
             AppendHash(hash, source.relativePath);
@@ -588,12 +655,12 @@ internal static class ScriptCompilerEngine
     ) {
         ArgumentNullException.ThrowIfNull(assembly);
         return includeEditor
-            ? assembly.defines.Concat(predefinedSymbols)
-                .Append(C_EDITOR_COMPILATION_SYMBOL)
-                .Distinct(StringComparer.Ordinal)
-                .OrderBy(static value => value, StringComparer.Ordinal)
-                .ToArray()
-            : assembly.defines.Concat(predefinedSymbols).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+               ? assembly.defines.Concat(predefinedSymbols)
+                   .Append(C_EDITOR_COMPILATION_SYMBOL)
+                   .Distinct(StringComparer.Ordinal)
+                   .OrderBy(static value => value, StringComparer.Ordinal)
+                   .ToArray()
+               : assembly.defines.Concat(predefinedSymbols).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
     }
 
     private static string ComputeGenerationBuildKey(
@@ -627,18 +694,20 @@ internal static class ScriptCompilerEngine
         ];
         string diagnosticsPath = GetDiagnosticsPath(cacheDirectory);
         if (!IsCachedAssemblyComplete(cacheDirectory, assemblyName))
+        {
             return false;
+        }
         try
         {
-            diagnostics = ScriptCompilerCacheSerialization.DecodeDiagnostics(
-                File.ReadAllBytes(diagnosticsPath));
+            diagnostics = ScriptCompilerCacheSerialization.DecodeDiagnostics(File.ReadAllBytes(diagnosticsPath));
             Directory.CreateDirectory(destinationDirectory);
             for (int i = 0; i < sourcePaths.Length; i++)
             {
                 File.Copy(
                     sourcePaths[i],
                     Path.Combine(destinationDirectory, Path.GetFileName(sourcePaths[i])),
-                    overwrite: true);
+                    overwrite: true
+                );
             }
             TryTouchCacheDirectory(cacheDirectory);
             return true;
@@ -686,35 +755,36 @@ internal static class ScriptCompilerEngine
         string assemblyName
     ) {
         string assemblyPath = Path.Combine(cacheDirectory, assemblyName + ".dll");
-        if (!File.Exists(assemblyPath) ||
-            !File.Exists(Path.ChangeExtension(assemblyPath, ".pdb")) ||
-            !File.Exists(Path.ChangeExtension(assemblyPath, ".xml")) ||
-            !File.Exists(GetTypeManifestPath(assemblyPath)) ||
-            !File.Exists(GetDiagnosticsPath(cacheDirectory)))
-        {
+        if (!File.Exists(assemblyPath)
+            || !File.Exists(Path.ChangeExtension(assemblyPath, ".pdb"))
+            || !File.Exists(Path.ChangeExtension(assemblyPath, ".xml"))
+            || !File.Exists(GetTypeManifestPath(assemblyPath))
+            || !File.Exists(GetDiagnosticsPath(cacheDirectory))
+        ) {
             return false;
         }
         try
         {
             if (!HasExpectedAssemblyIdentity(assemblyPath, assemblyName))
+            {
                 return false;
+            }
             _ = ScriptCompilerCacheSerialization.DecodeDiagnostics(
-                File.ReadAllBytes(GetDiagnosticsPath(cacheDirectory)));
+                File.ReadAllBytes(GetDiagnosticsPath(cacheDirectory))
+            );
             ScriptTypeManifest manifest = ScriptCompilerCacheSerialization.DecodeTypeManifest(
-                File.ReadAllBytes(GetTypeManifestPath(assemblyPath)));
-            if (!string.Equals(
-                    manifest.assemblyName,
-                    assemblyName,
-                    StringComparison.Ordinal))
+                File.ReadAllBytes(GetTypeManifestPath(assemblyPath))
+            );
+            if (!string.Equals(manifest.assemblyName, assemblyName, StringComparison.Ordinal))
             {
                 return false;
             }
             return true;
         }
         catch (Exception exception) when (exception is
-            InvalidOperationException or
-            IOException or
-            BadImageFormatException)
+            InvalidOperationException
+                                          or IOException
+                                          or BadImageFormatException)
         {
             return false;
         }
@@ -752,12 +822,13 @@ internal static class ScriptCompilerEngine
         result = null;
         string diagnosticsPath = GetDiagnosticsPath(outputDirectory);
         if (!File.Exists(diagnosticsPath))
+        {
             return false;
+        }
         ScriptDiagnostic[] diagnostics;
         try
         {
-            diagnostics = ScriptCompilerCacheSerialization.DecodeDiagnostics(
-                File.ReadAllBytes(diagnosticsPath));
+            diagnostics = ScriptCompilerCacheSerialization.DecodeDiagnostics(File.ReadAllBytes(diagnosticsPath));
         }
         catch (InvalidOperationException)
         {
@@ -770,15 +841,16 @@ internal static class ScriptCompilerEngine
         foreach (ScriptAssemblyInput assembly in sources.assemblies)
         {
             if (!IsCachedAssemblyComplete(outputDirectory, assembly.name))
+            {
                 return false;
+            }
         }
         result = new ScriptCompilationResult(
             success: true,
             diagnostics: diagnostics,
             outputDirectory: outputDirectory,
-            moduleDeployments: CreateModuleDeployments(
-                outputDirectory,
-                sources));
+            moduleDeployments: CreateModuleDeployments(outputDirectory, sources)
+        );
         TryTouchCacheDirectory(outputDirectory);
         return true;
     }
@@ -788,7 +860,9 @@ internal static class ScriptCompilerEngine
         try
         {
             if (Directory.Exists(path))
+            {
                 Directory.Delete(path, recursive: true);
+            }
         }
         catch (IOException)
         {
@@ -888,18 +962,16 @@ internal static class ScriptCompilerEngine
         Dictionary<string, string> pluginModules = pluginAssemblies
             .Select(static assembly => assembly.ownerPluginId)
             .Distinct(StringComparer.Ordinal)
-            .ToDictionary(
-                static pluginId => pluginId,
-                static pluginId => "Plugin." + pluginId,
-                StringComparer.Ordinal);
+            .ToDictionary(static pluginId => pluginId, static pluginId => "Plugin." + pluginId, StringComparer.Ordinal);
         Dictionary<string, ScriptAssemblyInput> assembliesByName = sources.assemblies.ToDictionary(
             static assembly => assembly.name,
-            StringComparer.OrdinalIgnoreCase);
+            StringComparer.OrdinalIgnoreCase
+        );
         var requests = new List<ScriptModuleDeployment>();
         foreach (IGrouping<string, ScriptAssemblyInput> group in pluginAssemblies
-                     .GroupBy(static assembly => assembly.ownerPluginId, StringComparer.Ordinal)
-                     .OrderBy(static group => group.Key, StringComparer.Ordinal))
-        {
+            .GroupBy(static assembly => assembly.ownerPluginId, StringComparer.Ordinal)
+            .OrderBy(static group => group.Key, StringComparer.Ordinal)
+        ) {
             ScriptAssemblyInput[] owned = group
                 .OrderBy(static assembly => assembly.scope)
                 .ThenBy(static assembly => assembly.name, StringComparer.Ordinal)
@@ -908,36 +980,48 @@ internal static class ScriptCompilerEngine
             string[] dependencies = owned
                 .SelectMany(static assembly => assembly.references)
                 .Select(reference => assembliesByName[reference].ownerPluginId)
-                .Where(owner => !string.IsNullOrEmpty(owner) &&
-                                !string.Equals(owner, group.Key, StringComparison.Ordinal))
+                .Where(owner => (
+                    !string.IsNullOrEmpty(owner)
+                    && !string.Equals(owner, group.Key, StringComparison.Ordinal)
+                ))
                 .Distinct(StringComparer.Ordinal)
                 .OrderBy(static value => value, StringComparer.Ordinal)
                 .Select(owner => pluginModules[owner])
                 .ToArray();
-            requests.Add(new ScriptModuleDeployment(
-                pluginModules[group.Key],
-                AssemblyPath(main.name),
-                AssemblyDomain.InnoPlugin,
-                main.scope == ScriptAssemblyScope.Editor ? AssemblyScope.Editor : AssemblyScope.Runtime,
-                owned
-                    .Where(assembly => !ReferenceEquals(assembly, main))
-                    .Select(assembly => AssemblyPath(assembly.name))
-                    .ToArray(),
-                dependencies,
-                owned.ToDictionary(
-                    static assembly => assembly.name,
-                    static assembly => assembly.scope == ScriptAssemblyScope.Editor
-                        ? AssemblyScope.Editor
-                        : AssemblyScope.Runtime,
-                    StringComparer.OrdinalIgnoreCase)));
+            requests.Add(
+                new ScriptModuleDeployment(
+                    pluginModules[group.Key],
+                    AssemblyPath(main.name),
+                    AssemblyDomain.InnoPlugin,
+                    main.scope == ScriptAssemblyScope.Editor ? AssemblyScope.Editor : AssemblyScope.Runtime,
+                    owned
+                        .Where(assembly => !ReferenceEquals(assembly, main))
+                        .Select(assembly => AssemblyPath(assembly.name))
+                        .ToArray(),
+                    dependencies,
+                    owned.ToDictionary(
+                        static assembly => assembly.name,
+                        static assembly => (
+                            assembly.scope == ScriptAssemblyScope.Editor
+                            ? AssemblyScope.Editor
+                            : AssemblyScope.Runtime
+                        ),
+                        StringComparer.OrdinalIgnoreCase
+                    )
+                )
+            );
         }
         ScriptAssemblyInput[] runtimeAssemblies = sources.assemblies
-            .Where(static assembly => assembly.domain == AssemblyDomain.InnoScripting
-                && assembly.scope == ScriptAssemblyScope.Runtime)
+            .Where(static assembly => (
+                assembly.domain == AssemblyDomain.InnoScripting
+                && assembly.scope == ScriptAssemblyScope.Runtime
+            ))
             .ToArray();
         ScriptAssemblyInput[] editorAssemblies = sources.assemblies
-            .Where(static assembly => assembly.domain == AssemblyDomain.InnoScripting
-                && assembly.scope == ScriptAssemblyScope.Editor)
+            .Where(static assembly => (
+                assembly.domain == AssemblyDomain.InnoScripting
+                && assembly.scope == ScriptAssemblyScope.Editor
+            ))
             .ToArray();
         string[] pluginModuleNames = pluginModules.Values
             .OrderBy(static value => value, StringComparer.Ordinal)
@@ -952,7 +1036,9 @@ internal static class ScriptCompilerEngine
                     .Where(static assembly => assembly.name != C_GAME_ASSEMBLY_NAME)
                     .Select(assembly => AssemblyPath(assembly.name))
                     .ToArray(),
-                pluginModuleNames));
+                pluginModuleNames
+            )
+        );
         if (sources.includesEditor)
         {
             requests.Add(
@@ -969,7 +1055,10 @@ internal static class ScriptCompilerEngine
                     editorAssemblies.ToDictionary(
                         static assembly => assembly.name,
                         static _ => AssemblyScope.Editor,
-                        StringComparer.OrdinalIgnoreCase)));
+                        StringComparer.OrdinalIgnoreCase
+                    )
+                )
+            );
         }
         return requests;
     }
@@ -988,7 +1077,8 @@ internal static class ScriptCompilerEngine
             diagnostic.GetMessage(),
             string.IsNullOrWhiteSpace(location.Path) ? null : location.Path,
             location.IsValid ? location.StartLinePosition.Line + 1 : 0,
-            location.IsValid ? location.StartLinePosition.Character + 1 : 0);
+            location.IsValid ? location.StartLinePosition.Character + 1 : 0
+        );
     }
 
     private sealed record CompilationResult(
@@ -1046,15 +1136,19 @@ internal static class ScriptCompilerEngine
             Diagnostic? right
         ) {
             if (ReferenceEquals(left, right))
+            {
                 return true;
+            }
             if (left is null || right is null)
+            {
                 return false;
+            }
             FileLinePositionSpan leftLocation = left.Location.GetLineSpan();
             FileLinePositionSpan rightLocation = right.Location.GetLineSpan();
-            return string.Equals(left.Id, right.Id, StringComparison.Ordinal) &&
-                   string.Equals(left.GetMessage(), right.GetMessage(), StringComparison.Ordinal) &&
-                   string.Equals(leftLocation.Path, rightLocation.Path, StringComparison.Ordinal) &&
-                   leftLocation.StartLinePosition.Equals(rightLocation.StartLinePosition);
+            return string.Equals(left.Id, right.Id, StringComparison.Ordinal)
+                   && string.Equals(left.GetMessage(), right.GetMessage(), StringComparison.Ordinal)
+                   && string.Equals(leftLocation.Path, rightLocation.Path, StringComparison.Ordinal)
+                   && leftLocation.StartLinePosition.Equals(rightLocation.StartLinePosition);
         }
 
         /// <summary>
@@ -1069,11 +1163,7 @@ internal static class ScriptCompilerEngine
         public int GetHashCode(Diagnostic diagnostic)
         {
             FileLinePositionSpan location = diagnostic.Location.GetLineSpan();
-            return HashCode.Combine(
-                diagnostic.Id,
-                diagnostic.GetMessage(),
-                location.Path,
-                location.StartLinePosition);
+            return HashCode.Combine(diagnostic.Id, diagnostic.GetMessage(), location.Path, location.StartLinePosition);
         }
     }
 }

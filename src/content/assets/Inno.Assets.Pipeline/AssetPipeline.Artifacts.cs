@@ -4,18 +4,17 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Extensibility.Modules;
-using Inno.Core.Identity;
 using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
+using Inno.Core.Identity;
 using Inno.Core.Logging;
+using Inno.Core.Serialization;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
 using Inno.Extensibility.Types;
 using Inno.Scripting.Api;
-using Inno.Core.Serialization;
-using Inno.Core.Execution;
-using Inno.Extensibility.Reload;
 
 namespace Inno.Assets.Pipeline;
 
@@ -40,8 +39,7 @@ sealed partial class AssetPipeline
         Guid persistentId,
         string outputName,
         out AssetArtifactInfo? artifact
-    )
-        => GetLoader().TryGetArtifact(persistentId, outputName, out artifact);
+    ) => GetLoader().TryGetArtifact(persistentId, outputName, out artifact);
 
     /// <summary>
     /// Acquires one verified authoring artifact generation for an explicit lifetime.
@@ -111,10 +109,7 @@ sealed partial class AssetPipeline
         using IDisposable operationScope = AcquireOperation();
         WaitForIdle();
         using SerializationGeneration serialization = m_serialization.CaptureGeneration();
-        return GetLoader().ExportRuntimeArtifacts(
-            destinationContentRoot,
-            serialization,
-            CancellationToken.None);
+        return GetLoader().ExportRuntimeArtifacts(destinationContentRoot, serialization, CancellationToken.None);
     }
 
     /// <summary>
@@ -152,7 +147,8 @@ sealed partial class AssetPipeline
         using SerializationGeneration serialization = m_serialization.CaptureGeneration();
         return await Task.Run(
             () => loader.ExportRuntimeArtifacts(destinationContentRoot, serialization, cancellationToken),
-            CancellationToken.None).ConfigureAwait(false);
+            CancellationToken.None
+        ).ConfigureAwait(false);
     }
 
     private void CollectArtifactsIfDue(
@@ -160,14 +156,15 @@ sealed partial class AssetPipeline
         bool force
     ) {
         if (m_options.mode == AssetPipelineMode.RuntimeArtifacts)
+        {
             return;
+        }
         long now = Environment.TickCount64;
         if (!force && now - m_lastArtifactCollectionTimestamp < 60_000)
+        {
             return;
+        }
         m_lastArtifactCollectionTimestamp = now;
-        _ = loader.CollectArtifacts(
-            m_cacheOptions.garbageCollectionGracePeriod,
-            m_cacheOptions.maximumSizeBytes);
+        _ = loader.CollectArtifacts(m_cacheOptions.garbageCollectionGracePeriod, m_cacheOptions.maximumSizeBytes);
     }
-
 }

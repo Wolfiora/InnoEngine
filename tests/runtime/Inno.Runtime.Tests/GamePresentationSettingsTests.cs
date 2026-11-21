@@ -1,13 +1,12 @@
-using Inno.Core.IO;
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
-
-using Inno.Core.Settings;
-using Inno.Core.Serialization;
-using Inno.Runtime;
 using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Core.IO;
+using Inno.Core.Serialization;
+using Inno.Core.Settings;
+using Inno.Runtime;
 
 namespace Inno.Runtime.Tests;
 
@@ -49,27 +48,29 @@ public sealed class GamePresentationSettingsTests
     [Fact]
     public void RuntimeHostRegistersDefaultPresentationProjectSetting()
     {
-        string directory = Path.Combine(
-            Path.GetTempPath(),
-            "InnoGamePresentationTests",
-            Guid.NewGuid().ToString("N"));
+        string directory = Path.Combine(Path.GetTempPath(), "InnoGamePresentationTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
         try
         {
             using EngineHost host = new EngineHostBuilder()
-                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(GamePresentationSettingsTests).Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
+                .UseMetadataSources(
+                    new DotNetAssemblyCatalogSource(typeof(GamePresentationSettingsTests).Assembly),
+                    new ReflectionTypeCatalogSource(),
+                    new ReflectionSerializationMetadataSource()
+                )
                 .Build();
             using var settings = new ProjectSettingsStore(
                 new FileByteDocumentStore(Path.GetFullPath(Path.Combine(directory, "Settings.Project.inno"))),
                 host.types,
                 host.serialization,
                 new ProjectId("tests.runtime"),
-                SerializationContext.empty);
+                SerializationContext.empty
+            );
             settings.RebuildCurrent();
 
             GamePresentationSettings presentation = settings.Get<GamePresentationSettings>(
-                GamePresentationSettings.settingId);
+                GamePresentationSettings.settingId
+            );
 
             Assert.True(presentation.preserveAspectRatio);
             Assert.Equal(1280, presentation.referenceWidth);

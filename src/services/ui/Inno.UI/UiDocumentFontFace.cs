@@ -30,10 +30,14 @@ public readonly record struct UiDocumentFontFace
         int weight
     ) {
         if (assetId == Guid.Empty)
+        {
             throw new ArgumentException("A font asset ID is required.", nameof(assetId));
+        }
         ArgumentException.ThrowIfNullOrWhiteSpace(family);
         if (weight is < 100 or > 1000)
+        {
             throw new ArgumentOutOfRangeException(nameof(weight));
+        }
         this.assetId = assetId;
         this.family = family;
         this.style = style;
@@ -44,14 +48,17 @@ public readonly record struct UiDocumentFontFace
     /// Gets the imported font asset identity.
     /// </summary>
     public Guid assetId { get; }
+
     /// <summary>
     /// Gets the family referenced by the document.
     /// </summary>
     public string family { get; }
+
     /// <summary>
     /// Gets the declared style.
     /// </summary>
     public TextFontStyle style { get; }
+
     /// <summary>
     /// Gets the declared weight.
     /// </summary>

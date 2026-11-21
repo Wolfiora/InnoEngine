@@ -1,8 +1,8 @@
+using System;
 using Inno.Assets;
 using Inno.Core.Serialization;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
-using System;
 
 namespace Inno.Rendering.Runtime;
 
@@ -46,4 +46,3 @@ public sealed class RenderExtensionStateContext
         m_owner.RestoreProperties(state.stableTypeId, state.propertyData, target);
     }
 }
-

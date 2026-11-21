@@ -1,8 +1,3 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Inno.Editor.Assets;
-using Inno.Core.Identity;
-using Inno.Editor.Interactions;
-using Inno.Editor.Assets.ImGui;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,13 +5,21 @@ using System.Linq;
 using System.Numerics;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Identity;
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+using Inno.Editor.Interactions;
+
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
+
 internal sealed partial class FileBrowserPanel
 {
     private int CollectPreservedEntryRows(
@@ -27,13 +30,17 @@ internal sealed partial class FileBrowserPanel
         RuntimeIdentity? editing = m_rename.activeTarget;
         RuntimeIdentity? dragging = m_assets.edits.interactions.TryGetActiveDragIdentity(out RuntimeIdentity source) ? source : null;
         if (editing is null && dragging is null && m_drawKeyboardFocus is null)
+        {
             return 0;
+        }
         int count = 0;
         for (int index = 0; index < entries.Count; index++)
         {
             RuntimeIdentity identity = entries[index].identity;
             if (identity == editing || identity == dragging || identity == m_drawKeyboardFocus)
+            {
                 rows[count++] = index / columns;
+            }
         }
         return count;
     }
@@ -52,7 +59,9 @@ internal sealed partial class FileBrowserPanel
         PushButtonColors(canGoBack ? EditorPalette.contentAccent : EditorPalette.contentBorderSoft);
         Ui.BeginDisabled(!canGoBack);
         if (Ui.SmallButton($"{ImGuiIcon.AngleLeft}##Back"))
+        {
             m_navigation.GoBack(context);
+        }
         Ui.EndDisabled();
         Ui.PopStyleColor(3);
         Ui.SameLine(0f, EditorUI.current.widgets.style.toolbarTightSpacing);
@@ -60,7 +69,9 @@ internal sealed partial class FileBrowserPanel
         PushButtonColors(canGoForward ? EditorPalette.contentAccent : EditorPalette.contentBorderSoft);
         Ui.BeginDisabled(!canGoForward);
         if (Ui.SmallButton($"{ImGuiIcon.AngleRight}##Forward"))
+        {
             m_navigation.GoForward(context);
+        }
         Ui.EndDisabled();
         Ui.PopStyleColor(3);
         Ui.SameLine(0f, EditorUI.current.widgets.style.toolbarSectionSpacing);
@@ -75,7 +86,9 @@ internal sealed partial class FileBrowserPanel
         Ui.PushStyleVar((ImGuiStyleVar.FramePadding), EditorUI.current.widgets.style.toolbarFramePadding);
         PushButtonColors(EditorPalette.contentAccent);
         if (Ui.SmallButton($"{m_viewMode}##ViewMode"))
+        {
             m_viewMode = m_viewMode == ViewMode.List ? ViewMode.Grid : ViewMode.List;
+        }
         Ui.PopStyleColor(3);
         Ui.SameLine(0f, EditorUI.current.widgets.style.toolbarSpacing);
         DrawEntryFilterCombo();
@@ -118,17 +131,23 @@ internal sealed partial class FileBrowserPanel
                 break;
             }
             if (candidate == selected)
+            {
                 selectedIndex = i;
+            }
         }
         if (focus < 0)
+        {
             focus = selectedIndex;
+        }
         ListNavigationResult navigation = m_ui.widgets.NavigateList(interactions, m_visibleSelection.Count, focus, pageSize);
         m_keyboardHandled = navigation.focusChanged || navigation.selectionRequested || navigation.activate || navigation.cancel;
         if (navigation.focusedIndex >= 0 && m_keyboardHandled)
         {
             RuntimeIdentity identity = m_visibleSelection[navigation.focusedIndex];
             if (!interactions.TryResolveIdentity(identity, out IdentityObject? target) || target is null)
+            {
                 return;
+            }
             m_keyboardFocus = identity;
             if (navigation.focusChanged)
             {
@@ -138,24 +157,36 @@ internal sealed partial class FileBrowserPanel
             if (navigation.selectionRequested)
             {
                 if (navigation.extendRange)
+                {
                     interactions.SelectRange(m_visibleSelection, target, navigation.additive);
+                }
                 else if (navigation.toggle)
+                {
                     interactions.ToggleSelection(target);
+                }
                 else
+                {
                     interactions.SetSelection(target);
+                }
             }
             interactions.For(FileBrowserInteractionIds.C_AREA, interactions.selection.selectedTarget).Focus();
             if (navigation.activate)
+            {
                 m_pendingActivation = m_keyboardFocus;
+            }
         }
         if (navigation.cancel)
+        {
             m_keyboardFocus = null;
+        }
     }
 
     private void RequestEntryKeyboardFocus(AssetFileEntry entry)
     {
         if (entry.identity.runtimeIdentity == m_drawKeyboardFocus && Ui.IsWindowFocused(ImGuiFocusedFlags.ChildWindows))
+        {
             Ui.FocusNextItem();
+        }
     }
 
     private void DrawBreadcrumbBar(
@@ -190,9 +221,13 @@ internal sealed partial class FileBrowserPanel
                 if (EditorUI.current.widgets.ClickableText($"crumb_{part.root}_{part.directory}", part.label, itemSize))
                 {
                     if (string.IsNullOrEmpty(part.directory))
+                    {
                         m_navigation.NavigateToRoot(context, part.root);
+                    }
                     else
+                    {
                         m_navigation.NavigateTo(context, part.directory);
+                    }
                 }
             }
 
@@ -223,13 +258,17 @@ internal sealed partial class FileBrowserPanel
         Vector2 framePadding
     ) {
         if (parts.Count == 0)
+        {
             return 0f;
+        }
         float width = 0f;
         float separatorWidth = Ui.MeasureText(">").X;
         for (int i = 0; i < parts.Count; i++)
         {
             if (i > 0)
+            {
                 width += separatorWidth + CurrentBrowserStyle.breadcrumbSpacing * 2f;
+            }
             width += Ui.MeasureText(parts[i].label).X + framePadding.X * 2f;
         }
 

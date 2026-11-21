@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-
 using Inno.Core.Events;
 using Inno.Core.Input;
 
@@ -97,8 +96,10 @@ public sealed class EditorGameInputCapture
         }
 
         if (m_deliveredWindowId == 0
-            || m_focused && m_deliveredWindowId == m_targetWindowId)
+            || m_focused && m_deliveredWindowId == m_targetWindowId
+        ) {
             return 0;
+        }
 
         uint formerWindowId = m_deliveredWindowId;
         m_deliveredWindowId = 0;
@@ -127,12 +128,14 @@ public sealed class EditorGameInputCapture
     {
         ArgumentNullException.ThrowIfNull(evnt);
         if (evnt is MouseMovedEvent observed && observed.windowId == m_targetWindowId)
+        {
             UpdatePointerBounds(observed);
+        }
         if (evnt.isGlobalHandled)
         {
             if (m_deliveredWindowId != 0 && IsReleaseFromWindow(evnt, m_deliveredWindowId)
-                || IsWindowExit(evnt, m_targetWindowId))
-            {
+                || IsWindowExit(evnt, m_targetWindowId)
+            ) {
                 uint formerWindowId = m_deliveredWindowId;
                 ReleaseCapture();
                 return formerWindowId != 0 ? new WindowFocusChangedEvent(formerWindowId, false) : null;
@@ -140,21 +143,23 @@ public sealed class EditorGameInputCapture
             return null;
         }
         if (evnt is WindowFocusChangedEvent { isFocused: false } lostFocus
-            && (lostFocus.windowId == m_deliveredWindowId || lostFocus.windowId == m_targetWindowId))
-        {
+            && (lostFocus.windowId == m_deliveredWindowId || lostFocus.windowId == m_targetWindowId)
+        ) {
             bool needsReset = m_deliveredWindowId != 0;
             ReleaseCapture();
             return needsReset ? lostFocus : null;
         }
         if (evnt is WindowCloseEvent closed
-            && (closed.windowId == m_deliveredWindowId || closed.windowId == m_targetWindowId))
-        {
+            && (closed.windowId == m_deliveredWindowId || closed.windowId == m_targetWindowId)
+        ) {
             bool needsReset = m_deliveredWindowId != 0;
             ReleaseCapture();
             return needsReset ? new WindowFocusChangedEvent(closed.windowId, false) : null;
         }
         if (!m_focused || m_targetWindowId == 0)
+        {
             return null;
+        }
 
         Event? routed = evnt switch
         {
@@ -167,7 +172,9 @@ public sealed class EditorGameInputCapture
             _ => null
         };
         if (routed is not null)
+        {
             m_deliveredWindowId = m_targetWindowId;
+        }
         return routed;
     }
 
@@ -204,21 +211,23 @@ public sealed class EditorGameInputCapture
     {
         Vector2 local = new(moved.x - m_origin.X, moved.y - m_origin.Y);
         return m_pointerInside || m_pressedButtons.Count > 0
-            ? moved.WithPosition(local.X, local.Y)
-            : null;
+               ? moved.WithPosition(local.X, local.Y)
+               : null;
     }
 
     private void UpdatePointerBounds(MouseMovedEvent moved)
     {
         Vector2 local = new(moved.x - m_origin.X, moved.y - m_origin.Y);
         m_pointerInside = m_hovered && local.X >= 0f && local.Y >= 0f
-            && local.X < m_size.X && local.Y < m_size.Y;
+                          && local.X < m_size.X && local.Y < m_size.Y;
     }
 
     private Event? RoutePress(MouseButtonPressedEvent pressed)
     {
         if (!m_pointerInside)
+        {
             return null;
+        }
         m_pressedButtons.Add(pressed.button);
         return pressed;
     }

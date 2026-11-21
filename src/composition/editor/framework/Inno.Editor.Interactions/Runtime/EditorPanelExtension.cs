@@ -1,6 +1,5 @@
 using System;
 using System.Numerics;
-
 using Inno.Editor.Core;
 
 namespace Inno.Editor.Interactions;
@@ -89,7 +88,9 @@ public sealed class EditorPanelExtension
             allowScrolling = m_panel.allowScrolling;
             initialSize = m_panel.initialSize;
             if (!float.IsFinite(initialSize.X) || !float.IsFinite(initialSize.Y) || initialSize.X < 0 || initialSize.Y < 0)
+            {
                 throw new InvalidOperationException("A panel's initial size must contain finite nonnegative dimensions.");
+            }
             return true;
         }
         catch (Exception exception) when (Inno.Core.Execution.RetirementPendingException.Find(exception) is null)

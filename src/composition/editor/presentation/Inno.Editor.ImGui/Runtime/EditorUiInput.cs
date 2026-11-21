@@ -2,6 +2,7 @@ using System.Numerics;
 using Inno.Native.ImGui;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Copies frame input facts used by presentation without exposing native input storage.
 /// </summary>
@@ -11,34 +12,42 @@ public readonly struct EditorUiInput
     /// Gets whether Alt is held.
     /// </summary>
     public bool alt { get; }
+
     /// <summary>
     /// Gets whether the physical Control modifier is held, independently of native shortcut conventions.
     /// </summary>
     public bool control { get; }
+
     /// <summary>
     /// Gets whether Shift is held.
     /// </summary>
     public bool shift { get; }
+
     /// <summary>
     /// Gets whether the physical Super modifier is held, independently of native shortcut conventions.
     /// </summary>
     public bool super { get; }
+
     /// <summary>
     /// Gets whether an active control owns text input.
     /// </summary>
     public bool wantsText { get; }
+
     /// <summary>
     /// Gets the current pointer movement in UI units.
     /// </summary>
     public Vector2 mouseDelta { get; }
+
     /// <summary>
     /// Gets the vertical scroll movement.
     /// </summary>
     public float wheel { get; }
+
     /// <summary>
     /// Gets the frame duration in seconds.
     /// </summary>
     public float deltaTime { get; }
+
     /// <summary>
     /// Gets the drawable pixel scale relative to logical UI coordinates.
     /// </summary>

@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Xunit;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Core.Input;
 using Inno.Core.Logging;
@@ -15,7 +16,7 @@ using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 using Inno.Native.ImGui;
 using Inno.Testing.Editor.Native;
-using Xunit;
+
 using NativeGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.PlayMode.Tests;
@@ -31,7 +32,9 @@ public sealed unsafe class DefaultLayoutNativeTests
         float height
     ) {
         using var host = new NativePanelHost(typeof(DefaultLayoutNativeTests).Assembly);
-        using var modules = new ModuleHost(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(DefaultLayoutNativeTests).Assembly) });
+        using var modules = new ModuleHost(
+            new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(DefaultLayoutNativeTests).Assembly) }
+        );
         using var types = new TypeCatalog(modules, new EmptyTypeSource());
         using var logs = new LogRouter();
         var context = new EditorContext(host.runtime.context.projectDirectory, new EditorKeyboardPolicy(KeyModifier.Control, "Ctrl"));
@@ -39,16 +42,22 @@ public sealed unsafe class DefaultLayoutNativeTests
         ImGuiIO* io = NativeGui.Raw.GetIO();
         io->ConfigFlags |= (int)ImGuiConfigFlags.DockingEnable;
         io->DisplaySize = Unsafe.BitCast<Vector2, ImVec2C>(new(1600f, 900f));
-        byte[] layout = Encoding.UTF8.GetBytes(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "DefaultEditorLayout.ini")) + '\0');
+        byte[] layout = Encoding.UTF8.GetBytes(
+            File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "DefaultEditorLayout.ini")) + '\0'
+        );
         fixed (byte* pointer = layout)
+        {
             NativeGui.Raw.LoadIniSettingsFromMemory((sbyte*)pointer, (ulong)(layout.Length - 1));
+        }
         runtime.Start();
         string[] titles = ["Scene", "Game", "File", "Hierarchy", "Inspector", "Shader Editor", "Console", "Stats"];
         var rectangles = new Dictionary<string, (Vector2 position, Vector2 size, uint dock)>();
         for (int frame = 0; frame < 12; frame++)
         {
             if (frame == 6)
+            {
                 io->DisplaySize = Unsafe.BitCast<Vector2, ImVec2C>(new(width, height));
+            }
             host.Frame(() =>
             {
                 runtime.Draw();
@@ -91,12 +100,16 @@ public sealed unsafe class DefaultLayoutNativeTests
     private sealed class EmptyTypeSource : ITypeCatalogSource
     {
         public IReadOnlyList<Type> GetTypes(Assembly assembly) => [];
+
         public TypeCatalogMetadata GetMetadata(Type type) => throw new NotSupportedException();
+
         public Type? ConstructGenericType(
             Type definition,
             IReadOnlyList<Type> arguments
         ) => throw new NotSupportedException();
+
         public bool CanCreateInstance(Type type) => false;
+
         public object CreateInstance(Type type) => throw new NotSupportedException();
     }
 }

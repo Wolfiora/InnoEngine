@@ -24,14 +24,14 @@ public abstract class MouseEvent : Event
     /// <exception cref="System.ArgumentNullException">
     /// The source event is null.
     /// </exception>
-    protected MouseEvent(MouseEvent source) : base(source) => windowId = source.windowId;
+    protected MouseEvent(MouseEvent source)
+        : base(source) => windowId = source.windowId;
 
     /// <summary>
     /// Gets the source window id for this event.
     /// </summary>
     public uint windowId { get; }
 }
-
 
 /// <summary>
 /// Raised when the cursor moves.
@@ -54,7 +54,8 @@ public class MouseMovedEvent : MouseEvent
         uint windowId,
         float x,
         float y
-    ) : base(windowId) {
+    ) : base(windowId)
+    {
         this.x = x;
         this.y = y;
     }
@@ -90,7 +91,8 @@ public class MouseMovedEvent : MouseEvent
         MouseMovedEvent source,
         float x,
         float y
-    ) : base(source) {
+    ) : base(source)
+    {
         this.x = x;
         this.y = y;
     }
@@ -157,9 +159,7 @@ public abstract class MouseButtonEvent(
 public class MouseButtonPressedEvent(
     uint windowId,
     MouseButton button
-) : MouseButtonEvent(windowId, button)
-{
-}
+) : MouseButtonEvent(windowId, button);
 
 /// <summary>
 /// Raised when a mouse button is released.
@@ -173,6 +173,4 @@ public class MouseButtonPressedEvent(
 public class MouseButtonReleasedEvent(
     uint windowId,
     MouseButton button
-) : MouseButtonEvent(windowId, button)
-{
-}
+) : MouseButtonEvent(windowId, button);

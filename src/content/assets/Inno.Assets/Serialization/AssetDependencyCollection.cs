@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Assets;
 using Inno.Extensibility.Types;
 
@@ -22,9 +21,7 @@ public sealed class AssetDependencyCollection
     /// Creates a dependency collector that preserves last-known source paths in serialized references.
     /// </summary>
     public AssetDependencyCollection()
-        : this(includeLastKnownPaths: true)
-    {
-    }
+        : this(includeLastKnownPaths: true) {}
 
     /// <summary>
     /// Creates a dependency collector with an explicit location-hint policy.
@@ -48,8 +45,8 @@ public sealed class AssetDependencyCollection
     /// </summary>
     public IReadOnlyList<AssetDependency> dependencies
         => m_dependencies is null || m_dependencies.Count == 0
-            ? Array.Empty<AssetDependency>()
-            : m_dependencies.Values.OrderBy(static dependency => dependency.persistentId).ToArray();
+           ? Array.Empty<AssetDependency>()
+           : m_dependencies.Values.OrderBy(static dependency => dependency.persistentId).ToArray();
 
     internal void Add(
         AssetObject asset,
@@ -59,17 +56,21 @@ public sealed class AssetDependencyCollection
         ArgumentNullException.ThrowIfNull(types);
         Guid persistentId = asset.identity.persistentId;
         if (persistentId == Guid.Empty)
+        {
             throw new InvalidOperationException($"Asset '{asset.GetType().FullName}' has no persistent identity.");
+        }
         if (!types.TryGetTypeRef(asset.GetType(), out TypeRef typeRef))
         {
             throw new InvalidOperationException(
-                $"Asset type '{asset.GetType().FullName}' requires a StableTypeId before it can be referenced persistently.");
+                $"Asset type '{asset.GetType().FullName}' requires a StableTypeId before it can be referenced persistently."
+            );
         }
 
         (m_dependencies ??= [])[persistentId] = new AssetDependency(
             persistentId,
             typeRef,
-            includeLastKnownPaths ? asset.assetPath.ToString() : string.Empty);
+            includeLastKnownPaths ? asset.assetPath.ToString() : string.Empty
+        );
     }
 
     /// <summary>
@@ -81,8 +82,11 @@ public sealed class AssetDependencyCollection
     public void Add(AssetDependency dependency)
     {
         if (dependency.persistentId == Guid.Empty)
+        {
             throw new ArgumentException("A dependency requires a persistent asset identity.", nameof(dependency));
-        (m_dependencies ??= [])[dependency.persistentId] = includeLastKnownPaths ? dependency
-            : new AssetDependency(dependency.persistentId, dependency.type, string.Empty);
+        }
+        (m_dependencies ??= [])[dependency.persistentId] = includeLastKnownPaths
+                                                           ? dependency
+                                                           : new AssetDependency(dependency.persistentId, dependency.type, string.Empty);
     }
 }

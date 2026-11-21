@@ -1,11 +1,11 @@
-using Inno.Core.Diagnostics;
-using Inno.Rendering;
-using Inno.Rendering.Shaders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.Diagnostics;
+using Inno.Rendering;
+using Inno.Rendering.Shaders;
 
 namespace Inno.Rendering.Assets.Authoring;
 
@@ -73,7 +73,9 @@ public sealed class ShaderStageToolResult
         this.bindings = Array.AsReadOnly(bindings.ToArray());
         this.diagnostics = Array.AsReadOnly(diagnostics.ToArray());
         if (!bytes.IsEmpty && this.diagnostics.Any(static value => value.severity == DiagnosticSeverity.Error))
+        {
             throw new ArgumentException("A failed candidate cannot publish compiled bytes.", nameof(bytes));
+        }
         m_bytes = bytes.ToArray();
     }
 
@@ -81,14 +83,17 @@ public sealed class ShaderStageToolResult
     /// Gets immutable target binary data, empty on failure.
     /// </summary>
     public ReadOnlyMemory<byte> bytes => m_bytes;
+
     /// <summary>
     /// Gets the exact generated logical-to-native resource layout.
     /// </summary>
     public IReadOnlyList<ShaderStageBinding> bindings { get; }
+
     /// <summary>
     /// Gets generation and native compiler diagnostics.
     /// </summary>
     public IReadOnlyList<ShaderSourceDiagnostic> diagnostics { get; }
+
     /// <summary>
     /// Gets whether a nonempty binary was compiled without error diagnostics.
     /// </summary>
@@ -103,6 +108,7 @@ public sealed partial class ShaderCompiler
     private readonly object m_stageCacheLock = new();
     private readonly Dictionary<(string stage, string target, GraphicsCapabilities capabilities), ShaderStageToolResult> m_stageCache = [];
     private long m_stageCacheBytes;
+
     /// <summary>
     /// Compiles a typed stage through the configured adapter without an intermediate complete-source authoring asset.
     /// </summary>
@@ -128,13 +134,21 @@ public sealed partial class ShaderCompiler
         cancellationToken.ThrowIfCancellationRequested();
         var key = (stage.contentHash, target.key, target.capabilities);
         lock (m_stageCacheLock)
+        {
             if (m_stageCache.TryGetValue(key, out ShaderStageToolResult? previous))
+            {
                 return previous;
-        ShaderStageToolResult result = await m_toolchain.CompileAsync(new ShaderStageToolRequest(stage, target), cancellationToken).ConfigureAwait(false);
+            }
+        }
+        ShaderStageToolResult result = await m_toolchain.CompileAsync(
+            new ShaderStageToolRequest(stage, target),
+            cancellationToken
+        ).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
         // The bounded cache contains immutable backend results only, never IR, providers or source assets.
         // Failed and cancelled requests are not cached, and layout-only graph edits reuse the semantic key.
         if (result.succeeded && result.bytes.Length <= 32 * 1024 * 1024)
+        {
             lock (m_stageCacheLock)
             {
                 if (m_stageCache.Count >= 256 || m_stageCacheBytes + result.bytes.Length > 32 * 1024 * 1024)
@@ -143,9 +157,11 @@ public sealed partial class ShaderCompiler
                     m_stageCacheBytes = 0;
                 }
                 if (m_stageCache.TryAdd(key, result))
+                {
                     m_stageCacheBytes += result.bytes.Length;
+                }
             }
+        }
         return result;
     }
 }
-

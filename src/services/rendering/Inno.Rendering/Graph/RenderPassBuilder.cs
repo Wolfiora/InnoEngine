@@ -95,11 +95,7 @@ public abstract class RenderPassBuilder
     /// </returns>
     public RenderPassBuilder ReadTexture(RenderTextureHandle texture)
     {
-        m_graph.AddUse(
-            m_pass,
-            texture,
-            RenderResourceAccess.Read,
-            RenderResourceUseKind.GenericRead);
+        m_graph.AddUse(m_pass, texture, RenderResourceAccess.Read, RenderResourceUseKind.GenericRead);
         return this;
     }
 
@@ -114,12 +110,7 @@ public abstract class RenderPassBuilder
     /// </returns>
     public RenderPassBuilder ReadBuffer(RenderBufferHandle buffer)
     {
-        m_graph.AddUse(
-            m_pass,
-            buffer,
-            RenderResourceAccess.Read,
-            RenderResourceUseKind.GenericRead);
+        m_graph.AddUse(m_pass, buffer, RenderResourceAccess.Read, RenderResourceUseKind.GenericRead);
         return this;
     }
 }
-

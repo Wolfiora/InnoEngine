@@ -4,6 +4,7 @@ using Inno.Editor.ImGui;
 using Inno.Editor.Settings;
 
 namespace Inno.Editor.Workbench;
+
 /// <summary>
 /// Applies the configured actual UI size and preserves project-local zoom multiples around it.
 /// </summary>
@@ -30,8 +31,11 @@ internal sealed class EditorZoomModule(
     internal bool isActualSize => m_zoomStep == 0;
 
     internal bool ZoomIn() => SetStep(m_zoomStep + 1);
+
     internal bool ZoomOut() => SetStep(m_zoomStep - 1);
+
     internal bool UseActualSize() => SetStep(0);
+
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.
     /// </summary>
@@ -95,10 +99,13 @@ internal sealed class EditorZoomModule(
     {
         float resolved = ResolveZoom(step);
         if (MathF.Abs(resolved - ResolveZoom(m_zoomStep)) < 0.0001f)
+        {
             return false;
+        }
         m_zoomStep = step;
         return ui.widgets.style.SetZoom(resolved);
     }
 
-    private static float NormalizeActualSize(float value) => float.IsFinite(value) ? Math.Clamp(value, EditorStyleMetrics.C_MIN_ZOOM, EditorStyleMetrics.C_MAX_ZOOM) : 1f;
+    private static float NormalizeActualSize(float value)
+        => float.IsFinite(value) ? Math.Clamp(value, EditorStyleMetrics.C_MIN_ZOOM, EditorStyleMetrics.C_MAX_ZOOM) : 1f;
 }

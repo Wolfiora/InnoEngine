@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Xunit;
 using Inno.Core.Execution;
 using Inno.Extensibility.Reload;
-using Xunit;
 
 namespace Inno.References.Tests;
 
@@ -43,27 +43,45 @@ public sealed class ReferenceRecoveryTests
     [InlineData("complete", true)]
     [InlineData("structure", true)]
     [InlineData("restore", true)]
-    public void PendingRetirementKeepsOwnersAndFaultsTheSharedGate(string phase, bool wrapped)
-    {
+    public void PendingRetirementKeepsOwnersAndFaultsTheSharedGate(
+        string phase,
+        bool wrapped
+    ) {
         var events = new List<string>();
         var first = new Participant("first", events);
         var pending = new Participant("pending", events, phase, pending: true, wrapped: wrapped);
         var gate = new GenerationCoordinator();
-        var recovery = new ReferenceRecoveryTransaction(ReferenceCatalog.empty, [],
-            phase == "complete" ? [pending, first] : [first, pending]);
-        Exception failure = Assert.ThrowsAny<Exception>(() => gate.Execute("recovery", new Publication(events, phase != "complete"), [recovery]));
-        if (wrapped || phase != "complete") Assert.IsType<AggregateException>(failure);
-        else Assert.IsType<RetirementPendingException>(failure);
+        var recovery = new ReferenceRecoveryTransaction(
+            ReferenceCatalog.empty,
+            [],
+            phase == "complete" ? [pending, first] : [first, pending]
+        );
+        Exception failure = Assert.ThrowsAny<Exception>(
+            () => gate.Execute("recovery", new Publication(events, phase != "complete"), [recovery])
+        );
+        if (wrapped || phase != "complete")
+        {
+            Assert.IsType<AggregateException>(failure);
+        }
+        else
+        {
+            Assert.IsType<RetirementPendingException>(failure);
+        }
         Assert.Same(failure, gate.failure);
         Assert.Equal(GenerationState.Faulted, gate.state);
         Assert.DoesNotContain($"{phase}:first", events);
         Exception retained = Assert.ThrowsAny<Exception>(recovery.Complete);
-        if (phase == "complete") Assert.Same(failure, retained);
+        if (phase == "complete")
+        {
+            Assert.Same(failure, retained);
+        }
         else
         {
             Assert.Contains(retained, Assert.IsType<AggregateException>(failure).InnerExceptions);
-            Assert.Contains(Assert.IsType<AggregateException>(failure).InnerExceptions,
-                item => item.Message == "Rejected publication.");
+            Assert.Contains(
+                Assert.IsType<AggregateException>(failure).InnerExceptions,
+                item => item.Message == "Rejected publication."
+            );
         }
         Assert.Same(retained, Assert.ThrowsAny<Exception>(recovery.RollbackStructure));
         Assert.Same(retained, Assert.ThrowsAny<Exception>(recovery.RestorePreviousState));
@@ -75,8 +93,11 @@ public sealed class ReferenceRecoveryTests
     public void OrdinaryCleanupFailureStillRetiresOtherOwnersAndCannotPretendToRollback()
     {
         var events = new List<string>();
-        var recovery = new ReferenceRecoveryTransaction(ReferenceCatalog.empty, [],
-            [new Participant("first", events, "complete"), new Participant("second", events)]);
+        var recovery = new ReferenceRecoveryTransaction(
+            ReferenceCatalog.empty,
+            [],
+            [new Participant("first", events, "complete"), new Participant("second", events)]
+        );
         var gate = new GenerationCoordinator();
         Assert.Throws<AggregateException>(() => gate.Execute("recovery", new Publication(events), [recovery]));
         Assert.Contains("complete:second", events);
@@ -95,8 +116,11 @@ public sealed class ReferenceRecoveryTests
         var ordinary = new Participant("ordinary", events, phase);
         var pending = new Participant("pending", events, phase, pending: true);
         var dependency = new Participant("dependency", events);
-        var recovery = new ReferenceRecoveryTransaction(ReferenceCatalog.empty, [],
-            phase == "complete" ? [ordinary, pending, dependency] : [dependency, pending, ordinary]);
+        var recovery = new ReferenceRecoveryTransaction(
+            ReferenceCatalog.empty,
+            [],
+            phase == "complete" ? [ordinary, pending, dependency] : [dependency, pending, ordinary]
+        );
         recovery.PrepareForActivation();
         Action finish;
         if (phase == "complete")
@@ -104,7 +128,10 @@ public sealed class ReferenceRecoveryTests
             recovery.Apply();
             finish = recovery.Complete;
         }
-        else if (phase == "structure") finish = recovery.RollbackStructure;
+        else if (phase == "structure")
+        {
+            finish = recovery.RollbackStructure;
+        }
         else
         {
             recovery.RollbackStructure();
@@ -125,8 +152,14 @@ public sealed class ReferenceRecoveryTests
         Exception? failure = null;
         var thread = new Thread(() =>
         {
-            try { recovery.PrepareForActivation(); }
-            catch (Exception exception) { failure = exception; }
+            try
+            {
+                recovery.PrepareForActivation();
+            }
+            catch (Exception exception)
+            {
+                failure = exception;
+            }
         });
         thread.Start();
         thread.Join();
@@ -136,41 +169,64 @@ public sealed class ReferenceRecoveryTests
         recovery.RestorePreviousState();
     }
 
-    private sealed class Participant(string name, ICollection<string> events, string? failurePhase = null,
-        bool pending = false, bool wrapped = false) : IReferenceRecoveryParticipant
+    private sealed class Participant(
+        string name,
+        ICollection<string> events,
+        string? failurePhase = null,
+        bool pending = false,
+        bool wrapped = false
+    ) : IReferenceRecoveryParticipant
     {
         public void PrepareForActivation() => Run("prepare");
+
         public void Apply() => Run("apply");
+
         public void Validate(IReadOnlyList<ReferenceRecoveryChange> changes) => Run("validate");
+
         public void Complete() => Run("complete");
+
         public void RollbackStructure() => Run("structure");
+
         public void RestorePreviousState() => Run("restore");
 
         private void Run(string phase)
         {
             events.Add($"{phase}:{name}");
             if (phase != failurePhase)
+            {
                 return;
+            }
             if (pending)
             {
                 if (wrapped)
-                    throw new AggregateException(new InvalidOperationException("completed sibling"),
-                        new InvalidOperationException("owner context", new RetirementPendingException("Pending reference owner.")));
+                {
+                    throw new AggregateException(
+                        new InvalidOperationException("completed sibling"),
+                        new InvalidOperationException("owner context", new RetirementPendingException("Pending reference owner."))
+                    );
+                }
                 throw new RetirementPendingException("Pending reference owner.");
             }
             throw new InvalidOperationException("Rejected reference owner.");
         }
     }
 
-    private sealed class Publication(ICollection<string> events, bool failApply = false) : IGenerationPublication<Probe>
+    private sealed class Publication(
+        ICollection<string> events,
+        bool failApply = false
+    ) : IGenerationPublication<Probe>
     {
         public void Activate()
         {
             events.Add("publication:activate");
             if (failApply)
+            {
                 throw new InvalidOperationException("Rejected publication.");
+            }
         }
+
         public void Rollback() => events.Add("publication:rollback");
+
         public Probe Complete()
         {
             events.Add("commit");

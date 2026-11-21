@@ -40,5 +40,4 @@ internal sealed unsafe partial class BgfxCommandEncoder : RenderCommandEncoder
         m_encoder = encoder;
         m_viewId = viewId;
     }
-
 }

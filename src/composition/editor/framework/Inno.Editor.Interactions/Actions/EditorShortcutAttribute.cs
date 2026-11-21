@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Input;
 
 namespace Inno.Editor.Interactions;
@@ -26,10 +25,7 @@ public sealed class EditorShortcutAttribute : Attribute
         KeyCode key,
         KeyModifier modifiers = KeyModifier.None,
         bool primary = false
-    )
-        : this(string.Empty, key, modifiers, primary)
-    {
-    }
+    ) : this(string.Empty, key, modifiers, primary) {}
 
     /// <summary>
     /// Creates a shortcut scoped to an exact interaction area.

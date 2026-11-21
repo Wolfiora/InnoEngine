@@ -23,7 +23,10 @@ public sealed class ArchitectureVerificationCommandTests
             File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), "Microsoft Visual Studio Solution File, Format Version 12.00");
             Console.SetOut(output);
             Console.SetError(output);
-            int result = await BuildApplication.Run(["verify-native", "--engine-root", root, "--target", "browser-wasm"], CancellationToken.None);
+            int result = await BuildApplication.Run(
+                ["verify-native", "--engine-root", root, "--target", "browser-wasm"],
+                CancellationToken.None
+            );
             Assert.Equal(1, result);
             Assert.Contains("requires a registered Editor test host", output.ToString(), StringComparison.Ordinal);
             Assert.DoesNotContain("BGCS-CSHARP-ABI-PLAN", output.ToString(), StringComparison.Ordinal);
@@ -47,8 +50,10 @@ public sealed class ArchitectureVerificationCommandTests
         try
         {
             Directory.CreateDirectory(Path.Combine(root, "src", "services", "audio"));
-            File.WriteAllText(Path.Combine(root, "InnoEngine.sln"),
-                "Microsoft Visual Studio Solution File, Format Version 12.00");
+            File.WriteAllText(
+                Path.Combine(root, "InnoEngine.sln"),
+                "Microsoft Visual Studio Solution File, Format Version 12.00"
+            );
             File.WriteAllText(Path.Combine(root, "src", "services", "audio", "Probe.cs"), "global using System;");
             Console.SetOut(output);
             Console.SetError(output);
@@ -63,7 +68,9 @@ public sealed class ArchitectureVerificationCommandTests
             Console.SetOut(previousOutput);
             Console.SetError(previousError);
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
 }

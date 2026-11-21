@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported tab item flags choices at the Editor presentation boundary.
 /// </summary>
@@ -46,5 +47,5 @@ public enum ImGuiTabItemFlags : int
     /// <summary>
     /// Tab is selected when trying to close + closure is not immediately assumed (will wait for user to stop submitting the tab). Otherwise closure is assumed when pressing the X, so if you keep submitting the tab may reappear at end of tab bar.
     /// </summary>
-    NoAssumedClosure = (int)Inno.Native.ImGui.ImGuiTabItemFlags.NoAssumedClosure,
+    NoAssumedClosure = (int)Inno.Native.ImGui.ImGuiTabItemFlags.NoAssumedClosure
 }

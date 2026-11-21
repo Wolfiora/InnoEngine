@@ -8,6 +8,7 @@ using Inno.Editor.Interactions;
 using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Assets;
+
 /// <summary>
 /// Applies importer configuration through the common sidecar pipeline and stable-identity Editor history.
 /// </summary>
@@ -19,6 +20,7 @@ public sealed partial class AssetImportSettingsEdits : EditorModule
     private readonly SerializationRegistry m_serialization;
     private readonly TypeCatalog m_types;
     private readonly EditorInteractions m_interactions;
+
     /// <summary>
     /// Uses the authoring owners responsible for source identity, converter generations and shared undo.
     /// </summary>
@@ -70,11 +72,17 @@ public sealed partial class AssetImportSettingsEdits : EditorModule
         ArgumentNullException.ThrowIfNull(settings);
         AssetImportSettingsSnapshot before = m_assets.GetImportSettings(path);
         if (before.fingerprint != expectedFingerprint)
+        {
             throw new IOException("Import settings changed externally. Reload before applying.");
+        }
         if (before.value is null || before.value.GetType() != settings.GetType())
+        {
             throw new InvalidOperationException("The importer settings type changed. Reload the editor.");
+        }
         if (!m_assets.TryGetPersistentId(path, out Guid id))
+        {
             throw new InvalidOperationException("The source has no persistent identity.");
+        }
         var data = new ChangeData
         {
             assetId = id,
@@ -83,7 +91,9 @@ public sealed partial class AssetImportSettingsEdits : EditorModule
             after = Capture(settings)
         };
         if (data.before.AsSpan().SequenceEqual(data.after))
+        {
             return m_assets.TryGetInfo(id, out AssetInfo? info) && info?.status == AssetImportStatus.Imported;
+        }
         bool imported = m_assets.SaveImportSettings(path, settings, expectedFingerprint);
         var change = new EditorHistoryChange(C_HISTORY, EditorHistoryPayload.FromBytes(m_serialization.Serialize(data)));
         try
@@ -138,19 +148,29 @@ public sealed partial class AssetImportSettingsEdits : EditorModule
         EditorHistoryDirection direction
     ) {
         if (!m_assets.TryGetInfo(data.assetId, out AssetInfo? info) || info is null || info.status == AssetImportStatus.Missing)
+        {
             throw new IOException("The import-settings source is missing. History is retained until it returns.");
+        }
         if (!m_assets.TryGetFileSystemEntry(info.assetPath, out AssetFileEntry entry) || entry.isReadOnly)
+        {
             throw new IOException("The import-settings source is not writable.");
+        }
         AssetImportSettingsSnapshot current = m_assets.GetImportSettings(info.assetPath);
         if (current.value is null || m_types.GetTypeRef(current.value.GetType()).stableId != data.typeId)
+        {
             throw new InvalidOperationException("The importer settings extension is unavailable or changed type.");
+        }
         byte[] expected = direction == EditorHistoryDirection.Undo ? data.after : data.before;
         if (!Capture(current.value).AsSpan().SequenceEqual(expected))
+        {
             throw new IOException("Import settings changed outside this history operation.");
+        }
         return (info.assetPath, current);
     }
 
-    private byte[] Capture(ISerializable value) => m_serialization.Encode(writer => writer.WriteProperties(value), AssetSerializationContext.Create(m_assets));
+    private byte[] Capture(ISerializable value)
+        => m_serialization.Encode(writer => writer.WriteProperties(value), AssetSerializationContext.Create(m_assets));
+
     private sealed class ChangeData : ISerializable
     {
         [SerializableProperty]
@@ -196,7 +216,7 @@ internal sealed class AssetImportSettingsHistory(AssetImportSettingsEdits edits)
             return EditorHistoryAvailability.Available();
         }
         catch (Exception failure) when ((failure is IOException or InvalidOperationException or ArgumentException or FormatException)
-            && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+                                        && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
         {
             return EditorHistoryAvailability.Unavailable(failure.Message);
         }
@@ -228,7 +248,7 @@ internal sealed class AssetImportSettingsHistory(AssetImportSettingsEdits edits)
             return EditorHistoryResult.Success();
         }
         catch (Exception failure) when ((failure is IOException or InvalidOperationException or ArgumentException or FormatException)
-            && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+                                        && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
         {
             return EditorHistoryResult.Failure(failure.Message);
         }

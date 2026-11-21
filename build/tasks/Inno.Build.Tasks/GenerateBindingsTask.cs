@@ -8,6 +8,7 @@ using Inno.Build.Bindings;
 using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.Toolchains;
+
 using BuildTask = Microsoft.Build.Utilities.Task;
 
 namespace Inno.Build.Tasks;
@@ -26,58 +27,70 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
     /// </summary>
     [Required]
     public string EngineRoot { get; set; } = string.Empty;
+
     /// <summary>
     /// Gets or sets the stable component identity declared by the sole binding definition.
     /// </summary>
     [Required]
     public string ComponentId { get; set; } = string.Empty;
+
     /// <summary>
     /// Gets or sets the absolute Native owner project, which must belong to this checkout.
     /// </summary>
     [Required]
     public string ComponentProject { get; set; } = string.Empty;
+
     /// <summary>
     /// Gets or sets the sole literal definition consumed by both the project and direct generation.
     /// </summary>
     [Required]
     public string BindingDefinition { get; set; } = string.Empty;
+
     /// <summary>
     /// Gets or sets the explicit configuration identity selected from the definition.
     /// </summary>
     [Required]
     public string TargetId { get; set; } = string.Empty;
+
     /// <summary>
     /// Gets or sets HostSource or TargetArtifacts without deriving publication from a path.
     /// </summary>
     [Required]
     public string OutputMode { get; set; } = string.Empty;
+
     /// <summary>
     /// Gets or sets the explicitly selected managed SDK host used to compose the target toolchain.
     /// </summary>
     [Required]
     public string DotnetHost { get; set; } = string.Empty;
+
     /// <summary>
     /// Gets or sets comparison without publication.
     /// </summary>
     public bool CheckOnly { get; set; }
+
     /// <summary>
     /// Gets or sets an optional request-owned descriptor destination written only after success.
     /// </summary>
     public string DescriptorOutputPath { get; set; } = string.Empty;
+
     /// <summary>
     /// Gets or sets an optional expected identity; stale requests fail before generation.
     /// </summary>
     public string ExpectedFingerprint { get; set; } = string.Empty;
+
     /// <summary>
     /// Gets the single source selected after complete publication or successful comparison.
     /// </summary>
     [Output]
     public string GeneratedBindings { get; private set; } = string.Empty;
+
     /// <summary>
     /// Gets the complete validated input identity.
     /// </summary>
     [Output]
     public string GenerationFingerprint { get; private set; } = string.Empty;
+
     /// <summary>
     /// Gets whether the selected generated context requires runtime-import initialization.
     /// </summary>
@@ -90,6 +103,7 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
     /// </summary>
     [Output]
     public string LibraryKind { get; private set; } = string.Empty;
+
     /// <summary>
     /// Gets the complete native artifacts and compilation requirements selected by this operation.
     /// </summary>
@@ -114,8 +128,12 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
     public void Cancel()
     {
         lock (m_lifecycle)
+        {
             if (!m_completed)
+            {
                 m_cancellation.Cancel();
+            }
+        }
     }
 
     /// <summary>
@@ -146,31 +164,50 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
             CancellationToken cancellation = m_cancellation.Token;
             cancellation.ThrowIfCancellationRequested();
             if (!Enum.TryParse(OutputMode, out NativeBindingOutputMode mode) || !Enum.IsDefined(mode))
+            {
                 throw new ArgumentException("Binding output mode must be explicitly declared.", nameof(OutputMode));
+            }
             string root = Path.GetFullPath(EngineRoot);
             string project = Path.GetRelativePath(root, Path.GetFullPath(ComponentProject)).Replace('\\', '/');
             string definition = Path.GetRelativePath(root, Path.GetFullPath(BindingDefinition)).Replace('\\', '/');
-            var owner = new NativeComponentDescriptor(ComponentId, project, project,
-                bindingDefinition: definition);
+            var owner = new NativeComponentDescriptor(ComponentId, project, project, bindingDefinition: definition);
             var context = new NativeBuildContext(root, "release");
             BuildCompositionContext captured = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(TargetId));
-            var execution = new BuildCompositionContext(DotnetHost, captured.applicationDirectory,
-                captured.host, captured.toolsTarget);
+            var execution = new BuildCompositionContext(
+                DotnetHost,
+                captured.applicationDirectory,
+                captured.host,
+                captured.toolsTarget
+            );
             BuildDistribution distribution = StandardBuildDistribution.Create(execution).build;
             if (NativeDependencyManifestPath.Length != 0)
             {
                 if (string.IsNullOrWhiteSpace(ProductId))
+                {
                     throw new InvalidDataException("Consume-only binding generation requires its explicit product selection.");
+                }
                 ProductNativeBuildPlan plan = distribution.ResolveNativeProduct(TargetId, ProductId).plan;
-                if (!plan.steps.Any(step => step.id == ComponentId && step.component.nativeProject == project
-                    && step.component.bindingDefinition == definition))
+                if (!plan.steps.Any(step => (
+                    step.id == ComponentId && step.component.nativeProject == project
+                    && step.component.bindingDefinition == definition
+                ))) {
                     throw new InvalidDataException("The selected product does not own this binding component: " + project);
-                using ProductNativeBuildResult products = NativeDependencyManifest.AcquireAsync(root,
-                    NativeDependencyManifestPath, TargetId, Configuration.ToLowerInvariant(), plan, cancellation).GetAwaiter().GetResult();
+                }
+                using ProductNativeBuildResult products = NativeDependencyManifest.AcquireAsync(
+                    root,
+                    NativeDependencyManifestPath,
+                    TargetId,
+                    Configuration.ToLowerInvariant(),
+                    plan,
+                    cancellation
+                ).GetAwaiter().GetResult();
                 NativeBindingGenerationDescriptor imported = products.bindingGenerations.TryGetValue(project, out var binding)
-                    ? binding : throw new InvalidDataException("The selected dependency does not contain its required bindings.");
+                    ? binding
+                    : throw new InvalidDataException("The selected dependency does not contain its required bindings.");
                 if (ExpectedFingerprint.Length != 0 && ExpectedFingerprint != imported.fingerprint)
+                {
                     throw new InvalidDataException("The dependency binding identity differs from the managed build selection.");
+                }
                 LibraryKind = plan.steps.Single(step => step.id == ComponentId).options.libraryKind.ToString();
                 SetOutputs(imported);
                 return true;
@@ -178,34 +215,54 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
             INativeBindingGenerator generator = distribution.ResolveBindingGenerator(TargetId);
             context = context.WithBindingGenerator(generator);
             NativeToolchainSelection toolchain = distribution.ResolveNativeToolchain(TargetId)
-                .ResolveAsync(context, execution.host, TargetId, cancellation).AsTask().GetAwaiter().GetResult();
+                .ResolveAsync(context, execution.host, TargetId, cancellation)
+                .AsTask()
+                .GetAwaiter()
+                .GetResult();
             context = context.WithToolchain(toolchain);
-            Dictionary<string, string>? expected = ExpectedFingerprint.Length == 0 ? null
-                : new(StringComparer.Ordinal) { [owner.nativeProject] = ExpectedFingerprint };
+            Dictionary<string, string>? expected = ExpectedFingerprint.Length == 0
+                                                   ? null
+                                                   : new(StringComparer.Ordinal) { [owner.nativeProject] = ExpectedFingerprint };
             // A source project can also host an offline producer that owns no runtime bindings.
             NativeComponentBuildOptions[] configured = distribution.platforms
                 .Where(platform => platform.descriptor.id.value == TargetId)
                 .SelectMany(static platform => platform.nativeProducts.Values)
                 .SelectMany(static product => product.plan.steps)
-                .Where(step => step.component.id == owner.id && step.component.nativeProject == owner.nativeProject
-                    && step.component.bindingDefinition is not null)
-                .Select(static step => step.options).ToArray();
+                .Where(step => (
+                    step.component.id == owner.id && step.component.nativeProject == owner.nativeProject
+                    && step.component.bindingDefinition is not null
+                ))
+                .Select(static step => step.options)
+                .ToArray();
             NativeComponentBuildOptions? selectedOptions = configured.FirstOrDefault();
-            if (selectedOptions is not null && configured.Any(options => options.libraryKind != selectedOptions.libraryKind
+            if (selectedOptions is not null && configured.Any(options => (
+                options.libraryKind != selectedOptions.libraryKind
                 || options.bindingLibraryName != selectedOptions.bindingLibraryName
-                || !options.bindingIncludeDirectories.SequenceEqual(selectedOptions.bindingIncludeDirectories, StringComparer.Ordinal)))
-                throw new InvalidOperationException($"The registered products for target '{TargetId}' declare ambiguous binding inputs for component '{ComponentId}' in '{project}'.");
-            Dictionary<string, NativeComponentBuildOptions>? componentOptions = selectedOptions is null ? null
+                || !options.bindingIncludeDirectories.SequenceEqual(selectedOptions.bindingIncludeDirectories, StringComparer.Ordinal)
+            ))) {
+                throw new InvalidOperationException(
+                    $"The registered products for target '{TargetId}' declare ambiguous binding inputs for component '{ComponentId}' in '{project}'."
+                );
+            }
+            Dictionary<string, NativeComponentBuildOptions>? componentOptions = selectedOptions is null
+                ? null
                 : new(StringComparer.Ordinal) { [owner.nativeProject] = selectedOptions };
             var request = new NativeBindingGenerationRequest([owner], TargetId, mode, CheckOnly, expected, componentOptions);
             using NativeBindingGenerationResult closure = generator.GenerateAsync(context, request, cancellation)
-                .AsTask().GetAwaiter().GetResult();
+                .AsTask()
+                .GetAwaiter()
+                .GetResult();
             NativeBindingGenerationDescriptor result = closure[owner.nativeProject];
             LibraryKind = selectedOptions?.libraryKind.ToString() ?? string.Empty;
             SetOutputs(result);
-            Log.LogMessage(MessageImportance.High,
+            Log.LogMessage(
+                MessageImportance.High,
                 "INNO-BINDINGS-PREPARE project={0} fingerprint={1} batches={2} generations={3}",
-                project, result.fingerprint, context.statistics.bindingBatches, context.statistics.bindingGenerations);
+                project,
+                result.fingerprint,
+                context.statistics.bindingBatches,
+                context.statistics.bindingGenerations
+            );
             return true;
         }
         catch (Exception failure)
@@ -222,10 +279,13 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
             }
         }
     }
+
     private void SetOutputs(NativeBindingGenerationDescriptor result)
     {
         if (DescriptorOutputPath.Length != 0)
+        {
             result.Write(DescriptorOutputPath);
+        }
         GeneratedBindings = result.bindingsPath;
         GenerationFingerprint = result.fingerprint;
         UsesRuntimeImports = result.usesRuntimeImports;
@@ -233,5 +293,4 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
         ArtifactDirectory = result.artifactDirectory;
         ArtifactOwnerDirectory = result.artifactOwnerDirectory;
     }
-
 }

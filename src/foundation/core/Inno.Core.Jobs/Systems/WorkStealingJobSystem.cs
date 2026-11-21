@@ -1,8 +1,8 @@
 using System;
-using Inno.Core.Execution;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using Inno.Core.Execution;
 using Inno.Core.Jobs.Internal;
 
 namespace Inno.Core.Jobs;
@@ -12,12 +12,13 @@ namespace Inno.Core.Jobs;
 /// </summary>
 internal sealed class WorkStealingJobSystem : IJobSystem
 {
-    private static readonly Action<object?> s_noop = static _ => { };
+    private static readonly Action<object?> s_noop = static _ => {};
     private static readonly Action<object?> s_actionInvoker = static state => ((Action?)state)?.Invoke();
+
     private static readonly Action<object?> s_parallelRangeInvoker = static state =>
     {
         var rangeState = (ParallelForRangeState?)state
-            ?? throw new InvalidOperationException("Parallel-for state cannot be null.");
+                         ?? throw new InvalidOperationException("Parallel-for state cannot be null.");
         rangeState.body(rangeState.startInclusive, rangeState.endExclusive);
     };
 
@@ -47,9 +48,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
     /// Creates a job system with default options.
     /// </summary>
     internal WorkStealingJobSystem()
-        : this(new JobSchedulerOptions())
-    {
-    }
+        : this(new JobSchedulerOptions()) {}
 
     /// <summary>
     /// Creates a job system with explicit options.
@@ -72,16 +71,22 @@ internal sealed class WorkStealingJobSystem : IJobSystem
                 m_workers[i] = new WorkerRuntime(workerId, () => WorkerLoop(workerId));
             }
             for (; started < m_workers.Length; started++)
+            {
                 m_workers[started].thread.Start();
+            }
         }
         catch
         {
             Interlocked.Exchange(ref m_running, 0);
             for (int index = 0; index < started; index++)
+            {
                 m_wakeSignal.Release();
+            }
             // No work can have been admitted before construction returns.
             for (int index = 0; index < started; index++)
+            {
                 m_workers[index].thread.Join();
+            }
             m_currentWorkerId.Dispose();
             m_wakeSignal.Dispose();
             m_completionSignal.Dispose();
@@ -97,10 +102,14 @@ internal sealed class WorkStealingJobSystem : IJobSystem
         get
         {
             lock (m_jobsGate)
+            {
                 return m_mainThreadQueue.statistics with
             {
-                frameJobs = m_frameJobs.Count, peakFrameJobs = m_peakFrameJobs, rejectedJobs = m_rejectedJobs
+                frameJobs = m_frameJobs.Count,
+                peakFrameJobs = m_peakFrameJobs,
+                rejectedJobs = m_rejectedJobs
             };
+            }
         }
     }
 
@@ -249,7 +258,9 @@ internal sealed class WorkStealingJobSystem : IJobSystem
             foreach (JobHandle dependency in dependencies)
             {
                 if (!dependency.isValid)
+                {
                     throw new ArgumentException("Dependency handle is invalid.", nameof(dependencies));
+                }
                 _ = ResolveHandleNoLock(dependency);
             }
             var index = AllocateJobIndexNoLock(job, state);
@@ -434,7 +445,9 @@ internal sealed class WorkStealingJobSystem : IJobSystem
         ArgumentNullException.ThrowIfNull(action);
         ThrowIfDisposed();
         if (!m_mainThreadQueue.TryEnqueue(action))
+        {
             throw new InvalidOperationException("The main-thread callback queue is at capacity or retiring.");
+        }
     }
 
     /// <summary>
@@ -462,7 +475,9 @@ internal sealed class WorkStealingJobSystem : IJobSystem
         try
         {
             if (m_frameActive)
+            {
                 EndFrame();
+            }
         }
         catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
         {

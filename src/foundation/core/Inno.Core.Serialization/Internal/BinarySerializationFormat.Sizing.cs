@@ -11,7 +11,9 @@ internal static partial class BinarySerializationFormat
     private static int GetEncodedSize(SerializationNode node)
     {
         if (node is ObjectSerializationNode { encodedCapture: { } encoded })
+        {
             return encoded.Length;
+        }
         int payload = node switch
         {
             NullSerializationNode => 0,
@@ -25,7 +27,8 @@ internal static partial class BinarySerializationFormat
         return checked(sizeof(byte) + payload);
     }
 
-    private static int GetScalarSize(object value) => value switch
+    private static int GetScalarSize(object value)
+        => value switch
     {
         bool or byte or sbyte => 1,
         short or ushort => 2,
@@ -47,7 +50,9 @@ internal static partial class BinarySerializationFormat
     {
         int size = sizeof(int);
         foreach (KeyValuePair<string, SerializationNode> member in node.values)
+        {
             size = checked(size + GetEncodedStringSize(member.Key) + GetEncodedSize(member.Value));
+        }
         return size;
     }
 
@@ -55,7 +60,9 @@ internal static partial class BinarySerializationFormat
     {
         int size = sizeof(int);
         foreach (SerializationNode value in node.values)
+        {
             size = checked(size + GetEncodedSize(value));
+        }
         return size;
     }
 
@@ -63,7 +70,9 @@ internal static partial class BinarySerializationFormat
     {
         int size = sizeof(int);
         foreach (KeyValuePair<SerializationNode, SerializationNode> entry in node.values)
+        {
             size = checked(size + GetEncodedSize(entry.Key) + GetEncodedSize(entry.Value));
+        }
         return size;
     }
 }

@@ -39,7 +39,9 @@ public static class Assets
         ArgumentNullException.ThrowIfNull(localPath);
         ArgumentNullException.ThrowIfNull(sourceFile);
         if (!sourceFile.Contains("::", StringComparison.Ordinal))
+        {
             throw new InvalidOperationException("Source-local Asset paths require a compiler-supplied canonical source location.");
+        }
         AssetSourceId source;
         try
         {
@@ -69,7 +71,7 @@ public static class Assets
     /// </exception>
     public static TAsset Load<TAsset>(AssetPath path)
         where TAsset : AssetObject
-        => AssetExecutionContext.current.Load<TAsset>(path);
+            => AssetExecutionContext.current.Load<TAsset>(path);
 
     /// <summary>
     /// Loads the canonical asset with a persistent identity in the current session.
@@ -88,7 +90,7 @@ public static class Assets
     /// </exception>
     public static TAsset Load<TAsset>(Guid persistentId)
         where TAsset : AssetObject
-        => AssetExecutionContext.current.Load<TAsset>(persistentId);
+            => AssetExecutionContext.current.Load<TAsset>(persistentId);
 
     /// <summary>
     /// Tries to load the canonical asset at a logical catalog path in the current session.
@@ -112,8 +114,7 @@ public static class Assets
     public static bool TryLoad<TAsset>(
         AssetPath path,
         out TAsset? asset
-    )
-        where TAsset : AssetObject
+    ) where TAsset : AssetObject
         => AssetExecutionContext.current.TryLoad(path, out asset);
 
     /// <summary>
@@ -138,8 +139,7 @@ public static class Assets
     public static bool TryLoad<TAsset>(
         Guid persistentId,
         out TAsset? asset
-    )
-        where TAsset : AssetObject
+    ) where TAsset : AssetObject
         => AssetExecutionContext.current.TryLoad(persistentId, out asset);
 
     /// <summary>
@@ -160,8 +160,7 @@ public static class Assets
     public static ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
         AssetPath path,
         CancellationToken cancellationToken = default
-    )
-        where TAsset : AssetObject
+    ) where TAsset : AssetObject
         => GetResidency().AcquireAsync<TAsset>(path, cancellationToken);
 
     /// <summary>
@@ -182,8 +181,7 @@ public static class Assets
     public static ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
         Guid persistentId,
         CancellationToken cancellationToken = default
-    )
-        where TAsset : AssetObject
+    ) where TAsset : AssetObject
         => GetResidency().AcquireAsync<TAsset>(persistentId, cancellationToken);
 
     /// <summary>
@@ -201,11 +199,11 @@ public static class Assets
     public static ArtifactLease AcquireArtifact(
         Guid persistentId,
         string outputName
-    )
-        => GetResidency().AcquireArtifact(persistentId, outputName);
+    ) => GetResidency().AcquireArtifact(persistentId, outputName);
 
     private static IAssetResidency GetResidency()
         => AssetExecutionContext.current as IAssetResidency
-            ?? throw new InvalidOperationException(
-                "The current asset lookup does not provide explicit residency ownership.");
+           ?? throw new InvalidOperationException(
+               "The current asset lookup does not provide explicit residency ownership."
+           );
 }

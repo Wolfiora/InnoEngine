@@ -74,6 +74,7 @@ public sealed class EditorShaderCompilation
     private readonly EditorRenderTargetArtifactProvider m_provider;
     private readonly GraphicsCapabilities m_capabilities;
     private readonly IEditorShaderArtifactValidator? m_validator;
+
     /// <summary>
     /// Pairs the authoring artifact owner with the active device's immutable capability snapshot.
     /// </summary>
@@ -108,6 +109,7 @@ public sealed class EditorShaderCompilation
         m_validator = validator ?? throw new ArgumentNullException(nameof(validator));
         m_capabilities = validator.capabilities;
     }
+
     /// <summary>
     /// Requests current compilation and reads its explicit last-good status.
     /// </summary>
@@ -123,8 +125,7 @@ public sealed class EditorShaderCompilation
     public EditorShaderCompilationSnapshot Request(
         ShaderAsset shader,
         RenderShaderVariant variant
-    )
-        => m_provider.RequestShaderCompilation(shader, variant, m_capabilities);
+    ) => m_provider.RequestShaderCompilation(shader, variant, m_capabilities);
 
     /// <summary>
     /// Reads the canonical Shader candidate for an isolated Material preview without modifying Material values.
@@ -187,15 +188,15 @@ public sealed class EditorShaderCompilation
             graph,
             revision,
             variant,
-            m_capabilities);
+            m_capabilities
+        );
         if (m_validator is null || compiled.state != EditorShaderCompilationState.Succeeded
-            || compiled.artifact is null)
+            || compiled.artifact is null
+        ) {
             return compiled;
+        }
 
-        EditorShaderArtifactValidationSnapshot validated = m_validator.Request(
-            documentId,
-            revision,
-            compiled.artifact);
+        EditorShaderArtifactValidationSnapshot validated = m_validator.Request(documentId, revision, compiled.artifact);
         IReadOnlyList<ShaderDiagnostic> diagnostics = compiled.diagnostics
             .Concat(validated.diagnostics)
             .ToArray();

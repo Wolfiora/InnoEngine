@@ -1,8 +1,8 @@
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
@@ -31,9 +31,13 @@ public sealed class RenderShaderStageArtifact
         ReadOnlySpan<byte> bytes
     ) {
         if (stage is not ShaderStage.Vertex and not ShaderStage.Fragment and not ShaderStage.Compute)
+        {
             throw new ArgumentException("A deployed shader stage must identify one programmable stage.", nameof(stage));
+        }
         if (bytes.IsEmpty)
+        {
             throw new ArgumentException("A deployed shader stage cannot be empty.", nameof(bytes));
+        }
         this.stage = stage;
         m_bytes = bytes.ToArray();
     }
@@ -48,4 +52,3 @@ public sealed class RenderShaderStageArtifact
     /// </summary>
     public ReadOnlyMemory<byte> bytes => m_bytes;
 }
-

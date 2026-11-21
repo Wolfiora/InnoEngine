@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-
 using Inno.Scripting.Api;
 
 namespace Inno.Editor.Core;
@@ -44,7 +43,9 @@ public sealed class EditorContext
         string? initialLayoutDocument = null
     ) {
         if (string.IsNullOrWhiteSpace(projectDirectory))
+        {
             throw new ArgumentException("A project directory is required.", nameof(projectDirectory));
+        }
         ArgumentNullException.ThrowIfNull(keyboard);
         this.keyboard = keyboard;
         this.projectDirectory = Path.GetFullPath(projectDirectory);
@@ -115,8 +116,7 @@ public sealed class EditorContext
     public bool TryGetLayoutSection(
         string sectionName,
         out IReadOnlyDictionary<string, string> values
-    )
-        => layout.TryGetSection(sectionName, out values);
+    ) => layout.TryGetSection(sectionName, out values);
 
     /// <summary>
     /// Adds or replaces one human-readable editor layout section in memory.
@@ -137,8 +137,7 @@ public sealed class EditorContext
     public void SetLayoutSection(
         string sectionName,
         IEnumerable<KeyValuePair<string, string>> values
-    )
-        => layout.SetSection(sectionName, values);
+    ) => layout.SetSection(sectionName, values);
 
     /// <summary>
     /// Removes one editor layout section from the in-memory document.
@@ -200,5 +199,4 @@ public sealed class EditorContext
     /// Gets whether any editor viewport currently owns application focus.
     /// </summary>
     public bool isFocused => frame.isFocused;
-
 }

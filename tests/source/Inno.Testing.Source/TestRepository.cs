@@ -35,13 +35,19 @@ public static class TestRepository
         AssemblyMetadataAttribute? declaration = testAssembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .SingleOrDefault(static attribute => attribute.Key == C_ARTIFACTS_METADATA);
         if (declaration is null)
+        {
             return null;
+        }
         string? directory = declaration.Value;
         if (string.IsNullOrWhiteSpace(directory) || !Path.IsPathFullyQualified(directory))
+        {
             throw new InvalidOperationException("Tests require the absolute SDK artifacts owner recorded by their project.");
+        }
         directory = GetProcessBinding(testAssembly, "INNO_TESTING_ARTIFACTS_PATH") ?? directory;
         if (string.IsNullOrWhiteSpace(directory) || !Path.IsPathFullyQualified(directory))
+        {
             throw new InvalidOperationException("Tests require the absolute SDK artifacts owner recorded by their project.");
+        }
         return Path.GetFullPath(directory);
     }
 
@@ -68,11 +74,13 @@ public static class TestRepository
         string? directory = testAssembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .SingleOrDefault(static attribute => attribute.Key == C_ROOT_METADATA)?.Value;
         if (string.IsNullOrWhiteSpace(directory) || !Path.IsPathFullyQualified(directory))
+        {
             throw new InvalidOperationException("Tests require the source checkout declared by their SDK project.");
+        }
         directory = GetProcessBinding(testAssembly, "INNO_TESTING_REPOSITORY_ROOT") ?? directory;
         if (string.IsNullOrWhiteSpace(directory) || !Path.IsPathFullyQualified(directory)
-            || !File.Exists(Path.Combine(directory, "InnoEngine.sln")))
-        {
+            || !File.Exists(Path.Combine(directory, "InnoEngine.sln"))
+        ) {
             throw new InvalidOperationException("Tests require the source checkout declared by their SDK project.");
         }
 
@@ -85,12 +93,18 @@ public static class TestRepository
     ) {
         string? owner = Environment.GetEnvironmentVariable("INNO_TESTING_ARTIFACTS_PATH");
         if (owner is null || testAssembly.IsDynamic || string.IsNullOrWhiteSpace(testAssembly.Location))
+        {
             return null;
+        }
         if (string.IsNullOrWhiteSpace(owner) || !Path.IsPathFullyQualified(owner))
+        {
             throw new InvalidOperationException("The test process must declare an absolute output owner before rebinding inputs.");
+        }
         string prefix = Path.TrimEndingDirectorySeparator(Path.GetFullPath(owner)) + Path.DirectorySeparatorChar;
         if (!Path.GetFullPath(testAssembly.Location).StartsWith(prefix, StringComparison.Ordinal))
+        {
             return null;
+        }
         return Environment.GetEnvironmentVariable(variable);
     }
 }

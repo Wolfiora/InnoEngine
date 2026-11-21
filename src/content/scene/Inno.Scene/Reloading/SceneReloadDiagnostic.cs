@@ -1,5 +1,5 @@
-using Inno.Core.Diagnostics;
 using System;
+using Inno.Core.Diagnostics;
 
 namespace Inno.Scene;
 

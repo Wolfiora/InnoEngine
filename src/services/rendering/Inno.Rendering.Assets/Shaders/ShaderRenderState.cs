@@ -1,12 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Scripting.Api;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
@@ -79,7 +79,8 @@ public struct ShaderRenderState
     /// <summary>
     /// Gets the default opaque raster state.
     /// </summary>
-    public static ShaderRenderState opaque => new()
+    public static ShaderRenderState opaque
+        => new()
     {
         topology = RenderPrimitiveTopology.TriangleList,
         cull = ShaderCullMode.Back,
@@ -131,4 +132,3 @@ public struct ShaderRenderState
     /// </summary>
     public bool multisampling { get; set; }
 }
-

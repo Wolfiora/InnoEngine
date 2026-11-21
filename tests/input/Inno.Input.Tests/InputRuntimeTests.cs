@@ -1,17 +1,16 @@
-using Inno.Core.Logging;
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
-using Inno.Runtime.Contracts;
 using System;
 using System.Collections.Generic;
 using System.IO;
-
+using Xunit;
+using Inno.Adapter.Input;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using Inno.Core.Events;
 using Inno.Core.Input;
+using Inno.Core.Logging;
 using Inno.Input.Runtime;
-using Inno.Adapter.Input;
 using Inno.Runtime;
-using Xunit;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Input.Tests;
 
@@ -34,7 +33,8 @@ public sealed class InputRuntimeTests
         using var second = new EventInputSource(8);
         using var firstBackend = first.CreateBackend();
         using var secondBackend = second.CreateBackend();
-        Event[] events = [
+        Event[] events =
+        [
             new KeyPressedEvent(7, KeyCode.Space),
             new TextInputEvent(7, "typed"),
             new MouseScrolledEvent(7, 2f, 3f)
@@ -152,8 +152,11 @@ public sealed class InputRuntimeTests
         using var source = new EventInputSource(windowId: 1);
         var observations = new List<bool>();
         using EngineHost host = new EngineHostBuilder()
-                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(InputRuntimeTests).Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
+            .UseMetadataSources(
+                new DotNetAssemblyCatalogSource(typeof(InputRuntimeTests).Assembly),
+                new ReflectionTypeCatalogSource(),
+                new ReflectionSerializationMetadataSource()
+            )
             .Build();
         var options = new RuntimeSessionOptions
         {
@@ -177,22 +180,24 @@ public sealed class InputRuntimeTests
         Assert.Equal([true, true], observations);
         Assert.Throws<InvalidOperationException>(() => _ = Input.snapshot);
         if (Directory.Exists(root))
+        {
             Directory.Delete(root, recursive: true);
+        }
     }
 
     private sealed class InputProbeFactory(List<bool> observations) : IRuntimeSubsystemFactory
     {
         public RuntimeSubsystemDescriptor descriptor { get; } = new(
             new RuntimeSubsystemId("tests.input.probe"),
-            dependencies: [new RuntimeSubsystemId("inno.runtime.input")]);
+            dependencies: [new RuntimeSubsystemId("inno.runtime.input")]
+        );
 
         public IRuntimeSubsystem Create(RuntimeSubsystemContext context) => new InputProbe(observations);
     }
 
     private sealed class InputProbe(List<bool> observations) : RuntimeSubsystem
     {
-        protected override void OnUpdate(RuntimeFrame frame)
-            => observations.Add(Input.IsKeyDown(KeyCode.Enter));
+        protected override void OnUpdate(RuntimeFrame frame) => observations.Add(Input.IsKeyDown(KeyCode.Enter));
 
         protected override void OnLateUpdate(RuntimeFrame frame)
             => observations.Add(Input.WasKeyPressed(KeyCode.Enter));

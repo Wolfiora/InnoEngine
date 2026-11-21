@@ -1,18 +1,20 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Inno.Core.Logging;
-using Inno.Scripting.Api;
 using Inno.Core.Serialization;
 using Inno.Editor.Annotations;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Interactions;
+using Inno.Scripting.Api;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 
 namespace Inno.Editor.Inspection;
+
 /// <summary>
 /// Resolves drawers and renders serialized property paths with isolated error handling.
 /// </summary>
@@ -25,6 +27,7 @@ public sealed class SerializedPropertyRenderer
     private readonly EditorInteractions m_interactions;
     private readonly IInspectionPropertyEditService m_edits;
     private readonly Logger m_logger;
+
     /// <summary>
     /// Creates a serialized property renderer over one drawer registry and feature-owned edit service.
     /// </summary>
@@ -259,7 +262,9 @@ public sealed class SerializedPropertyRenderer
         bool readOnly = (property.visibility & PropertyVisibility.RuntimeSet) == 0;
         MemberInfo? member = InspectorMemberMetadata.Resolve(owner.GetType(), property.name);
         if (member is null)
+        {
             return (true, readOnly);
+        }
         var context = new InspectorAttributeDrawContext(owner, member, property, property.name, property.name, readOnly);
         m_attributes.Update(context, InspectorMemberMetadata.GetAttributes(member));
         return (context.isVisible, context.isReadOnly);
@@ -294,14 +299,20 @@ public sealed class SerializedPropertyRenderer
             attributeContext = new InspectorAttributeDrawContext(metadataOwner, member, property, path, displayLabel, isReadOnly);
             m_attributes.Update(attributeContext, attributes);
             if (!attributeContext.isVisible)
+            {
                 return;
+            }
             displayLabel = attributeContext.label;
             isReadOnly = attributeContext.isReadOnly;
             if (!beginsSection && !EditorUI.current.widgets.isSectionContentVisible)
+            {
                 return;
+            }
             m_attributes.DrawBefore(attributeContext, attributes);
             if (!EditorUI.current.widgets.isSectionContentVisible)
+            {
                 return;
+            }
         }
         else if (!EditorUI.current.widgets.isSectionContentVisible)
         {
@@ -309,7 +320,9 @@ public sealed class SerializedPropertyRenderer
         }
 
         if (!beginsSection && !EditorUI.current.widgets.EnsureSection())
+        {
             return;
+        }
         var context = new PropertyDrawContext(
             editorContext,
             m_interactions,
@@ -329,9 +342,16 @@ public sealed class SerializedPropertyRenderer
             this,
             hdrColor
         );
-        EditorUI.current.widgets.PropertyRow(path, context.label, () => DrawContent(context), tooltip: attributeContext?.tooltip ?? tooltip);
+        EditorUI.current.widgets.PropertyRow(
+            path,
+            context.label,
+            () => DrawContent(context),
+            tooltip: attributeContext?.tooltip ?? tooltip
+        );
         if (attributeContext is not null)
+        {
             m_attributes.DrawAfter(attributeContext, attributes);
+        }
     }
 
     internal void DrawInline(
@@ -383,8 +403,9 @@ public sealed class SerializedPropertyRenderer
         {
             EditorUI.current.widgets.ColoredText(EditorPalette.error, $"Error: {exception.Message}");
             string failureState = $"{exception.GetType().FullName}|{exception.Message}";
-            if (!failureStates.TryGetValue(context.path, out string? previous) || !string.Equals(previous, failureState, StringComparison.Ordinal))
-            {
+            if (!failureStates.TryGetValue(context.path, out string? previous)
+                || !string.Equals(previous, failureState, StringComparison.Ordinal)
+            ) {
                 m_logger.Write(LogLevel.Error, "Inspector failed to draw property '{0}': {1}", [context.path, exception]);
                 failureStates[context.path] = failureState;
             }
@@ -399,7 +420,8 @@ public sealed class SerializedPropertyRenderer
     ) {
         ArgumentNullException.ThrowIfNull(owner);
         value = null;
-        return m_textStates.TryGetValue(owner, out Dictionary<string, string>? states) && states.TryGetValue(CreateStateKey(path, key), out value);
+        return m_textStates.TryGetValue(owner, out Dictionary<string, string>? states)
+               && states.TryGetValue(CreateStateKey(path, key), out value);
     }
 
     internal void SetTextState(
@@ -420,7 +442,9 @@ public sealed class SerializedPropertyRenderer
     ) {
         ArgumentNullException.ThrowIfNull(owner);
         if (m_textStates.TryGetValue(owner, out Dictionary<string, string>? states))
+        {
             states.Remove(CreateStateKey(path, key));
+        }
     }
 
     private static string CreateStateKey(

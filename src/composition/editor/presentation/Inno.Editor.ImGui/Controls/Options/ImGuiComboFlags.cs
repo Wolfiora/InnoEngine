@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported combo flags choices at the Editor presentation boundary.
 /// </summary>
@@ -46,5 +47,5 @@ public enum ImGuiComboFlags : int
     /// <summary>
     /// Selects the height mask presentation behavior.
     /// </summary>
-    HeightMask = (int)Inno.Native.ImGui.ImGuiComboFlags.HeightMask,
+    HeightMask = (int)Inno.Native.ImGui.ImGuiComboFlags.HeightMask
 }

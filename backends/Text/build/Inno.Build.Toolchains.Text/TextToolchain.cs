@@ -21,10 +21,18 @@ public static class TextToolchain
         "backends/Text/build/Inno.Build.Toolchains.Text/Inno.Build.Toolchains.Text.csproj",
         new NativeStaticBuildDefinition(
             "backends/Text/build/Inno.Build.Toolchains.Text/Native/StaticLibraries.cmake",
-            ["extern/freetype", "extern/harfbuzz", "backends/Text/native/Inno.Native.Text/Native/include", "backends/Text/native/Inno.Native.Text/Native/src", "backends/Text/native/Inno.Native.Text/Native/CMakeLists.txt"],
+            [
+                "extern/freetype",
+                "extern/harfbuzz",
+                "backends/Text/native/Inno.Native.Text/Native/include",
+                "backends/Text/native/Inno.Native.Text/Native/src",
+                "backends/Text/native/Inno.Native.Text/Native/CMakeLists.txt"
+            ],
             ["libinno-text", "libfreetype", "libharfbuzz"],
-            nativeSourceDirectory: "backends/Text/native/Inno.Native.Text"),
-        bindingDefinition: "backends/Text/native/Inno.Native.Text/Bindings/bindings.props");
+            nativeSourceDirectory: "backends/Text/native/Inno.Native.Text"
+        ),
+        bindingDefinition: "backends/Text/native/Inno.Native.Text/Bindings/bindings.props"
+    );
 
     /// <summary>
     /// Builds the component using the explicitly selected target SDK and validates the complete native product.
@@ -52,26 +60,41 @@ public static class TextToolchain
         NativeToolchainSelection selection = context.RequireToolchain();
         string source = Path.Combine(componentDescriptor.GetNativeRoot(context.engineRoot), "Native");
         NativeBuildRecipe recipe = CreateRecipe(context);
-        return await NativeArtifactPublisher.PublishAsync(context, recipe,
+        return await NativeArtifactPublisher.PublishAsync(
+            context,
+            recipe,
             async (
                 @scoped,
                 output,
                 token
-            ) => {
-                string build = await NativeCMakeExecutor.BuildAsync(scoped, componentDescriptor,
-                    source, "inno-text", [], token).ConfigureAwait(false);
+            ) =>
+            {
+                string build = await NativeCMakeExecutor.BuildAsync(
+                    scoped,
+                    componentDescriptor,
+                    source,
+                    "inno-text",
+                    [],
+                    token
+                ).ConfigureAwait(false);
                 string library = NativeCMakeExecutor.FindOutput(scoped, build, "*inno-text" + selection.sharedLibraryExtension);
                 string name = ToolchainEnvironment.NormalizeOutputName(Path.GetFileName(library), scoped.configuration);
                 File.Copy(library, Path.Combine(output, name));
-
-            }, cancellationToken, describeOutputs: static (
+            },
+            cancellationToken,
+            describeOutputs: static (
                 @scoped,
                 output
             ) =>
                 Directory.EnumerateFiles(output, "*", SearchOption.AllDirectories).Select(file =>
-                    new NativeArtifact(Path.GetRelativePath(output, file), file,
+                    new NativeArtifact(
+                        Path.GetRelativePath(output, file),
+                        file,
                         Path.GetRelativePath(output, file).StartsWith("Link" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
-                            ? NativeArtifactRole.ImportLibrary : NativeArtifactRole.SharedLibrary)).ToArray()).ConfigureAwait(false);
+                        ? NativeArtifactRole.ImportLibrary
+                        : NativeArtifactRole.SharedLibrary
+                    )).ToArray()
+        ).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -100,9 +123,19 @@ public static class TextToolchain
         ArgumentNullException.ThrowIfNull(context);
         NativeToolchainSelection selection = context.RequireToolchain();
         if (context.RequireComponentOptions(componentDescriptor).libraryKind != NativeLibraryKind.Shared)
-            throw new NotSupportedException("This standalone producer requires shared linkage; static products use the declared aggregate recipe.");
-        return NativeBuildRecipe.CreateForComponent(context, componentDescriptor, "text", selection.targetId,
+        {
+            throw new NotSupportedException(
+                "This standalone producer requires shared linkage; static products use the declared aggregate recipe."
+            );
+        }
+        return NativeBuildRecipe.CreateForComponent(
+            context,
+            componentDescriptor,
+            "text",
+            selection.targetId,
             componentDescriptor.staticBuild!.inputPaths.Select(path => Path.GetFullPath(path, context.engineRoot)),
-            [], [Path.Combine(componentDescriptor.GetToolchainRoot(context.engineRoot), "TextToolchain.cs")]);
+            [],
+            [Path.Combine(componentDescriptor.GetToolchainRoot(context.engineRoot), "TextToolchain.cs")]
+        );
     }
 }

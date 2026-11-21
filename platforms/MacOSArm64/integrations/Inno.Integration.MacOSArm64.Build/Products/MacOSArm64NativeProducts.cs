@@ -11,9 +11,13 @@ internal static class MacOSArm64NativeProducts
 
     internal static NativeComponentBuildOptions Options(string component)
     {
-        return new(NativeLibraryKind.Shared, inputPaths: [C_INPUT],
+        return new(
+            NativeLibraryKind.Shared,
+            inputPaths: [C_INPUT],
             bindingIncludeDirectories: component == "bgfx" ? ["extern/bx/include/compat/osx"] : [],
             linkPlan: component == "cimguizmo"
-                ? MacOSArm64LinkerSettings.Create(["@loader_path/../../cimgui/" + MacOSArm64BuildModule.target.id.value]) : null);
+                      ? MacOSArm64LinkerSettings.Create(["@loader_path/../../cimgui/" + MacOSArm64BuildModule.target.id.value])
+                      : null
+        );
     }
 }

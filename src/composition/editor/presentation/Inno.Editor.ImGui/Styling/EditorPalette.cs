@@ -1,6 +1,5 @@
 using System;
 using System.Numerics;
-
 using Inno.Native.ImGui;
 
 namespace Inno.Editor.ImGui;
@@ -447,7 +446,8 @@ public static unsafe class EditorPalette
             from.X + (to.X - from.X) * value,
             from.Y + (to.Y - from.Y) * value,
             from.Z + (to.Z - from.Z) * value,
-            from.W + (to.W - from.W) * value);
+            from.W + (to.W - from.W) * value
+        );
     }
 
     internal static void Apply(ImGuiStyle* style)
@@ -523,6 +523,5 @@ public static unsafe class EditorPalette
     public static Vector4 WithOpacity(
         Vector4 color,
         float opacity
-    )
-        => new(color.X, color.Y, color.Z, Math.Clamp(opacity, opacityNone, opacityOpaque));
+    ) => new(color.X, color.Y, color.Z, Math.Clamp(opacity, opacityNone, opacityOpaque));
 }

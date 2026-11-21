@@ -1,4 +1,5 @@
 namespace Inno.Editor.Workbench;
+
 internal static class GlobalInteractionIds
 {
     internal const string C_MAIN_MENU_AREA = "editor/main-menu";

@@ -54,19 +54,24 @@ internal sealed record SceneSubtreeHistoryData(
         byte[] subtree = ReadBytes(reader, "subtree");
         int referenceCount = reader.ReadInt32();
         if (referenceCount < 0)
+        {
             throw new InvalidDataException("Scene subtree incoming reference count cannot be negative.");
+        }
         var references = new SceneIncomingReferenceState[referenceCount];
         for (int i = 0; i < references.Length; i++)
         {
             references[i] = new SceneIncomingReferenceState(
                 new Guid(reader.ReadBytes(16)),
                 reader.ReadString(),
-                ReadBytes(reader, "incoming reference"));
+                ReadBytes(reader, "incoming reference")
+            );
         }
         Guid? selectedBefore = ReadGuid(reader);
         Guid? selectedAfter = ReadGuid(reader);
         if (stream.Position != stream.Length)
+        {
             throw new InvalidDataException("Scene subtree history payload contains trailing data.");
+        }
         return new SceneSubtreeHistoryData(
             sceneId,
             rootId,
@@ -77,7 +82,8 @@ internal sealed record SceneSubtreeHistoryData(
             subtree,
             references,
             selectedBefore,
-            selectedAfter);
+            selectedAfter
+        );
     }
 
     private static void WriteBytes(
@@ -94,10 +100,14 @@ internal sealed record SceneSubtreeHistoryData(
     ) {
         int length = reader.ReadInt32();
         if (length < 0 || length > reader.BaseStream.Length - reader.BaseStream.Position)
+        {
             throw new InvalidDataException($"Scene subtree history {name} length is invalid.");
+        }
         byte[] bytes = reader.ReadBytes(length);
         if (bytes.Length != length)
+        {
             throw new EndOfStreamException($"Scene subtree history {name} is truncated.");
+        }
         return bytes;
     }
 
@@ -107,7 +117,9 @@ internal sealed record SceneSubtreeHistoryData(
     ) {
         writer.Write(value.HasValue);
         if (value.HasValue)
+        {
             writer.Write(value.Value.ToByteArray());
+        }
     }
 
     private static Guid? ReadGuid(BinaryReader reader) => reader.ReadBoolean() ? new Guid(reader.ReadBytes(16)) : null;

@@ -148,5 +148,4 @@ public interface IEditorDocumentService
         Guid documentId,
         EditorDocumentCloseMode mode
     );
-
 }

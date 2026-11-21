@@ -27,11 +27,12 @@ public record struct AssetSourceId
         if (normalized.Any(static character =>
                 !(character is >= 'a' and <= 'z'
                   || character is >= '0' and <= '9'
-                  || character is '.' or '_' or '-')))
-        {
+                  || character is '.' or '_' or '-'))
+        ) {
             throw new ArgumentException(
                 "An asset source ID may contain lowercase ASCII letters, digits, '.', '_', and '-' only.",
-                nameof(value));
+                nameof(value)
+            );
         }
         this.value = normalized;
     }
@@ -76,7 +77,9 @@ public record struct AssetPath
         string localPath
     ) {
         if (!source.isValid)
+        {
             throw new ArgumentException("An asset source ID must be valid.", nameof(source));
+        }
         this.source = source;
         this.localPath = NormalizeLocalPath(localPath);
     }
@@ -121,8 +124,8 @@ public record struct AssetPath
         ArgumentNullException.ThrowIfNull(value);
         int separator = value.IndexOf(C_SOURCE_SEPARATOR, StringComparison.Ordinal);
         return separator < 0
-            ? Project(value)
-            : new AssetPath(new AssetSourceId(value[..separator]), value[(separator + C_SOURCE_SEPARATOR.Length)..]);
+               ? Project(value)
+               : new AssetPath(new AssetSourceId(value[..separator]), value[(separator + C_SOURCE_SEPARATOR.Length)..]);
     }
 
     /// <summary>
@@ -133,8 +136,8 @@ public record struct AssetPath
     /// </returns>
     public readonly override string ToString()
         => source == AssetSourceId.project
-            ? localPath ?? string.Empty
-            : $"{source}{C_SOURCE_SEPARATOR}{localPath}";
+           ? localPath ?? string.Empty
+           : $"{source}{C_SOURCE_SEPARATOR}{localPath}";
 
     private static string NormalizeLocalPath(string value)
     {
@@ -142,17 +145,19 @@ public record struct AssetPath
         if (Path.IsPathRooted(value)
             || value.StartsWith("/", StringComparison.Ordinal)
             || value.StartsWith('\\')
-            || value.Length >= 2 && char.IsAsciiLetter(value[0]) && value[1] == ':')
-        {
+            || value.Length >= 2 && char.IsAsciiLetter(value[0]) && value[1] == ':'
+        ) {
             throw new ArgumentException("An asset path must be source-relative.", nameof(value));
         }
         string path = value.Replace('\\', '/').Trim();
         while (path.StartsWith("./", StringComparison.Ordinal))
+        {
             path = path[2..];
+        }
         path = path.Trim('/');
         if (path.Split('/', StringSplitOptions.RemoveEmptyEntries)
-            .Any(static segment => segment is "." or ".."))
-        {
+            .Any(static segment => segment is "." or "..")
+        ) {
             throw new ArgumentException("An asset path cannot contain traversal segments.", nameof(value));
         }
         return path;

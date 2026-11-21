@@ -15,7 +15,9 @@ internal static class ScriptApiArtifactCache
         IEnumerable<string?> protectedDirectories
     ) {
         if (!Directory.Exists(root))
+        {
             return 0;
+        }
         var protectedPaths = protectedDirectories
             .Where(static path => !string.IsNullOrWhiteSpace(path))
             .Select(static path => Path.GetFullPath(path!))
@@ -31,9 +33,9 @@ internal static class ScriptApiArtifactCache
         int removed = 0;
         foreach (Entry entry in entries)
         {
-            if (protectedPaths.Contains(entry.path) ||
-                entry.lastWriteUtc > cutoff && totalSize <= C_MAXIMUM_SIZE)
-            {
+            if (protectedPaths.Contains(entry.path)
+                || entry.lastWriteUtc > cutoff && totalSize <= C_MAXIMUM_SIZE
+            ) {
                 continue;
             }
             try

@@ -4,12 +4,15 @@ using System.Linq;
 using Inno.Core.Events;
 
 namespace Inno.Editor.Interactions;
+
 internal sealed class EditorDocumentService : IEditorDocumentService
 {
     private readonly List<EditorDocumentContext> m_documents = [];
     private readonly Dictionary<string, EditorDocumentProvider> m_providers = new(StringComparer.Ordinal);
     private readonly EventDispatcher m_events;
+
     internal EditorDocumentService(EventDispatcher events) => m_events = events;
+
     /// <summary>
     /// Gets an immutable snapshot of currently owned source documents.
     /// </summary>
@@ -29,13 +32,17 @@ internal sealed class EditorDocumentService : IEditorDocumentService
         ArgumentNullException.ThrowIfNull(provider);
         ArgumentException.ThrowIfNullOrWhiteSpace(provider.id);
         if (!m_providers.TryAdd(provider.id, provider))
+        {
             throw new InvalidOperationException($"Editor document provider '{provider.id}' is already registered.");
+        }
         try
         {
             foreach (EditorDocumentContext document in m_documents.Where(document => document.providerId == provider.id).ToArray())
             {
                 if (!m_documents.Contains(document))
+                {
                     continue;
+                }
                 document.isProviderAvailable = true;
                 provider.Open(document);
             }
@@ -66,10 +73,14 @@ internal sealed class EditorDocumentService : IEditorDocumentService
         Guid assetId = default
     ) {
         string normalizedPath = NormalizePath(assetPath);
-        EditorDocumentContext? identityOwner = assetId == Guid.Empty ? null : m_documents.FirstOrDefault(document => document.assetId == assetId);
+        EditorDocumentContext? identityOwner = assetId == Guid.Empty
+                                               ? null
+                                               : m_documents.FirstOrDefault(document => document.assetId == assetId);
         EditorDocumentContext? pathOwner = FindPathOwner(normalizedPath);
         if (identityOwner is not null && pathOwner is not null && !ReferenceEquals(identityOwner, pathOwner))
+        {
             RetireStalePathOwner(pathOwner, normalizedPath);
+        }
         EditorDocumentContext? existing = identityOwner ?? pathOwner;
         if (existing is not null && assetId != Guid.Empty && existing.assetId != assetId)
         {
@@ -86,7 +97,8 @@ internal sealed class EditorDocumentService : IEditorDocumentService
         EditorDocumentProvider provider = m_providers.Values.OrderBy(
             static candidate => candidate.id,
             StringComparer.Ordinal
-        ).FirstOrDefault(candidate => candidate.CanOpen(normalizedPath)) ?? throw new InvalidOperationException($"No editor document provider can open '{normalizedPath}'.");
+        ).FirstOrDefault(candidate => candidate.CanOpen(normalizedPath))
+            ?? throw new InvalidOperationException($"No editor document provider can open '{normalizedPath}'.");
         var context = new EditorDocumentContext(Guid.NewGuid(), assetId, normalizedPath, provider.id)
         {
             isProviderAvailable = true
@@ -123,17 +135,25 @@ internal sealed class EditorDocumentService : IEditorDocumentService
     ) {
         EditorDocumentContext? document = Find(documentId);
         if (document is null)
+        {
             return false;
+        }
         string path = NormalizePath(assetPath);
         if (m_providers.TryGetValue(document.providerId, out EditorDocumentProvider? provider) && !provider.CanOpen(path))
+        {
             throw new ArgumentException("The new source path is not supported by this document provider.", nameof(assetPath));
+        }
         EditorDocumentContext? pathOwner = FindPathOwner(path, documentId);
         if (pathOwner is not null)
+        {
             RetireStalePathOwner(pathOwner, path);
+        }
         bool defaultTitle = document.title == System.IO.Path.GetFileName(document.assetPath);
         document.assetPath = path;
         if (defaultTitle)
+        {
             document.title = System.IO.Path.GetFileName(path);
+        }
         return true;
     }
 
@@ -150,6 +170,7 @@ internal sealed class EditorDocumentService : IEditorDocumentService
         Guid documentId,
         bool isDirty = true
     ) => Get(documentId).isDirty = isDirty;
+
     /// <summary>
     /// Persists the supplied value through the configured storage contract.
     /// </summary>
@@ -159,10 +180,12 @@ internal sealed class EditorDocumentService : IEditorDocumentService
     /// <returns>
     /// <see langword="true"/> when the owning provider saved the document.
     /// </returns>
-    public bool Save(Guid documentId) => Invoke(documentId, static (
-        provider,
-        context
-    ) => provider.Save(context), clearDirty: true);
+    public bool Save(Guid documentId)
+        => Invoke(documentId, static (
+            provider,
+            context
+        ) => provider.Save(context), clearDirty: true);
+
     /// <summary>
     /// Saves every dirty document through its owning provider.
     /// </summary>
@@ -175,7 +198,9 @@ internal sealed class EditorDocumentService : IEditorDocumentService
         foreach (EditorDocumentContext document in m_documents.ToArray())
         {
             if (document.isDirty && !Save(document.documentId))
+            {
                 succeeded = false;
+            }
         }
 
         return succeeded;
@@ -190,10 +215,12 @@ internal sealed class EditorDocumentService : IEditorDocumentService
     /// <returns>
     /// <see langword="true"/> when the owning provider applied the staged state.
     /// </returns>
-    public bool Apply(Guid documentId) => Invoke(documentId, static (
-        provider,
-        context
-    ) => provider.Apply(context), clearDirty: true);
+    public bool Apply(Guid documentId)
+        => Invoke(documentId, static (
+            provider,
+            context
+        ) => provider.Apply(context), clearDirty: true);
+
     /// <summary>
     /// Reverts one open document through its owning provider.
     /// </summary>
@@ -203,10 +230,12 @@ internal sealed class EditorDocumentService : IEditorDocumentService
     /// <returns>
     /// <see langword="true"/> when the owning provider restored the saved state.
     /// </returns>
-    public bool Revert(Guid documentId) => Invoke(documentId, static (
-        provider,
-        context
-    ) => provider.Revert(context), clearDirty: true);
+    public bool Revert(Guid documentId)
+        => Invoke(documentId, static (
+            provider,
+            context
+        ) => provider.Revert(context), clearDirty: true);
+
     /// <summary>
     /// Closes the requested resource and releases its operation-scoped state.
     /// </summary>
@@ -226,13 +255,21 @@ internal sealed class EditorDocumentService : IEditorDocumentService
         m_events.Emit(new EditorOperationPreparingEvent());
         EditorDocumentContext? document = Find(documentId);
         if (document is null || mode == EditorDocumentCloseMode.Cancel)
+        {
             return false;
+        }
         if (document.isDirty && mode == EditorDocumentCloseMode.Save && !Save(documentId))
+        {
             return false;
+        }
         if (document.isDirty && mode != EditorDocumentCloseMode.Discard && mode != EditorDocumentCloseMode.Save)
+        {
             return false;
+        }
         if (m_providers.TryGetValue(document.providerId, out EditorDocumentProvider? provider))
+        {
             provider.Close(document);
+        }
         m_documents.Remove(document);
         return true;
     }
@@ -242,7 +279,9 @@ internal sealed class EditorDocumentService : IEditorDocumentService
         foreach (EditorDocumentContext document in m_documents.ToArray())
         {
             if (m_providers.TryGetValue(document.providerId, out EditorDocumentProvider? provider))
+            {
                 provider.Close(document);
+            }
         }
 
         m_documents.Clear();
@@ -257,32 +296,48 @@ internal sealed class EditorDocumentService : IEditorDocumentService
         m_events.Emit(new EditorOperationPreparingEvent());
         EditorDocumentContext document = Get(documentId);
         if (!m_providers.TryGetValue(document.providerId, out EditorDocumentProvider? provider))
+        {
             return false;
+        }
         bool succeeded = operation(provider, document);
         if (succeeded && clearDirty)
+        {
             document.isDirty = false;
+        }
         return succeeded;
     }
 
-    private EditorDocumentContext Get(Guid documentId) => Find(documentId) ?? throw new ArgumentException($"Editor document '{documentId}' is not open.", nameof(documentId));
+    private EditorDocumentContext Get(Guid documentId)
+        => Find(documentId) ?? throw new ArgumentException($"Editor document '{documentId}' is not open.", nameof(documentId));
+
     private EditorDocumentContext? Find(Guid documentId) => m_documents.FirstOrDefault(document => document.documentId == documentId);
+
     private EditorDocumentContext? FindPathOwner(
         string assetPath,
         Guid excludedDocumentId = default
-    ) => m_documents.FirstOrDefault(document => document.documentId != excludedDocumentId && string.Equals(document.assetPath, assetPath, StringComparison.Ordinal));
+    ) => m_documents.FirstOrDefault(
+        document => document.documentId != excludedDocumentId && string.Equals(document.assetPath, assetPath, StringComparison.Ordinal)
+    );
+
     private void RetireStalePathOwner(
         EditorDocumentContext document,
         string destinationPath
     ) {
         if (document.isDirty)
         {
-            throw new InvalidOperationException($"Open document '{document.title}' has unsaved changes for '{destinationPath}'. " + "Save, revert, or close it before assigning that source path to another asset identity.");
+            throw new InvalidOperationException(
+                $"Open document '{document.title}' has unsaved changes for '{destinationPath}'. " + "Save, revert, or close it before assigning that source path to another asset identity."
+            );
         }
 
         if (m_providers.TryGetValue(document.providerId, out EditorDocumentProvider? provider))
+        {
             provider.Close(document);
+        }
         if (!m_documents.Remove(document))
+        {
             return;
+        }
     }
 
     private static string NormalizePath(string assetPath)
@@ -290,7 +345,9 @@ internal sealed class EditorDocumentService : IEditorDocumentService
         ArgumentException.ThrowIfNullOrWhiteSpace(assetPath);
         string normalized = assetPath.Replace('\\', '/').Trim();
         while (normalized.StartsWith("./", StringComparison.Ordinal))
+        {
             normalized = normalized[2..];
+        }
         return normalized;
     }
 
@@ -303,7 +360,9 @@ internal sealed class EditorDocumentService : IEditorDocumentService
 
         m_providers.Remove(provider.id);
         foreach (EditorDocumentContext document in m_documents.Where(document => document.providerId == provider.id))
+        {
             document.isProviderAvailable = false;
+        }
     }
 
     private sealed class ProviderLease(
@@ -312,6 +371,7 @@ internal sealed class EditorDocumentService : IEditorDocumentService
     ) : IDisposable
     {
         private EditorDocumentService? m_owner = owner;
+
         /// <summary>
         /// Releases the resources owned by this instance.
         /// </summary>

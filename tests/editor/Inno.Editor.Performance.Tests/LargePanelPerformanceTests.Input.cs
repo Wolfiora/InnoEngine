@@ -9,12 +9,13 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using BGCS.Runtime;
+using Xunit;
 using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
 using Inno.Scene;
 using Inno.Scene.Components;
 using Inno.Testing.Editor.Native;
-using Xunit;
+
 using NativeGui = Inno.Native.ImGui.ImGui;
 using NativeVector = Inno.Native.ImGui.ImVec2C;
 using SceneVector = Inno.Core.Mathematics.Vector3;
@@ -38,10 +39,16 @@ public sealed partial class LargePanelPerformanceTests
         {
             string? input = InputDirectory("assets");
             if (input is not null && Directory.Exists(input))
+            {
                 CopyDirectory(input, Path.Combine(host.projectRoot, "Assets"));
+            }
             else
+            {
                 for (int index = 0; index < 10_000; index++)
+                {
                     Directory.CreateDirectory(Path.Combine(host.projectRoot, "Assets", "Folder " + index.ToString("D5")));
+                }
+            }
             host.assets.Rescan();
             Assert.Equal(10_000, Directory.EnumerateDirectories(Path.Combine(host.projectRoot, "Assets"), "Folder *").Count());
         }
@@ -54,10 +61,12 @@ public sealed partial class LargePanelPerformanceTests
         SceneVector initial = scene?.GetObjects()[0].transform.localPosition ?? default;
         Transform? transform = scene?.GetObjects()[0].transform;
         using EditorEditGesture? gesture = scenario == "hierarchy-edit"
-            ? new EditorEditGesture(host.runtime.interactions.history, "Measured continuous edit")
-            : null;
+                                           ? new EditorEditGesture(host.runtime.interactions.history, "Measured continuous edit")
+                                           : null;
         if (scenario == "assets-search")
+        {
             FocusAssetSearch(host, panel);
+        }
         Action operation = scenario switch
         {
             "assets-search" => Search,
@@ -75,7 +84,9 @@ public sealed partial class LargePanelPerformanceTests
             Assert.Equal((float)edits, transform.localPosition.x);
         }
         else if (scenario.EndsWith("scroll", StringComparison.Ordinal))
+        {
             Assert.True(maximumScroll > 0f, "Actual wheel input never moved the visible list.");
+        }
 
         void Scroll()
         {
@@ -109,8 +120,15 @@ public sealed partial class LargePanelPerformanceTests
         void Edit()
         {
             int value = ++edits;
-            Assert.True(host.edits.ChangeProperty(transform!, nameof(Transform.localPosition),
-                () => transform!.localPosition = new(value, 0f, 0f), "Measured continuous edit", gesture!.mergeKey));
+            Assert.True(
+                host.edits.ChangeProperty(
+                    transform!,
+                    nameof(Transform.localPosition),
+                    () => transform!.localPosition = new(value, 0f, 0f),
+                    "Measured continuous edit",
+                    gesture!.mergeKey
+                )
+            );
             host.native.DrawPanel(panel);
         }
     }
@@ -126,7 +144,9 @@ public sealed partial class LargePanelPerformanceTests
         }
         GameScene scene = host.CreateScene();
         for (int index = 0; index < 10_000; index++)
+        {
             _ = scene.CreateObject("Object " + index.ToString("D5"));
+        }
         _ = host.workspace.Save(scene, string.Empty);
         return scene;
     }
@@ -148,7 +168,9 @@ public sealed partial class LargePanelPerformanceTests
             host.native.DrawPanel(panel);
             ImGuiNativeContext* context = NativeGui.Raw.GetCurrentContext();
             if (context->InputTextState.ID != 0 && context->ActiveId == context->InputTextState.ID)
+            {
                 return;
+            }
         }
         throw new InvalidOperationException("Ordinary pointer input did not focus the existing asset search field.");
     }
@@ -161,7 +183,9 @@ public sealed partial class LargePanelPerformanceTests
             ImGuiWindow* window = context->Windows.Data[index];
             string? name = Marshal.PtrToStringUTF8((nint)window->Name);
             if (window->Active != 0 && name?.Contains(fragment, StringComparison.Ordinal) == true)
+            {
                 return window;
+            }
         }
         throw new InvalidOperationException("The drawn native input owner is absent: " + fragment);
     }
@@ -171,9 +195,13 @@ public sealed partial class LargePanelPerformanceTests
         Action operation
     ) {
         for (int warmup = 0; warmup < 5; warmup++)
+        {
             operation();
-        int repetitions = int.Parse(Environment.GetEnvironmentVariable("INNO_UI_PERFORMANCE_REPETITIONS") ?? "5",
-            System.Globalization.CultureInfo.InvariantCulture);
+        }
+        int repetitions = int.Parse(
+            Environment.GetEnvironmentVariable("INNO_UI_PERFORMANCE_REPETITIONS") ?? "5",
+            System.Globalization.CultureInfo.InvariantCulture
+        );
         Assert.InRange(repetitions, 1, 5);
         using Process process = Process.GetCurrentProcess();
         var samples = new List<object>();
@@ -196,7 +224,11 @@ public sealed partial class LargePanelPerformanceTests
             double[] sorted = milliseconds.Order().ToArray();
             samples.Add(new
             {
-                repetition, milliseconds, median = (sorted[4] + sorted[5]) / 2, p95 = sorted[9], allocatedBytes = allocated,
+                repetition,
+                milliseconds,
+                median = (sorted[4] + sorted[5]) / 2,
+                p95 = sorted[9],
+                allocatedBytes = allocated,
                 totalAllocatedBytes = GC.GetTotalAllocatedBytes(precise: true) - totalBefore,
                 cpuMilliseconds = (process.TotalProcessorTime - cpuBefore).TotalMilliseconds,
                 gen0Collections = GC.CollectionCount(0) - gen0,
@@ -204,14 +236,22 @@ public sealed partial class LargePanelPerformanceTests
                 gen2Collections = GC.CollectionCount(2) - gen2
             });
         }
-        output.WriteLine(JsonSerializer.Serialize(new
-        {
-            workload = scenario, samples,
-            configuration = typeof(LargePanelPerformanceTests).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration,
-            viewport = "1000x800", warmupOperations = 5, measuredOperationsPerRepetition = 10,
-            nativeFramesPerOperation = scenario == "assets-search" ? 4 : 1,
-            consumer = scenario == "hierarchy-edit" ? "continuous-domain-gesture-and-actual-hierarchy-draw" : "actual-native-input-and-panel-draw",
-            sharedInput = InputDirectory(scenario.StartsWith("hierarchy", StringComparison.Ordinal) ? "hierarchy" : "assets")
-        }));
+        output.WriteLine(
+            JsonSerializer.Serialize(new
+            {
+                workload = scenario,
+                samples,
+                configuration = typeof(LargePanelPerformanceTests)
+                    .Assembly
+                    .GetCustomAttribute<AssemblyConfigurationAttribute>()
+                    ?.Configuration,
+                viewport = "1000x800",
+                warmupOperations = 5,
+                measuredOperationsPerRepetition = 10,
+                nativeFramesPerOperation = scenario == "assets-search" ? 4 : 1,
+                consumer = scenario == "hierarchy-edit" ? "continuous-domain-gesture-and-actual-hierarchy-draw" : "actual-native-input-and-panel-draw",
+                sharedInput = InputDirectory(scenario.StartsWith("hierarchy", StringComparison.Ordinal) ? "hierarchy" : "assets")
+            })
+        );
     }
 }

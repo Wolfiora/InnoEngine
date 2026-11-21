@@ -46,10 +46,18 @@ public sealed class BuildArtifactWriteLease : IDisposable
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
         if (!Path.IsPathFullyQualified(directory))
+        {
             throw new ArgumentException("Artifact mutation requires an absolute owner path.", nameof(directory));
+        }
         BuildCacheCleanupPlan.RequireChild(ownerDirectory, directory);
-        return new(await CoordinatedFileLease.AcquireAsync(Path.Combine(ownerDirectory, "owner.lock"), BuildArtifactReadLease.GetLeasePath(directory),
-            TimeSpan.FromSeconds(30), cancellationToken: cancellationToken).ConfigureAwait(false));
+        return new(
+            await CoordinatedFileLease.AcquireAsync(
+                Path.Combine(ownerDirectory, "owner.lock"),
+                BuildArtifactReadLease.GetLeasePath(directory),
+                TimeSpan.FromSeconds(30),
+                cancellationToken: cancellationToken
+            ).ConfigureAwait(false)
+        );
     }
 
     /// <summary>

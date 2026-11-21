@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Graphs;
@@ -5,11 +10,6 @@ using Inno.Core.Serialization;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 using Inno.Rendering.Shaders;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Inno.Rendering.Assets.Authoring;
 
@@ -48,33 +48,53 @@ internal sealed class ShaderAssetImporter : AssetImporter<ShaderAsset>
         byte[] captured;
         try
         {
-            captured = ShaderGraphArtifact.Capture(graph, context.types, context.serialization, owner,
+            captured = ShaderGraphArtifact.Capture(
+                graph,
+                context.types,
+                context.serialization,
+                owner,
                 (
                     id,
                     path
                 ) =>
                 {
                     context.DependsOnArtifact(id);
-                    AssetObject resolved = context.references.Resolve(id, context.services.GetStableTypeId<ShaderFunctionAsset>(),
-                        path, typeof(ShaderFunctionAsset), $"shader.sources[{id}]");
+                    AssetObject resolved = context.references.Resolve(
+                        id,
+                        context.services.GetStableTypeId<ShaderFunctionAsset>(),
+                        path,
+                        typeof(ShaderFunctionAsset),
+                        $"shader.sources[{id}]"
+                    );
                     if (resolved is not ShaderFunctionAsset { isMissing: false } source)
+                    {
                         throw new InvalidDataException($"Shader function '{id}' is unavailable. Its graph reference is preserved.");
+                    }
                     using ArtifactLease sourceLease = context.AcquireArtifact(source.identity.persistentId, ShaderSourceBundle.outputName);
                     return sourceLease.ReadAllBytes();
-                }, cancellationToken,
+                },
+                cancellationToken,
                 (
                     id,
                     path
                 ) =>
                 {
                     context.DependsOnArtifact(id);
-                    AssetObject resolved = context.references.Resolve(id, context.services.GetStableTypeId<ShaderAsset>(),
-                        path, typeof(ShaderAsset), $"shader.graphNodes[{id}]");
+                    AssetObject resolved = context.references.Resolve(
+                        id,
+                        context.services.GetStableTypeId<ShaderAsset>(),
+                        path,
+                        typeof(ShaderAsset),
+                        $"shader.graphNodes[{id}]"
+                    );
                     if (resolved is not ShaderAsset { isMissing: false } node)
+                    {
                         throw new InvalidDataException($"Shader graph node '{id}' is unavailable. Its graph reference is preserved.");
+                    }
                     using ArtifactLease graphLease = context.AcquireArtifact(node.identity.persistentId, ShaderGraphArtifact.outputName);
                     return ShaderGraphArtifact.ReadDocument(graphLease.ReadAllBytes(), context.serialization);
-                });
+                }
+            );
         }
         catch (ShaderTargetUnavailableException exception)
         {
@@ -84,16 +104,26 @@ internal sealed class ShaderAssetImporter : AssetImporter<ShaderAsset>
         // Function dependencies are authoring-only; texture defaults remain ordinary runtime references.
         _ = context.serialization.Serialize(definition, owner);
         foreach (AssetDependency dependency in dependencies.dependencies)
+        {
             output.DependsOnAsset(dependency);
+        }
         var asset = new ShaderAsset();
         asset.SetDefinition(definition, context.serialization, owner);
         output.SetAsset(asset);
         if (definition.passes.Length == 0)
+        {
             output.SetDeploymentScope(AssetDeploymentScope.AuthoringOnly);
+        }
         else
+        {
             await output.WriteArtifactAsync("runtime", ReadOnlyMemory<byte>.Empty, cancellationToken).ConfigureAwait(false);
-        await output.WriteArtifactAsync(ShaderGraphArtifact.outputName, captured,
-            cancellationToken, AssetDeploymentScope.AuthoringOnly).ConfigureAwait(false);
+        }
+        await output.WriteArtifactAsync(
+            ShaderGraphArtifact.outputName,
+            captured,
+            cancellationToken,
+            AssetDeploymentScope.AuthoringOnly
+        ).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -117,8 +147,14 @@ internal sealed class ShaderAssetImporter : AssetImporter<ShaderAsset>
         CancellationToken cancellationToken
     ) {
         cancellationToken.ThrowIfCancellationRequested();
-        return ValueTask.FromResult<ReadOnlyMemory<byte>?>(GraphDocumentCodec.Encode(
-            ShaderGraphArtifact.ReadDocument(ShaderGraphArtifact.Read(asset, context.artifacts), context.serialization), context.serialization));
+        return ValueTask.FromResult<ReadOnlyMemory<byte>?>(
+            GraphDocumentCodec.Encode(
+                ShaderGraphArtifact.ReadDocument(
+                    ShaderGraphArtifact.Read(asset, context.artifacts),
+                    context.serialization
+                ),
+                context.serialization
+            )
+        );
     }
 }
-

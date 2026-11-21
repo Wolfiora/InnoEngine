@@ -59,10 +59,12 @@ public sealed class ShaderSourceImplementationRequest
     /// Gets the stable owner-defined implementation/configuration key.
     /// </summary>
     public string implementationId { get; }
+
     /// <summary>
     /// Gets the explicitly selected language identity.
     /// </summary>
     public string languageId { get; }
+
     /// <summary>
     /// Gets the transient candidate request, which must not be persisted or retained after analysis.
     /// </summary>
@@ -87,8 +89,11 @@ public sealed class ShaderSourceImplementationAnalysis
         defines = request.source.defines;
         this.analysis = analysis;
         sources = Array.AsReadOnly(files.OrderBy(static file => file.assetPath, StringComparer.Ordinal).ToArray());
-        this.includes = Array.AsReadOnly(includes.OrderBy(static edge => edge.includingFile, StringComparer.Ordinal)
-            .ThenBy(static edge => edge.include, StringComparer.Ordinal).ToArray());
+        this.includes = Array.AsReadOnly(
+            includes.OrderBy(static edge => edge.includingFile, StringComparer.Ordinal)
+                .ThenBy(static edge => edge.include, StringComparer.Ordinal)
+                .ToArray()
+        );
         contentHash = ComputeContentHash();
     }
 
@@ -96,34 +101,42 @@ public sealed class ShaderSourceImplementationAnalysis
     /// Gets the stable implementation/configuration key.
     /// </summary>
     public string implementationId { get; }
+
     /// <summary>
     /// Gets the selected source language.
     /// </summary>
     public string languageId { get; }
+
     /// <summary>
     /// Gets the root source path in the frozen source set.
     /// </summary>
     public string sourcePath { get; }
+
     /// <summary>
     /// Gets the implementation's selected callable function name.
     /// </summary>
     public string entryPoint { get; }
+
     /// <summary>
     /// Gets the immutable preprocessing inputs used for this implementation.
     /// </summary>
     public IReadOnlyDictionary<string, string> defines { get; }
+
     /// <summary>
     /// Gets every successfully read source, including the root, ordered by path.
     /// </summary>
     public IReadOnlyList<ShaderSourceFile> sources { get; }
+
     /// <summary>
     /// Gets the original resolver's frozen include edges, including aliases and mounted source paths.
     /// </summary>
     public IReadOnlyList<ShaderSourceInclude> includes { get; }
+
     /// <summary>
     /// Gets the parsed interface and implementation-local diagnostics.
     /// </summary>
     public ShaderSourceAnalysis analysis { get; }
+
     /// <summary>
     /// Gets a deterministic source-input hash. A compiler cache must additionally include its toolchain,
     /// target, graph semantics and binding layout; this hash alone is not a compiled artifact key.
@@ -191,7 +204,9 @@ public ShaderSourceFile ReadInclude(
     string include
 ) {
             ShaderSourceInclude edge = includes.FirstOrDefault(value => value.includingFile == includingFile && value.include == include)
-                ?? throw new InvalidOperationException($"Include '{include}' from '{includingFile}' was not captured during source analysis.");
+                                       ?? throw new InvalidOperationException(
+                                           $"Include '{include}' from '{includingFile}' was not captured during source analysis."
+                                       );
             return sources.Single(file => file.assetPath == edge.resolvedPath);
         }
     }
@@ -209,7 +224,7 @@ public sealed class ShaderSourceModuleAnalysis
         this.implementations = Array.AsReadOnly(implementations.ToArray());
         this.diagnostics = Array.AsReadOnly(diagnostics.ToArray());
         succeeded = this.implementations.Count != 0 && this.implementations.All(static item => item.analysis.succeeded)
-            && this.diagnostics.All(static item => item.severity != DiagnosticSeverity.Error);
+                    && this.diagnostics.All(static item => item.severity != DiagnosticSeverity.Error);
         function = succeeded ? this.implementations[0].analysis.function : null;
     }
 
@@ -217,14 +232,17 @@ public sealed class ShaderSourceModuleAnalysis
     /// Gets all implementation snapshots, including failed or unavailable implementations.
     /// </summary>
     public IReadOnlyList<ShaderSourceImplementationAnalysis> implementations { get; }
+
     /// <summary>
     /// Gets implementation and cross-implementation diagnostics with original source positions.
     /// </summary>
     public IReadOnlyList<ShaderSourceDiagnostic> diagnostics { get; }
+
     /// <summary>
     /// Gets the common interface only when all supplied implementations agree and are valid.
     /// </summary>
     public ShaderSourceFunction? function { get; }
+
     /// <summary>
     /// Gets whether interface analysis succeeded; native compilation is a separate gate.
     /// </summary>
@@ -263,15 +281,21 @@ public ShaderSourceFile ReadInclude(
     string include
 ) {
         if (!m_files.ContainsKey(includingFile))
+        {
             throw new InvalidOperationException("An include must originate from an already captured source.");
+        }
         ShaderSourceFile file = m_resolver.ReadInclude(includingFile, include)
-            ?? throw new InvalidOperationException("The source resolver returned no source snapshot.");
+                                ?? throw new InvalidOperationException("The source resolver returned no source snapshot.");
         ArgumentException.ThrowIfNullOrWhiteSpace(file.assetPath);
         ArgumentNullException.ThrowIfNull(file.text);
         if (m_files.TryGetValue(file.assetPath, out ShaderSourceFile? previous) && previous.text != file.text)
+        {
             throw new InvalidOperationException($"Source '{file.assetPath}' changed during module analysis.");
+        }
         if (m_includes.TryGetValue((includingFile, include), out ShaderSourceInclude? edge) && edge.resolvedPath != file.assetPath)
+        {
             throw new InvalidOperationException($"Include '{include}' changed resolution during module analysis.");
+        }
         m_includes[(includingFile, include)] = new(includingFile, include, file.assetPath);
         m_files[file.assetPath] = file;
         return file;

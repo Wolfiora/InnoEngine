@@ -15,7 +15,8 @@ public static class BgfxToolsBuild
     public static NativeComponentDescriptor componentDescriptor { get; } = new(
         "bgfx-tools",
         BgfxNativeBuild.componentDescriptor.nativeProject,
-        BgfxNativeBuild.componentDescriptor.toolchainProject);
+        BgfxNativeBuild.componentDescriptor.toolchainProject
+    );
 
     /// <summary>
     /// Builds and installs graphics artifacts using explicit platform-owned SDK configuration.

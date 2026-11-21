@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Xunit;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Scene.Layers;
-using Xunit;
 
 namespace Inno.Scene.Tests;
 
@@ -121,6 +121,7 @@ public sealed partial class SceneSerializationTests
         SerializationSnapshot restored = m_serialization.CaptureSnapshot(scene, m_serializationContext, changed);
         Assert.Equal(before.ToArray(), restored.ToArray());
     }
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     private WeakReference CaptureAndRemoveSystem(GameScene scene)
     {

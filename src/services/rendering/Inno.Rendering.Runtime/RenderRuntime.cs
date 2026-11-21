@@ -1,16 +1,16 @@
-using Inno.References;
-using Inno.Runtime.Contracts;
-using Inno.Core.Diagnostics;
-using Inno.Core.Execution;
-using Inno.Core.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Inno.Extensibility.Types;
-using Inno.Rendering;
-using Inno.Input;
+using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
+using Inno.Core.Identity;
 using Inno.Core.Mathematics;
+using Inno.Extensibility.Types;
+using Inno.Input;
+using Inno.References;
+using Inno.Rendering;
 using Inno.Rendering.Assets;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Rendering.Runtime;
 
@@ -20,8 +20,9 @@ namespace Inno.Rendering.Runtime;
 public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewContentCollector
 {
     private const int C_MAX_QUEUED_REQUESTS = 4096;
-    private static readonly RenderPhaseId S_PRESENTATION_BACKGROUND_PHASE = new(
-        "inno.runtime.presentation-background");
+
+    private static readonly RenderPhaseId S_PRESENTATION_BACKGROUND_PHASE = new("inno.runtime.presentation-background");
+
     private static readonly RenderClearColor S_PRESENTATION_BACKGROUND_COLOR = new(0f, 0f, 0f, 1f);
 
     private readonly object m_requestLock = new();
@@ -129,7 +130,9 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
             foreach (IRenderFrameGraphContributor contributor in contributors)
             {
                 if (contributor is null || m_contributors.Contains(contributor))
+                {
                     throw new ArgumentException("Initial contributors must contain unique non-null instances.", nameof(contributors));
+                }
                 m_contributors.Add(contributor);
             }
         }
@@ -140,11 +143,7 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
         m_primaryPresentationViewportProvider = primaryPresentationViewportProvider;
         m_extensions = new RenderExtensionRegistry(types);
         m_graphicsSettings = new GraphicsSettingsState(m_device.capabilities);
-        m_resourceService = new RenderResourceService(
-            m_device,
-            m_diagnostics,
-            targetArtifacts,
-            resourceLimits);
+        m_resourceService = new RenderResourceService(m_device, m_diagnostics, targetArtifacts, resourceLimits);
         m_uploads = new RenderFrameUploadService(m_device, resourceLimits);
         m_compositor = new RenderLayerCompositor(m_device, compositionProgramProvider);
         targets = new RenderTargetStore(device, resourceLimits.targets);
@@ -187,8 +186,10 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
         foreach (RenderExtensionRegistry.ContentSourceEntry entry in m_extensions.extensions.sources.sources)
         {
             if (context.sourceIds is { } sourceIds
-                && !sourceIds.Contains(entry.id, StringComparer.Ordinal))
+                && !sourceIds.Contains(entry.id, StringComparer.Ordinal)
+            ) {
                 continue;
+            }
             try
             {
                 entry.source.Collect(context, sink);
@@ -199,11 +200,14 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
             }
             catch (Exception exception)
             {
-                PublishFrameIssue(new Diagnostic(
-                    "RENDER_VIEW_CONTENT_SOURCE_FAILED",
-                    $"View content source '{entry.id}' was isolated after failure: {exception}",
-                    DiagnosticSeverity.Error,
-                    entry.id));
+                PublishFrameIssue(
+                    new Diagnostic(
+                        "RENDER_VIEW_CONTENT_SOURCE_FAILED",
+                        $"View content source '{entry.id}' was isolated after failure: {exception}",
+                        DiagnosticSeverity.Error,
+                        entry.id
+                    )
+                );
             }
         }
         return sink.items;
@@ -217,11 +221,16 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
     /// <summary>
     /// Gets a detached control-thread snapshot of resource occupancy, high-water marks and rejected admissions.
     /// </summary>
-    public RenderResourceStatistics resourceStatistics => m_resourceService.statistics with
+    public RenderResourceStatistics resourceStatistics
+        => m_resourceService.statistics with
     {
-        uploadPages = m_uploads.pageCount, uploadResidentBytes = m_uploads.residentBytes,
-        uploadPeakBytes = m_uploads.peakResidentBytes, uploadedFrameBytes = m_uploads.frameBytes,
-        rejectedUploads = m_uploads.rejectedCount, targets = targets.count, rejectedTargets = targets.rejectedCount
+        uploadPages = m_uploads.pageCount,
+        uploadResidentBytes = m_uploads.residentBytes,
+        uploadPeakBytes = m_uploads.peakResidentBytes,
+        uploadedFrameBytes = m_uploads.frameBytes,
+        rejectedUploads = m_uploads.rejectedCount,
+        targets = targets.count,
+        rejectedTargets = targets.rejectedCount
     };
 
     /// <summary>
@@ -254,7 +263,9 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_retirement is not null)
+        {
             throw new InvalidOperationException("Rendering retirement has started and cannot accept new work.");
+        }
         m_extensions.EnsureHealthy();
     }
 
@@ -263,5 +274,4 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
     /// owned by this instance.
     /// </summary>
     protected override void OnStop() => ReleaseRendering();
-
 }

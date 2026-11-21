@@ -28,7 +28,9 @@ internal sealed class RenderPipelineGeneration : IDisposable
         RenderPipelineFeature feature
     ) {
         if (feature is IDisposable resource)
+        {
             m_lifetime.Own(resource);
+        }
         m_features.Add(id, feature);
     }
 

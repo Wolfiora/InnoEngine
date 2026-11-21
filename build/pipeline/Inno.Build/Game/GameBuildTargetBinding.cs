@@ -29,7 +29,9 @@ public sealed class GameBuildTargetBinding
         ArgumentNullException.ThrowIfNull(packager);
         ArgumentNullException.ThrowIfNull(compiler);
         if (string.IsNullOrWhiteSpace(packager.id.value) || packager.id != compiler.target)
+        {
             throw new ArgumentException("Packaging and content compilation require the same assigned target.", nameof(compiler));
+        }
         this.packager = packager;
         this.compiler = compiler;
     }

@@ -33,11 +33,15 @@ internal sealed class SceneStructureSnapshot
     internal IReadOnlyDictionary<EngineObject, Guid> CaptureObjectSourceIds()
     {
         if (m_sourceIds is not null && HasCurrentIdentities(m_sourceIds))
+        {
             return m_frozenSourceIds!;
+        }
 
         int count = objects.Count;
         foreach (SceneObjectStructureSnapshot entry in objects)
+        {
             count = checked(count + entry.components.Count);
+        }
         var sourceIds = new Dictionary<EngineObject, Guid>(count, ReferenceEqualityComparer.Instance);
         foreach (SceneObjectStructureSnapshot entry in objects)
         {
@@ -59,8 +63,12 @@ internal sealed class SceneStructureSnapshot
     {
         // Core registry rebinding can replace an identity without changing the structural snapshot.
         foreach ((EngineObject value, Guid persistentId) in sourceIds)
+        {
             if (value.identity.persistentId != persistentId)
+            {
                 return false;
+            }
+        }
         return true;
     }
 }

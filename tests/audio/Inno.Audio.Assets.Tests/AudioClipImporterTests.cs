@@ -1,9 +1,10 @@
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Buffers.Binary;
 using System.IO;
 using System.Reflection;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Diagnostics;
@@ -12,7 +13,6 @@ using Inno.Core.Logging;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
-using Xunit;
 
 namespace Inno.Audio.Assets.Tests;
 
@@ -37,7 +37,9 @@ public sealed class AudioClipImporterTests : IDisposable
         Directory.CreateDirectory(m_assets);
         m_identityScope = m_identities.EnterScope();
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(AudioClipImporterTests).Assembly)        });
+        {
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(AudioClipImporterTests).Assembly)
+        });
         _ = Assembly.Load("Inno.Audio.Assets");
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
@@ -52,7 +54,9 @@ public sealed class AudioClipImporterTests : IDisposable
         m_logs.Dispose();
         m_identityScope.Dispose();
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     [Fact]
@@ -92,11 +96,16 @@ public sealed class AudioClipImporterTests : IDisposable
     private AssetLoader CreateLoader()
         => new(m_types, m_serialization, m_identities, m_diagnostics, m_logs, m_assets, m_library);
 
-    private static AudioClipAsset Load(AssetLoader loader, string path)
-        => Assert.IsType<AudioClipAsset>(loader.Load(AssetPath.Project(path), typeof(AudioClipAsset)));
+    private static AudioClipAsset Load(
+        AssetLoader loader,
+        string path
+    ) => Assert.IsType<AudioClipAsset>(loader.Load(AssetPath.Project(path), typeof(AudioClipAsset)));
 
-    private static void AssertSeparateArtifact(AssetLoader loader, AudioClipAsset asset, byte[] expected)
-    {
+    private static void AssertSeparateArtifact(
+        AssetLoader loader,
+        AudioClipAsset asset,
+        byte[] expected
+    ) {
         Assert.True(loader.TryGetArtifact(asset.identity.persistentId, "runtime", out AssetArtifactInfo? runtime));
         Assert.True(loader.TryGetArtifact(asset.identity.persistentId, "audio-data", out AssetArtifactInfo? data));
         Assert.NotNull(runtime);
@@ -107,7 +116,10 @@ public sealed class AudioClipImporterTests : IDisposable
         Assert.Equal(expected, encoded.ReadAllBytes());
     }
 
-    private void Write(string path, byte[] bytes) => File.WriteAllBytes(Path.Combine(m_assets, path), bytes);
+    private void Write(
+        string path,
+        byte[] bytes
+    ) => File.WriteAllBytes(Path.Combine(m_assets, path), bytes);
 
     private static byte[] CreateWav()
     {

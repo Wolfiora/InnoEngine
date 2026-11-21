@@ -1,14 +1,16 @@
-using System.Linq;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
-using Inno.Editor.Interactions;
 using Inno.Editor.ImGui.ImGuiWidget;
+using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Renders immutable editor menu models through ImGui.
 /// </summary>
@@ -16,18 +18,24 @@ public sealed unsafe class EditorMenuRenderer
 {
     private readonly EditorUiSession m_session;
     private readonly Dictionary<(string Owner, uint Popup), string> m_contextSearches = [];
+
     internal EditorMenuRenderer(EditorUiSession session) => m_session = session;
+
     internal void RetireOwner(string owner)
     {
         foreach (var key in m_contextSearches.Keys.Where(value => value.Owner == owner).ToArray())
+        {
             m_contextSearches.Remove(key);
+        }
     }
 
     internal void Clear() => m_contextSearches.Clear();
+
     private readonly record struct MenuSection(
         EditorInteraction interaction,
         IReadOnlyList<EditorMenuItem> items
     );
+
     /// <summary>
     /// Draws a resolved right-click menu for the most recently submitted ImGui item.
     /// </summary>
@@ -55,9 +63,13 @@ public sealed unsafe class EditorMenuRenderer
 
         EditorMenuModel menu = interaction.BuildMenu();
         if (menu.items.Count == 0)
+        {
             return false;
+        }
         if (!EditorUI.current.widgets.BeginContextMenu(id))
+        {
             return false;
+        }
         try
         {
             DrawContextMenuContents(popupId, [new MenuSection(interaction, menu.items)]);
@@ -102,12 +114,19 @@ public sealed unsafe class EditorMenuRenderer
         EditorMenuModel scopeMenu = scopeInteraction.BuildMenu();
         EditorMenuModel itemMenu = itemInteraction.BuildMenu();
         if (scopeMenu.items.Count == 0 && itemMenu.items.Count == 0)
+        {
             return false;
+        }
         if (!EditorUI.current.widgets.BeginContextMenu(id))
+        {
             return false;
+        }
         try
         {
-            DrawContextMenuContents(popupId, [new MenuSection(scopeInteraction, scopeMenu.items), new MenuSection(itemInteraction, itemMenu.items)]);
+            DrawContextMenuContents(
+                popupId,
+                [new MenuSection(scopeInteraction, scopeMenu.items), new MenuSection(itemInteraction, itemMenu.items)]
+            );
         }
         finally
         {
@@ -144,9 +163,13 @@ public sealed unsafe class EditorMenuRenderer
 
         EditorMenuModel menu = interaction.BuildMenu();
         if (menu.items.Count == 0)
+        {
             return false;
+        }
         if (!EditorUI.current.widgets.BeginWindowContextMenu(id))
+        {
             return false;
+        }
         try
         {
             DrawContextMenuContents(popupId, [new MenuSection(interaction, menu.items)]);
@@ -163,12 +186,16 @@ public sealed unsafe class EditorMenuRenderer
         uint popupId,
         IReadOnlyList<MenuSection> sections
     ) {
-        string search = NativeImGui.IsWindowAppearing() ? string.Empty : m_contextSearches.GetValueOrDefault((m_session.owner, popupId), string.Empty);
+        string search = NativeImGui.IsWindowAppearing()
+                        ? string.Empty
+                        : m_contextSearches.GetValueOrDefault((m_session.owner, popupId), string.Empty);
         NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), EditorUI.current.widgets.style.menuSearchFramePadding);
         try
         {
             if (NativeImGui.IsWindowAppearing())
+            {
                 NativeImGui.SetKeyboardFocusHere();
+            }
             _ = EditorUI.current.widgets.SearchInput($"context-menu-{popupId}", "Search commands…", ref search, width: -1f);
         }
         finally
@@ -183,13 +210,19 @@ public sealed unsafe class EditorMenuRenderer
         foreach (MenuSection section in sections)
         {
             if (section.items.Count == 0)
+            {
                 continue;
+            }
             if (!searching && drewSection)
+            {
                 NativeImGui.Separator();
+            }
             if (searching)
             {
                 if (!DrawSearchItems(section.interaction, section.items, search))
+                {
                     continue;
+                }
                 NativeImGui.CloseCurrentPopup();
                 return;
             }
@@ -199,13 +232,17 @@ public sealed unsafe class EditorMenuRenderer
         }
     }
 
-    private bool ShouldResolveItemContextMenu(string id) => NativeImGui.IsPopupOpen(id)
-        || NativeImGui.IsItemHovered()
-        && NativeImGui.IsMouseReleased((int)(Inno.Native.ImGui.ImGuiMouseButton.Right));
-    private bool ShouldResolveWindowContextMenu(string id) => NativeImGui.IsPopupOpen(id)
-        || NativeImGui.IsWindowHovered()
-        && !NativeImGui.IsAnyItemHovered()
-        && NativeImGui.IsMouseReleased((int)(Inno.Native.ImGui.ImGuiMouseButton.Right));
+    private bool ShouldResolveItemContextMenu(string id)
+        => NativeImGui.IsPopupOpen(id)
+           || NativeImGui.IsItemHovered()
+              && NativeImGui.IsMouseReleased((int)(Inno.Native.ImGui.ImGuiMouseButton.Right));
+
+    private bool ShouldResolveWindowContextMenu(string id)
+        => NativeImGui.IsPopupOpen(id)
+           || NativeImGui.IsWindowHovered()
+              && !NativeImGui.IsAnyItemHovered()
+              && NativeImGui.IsMouseReleased((int)(Inno.Native.ImGui.ImGuiMouseButton.Right));
+
     /// <summary>
     /// Draws the complete editor main menu bar for the supplied menu context.
     /// </summary>
@@ -216,7 +253,9 @@ public sealed unsafe class EditorMenuRenderer
     {
         m_session.EnsureDrawing();
         if (!NativeImGui.BeginMainMenuBar())
+        {
             return;
+        }
         try
         {
             DrawItems(interaction, interaction.BuildMenu().items);
@@ -233,7 +272,9 @@ public sealed unsafe class EditorMenuRenderer
         IReadOnlyList<EditorToolbarItem> items
     ) {
         if (items.Count == 0)
+        {
             return;
+        }
         ImGuiStyle* style = NativeImGui.Raw.GetStyle();
         float extent = NativeImGui.GetFrameHeight();
         float width = extent * items.Count + style->ItemSpacing.X * (items.Count - 1);
@@ -243,7 +284,9 @@ public sealed unsafe class EditorMenuRenderer
         for (int i = 0; i < items.Count; i++)
         {
             if (i > 0)
+            {
                 NativeImGui.SameLine(0f, style->ItemSpacing.X);
+            }
             DrawToolbarItem(interaction, items[i], new Vector2(extent, extent));
         }
     }
@@ -255,13 +298,17 @@ public sealed unsafe class EditorMenuRenderer
     ) {
         bool disabled = !item.status.isEnabled;
         if (disabled)
+        {
             NativeImGui.BeginDisabled(true);
+        }
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
         bool pressed = NativeImGui.InvisibleButton($"##editor_toolbar_{item.actionId}", size);
         bool hovered = NativeImGui.IsItemHovered();
         bool active = NativeImGui.IsItemActive();
         if (disabled)
+        {
             NativeImGui.EndDisabled();
+        }
         if (item.status.isChecked || hovered || active)
         {
             Vector4 background = active ? EditorPalette.accentActive : hovered ? EditorPalette.accentHovered : EditorPalette.accent;
@@ -279,16 +326,21 @@ public sealed unsafe class EditorMenuRenderer
         EditorUI.current.widgets.AddGlyphCentered(NativeImGui.GetFontSize(), GetToolbarIcon(item.icon), minimum + size * 0.5f, color);
         if (hovered && EditorUI.current.widgets.BeginMenuTooltip())
         {
-            string tooltip = interaction.TryGetShortcut(item.actionId, out HotKeyGesture shortcut) ? $"{item.tooltip} ({shortcut})" : item.tooltip;
+            string tooltip = interaction.TryGetShortcut(item.actionId, out HotKeyGesture shortcut)
+                             ? $"{item.tooltip} ({shortcut})"
+                             : item.tooltip;
             NativeImGui.TextUnformatted(tooltip);
             EditorUI.current.widgets.EndMenuTooltip();
         }
 
         if (pressed && item.status.isEnabled)
+        {
             interaction.Enqueue(item.actionId);
+        }
     }
 
-    private string GetToolbarIcon(EditorToolbarIcon icon) => icon switch
+    private string GetToolbarIcon(EditorToolbarIcon icon)
+        => icon switch
     {
         EditorToolbarIcon.Play => ImGuiIcon.Play,
         EditorToolbarIcon.Stop => ImGuiIcon.Stop,
@@ -297,6 +349,7 @@ public sealed unsafe class EditorMenuRenderer
         EditorToolbarIcon.Edit => ImGuiIcon.Pen,
         _ => string.Empty
     };
+
     /// <summary>
     /// Recursively draws resolved menu nodes into the currently open popup or menu.
     /// </summary>
@@ -319,11 +372,15 @@ public sealed unsafe class EditorMenuRenderer
             // visible item of a popup or submenu. Enforcing that here keeps every menu surface
             // consistent even when a type-specific query hides the commands that preceded it.
             if (i > 0 && item.separatorBefore)
+            {
                 NativeImGui.Separator();
+            }
             if (item.children.Count > 0)
             {
                 if (!NativeImGui.BeginMenu(item.label, item.status.isEnabled))
+                {
                     continue;
+                }
                 try
                 {
                     DrawItems(interaction, item.children);
@@ -384,7 +441,9 @@ public sealed unsafe class EditorMenuRenderer
             if (item.children.Count > 0)
             {
                 if (DrawSearchItems(interaction, item.children, search, path))
+                {
                     return true;
+                }
                 continue;
             }
 
@@ -417,8 +476,12 @@ public sealed unsafe class EditorMenuRenderer
 
     private void DrawUnavailableReason(EditorActionState state)
     {
-        if (state.isEnabled || string.IsNullOrWhiteSpace(state.unavailableReason) || !NativeImGui.IsItemHovered((int)ImGuiHoveredFlags.AllowWhenDisabled))
+        if (state.isEnabled
+            || string.IsNullOrWhiteSpace(state.unavailableReason)
+            || !NativeImGui.IsItemHovered((int)ImGuiHoveredFlags.AllowWhenDisabled)
+        ) {
             return;
+        }
         NativeImGui.BeginTooltip();
         try
         {

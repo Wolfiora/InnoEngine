@@ -1,8 +1,8 @@
 using System;
 using System.Numerics;
+using Inno.Native.Sdl3;
 
 using ImGuiNative = Inno.Native.ImGui.ImGui;
-using Inno.Native.Sdl3;
 
 namespace Inno.Adapter.Presentation.ImGui;
 

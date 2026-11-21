@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported button flags choices at the Editor presentation boundary.
 /// </summary>
@@ -30,5 +31,5 @@ public enum ImGuiButtonFlags : int
     /// <summary>
     /// InvisibleButton(): do not disable navigation/tabbing. Otherwise disabled by default.
     /// </summary>
-    EnableNav = (int)Inno.Native.ImGui.ImGuiButtonFlags.EnableNav,
+    EnableNav = (int)Inno.Native.ImGui.ImGuiButtonFlags.EnableNav
 }

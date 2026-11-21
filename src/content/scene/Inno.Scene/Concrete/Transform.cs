@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-
 using Inno.Core.Mathematics;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 
 namespace Inno.Scene.Components;
 
@@ -222,7 +221,9 @@ public sealed class Transform : GameComponent
         for (Transform? current = m_parent; current is not null; current = current.m_parent)
         {
             if (ReferenceEquals(current, ancestor))
+            {
                 return true;
+            }
         }
         return false;
     }
@@ -232,7 +233,9 @@ public sealed class Transform : GameComponent
     internal void AddChildDirect(Transform child)
     {
         if (!m_children.Contains(child))
+        {
             m_children.Add(child);
+        }
     }
 
     internal void RemoveChildDirect(Transform child) => m_children.Remove(child);
@@ -271,7 +274,8 @@ public sealed class Transform : GameComponent
             m_localScale = new Vector3(
                 SafeDivide(scale.x, parentScale.x),
                 SafeDivide(scale.y, parentScale.y),
-                SafeDivide(scale.z, parentScale.z));
+                SafeDivide(scale.z, parentScale.z)
+            );
         }
 
         RecomputeWorldFromLocal();
@@ -291,53 +295,57 @@ public sealed class Transform : GameComponent
             m_worldScale = new Vector3(
                 m_localScale.x * m_parent.m_worldScale.x,
                 m_localScale.y * m_parent.m_worldScale.y,
-                m_localScale.z * m_parent.m_worldScale.z);
+                m_localScale.z * m_parent.m_worldScale.z
+            );
         }
 
         RecomputeMatrixFromLocal();
-        m_worldPosition = new Vector3(
-            m_localToWorldMatrix.m14,
-            m_localToWorldMatrix.m24,
-            m_localToWorldMatrix.m34);
+        m_worldPosition = new Vector3(m_localToWorldMatrix.m14, m_localToWorldMatrix.m24, m_localToWorldMatrix.m34);
 
         if (notifyChildren)
+        {
             NotifyChildrenWorldChanged();
+        }
     }
 
     private void AdvanceCaptureRevision()
     {
         if (m_serializationRevision is { } revision)
+        {
             m_serializationRevision = revision == ulong.MaxValue ? null : revision + 1;
+        }
     }
 
     private void RecomputeMatrixFromLocal()
     {
         Matrix localMatrix = Matrix.CreateTranslation(m_localPosition)
-            * Matrix.CreateFromQuaternion(m_localRotation)
-            * Matrix.CreateScale(m_localScale);
+                             * Matrix.CreateFromQuaternion(m_localRotation)
+                             * Matrix.CreateScale(m_localScale);
         m_localToWorldMatrix = m_parent is null
-            ? localMatrix
-            : m_parent.m_localToWorldMatrix * localMatrix;
+                               ? localMatrix
+                               : m_parent.m_localToWorldMatrix * localMatrix;
     }
 
     private void NotifyChildrenWorldChanged()
     {
         for (int i = 0; i < m_children.Count; i++)
+        {
             m_children[i].RecomputeWorldFromLocal();
+        }
     }
 
     private static float SafeDivide(
         float numerator,
         float denominator
-    )
-        => MathHelper.AlmostEquals(denominator, 0f) ? 0f : numerator / denominator;
+    ) => MathHelper.AlmostEquals(denominator, 0f) ? 0f : numerator / denominator;
 
     private static void EnsureInvertible(Matrix matrix)
     {
         if (MathF.Abs(Matrix.Determinant(matrix)) < MathHelper.C_TOLERANCE)
         {
             throw new InvalidOperationException(
-                "A transform hierarchy with zero scale cannot be converted from world space.");
+                "A transform hierarchy with zero scale cannot be converted from world space."
+            );
         }
     }
 }

@@ -65,30 +65,37 @@ public sealed class EngineSessionComposition
     /// Gets the isolated session selected by the product.
     /// </summary>
     public RuntimeSession session { get; }
+
     /// <summary>
     /// Gets the backend-neutral adapter factory catalog.
     /// </summary>
     public IAdapterCatalog adapters { get; }
+
     /// <summary>
     /// Gets portable backend selection values.
     /// </summary>
     public AdapterSelection selection { get; }
+
     /// <summary>
     /// Gets the host input source shared by isolated session readers.
     /// </summary>
     public IInputEventSource inputSource { get; }
+
     /// <summary>
     /// Gets immutable encoded content artifacts from the selected host environment.
     /// </summary>
     public IAssetArtifactLookup artifacts { get; }
+
     /// <summary>
     /// Gets the control-thread source of portable audio defaults.
     /// </summary>
     public Func<AudioProjectSettings> audioSettings { get; }
+
     /// <summary>
     /// Gets the factory transferring storage ownership to this session.
     /// </summary>
     public Func<IApplicationStorage> createStorage { get; }
+
     /// <summary>
     /// Gets an optional product-specific audio owner factory.
     /// </summary>

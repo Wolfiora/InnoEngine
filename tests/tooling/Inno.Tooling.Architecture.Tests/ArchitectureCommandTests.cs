@@ -22,9 +22,11 @@ public sealed class ArchitectureCommandTests
             File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), "Microsoft Visual Studio Solution File, Format Version 12.00");
             string project = Path.Combine(root, projectLocation);
             Directory.CreateDirectory(project);
-            File.WriteAllText(Path.Combine(project, Path.GetFileName(project) + ".csproj"),
+            File.WriteAllText(
+                Path.Combine(project, Path.GetFileName(project) + ".csproj"),
                 "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>"
-                + "<ItemGroup><PackageReference Include=\"BGCS.Runtime\" Version=\"[4.1.0]\" /></ItemGroup></Project>");
+                + "<ItemGroup><PackageReference Include=\"BGCS.Runtime\" Version=\"[4.1.0]\" /></ItemGroup></Project>"
+            );
             (_, string output) = ArchitectureCommandFixture.Run(root);
             Assert.Equal(rejected, output.Contains("the interop runtime dependency belongs", StringComparison.Ordinal));
             Assert.DoesNotContain("does not resolve to a repository project", output, StringComparison.Ordinal);
@@ -32,7 +34,9 @@ public sealed class ArchitectureCommandTests
         finally
         {
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
 
@@ -50,23 +54,27 @@ public sealed class ArchitectureCommandTests
             Directory.CreateDirectory(root);
             File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), "Microsoft Visual Studio Solution File, Format Version 12.00");
             string relative = scenario == "target"
-                ? "platforms/WindowsX64/player/Inno.Player.WindowsX64"
-                : "src/foundation/core/Inno.Core.Probe";
+                              ? "platforms/WindowsX64/player/Inno.Player.WindowsX64"
+                              : "src/foundation/core/Inno.Core.Probe";
             string project = Path.Combine(root, relative);
             Directory.CreateDirectory(project);
             string properties = scenario == "target"
                 ? "<OutputType>Exe</OutputType><InnoProductId>player</InnoProductId><InnoProductTarget>windows-x64</InnoProductTarget><InnoNativeTarget>windows-x64</InnoNativeTarget>"
                 : string.Empty;
-            File.WriteAllText(Path.Combine(project, Path.GetFileName(project) + ".csproj"),
+            File.WriteAllText(
+                Path.Combine(project, Path.GetFileName(project) + ".csproj"),
                 "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework>"
-                + properties + "</PropertyGroup></Project>");
+                + properties + "</PropertyGroup></Project>"
+            );
             string imported;
             if (scenario == "reference")
             {
                 string upper = Path.Combine(root, "platforms/MacOSArm64/runtime/Probe");
                 Directory.CreateDirectory(upper);
-                File.WriteAllText(Path.Combine(upper, "Probe.csproj"),
-                    "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>");
+                File.WriteAllText(
+                    Path.Combine(upper, "Probe.csproj"),
+                    "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>"
+                );
                 imported = "<ItemGroup Condition=\"'$(MSBuildProjectName)' == 'Inno.Core.Probe'\"><ProjectReference Include=\"$(MSBuildThisFileDirectory)platforms/MacOSArm64/runtime/Probe/Probe.csproj\" /></ItemGroup>";
             }
             else if (scenario == "source")
@@ -77,11 +85,15 @@ public sealed class ArchitectureCommandTests
                 imported = "<ItemGroup><Compile Include=\"$(MSBuildThisFileDirectory)src/content/Probe/Probe.cs\" Link=\"ImportedSource.cs\" /></ItemGroup>";
             }
             else
+            {
                 imported = "<PropertyGroup><InnoNativeTarget>macos-arm64</InnoNativeTarget></PropertyGroup>";
+            }
             File.WriteAllText(Path.Combine(root, "Directory.Build.targets"), "<Project>" + imported + "</Project>");
             string dotnet = Path.GetFullPath("../../../dotnet", RuntimeEnvironment.GetRuntimeDirectory());
             if (OperatingSystem.IsWindows())
+            {
                 dotnet += ".exe";
+            }
             string graph = Path.Combine(root, "evaluated.json");
             (int code, string output) = ArchitectureCommandFixture.Run(root, "--dotnet", dotnet, "--project-graph", graph);
             Assert.Equal(1, code);
@@ -93,7 +105,9 @@ public sealed class ArchitectureCommandTests
         finally
         {
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
 
@@ -110,28 +124,42 @@ public sealed class ArchitectureCommandTests
         try
         {
             foreach (string folder in new[] { "src", "native", "build", "tools", "tests" })
+            {
                 Directory.CreateDirectory(Path.Combine(root, folder));
+            }
             File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), "Microsoft Visual Studio Solution File, Format Version 12.00");
             File.WriteAllText(Path.Combine(root, "src", "Probe.cs"), source);
 
             (_, string output) = ArchitectureCommandFixture.Run(root);
 
-            Assert.Equal(rejected, output.Contains("place each parameter", StringComparison.Ordinal));
+            Assert.Equal(rejected, output.Contains("P-01: Expand the parameter list", StringComparison.Ordinal));
         }
         finally
         {
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
 
     [Theory]
-    [InlineData("Directory.Build.props", "<Project><PropertyGroup><ImplicitUsings>true</ImplicitUsings></PropertyGroup></Project>", "implicit usings", true)]
+    [InlineData(
+        "Directory.Build.props",
+        "<Project><PropertyGroup><ImplicitUsings>true</ImplicitUsings></PropertyGroup></Project>",
+        "implicit usings",
+        true
+    )]
     [InlineData("build/Probe.targets", "<Project><ItemGroup><Using Include=\"System\" /></ItemGroup></Project>", "MSBuild Using", true)]
     [InlineData("tests/Probe.cs", "global using System;", "global using", true)]
     [InlineData("build/Probe.cs.txt", "global using System;", "global using", true)]
-    [InlineData("tests/Probe.cs", "using System; // global using is prohibited\ninternal class Probe { }", "global using", false)]
-    [InlineData("tests/Probe.cs", "internal class Probe { const string Message = \"global using System;\"; }", "global using", false)]
+    [InlineData("tests/Probe.cs", "using System; // global using is prohibited\n\ninternal class Probe;\n", "global using", false)]
+    [InlineData(
+        "tests/Probe.cs",
+        "internal class Probe\n{\n    const string Message = \"global using System;\";\n}\n",
+        "global using",
+        false
+    )]
     public void CliRejectsCompilationWideImportsAcrossSourceAndBuildInputs(
         string relative,
         string content,
@@ -152,27 +180,99 @@ public sealed class ArchitectureCommandTests
         finally
         {
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
 
     [Theory]
     [InlineData("src/services/audio/Probe.cs", "global using System;", "global using", true)]
-    [InlineData("src/composition/player/Inno.Player.Runtime/Probe.cs", "internal class Probe { private BgfxDevice device; }", "backend-neutral", true)]
-    [InlineData("src/content/assets/Probe.cs", "internal class Probe { void Read() { context.With<IAssetReferenceResolver>(resolver); } }", "owner-complete", true)]
+    [InlineData(
+        "src/composition/player/Inno.Player.Runtime/Probe.cs",
+        "internal class Probe { private BgfxDevice device; }",
+        "backend-neutral",
+        true
+    )]
+    [InlineData(
+        "src/content/assets/Probe.cs",
+        "internal class Probe { void Read() { context.With<IAssetReferenceResolver>(resolver); } }",
+        "owner-complete",
+        true
+    )]
     [InlineData("src/services/audio/Probe.cs", "public class Probe { public MaEngine engine; }", "native implementation", true)]
-    [InlineData("src/services/audio/Probe.cs", "internal class Probe { void Release() { OnCleanupFailed(phase, failure); } }", "diagnostic-only", true)]
-    [InlineData("src/composition/editor/panels/Probe.cs", "using Ui = Inno.Editor.ImGui.ImGui; internal class Probe { void Draw() { for (int i = 0; i < 2; i++) { Ui.PushId(i); DrawRow(); if (i == 1) break; Ui.PopId(); } } }", "presentation loop ID scopes", true)]
-    [InlineData("src/composition/editor/panels/Probe.cs", "using Ui = Inno.Editor.ImGui.ImGui; internal class Probe { void Draw() { for (int i = 0; i < 2; i++) { Ui.PushId(i); try { DrawRow(); if (i == 1) break; } finally { Ui.PopId(); } } } }", "presentation loop ID scopes", false)]
-    [InlineData("src/composition/editor/panels/Probe.cs", "using Ui = Inno.Editor.ImGui.ImGui; using Other = Inno.Editor.ImGui.ImGui; internal class Probe { }", "multiple presentation aliases", true)]
-    [InlineData("src/composition/editor/panels/Probe.cs", "using Ui = Inno.Editor.ImGui.ImGui; using NativeUi = Inno.Native.ImGui.ImGui; internal class Probe { }", "multiple presentation aliases", false)]
-    [InlineData("src/composition/editor/panels/Probe.cs", "/// <summary>\n/// Removed identity.\n/// </summary>\n/// <summary>\n/// Actual section.\n/// </summary>\ninternal class Probe { }", "multiple XML summary elements", true)]
-    [InlineData("src/composition/editor/panels/Probe.cs", "/// <summary>\n/// Actual section.\n/// </summary>\ninternal class Probe { }", "multiple XML summary elements", false)]
-    [InlineData("src/services/Probe.cs", "using Ui = Inno.Editor.ImGui.ImGui; internal class Probe { void Draw() { for (int i = 0; i < 2; i++) { Ui.PushId(i); DrawRow(); Ui.PopId(); } } }", "presentation loop ID scopes", false)]
-    [InlineData("src/composition/editor/panels/Probe.cs", "internal class Probe { void Draw() { for (int i = 0; i < 2; i++) { collector.PushId(i); DrawRow(); collector.PopId(); } } }", "presentation loop ID scopes", false)]
-    [InlineData("src/services/audio/Probe.cs", "internal class Probe { void Release() { try { } catch (RetirementPendingException) { throw; } } }", "wrapped pending ownership", true)]
-    [InlineData("src/services/audio/Probe.cs", "internal class Probe { void Release() { try { } catch (Inno.Core.Execution.RetirementTimeoutException failure) { throw; } } }", "wrapped pending ownership", true)]
-    [InlineData("src/services/audio/Probe.cs", "internal class Probe { void Release() { try { } catch (Exception error) when (RetirementPendingException.Find(error) is not null) { throw; } } }", "wrapped pending ownership", false)]
+    [InlineData(
+        "src/services/audio/Probe.cs",
+        "internal class Probe { void Release() { OnCleanupFailed(phase, failure); } }",
+        "diagnostic-only",
+        true
+    )]
+    [InlineData(
+        "src/composition/editor/panels/Probe.cs",
+        "using Ui = Inno.Editor.ImGui.ImGui; internal class Probe { void Draw() { for (int i = 0; i < 2; i++) { Ui.PushId(i); DrawRow(); if (i == 1) break; Ui.PopId(); } } }",
+        "presentation loop ID scopes",
+        true
+    )]
+    [InlineData(
+        "src/composition/editor/panels/Probe.cs",
+        "using Ui = Inno.Editor.ImGui.ImGui;\n\ninternal class Probe\n{\n    void Draw()\n    {\n        for (int i = 0; i < 2; i++)\n        {\n            Ui.PushId(i);\n            try\n            {\n                DrawRow();\n                if (i == 1) break;\n            }\n            finally\n            {\n                Ui.PopId();\n            }\n        }\n    }\n}\n",
+        "presentation loop ID scopes",
+        false
+    )]
+    [InlineData(
+        "src/composition/editor/panels/Probe.cs",
+        "using Ui = Inno.Editor.ImGui.ImGui; using Other = Inno.Editor.ImGui.ImGui; internal class Probe { }",
+        "multiple presentation aliases",
+        true
+    )]
+    [InlineData(
+        "src/composition/editor/panels/Probe.cs",
+        "using NativeUi = Inno.Native.ImGui.ImGui;\nusing Ui = Inno.Editor.ImGui.ImGui;\n\ninternal class Probe;\n",
+        "multiple presentation aliases",
+        false
+    )]
+    [InlineData(
+        "src/composition/editor/panels/Probe.cs",
+        "/// <summary>\n/// Removed identity.\n/// </summary>\n/// <summary>\n/// Actual section.\n/// </summary>\ninternal class Probe { }",
+        "multiple XML summary elements",
+        true
+    )]
+    [InlineData(
+        "src/composition/editor/panels/Probe.cs",
+        "/// <summary>\n/// Actual section.\n/// </summary>\ninternal class Probe;\n",
+        "multiple XML summary elements",
+        false
+    )]
+    [InlineData(
+        "src/services/Probe.cs",
+        "using Ui = Inno.Editor.ImGui.ImGui;\n\ninternal class Probe\n{\n    void Draw()\n    {\n        for (int i = 0; i < 2; i++)\n        {\n            Ui.PushId(i);\n            DrawRow();\n            Ui.PopId();\n        }\n    }\n}\n",
+        "presentation loop ID scopes",
+        false
+    )]
+    [InlineData(
+        "src/composition/editor/panels/Probe.cs",
+        "internal class Probe\n{\n    void Draw()\n    {\n        for (int i = 0; i < 2; i++)\n        {\n            collector.PushId(i);\n            DrawRow();\n            collector.PopId();\n        }\n    }\n}\n",
+        "presentation loop ID scopes",
+        false
+    )]
+    [InlineData(
+        "src/services/audio/Probe.cs",
+        "internal class Probe { void Release() { try { } catch (RetirementPendingException) { throw; } } }",
+        "wrapped pending ownership",
+        true
+    )]
+    [InlineData(
+        "src/services/audio/Probe.cs",
+        "internal class Probe { void Release() { try { } catch (Inno.Core.Execution.RetirementTimeoutException failure) { throw; } } }",
+        "wrapped pending ownership",
+        true
+    )]
+    [InlineData(
+        "src/services/audio/Probe.cs",
+        "internal class Probe\n{\n    void Release()\n    {\n        try\n        {\n            Run();\n        }\n        catch (Exception error) when (RetirementPendingException.Find(error) is not null)\n        {\n            throw;\n        }\n    }\n}\n",
+        "wrapped pending ownership",
+        false
+    )]
     public void CliValidatesSourceContracts(
         string relative,
         string source,
@@ -183,7 +283,9 @@ public sealed class ArchitectureCommandTests
         try
         {
             foreach (string folder in new[] { "src", "native", "build", "tools", "tests" })
+            {
                 Directory.CreateDirectory(Path.Combine(root, folder));
+            }
             File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), """
                 Microsoft Visual Studio Solution File, Format Version 12.00
                 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{BBD55508-6095-4D53-B0E4-59B04BFB9376}"
@@ -204,7 +306,9 @@ public sealed class ArchitectureCommandTests
             (int code, string output) = ArchitectureCommandFixture.Run(root);
             Assert.Equal(1, code);
             if (rejected)
+            {
                 Assert.Contains(expected, output, StringComparison.OrdinalIgnoreCase);
+            }
             else
             {
                 Assert.DoesNotContain(expected, output, StringComparison.OrdinalIgnoreCase);
@@ -214,7 +318,9 @@ public sealed class ArchitectureCommandTests
         finally
         {
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
 
@@ -236,7 +342,9 @@ public sealed class ArchitectureCommandTests
         try
         {
             foreach (string folder in new[] { "src", "native", "build", "tools", "tests" })
+            {
                 Directory.CreateDirectory(Path.Combine(root, folder));
+            }
             File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), """
                 Microsoft Visual Studio Solution File, Format Version 12.00
                 Global
@@ -244,11 +352,13 @@ public sealed class ArchitectureCommandTests
                 """);
             string bindings = Path.Combine(root, "backends", "Probe", "native", "Inno.Native.Probe", "Bindings");
             Directory.CreateDirectory(bindings);
-            File.WriteAllText(Path.Combine(Path.GetDirectoryName(bindings)!, "Inno.Native.Probe.csproj"),
+            File.WriteAllText(
+                Path.Combine(Path.GetDirectoryName(bindings)!, "Inno.Native.Probe.csproj"),
                 "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework>"
                 + "<BindGenGeneratedBindings>true</BindGenGeneratedBindings></PropertyGroup>"
                 + (scenario == "missing-import" ? string.Empty : "<Import Project=\"Bindings/bindings.props\" />")
-                + "</Project>");
+                + "</Project>"
+            );
             File.WriteAllText(Path.Combine(bindings, "bindgen.json"), "{}");
             string definition = """
                 <Project>
@@ -262,13 +372,23 @@ public sealed class ArchitectureCommandTests
             {
                 "escaped-input" => definition.Replace("bindgen.json", "../outside.json", StringComparison.Ordinal),
                 "missing-input" => definition.Replace("bindgen.json", "missing.json", StringComparison.Ordinal),
-                "unknown-property" => definition.Replace("</PropertyGroup>", "<InnoBindingBridgeConfig>bridge.json</InnoBindingBridgeConfig></PropertyGroup>", StringComparison.Ordinal),
-                "conditional" => definition.Replace("<PropertyGroup>", "<PropertyGroup Condition=\"'$(Target)' != ''\">", StringComparison.Ordinal),
+                "unknown-property" => definition.Replace(
+                    "</PropertyGroup>",
+                    "<InnoBindingBridgeConfig>bridge.json</InnoBindingBridgeConfig></PropertyGroup>",
+                    StringComparison.Ordinal
+                ),
+                "conditional" => definition.Replace(
+                    "<PropertyGroup>",
+                    "<PropertyGroup Condition=\"'$(Target)' != ''\">",
+                    StringComparison.Ordinal
+                ),
                 "platform-table" => definition.Replace("</Project>", "<ItemGroup /></Project>", StringComparison.Ordinal),
                 _ => definition
             };
             if (scenario != "missing-definition")
+            {
                 File.WriteAllText(Path.Combine(bindings, "bindings.props"), definition);
+            }
 
             (int code, string output) = ArchitectureCommandFixture.Run(root);
 
@@ -278,8 +398,9 @@ public sealed class ArchitectureCommandTests
         finally
         {
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
-
 }

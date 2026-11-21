@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets.Pipeline;
 using Inno.Core.Serialization;
 
@@ -43,7 +42,8 @@ public sealed partial class AnimationClipImporter : AssetImporter<AnimationClipA
     ) {
         ArgumentNullException.ThrowIfNull(context);
         AnimationClipSource source = context.serialization.Deserialize<AnimationClipSource>(
-            context.sourceBytes.ToArray());
+            context.sourceBytes.ToArray()
+        );
         var clip = new AnimationClipAsset
         {
             duration = source.duration,
@@ -52,10 +52,7 @@ public sealed partial class AnimationClipImporter : AssetImporter<AnimationClipA
         };
         clip.Validate();
         output.SetAsset(clip);
-        await output.WriteArtifactAsync(
-            "runtime",
-            context.sourceBytes,
-            cancellationToken).ConfigureAwait(false);
+        await output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

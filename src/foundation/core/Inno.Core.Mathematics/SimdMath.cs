@@ -37,9 +37,9 @@ internal static class SimdMath
         }
 
         return a.GetElement(0) * b.GetElement(0)
-            + a.GetElement(1) * b.GetElement(1)
-            + a.GetElement(2) * b.GetElement(2)
-            + a.GetElement(3) * b.GetElement(3);
+               + a.GetElement(1) * b.GetElement(1)
+               + a.GetElement(2) * b.GetElement(2)
+               + a.GetElement(3) * b.GetElement(3);
     }
 
     /// <summary>

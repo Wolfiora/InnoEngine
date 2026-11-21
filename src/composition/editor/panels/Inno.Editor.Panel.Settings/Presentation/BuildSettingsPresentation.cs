@@ -1,12 +1,14 @@
-using Inno.Editor.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
 using Inno.Build;
 using Inno.Build.Managed;
+using Inno.Editor.ImGui;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Settings;
+
 internal enum BuildSettingsKey
 {
     GameProductName,
@@ -25,6 +27,7 @@ internal enum BuildSettingsKey
 internal sealed class BuildSettingsField
 {
     private const int C_TEXT_CAPACITY = 4096;
+
     internal BuildSettingsField(
         BuildSettingsKey key,
         string path,
@@ -52,7 +55,10 @@ internal sealed class BuildSettingsField
     ) => key switch
     {
         BuildSettingsKey.GameProductName => DrawTextValue(settings.gameProductName, value => settings.gameProductName = value),
-        BuildSettingsKey.GamePersistentDataPath => DrawTextValue(settings.gamePersistentDataPath, value => settings.gamePersistentDataPath = value),
+        BuildSettingsKey.GamePersistentDataPath => DrawTextValue(
+            settings.gamePersistentDataPath,
+            value => settings.gamePersistentDataPath = value
+        ),
         BuildSettingsKey.GameStartupScene => DrawTextValue(settings.gameStartupScene, value => settings.gameStartupScene = value),
         BuildSettingsKey.GameWindowWidth => DrawPositiveInt(settings.gameWindowWidth, value => settings.gameWindowWidth = value),
         BuildSettingsKey.GameWindowHeight => DrawPositiveInt(settings.gameWindowHeight, value => settings.gameWindowHeight = value),
@@ -62,7 +68,9 @@ internal sealed class BuildSettingsField
         BuildSettingsKey.PluginDisplayName => DrawTextValue(settings.pluginDisplayName, value => settings.pluginDisplayName = value),
         BuildSettingsKey.PluginOutputPath => DrawTextValue(settings.pluginOutputPath, value => settings.pluginOutputPath = value),
         BuildSettingsKey.IncludePluginDependencies => DrawIncludeDependencies(settings),
-        _ => throw new InvalidOperationException($"Unknown Build Settings field '{key}'.")};
+        _ => throw new InvalidOperationException($"Unknown Build Settings field '{key}'.")
+    };
+
     internal bool IsDefault(
         BuildSettings settings,
         BuildSettings defaults
@@ -79,7 +87,9 @@ internal sealed class BuildSettingsField
         BuildSettingsKey.PluginDisplayName => settings.pluginDisplayName == defaults.pluginDisplayName,
         BuildSettingsKey.PluginOutputPath => settings.pluginOutputPath == defaults.pluginOutputPath,
         BuildSettingsKey.IncludePluginDependencies => settings.includePluginDependencies == defaults.includePluginDependencies,
-        _ => throw new InvalidOperationException($"Unknown Build Settings field '{key}'.")};
+        _ => throw new InvalidOperationException($"Unknown Build Settings field '{key}'.")
+    };
+
     internal void Reset(
         BuildSettings settings,
         BuildSettings defaults
@@ -127,48 +137,27 @@ internal sealed class BuildSettingsField
     internal static bool ValuesEqual(
         BuildSettings left,
         BuildSettings right
-    ) => string.Equals(
-        left.gameProductName,
-        right.gameProductName,
-        StringComparison.Ordinal
-    )
-        && string.Equals(
-        left.gamePersistentDataPath,
-        right.gamePersistentDataPath,
-        StringComparison.Ordinal
-    )
-        && string.Equals(
-        left.gameStartupScene,
-        right.gameStartupScene,
-        StringComparison.Ordinal
-    )
-        && string.Equals(
-        left.gameOutputDirectory,
-        right.gameOutputDirectory,
-        StringComparison.Ordinal
-    )
-        && left.gameWindowWidth == right.gameWindowWidth
-        && left.gameWindowHeight == right.gameWindowHeight
-        && left.gameTarget == right.gameTarget
-        && left.gameManagedDeployment == right.gameManagedDeployment
-        && string.Equals(
-        left.pluginDisplayName,
-        right.pluginDisplayName,
-        StringComparison.Ordinal
-    )
-        && string.Equals(
-        left.pluginOutputPath,
-        right.pluginOutputPath,
-        StringComparison.Ordinal
-    )
-        && left.includePluginDependencies == right.includePluginDependencies;
+    ) => string.Equals(left.gameProductName, right.gameProductName, StringComparison.Ordinal)
+         && string.Equals(left.gamePersistentDataPath, right.gamePersistentDataPath, StringComparison.Ordinal)
+         && string.Equals(left.gameStartupScene, right.gameStartupScene, StringComparison.Ordinal)
+         && string.Equals(left.gameOutputDirectory, right.gameOutputDirectory, StringComparison.Ordinal)
+         && left.gameWindowWidth == right.gameWindowWidth
+         && left.gameWindowHeight == right.gameWindowHeight
+         && left.gameTarget == right.gameTarget
+         && left.gameManagedDeployment == right.gameManagedDeployment
+         && string.Equals(left.pluginDisplayName, right.pluginDisplayName, StringComparison.Ordinal)
+         && string.Equals(left.pluginOutputPath, right.pluginOutputPath, StringComparison.Ordinal)
+         && left.includePluginDependencies == right.includePluginDependencies;
+
     private static bool DrawTextValue(
         string value,
         Action<string> apply
     ) {
         Ui.SetNextItemWidth(-1f);
         if (!Ui.InputText("##value", ref value, C_TEXT_CAPACITY))
+        {
             return false;
+        }
         apply(value);
         return true;
     }
@@ -179,7 +168,9 @@ internal sealed class BuildSettingsField
     ) {
         Ui.SetNextItemWidth(-1f);
         if (!Ui.InputInt("##value", ref value, 1, 100, 0))
+        {
             return false;
+        }
         apply(Math.Max(1, value));
         return true;
     }
@@ -191,7 +182,9 @@ internal sealed class BuildSettingsField
         bool changed = false;
         Ui.SetNextItemWidth(-1f);
         if (!EditorUI.current.widgets.BeginBoundedCombo("##value", settings.gameManagedDeployment?.value ?? "Platform default"))
+        {
             return false;
+        }
         try
         {
             if (Ui.Selectable("Platform default", settings.gameManagedDeployment is null))
@@ -203,7 +196,9 @@ internal sealed class BuildSettingsField
             foreach (ManagedDeploymentId deployment in buildPipeline.GetManagedDeployments(settings.gameTarget))
             {
                 if (!Ui.Selectable(deployment.value, settings.gameManagedDeployment == deployment))
+                {
                     continue;
+                }
                 settings.gameManagedDeployment = deployment;
                 changed = true;
             }
@@ -223,11 +218,15 @@ internal sealed class BuildSettingsField
         bool changed = false;
         Ui.SetNextItemWidth(-1f);
         if (!EditorUI.current.widgets.BeginBoundedCombo("##value", GetTargetLabel(settings.gameTarget, buildPipeline)))
+        {
             return false;
+        }
         try
         {
             foreach (BuildTargetId target in buildPipeline.availableGameTargets)
+            {
                 changed |= DrawTargetChoice(settings, target, buildPipeline);
+            }
         }
         finally
         {
@@ -241,7 +240,9 @@ internal sealed class BuildSettingsField
     {
         bool value = settings.includePluginDependencies;
         if (!Ui.Checkbox("##value", ref value))
+        {
             return false;
+        }
         settings.includePluginDependencies = value;
         return true;
     }
@@ -254,9 +255,13 @@ internal sealed class BuildSettingsField
         bool selected = settings.gameTarget == target;
         bool changed = Ui.Selectable(GetTargetLabel(target, buildPipeline), selected);
         if (changed)
+        {
             settings.gameTarget = target;
+        }
         if (selected)
+        {
             Ui.SetItemDefaultFocus();
+        }
         return changed;
     }
 
@@ -268,8 +273,14 @@ internal sealed class BuildSettingsField
 
 internal static class BuildSettingsPresentation
 {
-    internal static IReadOnlyList<BuildSettingsField> fields { get; } = [
-        new BuildSettingsField(BuildSettingsKey.GameProductName, "Build/Game/Product Name", "Game Export Defaults", "Player-facing product name copied into each game export."),
+    internal static IReadOnlyList<BuildSettingsField> fields { get; } =
+    [
+        new BuildSettingsField(
+            BuildSettingsKey.GameProductName,
+            "Build/Game/Product Name",
+            "Game Export Defaults",
+            "Player-facing product name copied into each game export."
+        ),
         new BuildSettingsField(
             BuildSettingsKey.GamePersistentDataPath,
             "Build/Game/Persistent Data Folder",
@@ -282,9 +293,24 @@ internal static class BuildSettingsPresentation
             "Game Export Defaults",
             "Mount-qualified Scene path loaded when the exported Player starts."
         ),
-        new BuildSettingsField(BuildSettingsKey.GameWindowWidth, "Build/Game/Initial Window Width", "Game Export Defaults", "Initial logical Player window width."),
-        new BuildSettingsField(BuildSettingsKey.GameWindowHeight, "Build/Game/Initial Window Height", "Game Export Defaults", "Initial logical Player window height."),
-        new BuildSettingsField(BuildSettingsKey.GameTarget, "Build/Game/Target", "Game Export Defaults", "Platform target selected when the game export window opens."),
+        new BuildSettingsField(
+            BuildSettingsKey.GameWindowWidth,
+            "Build/Game/Initial Window Width",
+            "Game Export Defaults",
+            "Initial logical Player window width."
+        ),
+        new BuildSettingsField(
+            BuildSettingsKey.GameWindowHeight,
+            "Build/Game/Initial Window Height",
+            "Game Export Defaults",
+            "Initial logical Player window height."
+        ),
+        new BuildSettingsField(
+            BuildSettingsKey.GameTarget,
+            "Build/Game/Target",
+            "Game Export Defaults",
+            "Platform target selected when the game export window opens."
+        ),
         new BuildSettingsField(
             BuildSettingsKey.GameManagedDeployment,
             "Build/Game/Managed Deployment",

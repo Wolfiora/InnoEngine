@@ -1,10 +1,10 @@
+using System;
+using System.Collections.Generic;
 using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
 using Inno.Core.Serialization;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
-using System;
-using System.Collections.Generic;
 
 namespace Inno.Rendering.Runtime;
 
@@ -142,4 +142,3 @@ public sealed class RenderPipelineContext
     /// </summary>
     public RenderTextureHandle outputTexture { get; }
 }
-

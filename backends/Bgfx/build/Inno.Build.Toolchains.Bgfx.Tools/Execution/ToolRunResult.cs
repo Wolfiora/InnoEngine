@@ -47,4 +47,3 @@ public sealed class ToolRunResult
     /// </summary>
     public bool succeeded => exitCode == 0;
 }
-

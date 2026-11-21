@@ -1,7 +1,7 @@
 using System;
-using Inno.Core.Execution;
 using System.Collections.Generic;
 using System.Linq;
+using Inno.Core.Execution;
 
 namespace Inno.Audio.Runtime;
 
@@ -22,8 +22,7 @@ internal sealed class AudioMixerOwner : IDisposable
         IAudioDevice device,
         Action<Exception> retirementFailed,
         Action<Action> retire
-    )
-        : this(device, new AudioMixerBuilder().Build(), null, false, retirementFailed, retire) { }
+    ) : this(device, new AudioMixerBuilder().Build(), null, false, retirementFailed, retire) {}
 
     private AudioMixerOwner(
         IAudioDevice device,
@@ -39,11 +38,14 @@ internal sealed class AudioMixerOwner : IDisposable
         m_activeMixer = mixer;
         m_suspended = suspended;
         foreach ((AudioBusId id, AudioBusHandle handle) in CreateBusSet(device, mixer, controls))
+        {
             m_buses.Add(id, handle);
+        }
         foreach (AudioBusDefinition bus in mixer.buses)
         {
             BusControlState state = controls is not null && controls.TryGetValue(bus.id, out BusControlState? current)
-                ? current : new BusControlState(bus.volume, bus.muted, paused: false);
+                                    ? current
+                                    : new BusControlState(bus.volume, bus.muted, paused: false);
             m_busControls.Add(bus.id, new BusControlState(state.volume, state.muted, state.paused));
         }
     }
@@ -60,10 +62,10 @@ internal sealed class AudioMixerOwner : IDisposable
         AudioBusId bus,
         float volume
     ) {
-        if (volume < 0f || !float.IsFinite(volume) ||
-            !m_buses.TryGetValue(bus, out AudioBusHandle handle) ||
-            !m_device.SetBusVolume(handle, volume))
-        {
+        if (volume < 0f || !float.IsFinite(volume)
+            || !m_buses.TryGetValue(bus, out AudioBusHandle handle)
+            || !m_device.SetBusVolume(handle, volume)
+        ) {
             return false;
         }
         m_busControls[bus].volume = volume;
@@ -75,7 +77,9 @@ internal sealed class AudioMixerOwner : IDisposable
         bool muted
     ) {
         if (!m_buses.TryGetValue(bus, out AudioBusHandle handle) || !m_device.SetBusMuted(handle, muted))
+        {
             return false;
+        }
         m_busControls[bus].muted = muted;
         return true;
     }
@@ -84,9 +88,11 @@ internal sealed class AudioMixerOwner : IDisposable
         AudioBusId bus,
         bool paused
     ) {
-        if (!m_buses.TryGetValue(bus, out AudioBusHandle handle) ||
-            !m_device.SetBusPaused(handle, paused || bus == AudioBusId.master && m_suspended))
+        if (!m_buses.TryGetValue(bus, out AudioBusHandle handle)
+            || !m_device.SetBusPaused(handle, paused || bus == AudioBusId.master && m_suspended)
+        ) {
             return false;
+        }
         m_busControls[bus].paused = paused;
         return true;
     }
@@ -94,7 +100,9 @@ internal sealed class AudioMixerOwner : IDisposable
     internal void SetSuspended(bool suspended)
     {
         if (suspended == m_suspended)
+        {
             return;
+        }
         var masters = new List<KeyValuePair<AudioBusHandle, bool>>(m_retiredMasterPauses)
         {
             new(m_buses[AudioBusId.master], m_busControls[AudioBusId.master].paused)
@@ -105,7 +113,9 @@ internal sealed class AudioMixerOwner : IDisposable
             foreach ((AudioBusHandle handle, bool paused) in masters)
             {
                 if (!m_device.SetBusPaused(handle, paused || suspended))
+                {
                     throw new InvalidOperationException("The audio backend rejected application suspension.");
+                }
                 applied++;
             }
         }
@@ -118,7 +128,9 @@ internal sealed class AudioMixerOwner : IDisposable
                 {
                     KeyValuePair<AudioBusHandle, bool> master = masters[index];
                     if (!m_device.SetBusPaused(master.Key, master.Value || m_suspended))
+                    {
                         throw new InvalidOperationException("The audio backend rejected suspension rollback.");
+                    }
                 }
                 catch (Exception rollback)
                 {
@@ -149,10 +161,14 @@ internal sealed class AudioMixerOwner : IDisposable
         }
         m_buses.Clear();
         foreach ((AudioBusId id, AudioBusHandle handle) in candidate)
+        {
             m_buses.Add(id, handle);
+        }
         m_busControls.Clear();
         foreach (AudioBusDefinition bus in mixer.buses)
+        {
             m_busControls.Add(bus.id, new BusControlState(bus.volume, bus.muted, paused: false));
+        }
         m_activeMixer = mixer;
     }
 
@@ -163,7 +179,9 @@ internal sealed class AudioMixerOwner : IDisposable
         {
             Dictionary<AudioBusId, AudioBusHandle> retired = m_retiredBuses[index];
             if (retired.Values.Any(retained.Contains))
+            {
                 continue;
+            }
             try
             {
                 AudioBusHandle master = retired[AudioBusId.master];
@@ -215,7 +233,9 @@ internal sealed class AudioMixerOwner : IDisposable
         m_busControls.Clear();
         m_retiredMasterPauses.Clear();
         if (m_retirementFailures.Count == 0)
+        {
             return;
+        }
         Exception[] failures = m_retirementFailures.ToArray();
         m_retirementFailures.Clear();
         throw new AggregateException("Audio mixer retirement failed after every graph was attempted.", failures);
@@ -232,26 +252,30 @@ internal sealed class AudioMixerOwner : IDisposable
             foreach (AudioBusDefinition bus in mixer.buses)
             {
                 AudioBusHandle parent = bus.parent is AudioBusId parentId
-                    ? candidate[parentId]
-                    : default;
+                                        ? candidate[parentId]
+                                        : default;
                 AudioBusHandle handle = device.CreateBus(bus.id, parent);
                 if (!handle.isValid)
+                {
                     throw new InvalidOperationException($"The backend rejected audio bus '{bus.id}'.");
+                }
                 candidate.Add(bus.id, handle);
                 BusControlState state = controls is not null && controls.TryGetValue(bus.id, out BusControlState? current)
-                    ? current
-                    : new BusControlState(bus.volume, bus.muted, paused: false);
-                if (!device.SetBusVolume(handle, state.volume) ||
-                    !device.SetBusMuted(handle, state.muted) ||
-                    (state.paused || bus.id == AudioBusId.master && m_suspended) &&
-                    !device.SetBusPaused(handle, paused: true))
-                {
+                                        ? current
+                                        : new BusControlState(bus.volume, bus.muted, paused: false);
+                if (!device.SetBusVolume(handle, state.volume)
+                    || !device.SetBusMuted(handle, state.muted)
+                    || (state.paused || bus.id == AudioBusId.master && m_suspended)
+                       && !device.SetBusPaused(handle, paused: true)
+                ) {
                     throw new InvalidOperationException($"The backend rejected parameters for audio bus '{bus.id}'.");
                 }
                 foreach (AudioProcessorConfiguration processor in bus.processors)
                 {
                     if (!device.AddBusProcessor(handle, processor))
+                    {
                         throw new InvalidOperationException($"The backend rejected processor '{processor.id}'.");
+                    }
                 }
             }
             return candidate;
@@ -285,7 +309,9 @@ internal sealed class AudioMixerOwner : IDisposable
             try
             {
                 if (!device.DestroyBus(bus))
+                {
                     throw new InvalidOperationException("The backend refused audio bus retirement.");
+                }
             }
             catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
             {
@@ -298,7 +324,9 @@ internal sealed class AudioMixerOwner : IDisposable
             buses.Remove(id);
         }
         if (failures.Count > 0)
+        {
             throw new AggregateException("Audio bus retirement failed after every bus was attempted.", failures);
+        }
     }
 
     private sealed class BusControlState(

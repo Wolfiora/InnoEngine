@@ -1,10 +1,11 @@
-using Inno.Editor.Assets;
-using Inno.Editor.Assets.ImGui;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Panel.FileBrowser;
+
 [EditorAction(FileBrowserInteractionIds.C_OPEN, FileBrowserInteractionIds.C_AREA, priority: 100)]
 internal sealed class OpenAssetCommand(AssetBrowserModule assets) : EditorAction<AssetFileEntry>
 {
@@ -20,7 +21,9 @@ internal sealed class OpenAssetCommand(AssetBrowserModule assets) : EditorAction
     protected override EditorActionState Query(EditorActionContext<AssetFileEntry> context)
     {
         if (!TryGetAssetContext(context, out AssetEditorContext? assetContext) || assetContext is null)
+        {
             return EditorActionState.hidden;
+        }
         return assetContext.isDirectory ? EditorActionState.hidden : EditorActionState.enabled;
     }
 
@@ -33,20 +36,18 @@ internal sealed class OpenAssetCommand(AssetBrowserModule assets) : EditorAction
     protected override void Execute(EditorActionContext<AssetFileEntry> context)
     {
         if (!TryGetAssetContext(context, out AssetEditorContext? assetContext) || assetContext is null)
+        {
             return;
+        }
         if (assets.edits.pipeline.TryLoad<AssetObject>(
             AssetPath.Parse(assetContext.relativePath),
             out AssetObject? asset
         )
             && asset is not null
-            && context.interactions.For(
-            FileBrowserInteractionIds.C_AREA,
-            asset
-        ).Execute(
-            FileBrowserInteractionIds.C_OPEN,
-            assetContext.relativePath
-        ))
-        {
+            && context.interactions
+                .For(FileBrowserInteractionIds.C_AREA, asset)
+                .Execute(FileBrowserInteractionIds.C_OPEN, assetContext.relativePath)
+        ) {
             return;
         }
 

@@ -41,9 +41,13 @@ public sealed class SerializationMemberMetadata
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(type);
         if ((visibility & (PropertyVisibility.Serialize | PropertyVisibility.RuntimeGet)) != 0 && getter is null)
+        {
             throw new ArgumentException("Readable metadata requires a getter.", nameof(getter));
+        }
         if ((visibility & (PropertyVisibility.Deserialize | PropertyVisibility.RuntimeSet)) != 0 && setter is null)
+        {
             throw new ArgumentException("Writable metadata requires a setter.", nameof(setter));
+        }
         this.name = name;
         this.type = type;
         this.visibility = visibility;
@@ -79,8 +83,9 @@ public sealed class SerializationMemberMetadata
     /// Reading is not permitted by this metadata.
     /// </exception>
     public object? GetValue(object target)
-        => m_getter is not null ? m_getter(target)
-            : throw new InvalidOperationException($"Serialization member '{name}' does not permit reads.");
+        => m_getter is not null
+           ? m_getter(target)
+           : throw new InvalidOperationException($"Serialization member '{name}' does not permit reads.");
 
     /// <summary>
     /// Writes a value through the selected declaration accessor.
@@ -99,7 +104,9 @@ public sealed class SerializationMemberMetadata
         object? value
     ) {
         if (m_setter is null)
+        {
             throw new InvalidOperationException($"Serialization member '{name}' does not permit writes.");
+        }
         m_setter(target, value);
     }
 }

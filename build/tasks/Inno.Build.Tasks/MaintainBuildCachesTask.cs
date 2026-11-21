@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Microsoft.Build.Framework;
 using Inno.Build.Toolchains;
+
 using BuildTask = Microsoft.Build.Utilities.Task;
 
 namespace Inno.Build.Tasks;
@@ -27,8 +28,14 @@ public sealed class MaintainBuildCachesTask : BuildTask
     {
         try
         {
-            BuildMaintenanceApplication.CleanAsync(EngineRoot, new BuildCachePolicy(), false, false, null,
-                CancellationToken.None).GetAwaiter().GetResult();
+            BuildMaintenanceApplication.CleanAsync(
+                EngineRoot,
+                new BuildCachePolicy(),
+                false,
+                false,
+                null,
+                CancellationToken.None
+            ).GetAwaiter().GetResult();
             Log.LogMessage(MessageImportance.High, "INNO-CACHE-MAINTENANCE root=Editor budgetSeconds=5");
         }
         catch (Exception failure)

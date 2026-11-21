@@ -43,7 +43,9 @@ public sealed class FileContentStore : IRuntimeContentStore
         {
             ContentCacheGeneration generation = m_generation ?? throw new ObjectDisposedException(nameof(FileContentStore));
             if (!index.TryGetEntry(key, out ContentEntry? entry))
+            {
                 throw new FileNotFoundException($"Content '{key}' does not exist in pack '{descriptor.contentHash}'.");
+            }
             return generation.Acquire(entry!);
         }
     }

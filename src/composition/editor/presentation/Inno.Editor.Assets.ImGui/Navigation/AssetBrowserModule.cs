@@ -1,15 +1,16 @@
-using Inno.Editor.ImGui;
 using System;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Editor.Assets;
 using Inno.Editor.Core;
+using Inno.Editor.ImGui;
 using Inno.Editor.Inspection;
 using Inno.Editor.Interactions;
 using Inno.Editor.Settings;
 using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Assets.ImGui;
+
 /// <summary>
 /// Owns asset navigation and icon presentation independently from source mutations.
 /// </summary>
@@ -18,6 +19,7 @@ public sealed class AssetBrowserModule : EditorModule, IInspectionIconProvider<A
 {
     private readonly EditorSettings m_settings;
     private readonly AssetIconRegistry m_icons;
+
     /// <summary>
     /// Creates the asset presentation module for the current editor generation.
     /// </summary>
@@ -53,10 +55,12 @@ public sealed class AssetBrowserModule : EditorModule, IInspectionIconProvider<A
     /// Gets the source editing service; this module does not implement source transactions.
     /// </summary>
     public AssetEditingModule edits { get; }
+
     /// <summary>
     /// Gets navigation state; object selection belongs to the shared interaction owner.
     /// </summary>
     public AssetBrowserState browser { get; }
+
     /// <summary>
     /// Gets the configured folder glyph used by asset navigation.
     /// </summary>
@@ -83,7 +87,9 @@ public sealed class AssetBrowserModule : EditorModule, IInspectionIconProvider<A
     /// </param>
     protected override void Restore(EditorState state)
     {
-        AssetBrowserRoot restoredRoot = Enum.TryParse(state.Get("root", string.Empty), out AssetBrowserRoot parsedRoot) ? parsedRoot : AssetBrowserRoot.Assets;
+        AssetBrowserRoot restoredRoot = Enum.TryParse(state.Get("root", string.Empty), out AssetBrowserRoot parsedRoot)
+                                        ? parsedRoot
+                                        : AssetBrowserRoot.Assets;
         string assetsDirectory = RestoreDirectory(AssetBrowserRoot.Assets, state.Get("assetsDirectory", string.Empty));
         string pluginsDirectory = RestoreDirectory(AssetBrowserRoot.Plugins, state.Get("pluginsDirectory", string.Empty));
         browser.Restore(restoredRoot, assetsDirectory, pluginsDirectory);
@@ -95,22 +101,30 @@ public sealed class AssetBrowserModule : EditorModule, IInspectionIconProvider<A
     ) {
         string directory = AssetPath.Parse(path).ToString();
         if (string.IsNullOrEmpty(directory))
+        {
             return string.Empty;
+        }
         AssetPath isolated = AssetPath.Parse(directory);
         if ((root == AssetBrowserRoot.Assets) != (isolated.source == AssetSourceId.project))
+        {
             return string.Empty;
+        }
         while (!IsAvailableDirectory(directory))
         {
             string parent = ParentDirectory(directory);
             if (string.Equals(parent, directory, StringComparison.Ordinal))
+            {
                 return string.Empty;
+            }
             directory = parent;
         }
 
         return directory;
     }
 
-    private bool IsAvailableDirectory(string path) => edits.pipeline.TryGetFileSystemEntry(AssetPath.Parse(path), out AssetFileEntry entry) && entry.isDirectory;
+    private bool IsAvailableDirectory(string path)
+        => edits.pipeline.TryGetFileSystemEntry(AssetPath.Parse(path), out AssetFileEntry entry) && entry.isDirectory;
+
     /// <summary>
     /// Resolves the presentation icon registered for an asset type or source extension.
     /// </summary>
@@ -128,7 +142,9 @@ public sealed class AssetBrowserModule : EditorModule, IInspectionIconProvider<A
     {
         ArgumentNullException.ThrowIfNull(entry);
         if (entry.isDirectory)
+        {
             return folderIcon;
+        }
         _ = edits.pipeline.TryGetAssetType(entry.assetPath, out Type? assetType);
         if (m_icons.TryResolve(assetType, entry.assetPath.ToString(), out string icon))
         {
@@ -140,6 +156,7 @@ public sealed class AssetBrowserModule : EditorModule, IInspectionIconProvider<A
 
     /// <inheritdoc/>
     protected override void OnDispose() => m_icons.Dispose();
+
     private static string ParentDirectory(string value)
     {
         AssetPath path = AssetPath.Parse(value);

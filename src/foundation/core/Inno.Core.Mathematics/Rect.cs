@@ -18,14 +18,17 @@ public struct Rect : IEquatable<Rect>
     /// Gets the scalar measurement or identity associated with the current state.
     /// </summary>
     public float left => x;
+
     /// <summary>
     /// Gets the scalar measurement or identity associated with the current state.
     /// </summary>
     public float right => x + width;
+
     /// <summary>
     /// Gets the scalar measurement or identity associated with the current state.
     /// </summary>
     public float top => y;
+
     /// <summary>
     /// Gets the scalar measurement or identity associated with the current state.
     /// </summary>
@@ -35,14 +38,17 @@ public struct Rect : IEquatable<Rect>
     /// Gets the minimum corner of this axis-aligned rectangle.
     /// </summary>
     public Vector2 min => new(x, y);
+
     /// <summary>
     /// Gets the maximum corner of this axis-aligned rectangle.
     /// </summary>
     public Vector2 max => new(x + width, y + height);
+
     /// <summary>
     /// Gets the width and height derived from the rectangle bounds.
     /// </summary>
     public Vector2 size => new(width, height);
+
     /// <summary>
     /// Gets the midpoint derived from the rectangle bounds.
     /// </summary>
@@ -87,10 +93,10 @@ public struct Rect : IEquatable<Rect>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Overlaps(Rect other)
     {
-        return !(right <= other.left ||
-                 left >= other.right ||
-                 bottom <= other.top ||
-                 top >= other.bottom);
+        return !(right <= other.left
+                 || left >= other.right
+                 || bottom <= other.top
+                 || top >= other.bottom);
     }
 
     /// <summary>
@@ -105,10 +111,10 @@ public struct Rect : IEquatable<Rect>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Contains(Rect other)
     {
-        return left <= other.left &&
-               top <= other.top &&
-               right >= other.right &&
-               bottom >= other.bottom;
+        return left <= other.left
+               && top <= other.top
+               && right >= other.right
+               && bottom >= other.bottom;
     }
 
     /// <summary>
@@ -128,8 +134,8 @@ public struct Rect : IEquatable<Rect>
         float px,
         float py
     ) {
-        return px >= left && px < right &&
-               py >= top && py < bottom;
+        return px >= left && px < right
+               && py >= top && py < bottom;
     }
 
     /// <summary>
@@ -241,6 +247,7 @@ public struct Rect : IEquatable<Rect>
         Rect a,
         Rect b
     ) => a.Equals(b);
+
     /// <summary>
     /// Determines whether the supplied values differ under the type's equality tolerance.
     /// </summary>
@@ -306,6 +313,7 @@ public struct Rect : IEquatable<Rect>
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator System.Numerics.Vector4(Rect r) => new System.Numerics.Vector4(r.x, r.y, r.width, r.height);
+
     /// <summary>
     /// Converts the supplied value to <see cref="Rect"/>.
     /// </summary>
@@ -317,7 +325,7 @@ public struct Rect : IEquatable<Rect>
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Rect(System.Numerics.Vector4 v) => new Rect(v.X, v.Y, v.Z, v.W);
-    
+
     /// <summary>
     /// Determines whether this value and the supplied value represent the same logical state.
     /// </summary>
@@ -328,6 +336,7 @@ public struct Rect : IEquatable<Rect>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public override bool Equals(object? obj) => obj is Rect r && Equals(r);
+
     /// <summary>
     /// Determines whether this value and the supplied value represent the same logical state.
     /// </summary>
@@ -337,11 +346,12 @@ public struct Rect : IEquatable<Rect>
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool Equals(Rect other) =>
-        MathHelper.AlmostEquals(x, other.x) &&
-        MathHelper.AlmostEquals(y, other.y) &&
-        MathHelper.AlmostEquals(width, other.width) &&
-        MathHelper.AlmostEquals(height, other.height);
+    public bool Equals(Rect other)
+        => MathHelper.AlmostEquals(x, other.x)
+           && MathHelper.AlmostEquals(y, other.y)
+           && MathHelper.AlmostEquals(width, other.width)
+           && MathHelper.AlmostEquals(height, other.height);
+
     /// <summary>
     /// Computes a hash code consistent with the implemented equality contract.
     /// </summary>
@@ -349,6 +359,7 @@ public struct Rect : IEquatable<Rect>
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
     public override int GetHashCode() => HashCode.Combine(x, y, width, height);
+
     /// <summary>
     /// Formats this value as a human-readable component list.
     /// </summary>

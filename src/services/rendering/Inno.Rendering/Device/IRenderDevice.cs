@@ -176,8 +176,7 @@ public interface IRenderDevice : IDisposable
         ReadOnlySpan<byte> data,
         bool sRgb,
         string name
-    )
-        => throw new NotSupportedException("This render device does not support encoded texture containers.");
+    ) => throw new NotSupportedException("This render device does not support encoded texture containers.");
 
     /// <summary>
     /// Replaces one complete mip and addressable layer, slice, or cubemap face.

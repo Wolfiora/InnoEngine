@@ -11,6 +11,7 @@ namespace Inno.Build.Toolchains;
 public sealed class NativeBuildRecipe
 {
     internal NativeToolchainSelection? toolchain { get; private init; }
+
     /// <summary>
     /// Creates a complete recipe without inferring implementation identity from an assembly MVID.
     /// </summary>
@@ -50,8 +51,10 @@ public sealed class NativeBuildRecipe
         NativeBuildInput[] frozenInputs = inputs.ToArray();
         string[] frozenDeclarations = declarations.ToArray();
         if (frozenInputs.Any(static input => input is null)
-            || frozenDeclarations.Any(static declaration => declaration is null))
+            || frozenDeclarations.Any(static declaration => declaration is null)
+        ) {
             throw new ArgumentException("A recipe cannot contain null inputs or declarations.");
+        }
         this.owner = owner;
         this.component = component;
         this.targetId = targetId;
@@ -135,24 +138,74 @@ public sealed class NativeBuildRecipe
         context.toolchain?.linkPlan.GetFileExtension(options.libraryKind);
         string projectFile = Path.GetFullPath(owner.toolchainProject, context.engineRoot);
         if (!File.Exists(projectFile))
+        {
             throw new FileNotFoundException("A native recipe owner project is unavailable.", projectFile);
-        List<string> paths = [..inputPaths, ..options.inputPaths.Select(path => Path.GetFullPath(path, context.engineRoot)), ..(context.toolchain?.inputPaths ?? []), projectFile];
+        }
+        List<string> paths =
+        [
+            ..inputPaths,
+            ..options.inputPaths.Select(path => Path.GetFullPath(path, context.engineRoot)),
+            ..(context.toolchain?.inputPaths ?? []),
+            projectFile
+        ];
         paths.AddRange(implementationPaths);
         string commonRoot = Path.Combine(context.engineRoot, "build", "toolchains", "Inno.Build.Toolchains");
-        paths.AddRange(new[] { "NativeBuildContext.cs", "ToolchainEnvironment.cs", "ToolchainLayout.cs", "BuildArtifactManifest.cs", "ToolchainWorkingDirectory.cs" }
-            .Select(file => Path.Combine(commonRoot, file)));
-        paths.AddRange(new[]
-        {
-            "NativeArtifactPublisher.cs", "ProductNativeCacheLookup.cs", "NativeBuildFingerprint.cs", "NativeBuildInput.cs", "NativeWorkspaceIdentity.cs", "NativeBindingInputPaths.cs",
-            "NativeBuildInputState.cs", "NativeInputSnapshot.cs", "NativeInputReadCache.cs", "NativeInputVerificationScope.cs", "NativeBuildPhaseStatistics.cs", "NativeBuildProduct.cs",
-            "NativeBuildStatistics.cs", "NativeToolchainSelection.cs", "NativeBuildRecipe.cs", "ProductNativeBuildResult.cs", "NativeArtifact.cs", "NativeCompilerInputs.cs", "NativeLinkPlan.cs",
-            "NativeCMakeExecutor.cs", "NativeCMakeSource.cs", "NativeComponentBuildOptions.cs", "ProductNativeBuildStep.cs", "ProductNativeBuildPlan.cs", "NativeInputMaterializer.cs", "NativeBindingGenerationDescriptor.cs",
-            "NativeBindingGenerationResult.cs", "NativeBindingPreparation.cs", "NativeComponentDescriptor.cs", "NativeStaticBuildDefinition.cs",
-            "NativeToolchainPreparation.cs", "BuildHostDescriptor.cs",
-            "NativeBindingCompilation.cs", "NativeBindingSourceRoot.cs", "NativeBindingSourceFile.cs", "NativeBindingIncludeDirectory.cs", "NativeBindingCMake.cs"
-        }.Select(file => Path.Combine(commonRoot, "Native", file)));
-        paths.AddRange(new[] { "BuildHostServices.cs", "IToolchainWorkspaceProvider.cs", "PhysicalToolchainWorkspaceProvider.cs" }
-            .Select(file => Path.Combine(commonRoot, "Host", file)));
+        paths.AddRange(
+            new[] {
+                "NativeBuildContext.cs",
+                "ToolchainEnvironment.cs",
+                "ToolchainLayout.cs",
+                "BuildArtifactManifest.cs",
+                "ToolchainWorkingDirectory.cs"
+            }
+                .Select(file => Path.Combine(commonRoot, file))
+        );
+        paths.AddRange(
+            new[]
+            {
+                "NativeArtifactPublisher.cs",
+                "ProductNativeCacheLookup.cs",
+                "NativeBuildFingerprint.cs",
+                "NativeBuildInput.cs",
+                "NativeWorkspaceIdentity.cs",
+                "NativeBindingInputPaths.cs",
+                "NativeBuildInputState.cs",
+                "NativeInputSnapshot.cs",
+                "NativeInputReadCache.cs",
+                "NativeInputVerificationScope.cs",
+                "NativeBuildPhaseStatistics.cs",
+                "NativeBuildProduct.cs",
+                "NativeBuildStatistics.cs",
+                "NativeToolchainSelection.cs",
+                "NativeBuildRecipe.cs",
+                "ProductNativeBuildResult.cs",
+                "NativeArtifact.cs",
+                "NativeCompilerInputs.cs",
+                "NativeLinkPlan.cs",
+                "NativeCMakeExecutor.cs",
+                "NativeCMakeSource.cs",
+                "NativeComponentBuildOptions.cs",
+                "ProductNativeBuildStep.cs",
+                "ProductNativeBuildPlan.cs",
+                "NativeInputMaterializer.cs",
+                "NativeBindingGenerationDescriptor.cs",
+                "NativeBindingGenerationResult.cs",
+                "NativeBindingPreparation.cs",
+                "NativeComponentDescriptor.cs",
+                "NativeStaticBuildDefinition.cs",
+                "NativeToolchainPreparation.cs",
+                "BuildHostDescriptor.cs",
+                "NativeBindingCompilation.cs",
+                "NativeBindingSourceRoot.cs",
+                "NativeBindingSourceFile.cs",
+                "NativeBindingIncludeDirectory.cs",
+                "NativeBindingCMake.cs"
+            }.Select(file => Path.Combine(commonRoot, "Native", file))
+        );
+        paths.AddRange(
+            new[] { "BuildHostServices.cs", "IToolchainWorkspaceProvider.cs", "PhysicalToolchainWorkspaceProvider.cs" }
+                .Select(file => Path.Combine(commonRoot, "Host", file))
+        );
         paths.AddRange((context.toolchain?.host.services.inputPaths ?? []).Select(path => Path.GetFullPath(path, context.engineRoot)));
         paths.Add(Path.Combine(commonRoot, "Managed", "DotNetSdkEnvironment.cs"));
         paths.Add(Path.Combine(commonRoot, "Cache", "BuildArtifactReadLease.cs"));
@@ -160,13 +213,32 @@ public sealed class NativeBuildRecipe
         paths.Add(Path.Combine(commonRoot, "Cache", "BuildCachePublisher.cs"));
         paths.Add(Path.Combine(commonRoot, "Cache", "BuildCacheFileInventory.cs"));
         string ioRoot = Path.Combine(context.engineRoot, "src", "foundation", "core", "Inno.Core.IO");
-        paths.AddRange(new[] { "AtomicDirectory.cs", "AtomicFile.cs", "DirectoryCleanupException.cs", "FileSystemRename.cs", "FileLease.cs", "PathBoundary.cs",
-            "ProcessOwnerStamp.cs", "ProcessOwnerState.cs", "ProcessOwnedDirectory.cs", "ProcessOwnedDirectoryDescriptor.cs", "CoordinatedFileLease.cs" }
-            .Select(file => Path.Combine(ioRoot, file)));
-        return new NativeBuildRecipe(owner, component, targetId,
+        paths.AddRange(
+            new[]
+            {
+                "AtomicDirectory.cs",
+                "AtomicFile.cs",
+                "DirectoryCleanupException.cs",
+                "FileSystemRename.cs",
+                "FileLease.cs",
+                "PathBoundary.cs",
+                "ProcessOwnerStamp.cs",
+                "ProcessOwnerState.cs",
+                "ProcessOwnedDirectory.cs",
+                "ProcessOwnedDirectoryDescriptor.cs",
+                "CoordinatedFileLease.cs"
+            }
+                .Select(file => Path.Combine(ioRoot, file))
+        );
+        return new NativeBuildRecipe(
+            owner,
+            component,
+            targetId,
             paths.Select(path => NativeBuildInput.FromPath(context.engineRoot, path)),
             new[] { component, targetId, context.configuration, "executionRoot=" + context.engineRoot }.Concat(declarations)
-                .Concat(options.declarations).Concat(context.toolchain?.declarations ?? [])) { toolchain = context.toolchain };
+                .Concat(options.declarations)
+                .Concat(context.toolchain?.declarations ?? [])
+        ) { toolchain = context.toolchain };
     }
 
     /// <summary>
@@ -193,7 +265,13 @@ public sealed class NativeBuildRecipe
     ) {
         ArgumentNullException.ThrowIfNull(input);
         ArgumentException.ThrowIfNullOrWhiteSpace(fingerprint);
-        return new(owner, component, targetId, inputs.Append(input), declarations.Append("dependency=" + fingerprint)) { toolchain = this.toolchain };
+        return new(
+            owner,
+            component,
+            targetId,
+            inputs.Append(input),
+            declarations.Append("dependency=" + fingerprint)
+        ) { toolchain = this.toolchain };
     }
 
     /// <summary>
@@ -205,18 +283,28 @@ public sealed class NativeBuildRecipe
     ) {
         IEnumerable<NativeBuildInput> generated = [NativeBuildInput.FromPath(engineRoot, generation.bindingsPath)];
         if (generation.nativeDirectory.Length > 0)
+        {
             generated = generated.Append(NativeBuildInput.FromPath(engineRoot, generation.nativeDirectory))
                 .Concat(NativeBindingCompilation.Load(generation.nativeDirectory).GetInputs(engineRoot, generation.nativeDirectory));
-        return new NativeBuildRecipe(owner, component, targetId, inputs.Concat(generated),
+        }
+        return new NativeBuildRecipe(
+            owner,
+            component,
+            targetId,
+            inputs.Concat(generated),
             declarations.Append("bindings=" + generation.fingerprint)
-                .Append("bindingNativeRoot=" + generation.nativeDirectory)) { toolchain = this.toolchain };
+                .Append("bindingNativeRoot=" + generation.nativeDirectory)
+        ) { toolchain = this.toolchain };
     }
 
     private static void ValidateSegment(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
-        if (value is "." or ".." || value.Any(static character => !char.IsAsciiLetterOrDigit(character)
-            && character is not ('-' or '_' or '.')))
+        if (value is "." or ".." || value.Any(static character => (
+            !char.IsAsciiLetterOrDigit(character)
+            && character is not ('-' or '_' or '.')
+        ))) {
             throw new ArgumentException("Native component and target identities must be single path segments.", nameof(value));
+        }
     }
 }

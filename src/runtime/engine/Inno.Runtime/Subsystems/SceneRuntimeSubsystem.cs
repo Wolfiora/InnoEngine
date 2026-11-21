@@ -41,7 +41,9 @@ internal sealed class SceneRuntimeSubsystem(
     protected override void OnFixedUpdate(RuntimeFixedFrame frame)
     {
         if (sessionKind != RuntimeSessionKind.Edit)
+        {
             scenes.FixedUpdate(frame.deltaTime);
+        }
     }
 
     /// <summary>
@@ -53,7 +55,9 @@ internal sealed class SceneRuntimeSubsystem(
     protected override void OnUpdate(RuntimeFrame frame)
     {
         if (sessionKind != RuntimeSessionKind.Edit && !frame.isPaused)
+        {
             scenes.Update(frame.deltaTime);
+        }
     }
 
     /// <summary>
@@ -65,6 +69,8 @@ internal sealed class SceneRuntimeSubsystem(
     protected override void OnLateUpdate(RuntimeFrame frame)
     {
         if (sessionKind != RuntimeSessionKind.Edit && !frame.isPaused)
+        {
             scenes.LateUpdate(frame.deltaTime);
+        }
     }
 }

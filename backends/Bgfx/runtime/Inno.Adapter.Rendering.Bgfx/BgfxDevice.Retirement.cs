@@ -1,10 +1,10 @@
-using Inno.Adapter.Platform;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using Inno.Adapter.Platform;
 using Inno.Native.Bgfx;
 using Inno.Platform;
 using Inno.Rendering;
@@ -45,7 +45,9 @@ sealed unsafe partial class BgfxDevice
             surface.retirement.pending.Add(surface.frameBuffer);
             surface.retirement.closing = true;
             if (!m_surfaceRetirements.Contains(surface.retirement))
+            {
                 m_surfaceRetirements.Add(surface.retirement);
+            }
         }
         m_windowSurfaces.Clear();
         DrainWindowSurfaceRetirements();
@@ -107,7 +109,9 @@ sealed unsafe partial class BgfxDevice
         finally
         {
             foreach (PendingTextureReadback pending in m_textureReadbacks.Values)
+            {
                 NativeMemory.Free((void*)pending.data);
+            }
             m_textureReadbacks.Clear();
             m_disposed = true;
             generation = 0;
@@ -115,14 +119,18 @@ sealed unsafe partial class BgfxDevice
         }
 
         if (closureFailure is not null)
+        {
             throw new InvalidOperationException(closureFailure);
+        }
     }
 
     private void EnqueueDestroy(DeferredResource resource)
-        => m_deferredResources.Add(resource with
-        {
-            eligibleSubmission = checked(m_submissionSequence + (ulong)m_deferredDestroyFrames)
-        });
+        => m_deferredResources.Add(
+            resource with
+            {
+                eligibleSubmission = checked(m_submissionSequence + (ulong)m_deferredDestroyFrames)
+            }
+        );
 
     private void EnqueuePipelineDestroy(BgfxPipelineResource pipeline) => EnqueueDestroy(DeferredResource.ForProgram(pipeline.program));
 
@@ -215,8 +223,8 @@ sealed unsafe partial class BgfxDevice
             || m_computePipelines.Count != 0
             || m_windowSurfaces.Count != 0
             || m_surfaceRetirements.Count != 0
-            || m_deferredResources.Count != 0)
-        {
+            || m_deferredResources.Count != 0
+        ) {
             return "BGFX shutdown detected a non-empty managed resource ownership graph.";
         }
 
@@ -274,15 +282,19 @@ sealed unsafe partial class BgfxDevice
         /// The validated deferred resource that represents the completed operation.
         /// </returns>
         public static DeferredResource ForBuffer(BgfxBufferResource buffer)
-            => new(buffer.kind switch
-            {
-                BgfxBufferKind.Vertex => DeferredResourceKind.VertexBuffer,
-                BgfxBufferKind.Index => DeferredResourceKind.IndexBuffer,
-                BgfxBufferKind.DynamicVertex => DeferredResourceKind.DynamicVertexBuffer,
-                BgfxBufferKind.DynamicIndex => DeferredResourceKind.DynamicIndexBuffer,
-                BgfxBufferKind.Indirect => DeferredResourceKind.IndirectBuffer,
-                _ => throw new ArgumentOutOfRangeException(nameof(buffer))
-            }, buffer.nativeIndex, 0);
+            => new(
+                buffer.kind switch
+                {
+                    BgfxBufferKind.Vertex => DeferredResourceKind.VertexBuffer,
+                    BgfxBufferKind.Index => DeferredResourceKind.IndexBuffer,
+                    BgfxBufferKind.DynamicVertex => DeferredResourceKind.DynamicVertexBuffer,
+                    BgfxBufferKind.DynamicIndex => DeferredResourceKind.DynamicIndexBuffer,
+                    BgfxBufferKind.Indirect => DeferredResourceKind.IndirectBuffer,
+                    _ => throw new ArgumentOutOfRangeException(nameof(buffer))
+                },
+                buffer.nativeIndex,
+                0
+            );
 
         /// <summary>
         /// Creates a deferred resource record for the supplied program handle.
@@ -307,5 +319,4 @@ sealed unsafe partial class BgfxDevice
         public static DeferredResource ForVertexLayout(bgfx.VertexLayoutHandle layout)
             => new(DeferredResourceKind.VertexLayout, layout.idx, 0);
     }
-
 }

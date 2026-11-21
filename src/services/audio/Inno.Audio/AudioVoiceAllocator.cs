@@ -22,7 +22,9 @@ public sealed class AudioVoiceAllocator
     {
         int generation = Interlocked.Increment(ref S_NEXT_GENERATION);
         if (generation <= 0)
+        {
             throw new InvalidOperationException("Audio playback owner generations are exhausted.");
+        }
         m_generation = (uint)generation;
     }
 

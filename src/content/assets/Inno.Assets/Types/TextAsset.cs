@@ -1,6 +1,6 @@
 using Inno.Assets;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 
 namespace Inno.Assets;
 
@@ -25,9 +25,7 @@ public sealed class TextAsset : AssetObject
     /// <summary>
     /// Creates an empty text asset.
     /// </summary>
-    public TextAsset()
-    {
-    }
+    public TextAsset() {}
 
     /// <summary>
     /// Creates a text asset with content and an optional language hint.

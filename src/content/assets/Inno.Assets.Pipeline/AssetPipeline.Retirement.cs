@@ -4,18 +4,17 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Extensibility.Modules;
-using Inno.Core.Identity;
 using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
+using Inno.Core.Identity;
 using Inno.Core.Logging;
+using Inno.Core.Serialization;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
 using Inno.Extensibility.Types;
 using Inno.Scripting.Api;
-using Inno.Core.Serialization;
-using Inno.Core.Execution;
-using Inno.Extensibility.Reload;
 
 namespace Inno.Assets.Pipeline;
 
@@ -27,7 +26,9 @@ sealed partial class AssetPipeline
     public void Dispose()
     {
         lock (m_lifecycleLock)
+        {
             ShutdownLocked();
+        }
         GC.SuppressFinalize(this);
     }
 
@@ -50,11 +51,15 @@ sealed partial class AssetPipeline
         Action<Action<T>> remove
     ) {
         if (handlers is null)
+        {
             return;
+        }
         foreach (Delegate observer in handlers.GetInvocationList())
         {
             if (!IsRetiredCollectibleObserver(observer))
+            {
                 continue;
+            }
             remove((Action<T>)observer);
         }
     }
@@ -63,15 +68,15 @@ sealed partial class AssetPipeline
     {
         Type? declaringType = observer.Method.DeclaringType;
         Type? targetType = observer.Target?.GetType();
-        return IsRetiredCollectibleType(declaringType) ||
-               IsRetiredCollectibleType(targetType);
+        return IsRetiredCollectibleType(declaringType)
+               || IsRetiredCollectibleType(targetType);
     }
 
     private bool IsRetiredCollectibleType(Type? type)
     {
-        if (type is null ||
-            !type.Assembly.IsCollectible)
-        {
+        if (type is null
+            || !type.Assembly.IsCollectible
+        ) {
             return false;
         }
         return !m_types.TryGetTypeRef(type, out _);
@@ -92,11 +97,17 @@ sealed partial class AssetPipeline
                 m_shutdown.Own(m_loader);
             }
             if (m_fileSystem is not null)
+            {
                 m_shutdown.Own(m_fileSystem);
+            }
             if (m_catalogParticipantRegistration is not null)
+            {
                 m_shutdown.Own(m_catalogParticipantRegistration);
+            }
             if (m_failedPreparation is not null)
+            {
                 m_shutdown.Own(m_failedPreparation);
+            }
         }
         try
         {
@@ -136,5 +147,4 @@ sealed partial class AssetPipeline
         AssetReloaded = null;
         SourceMountsChanged = null;
     }
-
 }

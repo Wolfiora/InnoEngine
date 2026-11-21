@@ -1,10 +1,10 @@
-using Inno.Adapter.Platform;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using Inno.Adapter.Platform;
 using Inno.Native.Bgfx;
 using Inno.Platform;
 using Inno.Rendering;
@@ -34,7 +34,8 @@ sealed unsafe partial class BgfxDevice
             throw new InvalidOperationException(
                 $"Frame requires at least {m_nextViewId + requestedViews} views, "
                 + $"but the device supports {capabilities.limits.maxViews}. "
-                + "Reduce active cameras, viewports, or render passes.");
+                + "Reduce active cameras, viewports, or render passes."
+            );
         }
 
         m_activeGraph = graph;
@@ -67,17 +68,15 @@ sealed unsafe partial class BgfxDevice
 
                     if (!m_transientTextureSlots.TryGetValue(texture.physicalSlot, out nativeTexture))
                     {
-                        nativeTexture = AcquireTransientTexture(
-                            texture.descriptor,
-                            texture.name,
-                            texture.physicalSlot);
+                        nativeTexture = AcquireTransientTexture(texture.descriptor, texture.name, texture.physicalSlot);
                         m_transientTextureSlots.Add(texture.physicalSlot, nativeTexture);
                         m_transientTextureSlotDescriptors.Add(texture.physicalSlot, texture.descriptor);
                     }
                     else if (!m_transientTextureSlotDescriptors[texture.physicalSlot].Equals(texture.descriptor))
                     {
                         throw new InvalidOperationException(
-                            $"Render-graph physical texture slot {texture.physicalSlot} aliases incompatible descriptors.");
+                            $"Render-graph physical texture slot {texture.physicalSlot} aliases incompatible descriptors."
+                        );
                     }
                 }
 
@@ -95,7 +94,8 @@ sealed unsafe partial class BgfxDevice
                 bgfx.Raw.set_view_order(
                     checked((ushort)m_activeGraphViewBase),
                     checked((ushort)graph.passes.Count),
-                    order);
+                    order
+                );
             }
 
             m_nextViewId += requestedViews;
@@ -128,7 +128,8 @@ sealed unsafe partial class BgfxDevice
         ushort viewId = checked((ushort)(m_activeGraphViewBase + pass.viewIndex));
         int viewNameLength = Encoding.UTF8.GetByteCount(pass.name);
         Span<byte> viewNameBytes = viewNameLength < 256
-            ? stackalloc byte[256] : new byte[checked(viewNameLength + 1)];
+                                   ? stackalloc byte[256]
+                                   : new byte[checked(viewNameLength + 1)];
         Encoding.UTF8.GetBytes(pass.name, viewNameBytes);
         viewNameBytes[viewNameLength] = 0;
         fixed (byte* viewNamePointer = viewNameBytes)
@@ -216,5 +217,4 @@ sealed unsafe partial class BgfxDevice
         m_activeGraph = null;
         m_activeGraphViewBase = 0;
     }
-
 }

@@ -1,8 +1,8 @@
-using Inno.Core.Mathematics;
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Inno.Core.Mathematics;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
@@ -52,4 +52,3 @@ public sealed class GeometryData
     /// </summary>
     public IReadOnlyList<GeometrySection> sections { get; }
 }
-

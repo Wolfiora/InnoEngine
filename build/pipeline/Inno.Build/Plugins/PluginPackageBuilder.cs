@@ -8,17 +8,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Plugins.Authoring;
-using Inno.Plugins;
 using Inno.Core.IO;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
+using Inno.Plugins;
+using Inno.Plugins.Authoring;
 
 namespace Inno.Build;
 
 internal sealed class PluginPackageBuilder
 {
     private static readonly DateTimeOffset S_ARCHIVE_TIME = new(1980, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
     private static readonly HashSet<string> S_FORBIDDEN_EXTENSIONS = new(StringComparer.OrdinalIgnoreCase)
     {
         ".dll", ".exe", ".dylib", ".so", ".a", ".lib", ".pdb"
@@ -49,10 +50,12 @@ internal sealed class PluginPackageBuilder
         ArgumentNullException.ThrowIfNull(request);
         request.Validate();
         if (!m_assets.isInitialized)
-            throw new InvalidOperationException("Plugin build requires an active authoring asset database.");
-        if (m_plugins.activePlugins.Any(plugin =>
-                string.Equals(plugin.manifest.pluginId, request.pluginId, StringComparison.Ordinal)))
         {
+            throw new InvalidOperationException("Plugin build requires an active authoring asset database.");
+        }
+        if (m_plugins.activePlugins.Any(plugin =>
+                string.Equals(plugin.manifest.pluginId, request.pluginId, StringComparison.Ordinal))
+        ) {
             throw new InvalidOperationException($"Plugin ID '{request.pluginId}' is already active in this project.");
         }
         string destination = Path.GetFullPath(request.outputPath);
@@ -65,12 +68,13 @@ internal sealed class PluginPackageBuilder
         try
         {
             await using (FileStream stream = new(
-                             temporary,
-                             FileMode.CreateNew,
-                             FileAccess.Write,
-                             FileShare.None,
-                             128 * 1024,
-                             FileOptions.Asynchronous | FileOptions.SequentialScan))
+                temporary,
+                FileMode.CreateNew,
+                FileAccess.Write,
+                FileShare.None,
+                128 * 1024,
+                FileOptions.Asynchronous | FileOptions.SequentialScan
+            ))
             using (var archive = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
             {
                 await WriteBytesAsync(archive, "Plugin.inno", plan.manifest, cancellationToken)
@@ -80,41 +84,50 @@ internal sealed class PluginPackageBuilder
                 {
                     await WriteSourceAsync(archive, source, cancellationToken).ConfigureAwait(false);
                     completed++;
-                    progress?.Report(new BuildProgress(
-                        "project-content",
-                        0.15d + 0.5d * completed / Math.Max(1d, plan.projectEntries.Count),
-                        $"Packaging project source {completed}/{plan.projectEntries.Count}."));
+                    progress?.Report(
+                        new BuildProgress(
+                            "project-content",
+                            0.15d + 0.5d * completed / Math.Max(1d, plan.projectEntries.Count),
+                            $"Packaging project source {completed}/{plan.projectEntries.Count}."
+                        )
+                    );
                 }
                 for (int index = 0; index < plan.dependencies.Count; index++)
                 {
                     PluginDependencyPlan dependency = plan.dependencies[index];
                     ZipArchiveEntry packageEntry = archive.CreateEntry(
                         $"Dependencies/{dependency.pluginId}.iplugin",
-                        CompressionLevel.Optimal);
+                        CompressionLevel.Optimal
+                    );
                     packageEntry.LastWriteTime = S_ARCHIVE_TIME;
                     await using Stream packageStream = packageEntry.Open();
                     using var nested = new ZipArchive(packageStream, ZipArchiveMode.Create, leaveOpen: true);
                     await WriteBytesAsync(nested, "Plugin.inno", dependency.manifest, cancellationToken)
                         .ConfigureAwait(false);
                     foreach (SourceEntry source in dependency.entries)
+                    {
                         await WriteSourceAsync(nested, source, cancellationToken).ConfigureAwait(false);
-                    progress?.Report(new BuildProgress(
-                        "dependencies",
-                        0.7d + 0.2d * (index + 1) / Math.Max(1d, plan.dependencies.Count),
-                        $"Embedded dependency {index + 1}/{plan.dependencies.Count}."));
+                    }
+                    progress?.Report(
+                        new BuildProgress(
+                            "dependencies",
+                            0.7d + 0.2d * (index + 1) / Math.Max(1d, plan.dependencies.Count),
+                            $"Embedded dependency {index + 1}/{plan.dependencies.Count}."
+                        )
+                    );
                 }
             }
             EnsurePlanUnchanged(plan);
             cancellationToken.ThrowIfCancellationRequested();
             string contentHash;
             await using (FileStream stream = new(
-                             temporary,
-                             FileMode.Open,
-                             FileAccess.Read,
-                             FileShare.Read,
-                             128 * 1024,
-                             FileOptions.Asynchronous | FileOptions.SequentialScan))
-            {
+                temporary,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                128 * 1024,
+                FileOptions.Asynchronous | FileOptions.SequentialScan
+            )) {
                 contentHash = Convert.ToHexString(await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false));
             }
             AtomicFile.Install(temporary, destination);
@@ -126,41 +139,54 @@ internal sealed class PluginPackageBuilder
                 plan.assetCount,
                 artifactBundleCount: 0,
                 runtimeAssemblyCount: 0,
-                plan.dependencies.Count);
+                plan.dependencies.Count
+            );
         }
         finally
         {
             if (File.Exists(temporary))
+            {
                 File.Delete(temporary);
+            }
         }
     }
 
     private PluginPackagePlan CapturePlan(PluginBuildRequest request)
     {
-        AssetSourceMount projectMount = m_assets.sourceMounts.Single(
-            static mount => mount.id == AssetSourceId.project);
+        AssetSourceMount projectMount = m_assets.sourceMounts.Single(static mount => mount.id == AssetSourceId.project);
         PluginCandidate[] installedPlugins = m_plugins.activePlugins.ToArray();
         ValidateDependencyGraph(installedPlugins);
         var selectedIds = new HashSet<string>(StringComparer.Ordinal);
         var installedById = installedPlugins.ToDictionary(
-            static plugin => plugin.manifest.pluginId, StringComparer.Ordinal);
+            static plugin => plugin.manifest.pluginId,
+            StringComparer.Ordinal
+        );
         void SelectDependency(string id)
         {
             if (!installedById.TryGetValue(id, out PluginCandidate? plugin))
+            {
                 throw new InvalidOperationException($"Declared plugin dependency '{id}' is not installed and active.");
+            }
             if (!selectedIds.Add(id))
+            {
                 return;
+            }
             foreach (string upstream in plugin.manifest.dependencies)
+            {
                 SelectDependency(upstream);
+            }
         }
         foreach (string id in request.dependencies)
+        {
             SelectDependency(id);
+        }
         PluginCandidate[] activePlugins = installedPlugins
             .Where(plugin => selectedIds.Contains(plugin.manifest.pluginId))
             .ToArray();
         string[] dependencyIds = activePlugins.Select(static plugin => plugin.manifest.pluginId).ToArray();
         ProjectSettingsDocument settingsDocument = m_serialization.Deserialize<ProjectSettingsDocument>(
-            m_settings.CaptureDocument());
+            m_settings.CaptureDocument()
+        );
         string[] overrides = activePlugins
             .Where(plugin => plugin.manifest.settingContributions.Any(contribution =>
                 settingsDocument.overrides.Any(project => project.id == contribution.id)))
@@ -170,15 +196,15 @@ internal sealed class PluginPackageBuilder
         HashSet<string> overrideSet = overrides.ToHashSet(StringComparer.Ordinal);
         var settings = new List<ProjectSettingRecord>();
         foreach (ProjectSettingRecord record in settingsDocument.overrides
-                     .OrderBy(static value => value.id.value, StringComparer.Ordinal))
-        {
+            .OrderBy(static value => value.id.value, StringComparer.Ordinal)
+        ) {
             if (m_settings.TryCapture(
-                    record.id,
-                    request.pluginId,
-                    dependencySet,
-                    overrideSet,
-                    out ProjectSettingRecord captured))
-            {
+                record.id,
+                request.pluginId,
+                dependencySet,
+                overrideSet,
+                out ProjectSettingRecord captured
+            )) {
                 settings.Add(captured);
             }
         }
@@ -188,12 +214,16 @@ internal sealed class PluginPackageBuilder
             .OrderBy(static entry => entry.assetPath.localPath, StringComparer.Ordinal)
             .ToArray();
         if (projectFiles.Length == 0)
+        {
             throw new InvalidOperationException("The project contains no source content to export.");
+        }
         string[] relativeFiles = projectFiles.Select(static entry => entry.assetPath.localPath).ToArray();
         foreach (string relative in relativeFiles)
         {
             if (S_FORBIDDEN_EXTENSIONS.Contains(Path.GetExtension(relative)))
+            {
                 throw new InvalidOperationException($"Plugin content '{relative}' is a forbidden binary.");
+            }
         }
         var manifest = new PluginManifest
         {
@@ -231,20 +261,22 @@ internal sealed class PluginPackageBuilder
         {
             foreach (PluginCandidate plugin in activePlugins)
             {
-                SourceEntry[] entries = Directory.EnumerateFiles(
-                        plugin.sourceMount.rootPath,
-                        "*",
-                        SearchOption.AllDirectories)
+                SourceEntry[] entries = Directory
+                    .EnumerateFiles(plugin.sourceMount.rootPath, "*", SearchOption.AllDirectories)
                     .Select(path => SourceEntry.Capture(
                         path,
-                        "Assets/" + Path.GetRelativePath(plugin.sourceMount.rootPath, path).Replace('\\', '/')))
+                        "Assets/" + Path.GetRelativePath(plugin.sourceMount.rootPath, path).Replace('\\', '/')
+                    ))
                     .OrderBy(static value => value.archivePath, StringComparer.Ordinal)
                     .ToArray();
-                dependencies.Add(new PluginDependencyPlan(
-                    plugin.manifest.pluginId,
-                    plugin.contentHash,
-                    m_serialization.Serialize(plugin.manifest),
-                    entries));
+                dependencies.Add(
+                    new PluginDependencyPlan(
+                        plugin.manifest.pluginId,
+                        plugin.contentHash,
+                        m_serialization.Serialize(plugin.manifest),
+                        entries
+                    )
+                );
             }
         }
         return new PluginPackagePlan(
@@ -252,7 +284,8 @@ internal sealed class PluginPackageBuilder
             projectEntries,
             dependencies,
             projectFiles.Length,
-            installedPlugins.Select(static plugin => (plugin.manifest.pluginId, plugin.contentHash)).ToArray());
+            installedPlugins.Select(static plugin => (plugin.manifest.pluginId, plugin.contentHash)).ToArray()
+        );
     }
 
     private static async ValueTask WriteSourceAsync(
@@ -270,7 +303,8 @@ internal sealed class PluginPackageBuilder
             FileAccess.Read,
             FileShare.Read,
             128 * 1024,
-            FileOptions.Asynchronous | FileOptions.SequentialScan);
+            FileOptions.Asynchronous | FileOptions.SequentialScan
+        );
         await input.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
         source.EnsureUnchanged();
     }
@@ -290,40 +324,55 @@ internal sealed class PluginPackageBuilder
     private void EnsurePlanUnchanged(PluginPackagePlan plan)
     {
         foreach (SourceEntry source in plan.projectEntries)
+        {
             source.EnsureUnchanged();
+        }
         foreach (PluginDependencyPlan dependency in plan.dependencies)
         {
             foreach (SourceEntry source in dependency.entries)
+            {
                 source.EnsureUnchanged();
+            }
         }
         (string pluginId, string contentHash)[] current = m_plugins.activePlugins
             .Select(static plugin => (plugin.manifest.pluginId, plugin.contentHash))
             .ToArray();
         if (!plan.activePlugins.SequenceEqual(current))
+        {
             throw new InvalidOperationException("The active Plugin generation changed during package creation.");
+        }
     }
 
     private static void ValidateDependencyGraph(IReadOnlyList<PluginCandidate> plugins)
     {
         Dictionary<string, PluginCandidate> byId = plugins.ToDictionary(
             static value => value.manifest.pluginId,
-            StringComparer.Ordinal);
+            StringComparer.Ordinal
+        );
         var completed = new HashSet<string>(StringComparer.Ordinal);
         var visiting = new HashSet<string>(StringComparer.Ordinal);
         foreach (PluginCandidate plugin in plugins)
+        {
             Visit(plugin.manifest.pluginId);
+        }
 
         void Visit(string id)
         {
             if (completed.Contains(id))
+            {
                 return;
+            }
             if (!visiting.Add(id))
+            {
                 throw new InvalidOperationException($"Plugin dependency graph contains a cycle at '{id}'.");
+            }
             PluginCandidate plugin = byId[id];
             foreach (string dependency in plugin.manifest.dependencies)
             {
                 if (!byId.ContainsKey(dependency))
+                {
                     throw new InvalidOperationException($"Plugin '{id}' requires unavailable dependency '{dependency}'.");
+                }
                 Visit(dependency);
             }
             visiting.Remove(id);
@@ -354,10 +403,14 @@ internal sealed class PluginPackageBuilder
             .ToList();
         string? projectRoot = Directory.GetParent(m_assets.assetRoot)?.FullName;
         if (projectRoot is not null)
+        {
             protectedRoots.Add(Path.Combine(projectRoot, "Plugins"));
+        }
         string? conflict = protectedRoots.FirstOrDefault(root => IsWithin(root, destination));
         if (conflict is not null)
+        {
             throw new InvalidOperationException($"Plugin output cannot be written inside '{Path.GetFullPath(conflict)}'.");
+        }
     }
 
     private static bool IsWithin(
@@ -366,8 +419,8 @@ internal sealed class PluginPackageBuilder
     ) {
         string normalizedRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root));
         StringComparison comparison = OperatingSystem.IsWindows()
-            ? StringComparison.OrdinalIgnoreCase
-            : StringComparison.Ordinal;
+                                      ? StringComparison.OrdinalIgnoreCase
+                                      : StringComparison.Ordinal;
         return string.Equals(candidate, normalizedRoot, comparison)
                || candidate.StartsWith(normalizedRoot + Path.DirectorySeparatorChar, comparison);
     }
@@ -399,19 +452,19 @@ internal sealed class PluginPackageBuilder
         ) {
             var info = new FileInfo(sourcePath);
             if (!info.Exists)
+            {
                 throw new InvalidOperationException($"Plugin source dependency '{sourcePath}' is missing.");
-            return new SourceEntry(
-                info.FullName,
-                archivePath.Replace('\\', '/'),
-                info.Length,
-                info.LastWriteTimeUtc);
+            }
+            return new SourceEntry(info.FullName, archivePath.Replace('\\', '/'), info.Length, info.LastWriteTimeUtc);
         }
 
         internal void EnsureUnchanged()
         {
             var info = new FileInfo(sourcePath);
             if (!info.Exists || info.Length != length || info.LastWriteTimeUtc != lastWriteTimeUtc)
+            {
                 throw new InvalidOperationException($"Plugin source '{sourcePath}' changed during package creation.");
+            }
         }
     }
 }

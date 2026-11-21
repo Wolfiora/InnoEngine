@@ -24,8 +24,12 @@ public static class NativeToolchainPreparation
     /// <returns>
     /// A caller-owned dictionary to populate with explicitly selected SDK variables.
     /// </returns>
-    public static Dictionary<string, string> CreateEnvironment() => AmbientCompilerVariables.ToDictionary(
-        static variable => variable, static _ => string.Empty, StringComparer.OrdinalIgnoreCase);
+    public static Dictionary<string, string> CreateEnvironment()
+        => AmbientCompilerVariables.ToDictionary(
+            static variable => variable,
+            static _ => string.Empty,
+            StringComparer.OrdinalIgnoreCase
+        );
 
     /// <summary>
     /// Validates and freezes a provider's complete tool selection before product staging,
@@ -84,13 +88,28 @@ public static class NativeToolchainPreparation
             string physicalCMake = new PhysicalPathResolver().Resolve(cmake);
             string modules = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(physicalCMake)!, "..", "share"));
             if (Directory.Exists(modules))
+            {
                 complete.Add(modules);
+            }
         }
         complete.AddRange(tools.Values);
         foreach (string input in complete)
+        {
             if (!File.Exists(input) && !Directory.Exists(input))
+            {
                 throw new FileNotFoundException("A selected native toolchain input is unavailable.", input);
-        return new(targetId, host, tools, environment, complete, cmakeArguments,
-            linkPlan, multiConfiguration, compilerInputs);
+            }
+        }
+        return new(
+            targetId,
+            host,
+            tools,
+            environment,
+            complete,
+            cmakeArguments,
+            linkPlan,
+            multiConfiguration,
+            compilerInputs
+        );
     }
 }

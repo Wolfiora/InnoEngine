@@ -37,10 +37,13 @@ public sealed class WindowsX64BgfxSurfaceIntegration : IBgfxSurfaceIntegration
         BgfxSurfaceRole role
     ) {
         if (role != BgfxSurfaceRole.Primary && role != BgfxSurfaceRole.Additional)
+        {
             throw new ArgumentOutOfRangeException(nameof(role));
+        }
         if (handles.handleKind != PlatformNativeHandleId.win32)
+        {
             throw new NotSupportedException("The Windows BGFX integration requires its explicit win32 surface ABI.");
-        return new BgfxSurfaceDescriptor(handles.windowHandle, handles.displayHandle,
-            supportsSrgbReset: true);
+        }
+        return new BgfxSurfaceDescriptor(handles.windowHandle, handles.displayHandle, supportsSrgbReset: true);
     }
 }

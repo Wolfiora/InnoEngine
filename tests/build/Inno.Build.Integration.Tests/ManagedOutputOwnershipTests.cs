@@ -1,6 +1,3 @@
-using Inno.Build.Toolchains;
-using Inno.Core.IO;
-using Inno.Testing.Source;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,6 +6,9 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Inno.Build.Toolchains;
+using Inno.Core.IO;
+using Inno.Testing.Source;
 
 namespace Inno.Build.Integration.Tests;
 
@@ -21,7 +21,7 @@ public sealed class ManagedOutputOwnershipTests
         string owner = Path.Combine(Path.GetTempPath(), "InnoManagedOutputTests");
         string fixture = PathBoundary.Resolve(owner, Guid.NewGuid().ToString("N"));
         string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
-            ?? ToolchainEnvironment.ResolveExecutable("dotnet");
+                      ?? ToolchainEnvironment.ResolveExecutable("dotnet");
         var outputs = new List<Dictionary<string, string>>();
         Directory.CreateDirectory(fixture);
         try
@@ -31,7 +31,9 @@ public sealed class ManagedOutputOwnershipTests
                 string checkoutRoot = Path.Combine(fixture, checkout);
                 Directory.CreateDirectory(Path.Combine(checkoutRoot, "build", "msbuild"));
                 foreach (string source in new[] { "global.json", "Directory.Build.props", "build/msbuild/Inno.Packages.props" })
+                {
                     File.Copy(Path.Combine(root, source), Path.Combine(checkoutRoot, source));
+                }
                 await File.WriteAllTextAsync(Path.Combine(checkoutRoot, "Directory.Build.targets"), "<Project />");
                 string productProperties = Path.Combine(checkoutRoot, "Product.props");
                 await File.WriteAllTextAsync(productProperties, "<Project />");
@@ -44,7 +46,9 @@ public sealed class ManagedOutputOwnershipTests
                 await File.WriteAllTextAsync(Path.Combine(checkoutRoot, "Shared.cs"), "public sealed class Shared { }");
                 var properties = new List<string>
                 {
-                    "-p:Configuration=Debug", "-p:InnoNativeTarget=test-target", "-p:InnoToolTarget=test-host",
+                    "-p:Configuration=Debug",
+                    "-p:InnoNativeTarget=test-target",
+                    "-p:InnoToolTarget=test-host",
                     "-p:ArtifactsPath=" + Path.Combine(checkoutRoot, "outputs"),
                     "-p:InnoProductBuildProperties=" + productProperties
                 };
@@ -95,15 +99,19 @@ public sealed class ManagedOutputOwnershipTests
                 """);
             await File.WriteAllTextAsync(Path.Combine(fixture, "Shared.cs"), "public sealed class Shared { }");
             string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
-                ?? ToolchainEnvironment.ResolveExecutable("dotnet");
+                          ?? ToolchainEnvironment.ResolveExecutable("dotnet");
             var common = new List<string> { $"-p:Configuration={configuration}" };
             if (artifacts)
+            {
                 common.Add($"-p:ArtifactsPath={Path.Combine(fixture, "outputs")}");
+            }
             Dictionary<string, string> neutral = await EvaluateAsync(host, project, common);
             var productArguments = new List<string>(common) { "-p:InnoNativeTarget=test-target" };
             Dictionary<string, string> product = await EvaluateAsync(host, project, productArguments);
             foreach (string property in new[] { "ProjectAssetsFile", "IntermediateOutputPath", "TargetPath" })
+            {
                 Assert.NotEqual(neutral[property], product[property]);
+            }
 
             var compileArguments = new List<string>(productArguments)
             {
@@ -151,7 +159,9 @@ public sealed class ManagedOutputOwnershipTests
             Assert.NotEqual(product["TargetPath"], rid["TargetPath"]);
 
             foreach (List<string> request in new[] { common, productArguments })
+            {
                 await RunAsync(host, fixture, ["restore", project, .. request, "-v:quiet"]);
+            }
             string driver = Path.Combine(fixture, "Build.proj");
             await File.WriteAllTextAsync(driver, $"""
                 <Project>
@@ -183,13 +193,18 @@ public sealed class ManagedOutputOwnershipTests
     ) {
         using var output = new StringWriter();
         await RunAsync(host, Path.GetDirectoryName(project)!, [
-            "msbuild", project, "-nologo", .. properties,
+            "msbuild",
+            project,
+            "-nologo",
+            .. properties,
             "-getProperty:ProjectAssetsFile,IntermediateOutputPath,TargetPath,RuntimeIdentifier"
         ], output);
         using JsonDocument document = JsonDocument.Parse(output.ToString());
         var values = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (JsonProperty property in document.RootElement.GetProperty("Properties").EnumerateObject())
+        {
             values.Add(property.Name, property.Value.GetString()!);
+        }
         return values;
     }
 
@@ -203,7 +218,14 @@ public sealed class ManagedOutputOwnershipTests
         using var error = new StringWriter();
         using var captured = new StringWriter();
         Exception? failure = await Record.ExceptionAsync(() => ToolchainEnvironment.RunAsync(
-            host, arguments, directory, cancellation.Token, DotNetSdkEnvironment.Create(host), output ?? captured, error));
+            host,
+            arguments,
+            directory,
+            cancellation.Token,
+            DotNetSdkEnvironment.Create(host),
+            output ?? captured,
+            error
+        ));
         Assert.True(failure is null, $"{failure}{Environment.NewLine}{output ?? captured}{Environment.NewLine}{error}");
     }
 }

@@ -32,7 +32,9 @@ public sealed class EngineHostBuilder
     public EngineHostBuilder UseRetirementTimeout(TimeSpan timeout)
     {
         if (timeout <= TimeSpan.Zero)
+        {
             throw new ArgumentOutOfRangeException(nameof(timeout));
+        }
         m_retirementTimeout = timeout;
         return this;
     }
@@ -46,9 +48,16 @@ public sealed class EngineHostBuilder
     public EngineHost Build()
     {
         if (m_moduleSource is null || m_typeSource is null || m_serializationMetadata is null)
+        {
             throw new InvalidOperationException("The composition root must select module, type and serialization metadata sources.");
-        EngineHost host = new(m_retirementTimeout, m_logDeliveryMode,
-            m_moduleSource, m_typeSource, m_serializationMetadata);
+        }
+        EngineHost host = new(
+            m_retirementTimeout,
+            m_logDeliveryMode,
+            m_moduleSource,
+            m_typeSource,
+            m_serializationMetadata
+        );
         m_moduleSource = null;
         m_typeSource = null;
         m_serializationMetadata = null;
@@ -79,7 +88,9 @@ public sealed class EngineHostBuilder
         ArgumentNullException.ThrowIfNull(types);
         ArgumentNullException.ThrowIfNull(serialization);
         if (m_moduleSource is not null)
+        {
             throw new InvalidOperationException("Metadata sources have already been selected.");
+        }
         m_moduleSource = modules;
         m_typeSource = types;
         m_serializationMetadata = serialization;
@@ -101,7 +112,9 @@ public sealed class EngineHostBuilder
     public EngineHostBuilder UseLogDelivery(LogDeliveryMode deliveryMode)
     {
         if (!Enum.IsDefined(deliveryMode))
+        {
             throw new ArgumentOutOfRangeException(nameof(deliveryMode));
+        }
         m_logDeliveryMode = deliveryMode;
         return this;
     }

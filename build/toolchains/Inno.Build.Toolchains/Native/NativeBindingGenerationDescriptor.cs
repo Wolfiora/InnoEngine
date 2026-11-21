@@ -46,7 +46,9 @@ public sealed class NativeBindingGenerationDescriptor
         document.Save(buffer);
         byte[] content = buffer.ToArray();
         if (File.Exists(destination) && File.ReadAllBytes(destination).AsSpan().SequenceEqual(content))
+        {
             return;
+        }
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
         AtomicFile.WriteAllBytes(destination, content);
     }
@@ -84,7 +86,9 @@ public sealed class NativeBindingGenerationDescriptor
         IReadOnlyDictionary<string, NativeLibraryKind> linkage
     ) {
         if (!XNode.DeepEquals(XDocument.Load(path), CreateSelection(generations, linkage)))
+        {
             throw new InvalidDataException("Native publication must preserve the exact binding selection used by managed compilation.");
+        }
     }
 
     /// <summary>
@@ -140,7 +144,8 @@ public sealed class NativeBindingGenerationDescriptor
     public static NativeBindingGenerationDescriptor Load(string path)
     {
         NativeBindingGenerationDescriptor descriptor = JsonSerializer.Deserialize<NativeBindingGenerationDescriptor>(
-            File.ReadAllText(path)) ?? throw new InvalidDataException("The binding generation descriptor is empty.");
+            File.ReadAllText(path)
+        ) ?? throw new InvalidDataException("The binding generation descriptor is empty.");
         descriptor.Validate();
         return descriptor;
     }
@@ -164,7 +169,9 @@ public sealed class NativeBindingGenerationDescriptor
         finally
         {
             if (File.Exists(staging))
+            {
                 File.Delete(staging);
+            }
         }
     }
 
@@ -178,12 +185,20 @@ public sealed class NativeBindingGenerationDescriptor
             || descriptor.artifactDirectory.Length == 0 && descriptor.artifactOwnerDirectory.Length != 0
             || descriptor.artifactDirectory.Length > 0 && !Path.IsPathFullyQualified(descriptor.artifactOwnerDirectory)
             || descriptor.artifactDirectory.Length > 0 && (!Path.IsPathFullyQualified(descriptor.artifactDirectory)
-                || Path.GetFullPath(descriptor.bindingsPath) != Path.Combine(Path.GetFullPath(descriptor.artifactDirectory), "Generated", "Bindings.cs"))
+                                                           || Path.GetFullPath(descriptor.bindingsPath) != Path.Combine(
+                                                               Path.GetFullPath(descriptor.artifactDirectory),
+                                                               "Generated",
+                                                               "Bindings.cs"
+                                                           ))
             || descriptor.nativeDirectory.Length > 0 && (!Path.IsPathFullyQualified(descriptor.nativeDirectory)
-                || !Directory.Exists(descriptor.nativeDirectory)))
+                                                         || !Directory.Exists(descriptor.nativeDirectory))
+        ) {
             throw new InvalidDataException("The binding generation descriptor does not identify complete outputs.");
+        }
         if (descriptor.artifactDirectory.Length > 0)
+        {
             BuildCacheCleanupPlan.RequireChild(descriptor.artifactOwnerDirectory, descriptor.artifactDirectory);
+        }
     }
 
     private static XDocument CreateSelection(
@@ -193,25 +208,37 @@ public sealed class NativeBindingGenerationDescriptor
         ArgumentNullException.ThrowIfNull(generations);
         ArgumentNullException.ThrowIfNull(linkage);
         if (generations.Count != linkage.Count || generations.Keys.Any(key => !linkage.ContainsKey(key)))
+        {
             throw new ArgumentException("Binding selections require exact component linkage coverage.", nameof(linkage));
+        }
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var document = new XElement("Project");
         foreach (var entry in generations.OrderBy(static entry => entry.Key, StringComparer.Ordinal))
         {
             string name = Path.GetFileNameWithoutExtension(entry.Key);
-            if (string.IsNullOrWhiteSpace(name) || name.Any(static value => !char.IsAsciiLetterOrDigit(value)
-                && value is not ('.' or '_' or '-')) || !names.Add(name))
+            if (string.IsNullOrWhiteSpace(name) || name.Any(static value => (
+                !char.IsAsciiLetterOrDigit(value)
+                && value is not ('.' or '_' or '-')
+            )) || !names.Add(name)
+            ) {
                 throw new ArgumentException("Binding selections require unique portable project names.", nameof(generations));
+            }
             if (!Enum.IsDefined(linkage[entry.Key]))
+            {
                 throw new ArgumentException("A selected native component requires supported linkage.", nameof(linkage));
-            document.Add(new XElement("PropertyGroup",
-                new XAttribute("Condition", "'$(MSBuildProjectName)' == '" + name + "'"),
-                new XElement("BindGenExpectedFingerprint", entry.Value.fingerprint),
-                new XElement("BindGenArtifactDirectory", entry.Value.artifactDirectory),
-                new XElement("BindGenArtifactOwnerDirectory", entry.Value.artifactOwnerDirectory),
-                new XElement("InnoNativeLibraryKind", linkage[entry.Key]),
-                new XElement("InnoNativeRuntimeImports", entry.Value.usesRuntimeImports ? "true" : "false"),
-                new XElement("BindGenOutputDirectory", Path.GetDirectoryName(entry.Value.bindingsPath))));
+            }
+            document.Add(
+                new XElement(
+                    "PropertyGroup",
+                    new XAttribute("Condition", "'$(MSBuildProjectName)' == '" + name + "'"),
+                    new XElement("BindGenExpectedFingerprint", entry.Value.fingerprint),
+                    new XElement("BindGenArtifactDirectory", entry.Value.artifactDirectory),
+                    new XElement("BindGenArtifactOwnerDirectory", entry.Value.artifactOwnerDirectory),
+                    new XElement("InnoNativeLibraryKind", linkage[entry.Key]),
+                    new XElement("InnoNativeRuntimeImports", entry.Value.usesRuntimeImports ? "true" : "false"),
+                    new XElement("BindGenOutputDirectory", Path.GetDirectoryName(entry.Value.bindingsPath))
+                )
+            );
         }
         return new XDocument(document);
     }

@@ -35,17 +35,24 @@ public sealed class StaticPlayerModuleActivator : IPlayerModuleActivator
         ArgumentNullException.ThrowIfNull(deployment);
         ArgumentNullException.ThrowIfNull(assemblies);
         if (assemblies.Count != deployment.modules.Count)
+        {
             throw new InvalidDataException("Linked module ownership differs from the code deployment.");
+        }
         var sources = new List<IModuleSource>(deployment.modules.Count);
         foreach (GameCodeModule module in deployment.modules)
         {
             if (!assemblies.TryGetValue(module.name, out IReadOnlyList<Assembly>? linked)
                 || linked is null || linked.Any(static assembly => assembly is null)
                 || !module.assemblies.Select(static assembly => assembly.name).SequenceEqual(
-                    linked.Select(static assembly => assembly.GetName().Name), StringComparer.Ordinal))
+                    linked.Select(static assembly => assembly.GetName().Name),
+                    StringComparer.Ordinal
+                )
+            ) {
                 throw new InvalidDataException($"Linked code for module '{module.name}' differs from its deployment.");
-            sources.Add(new StaticModuleSource(module.name, module.domain,
-                AssemblyScope.Runtime, linked, module.dependencies));
+            }
+            sources.Add(
+                new StaticModuleSource(module.name, module.domain, AssemblyScope.Runtime, linked, module.dependencies)
+            );
         }
         m_linkedDeployment = deployment;
         m_sources = sources.AsReadOnly();
@@ -60,7 +67,9 @@ public sealed class StaticPlayerModuleActivator : IPlayerModuleActivator
         ArgumentNullException.ThrowIfNull(deployment);
         deployment.ValidateMatches(m_linkedDeployment);
         if (m_sources.Count == 0)
+        {
             return;
+        }
         using AssemblyReloadSession activation = modules.BeginReload(m_sources);
         activation.Activate();
         _ = activation.Complete();

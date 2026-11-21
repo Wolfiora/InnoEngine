@@ -55,7 +55,9 @@ internal sealed class SerializationOperation
     internal void EnsureActive()
     {
         if (!m_isActive)
+        {
             throw new InvalidOperationException("The serialization reader or writer is no longer active.");
+        }
     }
 
     internal void RecordConverterWrite() => m_converterWrites = checked(m_converterWrites + 1);
@@ -68,7 +70,9 @@ internal sealed class SerializationOperation
         EnsureActive();
         BinarySerializationNode captured = PropertySnapshotPipeline.CaptureData(value, context, m_converters, previous);
         if (captured.properties?.hasConverters == true)
+        {
             RecordConverterWrite();
+        }
         return captured;
     }
 
@@ -83,12 +87,16 @@ internal sealed class SerializationOperation
     {
         EnsureActive();
         if (!(m_scheduledObjects ??= new(ReferenceEqualityComparer.Instance)).Add(value))
+        {
             return;
+        }
         (m_scheduledObjectOrder ??= []).Add(value);
 
         Action<object, SerializationContext>? callback = GetMetadata(value.GetType()).restored;
         if (callback is not null)
+        {
             (m_completionCallbacks ??= []).Add(() => callback(value, context));
+        }
     }
 
     internal void EnterCapture(
@@ -100,7 +108,8 @@ internal sealed class SerializationOperation
         if (captures.TryGetValue(value, out string? existingPath))
         {
             throw new InvalidOperationException(
-                $"Serialization cycle detected at '{path}'. The same object is already being written at '{existingPath}'.");
+                $"Serialization cycle detected at '{path}'. The same object is already being written at '{existingPath}'."
+            );
         }
 
         captures.Add(value, path);
@@ -115,16 +124,18 @@ internal sealed class SerializationOperation
     internal void Rollback(Checkpoint checkpoint)
     {
         EnsureActive();
-        if (checkpoint.callbackCount < 0 ||
-            checkpoint.callbackCount > (m_completionCallbacks?.Count ?? 0) ||
-            checkpoint.scheduledObjectCount < 0 ||
-            checkpoint.scheduledObjectCount > (m_scheduledObjectOrder?.Count ?? 0))
-        {
+        if (checkpoint.callbackCount < 0
+            || checkpoint.callbackCount > (m_completionCallbacks?.Count ?? 0)
+            || checkpoint.scheduledObjectCount < 0
+            || checkpoint.scheduledObjectCount > (m_scheduledObjectOrder?.Count ?? 0)
+        ) {
             throw new InvalidOperationException("The serialization operation checkpoint is invalid.");
         }
 
         if (m_completionCallbacks is { } callbacks && callbacks.Count > checkpoint.callbackCount)
+        {
             callbacks.RemoveRange(checkpoint.callbackCount, callbacks.Count - checkpoint.callbackCount);
+        }
         if (m_scheduledObjectOrder is { } order)
         {
             for (int i = order.Count - 1; i >= checkpoint.scheduledObjectCount; i--)
@@ -138,7 +149,9 @@ internal sealed class SerializationOperation
     internal void ExitCapture(object value)
     {
         if (m_isActive)
+        {
             m_capturePaths?.Remove(value);
+        }
     }
 
     internal void Complete()
@@ -147,8 +160,12 @@ internal sealed class SerializationOperation
         try
         {
             if (m_completionCallbacks is { } callbacks)
+            {
                 for (int i = 0; i < callbacks.Count; i++)
+                {
                     callbacks[i]();
+                }
+            }
         }
         finally
         {
@@ -163,7 +180,9 @@ internal sealed class SerializationOperation
     internal void Fail()
     {
         if (!m_isActive)
+        {
             return;
+        }
 
         m_isActive = false;
         m_completionCallbacks?.Clear();
@@ -176,5 +195,4 @@ internal sealed class SerializationOperation
         int callbackCount,
         int scheduledObjectCount
     );
-
 }

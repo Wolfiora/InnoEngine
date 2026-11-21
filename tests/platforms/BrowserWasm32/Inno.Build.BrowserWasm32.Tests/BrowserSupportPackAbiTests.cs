@@ -18,11 +18,12 @@ public sealed class BrowserSupportPackAbiTests : IDisposable
             "BrowserWasm32Bridge.cs", "global.json", "Analyzers/Inno.Runtime.Generators.dll",
             "Analyzers/Inno.Core.Serialization.Generators.dll", "wwwroot/index.html", "wwwroot/main.js",
             "Native/wasm_sjlj_shim.c", "References/Inno.Player.Runtime.dll"
-        })
+        }) {
             Write("PlayerLink/" + input);
+        }
         string archive = Path.Combine(m_root, "PlayerLink", "Native", "custom.a");
         string header = "object.o/".PadRight(16) + "0".PadRight(12) + "0".PadRight(6)
-            + "0".PadRight(6) + "644".PadRight(8) + "8".PadRight(10) + "`\n";
+                        + "0".PadRight(6) + "644".PadRight(8) + "8".PadRight(10) + "`\n";
         byte[] bytes = [.. Encoding.ASCII.GetBytes("!<arch>\n" + header), 0, 97, 115, 109, 1, 0, 0, 0];
         File.WriteAllBytes(archive, bytes);
         var validator = new Inno.Build.BrowserWasm32.BrowserWasm32SupportPackValidator();

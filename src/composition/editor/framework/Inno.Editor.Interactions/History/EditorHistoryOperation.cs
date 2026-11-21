@@ -43,16 +43,16 @@ internal abstract class EditorHistoryOperation : IDisposable
     {
         ObjectDisposedException.ThrowIf(m_isDisposed, this);
         return canUndo
-            ? Undo()
-            : EditorHistoryResult.Failure($"'{name}' cannot currently be undone.");
+               ? Undo()
+               : EditorHistoryResult.Failure($"'{name}' cannot currently be undone.");
     }
 
     internal EditorHistoryResult RedoInternal()
     {
         ObjectDisposedException.ThrowIf(m_isDisposed, this);
         return canRedo
-            ? Redo()
-            : EditorHistoryResult.Failure($"'{name}' cannot currently be redone.");
+               ? Redo()
+               : EditorHistoryResult.Failure($"'{name}' cannot currently be redone.");
     }
 
     internal bool TryMergeInternal(EditorHistoryOperation newer)
@@ -95,7 +95,9 @@ internal abstract class EditorHistoryOperation : IDisposable
     public void Dispose()
     {
         if (m_isDisposed)
+        {
             return;
+        }
         m_isDisposed = true;
         Dispose(true);
         GC.SuppressFinalize(this);
@@ -107,7 +109,5 @@ internal abstract class EditorHistoryOperation : IDisposable
     /// <param name="disposing">
     /// Whether managed resources may be released.
     /// </param>
-    protected virtual void Dispose(bool disposing)
-    {
-    }
+    protected virtual void Dispose(bool disposing) {}
 }

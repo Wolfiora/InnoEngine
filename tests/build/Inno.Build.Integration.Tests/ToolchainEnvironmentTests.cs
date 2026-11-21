@@ -1,8 +1,8 @@
-using Inno.Testing.Source;
 using System;
 using System.IO;
-using Inno.Build.Toolchains;
 using Xunit;
+using Inno.Build.Toolchains;
+using Inno.Testing.Source;
 
 namespace Inno.Build.Integration.Tests;
 
@@ -12,12 +12,12 @@ public sealed class ToolchainEnvironmentTests
     public void NativeBuildRootBelongsToTheToolchainProject()
     {
         string engine = TestRepository.GetRoot(typeof(ToolchainEnvironmentTests).Assembly);
-        string expected = Path.Combine(engine,
-            "build", "toolchains", "Inno.Build.Toolchains", "obj", "native");
+        string expected = Path.Combine(engine, "build", "toolchains", "Inno.Build.Toolchains", "obj", "native");
         var component = new NativeComponentDescriptor(
             "fixture",
             "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
-            "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj");
+            "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
+        );
         var context = new NativeBuildContext(engine, "debug");
 
         Assert.Equal(expected, context.GetNativeBuildRoot(component));

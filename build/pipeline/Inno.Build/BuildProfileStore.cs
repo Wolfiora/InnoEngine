@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-
 using Inno.Core.IO;
 using Inno.Core.Serialization;
 
@@ -63,7 +62,9 @@ public sealed class BuildProfileStore
     public BuildProfile Load()
     {
         if (!File.Exists(m_path))
+        {
             throw new FileNotFoundException("The project build profile does not exist.", m_path);
+        }
 
         BuildProfile profile;
         try
@@ -71,9 +72,9 @@ public sealed class BuildProfileStore
             profile = m_serialization.Deserialize<BuildProfile>(File.ReadAllBytes(m_path));
         }
         catch (Exception exception) when (exception is IOException
-            or InvalidDataException
-            or InvalidOperationException
-            or ArgumentException)
+                                          or InvalidDataException
+                                          or InvalidOperationException
+                                          or ArgumentException)
         {
             throw new InvalidDataException($"Build profile '{m_path}' is not a valid current-format document.", exception);
         }

@@ -11,9 +11,8 @@ public abstract class PlayerSupportPackFixture : IDisposable
     protected readonly string m_supportPackRoot;
     private readonly string[] m_referenceAssemblies;
 
-    protected PlayerSupportPackFixture() : this([typeof(Inno.Core.Identity.IdentityAllocator).Assembly.Location])
-    {
-    }
+    protected PlayerSupportPackFixture()
+        : this([typeof(Inno.Core.Identity.IdentityAllocator).Assembly.Location]) {}
 
     protected PlayerSupportPackFixture(string[] referenceAssemblies)
     {
@@ -26,10 +25,18 @@ public abstract class PlayerSupportPackFixture : IDisposable
 
     public virtual void Dispose()
     {
-        if (!Path.GetFullPath(m_root).StartsWith(Path.Combine(Path.GetTempPath(), "InnoBuildTests") + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+        if (!Path.GetFullPath(m_root)
+            .StartsWith(
+                Path.Combine(Path.GetTempPath(), "InnoBuildTests") + Path.DirectorySeparatorChar,
+                StringComparison.OrdinalIgnoreCase
+            )
+        ) {
             throw new InvalidOperationException("The support pack fixture escaped its owned directory.");
+        }
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     protected void CreateSupportPack(
@@ -48,10 +55,19 @@ public abstract class PlayerSupportPackFixture : IDisposable
         string link = Path.Combine(directory, "PlayerLink");
         Directory.CreateDirectory(link);
         string platform = target == new BuildTargetId("macos-arm64") ? "MacOSArm64" : "WindowsX64";
-        File.WriteAllText(Path.Combine(link, "Player.csproj"),
-            "<Project><PropertyGroup><AssemblyName>Inno.Player." + platform + "</AssemblyName></PropertyGroup></Project>");
-        foreach (string source in new[] { "Program.cs", platform + "PlayerComposition.cs", platform + "PlayerContentSource.cs", "global.json" })
+        File.WriteAllText(
+            Path.Combine(link, "Player.csproj"),
+            "<Project><PropertyGroup><AssemblyName>Inno.Player." + platform + "</AssemblyName></PropertyGroup></Project>"
+        );
+        foreach (string source in new[]
+        {
+            "Program.cs",
+            platform + "PlayerComposition.cs",
+            platform + "PlayerContentSource.cs",
+            "global.json"
+        }) {
             File.WriteAllText(Path.Combine(link, source), "fixture input");
+        }
         string analyzers = Path.Combine(link, "Analyzers");
         Directory.CreateDirectory(analyzers);
         File.WriteAllText(Path.Combine(analyzers, "Inno.Runtime.Generators.dll"), "fixture analyzer");
@@ -59,17 +75,19 @@ public abstract class PlayerSupportPackFixture : IDisposable
         string linkReferences = Path.Combine(link, "References");
         Directory.CreateDirectory(linkReferences);
         foreach (string source in Directory.EnumerateFiles(references, "*.dll"))
+        {
             File.Copy(source, Path.Combine(linkReferences, Path.GetFileName(source)));
+        }
         File.WriteAllText(Path.Combine(linkReferences, "Inno.Player.Runtime.dll"), "fixture runtime");
         File.WriteAllText(Path.Combine(linkReferences, "BGCS.Runtime.dll"), "fixture interop");
         File.WriteAllBytes(Path.Combine(link, executable), [0x49, 0x4E, 0x4E, 0x4F]);
         string native = Path.Combine(directory, "native");
         Directory.CreateDirectory(native);
         string[] required = target == new BuildTargetId("macos-arm64")
-            ? ["libbgfx-shared-lib-release.dylib", "SDL3-release.dylib", "libminiaudio-release.dylib",
-                "libinno-text-release.dylib", "libinno-ui-release.dylib"]
-            : ["bgfx-shared-lib-release.dll", "SDL3-release.dll", "miniaudio-release.dll",
-                "inno-text-release.dll", "inno-ui-release.dll"];
+                            ? ["libbgfx-shared-lib-release.dylib", "SDL3-release.dylib", "libminiaudio-release.dylib",
+                                "libinno-text-release.dylib", "libinno-ui-release.dylib"]
+                            : ["bgfx-shared-lib-release.dll", "SDL3-release.dll", "miniaudio-release.dll",
+                                "inno-text-release.dll", "inno-ui-release.dll"];
         string linkNative = Path.Combine(link, "native");
         Directory.CreateDirectory(linkNative);
         foreach (string file in required)
@@ -78,10 +96,13 @@ public abstract class PlayerSupportPackFixture : IDisposable
             File.WriteAllBytes(Path.Combine(linkNative, file), CreateNativeImage(target));
         }
         IPlayerSupportPackValidator validator = target == new BuildTargetId("macos-arm64")
-            ? new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator()
-            : new Inno.Build.WindowsX64.WindowsX64SupportPackValidator();
+                                                ? new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator()
+                                                : new Inno.Build.WindowsX64.WindowsX64SupportPackValidator();
         using PlayerSupportPackLease published = new PlayerSupportPackCatalog(m_supportPackRoot).PublishAsync(
-            target, directory, validator).AsTask().GetAwaiter().GetResult();
+            target,
+            directory,
+            validator
+        ).AsTask().GetAwaiter().GetResult();
     }
 
     protected string GetSupportPackDirectory(BuildTargetId target)
@@ -122,5 +143,4 @@ public abstract class PlayerSupportPackFixture : IDisposable
            || name.Contains("Inno.Scripting.Compiler", StringComparison.OrdinalIgnoreCase)
            || name.Contains("Inno.Assets.Pipeline", StringComparison.OrdinalIgnoreCase)
            || name.Contains("Inno.Plugins.Authoring", StringComparison.OrdinalIgnoreCase);
-
 }

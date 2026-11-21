@@ -20,7 +20,9 @@ public abstract class UiBackendProvider
     protected UiBackendProvider(UiBackendId id)
     {
         if (!id.isValid)
+        {
             throw new ArgumentException("A provider requires an assigned backend ID.", nameof(id));
+        }
         this.id = id;
     }
 

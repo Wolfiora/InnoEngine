@@ -14,30 +14,37 @@ public readonly record struct GraphicsApi : IComparable<GraphicsApi>
     /// Headless validation backend.
     /// </summary>
     public static GraphicsApi Noop { get; } = new("Noop");
+
     /// <summary>
     /// Direct3D 11 renderer.
     /// </summary>
     public static GraphicsApi Direct3D11 { get; } = new("Direct3D11");
+
     /// <summary>
     /// Direct3D 12 renderer.
     /// </summary>
     public static GraphicsApi Direct3D12 { get; } = new("Direct3D12");
+
     /// <summary>
     /// Apple Metal renderer.
     /// </summary>
     public static GraphicsApi Metal { get; } = new("Metal");
+
     /// <summary>
     /// Khronos Vulkan renderer.
     /// </summary>
     public static GraphicsApi Vulkan { get; } = new("Vulkan");
+
     /// <summary>
     /// Desktop OpenGL renderer.
     /// </summary>
     public static GraphicsApi OpenGL { get; } = new("OpenGL");
+
     /// <summary>
     /// OpenGL ES renderer.
     /// </summary>
     public static GraphicsApi OpenGLES { get; } = new("OpenGLES");
+
     /// <summary>
     /// WebGPU renderer.
     /// </summary>
@@ -55,9 +62,12 @@ public readonly record struct GraphicsApi : IComparable<GraphicsApi>
     public GraphicsApi(string value)
     {
         if (!IsPortableIdentifier(value))
+        {
             throw new ArgumentException(
                 "Graphics API IDs must begin with a letter or digit and use only portable letters, numbers, dots, underscores or hyphens.",
-                nameof(value));
+                nameof(value)
+            );
+        }
         this.value = value;
     }
 
@@ -89,7 +99,9 @@ public readonly record struct GraphicsApi : IComparable<GraphicsApi>
     ) {
         api = default;
         if (!IsPortableIdentifier(value))
+        {
             return false;
+        }
         api = new GraphicsApi(value!);
         return true;
     }
@@ -116,10 +128,16 @@ public readonly record struct GraphicsApi : IComparable<GraphicsApi>
     private static bool IsPortableIdentifier(string? candidate)
     {
         if (string.IsNullOrEmpty(candidate) || !char.IsAsciiLetterOrDigit(candidate[0]))
+        {
             return false;
+        }
         foreach (char character in candidate)
+        {
             if (!(char.IsAsciiLetterOrDigit(character) || character is '-' or '_' or '.'))
+            {
                 return false;
+            }
+        }
         return true;
     }
 }
@@ -345,7 +363,9 @@ public sealed class GraphicsCapabilities
         ArgumentNullException.ThrowIfNull(storageReadFormats);
         ArgumentNullException.ThrowIfNull(storageWriteFormats);
         if (!backend.isValid)
+        {
             throw new ArgumentException("Graphics capabilities require a backend identity.", nameof(backend));
+        }
         this.backend = backend;
         this.features = features;
         this.limits = limits;
@@ -355,8 +375,7 @@ public sealed class GraphicsCapabilities
         m_sampled3DFormats = new HashSet<RenderTextureFormat>(sampled3DFormats ?? []);
         m_sampledCubeFormats = new HashSet<RenderTextureFormat>(sampledCubeFormats ?? []);
         m_renderTargetFormats = new HashSet<RenderTextureFormat>(renderTargetFormats);
-        m_multisampleRenderTargetFormats = new HashSet<RenderTextureFormat>(
-            multisampleRenderTargetFormats ?? []);
+        m_multisampleRenderTargetFormats = new HashSet<RenderTextureFormat>(multisampleRenderTargetFormats ?? []);
         m_storageReadFormats = new HashSet<RenderTextureFormat>(storageReadFormats);
         m_storageWriteFormats = new HashSet<RenderTextureFormat>(storageWriteFormats);
     }
@@ -423,14 +442,13 @@ public sealed class GraphicsCapabilities
     public bool SupportsSampled(
         RenderTextureFormat format,
         RenderTextureDimension dimension
-    )
-        => dimension switch
-        {
-            RenderTextureDimension.Texture2D => m_sampledFormats.Contains(format),
-            RenderTextureDimension.Texture3D => m_sampled3DFormats.Contains(format),
-            RenderTextureDimension.Cube => m_sampledCubeFormats.Contains(format),
-            _ => false
-        };
+    ) => dimension switch
+    {
+        RenderTextureDimension.Texture2D => m_sampledFormats.Contains(format),
+        RenderTextureDimension.Texture3D => m_sampled3DFormats.Contains(format),
+        RenderTextureDimension.Cube => m_sampledCubeFormats.Contains(format),
+        _ => false
+    };
 
     /// <summary>
     /// Tests whether a format is valid as a raster attachment.
@@ -469,13 +487,12 @@ public sealed class GraphicsCapabilities
     public bool SupportsStorage(
         RenderTextureFormat format,
         RenderStorageAccess access
-    )
-        => access switch
-        {
-            RenderStorageAccess.Read => m_storageReadFormats.Contains(format),
-            RenderStorageAccess.Write => m_storageWriteFormats.Contains(format),
-            RenderStorageAccess.ReadWrite => m_storageReadFormats.Contains(format)
-                                             && m_storageWriteFormats.Contains(format),
-            _ => false
-        };
+    ) => access switch
+    {
+        RenderStorageAccess.Read => m_storageReadFormats.Contains(format),
+        RenderStorageAccess.Write => m_storageWriteFormats.Contains(format),
+        RenderStorageAccess.ReadWrite => m_storageReadFormats.Contains(format)
+                                         && m_storageWriteFormats.Contains(format),
+        _ => false
+    };
 }

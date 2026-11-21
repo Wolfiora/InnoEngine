@@ -1,15 +1,13 @@
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.Loader;
-
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
 using Inno.Core.Execution;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Reload;
 using Inno.Extensibility.Types;
-
-using Xunit;
 
 namespace Inno.Extensibility.Modules.Tests;
 
@@ -22,7 +20,9 @@ public sealed class ModuleRetirementTests
     public void PendingParticipantDoesNotBeginUnloadingEitherLiveGeneration(string phase)
     {
         string cache = Path.Combine(Path.GetTempPath(), "InnoModuleRetirement", Guid.NewGuid().ToString("N"));
-        var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleRetirementTests).Assembly)});
+        var modules = new ModuleHost(
+            new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleRetirementTests).Assembly)}
+        );
         var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         AssemblyModuleHandle handle = modules.Load(Request("V1", cache));
         var participant = new Participant();
@@ -36,14 +36,20 @@ public sealed class ModuleRetirementTests
         candidate.Unloading += _ => unloads++;
 
         if (phase == "activate")
+        {
             Assert.Throws<RetirementTimeoutException>(reload.Activate);
+        }
         else
         {
             reload.Activate();
             if (phase == "complete")
+            {
                 Assert.Throws<RetirementTimeoutException>(() => reload.Complete());
+            }
             else
+            {
                 Assert.Throws<RetirementTimeoutException>(reload.Rollback);
+            }
         }
 
         Assert.Equal(GenerationState.Faulted, modules.generations.state);
@@ -65,28 +71,43 @@ public sealed class ModuleRetirementTests
     public void WrappedPendingKeepsBothCollectibleContextsAndPreservesTheOriginalFailure(string phase)
     {
         string cache = Path.Combine(Path.GetTempPath(), "InnoWrappedRetirement", Guid.NewGuid().ToString("N"));
-        var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleRetirementTests).Assembly)});
+        var modules = new ModuleHost(
+            new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleRetirementTests).Assembly)}
+        );
         var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         AssemblyModuleHandle handle = modules.Load(Request("V1", cache));
         var participant = new Participant();
         using IDisposable registration = modules.RegisterCatalogParticipant(participant);
         participant.phase = phase;
-        participant.failure = new AggregateException(new InvalidOperationException("completed sibling"),
-            new InvalidOperationException("native owner", new RetirementTimeoutException("callback still active")));
+        participant.failure = new AggregateException(
+            new InvalidOperationException("completed sibling"),
+            new InvalidOperationException("native owner", new RetirementTimeoutException("callback still active"))
+        );
         var reload = modules.BeginReload(handle, Request("V2", cache));
         int unloads = 0;
         Context(reload.context.previousCatalog).Unloading += _ => unloads++;
         Context(reload.context.candidateCatalog).Unloading += _ => unloads++;
         if (phase == "activate")
+        {
             Assert.Same(participant.failure, Assert.Throws<AggregateException>(reload.Activate));
+        }
         else
         {
             reload.Activate();
-            Assert.Same(participant.failure, Assert.Throws<AggregateException>(() =>
-            {
-                if (phase == "complete") _ = reload.Complete();
-                else reload.Rollback();
-            }));
+            Assert.Same(
+                participant.failure,
+                Assert.Throws<AggregateException>(() =>
+                {
+                    if (phase == "complete")
+                    {
+                        _ = reload.Complete();
+                    }
+                    else
+                    {
+                        reload.Rollback();
+                    }
+                })
+            );
         }
         Assert.Equal(GenerationState.Faulted, modules.generations.state);
         Assert.Same(participant.failure, Assert.Throws<AggregateException>(reload.Dispose));
@@ -103,7 +124,9 @@ public sealed class ModuleRetirementTests
     public void CatalogParticipantErrorsBeforePendingDoNotDisappearOrUnloadEitherContext(string phase)
     {
         string cache = Path.Combine(Path.GetTempPath(), "InnoCatalogRetirement", Guid.NewGuid().ToString("N"));
-        var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleRetirementTests).Assembly)});
+        var modules = new ModuleHost(
+            new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleRetirementTests).Assembly)}
+        );
         var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         AssemblyModuleHandle handle = modules.Load(Request("V1", cache));
         var ordinary = new Participant { failure = new InvalidOperationException("earlier catalog cleanup") };
@@ -119,8 +142,14 @@ public sealed class ModuleRetirementTests
         reload.Activate();
         AggregateException failure = Assert.Throws<AggregateException>(() =>
         {
-            if (phase == "complete") _ = reload.Complete();
-            else reload.Rollback();
+            if (phase == "complete")
+            {
+                _ = reload.Complete();
+            }
+            else
+            {
+                reload.Rollback();
+            }
         });
         Assert.Contains(ordinary.failure, failure.Flatten().InnerExceptions);
         Assert.Same(pending.failure, RetirementPendingException.Find(failure));
@@ -135,7 +164,9 @@ public sealed class ModuleRetirementTests
     public void RejectedCatalogActivationRemainsVisibleWhenItsRollbackIsPending()
     {
         string cache = Path.Combine(Path.GetTempPath(), "InnoRejectedRetirement", Guid.NewGuid().ToString("N"));
-        var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleRetirementTests).Assembly)});
+        var modules = new ModuleHost(
+            new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleRetirementTests).Assembly)}
+        );
         var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         AssemblyModuleHandle handle = modules.Load(Request("V1", cache));
         var participant = new Participant();
@@ -158,8 +189,7 @@ public sealed class ModuleRetirementTests
     private static DotNetModuleSource Request(
         string variant,
         string artifactRootDirectory
-    )
-    {
+    ) {
         string directory = Path.Combine(AppContext.BaseDirectory, "Modules", variant);
         return new DotNetModuleSource
         {
@@ -173,8 +203,9 @@ public sealed class ModuleRetirementTests
     }
 
     private static AssemblyLoadContext Context(AssemblyCatalogSnapshot catalog)
-        => AssemblyLoadContext.GetLoadContext(catalog.assemblies.Single(assembly =>
-            assembly.GetName().Name == "Inno.Extensibility.Modules.TestModule"))!;
+        => AssemblyLoadContext.GetLoadContext(
+            catalog.assemblies.Single(assembly => (assembly.GetName().Name == "Inno.Extensibility.Modules.TestModule"))
+        )!;
 
     private sealed class Participant : IAssemblyCatalogParticipant
     {
@@ -197,9 +228,13 @@ public sealed class ModuleRetirementTests
             private void ThrowIfPending(string phase)
             {
                 if (phase == "activate" && owner.activationFailure is not null)
+                {
                     throw owner.activationFailure;
+                }
                 if (owner.phase == phase)
+                {
                     throw owner.failure;
+                }
             }
         }
     }

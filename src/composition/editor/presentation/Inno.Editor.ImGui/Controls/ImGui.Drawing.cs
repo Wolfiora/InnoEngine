@@ -1,8 +1,10 @@
 using System.Numerics;
 using Inno.Native.ImGui;
+
 using RawImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Provides frame-bounded drawing access and copied presentation values.
 /// </summary>

@@ -61,11 +61,7 @@ public sealed class EditorHistoryChange : IDisposable
         EditorHistoryBlobStore store,
         int inlinePayloadThreshold,
         bool canStoreOnDisk
-    )
-        => new(
-            kind,
-            payload.Retain(store, inlinePayloadThreshold, canStoreOnDisk),
-            mergeKey);
+    ) => new(kind, payload.Retain(store, inlinePayloadThreshold, canStoreOnDisk), mergeKey);
 
     /// <summary>
     /// Releases the payload storage owned by this history change.
@@ -73,7 +69,9 @@ public sealed class EditorHistoryChange : IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_disposed = true;
         payload.Dispose();
         GC.SuppressFinalize(this);

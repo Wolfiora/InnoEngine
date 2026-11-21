@@ -8,7 +8,10 @@ internal sealed class AnimationClipSnapshot
     {
         duration = clip.duration;
         tracks = clip.tracks.Select(static track => new AnimationTrack(
-            track.bindingId, track.interpolation, track.keyframes)).ToArray();
+            track.bindingId,
+            track.interpolation,
+            track.keyframes
+        )).ToArray();
         events = clip.events.Select(static marker => new AnimationEventMarker
         {
             time = marker.time,

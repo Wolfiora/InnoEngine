@@ -1,10 +1,7 @@
-using Inno.Scripting.Api;
 using Inno.Editor.Rendering;
+using Inno.Scripting.Api;
 
-[assembly: ScriptingApiNamespace(
-    "InnoEditor.Rendering",
-    "Inno.Editor.Rendering",
-    ScriptingApiScope.Editor)]
+[assembly: ScriptingApiNamespace("InnoEditor.Rendering", "Inno.Editor.Rendering", ScriptingApiScope.Editor)]
 
 [assembly: ScriptingApiExport(typeof(EditorViewportKindId), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(PipelineDocuments), ScriptingApiScope.Editor)]

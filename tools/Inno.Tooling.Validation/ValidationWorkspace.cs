@@ -21,12 +21,18 @@ internal static class ValidationWorkspace
     ) {
         source = Path.GetFullPath(source);
         if (!Directory.Exists(source))
+        {
             throw new InvalidDataException("Retained compilation outputs are unavailable.");
+        }
         if (Directory.EnumerateFileSystemEntries(plan.artifacts).Any())
+        {
             throw new InvalidDataException("Retained outputs require a fresh owned workspace; existing outputs cannot be overwritten.");
+        }
         string[] files = PathBoundary.EnumerateFiles(source).ToArray();
         if (files.Length == 0)
+        {
             throw new InvalidDataException("Retained compilation output discovery is empty.");
+        }
         foreach (string file in files)
         {
             cancellation.ThrowIfCancellationRequested();
@@ -49,27 +55,43 @@ internal static class ValidationWorkspace
         ValidationPlan plan,
         CancellationToken cancellation
     ) {
-        string parent = Path.GetDirectoryName(plan.artifacts) ?? throw new InvalidDataException("A validation output owner requires a parent directory.");
+        string parent = Path.GetDirectoryName(plan.artifacts)
+                        ?? throw new InvalidDataException("A validation output owner requires a parent directory.");
         ValidationInputs.Resolve(plan.root, Path.GetRelativePath(plan.root, parent));
         string owner = Path.Combine(parent, "owner.lock");
         string leaf = plan.artifacts + ".lock";
         if (!File.Exists(owner) || !File.Exists(leaf))
+        {
             throw new InvalidDataException("Required validation output ownership is absent; evidence cannot adopt an unknown directory.");
-        return await CoordinatedFileLease.AcquireAsync(owner, leaf, Timeout.InfiniteTimeSpan, shared: true, cancellationToken: cancellation).ConfigureAwait(false);
+        }
+        return await CoordinatedFileLease.AcquireAsync(
+            owner,
+            leaf,
+            Timeout.InfiniteTimeSpan,
+            shared: true,
+            cancellationToken: cancellation
+        ).ConfigureAwait(false);
     }
 
     internal static async Task<CoordinatedFileLease> AcquireAsync(
         ValidationPlan plan,
         CancellationToken cancellation
     ) {
-        string parent = Path.GetDirectoryName(plan.artifacts) ?? throw new InvalidDataException("A validation output owner requires a parent directory.");
+        string parent = Path.GetDirectoryName(plan.artifacts)
+                        ?? throw new InvalidDataException("A validation output owner requires a parent directory.");
         ValidationInputs.Resolve(plan.root, Path.GetRelativePath(plan.root, parent));
-        string key = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(Path.GetRelativePath(plan.root, parent).Replace('\\', '/'))));
+        string key = Convert.ToHexStringLower(
+            SHA256.HashData(Encoding.UTF8.GetBytes(Path.GetRelativePath(plan.root, parent).Replace('\\', '/')))
+        );
         var publisher = new BuildCachePublisher(parent, BuildCacheArtifactRole.ReusableWorkspace);
         BuildCacheOwnerCatalog.Register(plan.root, parent, "validation-workspaces-" + key, publisher.role, cancellation);
         using FileLease activity = await publisher.AcquireUseAsync(cancellation).ConfigureAwait(false);
-        CoordinatedFileLease ownership = await CoordinatedFileLease.AcquireAsync(Path.Combine(parent, "owner.lock"),
-            plan.artifacts + ".lock", Timeout.InfiniteTimeSpan, cancellationToken: cancellation).ConfigureAwait(false);
+        CoordinatedFileLease ownership = await CoordinatedFileLease.AcquireAsync(
+            Path.Combine(parent, "owner.lock"),
+            plan.artifacts + ".lock",
+            Timeout.InfiniteTimeSpan,
+            cancellationToken: cancellation
+        ).ConfigureAwait(false);
         try
         {
             publisher.BeginWorkingDirectory(plan.artifacts, plan.artifacts + ".lock", null, cancellation);

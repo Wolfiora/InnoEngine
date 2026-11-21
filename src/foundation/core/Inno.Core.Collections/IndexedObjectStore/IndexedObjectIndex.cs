@@ -4,16 +4,19 @@ using System.Runtime.CompilerServices;
 
 namespace Inno.Core.Collections;
 
-internal interface IIndexedObjectIndex<T> where T : class
+internal interface IIndexedObjectIndex<T>
+    where T : class
 {
     /// <summary>
     /// Gets the human-readable name used for presentation and diagnostics.
     /// </summary>
     string name { get; }
+
     /// <summary>
     /// Gets the key type accepted by this index implementation.
     /// </summary>
     Type keyType { get; }
+
     /// <summary>
     /// Adds a new keyed value or atomically replaces the existing value for that key.
     /// </summary>
@@ -27,6 +30,7 @@ internal interface IIndexedObjectIndex<T> where T : class
         T item,
         object key
     );
+
     /// <summary>
     /// Removes the requested value while preserving the collection's invariants.
     /// </summary>
@@ -34,10 +38,12 @@ internal interface IIndexedObjectIndex<T> where T : class
     /// The stored item associated with the validated handle.
     /// </param>
     void Remove(T item);
+
     /// <summary>
     /// Removes all retained entries and returns the instance to an empty reusable state.
     /// </summary>
     void Clear();
+
     /// <summary>
     /// Retrieves the requested count value from current authoritative state.
     /// </summary>
@@ -48,6 +54,7 @@ internal interface IIndexedObjectIndex<T> where T : class
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
     int GetCount(object key);
+
     /// <summary>
     /// Attempts to get single without changing state when the operation cannot complete.
     /// </summary>
@@ -64,6 +71,7 @@ internal interface IIndexedObjectIndex<T> where T : class
         object key,
         out T? item
     );
+
     /// <summary>
     /// Determines whether current state contains the requested value value.
     /// </summary>
@@ -80,6 +88,7 @@ internal interface IIndexedObjectIndex<T> where T : class
         object key,
         T item
     );
+
     /// <summary>
     /// Retrieves the requested set value from current authoritative state.
     /// </summary>
@@ -92,7 +101,9 @@ internal interface IIndexedObjectIndex<T> where T : class
     HashSet<T>? GetSet(object key);
 }
 
-internal sealed class IndexedObjectIndex<T, TKey> : IIndexedObjectIndex<T> where T : class where TKey : notnull
+internal sealed class IndexedObjectIndex<T, TKey> : IIndexedObjectIndex<T>
+    where T : class
+    where TKey : notnull
 {
     private readonly IKeyStorage<TKey, T> m_storage;
     private readonly IKeyOrdering<TKey> m_ordering;
@@ -103,10 +114,12 @@ internal sealed class IndexedObjectIndex<T, TKey> : IIndexedObjectIndex<T> where
     /// Gets the human-readable name used for presentation and diagnostics.
     /// </summary>
     public string name { get; }
+
     /// <summary>
     /// Gets the key type accepted by this index implementation.
     /// </summary>
     public Type keyType => typeof(TKey);
+
     /// <summary>
     /// Gets the index capabilities supported by this key declaration.
     /// </summary>
@@ -121,13 +134,13 @@ internal sealed class IndexedObjectIndex<T, TKey> : IIndexedObjectIndex<T> where
         this.flags = flags;
 
         m_storage = (flags & IndexedObjectKeyFlags.Unique) != 0
-            ? new UniqueKeyStorage<TKey, T>()
-            : new MultiKeyStorage<TKey, T>();
+                    ? new UniqueKeyStorage<TKey, T>()
+                    : new MultiKeyStorage<TKey, T>();
 
         m_orderComparer = orderComparer ?? Comparer<TKey>.Default;
         m_ordering = (flags & IndexedObjectKeyFlags.Ordered) != 0
-            ? new SortedKeyOrdering<TKey>(m_orderComparer)
-            : new NullKeyOrdering<TKey>();
+                     ? new SortedKeyOrdering<TKey>(m_orderComparer)
+                     : new NullKeyOrdering<TKey>();
 
         m_keyByItem = new Dictionary<T, TKey>(IndexedObjectStore<T>.ReferenceEqualityComparer<T>.INSTANCE);
     }
@@ -135,32 +148,25 @@ internal sealed class IndexedObjectIndex<T, TKey> : IIndexedObjectIndex<T> where
     void IIndexedObjectIndex<T>.AddOrUpdate(
         T item,
         object key
-    )
-        => AddOrUpdate(item, (TKey)key);
+    ) => AddOrUpdate(item, (TKey)key);
 
-    void IIndexedObjectIndex<T>.Remove(T item)
-        => Remove(item);
+    void IIndexedObjectIndex<T>.Remove(T item) => Remove(item);
 
-    void IIndexedObjectIndex<T>.Clear()
-        => Clear();
+    void IIndexedObjectIndex<T>.Clear() => Clear();
 
-    int IIndexedObjectIndex<T>.GetCount(object key)
-        => GetCount((TKey)key);
+    int IIndexedObjectIndex<T>.GetCount(object key) => GetCount((TKey)key);
 
     bool IIndexedObjectIndex<T>.TryGetSingle(
         object key,
         out T? item
-    )
-        => TryGetSingle((TKey)key, out item);
+    ) => TryGetSingle((TKey)key, out item);
 
     bool IIndexedObjectIndex<T>.Contains(
         object key,
         T item
-    )
-        => Contains((TKey)key, item);
+    ) => Contains((TKey)key, item);
 
-    HashSet<T>? IIndexedObjectIndex<T>.GetSet(object key)
-        => FindUnsafe((TKey)key);
+    HashSet<T>? IIndexedObjectIndex<T>.GetSet(object key) => FindUnsafe((TKey)key);
 
     /// <summary>
     /// Adds a new keyed value or atomically replaces the existing value for that key.
@@ -178,21 +184,29 @@ internal sealed class IndexedObjectIndex<T, TKey> : IIndexedObjectIndex<T> where
         if (m_keyByItem.TryGetValue(item, out var oldKey))
         {
             if (EqualityComparer<TKey>.Default.Equals(oldKey, key))
+            {
                 return;
+            }
 
             // Add first so a rejected unique key leaves the previous mapping intact.
             bool addedKey = m_storage.Add(key, item);
             m_storage.Remove(oldKey, item);
             if (m_storage.IsKeyEmpty(oldKey))
+            {
                 m_ordering.RemoveKey(oldKey);
+            }
             if (addedKey)
+            {
                 m_ordering.AddKey(key);
+            }
             m_keyByItem[item] = key;
             return;
         }
 
         if (m_storage.Add(key, item))
+        {
             m_ordering.AddKey(key);
+        }
         m_keyByItem[item] = key;
     }
 
@@ -205,12 +219,16 @@ internal sealed class IndexedObjectIndex<T, TKey> : IIndexedObjectIndex<T> where
     public void Remove(T item)
     {
         if (!m_keyByItem.TryGetValue(item, out var key))
+        {
             return;
+        }
 
         m_keyByItem.Remove(item);
         m_storage.Remove(key, item);
         if (m_storage.IsKeyEmpty(key))
+        {
             m_ordering.RemoveKey(key);
+        }
     }
 
     /// <summary>

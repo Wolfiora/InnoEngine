@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported color edit flags choices at the Editor presentation boundary.
 /// </summary>
@@ -134,5 +135,5 @@ public enum ImGuiColorEditFlags : int
     /// <summary>
     /// Selects the input mask presentation behavior.
     /// </summary>
-    InputMask = (int)Inno.Native.ImGui.ImGuiColorEditFlags.InputMask,
+    InputMask = (int)Inno.Native.ImGui.ImGuiColorEditFlags.InputMask
 }

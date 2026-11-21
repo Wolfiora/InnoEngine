@@ -1,10 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Scripting.Api;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering;
 
@@ -43,4 +43,3 @@ public record struct ShaderPropertyId
     /// </returns>
     public readonly override string ToString() => value ?? string.Empty;
 }
-

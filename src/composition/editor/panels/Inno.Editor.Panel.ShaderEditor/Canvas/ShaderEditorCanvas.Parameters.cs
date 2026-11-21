@@ -1,23 +1,27 @@
-using Inno.Editor.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Linq;
 using Inno.Core.Graphs;
-using Inno.Rendering;
-using Inno.Rendering.Shaders;
+using Inno.Editor.ImGui;
 using Inno.Editor.Shaders;
 using Inno.Editor.Shaders.ImGui;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
+using Inno.Rendering;
 using Inno.Rendering.Assets;
+using Inno.Rendering.Shaders;
+
+using EditorImGui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 
 namespace Inno.Editor.Panel.ShaderEditor;
+
 internal sealed partial class ShaderEditorCanvas
 {
     private bool StoragePopup(ref ShaderGraphType type)
     {
         EditorImGui.SetNextWindowSize(new(490, 390), (ImGuiCond.Appearing));
         if (!EditorImGui.BeginPopup("##storage"))
+        {
             return false;
+        }
         bool changed = false;
         try
         {
@@ -75,7 +79,9 @@ internal sealed partial class ShaderEditorCanvas
                 InspectorRow("storage.element", "Element", () =>
                 {
                     if (!EditorUI.current.widgets.BeginBoundedCombo("##element", current))
+                    {
                         return;
+                    }
                     try
                     {
                         foreach (string candidate in new[]
@@ -94,9 +100,12 @@ internal sealed partial class ShaderEditorCanvas
                             "uint4"
                         }
 
-                        )
+                        ) {
                             if (EditorImGui.Selectable(candidate, current == candidate))
+                            {
                                 selected = candidate;
+                            }
+                        }
                     }
                     finally
                     {
@@ -113,7 +122,9 @@ internal sealed partial class ShaderEditorCanvas
                 }
             }
 
-            EditorUI.current.widgets.WrappedText("Storage resources are bound by the render pass. The graph declares types and access; the Render Graph owns resource lifetime and synchronization.");
+            EditorUI.current.widgets.WrappedText(
+                "Storage resources are bound by the render pass. The graph declares types and access; the Render Graph owns resource lifetime and synchronization."
+            );
         }
         finally
         {
@@ -126,7 +137,9 @@ internal sealed partial class ShaderEditorCanvas
     private void DrawParameter(ShaderGraphInputSettings input)
     {
         if (m_inspection is null)
+        {
             return;
+        }
         ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(Controller.document, owner.serialization, owner.context);
         int index = Array.FindIndex(definition.properties, value => value.id.value == input.id);
         if (index < 0)
@@ -144,7 +157,11 @@ internal sealed partial class ShaderEditorCanvas
         {
             string displayName = property.displayName;
             bool changed = false;
-            InspectorRow("parameter.display-name", "Display Name", () => changed = EditorImGui.InputText("##display-name", ref displayName, 256));
+            InspectorRow(
+                "parameter.display-name",
+                "Display Name",
+                () => changed = EditorImGui.InputText("##display-name", ref displayName, 256)
+            );
             Gesture();
             if (changed)
             {
@@ -179,23 +196,33 @@ internal sealed partial class ShaderEditorCanvas
         if (property.bindingOwner != ShaderPropertyBindingOwner.Material)
         {
             if (parameterOpen)
+            {
                 EditorUI.current.widgets.Hint("Supplied by the Render Pass. This binding is read-only in Material Inspectors.");
+            }
             return;
         }
 
         if (property.bindingKind is not (ShaderPropertyBindingKind.Uniform or ShaderPropertyBindingKind.SampledTexture))
         {
             if (parameterOpen)
+            {
                 EditorUI.current.widgets.Hint("Storage resources require a Render Pass owner.");
+            }
             return;
         }
 
-        ShaderParameterPresentation presentation = ShaderParameterPresentation.Read(Controller.document, property.id, owner.serialization, owner.context);
+        ShaderParameterPresentation presentation = ShaderParameterPresentation.Read(
+            Controller.document,
+            property.id,
+            owner.serialization,
+            owner.context
+        );
         if (!EditorUI.current.widgets.SectionHeader(
             "Material Inspector",
             "Presentation belongs only to this Shader's authoring graph. It does not modify existing Material values or enter the Player."
-        ))
+        )) {
             return;
+        }
         string group = presentation.group;
         bool groupChanged = false;
         InspectorRow("parameter.group", "Group", () => groupChanged = EditorImGui.InputText("##group", ref group, 256));
@@ -208,7 +235,11 @@ internal sealed partial class ShaderEditorCanvas
         Gesture();
         string description = presentation.description;
         bool descriptionChanged = false;
-        InspectorRow("parameter.description", "Description", () => descriptionChanged = EditorImGui.InputText("##description", ref description, 2048));
+        InspectorRow(
+            "parameter.description",
+            "Description",
+            () => descriptionChanged = EditorImGui.InputText("##description", ref description, 2048)
+        );
         if (descriptionChanged)
         {
             presentation.description = description;
@@ -238,20 +269,52 @@ internal sealed partial class ShaderEditorCanvas
             });
             if (range)
             {
-                m_inspection.properties.DrawValue(m_inspection.editorContext, draft, "shader.parameter." + property.id.value + ".minimum", "Minimum", typeof(double), () => presentation.minimum, value =>
+                m_inspection.properties.DrawValue(
+                    m_inspection.editorContext,
+                    draft,
+                    "shader.parameter."
+                    + property.id.value
+                    + ".minimum",
+                    "Minimum",
+                    typeof(double),
+                    () => presentation.minimum,
+                    value =>
                 {
                     if (!double.IsFinite((double)value!))
+                    {
                         return;
+                    }
                     presentation.minimum = Math.Clamp((double)value!, -float.MaxValue, presentation.maximum);
                     SavePresentation(true);
-                }, new ParameterEdits(this), draft.readOnly, minimum: -float.MaxValue, maximum: presentation.maximum);
-                m_inspection.properties.DrawValue(m_inspection.editorContext, draft, "shader.parameter." + property.id.value + ".maximum", "Maximum", typeof(double), () => presentation.maximum, value =>
+                },
+                    new ParameterEdits(this),
+                    draft.readOnly,
+                    minimum: -float.MaxValue,
+                    maximum: presentation.maximum
+                );
+                m_inspection.properties.DrawValue(
+                    m_inspection.editorContext,
+                    draft,
+                    "shader.parameter."
+                    + property.id.value
+                    + ".maximum",
+                    "Maximum",
+                    typeof(double),
+                    () => presentation.maximum,
+                    value =>
                 {
                     if (!double.IsFinite((double)value!))
+                    {
                         return;
+                    }
                     presentation.maximum = Math.Clamp((double)value!, presentation.minimum, float.MaxValue);
                     SavePresentation(true);
-                }, new ParameterEdits(this), draft.readOnly, minimum: presentation.minimum, maximum: float.MaxValue);
+                },
+                    new ParameterEdits(this),
+                    draft.readOnly,
+                    minimum: presentation.minimum,
+                    maximum: float.MaxValue
+                );
                 EditorUI.current.widgets.Hint("Editing bounds only · existing defaults and overrides are not clamped on display");
             }
         }

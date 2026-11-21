@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 
@@ -16,11 +15,13 @@ internal sealed class ControlledSampleAssetImporter : AssetImporter<TextAsset>
     /// <summary>
     /// Creates a discoverable importer that uses only test-owned synchronization state.
     /// </summary>
-    public ControlledSampleAssetImporter()
-    {
-    }
+    public ControlledSampleAssetImporter() {}
 
-    internal static Control? current { get => m_current.Value; set => m_current.Value = value; }
+    internal static Control? current
+    {
+        get => m_current.Value;
+        set => m_current.Value = value;
+    }
 
     /// <summary>
     /// Gets the unique source extension used by the real importer cancellation test.

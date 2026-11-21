@@ -1,7 +1,7 @@
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 
@@ -79,4 +79,3 @@ public sealed class RenderRequest
     /// </summary>
     public int priority { get; }
 }
-

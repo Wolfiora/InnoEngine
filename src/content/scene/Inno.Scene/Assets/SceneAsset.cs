@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
 using Inno.Assets;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 using Inno.Scripting.Api;
+
 namespace Inno.Scene;
 
 /// <summary>
@@ -16,6 +16,7 @@ namespace Inno.Scene;
 public sealed class SceneAsset : AssetObject
 {
     private byte[] m_pendingPayload = [];
+
     [SerializableProperty]
     internal AssetDependency[] sourceDependencies { get; set; } = [];
 
@@ -95,7 +96,9 @@ public sealed class SceneAsset : AssetObject
             .With<AssetObject>(this);
         GameScene scene = serialization.Deserialize<GameScene>(GetPayload(), context);
         if (!string.IsNullOrWhiteSpace(assetPath.localPath))
+        {
             scene.name = Path.GetFileNameWithoutExtension(assetPath.localPath);
+        }
         return scene;
     }
 
@@ -118,7 +121,9 @@ public sealed class SceneAsset : AssetObject
     ) {
         ArgumentNullException.ThrowIfNull(dependencies);
         if (payload.IsEmpty)
+        {
             throw new ArgumentException("Imported scene content cannot be empty.", nameof(payload));
+        }
         return new SceneAsset
         {
             m_pendingPayload = payload.ToArray(),
@@ -138,9 +143,13 @@ public sealed class SceneAsset : AssetObject
     private byte[] GetPayload()
     {
         if (m_pendingPayload.Length != 0)
+        {
             return (byte[])m_pendingPayload.Clone();
+        }
         if (!runtimePayload.IsEmpty)
+        {
             return runtimePayload.ToArray();
+        }
         throw new InvalidOperationException($"Scene asset '{assetPath}' does not contain an imported or pending scene payload.");
     }
 

@@ -32,16 +32,19 @@ public sealed class NativeBindingConfigurationTests
     {
         string root = TestRepository.GetRoot(typeof(NativeBindingConfigurationTests).Assembly);
         BuildCompositionContext environment = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId("windows-x64"));
-        ProductNativeBuildPlan product = StandardBuildDistribution.Create(environment).build.ResolveNativeProduct("windows-x64", "editor").plan;
+        ProductNativeBuildPlan product = StandardBuildDistribution.Create(environment).build
+            .ResolveNativeProduct("windows-x64", "editor").plan;
         using HostServices services = new HostServicesProvider().Create(new(root, JsonSerializer.SerializeToElement(new { })));
         foreach (NativeComponentDescriptor owner in product.steps.Select(step => step.component)
-            .Where(owner => owner.bindingDefinition is not null).DistinctBy(owner => owner.nativeProject))
-        {
+            .Where(owner => owner.bindingDefinition is not null)
+            .DistinctBy(owner => owner.nativeProject)
+        ) {
             string definition = Path.GetFullPath(owner.bindingDefinition!, root);
             XDocument document = XDocument.Load(definition);
             string[] configurations = document.Descendants("InnoBindingConfig")
                 .Select(element => Path.GetFullPath(element.Value, Path.GetDirectoryName(definition)!))
-                .Distinct(StringComparer.Ordinal).ToArray();
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
             Assert.NotEmpty(configurations);
             foreach (string configuration in configurations)
             {

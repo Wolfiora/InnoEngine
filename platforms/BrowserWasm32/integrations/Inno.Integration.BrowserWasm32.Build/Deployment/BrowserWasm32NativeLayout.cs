@@ -11,10 +11,15 @@ internal static class BrowserWasm32NativeLayout
         string target
     ) {
         if (relative.Split(Path.DirectorySeparatorChar)[0] == "Link")
+        {
             return null;
+        }
         if (component == "bgfx-tools")
+        {
             return relative.StartsWith("includes" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
-                ? Path.Combine("bgfx", relative) : Path.Combine("bgfx", target, "tools", relative);
+                   ? Path.Combine("bgfx", relative)
+                   : Path.Combine("bgfx", target, "tools", relative);
+        }
         return Path.Combine(component, target, relative);
     }
 }

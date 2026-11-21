@@ -90,10 +90,11 @@ internal sealed class IdentityRegistry
             if (TryGetSlotByPersistentNoLock(resolvedPersistentId, out int existingSlot))
             {
                 if (TryGetLiveObjectBySlotNoLock(existingSlot, out IdentityObject? existing, out _)
-                    && !ReferenceEquals(existing, obj))
-                {
+                    && !ReferenceEquals(existing, obj)
+                ) {
                     throw new InvalidOperationException(
-                        $"Persistent id '{resolvedPersistentId}' is already registered.");
+                        $"Persistent id '{resolvedPersistentId}' is already registered."
+                    );
                 }
 
                 RemoveSlotBySlotNoLock(existingSlot);
@@ -159,7 +160,9 @@ internal sealed class IdentityRegistry
             }
 
             if (!ReferenceEquals(activeObject, obj))
+            {
                 return false;
+            }
 
             RemoveSlotBySlotNoLock(objectSlot);
             identity.Unbind(this);
@@ -311,7 +314,9 @@ internal sealed class IdentityRegistry
     ) {
         runtimeId = 0;
         if (identity.persistentId == Guid.Empty || identity.rawRuntimeId == 0)
+        {
             return false;
+        }
 
         m_lock.EnterReadLock();
         try
@@ -343,7 +348,9 @@ internal sealed class IdentityRegistry
     private int AllocateSlot()
     {
         if (m_freeSlots.Count > 0)
+        {
             return m_freeSlots.Pop();
+        }
 
         int slot = m_generations.Count;
         m_generations.Add(1);
@@ -505,9 +512,9 @@ internal sealed class IdentityRegistry
             return;
         }
 
-        if (TryGetEntryByDenseNoLock(denseIndex, out RegistryEntry? entry) &&
-            entry!.TryGetObject(out _))
-        {
+        if (TryGetEntryByDenseNoLock(denseIndex, out RegistryEntry? entry)
+            && entry!.TryGetObject(out _)
+        ) {
             return;
         }
 
@@ -517,11 +524,15 @@ internal sealed class IdentityRegistry
     private Guid GetPersistentIdBySlotNoLock(int slot)
     {
         if (slot < 0 || slot >= m_sparseToDense.Count)
+        {
             return Guid.Empty;
+        }
 
         int denseIndex = m_sparseToDense[slot];
         if (denseIndex < 0 || denseIndex >= m_active.Count)
+        {
             return Guid.Empty;
+        }
 
         return m_active[denseIndex].persistentId;
     }
@@ -561,9 +572,9 @@ internal sealed class IdentityRegistry
             m_slotByObject.Remove(removedObj!);
         }
 
-        if (m_slotByPersistent.TryGetValue(removed.persistentId, out int mappedSlot) &&
-            mappedSlot == slot)
-        {
+        if (m_slotByPersistent.TryGetValue(removed.persistentId, out int mappedSlot)
+            && mappedSlot == slot
+        ) {
             m_slotByPersistent.Remove(removed.persistentId);
         }
 
@@ -603,6 +614,7 @@ internal sealed class IdentityRegistry
         /// The m object ref value used as part of this type's public representation.
         /// </summary>
         public WeakReference<IdentityObject> m_objectRef;
+
         /// <summary>
         /// The persistent id value used as part of this type's public representation.
         /// </summary>

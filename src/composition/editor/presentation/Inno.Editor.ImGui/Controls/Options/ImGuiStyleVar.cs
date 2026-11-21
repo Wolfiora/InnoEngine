@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported style var choices at the Editor presentation boundary.
 /// </summary>
@@ -173,5 +174,5 @@ public enum ImGuiStyleVar : int
     /// <summary>
     /// Marks the exclusive end of the valid option range.
     /// </summary>
-    Count = (int)Inno.Native.ImGui.ImGuiStyleVar.Count,
+    Count = (int)Inno.Native.ImGui.ImGuiStyleVar.Count
 }

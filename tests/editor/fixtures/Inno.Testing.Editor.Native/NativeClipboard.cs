@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using Inno.Native.ImGui;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Testing.Editor.Native;
@@ -28,7 +29,9 @@ internal sealed unsafe class NativeClipboard : IDisposable
     public void Dispose()
     {
         if (!m_handle.IsAllocated)
+        {
             return;
+        }
         Marshal.FreeCoTaskMem(m_text);
         m_text = 0;
         m_handle.Free();

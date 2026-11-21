@@ -50,14 +50,17 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
         await output.WriteArtifactAsync(
             "runtime",
             AudioClipMetadataCodec.Encode(metadata),
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken
+        ).ConfigureAwait(false);
         await output.WriteArtifactAsync("audio-data", context.sourceBytes, cancellationToken).ConfigureAwait(false);
     }
 
     private static AudioClipMetadata ReadWav(ReadOnlySpan<byte> bytes)
     {
         if (bytes.Length < 12 || !bytes[..4].SequenceEqual("RIFF"u8) || !bytes[8..12].SequenceEqual("WAVE"u8))
+        {
             throw new InvalidDataException("The WAV source has an invalid RIFF header.");
+        }
 
         int channels = 0;
         int sampleRate = 0;
@@ -69,20 +72,28 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
             ReadOnlySpan<byte> chunkId = bytes.Slice(offset, 4);
             uint chunkLengthValue = BinaryPrimitives.ReadUInt32LittleEndian(bytes.Slice(offset + 4, 4));
             if (chunkLengthValue > int.MaxValue)
+            {
                 throw new InvalidDataException("The WAV source contains an oversized chunk.");
+            }
             int chunkLength = (int)chunkLengthValue;
             int chunkStart = checked(offset + 8);
             int chunkEnd = checked(chunkStart + chunkLength);
             if (chunkEnd > bytes.Length)
+            {
                 throw new InvalidDataException("The WAV source contains a truncated chunk.");
+            }
 
             if (chunkId.SequenceEqual("fmt "u8))
             {
                 if (chunkLength < 16)
+                {
                     throw new InvalidDataException("The WAV format chunk is truncated.");
+                }
                 ushort format = BinaryPrimitives.ReadUInt16LittleEndian(bytes.Slice(chunkStart, 2));
                 if (format is not 1 and not 3 and not 0xfffe)
+                {
                     throw new InvalidDataException($"The WAV format code '{format}' is not supported.");
+                }
                 channels = BinaryPrimitives.ReadUInt16LittleEndian(bytes.Slice(chunkStart + 2, 2));
                 sampleRate = checked((int)BinaryPrimitives.ReadUInt32LittleEndian(bytes.Slice(chunkStart + 4, 4)));
                 blockAlignment = BinaryPrimitives.ReadUInt16LittleEndian(bytes.Slice(chunkStart + 12, 2));
@@ -96,19 +107,18 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
         }
 
         if (channels <= 0 || sampleRate <= 0 || blockAlignment <= 0 || dataLength < 0)
+        {
             throw new InvalidDataException("The WAV source is missing valid format or data chunks.");
-        return new AudioClipMetadata(
-            AudioCodecId.wav,
-            channels,
-            sampleRate,
-            dataLength / blockAlignment,
-            bytes.Length);
+        }
+        return new AudioClipMetadata(AudioCodecId.wav, channels, sampleRate, dataLength / blockAlignment, bytes.Length);
     }
 
     private static AudioClipMetadata ReadFlac(ReadOnlySpan<byte> bytes)
     {
         if (bytes.Length < 42 || !bytes[..4].SequenceEqual("fLaC"u8))
+        {
             throw new InvalidDataException("The FLAC source has an invalid stream marker.");
+        }
         int offset = 4;
         bool foundStreamInfo = false;
         int channels = 0;
@@ -122,11 +132,15 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
             int dataStart = checked(offset + 4);
             int dataEnd = checked(dataStart + length);
             if (dataEnd > bytes.Length)
+            {
                 throw new InvalidDataException("The FLAC source contains a truncated metadata block.");
+            }
             if (blockType == 0)
             {
                 if (foundStreamInfo || length != 34)
+                {
                     throw new InvalidDataException("The FLAC STREAMINFO block is invalid.");
+                }
                 ReadOnlySpan<byte> packed = bytes.Slice(dataStart + 10, 8);
                 ulong value = BinaryPrimitives.ReadUInt64BigEndian(packed);
                 sampleRate = (int)((value >> 44) & 0xfffff);
@@ -136,10 +150,14 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
             }
             offset = dataEnd;
             if ((header & 0x80) != 0)
+            {
                 break;
+            }
         }
         if (!foundStreamInfo || channels <= 0 || sampleRate <= 0 || frameCount <= 0)
+        {
             throw new InvalidDataException("The FLAC source is missing valid STREAMINFO metadata.");
+        }
         return new AudioClipMetadata(AudioCodecId.flac, channels, sampleRate, frameCount, bytes.Length);
     }
 
@@ -163,7 +181,9 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
                 break;
             }
             if (offset + frameLength > bytes.Length)
+            {
                 throw new InvalidDataException("The MP3 source contains a truncated audio frame.");
+            }
             sampleRate = frameSampleRate;
             channels = frameChannels;
             frameCount += samples;
@@ -171,23 +191,31 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
             offset += frameLength;
         }
         if (encodedFrameCount == 0)
+        {
             throw new InvalidDataException("The MP3 source contains no valid Layer III frame.");
+        }
         return new AudioClipMetadata(AudioCodecId.mp3, channels, sampleRate, frameCount, bytes.Length);
     }
 
     private static int SkipId3(ReadOnlySpan<byte> bytes)
     {
         if (bytes.Length < 10 || !bytes[..3].SequenceEqual("ID3"u8))
+        {
             return 0;
+        }
         for (int index = 6; index < 10; index++)
         {
             if ((bytes[index] & 0x80) != 0)
+            {
                 throw new InvalidDataException("The MP3 ID3 size is invalid.");
+            }
         }
         int size = (bytes[6] << 21) | (bytes[7] << 14) | (bytes[8] << 7) | bytes[9];
         int offset = checked(10 + size);
         if (offset > bytes.Length)
+        {
             throw new InvalidDataException("The MP3 ID3 tag is truncated.");
+        }
         return offset;
     }
 
@@ -203,21 +231,29 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
         samples = 0;
         channels = 0;
         if ((header & 0xffe00000) != 0xffe00000)
+        {
             return false;
+        }
         int mpegBits = (int)((header >> 19) & 0x3);
         int layerBits = (int)((header >> 17) & 0x3);
         int bitrateIndex = (int)((header >> 12) & 0xf);
         int sampleRateIndex = (int)((header >> 10) & 0x3);
         if (mpegBits == 1 || layerBits != 1 || bitrateIndex is 0 or 15 || sampleRateIndex == 3)
+        {
             return false;
+        }
 
         int[] sampleRates = [44100, 48000, 32000];
         sampleRate = sampleRates[sampleRateIndex];
         bool mpegOne = mpegBits == 3;
         if (mpegBits == 2)
+        {
             sampleRate /= 2;
+        }
         else if (mpegBits == 0)
+        {
             sampleRate /= 4;
+        }
         int[] mpegOneBitrates = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320];
         int[] lowerBitrates = [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160];
         int bitrate = (mpegOne ? mpegOneBitrates : lowerBitrates)[bitrateIndex];

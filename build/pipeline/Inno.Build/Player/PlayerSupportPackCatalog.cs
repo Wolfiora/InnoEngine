@@ -1,13 +1,13 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using Inno.Core.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.IO;
 
 namespace Inno.Build;
 
@@ -92,14 +92,24 @@ public sealed class PlayerSupportPackCatalog
         ArgumentNullException.ThrowIfNull(validator);
         ArgumentNullException.ThrowIfNull(verifyInputs);
         if (fingerprint is null || fingerprint.Length != 64
-            || fingerprint.Any(static character => !char.IsAsciiHexDigitLower(character)))
+            || fingerprint.Any(static character => !char.IsAsciiHexDigitLower(character))
+        ) {
             throw new ArgumentException("A prepared Pack requires its exact content identity.", nameof(fingerprint));
+        }
         cancellationToken.ThrowIfCancellationRequested();
         string targetRoot = PathBoundary.Resolve(m_root, target.value);
-        using FileLease selection = await FileLease.AcquireAsync(Path.Combine(targetRoot, "current.lock"),
-            Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
-        PlayerSupportPackLease reading = AcquireArtifact(PathBoundary.Resolve(targetRoot, fingerprint), fingerprint,
-            target, validator, cancellationToken);
+        using FileLease selection = await FileLease.AcquireAsync(
+            Path.Combine(targetRoot, "current.lock"),
+            Timeout.InfiniteTimeSpan,
+            cancellationToken
+        ).ConfigureAwait(false);
+        PlayerSupportPackLease reading = AcquireArtifact(
+            PathBoundary.Resolve(targetRoot, fingerprint),
+            fingerprint,
+            target,
+            validator,
+            cancellationToken
+        );
         try
         {
             await VerifySelectionInputsAsync(verifyInputs, cancellationToken).ConfigureAwait(false);
@@ -153,12 +163,15 @@ public sealed class PlayerSupportPackCatalog
         if (!File.Exists(index))
         {
             throw new DirectoryNotFoundException(
-                $"Player Support Pack '{target}' is not installed at '{targetRoot}'. " +
-                "Install or generate the target Support Pack before exporting.");
+                $"Player Support Pack '{target}' is not installed at '{targetRoot}'. "
+                + "Install or generate the target Support Pack before exporting."
+            );
         }
         string fingerprint = File.ReadAllText(index);
         if (fingerprint.Length != 64 || fingerprint.Any(static character => !char.IsAsciiHexDigitLower(character)))
+        {
             throw new InvalidDataException($"Player Support Pack '{target}' has an invalid current fingerprint.");
+        }
         string directory = Path.Combine(targetRoot, fingerprint);
         return AcquireArtifact(directory, fingerprint, target, validator, cancellationToken);
     }
@@ -211,7 +224,10 @@ public sealed class PlayerSupportPackCatalog
         string targetRoot = Path.Combine(m_root, target.value);
         Directory.CreateDirectory(targetRoot);
         using FileLease ownership = await FileLease.AcquireAsync(
-            Path.Combine(targetRoot, "current.lock"), Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+            Path.Combine(targetRoot, "current.lock"),
+            Timeout.InfiniteTimeSpan,
+            cancellationToken
+        ).ConfigureAwait(false);
         string destination = Path.Combine(targetRoot, fingerprint);
         bool valid = false;
         if (Directory.Exists(destination))
@@ -219,7 +235,12 @@ public sealed class PlayerSupportPackCatalog
             try
             {
                 using PlayerSupportPackLease existing = AcquireArtifact(
-                    destination, fingerprint, target, validator, cancellationToken);
+                    destination,
+                    fingerprint,
+                    target,
+                    validator,
+                    cancellationToken
+                );
                 valid = true;
             }
             catch (InvalidDataException) { }
@@ -227,9 +248,14 @@ public sealed class PlayerSupportPackCatalog
         if (!valid)
         {
             using FileLease publication = await FileLease.AcquireAsync(
-                GetLeasePath(destination), TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(false);
+                GetLeasePath(destination),
+                TimeSpan.FromSeconds(30),
+                cancellationToken
+            ).ConfigureAwait(false);
             if (verifyInputs is not null)
+            {
                 await VerifySelectionInputsAsync(verifyInputs, cancellationToken).ConfigureAwait(false);
+            }
             cancellationToken.ThrowIfCancellationRequested();
             PathBoundary.RequireUnlinkedPath(targetRoot, destination);
             try
@@ -242,12 +268,16 @@ public sealed class PlayerSupportPackCatalog
             }
         }
         else if (verifyInputs is not null)
+        {
             await VerifySelectionInputsAsync(verifyInputs, cancellationToken).ConfigureAwait(false);
+        }
         PlayerSupportPackLease reading = AcquireArtifact(destination, fingerprint, target, validator, cancellationToken);
         try
         {
             if (verifyInputs is not null)
+            {
                 await VerifySelectionInputsAsync(verifyInputs, cancellationToken).ConfigureAwait(false);
+            }
             cancellationToken.ThrowIfCancellationRequested();
             SelectCurrent(targetRoot, fingerprint);
             return reading;
@@ -265,7 +295,9 @@ public sealed class PlayerSupportPackCatalog
     ) {
         string index = Path.Combine(targetRoot, "current");
         if (!File.Exists(index) || File.ReadAllText(index) != fingerprint)
+        {
             AtomicFile.WriteAllBytes(index, Encoding.UTF8.GetBytes(fingerprint));
+        }
     }
 
     private static async ValueTask VerifySelectionInputsAsync(
@@ -292,16 +324,24 @@ public sealed class PlayerSupportPackCatalog
         string path = GetLeasePath(directory);
         if (!File.Exists(path))
         {
-            using FileLease initializer = FileLease.AcquireAsync(path,
-                TimeSpan.FromSeconds(30), cancellationToken).GetAwaiter().GetResult();
+            using FileLease initializer = FileLease.AcquireAsync(
+                path,
+                TimeSpan.FromSeconds(30),
+                cancellationToken
+            ).GetAwaiter().GetResult();
         }
-        FileLease lease = FileLease.AcquireSharedAsync(path,
-            TimeSpan.FromSeconds(30), cancellationToken).GetAwaiter().GetResult();
+        FileLease lease = FileLease.AcquireSharedAsync(
+            path,
+            TimeSpan.FromSeconds(30),
+            cancellationToken
+        ).GetAwaiter().GetResult();
         try
         {
             ValidateDirectory(directory, target, validator);
             if (ComputeFingerprint(directory, cancellationToken) != fingerprint)
+            {
                 throw new InvalidDataException($"Player Support Pack '{target}' no longer matches its immutable fingerprint.");
+            }
             return new PlayerSupportPackLease(directory, lease);
         }
         catch
@@ -319,27 +359,34 @@ public sealed class PlayerSupportPackCatalog
         IPlayerSupportPackValidator validator
     ) {
         if (!Directory.Exists(directory))
+        {
             throw new InvalidDataException($"Player Support Pack '{target}' points to a missing artifact '{directory}'.");
+        }
         string[] files = PathBoundary.EnumerateFiles(directory).ToArray();
         if (files.Length == 0)
+        {
             throw new InvalidDataException($"Player Support Pack '{target}' is empty.");
+        }
         foreach (string file in files)
         {
             string relativePath = Path.GetRelativePath(directory, file);
             if (relativePath.StartsWith("PlayerLink" + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+            {
                 continue;
+            }
             string name = Path.GetFileName(file);
             if (S_FORBIDDEN_EXTENSIONS.Contains(Path.GetExtension(name))
-                || S_FORBIDDEN_NAME_TOKENS.Any(token => name.Contains(token, StringComparison.OrdinalIgnoreCase)))
-            {
+                || S_FORBIDDEN_NAME_TOKENS.Any(token => name.Contains(token, StringComparison.OrdinalIgnoreCase))
+            ) {
                 throw new InvalidDataException(
-                    $"Player Support Pack '{target}' contains forbidden build-time file '{name}'.");
+                    $"Player Support Pack '{target}' contains forbidden build-time file '{name}'."
+                );
             }
         }
         string referenceDirectory = Path.Combine(directory, "References");
         if (!Directory.Exists(referenceDirectory)
-            || !Directory.EnumerateFiles(referenceDirectory, "Inno.*.dll", SearchOption.TopDirectoryOnly).Any())
-        {
+            || !Directory.EnumerateFiles(referenceDirectory, "Inno.*.dll", SearchOption.TopDirectoryOnly).Any()
+        ) {
             throw new InvalidDataException($"Player Support Pack '{target}' has no target compilation references.");
         }
         validator.Validate(directory);
@@ -353,7 +400,9 @@ public sealed class PlayerSupportPackCatalog
     ) {
         cancellationToken.ThrowIfCancellationRequested();
         if (provisioner is null)
+        {
             return Acquire(target, validator, cancellationToken);
+        }
 
         SemaphoreSlim gate = m_provisionGates.GetOrAdd(target, static _ => new SemaphoreSlim(1, 1));
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -376,8 +425,8 @@ public sealed class PlayerSupportPackCatalog
         using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         Span<byte> length = stackalloc byte[sizeof(int)];
         foreach (string file in PathBoundary.EnumerateFiles(directory)
-            .OrderBy(path => Path.GetRelativePath(directory, path).Replace('\\', '/'), StringComparer.Ordinal))
-        {
+            .OrderBy(path => Path.GetRelativePath(directory, path).Replace('\\', '/'), StringComparer.Ordinal)
+        ) {
             cancellationToken.ThrowIfCancellationRequested();
             string relative = Path.GetRelativePath(directory, file).Replace('\\', '/');
             byte[] path = Encoding.UTF8.GetBytes(relative);

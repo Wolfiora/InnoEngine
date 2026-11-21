@@ -1,4 +1,3 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.IO;
 using Inno.Assets;
@@ -10,7 +9,10 @@ using Inno.Editor.Shaders;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+
 namespace Inno.Editor.Panel.ShaderEditor;
+
 [InspectionDrawer(typeof(AssetFileEntry), priority: 100, conditional: true)]
 internal sealed class ShaderSourceDrawer(IInspectionIconProvider<AssetFileEntry> icons) : InspectionDrawer<AssetFileEntry>
 {
@@ -35,6 +37,7 @@ internal sealed class ShaderSourceDrawer(IInspectionIconProvider<AssetFileEntry>
         InspectionDrawContext context,
         AssetFileEntry target
     ) => icons.GetIcon(target);
+
     /// <summary>
     /// Checks whether this drawer supports the selected Inspector target.
     /// </summary>
@@ -44,7 +47,9 @@ internal sealed class ShaderSourceDrawer(IInspectionIconProvider<AssetFileEntry>
     /// <returns>
     /// <see langword="true"/> when the documented condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    protected override bool CanInspect(AssetFileEntry target) => !target.isDirectory && target.extension.Equals(".ishader", StringComparison.OrdinalIgnoreCase);
+    protected override bool CanInspect(AssetFileEntry target)
+        => !target.isDirectory && target.extension.Equals(".ishader", StringComparison.OrdinalIgnoreCase);
+
     /// <summary>
     /// Binds a caller-visible label to the current inspection target.
     /// </summary>
@@ -61,6 +66,7 @@ internal sealed class ShaderSourceDrawer(IInspectionIconProvider<AssetFileEntry>
         InspectionDrawContext context,
         AssetFileEntry target
     ) => (target.nameWithoutExtension, null);
+
     /// <summary>
     /// Renders the value presentation for the current editor frame.
     /// </summary>
@@ -77,9 +83,13 @@ internal sealed class ShaderSourceDrawer(IInspectionIconProvider<AssetFileEntry>
         if (context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents))
         {
             if (documents!.TryOpen(target, out ShaderEditorDocuments.Draft draft))
+            {
                 new ShaderEditorCanvas(documents, draft).DrawInspector(context, []);
+            }
             else
+            {
                 EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, "Waiting for Shader asset import…");
+            }
         }
     }
 }
@@ -108,16 +118,14 @@ internal sealed class ShaderSelectionDrawer(IInspectionIconProvider<AssetFileEnt
         InspectionDrawContext context,
         ShaderInspectionSelection target
     ) => context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents)
-        && documents is not null
-        && documents.assets.TryGetInfo(
-        target.assetId,
-        out AssetInfo? info
-    )
-        && info is not null
-        && documents.assets.TryGetFileSystemEntry(
-        info.assetPath,
-        out AssetFileEntry entry
-    ) ? icons.GetIcon(entry) : icon;
+         && documents is not null
+         && documents.assets.TryGetInfo(target.assetId, out AssetInfo? info)
+         && info is not null
+         && documents.assets.TryGetFileSystemEntry(
+             info.assetPath,
+             out AssetFileEntry entry
+         ) ? icons.GetIcon(entry) : icon;
+
     /// <summary>
     /// Binds a caller-visible label to the current inspection target.
     /// </summary>
@@ -136,12 +144,11 @@ internal sealed class ShaderSelectionDrawer(IInspectionIconProvider<AssetFileEnt
     ) {
         if (context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents)
             && documents is not null
-            && documents.assets.TryGetInfo(
-            target.assetId,
-            out AssetInfo? info
-        )
-            && info is not null)
+            && documents.assets.TryGetInfo(target.assetId, out AssetInfo? info)
+            && info is not null
+        ) {
             return (Path.GetFileName(info.assetPath.localPath), null);
+        }
         return ("Shader", null);
     }
 
@@ -160,16 +167,10 @@ internal sealed class ShaderSelectionDrawer(IInspectionIconProvider<AssetFileEnt
     ) {
         if (!context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents)
             || documents is null
-            || !documents.assets.TryGetInfo(
-            target.assetId,
-            out AssetInfo? info
-        )
+            || !documents.assets.TryGetInfo(target.assetId, out AssetInfo? info)
             || info is null
-            || !documents.assets.TryGetFileSystemEntry(
-            info.assetPath,
-            out AssetFileEntry entry
-        ))
-        {
+            || !documents.assets.TryGetFileSystemEntry(info.assetPath, out AssetFileEntry entry)
+        ) {
             EditorUI.current.widgets.ColoredText(EditorPalette.contextText, "Node selection unavailable");
             return;
         }
@@ -181,9 +182,16 @@ internal sealed class ShaderSelectionDrawer(IInspectionIconProvider<AssetFileEnt
         }
 
         if (target.nodes.Count == 1 && documents.Controller(draft).document.FindNode(target.nodes[0]) is GraphNodeRecord node)
-            EditorUI.current.widgets.ColoredText(EditorPalette.contextText, "Node: " + new ShaderEditorCanvas(documents, draft).Title(node));
+        {
+            EditorUI.current.widgets.ColoredText(
+                EditorPalette.contextText,
+                "Node: " + new ShaderEditorCanvas(documents, draft).Title(node)
+            );
+        }
         else
+        {
             EditorUI.current.widgets.ColoredText(EditorPalette.contextText, $"Nodes: {target.nodes.Count} selected");
+        }
     }
 
     /// <summary>
@@ -200,17 +208,25 @@ internal sealed class ShaderSelectionDrawer(IInspectionIconProvider<AssetFileEnt
         ShaderInspectionSelection target
     ) {
         if (!context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents) || documents is null)
-            return;
-        if (!documents.assets.TryGetInfo(target.assetId, out AssetInfo? info) || info is null || !documents.assets.TryGetFileSystemEntry(info.assetPath, out AssetFileEntry entry))
         {
+            return;
+        }
+        if (!documents.assets.TryGetInfo(target.assetId, out AssetInfo? info)
+            || info is null
+            || !documents.assets.TryGetFileSystemEntry(info.assetPath, out AssetFileEntry entry)
+        ) {
             EditorUI.current.widgets.WrappedText("Shader source unavailable. Selection identities are retained.");
             return;
         }
 
         if (documents.TryOpen(entry, out ShaderEditorDocuments.Draft draft))
+        {
             new ShaderEditorCanvas(documents, draft).DrawInspector(context, target.nodes);
+        }
         else
+        {
             EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, "Waiting for Shader asset import…");
+        }
     }
 }
 
@@ -238,11 +254,12 @@ internal sealed class ShaderAssetDrawer(IInspectionIconProvider<AssetFileEntry> 
         InspectionDrawContext context,
         ShaderAsset target
     ) => context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents)
-        && documents is not null
-        && documents.assets.TryGetFileSystemEntry(
-        target.assetPath,
-        out AssetFileEntry entry
-    ) ? icons.GetIcon(entry) : icon;
+         && documents is not null
+         && documents.assets.TryGetFileSystemEntry(
+             target.assetPath,
+             out AssetFileEntry entry
+         ) ? icons.GetIcon(entry) : icon;
+
     /// <summary>
     /// Binds a caller-visible label to the current inspection target.
     /// </summary>
@@ -259,6 +276,7 @@ internal sealed class ShaderAssetDrawer(IInspectionIconProvider<AssetFileEntry> 
         InspectionDrawContext context,
         ShaderAsset target
     ) => (target.name, null);
+
     /// <summary>
     /// Renders the value presentation for the current editor frame.
     /// </summary>
@@ -273,12 +291,20 @@ internal sealed class ShaderAssetDrawer(IInspectionIconProvider<AssetFileEntry> 
         ShaderAsset target
     ) {
         if (!context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents) || documents is null)
+        {
             return;
+        }
         if (!documents.assets.TryGetFileSystemEntry(target.assetPath, out AssetFileEntry entry))
+        {
             return;
+        }
         if (documents.TryOpen(entry, out ShaderEditorDocuments.Draft draft))
+        {
             new ShaderEditorCanvas(documents, draft).DrawInspector(context, []);
+        }
         else
+        {
             EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, "Waiting for Shader asset import…");
+        }
     }
 }

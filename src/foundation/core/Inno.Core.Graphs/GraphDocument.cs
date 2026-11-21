@@ -282,7 +282,9 @@ public sealed class GraphDocument
         m_nodes.AddRange(nodes);
         m_nodeIndex.Clear();
         foreach ((GraphNodeId id, GraphNodeRecord node) in nodeIndex)
+        {
             m_nodeIndex.Add(id, node);
+        }
         m_edges.Clear();
         m_edges.AddRange(edges);
         m_metadata.Clear();

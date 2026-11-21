@@ -1,10 +1,10 @@
+using System;
+using System.IO;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Graphs;
 using Inno.Core.Serialization;
 using Inno.Rendering;
-using System;
-using System.IO;
 
 namespace Inno.Rendering.Assets.Authoring;
 
@@ -85,9 +85,10 @@ public sealed class ShaderGraphSourceStore
     private static void Validate(AssetPath path)
     {
         if (!path.isValid || !path.localPath.EndsWith(".ishader", StringComparison.OrdinalIgnoreCase))
+        {
             throw new ArgumentException("A shader graph source must use the .ishader extension.", nameof(path));
+        }
     }
-
 }
 
 /// <summary>
@@ -97,6 +98,7 @@ public sealed class ShaderGraphSourceStore
 public sealed class ShaderGraphSourceSnapshot
 {
     private readonly GraphDocument m_document;
+
     internal ShaderGraphSourceSnapshot(
         GraphDocument document,
         string hash,
@@ -106,17 +108,19 @@ public sealed class ShaderGraphSourceSnapshot
         contentHash = hash;
         isReadOnly = readOnly;
     }
+
     /// <summary>
     /// Gets a detached copy of authored graph records.
     /// </summary>
     public GraphDocument document => m_document.Clone();
+
     /// <summary>
     /// Gets the source fingerprint used to reject external-edit conflicts.
     /// </summary>
     public string contentHash { get; }
+
     /// <summary>
     /// Gets whether the source belongs to an immutable installation mount.
     /// </summary>
     public bool isReadOnly { get; }
 }
-

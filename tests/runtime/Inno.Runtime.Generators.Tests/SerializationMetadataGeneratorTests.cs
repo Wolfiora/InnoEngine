@@ -3,14 +3,14 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Xunit;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Core.Serialization;
 using Inno.Core.Serialization.Generators;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Xunit;
 
 namespace Inno.Runtime.Generators.Tests;
 
@@ -55,7 +55,10 @@ public sealed class SerializationMetadataGeneratorTests
         {
             lifetime.LoadFromStream(new MemoryStream(parent));
             Assembly assembly = lifetime.LoadFromStream(new MemoryStream(child));
-            Type catalog = assembly.GetType("Inno.SerializationChildFixture.Generated.RuntimeSerializationMetadataCatalog", throwOnError: true)!;
+            Type catalog = assembly.GetType(
+                "Inno.SerializationChildFixture.Generated.RuntimeSerializationMetadataCatalog",
+                throwOnError: true
+            )!;
             var register = catalog.GetMethod("Register", BindingFlags.Public | BindingFlags.Static)!
                 .CreateDelegate<Action<Action<SerializationTypeMetadata>>>();
             var source = new StaticSerializationMetadataSource([register]);
@@ -160,9 +163,12 @@ public sealed class SerializationMetadataGeneratorTests
             """;
         string[] references = ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")
             ?? throw new InvalidOperationException("The test host supplies no platform references.")).Split(Path.PathSeparator);
-        CSharpCompilation input = CSharpCompilation.Create("Inno.SerializationMetadataFixture",
-            [CSharpSyntaxTree.ParseText(source)], references.Select(static path => MetadataReference.CreateFromFile(path)),
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
+        CSharpCompilation input = CSharpCompilation.Create(
+            "Inno.SerializationMetadataFixture",
+            [CSharpSyntaxTree.ParseText(source)],
+            references.Select(static path => MetadataReference.CreateFromFile(path)),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable)
+        );
         GeneratorDriver driver = CSharpGeneratorDriver.Create(new SerializationMetadataGenerator().AsSourceGenerator());
         driver.RunGeneratorsAndUpdateCompilation(input, out Compilation output, out var diagnostics);
         Assert.Empty(diagnostics.Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error));
@@ -174,16 +180,21 @@ public sealed class SerializationMetadataGeneratorTests
         try
         {
             Assembly assembly = lifetime.LoadFromStream(stream);
-            Type catalog = assembly.GetType("Inno.SerializationMetadataFixture.Generated.RuntimeSerializationMetadataCatalog", throwOnError: true)!;
+            Type catalog = assembly.GetType(
+                "Inno.SerializationMetadataFixture.Generated.RuntimeSerializationMetadataCatalog",
+                throwOnError: true
+            )!;
             var register = catalog.GetMethod("Register", BindingFlags.Public | BindingFlags.Static)!
                 .CreateDelegate<Action<Action<SerializationTypeMetadata>>>();
             var metadata = new StaticSerializationMetadataSource([register]);
             using var modules = new ModuleHost(new ModuleHostOptions
             {
-                catalogSource = new DotNetAssemblyCatalogSource(assembly)            });
+                catalogSource = new DotNetAssemblyCatalogSource(assembly)
+            });
             using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
             using var serialization = new SerializationRegistry(types, metadata);
-            var run = assembly.GetType("Fixture.Scenario", throwOnError: true)!.GetMethod("Run")!
+            var run = assembly.GetType("Fixture.Scenario", throwOnError: true)!
+                .GetMethod("Run")!
                 .CreateDelegate<Func<SerializationRegistry, bool>>();
             Assert.True(run(serialization));
             Assert.Throws<InvalidOperationException>(() => metadata.GetMetadata(typeof(DateTime)));
@@ -267,8 +278,10 @@ public sealed class SerializationMetadataGeneratorTests
             """, []);
         GeneratorDriver driver = CSharpGeneratorDriver.Create(new SerializationMetadataGenerator().AsSourceGenerator());
         driver.RunGeneratorsAndUpdateCompilation(input, out _, out var diagnostics);
-        Assert.Contains(diagnostics, static diagnostic => diagnostic.Id == "INNOSER012"
-            && diagnostic.Severity == DiagnosticSeverity.Error);
+        Assert.Contains(diagnostics, static diagnostic => (
+            diagnostic.Id == "INNOSER012"
+            && diagnostic.Severity == DiagnosticSeverity.Error
+        ));
     }
 
     [Fact]
@@ -287,16 +300,21 @@ public sealed class SerializationMetadataGeneratorTests
         try
         {
             Assembly assembly = lifetime.LoadFromStream(new MemoryStream(bytes));
-            Type catalog = assembly.GetType("Inno.PrivateSerializationFixture.Generated.RuntimeSerializationMetadataCatalog", throwOnError: true)!;
+            Type catalog = assembly.GetType(
+                "Inno.PrivateSerializationFixture.Generated.RuntimeSerializationMetadataCatalog",
+                throwOnError: true
+            )!;
             var register = catalog.GetMethod("Register", BindingFlags.Public | BindingFlags.Static)!
                 .CreateDelegate<Action<Action<SerializationTypeMetadata>>>();
             var metadata = new StaticSerializationMetadataSource([register]);
             using var modules = new ModuleHost(new ModuleHostOptions
             {
-                catalogSource = new DotNetAssemblyCatalogSource(assembly)            });
+                catalogSource = new DotNetAssemblyCatalogSource(assembly)
+            });
             using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
             using var serialization = new SerializationRegistry(types, metadata);
-            var run = assembly.GetType("Fixture.Scenario", throwOnError: true)!.GetMethod("Run")!
+            var run = assembly.GetType("Fixture.Scenario", throwOnError: true)!
+                .GetMethod("Run")!
                 .CreateDelegate<Func<SerializationRegistry, bool>>();
             Assert.True(run(serialization));
         }
@@ -313,9 +331,12 @@ public sealed class SerializationMetadataGeneratorTests
     ) {
         string[] references = ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")
             ?? throw new InvalidOperationException("The test host supplies no platform references.")).Split(Path.PathSeparator);
-        return CSharpCompilation.Create(assemblyName, [CSharpSyntaxTree.ParseText(source)],
+        return CSharpCompilation.Create(
+            assemblyName,
+            [CSharpSyntaxTree.ParseText(source)],
             references.Select(static path => MetadataReference.CreateFromFile(path)).Concat(additionalReferences),
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable)
+        );
     }
 
     private static byte[] Compile(
@@ -324,8 +345,11 @@ public sealed class SerializationMetadataGeneratorTests
         MetadataReference[] additionalReferences
     ) {
         GeneratorDriver driver = CSharpGeneratorDriver.Create(new SerializationMetadataGenerator().AsSourceGenerator());
-        driver.RunGeneratorsAndUpdateCompilation(CreateCompilation(assemblyName, source, additionalReferences),
-            out Compilation output, out var diagnostics);
+        driver.RunGeneratorsAndUpdateCompilation(
+            CreateCompilation(assemblyName, source, additionalReferences),
+            out Compilation output,
+            out var diagnostics
+        );
         Assert.Empty(diagnostics.Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error));
         using var stream = new MemoryStream();
         var emitted = output.Emit(stream);

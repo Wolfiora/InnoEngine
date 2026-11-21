@@ -12,10 +12,10 @@ internal static class ScriptApiMapBuilder
     {
         var source = new StringBuilder("# Script namespace\tImplementation namespace\n");
         foreach (ScriptApiNamespaceMapping mapping in profile.namespaceMappings
-                     .Distinct()
-                     .OrderBy(static value => value.apiNamespace, StringComparer.Ordinal)
-                     .ThenBy(static value => value.implementationNamespace, StringComparer.Ordinal))
-        {
+            .Distinct()
+            .OrderBy(static value => value.apiNamespace, StringComparer.Ordinal)
+            .ThenBy(static value => value.implementationNamespace, StringComparer.Ordinal)
+        ) {
             source.Append(mapping.apiNamespace)
                 .Append('\t')
                 .Append(mapping.implementationNamespace)

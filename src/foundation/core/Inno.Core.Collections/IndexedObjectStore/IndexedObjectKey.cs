@@ -20,7 +20,7 @@ public enum IndexedObjectKeyFlags
     /// <summary>
     /// Allows at most one item for each key value.
     /// </summary>
-    Unique =  1 << 2,
+    Unique =  1 << 2
 }
 
 /// <summary>
@@ -33,12 +33,12 @@ public readonly struct IndexedObjectKey<TKey>
 {
     internal readonly WeakReference<IIndexedObjectStore>? storeRef;
     internal readonly int id;
-    
+
     /// <summary>
     /// Key name
     /// </summary>
     public readonly string name;
-    
+
     /// <summary>
     /// Returns true if the store key is still valid in its owning store.
     /// </summary>
@@ -48,7 +48,9 @@ public readonly struct IndexedObjectKey<TKey>
         get
         {
             if (storeRef == null || !storeRef.TryGetTarget(out var store))
+            {
                 return false;
+            }
 
             return store.IsValidKey(id, typeof(TKey));
         }

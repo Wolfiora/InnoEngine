@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-
 using Inno.Editor.Core;
 
 namespace Inno.Editor.Interactions;
@@ -43,7 +42,9 @@ internal sealed class EditorJsonState : EditorState
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         if (!m_values.TryGetValue(key, out string? payload))
+        {
             return fallback;
+        }
         try
         {
             T? value = JsonSerializer.Deserialize<T>(payload);
@@ -78,8 +79,7 @@ internal sealed class EditorJsonState : EditorState
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         if (m_writableValues is null)
         {
-            throw new InvalidOperationException(
-                "Editor state supplied for restoration cannot be modified.");
+            throw new InvalidOperationException("Editor state supplied for restoration cannot be modified.");
         }
         try
         {
@@ -87,13 +87,12 @@ internal sealed class EditorJsonState : EditorState
         }
         catch (JsonException exception)
         {
-            throw new NotSupportedException(
-                $"Editor state value '{key}' cannot be serialized.",
-                exception);
+            throw new NotSupportedException($"Editor state value '{key}' cannot be serialized.", exception);
         }
     }
 
     internal IReadOnlyDictionary<string, string> Export()
         => m_writableValues ?? throw new InvalidOperationException(
-            "Only editor state captured by an extension can be exported.");
+            "Only editor state captured by an extension can be exported."
+        );
 }

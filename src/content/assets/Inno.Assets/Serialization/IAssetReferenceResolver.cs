@@ -1,8 +1,7 @@
 using System;
-
 using Inno.Assets;
-using Inno.Core.Identity;
 using Inno.Core.Execution;
+using Inno.Core.Identity;
 using Inno.References;
 
 namespace Inno.Assets;
@@ -37,10 +36,13 @@ public interface IAssetReferenceResolver : IReferenceResolver
             return new ReferenceResolution(
                 descriptor,
                 ReferenceResolutionState.Invalid,
-                diagnostic: $"Asset resolver cannot process reference kind '{descriptor.kindId}'.");
+                diagnostic: $"Asset resolver cannot process reference kind '{descriptor.kindId}'."
+            );
         }
         if (descriptor.isUnassigned)
+        {
             return new ReferenceResolution(descriptor, ReferenceResolutionState.Unassigned);
+        }
         try
         {
             AssetObject asset = Resolve(
@@ -48,30 +50,33 @@ public interface IAssetReferenceResolver : IReferenceResolver
                 descriptor.expectedStableTypeId,
                 descriptor.lastKnownPath ?? string.Empty,
                 typeof(AssetObject),
-                "$reference");
+                "$reference"
+            );
             if (asset.identity.persistentId != descriptor.targetPersistentId)
             {
-                return new ReferenceResolution(descriptor, ReferenceResolutionState.Invalid,
-                    diagnostic: "The asset resolver returned a different persistent identity.");
+                return new ReferenceResolution(
+                    descriptor,
+                    ReferenceResolutionState.Invalid,
+                    diagnostic: "The asset resolver returned a different persistent identity."
+                );
             }
             if (asset.isMissing)
             {
                 return new ReferenceResolution(
                     descriptor,
                     ReferenceResolutionState.Missing,
-                    diagnostic: $"Asset '{descriptor.targetPersistentId:D}' is unavailable in the current generation.");
+                    diagnostic: $"Asset '{descriptor.targetPersistentId:D}' is unavailable in the current generation."
+                );
             }
             if (asset.identity.runtimeIdentity is not RuntimeIdentity runtimeIdentity)
             {
                 return new ReferenceResolution(
                     descriptor,
                     ReferenceResolutionState.Invalid,
-                    diagnostic: $"Asset '{descriptor.targetPersistentId:D}' is not registered in a runtime identity domain.");
+                    diagnostic: $"Asset '{descriptor.targetPersistentId:D}' is not registered in a runtime identity domain."
+                );
             }
-            return new ReferenceResolution(
-                descriptor,
-                ReferenceResolutionState.Resolved,
-                runtimeIdentity);
+            return new ReferenceResolution(descriptor, ReferenceResolutionState.Resolved, runtimeIdentity);
         }
         catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
         {
@@ -79,10 +84,7 @@ public interface IAssetReferenceResolver : IReferenceResolver
         }
         catch (Exception exception) when (exception is InvalidOperationException or System.IO.InvalidDataException)
         {
-            return new ReferenceResolution(
-                descriptor,
-                ReferenceResolutionState.Missing,
-                diagnostic: exception.Message);
+            return new ReferenceResolution(descriptor, ReferenceResolutionState.Missing, diagnostic: exception.Message);
         }
     }
 

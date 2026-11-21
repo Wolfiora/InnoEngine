@@ -20,8 +20,12 @@ public readonly record struct PlatformNativeHandleId
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         foreach (char character in value)
+        {
             if (char.IsWhiteSpace(character))
+            {
                 throw new ArgumentException("A native surface identifier cannot contain whitespace.", nameof(value));
+            }
+        }
         this.value = value;
     }
 

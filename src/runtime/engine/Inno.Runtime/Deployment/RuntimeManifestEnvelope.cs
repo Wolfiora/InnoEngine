@@ -40,10 +40,11 @@ public static class RuntimeManifestEnvelope
         manifest.Validate();
         byte[] applicationId = Encoding.UTF8.GetBytes(manifest.applicationId);
         byte[] persistentDataPath = Encoding.UTF8.GetBytes(
-            manifest.persistentDataPath.Length == 0 ? manifest.applicationId : manifest.persistentDataPath);
+            manifest.persistentDataPath.Length == 0 ? manifest.applicationId : manifest.persistentDataPath
+        );
         byte[] payload = serialization.Serialize(manifest);
-        byte[] result = new byte[checked(magic.Length + sizeof(int) * 3 +
-            applicationId.Length + persistentDataPath.Length + payload.Length)];
+        byte[] result = new byte[checked(magic.Length + sizeof(int) * 3
+                                         + applicationId.Length + persistentDataPath.Length + payload.Length)];
         int offset = 0;
         magic.CopyTo(result);
         offset += magic.Length;
@@ -126,11 +127,16 @@ public static class RuntimeManifestEnvelope
         GameRuntimeManifest manifest = serialization.Deserialize<GameRuntimeManifest>(payload);
         manifest.Validate();
         if (!string.Equals(applicationId, manifest.applicationId, StringComparison.Ordinal))
+        {
             throw new InvalidDataException("Runtime manifest application identities do not match.");
+        }
         string expectedPath = manifest.persistentDataPath.Length == 0
-            ? manifest.applicationId : manifest.persistentDataPath;
+                              ? manifest.applicationId
+                              : manifest.persistentDataPath;
         if (!string.Equals(persistentDataPath, expectedPath, StringComparison.Ordinal))
+        {
             throw new InvalidDataException("Runtime manifest persistent data paths do not match.");
+        }
         return manifest;
     }
 
@@ -142,12 +148,16 @@ public static class RuntimeManifestEnvelope
     ) {
         int minimumLength = magic.Length + sizeof(int) * 3;
         if (data.Length < minimumLength || !data[..magic.Length].SequenceEqual(magic))
+        {
             throw new InvalidDataException("Runtime manifest envelope has an invalid header.");
+        }
         int offset = magic.Length;
         int applicationIdLength = BinaryPrimitives.ReadInt32LittleEndian(data[offset..]);
         offset += sizeof(int);
         if (applicationIdLength <= 0 || applicationIdLength > 255 || applicationIdLength > data.Length - offset - sizeof(int) * 2)
+        {
             throw new InvalidDataException("Runtime manifest envelope has an invalid application identity length.");
+        }
         try
         {
             applicationId = new UTF8Encoding(false, true).GetString(data.Slice(offset, applicationIdLength));
@@ -159,9 +169,9 @@ public static class RuntimeManifestEnvelope
         offset += applicationIdLength;
         int persistentDataPathLength = BinaryPrimitives.ReadInt32LittleEndian(data[offset..]);
         offset += sizeof(int);
-        if (persistentDataPathLength <= 0 || persistentDataPathLength > 1024 ||
-            persistentDataPathLength > data.Length - offset - sizeof(int))
-        {
+        if (persistentDataPathLength <= 0 || persistentDataPathLength > 1024
+            || persistentDataPathLength > data.Length - offset - sizeof(int)
+        ) {
             throw new InvalidDataException("Runtime manifest envelope has an invalid persistent data path length.");
         }
         try
@@ -176,20 +186,24 @@ public static class RuntimeManifestEnvelope
         int payloadLength = BinaryPrimitives.ReadInt32LittleEndian(data[offset..]);
         offset += sizeof(int);
         if (payloadLength <= 0 || payloadLength != data.Length - offset)
+        {
             throw new InvalidDataException("Runtime manifest envelope has an invalid payload length.");
+        }
         payload = data[offset..];
     }
 
     private static void ValidateApplicationId(string applicationId)
     {
         if (string.IsNullOrWhiteSpace(applicationId))
+        {
             throw new InvalidDataException("Runtime manifest requires an application identity.");
+        }
         foreach (char character in applicationId)
         {
             if (!(character is >= 'a' and <= 'z'
                   || character is >= '0' and <= '9'
-                  || character is '.' or '_' or '-'))
-            {
+                  || character is '.' or '_' or '-')
+            ) {
                 throw new InvalidDataException("Runtime manifest contains an invalid application identity.");
             }
         }
@@ -198,17 +212,23 @@ public static class RuntimeManifestEnvelope
     internal static void ValidatePersistentDataPath(string persistentDataPath)
     {
         if (persistentDataPath is null)
+        {
             throw new InvalidDataException("Runtime manifest requires a persistent data path value.");
+        }
         if (persistentDataPath.Length == 0)
+        {
             return;
+        }
         foreach (string segment in persistentDataPath.Split('/'))
         {
             string stem = segment.Split('.', 2)[0];
             if (segment is "." or ".." || string.IsNullOrEmpty(segment) || segment.EndsWith('.')
                 || stem is "con" or "prn" or "aux" or "nul"
                 || (stem.Length == 4 && (stem.StartsWith("com", StringComparison.Ordinal)
-                    || stem.StartsWith("lpt", StringComparison.Ordinal)) && stem[3] is >= '1' and <= '9'))
+                                         || stem.StartsWith("lpt", StringComparison.Ordinal)) && stem[3] is >= '1' and <= '9')
+            ) {
                 throw new InvalidDataException("Runtime manifest contains an invalid persistent data folder.");
+            }
             ValidateApplicationId(segment);
         }
     }

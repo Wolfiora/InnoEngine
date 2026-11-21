@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Editor.Core;
 
 namespace Inno.Editor.Interactions;

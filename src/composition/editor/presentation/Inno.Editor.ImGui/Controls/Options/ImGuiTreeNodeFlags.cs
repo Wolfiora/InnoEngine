@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported tree node flags choices at the Editor presentation boundary.
 /// </summary>
@@ -94,5 +95,5 @@ public enum ImGuiTreeNodeFlags : int
     /// <summary>
     /// Horizontal lines to child nodes. Vertical line drawn down to bottom-most child node. Slower (for large trees).
     /// </summary>
-    DrawLinesToNodes = (int)Inno.Native.ImGui.ImGuiTreeNodeFlags.DrawLinesToNodes,
+    DrawLinesToNodes = (int)Inno.Native.ImGui.ImGuiTreeNodeFlags.DrawLinesToNodes
 }

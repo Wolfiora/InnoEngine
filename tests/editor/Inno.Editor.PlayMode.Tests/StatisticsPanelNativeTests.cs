@@ -1,9 +1,10 @@
 using System;
 using System.Numerics;
+using Xunit;
 using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
 using Inno.Testing.Editor.Native;
-using Xunit;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using Ui = Inno.Editor.ImGui.ImGui;
 
@@ -18,7 +19,9 @@ public sealed unsafe class StatisticsPanelNativeTests
         EditorPanelExtension panel = host.GetPanel("diagnostics.stats");
         Assert.Equal(0, DrawAndCountTrendVertices(host, panel, 0.1f));
         for (int frame = 0; frame < 4; frame++)
+        {
             Assert.Equal(0, DrawAndCountTrendVertices(host, panel, 0.1f));
+        }
         int twoSampleVertices = DrawAndCountTrendVertices(host, panel, 0.1f);
         Assert.True(twoSampleVertices > 0);
         panel.isOpen = false;
@@ -73,7 +76,9 @@ public sealed unsafe class StatisticsPanelNativeTests
                 {
                     uint vertex = draw->VtxBuffer.Data[index].Col;
                     if ((vertex & 0x00ffffff) == (packed & 0x00ffffff) && (vertex >> 24) != 0)
+                    {
                         count++;
+                    }
                 }
             }
             finally

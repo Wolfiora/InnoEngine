@@ -10,6 +10,7 @@ using Inno.Editor.Scene;
 using Inno.Scene;
 
 namespace Inno.Editor.Panel.Inspector;
+
 [InspectionDrawer(typeof(EditorSelectionSnapshot))]
 internal sealed class SelectionInspectionDrawer(
     SceneEdits edits,
@@ -20,6 +21,7 @@ internal sealed class SelectionInspectionDrawer(
     private readonly GameObjectTagSelector m_tags = new(settings, edits);
     private readonly GameObjectLayerSelector m_layers = new(settings, edits);
     private string m_componentSearch = "";
+
     /// <inheritdoc/>
     public override string icon => ImGuiIcon.LayerGroup;
 
@@ -28,6 +30,7 @@ internal sealed class SelectionInspectionDrawer(
         InspectionDrawContext context,
         EditorSelectionSnapshot target
     ) => ($"{target.identities.Count} Selected", null);
+
     /// <inheritdoc/>
     protected override void Draw(
         InspectionDrawContext context,
@@ -37,12 +40,16 @@ internal sealed class SelectionInspectionDrawer(
         target.CopyTargets(context.interactions, values);
         if (values.Count != target.identities.Count)
         {
-            EditorUiSession.current.widgets.Hint("The selection includes unavailable or different content. Select compatible scene objects or assets to edit common values.");
+            EditorUiSession.current.widgets.Hint(
+                "The selection includes unavailable or different content. Select compatible scene objects or assets to edit common values."
+            );
             return;
         }
 
         if (values.Count == 0)
+        {
             return;
+        }
         int primaryIndex = values.FindIndex(value => value.identity.runtimeIdentity == target.primary);
         if (primaryIndex > 0)
         {
@@ -52,13 +59,23 @@ internal sealed class SelectionInspectionDrawer(
         }
         bool readOnly = values.Any(value => !edits.CanEdit(value));
         if (readOnly)
-            EditorUiSession.current.widgets.HelpBox("The selection includes a read-only owner. No batch changes will be applied.", ImGuiIcon.Lock, EditorPalette.warning);
+        {
+            EditorUiSession.current.widgets.HelpBox(
+                "The selection includes a read-only owner. No batch changes will be applied.",
+                ImGuiIcon.Lock,
+                EditorPalette.warning
+            );
+        }
         EditorUiSession.current.widgets.Disabled(readOnly, () =>
         {
             if (values.All(value => value is GameObject))
+            {
                 DrawGameObjects(context, target, values.Cast<GameObject>().ToArray());
+            }
             else
+            {
                 DrawCommon(context, target, values, "selection");
+            }
         });
     }
 
@@ -71,11 +88,18 @@ internal sealed class SelectionInspectionDrawer(
         bool mixed = targets.Any(value => value.activeSelf != active);
         EditorUiSession.current.widgets.MixedValue(mixed, () =>
         {
-            if (!EditorUiSession.current.widgets.CompactCheckbox("selection.active", ref active, tooltip: "Set the active state of every selected object."))
+            if (!EditorUiSession.current.widgets.CompactCheckbox(
+                "selection.active",
+                ref active,
+                tooltip: "Set the active state of every selected object."
+            )) {
                 return;
+            }
             using EditorHistoryTransaction transaction = context.interactions.history.BeginTransaction("Set Selected Active");
             foreach (GameObject target in targets)
+            {
                 edits.SetGameObjectActive(target, active);
+            }
             transaction.Commit();
         });
         EditorUiSession.current.widgets.Hint(mixed ? "Active \u00b7 Mixed values" : "Active");
@@ -89,18 +113,26 @@ internal sealed class SelectionInspectionDrawer(
             Type type = component.GetType();
             int occurrence = occurrences.GetValueOrDefault(type);
             occurrences[type] = occurrence + 1;
-            GameComponent? [] matches = targets.Select(value => value.GetComponents().Where(candidate => candidate.GetType() == type).Skip(occurrence).FirstOrDefault()).ToArray();
+            GameComponent? [] matches = targets
+                .Select(value => value.GetComponents().Where(candidate => candidate.GetType() == type).Skip(occurrence).FirstOrDefault())
+                .ToArray();
             if (matches.Any(value => value is null))
-                continue;
-            if (EditorUiSession.current.widgets.SectionHeader($"{type.Name} ({occurrence + 1})", "Common component values. Changes apply atomically to the entire selection."))
             {
+                continue;
+            }
+            if (EditorUiSession.current.widgets.SectionHeader(
+                $"{type.Name} ({occurrence + 1})",
+                "Common component values. Changes apply atomically to the entire selection."
+            )) {
                 string id = $"selection.{type.FullName}.{occurrence}";
                 DrawCommon(context, state, matches.Cast<EngineObject>().ToArray(), id);
                 if (Inno.Editor.ImGui.ImGui.Button("Reset Selected##" + id))
                 {
                     using EditorHistoryTransaction transaction = context.interactions.history.BeginTransaction("Reset Components");
                     foreach (GameComponent match in matches.Cast<GameComponent>())
+                    {
                         edits.ResetComponent(match);
+                    }
                     transaction.Commit();
                 }
 
@@ -111,7 +143,9 @@ internal sealed class SelectionInspectionDrawer(
                     {
                         using EditorHistoryTransaction transaction = context.interactions.history.BeginTransaction("Remove Components");
                         foreach (GameComponent match in matches.Cast<GameComponent>())
+                        {
                             edits.RemoveComponent(match);
+                        }
                         transaction.Commit();
                         return;
                     }
@@ -134,12 +168,16 @@ internal sealed class SelectionInspectionDrawer(
         }
 
         if (!widgets.BeginSearchPopup("selection.add-component", ref m_componentSearch, "Search components...", 256))
+        {
             return;
+        }
         try
         {
             EditorInteraction interaction = context.interactions.For(InspectorInteractionIds.C_COMPONENT_AREA, primary);
             if (EditorUiSession.current.menus.DrawSearchItems(interaction, interaction.BuildMenu().items, m_componentSearch))
+            {
                 Inno.Editor.ImGui.ImGui.CloseCurrentPopup();
+            }
         }
         finally
         {
@@ -159,32 +197,52 @@ internal sealed class SelectionInspectionDrawer(
             return;
         }
 
-        IReadOnlyList<SerializedProperty>[] properties = targets.Select(value => serialization.GetProperties((ISerializable)value)).ToArray();
+        IReadOnlyList<SerializedProperty>[] properties = targets
+            .Select(value => serialization.GetProperties((ISerializable)value))
+            .ToArray();
         int common = 0;
         foreach (SerializedProperty property in properties[0])
         {
             if (properties.Any(values => !values.Any(value => value.name == property.name && value.propertyType == property.propertyType)))
+            {
                 continue;
+            }
             var availability = properties.Select((
                 values,
                 index
             ) => context.properties.GetPropertyAvailability(
-                targets[index], values.Single(value => value.name == property.name && value.propertyType == property.propertyType))).ToArray();
+                targets[index],
+                values.Single(value => value.name == property.name && value.propertyType == property.propertyType)
+            )).ToArray();
             if (availability.Any(value => !value.isVisible))
+            {
                 continue;
+            }
             bool readOnly = availability.Any(value => value.isReadOnly);
             common++;
             bool mixed = !edits.HaveSamePropertyValues(targets, property.name);
             EditorUiSession.current.widgets.MixedValue(
                 mixed,
-                () => context.properties.DrawDraftProperty(context.editorContext, state, targets[0], path, property, new SelectionEdits(edits, targets), readOnly)
+                () => context.properties.DrawDraftProperty(
+                    context.editorContext,
+                    state,
+                    targets[0],
+                    path,
+                    property,
+                    new SelectionEdits(edits, targets),
+                    readOnly
+                )
             );
             if (mixed)
+            {
                 EditorUiSession.current.widgets.Hint("Mixed values");
+            }
         }
 
         if (common == 0)
+        {
             EditorUiSession.current.widgets.Hint("No common editable properties.");
+        }
     }
 
     private sealed class SelectionEdits(

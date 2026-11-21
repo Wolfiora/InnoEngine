@@ -1,8 +1,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Core.Serialization.Converters;
 using Xunit;
+using Inno.Core.Serialization.Converters;
 
 namespace Inno.Core.Serialization.Tests;
 

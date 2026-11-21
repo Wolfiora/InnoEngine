@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using System.Text;
-using Inno.Build.SupportPacks;
 using Xunit;
+using Inno.Build.SupportPacks;
 
 namespace Inno.Build.SupportPacks.Tests;
 
@@ -15,8 +15,13 @@ public sealed class SupportPackClosureValidationTests : IDisposable
     {
         Write("PlayerLink/References/Custom.Runtime.dll");
         Write("native/custom/fixture-target/arbitrary-name.fixture");
-        var requirements = new PlayerSupportPackRequirements(new("fixture-target"),
-            ["PlayerLink/References/Custom.Runtime.dll"], "native", ["custom/fixture-target"], ".fixture");
+        var requirements = new PlayerSupportPackRequirements(
+            new("fixture-target"),
+            ["PlayerLink/References/Custom.Runtime.dll"],
+            "native",
+            ["custom/fixture-target"],
+            ".fixture"
+        );
         var validator = new PlayerSupportPackClosureValidator(requirements, new LayoutValidator(), null);
         validator.Validate(m_root);
         Write("native/unselected/fixture-target/another.fixture");
@@ -27,8 +32,13 @@ public sealed class SupportPackClosureValidationTests : IDisposable
     public void MissingDeclaredArchiveFailsEvenWhenItsGroupContainsAnotherArchive()
     {
         Write("PlayerLink/Native/custom/fixture-target/other.a");
-        var requirements = new PlayerSupportPackRequirements(new("fixture-target"),
-            ["PlayerLink/Native/custom/fixture-target/required.a"], "PlayerLink/Native", ["custom/fixture-target"], ".a");
+        var requirements = new PlayerSupportPackRequirements(
+            new("fixture-target"),
+            ["PlayerLink/Native/custom/fixture-target/required.a"],
+            "PlayerLink/Native",
+            ["custom/fixture-target"],
+            ".a"
+        );
         var validator = new PlayerSupportPackClosureValidator(requirements, new LayoutValidator(), null);
         InvalidDataException missing = Assert.Throws<InvalidDataException>(() => validator.Validate(m_root));
         Assert.Contains("required.a", missing.Message);
@@ -40,9 +50,14 @@ public sealed class SupportPackClosureValidationTests : IDisposable
     public void StaticClosureRejectsAnAdditionalArchive(string extra)
     {
         Write("PlayerLink/Native/custom/fixture-target/required.a");
-        var requirements = new PlayerSupportPackRequirements(new("fixture-target"),
-            ["PlayerLink/Native/custom/fixture-target/required.a"], "PlayerLink/Native",
-            ["custom/fixture-target"], ".a", ["custom/fixture-target/required.a"]);
+        var requirements = new PlayerSupportPackRequirements(
+            new("fixture-target"),
+            ["PlayerLink/Native/custom/fixture-target/required.a"],
+            "PlayerLink/Native",
+            ["custom/fixture-target"],
+            ".a",
+            ["custom/fixture-target/required.a"]
+        );
         var validator = new PlayerSupportPackClosureValidator(requirements, new LayoutValidator(), null);
         validator.Validate(m_root);
         Write("PlayerLink/Native/" + extra);
@@ -54,13 +69,20 @@ public sealed class SupportPackClosureValidationTests : IDisposable
     [InlineData("native/../outside")]
     [InlineData("C:/outside")]
     public void RequirementPathsCannotEscapeTheirOwner(string path)
-        => Assert.Throws<ArgumentException>(() => new PlayerSupportPackRequirements(new("fixture-target"),
-            [path], "native", ["custom"], ".fixture"));
+        => Assert.Throws<ArgumentException>(() => new PlayerSupportPackRequirements(
+            new("fixture-target"),
+            [path],
+            "native",
+            ["custom"],
+            ".fixture"
+        ));
 
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     private void Write(string relative)

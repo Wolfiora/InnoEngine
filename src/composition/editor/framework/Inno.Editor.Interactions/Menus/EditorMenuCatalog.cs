@@ -10,8 +10,7 @@ internal sealed class EditorMenuCatalog(
     EditorExtensionCatalog catalog,
     EditorActionRouter actions,
     Logger log
-)
-{
+) {
     private readonly HashSet<string> m_sourceFailures = new(StringComparer.Ordinal);
     private Dictionary<string, TemplateNode[]>? m_templates;
 
@@ -23,7 +22,9 @@ internal sealed class EditorMenuCatalog(
         foreach (EditorExtensionCatalog.MenuSourceRegistration registration in catalog.extensions.menuSources)
         {
             if (!string.Equals(registration.area, context.area, StringComparison.Ordinal))
+            {
                 continue;
+            }
             try
             {
                 var builder = new EditorMenuBuilder();
@@ -31,25 +32,37 @@ internal sealed class EditorMenuCatalog(
                 string sourceName = registration.type.FullName ?? registration.type.Name;
                 m_sourceFailures.Remove(sourceName);
                 if (builder.groups.Count == 0 && builder.items.Count == 0)
+                {
                     continue;
+                }
                 var placements = new List<Placement>(builder.groups.Count + builder.items.Count);
                 foreach (var group in builder.groups)
+                {
                     placements.Add(CreatePlacement(group.path, null, group.order, group.separatorBefore, null));
+                }
                 foreach (var item in builder.items)
+                {
                     placements.Add(CreatePlacement(item.path, item.actionId, item.order, item.separatorBefore, item.argument));
+                }
                 dynamicPlacements.AddRange(placements);
             }
             catch (Exception exception)
             {
                 string sourceName = registration.type.FullName ?? registration.type.Name;
                 if (m_sourceFailures.Add(sourceName))
+                {
                     log.Write(LogLevel.Error, "Editor menu source '{0}' failed: {1}", [sourceName, exception]);
+                }
             }
         }
         if (dynamicPlacements.Count > 0)
         {
-            foreach (Placement placement in dynamicPlacements.OrderBy(static value => value.order).ThenBy(static value => value.path, StringComparer.Ordinal))
+            foreach (Placement placement in dynamicPlacements
+                .OrderBy(static value => value.order)
+                .ThenBy(static value => value.path, StringComparer.Ordinal)
+            ) {
                 template = Merge(template, placement, 0);
+            }
         }
         return new EditorMenuModel(Resolve(template, context));
     }
@@ -70,7 +83,9 @@ internal sealed class EditorMenuCatalog(
                 foreach (EditorMenuAttribute menu in registration.menus)
                 {
                     if (!placementsByArea.TryGetValue(menu.area, out List<Placement>? placements))
+                    {
                         placementsByArea.Add(menu.area, placements = []);
+                    }
                     placements.Add(CreatePlacement(menu.path, registration.id, menu.order, menu.separatorBefore, null));
                 }
             }
@@ -78,8 +93,12 @@ internal sealed class EditorMenuCatalog(
             foreach ((string key, List<Placement> placements) in placementsByArea)
             {
                 var root = new MutableNode(string.Empty, 0, false);
-                foreach (Placement placement in placements.OrderBy(static value => value.order).ThenBy(static value => value.path, StringComparer.Ordinal))
+                foreach (Placement placement in placements
+                    .OrderBy(static value => value.order)
+                    .ThenBy(static value => value.path, StringComparer.Ordinal)
+                ) {
                     AddPlacement(root, placement);
+                }
                 templates.Add(key, FreezeTemplate(root.children.Values));
             }
             m_templates = templates;
@@ -92,7 +111,9 @@ internal sealed class EditorMenuCatalog(
         EditorMenuContext context
     ) {
         if (nodes.Length == 0)
+        {
             return Array.Empty<EditorMenuItem>();
+        }
         var result = new List<EditorMenuItem>(nodes.Length);
         foreach (TemplateNode node in nodes)
         {
@@ -107,7 +128,9 @@ internal sealed class EditorMenuCatalog(
                 {
                     EditorActionState candidate = actions.Query(action, context.CreateActionContext(placement.argument));
                     if (!candidate.isVisible)
+                    {
                         continue;
+                    }
                     actionPlacement = placement;
                     state = candidate;
                 }
@@ -117,17 +140,30 @@ internal sealed class EditorMenuCatalog(
             if (actionPlacement is null)
             {
                 if (children.Count == 0)
+                {
                     continue;
+                }
                 state = EditorActionState.enabled;
             }
             string label = string.IsNullOrWhiteSpace(state.displayName) ? node.label : state.displayName!;
-            result.Add(new EditorMenuItem(label, actionPlacement?.actionId ?? string.Empty, order,
-                separatorBefore, state, children, actionPlacement?.argument));
+            result.Add(
+                new EditorMenuItem(
+                    label,
+                    actionPlacement?.actionId ?? string.Empty,
+                    order,
+                    separatorBefore,
+                    state,
+                    children,
+                    actionPlacement?.argument
+                )
+            );
         }
         for (int index = 1; index < result.Count; index++)
         {
             if (result[index - 1].order <= result[index].order)
+            {
                 continue;
+            }
             result.Sort(static (
                 left,
                 right
@@ -146,7 +182,9 @@ internal sealed class EditorMenuCatalog(
     ) {
         string[] segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (segments.Length == 0)
+        {
             throw new InvalidOperationException("An editor menu path must contain at least one segment.");
+        }
         return new Placement(string.Join('/', segments), segments, actionId, order, separatorBefore, argument);
     }
 
@@ -160,8 +198,11 @@ internal sealed class EditorMenuCatalog(
             string segment = placement.segments[index];
             if (!current.children.TryGetValue(segment, out MutableNode? child))
             {
-                child = new MutableNode(segment, placement.order,
-                    index == placement.segments.Length - 1 && placement.separatorBefore);
+                child = new MutableNode(
+                    segment,
+                    placement.order,
+                    index == placement.segments.Length - 1 && placement.separatorBefore
+                );
                 current.children.Add(segment, child);
             }
             current = child;
@@ -172,9 +213,16 @@ internal sealed class EditorMenuCatalog(
     }
 
     private static TemplateNode[] FreezeTemplate(IEnumerable<MutableNode> nodes)
-        => nodes.OrderBy(static value => value.order).ThenBy(static value => value.label, StringComparer.Ordinal)
-            .Select(static node => new TemplateNode(node.label, node.order, node.separatorBefore,
-                node.placements.OrderBy(static placement => placement.order).ToArray(), FreezeTemplate(node.children.Values))).ToArray();
+        => nodes.OrderBy(static value => value.order)
+            .ThenBy(static value => value.label, StringComparer.Ordinal)
+            .Select(static node => new TemplateNode(
+                node.label,
+                node.order,
+                node.separatorBefore,
+                node.placements.OrderBy(static placement => placement.order).ToArray(),
+                FreezeTemplate(node.children.Values)
+            ))
+            .ToArray();
 
     private static TemplateNode[] Merge(
         TemplateNode[] nodes,
@@ -186,7 +234,9 @@ internal sealed class EditorMenuCatalog(
         for (int candidate = 0; candidate < nodes.Length; candidate++)
         {
             if (!string.Equals(nodes[candidate].label, label, StringComparison.Ordinal))
+            {
                 continue;
+            }
             index = candidate;
             break;
         }
@@ -197,14 +247,21 @@ internal sealed class EditorMenuCatalog(
         {
             int insertion = 0;
             while (insertion < placements.Length && placements[insertion].order <= placement.order)
+            {
                 insertion++;
+            }
             placements = new Placement[current.placements.Length + 1];
             Array.Copy(current.placements, placements, insertion);
             placements[insertion] = placement;
             Array.Copy(current.placements, insertion, placements, insertion + 1, current.placements.Length - insertion);
         }
-        TemplateNode replacement = new(label, current.order, current.separatorBefore, placements,
-            leaf ? current.children : Merge(current.children, placement, depth + 1));
+        TemplateNode replacement = new(
+            label,
+            current.order,
+            current.separatorBefore,
+            placements,
+            leaf ? current.children : Merge(current.children, placement, depth + 1)
+        );
         var result = new TemplateNode[nodes.Length + (index < 0 ? 1 : 0)];
         Array.Copy(nodes, result, nodes.Length);
         result[index >= 0 ? index : nodes.Length] = replacement;
@@ -236,8 +293,7 @@ internal sealed class EditorMenuCatalog(
         string label,
         int order,
         bool separatorBefore
-    )
-    {
+    ) {
         internal string label = label;
         internal int order = order;
         internal bool separatorBefore = separatorBefore;

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Xunit;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Extensibility.Types;
-using Xunit;
 
 namespace Inno.Core.Serialization.Tests;
 
@@ -38,17 +38,23 @@ public sealed partial class SerializationBehaviorTests
         long fresh = Measure(null);
         long inherited = Measure(prepared);
 
-        Assert.True(inherited < fresh && inherited <= 1024,
-            $"Prepared context allocated {inherited} bytes; fresh context allocated {fresh} bytes.");
+        Assert.True(
+            inherited < fresh && inherited <= 1024,
+            $"Prepared context allocated {inherited} bytes; fresh context allocated {fresh} bytes."
+        );
 
         long Measure(SerializationContext? context)
         {
             for (int index = 0; index < 16; index++)
+            {
                 _ = m_serialization.CapturePropertyData(source, nameof(DefaultSample.count), context);
+            }
             byte[]? actual = null;
             long before = GC.GetAllocatedBytesForCurrentThread();
             for (int index = 0; index < 128; index++)
+            {
                 actual = m_serialization.CapturePropertyData(source, nameof(DefaultSample.count), context);
+            }
             long allocated = (GC.GetAllocatedBytesForCurrentThread() - before) / 128;
             Assert.Equal(expected, actual);
             return allocated;
@@ -85,12 +91,16 @@ public sealed partial class SerializationBehaviorTests
         byte[] forward = m_serialization.Encode(writer =>
         {
             foreach (string key in keys)
+            {
                 writer.Write(key, key);
+            }
         });
         byte[] reverse = m_serialization.Encode(writer =>
         {
             for (int index = keys.Length - 1; index >= 0; index--)
+            {
                 writer.Write(keys[index], keys[index]);
+            }
         });
 
         Assert.Equal(forward, reverse);
@@ -101,13 +111,17 @@ public sealed partial class SerializationBehaviorTests
     {
         byte[] expected = m_serialization.Encode(static writer => writer.Write("value", 73));
         for (int index = 0; index < 16; index++)
+        {
             _ = m_serialization.Encode(static writer => writer.Write("value", 73));
+        }
 
         const int C_ITERATIONS = 128;
         byte[]? actual = null;
         long before = GC.GetAllocatedBytesForCurrentThread();
         for (int index = 0; index < C_ITERATIONS; index++)
+        {
             actual = m_serialization.Encode(static writer => writer.Write("value", 73));
+        }
         long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
 
         Assert.Equal(expected, actual);
@@ -152,7 +166,9 @@ public sealed partial class SerializationBehaviorTests
     {
         var payload = new byte[length];
         for (int index = 0; index < payload.Length; index++)
+        {
             payload[index] = unchecked((byte)index);
+        }
 
         byte[] data = m_serialization.Serialize(new DefaultSample { bytes = payload });
         DefaultSample restored = m_serialization.Deserialize<DefaultSample>(data);
@@ -175,7 +191,7 @@ public sealed partial class SerializationBehaviorTests
                 m_unrelatedReads++;
                 throw new InvalidOperationException("An unrelated getter must not be evaluated.");
             }
-            set { }
+            set {}
         }
 
         public int ignored { get; set; }
@@ -188,8 +204,9 @@ public sealed partial class SerializationBehaviorTests
         var replaced = new object();
         SerializationContext context = SerializationContext.empty.With(replaced);
         if (nested)
+        {
             context = context.With("marker").With<IReadOnlyList<int>>(new[] { 1, 2 });
+        }
         return (context.With(new object()), new WeakReference(replaced));
     }
-
 }

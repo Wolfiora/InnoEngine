@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using Inno.Editor.Hosting;
 using Xunit;
+using Inno.Editor.Hosting;
 
 namespace Inno.Editor.Hosting.Tests;
 
@@ -15,7 +15,9 @@ public sealed class EditorCommandLineOptionsTests
         Assert.Null(EditorCommandLineOptions.Parse(["project"]).nativeDependencies);
         Assert.Throws<ArgumentException>(() => EditorCommandLineOptions.Parse(["project", "--native-dependencies", "relative.json"]));
         Assert.Throws<ArgumentException>(() => EditorCommandLineOptions.Parse(["project", "--native-dependencies", ""]));
-        Assert.Throws<ArgumentException>(() => EditorCommandLineOptions.Parse(["project", "--native-dependencies", selection, "--native-dependencies", selection]));
+        Assert.Throws<ArgumentException>(
+            () => EditorCommandLineOptions.Parse(["project", "--native-dependencies", selection, "--native-dependencies", selection])
+        );
     }
 
     [Fact]
@@ -35,5 +37,7 @@ public sealed class EditorCommandLineOptionsTests
 
     [Fact]
     public void RepeatedVisibilityIsRejectedBeforeComposition()
-        => Assert.Throws<ArgumentException>(() => EditorCommandLineOptions.Parse(["project", "--window-visible", "false", "--window-visible", "true"]));
+        => Assert.Throws<ArgumentException>(
+            () => EditorCommandLineOptions.Parse(["project", "--window-visible", "false", "--window-visible", "true"])
+        );
 }

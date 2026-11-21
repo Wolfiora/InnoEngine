@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
 
@@ -36,19 +35,37 @@ internal sealed class BindingGenerationOperation : IDisposable
             BindingDefinitionReader.Read(m_context, component, m_request, m_profile)).ToArray();
         string[] fingerprints = definitions.Select(definition => Compute(definition, m_context, cancellation)).ToArray();
         for (int index = 0; index < definitions.Length; index++)
+        {
             if (m_request.expectedFingerprints.TryGetValue(definitions[index].component.nativeProject, out string? expected)
-                && expected != fingerprints[index])
+                && expected != fingerprints[index]
+            ) {
                 throw new InvalidOperationException("Binding inputs changed after their generation was selected.");
-        BuildCacheOwnerCatalog.Register(m_context.engineRoot, Path.Combine(m_context.engineRoot, "artifacts", "bindings"),
-            "bindings", BuildCacheArtifactRole.ImmutableArtifact, cancellation);
+            }
+        }
+        BuildCacheOwnerCatalog.Register(
+            m_context.engineRoot,
+            Path.Combine(m_context.engineRoot, "artifacts", "bindings"),
+            "bindings",
+            BuildCacheArtifactRole.ImmutableArtifact,
+            cancellation
+        );
         // Batch leases are acquired in canonical path order. No partial closure is returned on failure.
         StringComparer paths = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
         foreach (string path in definitions.Select(definition => Path.Combine(
-            definition.component.GetNativeRoot(m_context.engineRoot), "obj", "bindings", "generation.lock")).Order(paths))
+            definition.component.GetNativeRoot(m_context.engineRoot),
+            "obj",
+            "bindings",
+            "generation.lock"
+        )).Order(paths)
+        ) {
             m_leases.Add(await FileLease.AcquireAsync(path, Timeout.InfiniteTimeSpan, cancellation).ConfigureAwait(false));
+        }
         if (m_request.outputMode == NativeBindingOutputMode.TargetArtifacts)
         {
-            var cache = new BuildCachePublisher(Path.Combine(m_context.engineRoot, "artifacts", "bindings"), BuildCacheArtifactRole.ImmutableArtifact);
+            var cache = new BuildCachePublisher(
+                Path.Combine(m_context.engineRoot, "artifacts", "bindings"),
+                BuildCacheArtifactRole.ImmutableArtifact
+            );
             m_leases.Add(await cache.AcquireUseAsync(cancellation).ConfigureAwait(false));
         }
         m_context.RecordBindingBatch();
@@ -68,13 +85,28 @@ internal sealed class BindingGenerationOperation : IDisposable
                 string destination = Path.Combine(output, fingerprint);
                 try
                 {
-                    m_reading.Add(await BuildArtifactReadLease.AcquireAsync(destination, Path.Combine(m_context.engineRoot, "artifacts", "bindings"), fingerprint,
-                        ["Native", "Generated"], cancellation, m_context).ConfigureAwait(false));
+                    m_reading.Add(
+                        await BuildArtifactReadLease.AcquireAsync(
+                            destination,
+                            Path.Combine(m_context.engineRoot, "artifacts", "bindings"),
+                            fingerprint,
+                            ["Native", "Generated"],
+                            cancellation,
+                            m_context
+                        ).ConfigureAwait(false)
+                    );
                     protectedTargets.Add(destination);
                     if (!m_request.checkOnly)
                     {
-                        results.Add(definition.component.nativeProject, TargetBindingGeneration.Describe(
-                            Path.Combine(m_context.engineRoot, "artifacts", "bindings"), destination, fingerprint, usesRuntimeImports));
+                        results.Add(
+                            definition.component.nativeProject,
+                            TargetBindingGeneration.Describe(
+                                Path.Combine(m_context.engineRoot, "artifacts", "bindings"),
+                                destination,
+                                fingerprint,
+                                usesRuntimeImports
+                            )
+                        );
                         continue;
                     }
                 }
@@ -82,20 +114,37 @@ internal sealed class BindingGenerationOperation : IDisposable
                 {
                     // Invalid output is repaired only after exclusive artifact ownership is acquired at commit.
                 }
-                var publication = BindingGenerationPublication.CreateTarget(Path.Combine(m_context.engineRoot, "artifacts", "bindings"), destination, cancellation);
+                var publication = BindingGenerationPublication.CreateTarget(
+                    Path.Combine(m_context.engineRoot, "artifacts", "bindings"),
+                    destination,
+                    cancellation
+                );
                 m_publications.Add(publication);
                 TargetBindingGeneration.Generate(m_context, definition, loaded, publication, fingerprint, cancellation);
-                results.Add(definition.component.nativeProject, TargetBindingGeneration.Describe(
-                    Path.Combine(m_context.engineRoot, "artifacts", "bindings"), destination, fingerprint, usesRuntimeImports));
+                results.Add(
+                    definition.component.nativeProject,
+                    TargetBindingGeneration.Describe(
+                        Path.Combine(m_context.engineRoot, "artifacts", "bindings"),
+                        destination,
+                        fingerprint,
+                        usesRuntimeImports
+                    )
+                );
             }
             else
             {
-                var publication = BindingGenerationPublication.CreateHost(Path.Combine(m_context.engineRoot, "artifacts", "bindings"), output, definition.GetHostNativeRoot(m_context), cancellation);
+                var publication = BindingGenerationPublication.CreateHost(
+                    Path.Combine(m_context.engineRoot, "artifacts", "bindings"),
+                    output,
+                    definition.GetHostNativeRoot(m_context),
+                    cancellation
+                );
                 m_publications.Add(publication);
                 HostBindingGeneration.Generate(m_context, definition, loaded, publication, fingerprint, cancellation);
                 results.Add(definition.component.nativeProject, new NativeBindingGenerationDescriptor
                 {
-                    fingerprint = fingerprint, bindingsPath = Path.Combine(output, "Bindings.cs"),
+                    fingerprint = fingerprint,
+                    bindingsPath = Path.Combine(output, "Bindings.cs"),
                     usesRuntimeImports = usesRuntimeImports,
                     artifactDirectory = string.Empty,
                     artifactOwnerDirectory = string.Empty,
@@ -106,25 +155,42 @@ internal sealed class BindingGenerationOperation : IDisposable
         Verify(definitions, fingerprints, m_context.BeginInputVerification("binding-generation"), cancellation);
         cancellation.ThrowIfCancellationRequested();
         foreach (BindingGenerationPublication publication in m_publications)
+        {
             if (!m_request.checkOnly)
             {
                 if (m_request.outputMode == NativeBindingOutputMode.TargetArtifacts)
                 {
                     using BuildArtifactWriteLease mutation = await BuildArtifactWriteLease.AcquireAsync(
-                        publication.managedDestination, Path.Combine(m_context.engineRoot, "artifacts", "bindings"), cancellation).ConfigureAwait(false);
+                        publication.managedDestination,
+                        Path.Combine(m_context.engineRoot, "artifacts", "bindings"),
+                        cancellation
+                    ).ConfigureAwait(false);
                     publication.Commit();
                 }
                 else
+                {
                     publication.Commit();
+                }
             }
+        }
         if (m_request.outputMode == NativeBindingOutputMode.TargetArtifacts)
         {
             foreach (NativeBindingGenerationDescriptor descriptor in results.Values)
             {
                 string directory = descriptor.artifactDirectory;
                 if (!protectedTargets.Contains(directory))
-                    m_reading.Add(await BuildArtifactReadLease.AcquireAsync(directory, Path.Combine(m_context.engineRoot, "artifacts", "bindings"), descriptor.fingerprint,
-                        ["Native", "Generated"], cancellation, m_context).ConfigureAwait(false));
+                {
+                    m_reading.Add(
+                        await BuildArtifactReadLease.AcquireAsync(
+                            directory,
+                            Path.Combine(m_context.engineRoot, "artifacts", "bindings"),
+                            descriptor.fingerprint,
+                            ["Native", "Generated"],
+                            cancellation,
+                            m_context
+                        ).ConfigureAwait(false)
+                    );
+                }
             }
         }
         else
@@ -135,12 +201,21 @@ internal sealed class BindingGenerationOperation : IDisposable
         }
         if (m_request.outputMode == NativeBindingOutputMode.TargetArtifacts && !m_request.checkOnly)
         {
-            var cache = new BuildCachePublisher(Path.Combine(m_context.engineRoot, "artifacts", "bindings"), BuildCacheArtifactRole.ImmutableArtifact);
+            var cache = new BuildCachePublisher(
+                Path.Combine(m_context.engineRoot, "artifacts", "bindings"),
+                BuildCacheArtifactRole.ImmutableArtifact
+            );
             foreach (BindingGenerationConfiguration definition in definitions)
             {
                 NativeBindingGenerationDescriptor generation = results[definition.component.nativeProject];
-                cache.Record(generation.artifactDirectory, generation.artifactDirectory + ".read.lock", [],
-                    definition.component.id + "/" + m_request.targetId, m_request.targetId, cancellation);
+                cache.Record(
+                    generation.artifactDirectory,
+                    generation.artifactDirectory + ".read.lock",
+                    [],
+                    definition.component.id + "/" + m_request.targetId,
+                    m_request.targetId,
+                    cancellation
+                );
             }
         }
         var result = new NativeBindingGenerationResult(results, m_reading);
@@ -188,7 +263,9 @@ internal sealed class BindingGenerationOperation : IDisposable
             }
         }
         if (failures.Count > 0)
+        {
             throw new AggregateException("Binding batch cleanup failed after draining generation.", failures);
+        }
     }
 
     private void Verify(
@@ -199,9 +276,18 @@ internal sealed class BindingGenerationOperation : IDisposable
     ) {
         for (int index = 0; index < definitions.Count; index++)
         {
-            BindingGenerationConfiguration current = BindingDefinitionReader.Read(verification, definitions[index].component, m_request, m_profile);
+            BindingGenerationConfiguration current = BindingDefinitionReader.Read(
+                verification,
+                definitions[index].component,
+                m_request,
+                m_profile
+            );
             if (Compute(current, verification, cancellation) != fingerprints[index])
-                throw new InvalidOperationException("Binding inputs changed during an ownership wait or generation; the candidate was not published.");
+            {
+                throw new InvalidOperationException(
+                    "Binding inputs changed during an ownership wait or generation; the candidate was not published."
+                );
+            }
         }
     }
 

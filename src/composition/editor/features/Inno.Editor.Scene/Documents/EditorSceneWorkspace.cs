@@ -1,22 +1,21 @@
-using Inno.Extensibility.Reload;
 using System;
-using Inno.References;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Extensibility.Modules;
 using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
+using Inno.Extensibility.Types;
+using Inno.References;
 using Inno.Runtime;
 using Inno.Scene;
 using Inno.Scene.Components;
@@ -116,7 +115,7 @@ internal sealed partial class EditorSceneWorkspace :
 
     internal TSceneObject? Find<TSceneObject>(Guid persistentId)
         where TSceneObject : IdentityObject
-        => world.Find<TSceneObject>(persistentId);
+            => world.Find<TSceneObject>(persistentId);
 
     /// <summary>
     /// Gets all scenes currently available to editor features.
@@ -146,19 +145,23 @@ internal sealed partial class EditorSceneWorkspace :
     public bool CanEdit(GameScene scene)
     {
         ArgumentNullException.ThrowIfNull(scene);
-        if (m_isPreparingPlayMode || scene.isDestroyed || !scene.isLoaded ||
-            !world.loadedScenes.Any(candidate => ReferenceEquals(candidate, scene)))
+        if (m_isPreparingPlayMode || scene.isDestroyed || !scene.isLoaded
+            || !world.loadedScenes.Any(candidate => ReferenceEquals(candidate, scene))
+        ) {
             return false;
+        }
         if (m_playModeSession is PlayModeLease playModeSession)
         {
             if (!playModeSession.TryGetSnapshot(scene.identity.persistentId, out SceneDocumentSnapshot snapshot))
+            {
                 return true;
+            }
             return string.IsNullOrEmpty(snapshot.sourcePath)
-                || AssetPath.Parse(snapshot.sourcePath).source == AssetSourceId.project;
+                   || AssetPath.Parse(snapshot.sourcePath).source == AssetSourceId.project;
         }
         return !m_documents.TryGetValue(scene.identity.persistentId, out SceneDocument? document)
-            || string.IsNullOrEmpty(document.sourcePath)
-            || AssetPath.Parse(document.sourcePath).source == AssetSourceId.project;
+               || string.IsNullOrEmpty(document.sourcePath)
+               || AssetPath.Parse(document.sourcePath).source == AssetSourceId.project;
     }
 
     /// <summary>
@@ -175,9 +178,9 @@ internal sealed partial class EditorSceneWorkspace :
             .Where(static scene => !scene.isDestroyed)
             .ToArray();
         GameScene? activeScene = presentedWorld.activeScene;
-        if (activeScene is { isDestroyed: true } ||
-            activeScene is not null && !scenes.Contains(activeScene))
-        {
+        if (activeScene is { isDestroyed: true }
+            || activeScene is not null && !scenes.Contains(activeScene)
+        ) {
             activeScene = null;
         }
         return SceneContentSource.CreateScope(scenes, activeScene);
@@ -215,9 +218,7 @@ internal sealed partial class EditorSceneWorkspace :
         GameScene scene = world.LoadNewSceneAdditive(name);
         if (canPersist)
         {
-            m_documents.Add(
-                scene.identity.persistentId,
-                new SceneDocument(scene, string.Empty, Guid.Empty, []));
+            m_documents.Add(scene.identity.persistentId, new SceneDocument(scene, string.Empty, Guid.Empty, []));
         }
         return scene;
     }
@@ -235,7 +236,9 @@ internal sealed partial class EditorSceneWorkspace :
         foreach (SceneDocument document in m_documents.Values)
         {
             if (document.scene.isDestroyed)
+            {
                 continue;
+            }
             Guid sceneId = document.scene.identity.persistentId;
             synchronizedScenes.Add(sceneId);
             try
@@ -246,7 +249,9 @@ internal sealed partial class EditorSceneWorkspace :
             {
                 document.isDirty = true;
                 if (m_diagnostics.PublishSynchronizationFailure(document.scene, exception))
+                {
                     m_log.Write(LogLevel.Error, "Scene document synchronization failed: {0}", [exception]);
+                }
             }
         }
         m_diagnostics.RetainSynchronizationTargets(synchronizedScenes);
@@ -266,7 +271,9 @@ internal sealed partial class EditorSceneWorkspace :
     {
         ArgumentNullException.ThrowIfNull(scene);
         if (scene.isDestroyed)
+        {
             return false;
+        }
         using IDisposable scope = EnterPresentationScope();
         Guid sceneId = scene.identity.persistentId;
         bool closed = world.UnloadScene(scene);
@@ -300,13 +307,11 @@ internal sealed partial class EditorSceneWorkspace :
     protected override void OnStart(EditorContext context)
     {
         if (m_isAttached)
+        {
             return;
+        }
         m_assets.Changed += OnAssetDatabaseChanged;
-        m_reloadIntegration = SceneReloadIntegration.Acquire(
-            m_runtimeSession,
-            m_serialization,
-            m_assets,
-            m_reloads);
+        m_reloadIntegration = SceneReloadIntegration.Acquire(m_runtimeSession, m_serialization, m_assets, m_reloads);
         m_reloadRegistration = m_reloads.Register(this);
         m_isAttached = true;
         m_sceneStateDiagnostics.Reconcile(force: true);
@@ -338,7 +343,9 @@ internal sealed partial class EditorSceneWorkspace :
     protected override void OnStop(EditorContext context)
     {
         if (!m_isAttached)
+        {
             return;
+        }
         try
         {
             m_playModeSession?.Dispose();
@@ -369,14 +376,16 @@ internal sealed partial class EditorSceneWorkspace :
         m_diagnostics.Dispose();
     }
 
-    void IEditorReloadParticipant.RefreshDiagnostics()
-        => m_sceneStateDiagnostics.Reconcile(force: true);
+    void IEditorReloadParticipant.RefreshDiagnostics() => m_sceneStateDiagnostics.Reconcile(force: true);
 
     internal void EnsureEditable(GameScene scene)
     {
         if (!CanEdit(scene))
+        {
             throw new InvalidOperationException(
-                "The scene is not editable in the current presentation or belongs to a read-only source.");
+                "The scene is not editable in the current presentation or belongs to a read-only source."
+            );
+        }
     }
 
     private void EnsurePresentedScene(GameScene scene)
@@ -385,9 +394,12 @@ internal sealed partial class EditorSceneWorkspace :
         for (int i = 0; i < presentedScenes.Count; i++)
         {
             if (ReferenceEquals(presentedScenes[i], scene))
+            {
                 return;
+            }
         }
         throw new InvalidOperationException(
-            "The scene is not owned by the Editor's active Edit or Play presentation session.");
+            "The scene is not owned by the Editor's active Edit or Play presentation session."
+        );
     }
 }

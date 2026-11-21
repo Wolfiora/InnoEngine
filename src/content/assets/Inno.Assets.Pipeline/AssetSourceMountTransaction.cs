@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Scripting.Api;
-using Inno.References;
 using Inno.Core.Execution;
+using Inno.References;
+using Inno.Scripting.Api;
 
 namespace Inno.Assets.Pipeline;
 
@@ -32,8 +32,10 @@ public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnaps
         this.catalogCandidate = catalogCandidate;
         this.candidateFileSystem = candidateFileSystem;
         m_recovery = new ReferenceRecoveryTransaction(
-            ReferenceCatalog.Create(generation, [candidateLoader]), previousStates,
-            [new AssetSourceMountRecovery(owner, this)]);
+            ReferenceCatalog.Create(generation, [candidateLoader]),
+            previousStates,
+            [new AssetSourceMountRecovery(owner, this)]
+        );
     }
 
     internal AssetCatalogCandidate catalogCandidate { get; }
@@ -102,12 +104,14 @@ public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnaps
     /// Thrown when no compatible candidate asset exists.
     /// </exception>
     [ScriptingApiIgnore]
-    public TAsset Load<TAsset>(AssetPath path) where TAsset : AssetObject
+    public TAsset Load<TAsset>(AssetPath path)
+        where TAsset : AssetObject
     {
         EnsureOpen();
         AssetObject? asset = candidateLoader.Load(path, typeof(TAsset));
         return asset as TAsset ?? throw new InvalidOperationException(
-            $"Candidate asset '{path}' cannot be loaded as '{typeof(TAsset).FullName}'.");
+            $"Candidate asset '{path}' cannot be loaded as '{typeof(TAsset).FullName}'."
+        );
     }
 
     /// <summary>
@@ -174,7 +178,9 @@ public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnaps
     {
         EnsureOpen();
         if (m_activationComplete)
+        {
             return;
+        }
         if (!m_prepared)
         {
             m_prepared = true;
@@ -198,7 +204,9 @@ public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnaps
     {
         EnsureOpen();
         if (!m_activationComplete)
+        {
             throw new InvalidOperationException("A source-mount candidate must finish activation before completion.");
+        }
         try
         {
             m_recovery.Complete();
@@ -223,9 +231,13 @@ public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnaps
     public void Rollback()
     {
         if (isFinished)
+        {
             return;
+        }
         if (m_terminalFailure is not null)
+        {
             throw m_terminalFailure;
+        }
         if (!m_prepared)
         {
             m_prepared = true;
@@ -255,8 +267,12 @@ public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnaps
     private void EnsureOpen()
     {
         if (m_terminalFailure is not null)
+        {
             throw m_terminalFailure;
+        }
         if (isFinished)
+        {
             throw new ObjectDisposedException(nameof(AssetSourceMountTransaction));
+        }
     }
 }

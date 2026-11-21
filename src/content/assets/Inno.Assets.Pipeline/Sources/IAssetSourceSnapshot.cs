@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Assets;
 
 namespace Inno.Assets.Pipeline;
@@ -45,7 +44,8 @@ public interface IAssetSourceSnapshot : IAssetArtifactLookup
     /// <exception cref="InvalidOperationException">
     /// No compatible asset can be loaded from this view.
     /// </exception>
-    TAsset Load<TAsset>(AssetPath path) where TAsset : AssetObject;
+    TAsset Load<TAsset>(AssetPath path)
+        where TAsset : AssetObject;
 
     /// <summary>
     /// Resolves immutable catalog information by source path.
@@ -63,5 +63,4 @@ public interface IAssetSourceSnapshot : IAssetArtifactLookup
         AssetPath path,
         out AssetInfo? info
     );
-
 }

@@ -1,4 +1,5 @@
 using Inno.Core.Diagnostics;
+
 namespace Inno.Scripting.Compiler;
 
 /// <summary>

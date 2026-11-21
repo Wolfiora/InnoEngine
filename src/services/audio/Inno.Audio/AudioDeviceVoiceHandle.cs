@@ -14,10 +14,12 @@ public readonly record struct AudioDeviceVoiceHandle
     }
 
     internal ulong value { get; }
+
     /// <summary>
     /// Gets the backend device generation that owns this voice.
     /// </summary>
     public uint deviceGeneration { get; }
+
     /// <summary>
     /// Gets whether this value identifies a backend allocation.
     /// </summary>

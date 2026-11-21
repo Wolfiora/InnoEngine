@@ -1,22 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
-
-using Inno.Assets;
-using Inno.Core.Execution;
-using Inno.References;
-using System.IO;
 using System.Threading.Tasks;
+using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Extensibility.Modules;
-using Inno.Core.Identity;
 using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
+using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
-using Inno.Scripting.Api;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Modules;
 using Inno.Extensibility.Reload;
+using Inno.Extensibility.Types;
+using Inno.References;
+using Inno.Scripting.Api;
 
 namespace Inno.Assets.Pipeline;
 
@@ -32,16 +31,24 @@ public sealed partial class AssetPipeline
         {
             m_generations.EnsureRetirementSafe();
             if (m_failedPreparation is not null || m_shutdown is not null)
+            {
                 throw new InvalidOperationException("The Asset Pipeline is retiring and cannot prepare a source candidate.");
+            }
             if (m_sourceMountCandidate is not null)
+            {
                 throw new InvalidOperationException("Another source-mount candidate is already pending.");
+            }
             AssetSourceMount[] snapshot = mounts.ToArray();
             AssetSourceMount projectMount = snapshot.SingleOrDefault(static mount => mount.id == AssetSourceId.project)
-                ?? throw new ArgumentException("A project asset source mount is required.", nameof(mounts));
+                                            ?? throw new ArgumentException("A project asset source mount is required.", nameof(mounts));
             if (projectMount.isReadOnly)
+            {
                 throw new ArgumentException("The project asset source mount must be writable.", nameof(mounts));
+            }
             if (snapshot.Select(static mount => mount.id).Distinct().Count() != snapshot.Length)
+            {
                 throw new ArgumentException("Asset source mount IDs must be unique.", nameof(mounts));
+            }
             PreparedSourceMounts prepared = PrepareSourceMountCatalog(GetLoader(), snapshot, CancellationToken.None);
             try
             {
@@ -75,10 +82,15 @@ public sealed partial class AssetPipeline
             catalog = activeLoader.PrepareCatalogCandidate(mounts, m_options.sourcePolicy);
             AssetLoader loader = catalog.loader;
             files = new AssetFileSystem(
-                mounts, autoStart: false, m_options.fileWatcherFlushDelayMs, m_options.sourcePolicy,
-                requireWritableProject: true, m_identities,
+                mounts,
+                autoStart: false,
+                m_options.fileWatcherFlushDelayMs,
+                m_options.sourcePolicy,
+                requireWritableProject: true,
+                m_identities,
                 persistentIdentityResolver: path => loader.TryGetPersistentId(path, out Guid id) ? id : null,
-                activateIdentities: false);
+                activateIdentities: false
+            );
             loader.Rescan(cancellationToken);
             files.Refresh();
             cancellationToken.ThrowIfCancellationRequested();
@@ -104,9 +116,17 @@ public sealed partial class AssetPipeline
     ) {
         EnsureInitializationThread();
         if (m_sourceMountCandidate is not null)
+        {
             throw new InvalidOperationException("Another source-mount candidate is already pending.");
+        }
         var transaction = new AssetSourceMountTransaction(
-            this, prepared.mounts, prepared.catalog, prepared.files, recovery, Math.Max(1, m_revision + 1));
+            this,
+            prepared.mounts,
+            prepared.catalog,
+            prepared.files,
+            recovery,
+            Math.Max(1, m_revision + 1)
+        );
         m_sourceMountCandidate = transaction;
         return transaction;
     }
@@ -125,7 +145,9 @@ public sealed partial class AssetPipeline
             resources.Own(catalog.loader);
         }
         if (files is not null)
+        {
             resources.Own(files);
+        }
         try
         {
             Retire(resources, new RetirementBarrier("Asset source preparation"));
@@ -133,7 +155,9 @@ public sealed partial class AssetPipeline
         catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
         {
             lock (m_lifecycleLock)
+            {
                 m_failedPreparation = resources;
+            }
             throw;
         }
     }
@@ -185,7 +209,9 @@ public sealed partial class AssetPipeline
         {
             EnsurePendingSourceMountTransaction(transaction);
             if (transaction.isActivated)
+            {
                 return;
+            }
             transaction.candidateLoader.ActivateExtensionDiscovery();
             _ = transaction.candidateLoader.RefreshRegistries();
             transaction.candidateFileSystem.Refresh();
@@ -193,14 +219,19 @@ public sealed partial class AssetPipeline
             transaction.previousFileSystem = m_fileSystem;
             transaction.previousMounts = sourceMounts;
             transaction.previousOptions = m_options;
-            SwitchSourceIdentities(transaction.previousLoader!, transaction.previousFileSystem!,
-                transaction.candidateLoader, transaction.candidateFileSystem);
+            SwitchSourceIdentities(
+                transaction.previousLoader!,
+                transaction.previousFileSystem!,
+                transaction.candidateLoader,
+                transaction.candidateFileSystem
+            );
             transaction.candidateLoader.AssetReloaded += OnAssetReloaded;
             m_loader = transaction.candidateLoader;
             m_fileSystem = transaction.candidateFileSystem;
             sourceMounts = transaction.sourceMounts;
             AssetSourceMount project = transaction.sourceMounts.Single(
-                static mount => mount.id == AssetSourceId.project);
+                static mount => mount.id == AssetSourceId.project
+            );
             assetRoot = project.rootPath;
             m_options = m_options with { assetRoot = assetRoot, sourceMounts = transaction.sourceMounts };
             m_revision++;
@@ -219,12 +250,16 @@ public sealed partial class AssetPipeline
             m_generations.EnsureRetirementSafe();
             EnsurePendingSourceMountTransaction(transaction);
             if (!transaction.isActivated)
+            {
                 throw new InvalidOperationException("A source-mount candidate must be activated before completion.");
+            }
             try
             {
                 transaction.catalogCandidate.Commit();
                 if (m_options.enableFileSystemWatcher)
+                {
                     transaction.candidateFileSystem.Start();
+                }
             }
             catch (Exception failure)
             {
@@ -239,7 +274,9 @@ public sealed partial class AssetPipeline
                 transaction.retirement.Own(transaction.previousLoader);
             }
             if (transaction.previousFileSystem is not null)
+            {
                 transaction.retirement.Own(transaction.previousFileSystem);
+            }
             RetireSourceMounts(transaction);
             changed = SourceMountsChanged;
         }
@@ -250,7 +287,9 @@ public sealed partial class AssetPipeline
     {
         ArgumentNullException.ThrowIfNull(transaction);
         if (transaction.isFinished)
+        {
             return;
+        }
         EnsureInitializationThread();
         using IDisposable operationScope = AcquireOperation();
         lock (m_lifecycleLock)
@@ -260,14 +299,19 @@ public sealed partial class AssetPipeline
             if (transaction.isActivated)
             {
                 transaction.candidateLoader.AssetReloaded -= OnAssetReloaded;
-                SwitchSourceIdentities(transaction.candidateLoader, transaction.candidateFileSystem,
-                    transaction.previousLoader!, transaction.previousFileSystem!);
+                SwitchSourceIdentities(
+                    transaction.candidateLoader,
+                    transaction.candidateFileSystem,
+                    transaction.previousLoader!,
+                    transaction.previousFileSystem!
+                );
                 m_loader = transaction.previousLoader;
                 m_fileSystem = transaction.previousFileSystem;
                 sourceMounts = transaction.previousMounts ?? [];
                 m_options = transaction.previousOptions;
                 AssetSourceMount? project = sourceMounts.SingleOrDefault(
-                    static mount => mount.id == AssetSourceId.project);
+                    static mount => mount.id == AssetSourceId.project
+                );
                 assetRoot = project?.rootPath ?? string.Empty;
                 m_revision++;
                 transaction.isActivated = false;
@@ -327,7 +371,9 @@ public sealed partial class AssetPipeline
     {
         string root = Path.Combine(activeLibraryRoot, "AssetDatabase", "Candidates");
         if (Directory.Exists(root))
+        {
             Directory.Delete(root, recursive: true);
+        }
     }
 
     private void SwitchSourceIdentities(
@@ -389,6 +435,8 @@ public sealed partial class AssetPipeline
     private void EnsurePendingSourceMountTransaction(AssetSourceMountTransaction transaction)
     {
         if (!ReferenceEquals(m_sourceMountCandidate, transaction))
+        {
             throw new InvalidOperationException("The source-mount transaction is not the current candidate.");
+        }
     }
 }

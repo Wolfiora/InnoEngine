@@ -31,7 +31,9 @@ public sealed class OwnedReadStreamTests
         {
             Assert.False(input.CanRead);
             if (++releases == 1)
+            {
                 throw new IOException("Expected retryable release.");
+            }
         }
     }
 }

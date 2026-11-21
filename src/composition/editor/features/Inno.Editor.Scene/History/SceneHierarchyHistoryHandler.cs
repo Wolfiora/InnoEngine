@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Core.Logging;
 using Inno.Editor.Interactions;
 using Inno.Scene;
@@ -48,23 +47,24 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
         {
             SceneHierarchyHistoryData data = SceneHierarchyHistoryData.Decode(change.payload.ReadBytes());
             SceneObjectPlacement[] placements = direction == EditorHistoryDirection.Undo
-                ? data.before
-                : data.after;
+                                                ? data.before
+                                                : data.after;
             IReadOnlyDictionary<Guid, Guid> destinationScenes = placements.ToDictionary(
                 static placement => placement.objectId,
-                static placement => placement.sceneId);
+                static placement => placement.sceneId
+            );
             for (int i = 0; i < placements.Length; i++)
             {
                 SceneObjectPlacement placement = placements[i];
                 if (ResolveScene(placement.sceneId) is null)
                 {
-                    return EditorHistoryAvailability.Unavailable(
-                        $"Scene '{placement.sceneId}' is no longer loaded.");
+                    return EditorHistoryAvailability.Unavailable($"Scene '{placement.sceneId}' is no longer loaded.");
                 }
                 if (m_workspace.Find<GameObject>(placement.objectId) is not { isRuntimeValid: true })
                 {
                     return EditorHistoryAvailability.Unavailable(
-                        $"GameObject '{placement.objectId}' is no longer available.");
+                        $"GameObject '{placement.objectId}' is no longer available."
+                    );
                 }
                 GameObject? parent = null;
                 if (placement.parentId is Guid parentId)
@@ -73,16 +73,18 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
                     if (parent is not { isRuntimeValid: true })
                     {
                         return EditorHistoryAvailability.Unavailable(
-                            $"Parent GameObject '{parentId}' is no longer available.");
+                            $"Parent GameObject '{parentId}' is no longer available."
+                        );
                     }
                 }
-                if (parent is not null &&
-                    parent.scene.identity.persistentId != placement.sceneId &&
-                    (!destinationScenes.TryGetValue(parent.identity.persistentId, out Guid parentDestination) ||
-                     parentDestination != placement.sceneId))
-                {
+                if (parent is not null
+                    && parent.scene.identity.persistentId != placement.sceneId
+                    && (!destinationScenes.TryGetValue(parent.identity.persistentId, out Guid parentDestination)
+                        || parentDestination != placement.sceneId)
+                ) {
                     return EditorHistoryAvailability.Unavailable(
-                        $"Parent GameObject '{parent.identity.persistentId}' does not belong to destination scene '{placement.sceneId}'.");
+                        $"Parent GameObject '{parent.identity.persistentId}' does not belong to destination scene '{placement.sceneId}'."
+                    );
                 }
             }
             return EditorHistoryAvailability.Available();
@@ -117,8 +119,8 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
         {
             SceneHierarchyHistoryData data = SceneHierarchyHistoryData.Decode(change.payload.ReadBytes());
             SceneObjectPlacement[] destination = direction == EditorHistoryDirection.Undo
-                ? data.before
-                : data.after;
+                                                 ? data.before
+                                                 : data.after;
             SceneObjectPlacement[] rollback = Capture(destination);
             try
             {
@@ -133,8 +135,9 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
                 catch (Exception rollbackException)
                 {
                     return StateIntegrityFailure(
-                        $"Scene hierarchy update failed: {exception.Message} " +
-                        $"Placement rollback failed: {rollbackException.Message}");
+                        $"Scene hierarchy update failed: {exception.Message} "
+                        + $"Placement rollback failed: {rollbackException.Message}"
+                    );
                 }
                 return EditorHistoryResult.Failure(exception.Message);
             }
@@ -145,10 +148,7 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
             }
             catch (Exception exception)
             {
-                m_log.Write(
-                    LogLevel.Error,
-                    "Scene hierarchy selection notification failed: {0}",
-                    [exception]);
+                m_log.Write(LogLevel.Error, "Scene hierarchy selection notification failed: {0}", [exception]);
             }
             return EditorHistoryResult.Success();
         }
@@ -162,24 +162,27 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
         => placements.Select(placement =>
         {
             GameObject gameObject = m_workspace.Find<GameObject>(placement.objectId)
-                ?? throw new InvalidOperationException($"GameObject '{placement.objectId}' is no longer available.");
+                                    ?? throw new InvalidOperationException($"GameObject '{placement.objectId}' is no longer available.");
             return new SceneObjectPlacement(
                 gameObject.scene.identity.persistentId,
                 placement.objectId,
                 gameObject.transform.parent?.gameObject.identity.persistentId,
-                gameObject.transform.siblingIndex);
+                gameObject.transform.siblingIndex
+            );
         }).ToArray();
 
     private void ApplyPlacements(IReadOnlyCollection<SceneObjectPlacement> placements)
     {
         foreach (SceneObjectPlacement placement in placements.OrderBy(placement =>
-                     GetHierarchyDepth(ResolveObject(placement.objectId).transform)))
-        {
+                     GetHierarchyDepth(ResolveObject(placement.objectId).transform))
+        ) {
             GameObject gameObject = ResolveObject(placement.objectId);
             GameScene destination = ResolveScene(placement.sceneId)
-                ?? throw new InvalidOperationException($"Scene '{placement.sceneId}' is no longer loaded.");
+                                    ?? throw new InvalidOperationException($"Scene '{placement.sceneId}' is no longer loaded.");
             if (!ReferenceEquals(gameObject.scene, destination))
+            {
                 m_workspace.world.MoveGameObjectToScene(gameObject, destination);
+            }
         }
 
         var pending = new List<SceneObjectPlacement>(placements);
@@ -191,20 +194,26 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
                 SceneObjectPlacement placement = pending[i];
                 GameObject gameObject = ResolveObject(placement.objectId);
                 Transform? parent = placement.parentId is Guid parentId
-                    ? ResolveObject(parentId).transform
-                    : null;
+                                    ? ResolveObject(parentId).transform
+                                    : null;
                 if (parent is not null && IsDescendantOf(parent, gameObject.transform))
+                {
                     continue;
+                }
                 gameObject.transform.SetParent(parent);
                 pending.RemoveAt(i);
                 progressed = true;
             }
             if (!progressed)
+            {
                 throw new InvalidOperationException("Scene hierarchy history would create a parent cycle.");
+            }
         }
 
         foreach (SceneObjectPlacement placement in placements.OrderBy(static value => value.siblingIndex))
+        {
             ResolveObject(placement.objectId).transform.SetSiblingIndex(placement.siblingIndex);
+        }
     }
 
     private static bool IsDescendantOf(
@@ -214,7 +223,9 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
         for (Transform? current = transform; current is not null; current = current.parent)
         {
             if (ReferenceEquals(current, possibleAncestor))
+            {
                 return true;
+            }
         }
         return false;
     }
@@ -223,17 +234,19 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
     {
         int depth = 0;
         for (Transform? current = transform.parent; current is not null; current = current.parent)
+        {
             depth++;
+        }
         return depth;
     }
 
     private GameObject ResolveObject(Guid objectId)
         => m_workspace.Find<GameObject>(objectId) is { isRuntimeValid: true } gameObject
-            ? gameObject
-            : throw new InvalidOperationException($"GameObject '{objectId}' is no longer available.");
+           ? gameObject
+           : throw new InvalidOperationException($"GameObject '{objectId}' is no longer available.");
 
     private GameScene? ResolveScene(Guid sceneId)
         => m_workspace.Find<GameScene>(sceneId) is { isLoaded: true, isDestroyed: false } scene
-            ? scene
-            : null;
+           ? scene
+           : null;
 }

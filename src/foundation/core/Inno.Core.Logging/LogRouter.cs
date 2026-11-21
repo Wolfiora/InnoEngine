@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
-
 using Inno.Core.Execution;
 using Inno.Extensibility.Modules;
 
@@ -65,7 +64,9 @@ public sealed class LogRouter : IDisposable
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(queueCapacity);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(drainBudget);
         if (!Enum.IsDefined(deliveryMode))
+        {
             throw new ArgumentOutOfRangeException(nameof(deliveryMode));
+        }
         m_queueCapacity = queueCapacity;
         m_drainBudget = drainBudget;
         if (deliveryMode == LogDeliveryMode.Background)
@@ -143,7 +144,9 @@ public sealed class LogRouter : IDisposable
         lock (m_sinksLock)
         {
             if (m_sinks.Remove(sink))
+            {
                 Volatile.Write(ref m_sinkSnapshot, m_sinks.ToArray());
+            }
         }
     }
 
@@ -182,7 +185,8 @@ public sealed class LogRouter : IDisposable
             this,
             ownerType.Assembly.GetInnoAssemblyDomain(),
             ownerType.Assembly.GetInnoAssemblyScope(),
-            ownerType.Name);
+            ownerType.Name
+        );
     }
 
     /// <summary>
@@ -200,7 +204,9 @@ public sealed class LogRouter : IDisposable
     public void Dispatch(LogEntry entry)
     {
         if (!TryDispatch(entry))
+        {
             throw new InvalidOperationException("The log queue is full; the producer must apply backpressure.");
+        }
     }
 
     /// <summary>
@@ -225,13 +231,19 @@ public sealed class LogRouter : IDisposable
         {
             ObjectDisposedException.ThrowIf(m_disposed, this);
             if (!IsEnabled(entry.level))
+            {
                 return true;
+            }
             if (m_queue.Count >= m_queueCapacity)
+            {
                 return false;
+            }
             Enqueue(WorkItem.ForEntry(entry));
         }
         if (m_worker is null)
+        {
             DrainInline();
+        }
         return true;
     }
 
@@ -253,11 +265,15 @@ public sealed class LogRouter : IDisposable
         {
             ObjectDisposedException.ThrowIf(m_disposed, this);
             if (m_queue.Count >= m_queueCapacity)
+            {
                 throw new InvalidOperationException("The log queue is full; retry the flush after the worker drains pending entries.");
+            }
             Enqueue(WorkItem.ForBarrier(completion));
         }
         if (m_worker is null)
+        {
             DrainInline();
+        }
         completion.Wait();
     }
 
@@ -274,7 +290,9 @@ public sealed class LogRouter : IDisposable
     {
         EnsureOutsideDelivery("dispose");
         lock (m_disposalSync)
+        {
             DisposeCore();
+        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -285,14 +303,18 @@ public sealed class LogRouter : IDisposable
         lock (m_queueSync)
         {
             if (m_disposed)
+            {
                 return;
+            }
             m_disposed = true;
             m_running = false;
             m_signal.Release();
         }
         m_worker?.Join();
         if (m_worker is null)
+        {
             DrainInline();
+        }
         ILogSink[] sinks;
         lock (m_sinksLock)
         {
@@ -305,7 +327,9 @@ public sealed class LogRouter : IDisposable
         for (int index = 0; index < sinks.Length; index++)
         {
             if (sinks[index] is not IDisposable disposable)
+            {
                 continue;
+            }
             try
             {
                 disposable.Dispose();
@@ -318,7 +342,9 @@ public sealed class LogRouter : IDisposable
         }
         m_signal.Dispose();
         if (failures is not null)
+        {
             throw new AggregateException("One or more log sinks failed to dispose.", failures);
+        }
     }
 
     private void ProcessQueue()
@@ -331,7 +357,9 @@ public sealed class LogRouter : IDisposable
                 m_signal.Wait();
                 DrainQueue();
                 if (!m_running && m_queue.IsEmpty)
+                {
                     return;
+                }
             }
         }
         finally
@@ -345,12 +373,16 @@ public sealed class LogRouter : IDisposable
         lock (m_inlineDeliverySync)
         {
             if (m_deliveryThreadId != 0)
+            {
                 return;
+            }
             Volatile.Write(ref m_deliveryThreadId, Environment.CurrentManagedThreadId);
             try
             {
                 while (!m_queue.IsEmpty)
+                {
                     DrainQueue();
+                }
             }
             finally
             {
@@ -362,14 +394,18 @@ public sealed class LogRouter : IDisposable
     private void EnsureOutsideDelivery(string operation)
     {
         if (Volatile.Read(ref m_deliveryThreadId) == Environment.CurrentManagedThreadId)
+        {
             throw new InvalidOperationException($"A log delivery callback cannot {operation} its own router.");
+        }
     }
 
     private void Enqueue(WorkItem item)
     {
         m_queue.Enqueue(item);
         if (m_worker is not null)
+        {
             m_signal.Release();
+        }
     }
 
     private void DrainQueue()
@@ -387,7 +423,9 @@ public sealed class LogRouter : IDisposable
             for (int index = 0; index < sinks.Length; index++)
             {
                 if (quarantined?.Contains(sinks[index]) == true)
+                {
                     continue;
+                }
                 try
                 {
                     sinks[index].Receive(item.entry);
@@ -413,8 +451,7 @@ public sealed class LogRouter : IDisposable
         Action<ILogSink, Exception>? handlers = sinkFailed;
         if (handlers is null)
         {
-            ReportFailureToConsole(
-                $"Log sink '{sink.GetType().FullName}' failed and was quarantined: {exception}");
+            ReportFailureToConsole($"Log sink '{sink.GetType().FullName}' failed and was quarantined: {exception}");
             return;
         }
         foreach (Delegate handler in handlers.GetInvocationList())
@@ -426,7 +463,8 @@ public sealed class LogRouter : IDisposable
             catch (Exception observerFailure)
             {
                 ReportFailureToConsole(
-                    $"Log sink failure observer '{handler.Method.DeclaringType?.FullName}' failed: {observerFailure}");
+                    $"Log sink failure observer '{handler.Method.DeclaringType?.FullName}' failed: {observerFailure}"
+                );
             }
         }
     }
@@ -451,5 +489,4 @@ public sealed class LogRouter : IDisposable
 
         internal static WorkItem ForBarrier(ManualResetEventSlim completion) => new(default, completion);
     }
-
 }

@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
-using Inno.Rendering;
 using Xunit;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Tests;
 
@@ -94,7 +94,9 @@ public sealed class RenderGraphMutationTests
         var graph = CreateGraph();
         RenderGraphNameScope retired;
         using (graph.BeginMutationScope())
+        {
             retired = graph.BeginNameScope("Retired");
+        }
         using (graph.BeginNameScope("Current"))
         {
             retired.Dispose();
@@ -109,17 +111,28 @@ public sealed class RenderGraphMutationTests
         var graph = CreateGraph();
         using RenderGraphNameScope name = graph.BeginNameScope("Accepted");
         using (graph.BeginMutationScope())
+        {
             Assert.Throws<InvalidOperationException>(() => name.Dispose());
+        }
         graph.AddRasterPass("Visible", new("visible"), 0, Execute).HasSideEffect();
         Assert.Equal("Accepted/Visible", Assert.Single(graph.Compile().graph!.passes).name);
     }
 
     private static RenderGraphBuilder CreateGraph()
-        => new(1, new GraphicsCapabilities(
-            GraphicsApi.Noop, GraphicsCapability.None,
-            new GraphicsLimits(64, 8, 16384, 16),
-            Enum.GetValues<RenderTextureFormat>(), Enum.GetValues<RenderTextureFormat>(),
-            [], [], false, false));
+        => new(
+            1,
+            new GraphicsCapabilities(
+                GraphicsApi.Noop,
+                GraphicsCapability.None,
+                new GraphicsLimits(64, 8, 16384, 16),
+                Enum.GetValues<RenderTextureFormat>(),
+                Enum.GetValues<RenderTextureFormat>(),
+                [],
+                [],
+                false,
+                false
+            )
+        );
 
     [Fact]
     public void AcceptedFuturePhaseOrderingStillDetectsALaterCycleAndRollsBack()
@@ -127,7 +140,9 @@ public sealed class RenderGraphMutationTests
         var graph = CreateGraph();
         graph.AddRasterPass("First", new("first"), 0, Execute).HasSideEffect().Before(new("future"));
         using (RenderGraphMutationScope accepted = graph.BeginMutationScope())
+        {
             accepted.Commit();
+        }
         using (graph.BeginMutationScope())
         {
             graph.AddRasterPass("Future", new("future"), 0, Execute).HasSideEffect().Before(new("first"));
@@ -180,5 +195,5 @@ public sealed class RenderGraphMutationTests
     private static void Execute(
         int payload,
         RenderPassContext context
-    ) { }
+    ) {}
 }

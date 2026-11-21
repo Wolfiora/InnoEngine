@@ -45,7 +45,9 @@ public sealed class SerializationRegistry : IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_disposed = true;
         m_converters.Dispose();
         GC.SuppressFinalize(this);
@@ -116,10 +118,20 @@ public sealed class SerializationRegistry : IDisposable
         foreach (SerializationMemberMetadata member in members)
         {
             if ((member.visibility & PropertyVisibility.RuntimeGet) == 0)
+            {
                 continue;
-            properties.Add(new SerializedProperty(member.name, member.type,
-                () => member.GetValue(value), propertyValue => member.SetValue(value, propertyValue),
-                member.visibility, true, (member.visibility & PropertyVisibility.RuntimeSet) != 0));
+            }
+            properties.Add(
+                new SerializedProperty(
+                    member.name,
+                    member.type,
+                    () => member.GetValue(value),
+                    propertyValue => member.SetValue(value, propertyValue),
+                    member.visibility,
+                    true,
+                    (member.visibility & PropertyVisibility.RuntimeSet) != 0
+                )
+            );
         }
         return properties;
     }
@@ -189,7 +201,8 @@ public sealed class SerializationRegistry : IDisposable
             value,
             propertyName,
             CreateContext(context),
-            converters);
+            converters
+        );
         return PropertySnapshotBinaryFormat.Encode([snapshot]);
     }
 
@@ -279,14 +292,11 @@ public sealed class SerializationRegistry : IDisposable
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(snapshots);
         if (!Enum.IsDefined(mode))
+        {
             throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unknown property restore mode.");
+        }
         using ConverterRegistryLease converters = m_converters.Capture();
-        return PropertySnapshotPipeline.Restore(
-            target,
-            snapshots,
-            mode,
-            CreateContext(context),
-            converters);
+        return PropertySnapshotPipeline.Restore(target, snapshots, mode, CreateContext(context), converters);
     }
 
     /// <summary>
@@ -329,14 +339,17 @@ public sealed class SerializationRegistry : IDisposable
         EnsureInitialized();
         ArgumentNullException.ThrowIfNull(target);
         if (!Enum.IsDefined(mode))
+        {
             throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unknown property restore mode.");
+        }
         using ConverterRegistryLease converters = m_converters.Capture();
         return PropertySnapshotPipeline.Restore(
             target,
             PropertySnapshotBinaryFormat.Decode(data),
             mode,
             CreateContext(context),
-            converters);
+            converters
+        );
     }
 
     /// <summary>
@@ -363,8 +376,7 @@ public sealed class SerializationRegistry : IDisposable
     public byte[] Serialize<T>(
         T value,
         SerializationContext? context = null
-    )
-        where T : class, ISerializable
+    ) where T : class, ISerializable
     {
         EnsureInitialized();
         ArgumentNullException.ThrowIfNull(value);
@@ -412,7 +424,8 @@ public sealed class SerializationRegistry : IDisposable
         T value,
         SerializationContext? context = null,
         SerializationSnapshot? previous = null
-    ) where T : class, ISerializable {
+    ) where T : class, ISerializable
+    {
         EnsureInitialized();
         ArgumentNullException.ThrowIfNull(value);
         using ConverterRegistryLease converters = m_converters.Capture();
@@ -432,8 +445,7 @@ public sealed class SerializationRegistry : IDisposable
         T value,
         ConverterRegistryLease converters,
         SerializationContext? context = null
-    )
-        where T : class, ISerializable
+    ) where T : class, ISerializable
     {
         ArgumentNullException.ThrowIfNull(value);
         ArgumentNullException.ThrowIfNull(converters);
@@ -470,8 +482,7 @@ public sealed class SerializationRegistry : IDisposable
     public T Deserialize<T>(
         ReadOnlySpan<byte> bytes,
         SerializationContext? context = null
-    )
-        where T : class, ISerializable
+    ) where T : class, ISerializable
     {
         EnsureInitialized();
         using ConverterRegistryLease converters = m_converters.Capture();
@@ -482,8 +493,7 @@ public sealed class SerializationRegistry : IDisposable
         ReadOnlySpan<byte> bytes,
         ConverterRegistryLease converters,
         SerializationContext? context = null
-    )
-        where T : class, ISerializable
+    ) where T : class, ISerializable
     {
         ArgumentNullException.ThrowIfNull(converters);
         SerializationNode root = BinarySerializationFormat.Decode(bytes);
@@ -526,8 +536,7 @@ public sealed class SerializationRegistry : IDisposable
         T target,
         ReadOnlySpan<byte> bytes,
         SerializationContext? context = null
-    )
-        where T : class, ISerializable
+    ) where T : class, ISerializable
     {
         EnsureInitialized();
         ArgumentNullException.ThrowIfNull(target);
@@ -639,7 +648,9 @@ public sealed class SerializationRegistry : IDisposable
         ArgumentNullException.ThrowIfNull(converters);
         SerializationNode decoded = BinarySerializationFormat.Decode(bytes);
         if (decoded is not ObjectSerializationNode root)
+        {
             throw new InvalidOperationException("The advanced serialization root must be an object.");
+        }
 
         var operation = new SerializationOperation(CreateContext(context), converters);
         try
@@ -668,8 +679,11 @@ public sealed class SerializationRegistry : IDisposable
         context ??= SerializationContext.empty;
         if (context.TryGet<TypeCatalog>(out TypeCatalog? types) && ReferenceEquals(types, m_types)
             && context.TryGet<SerializationRegistry>(out SerializationRegistry? registry) && ReferenceEquals(registry, this)
-            && context.TryGet<ISerializationMetadataSource>(out ISerializationMetadataSource? metadata) && ReferenceEquals(metadata, m_metadata))
+            && context.TryGet<ISerializationMetadataSource>(out ISerializationMetadataSource? metadata)
+            && ReferenceEquals(metadata, m_metadata)
+        ) {
             return context;
+        }
         return context.With(m_types).With(this).With<ISerializationMetadataSource>(m_metadata);
     }
 }

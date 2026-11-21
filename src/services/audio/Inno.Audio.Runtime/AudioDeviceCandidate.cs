@@ -52,7 +52,9 @@ internal sealed class AudioDeviceCandidate : IDisposable
         }
         m_device = null;
         if (m_failures.Count == 0)
+        {
             return;
+        }
         Exception[] failures = m_failures.ToArray();
         m_failures.Clear();
         throw new AggregateException("Audio candidate retirement failed after every owner was attempted.", failures);

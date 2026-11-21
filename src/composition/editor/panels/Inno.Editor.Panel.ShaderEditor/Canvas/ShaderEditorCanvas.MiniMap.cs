@@ -1,13 +1,15 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Inno.Core.Graphs;
 using Inno.Editor.ImGui;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using ImGuiApi = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.ShaderEditor;
+
 internal sealed partial class ShaderEditorCanvas
 {
     private const float C_MINI_MAP_WIDTH = 220f;
@@ -15,11 +17,11 @@ internal sealed partial class ShaderEditorCanvas
     private const float C_MINI_MAP_MARGIN = 14f;
     private const float C_MINI_MAP_PADDING = 9f;
     private readonly Dictionary<GraphNodeId, MiniMapNodeGeometry> m_miniMapGeometry = [];
+
     private readonly record struct MiniMapNodeGeometry(
         Vector2 minimum,
         Vector2 maximum
-    )
-    {
+    ) {
         internal Vector2 center => (minimum + maximum) * 0.5f;
     }
 
@@ -27,16 +29,18 @@ internal sealed partial class ShaderEditorCanvas
         Vector2 worldMinimum,
         Vector2 screenOrigin,
         float scale
-    )
-    {
+    ) {
         internal Vector2 ToScreen(Vector2 position) => screenOrigin + (position - worldMinimum) * scale;
+
         internal Vector2 ToWorld(Vector2 position) => worldMinimum + (position - screenOrigin) / scale;
     }
 
     private bool MiniMapContains(Vector2 point)
     {
         if (!TryGetMiniMapBounds(out Vector2 minimum, out Vector2 maximum))
+        {
             return false;
+        }
         return point.X >= minimum.X && point.X <= maximum.X && point.Y >= minimum.Y && point.Y <= maximum.Y;
     }
 
@@ -46,7 +50,9 @@ internal sealed partial class ShaderEditorCanvas
     ) {
         minimum = maximum = default;
         if (m_size.X < 320f || m_size.Y < 220f)
+        {
             return false;
+        }
         float zoom = EditorUI.current.widgets.style.zoom;
         Vector2 size = new(MathF.Min(C_MINI_MAP_WIDTH * zoom, m_size.X * 0.30f), MathF.Min(C_MINI_MAP_HEIGHT * zoom, m_size.Y * 0.30f));
         maximum = m_origin + new Vector2(m_size.X - C_MINI_MAP_MARGIN * zoom, C_MINI_MAP_MARGIN * zoom + size.Y);
@@ -57,7 +63,9 @@ internal sealed partial class ShaderEditorCanvas
     private void DrawMiniMap()
     {
         if (!TryGetMiniMapBounds(out Vector2 minimum, out Vector2 maximum))
+        {
             return;
+        }
         Vector2 size = maximum - minimum;
         Vector2 cursor = ImGuiApi.GetCursorScreenPosition();
         ImGuiApi.SetCursorScreenPosition(minimum);
@@ -74,13 +82,22 @@ internal sealed partial class ShaderEditorCanvas
             );
             began = true;
             if (!visible)
+            {
                 return;
+            }
             MiniMapLayout layout = CreateMiniMapLayout(minimum, maximum);
-            ImGuiApi.InvisibleButton("##mini-map-navigation", Vector2.Max(ImGuiApi.GetContentRegionAvailable(), Vector2.One), ImGuiButtonFlags.MouseButtonLeft);
+            ImGuiApi.InvisibleButton(
+                "##mini-map-navigation",
+                Vector2.Max(ImGuiApi.GetContentRegionAvailable(), Vector2.One),
+                ImGuiButtonFlags.MouseButtonLeft
+            );
             if (ImGuiApi.IsItemActive() && ImGuiApi.IsMouseButtonDown(ImGuiMouseButton.Left))
             {
                 Vector2 graphPoint = layout.ToWorld(Vector2.Clamp(ImGuiApi.GetMousePos(), minimum, maximum));
-                Canvas.SetViewport(new(m_size.X * 0.5f - graphPoint.X * Canvas.zoom, m_size.Y * 0.5f - graphPoint.Y * Canvas.zoom), Canvas.zoom);
+                Canvas.SetViewport(
+                    new(m_size.X * 0.5f - graphPoint.X * Canvas.zoom, m_size.Y * 0.5f - graphPoint.Y * Canvas.zoom),
+                    Canvas.zoom
+                );
             }
 
             DrawMiniMapContents(Inno.Editor.ImGui.ImGui.GetDrawList(), layout);
@@ -88,7 +105,9 @@ internal sealed partial class ShaderEditorCanvas
         finally
         {
             if (began)
+            {
                 ImGuiApi.EndChild();
+            }
             ImGuiApi.PopStyleColor();
             ImGuiApi.PopStyleVar();
             ImGuiApi.SetCursorScreenPosition(cursor);
@@ -128,15 +147,11 @@ internal sealed partial class ShaderEditorCanvas
     ) {
         foreach (GraphEdgeRecord edge in Controller.document.edges)
         {
-            if (!m_miniMapGeometry.TryGetValue(
-                edge.output.nodeId,
-                out MiniMapNodeGeometry source
-            )
-                || !m_miniMapGeometry.TryGetValue(
-                edge.input.nodeId,
-                out MiniMapNodeGeometry target
-            ))
+            if (!m_miniMapGeometry.TryGetValue(edge.output.nodeId, out MiniMapNodeGeometry source)
+                || !m_miniMapGeometry.TryGetValue(edge.input.nodeId, out MiniMapNodeGeometry target)
+            ) {
                 continue;
+            }
             draw.Line(layout.ToScreen(source.center), layout.ToScreen(target.center), Color(0.55f, 0.42f, 0.76f, 0.65f), 1f);
         }
 

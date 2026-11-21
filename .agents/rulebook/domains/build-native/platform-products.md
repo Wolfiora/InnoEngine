@@ -1,22 +1,9 @@
-# Build and Native
+---
+paths: ["build/**", "backends/**", "platforms/**", ".github/**", "Directory.Build.props", "Directory.Build.targets", "Directory.Solution.props", "Directory.Solution.targets"]
+tags: [platform-products, native]
+---
+# Platform products
 
-Load complete rule units. The [registry](../coverage.json) owns routing and provenance.
-
-<!-- rule-unit: build-host -->
-<a id="build-host"></a>
-## 25. Hosts, platform targets and unified builds
-
-- Shared Foundation, Shell and Player Runtime do not detect capabilities with OperatingSystem.IsBrowser. Platform entries inject frame scheduling, module activation, storage, logging and threading policy. Input uses the same Core Events entry.
-- Each Native component has one project, separating common BGCS declarations from target profiles. The host single file is Generated/Bindings.cs; target managed output is artifacts/bindings/<component>/<target>/<generationFingerprint>/Generated/Bindings.cs. CMake intermediates remain in the owning toolchain's obj/native. Different targets and generation identities must not overwrite each other's output.
-- BGCS-generated ABI carriers have explicit marshalling. Common MSBuild rules enable DisableRuntimeMarshalling for every binding component. Do not let the runtime reinterpret declarations or duplicate assembly attributes in components. Acceptance checks actual parameters, returns and callbacks, not merely sizeof.
-- Cpp2C target bridges use artifacts/bindings/<component>/<target>/<generationFingerprint>/Native and share staging validation and atomic commit with the managed single file. They must not overwrite host Native/Generated. Target toolchains read the current request's generation description and select the bridge through CMake parameters. Emscripten SDK/Cache/Node/Python selection follows the target project's MSBuild workload; do not guess the highest installed package version.
-- Development executable projects are only entry's InnoEngine.Editor and InnoEngine.Build. Inno.Build.Cli is a shared application library. Component toolchains, Shader compilation, Support Pack transactions and architecture validation remain composed libraries; MSBuild uses thin Task adapters.
-- Ordinary Editor IDE/MSBuild Build and Publish prepare the current configuration's entire native closure through the same Native toolchain and deployment contracts. Failed builds must not report runnable output. Runtime Loaders load explicitly deployed files only; they do not build, probe repository caches or support old symbols. Preserve content-identical deployed files rather than recopying or replacing loaded DLLs.
-- Support Pack core registers targets through IPlayerSupportPackSource and IPlayerSupportPackValidator, without concrete platform branches. Inno.Build.Composition accepts neutral binding contributions only. Built-in targets, managed deployments, Support Packs and product-component closures register only in Inno.Build.Distribution.Standard. Editor, CLI and MSBuild inject host context and consume the same immutable distribution. General Build libraries must not reference that composition library or Editor in reverse. Validate requested targets and managed-deployment capabilities before Support Pack provision or external tool execution; do not perform expensive preparation before rejecting unsupported combinations.
-<!-- /rule-unit: build-host -->
-
-<!-- rule-unit: platform-products -->
-<a id="platform-products"></a>
 ## 28. Platforms, shared backends and product composition
 
 - Organize shared code by responsibility, system/SDK integration by platform, builds by explicit targets including architecture and ABI, and Editor/Player by product composition. Desktop is not a target. Declare tool host, runtime target, product and managed deployment separately.
@@ -48,24 +35,3 @@ Load complete rule units. The [registry](../coverage.json) owns routing and prov
 - ImGui viewport position and logical size coordinate through platform events and ImGui getter/setter protocols. Drawable-metrics synchronization must not overwrite requested position/size or generate Move/Resize requests, avoiding feedback that interferes with dragging.
 
 - Both entries use ordinary ProjectReferences and direct public calls. Do not restore prebuilt Editor receipts, CLI-started workers, runtime child MSBuild or shared .run mechanisms. Only an entry may lift Solution build suppression for its own conditional product references; this does not bring other host products into default builds.
-<!-- /rule-unit: platform-products -->
-
-<!-- rule-unit: backend-build -->
-<a id="backend-build"></a>
-## 29. Backend integration and generation cost
-
-- Shared SDL window creation and focus reading have one backend owner; platform integrations handle actual SDK differences only. Shared BGFX Devices receive borrowed surfaces through IBgfxSurfaceIntegration and maintain no named-platform/ABI allowlist. Default catalogs receive explicit rendering factories.
-- Closing additional windows first unregisters interaction, then retires renderer surfaces. Release native windows only after rendering confirms framebuffer-destruction commands were processed. Native callbacks neither wait for nor advance frames. Final drain occurs only on the owner thread, outside a frame and without an active graph/encoder; failure retains dependency owners. Task completion is not a general GPU fence.
-- Component Bindings/bindings.props solely owns Native generation definitions shared by MSBuild and library calls. Toolchains depend only on INativeBindingGenerator; Inno.Build.Bindings owns concrete BGCS workflows, and Tasks map parameters/cancellation/logging only. A product closure requests one complete binding batch. Managed consumers retain Native-selected fingerprints and each component's Static/Shared request. Dynamic-initialization switches consume actual linkage only at Native compilation boundaries, never inferred from platform names or hosts.
-- Binding configuration path variables expand only from the operation's frozen Native SDK environment. Direct libraries and MSBuild share target resolution. Do not mutate process environments or temporary PATH values to expose SDKs to generators. Missing configuration fails before candidate creation.
-- Product binding selection belongs to that product's SDK intermediate directory and remains after Build/Publish for content-identical reuse. Only Native binding projects import it; transient selection files must not become common-domain compilation inputs. Identical content does not rewrite timestamps; changes replace atomically; product cleanup retires the file. Native Publish still verifies the current managed compilation's closure, fingerprints and source. Retaining a selection file does not hold a generation-cache read lease; actual consumers acquire independent protection.
-- Revalidate freshness initially, after batch locks/generation and after each Native lock/compilation. Deduplicate complete content reads only within one explicit phase, never across waits/execution. Copy mutable source to freeze it; hardlinks do not make mutable input immutable.
-- Cold CMake producers use the common executor to freeze recipe-declared workspace inputs. Browser aggregate component includes, bridges and arguments resolve into the same copied tree. Warm hits do not copy. External SDKs and outputs retain their own locations and owners; do not misroute outputs by replacing the entire repository root in strings.
-- Task runtimes reuse only successful immutable publications within one IBuildEngine4 Build lifetime and the same complete request identity. Registries store BCL data only, never SDK owners, leases or private-ALC types. Each actual load boundary retains an independent owner; failures/cancellation are not cached. Core.IO leases coordinate shared restore writes, yielding/reacquiring MSBuild nodes while waiting and retaining lock files.
-- Independent concurrent managed builds use explicit SDK ArtifactsPath values for separate bin/obj owners. Common rules must not override that output selection. Actual product Restore graphs select NuGet Runtime assets; content-addressed Native caches share through their own leases. Ordinary IDE bin/obj belongs to one active build; two independent processes writing the same paths is not supported concurrency.
-- Neutral and product requests within one SDK graph also isolate actual outputs. With ArtifactsPath, select an ArtifactsProjectName containing product inputs before SDK default paths are established, preserving SDK configuration/TFM/RID pivots and explicit caller settings. Before building, the development Editor entry uses existing owned restore for its selected product's complete reference closure. It cannot rely on later platform-child restores to satisfy direct or SDK-added transitive references.
-- Owned NuGet Restore uses standard ExcludeRestorePackageImports=true. Compilation uses a separate evaluation configuration including restored imports. A cached ProjectInstance must not carry old package content items into new assembly outputs. Package-name exceptions, patched NuGet imports and cache deletion must not conceal mixed artifacts.
-- NuGet dependencies use ordinary csproj PackageReferences and SDK Restore. Do not enable, generate or commit dependency lockfiles, or maintain per-project/host/RID/AOT/trimming lock inventories and naming schemes. Official declarations own package versions; BGCS retains its unified exact version. Consumers read actual SDK-evaluated assets/package content. CI performs ordinary restore and verifies builds, package identities and source hygiene. Custom dependency resolvers, clearing real SDK properties and ignore rules must not replace the correct flow. Core IO leases for concurrency, process ownership and atomic publication are not dependency locking and must remain.
-
-- Engine-managed build SDK working caches and coordination locks belong inside the corresponding artifacts/obj or explicit output owner. Do not retain global ignore rules or validation exemptions for retired cache locations in source directories. Before removing old project directories, verify current project/restore graphs, Git ownership, symlinks, active processes and complete file inventories. Ordinary runtime locks retain existing owner-retirement protocols. Historical configuration on an old remote branch is not an untracked current-branch file; do not delete manifests across branches or rewrite history to fabricate cleanup.
-<!-- /rule-unit: backend-build -->

@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Xunit;
 using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Core.Execution;
-using Xunit;
 
 namespace Inno.Rendering.Shaders.Tests;
 
@@ -19,7 +19,11 @@ public sealed class ShaderSourceModuleTests
         var catalog = new ShaderSourceFrontendCatalog([new BgfxShaderSourceFrontend(), alternate]);
         ShaderSourceModuleAnalysis result = catalog.AnalyzeModule([
             Request("adapter.first", "float Shade(float value) { return value; }"),
-            new("adapter.second", alternate.languageId, new(new("Other.ishadersource", "native function implementation"), "ShadeOther", new Includes()))
+            new(
+                "adapter.second",
+                alternate.languageId,
+                new(new("Other.ishadersource", "native function implementation"), "ShadeOther", new Includes())
+            )
         ]);
         Assert.True(result.succeeded, Errors(result));
         Assert.Equal("value", Assert.Single(result.function!.parameters).name);
@@ -37,7 +41,8 @@ public sealed class ShaderSourceModuleTests
     {
         var catalog = new ShaderSourceFrontendCatalog([new BgfxShaderSourceFrontend()]);
         ShaderSourceModuleAnalysis result = catalog.AnalyzeModule([
-            Request("first", "float Shade(float value) { return value; }"), Request("second", source)
+            Request("first", "float Shade(float value) { return value; }"),
+            Request("second", source)
         ]);
         Assert.False(result.succeeded);
         Assert.Null(result.function);
@@ -81,8 +86,14 @@ public sealed class ShaderSourceModuleTests
         Assert.Equal(2, first.sources.Count);
         Assert.Equal("data.inc", Assert.Single(first.analysis.dependencies));
 
-        ShaderSourceImplementationAnalysis reordered = Assert.Single(catalog.AnalyzeModule([Request("different-owner-key", source, includes,
-            new Dictionary<string, string> { ["SECOND"] = "2", ["FIRST"] = "1" })]).implementations);
+        ShaderSourceImplementationAnalysis reordered = Assert.Single(
+            catalog.AnalyzeModule([Request(
+                "different-owner-key",
+                source,
+                includes,
+                new Dictionary<string, string> { ["SECOND"] = "2", ["FIRST"] = "1" }
+            )]).implementations
+        );
         Assert.Equal(first.contentHash, reordered.contentHash);
         includes.values["data.inc"] = "#pragma once\nconst float Scale = 2.0;";
         ShaderSourceImplementationAnalysis changed = Assert.Single(catalog.AnalyzeModule([request]).implementations);
@@ -93,7 +104,11 @@ public sealed class ShaderSourceModuleTests
     [Fact]
     public void MissingLanguageRetainsSourceAndRecoversWhenItsProviderReturns()
     {
-        var implementation = new ShaderSourceImplementationRequest("alternate", "tests.alternate", new(new("Other.ishadersource", "native source"), "Other", new Includes()));
+        var implementation = new ShaderSourceImplementationRequest(
+            "alternate",
+            "tests.alternate",
+            new(new("Other.ishadersource", "native source"), "Other", new Includes())
+        );
         ShaderSourceModuleAnalysis missing = new ShaderSourceFrontendCatalog([]).AnalyzeModule([implementation]);
         Assert.False(missing.succeeded);
         Assert.Null(missing.function);
@@ -106,8 +121,11 @@ public sealed class ShaderSourceModuleTests
     public void SuccessfulFrontendsCannotClaimDependenciesOutsideTheirFrozenSourceSet()
     {
         var alternate = new AlternateFrontend { inventedDependency = true };
-        var request = new ShaderSourceImplementationRequest("alternate", alternate.languageId,
-            new(new("Other.ishadersource", "native source"), "Other", new Includes()));
+        var request = new ShaderSourceImplementationRequest(
+            "alternate",
+            alternate.languageId,
+            new(new("Other.ishadersource", "native source"), "Other", new Includes())
+        );
         ShaderSourceModuleAnalysis result = new ShaderSourceFrontendCatalog([alternate]).AnalyzeModule([request]);
         Assert.False(result.succeeded);
         Assert.Contains(result.diagnostics, value => value.code == "SHADER_SOURCE_DEPENDENCY_UNCAPTURED");
@@ -125,8 +143,11 @@ public sealed class ShaderSourceModuleTests
     [Fact]
     public void IncludeReadsCannotMixDifferentContentsForTheSameSourcePath()
     {
-        var request = Request("first", "#include \"data.inc\"\n#include \"data.inc\"\nfloat Shade(float value) { return value; }",
-            new ChangingIncludes());
+        var request = Request(
+            "first",
+            "#include \"data.inc\"\n#include \"data.inc\"\nfloat Shade(float value) { return value; }",
+            new ChangingIncludes()
+        );
         ShaderSourceModuleAnalysis result = new ShaderSourceFrontendCatalog([new BgfxShaderSourceFrontend()]).AnalyzeModule([request]);
         Assert.False(result.succeeded);
         Assert.Contains(result.diagnostics, value => value.message.Contains("changed during module analysis", StringComparison.Ordinal));
@@ -137,7 +158,9 @@ public sealed class ShaderSourceModuleTests
     {
         var failure = new IOException("Source candidate is retiring.", new RetirementPendingException("Pending source owner."));
         var request = Request("first", "#include \"data.inc\"\nfloat Shade(float value) { return value; }", new FailingIncludes(failure));
-        IOException actual = Assert.Throws<IOException>(() => new ShaderSourceFrontendCatalog([new BgfxShaderSourceFrontend()]).AnalyzeModule([request]));
+        IOException actual = Assert.Throws<IOException>(
+            () => new ShaderSourceFrontendCatalog([new BgfxShaderSourceFrontend()]).AnalyzeModule([request])
+        );
         Assert.Same(failure, actual);
     }
 
@@ -157,37 +180,57 @@ public sealed class ShaderSourceModuleTests
     [InlineData("struct Data { void values[2]; }; float Shade(float value) { return value; }")]
     public void VoidCannotBeSmuggledIntoTheValueInterfaceViaAnArrayOrAlias(string source)
     {
-        ShaderSourceModuleAnalysis result = new ShaderSourceFrontendCatalog([new BgfxShaderSourceFrontend()]).AnalyzeModule([Request("test", source)]);
+        ShaderSourceModuleAnalysis result = new ShaderSourceFrontendCatalog(
+            [new BgfxShaderSourceFrontend()]
+        ).AnalyzeModule([Request("test", source)]);
         Assert.False(result.succeeded);
-        Assert.Contains(result.diagnostics, value => value.code == "SHADER_SOURCE_INTERFACE" && value.message.Contains("void", StringComparison.Ordinal));
+        Assert.Contains(
+            result.diagnostics,
+            value => value.code == "SHADER_SOURCE_INTERFACE" && value.message.Contains("void", StringComparison.Ordinal)
+        );
         Assert.Throws<ArgumentException>(() => ShaderSourceType.ArrayOf(ShaderSourceType.Atomic("void"), 2));
         Assert.Throws<ArgumentException>(() => new ShaderSourceField("value", ShaderSourceType.Atomic("void")));
-        Assert.Throws<ArgumentException>(() => new ShaderSourceParameter("value", ShaderSourceType.Atomic("void"), ShaderSourceParameterDirection.Output));
+        Assert.Throws<ArgumentException>(
+            () => new ShaderSourceParameter("value", ShaderSourceType.Atomic("void"), ShaderSourceParameterDirection.Output)
+        );
     }
 
-    private static ShaderSourceImplementationRequest Request(string id, string source, IShaderSourceResolver? includes = null,
-        IReadOnlyDictionary<string, string>? defines = null)
-        => new(id, C_SC, new(new("Module.ishadersource", source), "Shade", includes ?? new Includes(), defines));
+    private static ShaderSourceImplementationRequest Request(
+        string id,
+        string source,
+        IShaderSourceResolver? includes = null,
+        IReadOnlyDictionary<string, string>? defines = null
+    ) => new(id, C_SC, new(new("Module.ishadersource", source), "Shade", includes ?? new Includes(), defines));
 
-    private static string Errors(ShaderSourceModuleAnalysis result) => string.Join("\n", result.diagnostics.Select(static value => value.message));
+    private static string Errors(ShaderSourceModuleAnalysis result)
+        => string.Join("\n", result.diagnostics.Select(static value => value.message));
 
     private sealed class Includes : IShaderSourceResolver
     {
         internal Dictionary<string, string> values { get; } = new(StringComparer.Ordinal);
-        public ShaderSourceFile ReadInclude(string includingFile, string include)
-            => new(include, values.TryGetValue(include, out string? value) ? value : throw new FileNotFoundException(include));
+
+        public ShaderSourceFile ReadInclude(
+            string includingFile,
+            string include
+        ) => new(include, values.TryGetValue(include, out string? value) ? value : throw new FileNotFoundException(include));
     }
 
     private sealed class ChangingIncludes : IShaderSourceResolver
     {
         private int m_count;
-        public ShaderSourceFile ReadInclude(string includingFile, string include)
-            => new(include, ++m_count == 1 ? "#pragma once\nconst float Scale = 1.0;" : "#pragma once\nconst float Scale = 2.0;");
+
+        public ShaderSourceFile ReadInclude(
+            string includingFile,
+            string include
+        ) => new(include, ++m_count == 1 ? "#pragma once\nconst float Scale = 1.0;" : "#pragma once\nconst float Scale = 2.0;");
     }
 
     private sealed class FailingIncludes(Exception failure) : IShaderSourceResolver
     {
-        public ShaderSourceFile ReadInclude(string includingFile, string include) => throw failure;
+        public ShaderSourceFile ReadInclude(
+            string includingFile,
+            string include
+        ) => throw failure;
     }
 
     private sealed class AlternateFrontend : IShaderSourceFrontend
@@ -195,12 +238,20 @@ public sealed class ShaderSourceModuleTests
         internal int calls;
         internal bool inventedDependency;
         public string languageId => "tests.alternate";
+
         public ShaderSourceAnalysis Analyze(ShaderSourceRequest request)
         {
             calls++;
-            return new(new(request.entryPoint, ShaderSourceType.Atomic("float"),
-                [new("value", ShaderSourceType.Atomic("float"), ShaderSourceParameterDirection.Input)], new(request.source.assetPath, 1, 1)),
-                inventedDependency ? ["unread.inc"] : [], []);
+            return new(
+                new(
+                    request.entryPoint,
+                    ShaderSourceType.Atomic("float"),
+                    [new("value", ShaderSourceType.Atomic("float"), ShaderSourceParameterDirection.Input)],
+                    new(request.source.assetPath, 1, 1)
+                ),
+                inventedDependency ? ["unread.inc"] : [],
+                []
+            );
         }
     }
 }

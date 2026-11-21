@@ -1,5 +1,5 @@
-using Inno.Rendering;
 using System;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets.Authoring;
 
@@ -9,9 +9,5 @@ internal sealed class RenderingAssetFormatException : FormatException
     internal RenderingAssetFormatException(
         string path,
         string message
-    )
-        : base($"{path}: {message}")
-    {
-    }
+    ) : base($"{path}: {message}") {}
 }
-

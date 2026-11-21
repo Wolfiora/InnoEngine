@@ -28,12 +28,18 @@ public sealed class BuildCachePolicy
         TimeSpan? timeBudget = null
     ) {
         if (maximumBytes < 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(maximumBytes));
+        }
         if (minimumFreeBytes < 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(minimumFreeBytes));
+        }
         TimeSpan duration = timeBudget ?? TimeSpan.FromSeconds(5);
         if (duration <= TimeSpan.Zero || duration == System.Threading.Timeout.InfiniteTimeSpan)
+        {
             throw new ArgumentOutOfRangeException(nameof(timeBudget));
+        }
         this.maximumBytes = maximumBytes;
         this.minimumFreeBytes = minimumFreeBytes;
         this.timeBudget = duration;

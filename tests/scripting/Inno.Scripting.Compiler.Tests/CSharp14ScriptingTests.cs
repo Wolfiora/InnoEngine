@@ -2,20 +2,20 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
-using System.Runtime.Loader;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Loader;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Text;
 using System.Xml.Linq;
+using Xunit;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Build.Toolchains;
 using Inno.Plugins;
 using Inno.Scripting.Compiler;
-using Xunit;
 
 namespace Inno.Scripting.Compiler.Tests;
 
@@ -38,14 +38,27 @@ public sealed class CSharp14ScriptingTests
         fixture.Rescan();
         fixture.compiler.GenerateProjectFiles();
         string project = Path.Combine(fixture.projectRoot, "Inno.GameScripts.csproj");
-        string host = Path.GetFullPath(Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "..", "..", "..",
-            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"));
+        string host = Path.GetFullPath(
+            Path.Combine(
+                RuntimeEnvironment.GetRuntimeDirectory(),
+                "..",
+                "..",
+                "..",
+                OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
+            )
+        );
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(host, project);
         using var output = new StringWriter();
         using var errors = new StringWriter();
-        await Assert.ThrowsAsync<InvalidOperationException>(() => ToolchainEnvironment.RunAsync(sdk.hostPath,
+        await Assert.ThrowsAsync<InvalidOperationException>(() => ToolchainEnvironment.RunAsync(
+            sdk.hostPath,
             [sdk.cliPath, "build", project, "--disable-build-servers", "-m:1", "-nr:false", "-p:" + property + "=" + value],
-            fixture.projectRoot, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath), output, errors));
+            fixture.projectRoot,
+            CancellationToken.None,
+            DotNetSdkEnvironment.Create(sdk.hostPath),
+            output,
+            errors
+        ));
         Assert.Contains("IDE compiler input '" + property + "' differs", output.ToString() + errors, StringComparison.Ordinal);
     }
 
@@ -61,17 +74,24 @@ public sealed class CSharp14ScriptingTests
         using var fixture = new CompilerFixture((
             root,
             serialization
-        ) => {
+        ) =>
+        {
             using FileStream stream = File.Create(Path.Combine(root, "Plugins", "language.iplugin"));
             using var archive = new ZipArchive(stream, ZipArchiveMode.Create);
             using (Stream manifest = archive.CreateEntry("Plugin.inno").Open())
-                manifest.Write(serialization.Serialize(new PluginManifest
-                {
-                    pluginId = "tests.csharp14",
-                    displayName = "CSharp14 source plugin"
-                }));
+            {
+                manifest.Write(
+                    serialization.Serialize(new PluginManifest
+                    {
+                        pluginId = "tests.csharp14",
+                        displayName = "CSharp14 source plugin"
+                    })
+                );
+            }
             using (Stream source = archive.CreateEntry("Assets/PluginLanguage.cs").Open())
-                source.Write(Encoding.UTF8.GetBytes("""
+            {
+                source.Write(
+                    Encoding.UTF8.GetBytes("""
                     namespace LanguagePlugin;
                     public sealed class Counter
                     {
@@ -84,14 +104,18 @@ public sealed class CSharp14ScriptingTests
                             public bool hasCount => counter.count > 0;
                         }
                     }
-                    """));
+                    """)
+                );
+            }
             using Stream metadata = archive.CreateEntry("Assets/PluginLanguage.cs.imeta").Open();
-            metadata.Write(serialization.Serialize(new ScriptingAssetSourceMeta
-            {
-                persistentId = Guid.NewGuid(),
-                sourceKind = (int)AssetSourceKind.File,
-                importerId = "inno.editor.csharp-script"
-            }));
+            metadata.Write(
+                serialization.Serialize(new ScriptingAssetSourceMeta
+                {
+                    persistentId = Guid.NewGuid(),
+                    sourceKind = (int)AssetSourceKind.File,
+                    importerId = "inno.editor.csharp-script"
+                })
+            );
         });
         fixture.Write("Consumer.cs", """
             using LanguagePlugin;
@@ -242,9 +266,15 @@ public sealed class CSharp14ScriptingTests
         using var errors = new StringWriter();
         try
         {
-            await ToolchainEnvironment.RunAsync(sdk.hostPath,
+            await ToolchainEnvironment.RunAsync(
+                sdk.hostPath,
                 [sdk.cliPath, "build", project, "--disable-build-servers", "-m:1", "-nr:false", "-v:quiet"],
-                directory, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath), output, errors);
+                directory,
+                CancellationToken.None,
+                DotNetSdkEnvironment.Create(sdk.hostPath),
+                output,
+                errors
+            );
             return output.ToString();
         }
         catch (InvalidOperationException failure)
@@ -263,7 +293,8 @@ public sealed class CSharp14ScriptingTests
             using var stream = new MemoryStream(File.ReadAllBytes(assemblyPath));
             Assembly assembly = lifetime.LoadFromStream(stream);
             Func<bool> evaluate = assembly.GetType("LanguageSemantics", throwOnError: true)!
-                .GetMethod("Evaluate", BindingFlags.Public | BindingFlags.Static)!.CreateDelegate<Func<bool>>();
+                .GetMethod("Evaluate", BindingFlags.Public | BindingFlags.Static)!
+                .CreateDelegate<Func<bool>>();
             Assert.True(evaluate());
         }
         finally
@@ -283,21 +314,30 @@ public sealed class CSharp14ScriptingTests
         using var fixture = new CompilerFixture(compilationEnvironment: environment);
         fixture.Write("Counter.cs", "public sealed class Counter { public int count { get; set; } }");
         fixture.Rescan();
-        string host = Path.Combine(Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
-            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
+        string host = Path.Combine(
+            Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
+            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
+        );
         ScriptCompilationInputs selected = new Inno.Build.SdkScriptCompilationEnvironment(host, fixture.projectRoot).Capture();
         string destination = Path.Combine(fixture.projectRoot, "Framework");
         Directory.CreateDirectory(destination);
         foreach (string path in selected.frameworkReferences)
+        {
             File.Copy(path, Path.Combine(destination, Path.GetFileName(path)));
-        environment.inputs = new ScriptCompilationInputs(selected.sdkIdentity,
-            Directory.EnumerateFiles(destination, "*.dll"), selected.predefinedSymbols);
+        }
+        environment.inputs = new ScriptCompilationInputs(
+            selected.sdkIdentity,
+            Directory.EnumerateFiles(destination, "*.dll"),
+            selected.predefinedSymbols
+        );
         ScriptCompilationResult first = fixture.Compile();
         Assert.True(first.success, string.Join(Environment.NewLine, first.diagnostics));
         string referenceRoot = Path.Combine(fixture.projectRoot, "Library", "ScriptApi", "Runtime");
         string[] references = Directory.GetDirectories(referenceRoot);
         using (FileStream changed = new(Path.Combine(destination, "System.Runtime.dll"), FileMode.Append))
+        {
             changed.WriteByte(0);
+        }
         ScriptCompilationResult second = fixture.Compile();
         Assert.True(second.success, string.Join(Environment.NewLine, second.diagnostics));
         Assert.NotEqual(first.outputDirectory, second.outputDirectory);
@@ -321,7 +361,8 @@ public sealed class CSharp14ScriptingTests
         try
         {
             XDocument document = XDocument.Parse(Encoding.UTF8.GetString(original));
-            XElement member = document.Root!.Element("members")!.Elements("member")
+            XElement member = document.Root!.Element("members")!
+                .Elements("member")
                 .Single(value => (string?)value.Attribute("name") == "T:Inno.Scene.SceneManager");
             member.SetElementValue("summary", "Documentation generation Alpha.");
             document.Save(source);
@@ -338,7 +379,8 @@ public sealed class CSharp14ScriptingTests
             Assert.NotEqual(first, second);
             Assert.Contains("generation Bravo.", File.ReadAllText(second), StringComparison.Ordinal);
             Assert.Equal(frozen, File.ReadAllBytes(first));
-            XElement origin = XDocument.Load(second).Root!.Element("provenance")!.Elements("type")
+            XElement origin = XDocument.Load(second).Root!.Element("provenance")!
+                .Elements("type")
                 .Single(value => (string?)value.Attribute("source") == "T:Inno.Scene.SceneManager");
             Assert.Equal("T:InnoEngine.Scene.SceneManager", (string?)origin.Attribute("id"));
         }
@@ -351,7 +393,8 @@ public sealed class CSharp14ScriptingTests
         string ReferenceDocumentation()
         {
             string project = Path.Combine(fixture.projectRoot, "Inno.GameScripts.csproj");
-            XElement reference = XDocument.Load(project).Descendants("Reference")
+            XElement reference = XDocument.Load(project)
+                .Descendants("Reference")
                 .Single(value => (string?)value.Attribute("Include") == "Inno.ScriptApi.Runtime");
             return Path.ChangeExtension(Path.GetFullPath(reference.Element("HintPath")!.Value, fixture.projectRoot), ".xml");
         }

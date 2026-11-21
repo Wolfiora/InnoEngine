@@ -25,8 +25,9 @@ public sealed class PanelLifecycle(
 ) : EditorModule
 {
     private const string C_RESOURCE_COLUMNS =
-        "managed-bytes-after-full-gc\tprivate-bytes\tselection-count\tscene-count\thistory-resident-bytes\thistory-disk-bytes\tpending-events" +
-        "\tgc-index\tgc-generation\tgc-compacted\tgc-concurrent\tgc-heap-bytes\tgc-fragmented-bytes\testimated-managed-bytes";
+        "managed-bytes-after-full-gc\tprivate-bytes\tselection-count\tscene-count\thistory-resident-bytes\thistory-disk-bytes\tpending-events"
+        + "\tgc-index\tgc-generation\tgc-compacted\tgc-concurrent\tgc-heap-bytes\tgc-fragmented-bytes\testimated-managed-bytes";
+
     private readonly List<string> m_resources = ["completed-cycles\t" + C_RESOURCE_COLUMNS];
     private readonly List<string> m_preparationResources = ["phase\t" + C_RESOURCE_COLUMNS];
     private string[] m_panels = [];
@@ -49,7 +50,9 @@ public sealed class PanelLifecycle(
     protected override void OnUpdate(EditorContext context)
     {
         if (m_completed)
+        {
             return;
+        }
         if (m_panels.Length == 0 && m_warmup++ < 20)
         {
             return;
@@ -57,17 +60,23 @@ public sealed class PanelLifecycle(
         if (m_panels.Length == 0)
         {
             if (workspace.scenes.Count == 0)
+            {
                 workspace.Open("FlappyBird/FlappyBird.iscene");
+            }
             m_panels = interactions.GetPanelDeclarations().Select(static panel => panel.id).Order(StringComparer.Ordinal).ToArray();
             if (m_panels.Length < 8)
+            {
                 throw new InvalidOperationException("The complete Editor product must expose its eight standard panels.");
+            }
             m_originalOpenStates = new bool[m_panels.Length];
             m_preparationResources.Add(CaptureResourceRow("before-first-panel-draw"));
             for (int index = 0; index < m_panels.Length; index++)
             {
                 string panel = m_panels[index];
                 if (!interactions.TryGetPanelState(panel, out m_originalOpenStates[index]) || !interactions.OpenPanel(panel))
+                {
                     throw new InvalidOperationException("The product could not open panel '" + panel + "' for preparation.");
+                }
             }
             m_preparationFrames = 120;
             return;
@@ -75,10 +84,16 @@ public sealed class PanelLifecycle(
         if (m_preparationFrames > 0)
         {
             if (--m_preparationFrames > 0)
+            {
                 return;
+            }
             foreach (string panel in m_panels)
+            {
                 if (!interactions.ClosePanel(panel))
+                {
                     throw new InvalidOperationException("The product could not close panel '" + panel + "' after preparation.");
+                }
+            }
             m_preparationResources.Add(CaptureResourceRow("after-120-drawn-frames"));
             return;
         }
@@ -86,29 +101,45 @@ public sealed class PanelLifecycle(
         foreach (string panel in m_panels)
         {
             if (!interactions.TryGetPanelState(panel, out bool isOpen) || isOpen != expectedOpen)
+            {
                 throw new InvalidOperationException("Panel state or native drawing failed for '" + panel + "' at cycle " + m_cycles + ".");
+            }
         }
         if (expectedOpen)
+        {
             m_cycles++;
+        }
         else
         {
             VerifyDocumentState();
             if (m_cycles % 10 == 0)
+            {
                 CaptureResources();
+            }
         }
         if (m_cycles == m_requiredCycles && !expectedOpen)
         {
             for (int index = 0; index < m_panels.Length; index++)
             {
-                bool restored = m_originalOpenStates[index] ? interactions.OpenPanel(m_panels[index]) : interactions.ClosePanel(m_panels[index]);
+                bool restored = m_originalOpenStates[index]
+                                ? interactions.OpenPanel(m_panels[index])
+                                : interactions.ClosePanel(m_panels[index]);
                 if (!restored)
+                {
                     throw new InvalidOperationException("The product could not restore panel '" + m_panels[index] + "'.");
+                }
             }
             string directory = Path.Combine(context.projectDirectory, "Library", "Acceptance");
             Directory.CreateDirectory(directory);
-            File.WriteAllLines(Path.Combine(directory, "panel-lifecycle.tsv"),
+            File.WriteAllLines(
+                Path.Combine(directory, "panel-lifecycle.tsv"),
                 new[] { "panel\tcompleted-open-close-cycles", "protocol\tpublic EditorInteractions / actual product drawing" }
-                    .Concat(m_panels.Select(panel => panel + "\t" + m_requiredCycles.ToString(System.Globalization.CultureInfo.InvariantCulture))));
+                    .Concat(
+                        m_panels.Select(
+                            panel => panel + "\t" + m_requiredCycles.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                        )
+                    )
+            );
             File.WriteAllLines(Path.Combine(directory, "panel-lifecycle-resources.tsv"), m_resources);
             File.WriteAllLines(Path.Combine(directory, "panel-lifecycle-preparation.tsv"), m_preparationResources);
             string completion = Path.Combine(directory, "journey-completed.txt");
@@ -121,7 +152,9 @@ public sealed class PanelLifecycle(
         {
             bool changed = expectedOpen ? interactions.ClosePanel(panel) : interactions.OpenPanel(panel);
             if (!changed)
+            {
                 throw new InvalidOperationException("The panel protocol rejected '" + panel + "'.");
+            }
         }
     }
 
@@ -138,10 +171,14 @@ public sealed class PanelLifecycle(
             m_sceneCount = workspace.scenes.Count;
             m_baselineCaptured = true;
         }
-        if (history.isFaulted || history.undoName != m_undoName || history.redoName != m_redoName ||
-            history.residentBytes != m_historyResidentBytes || history.diskBytes != m_historyDiskBytes ||
-            interactions.selection.count != m_selectionCount || workspace.scenes.Count != m_sceneCount)
-            throw new InvalidOperationException("Window-only lifecycle operations changed Edit selection, scenes or committed History state.");
+        if (history.isFaulted || history.undoName != m_undoName || history.redoName != m_redoName
+            || history.residentBytes != m_historyResidentBytes || history.diskBytes != m_historyDiskBytes
+            || interactions.selection.count != m_selectionCount || workspace.scenes.Count != m_sceneCount
+        ) {
+            throw new InvalidOperationException(
+                "Window-only lifecycle operations changed Edit selection, scenes or committed History state."
+            );
+        }
     }
 
     private void CaptureResources()
@@ -151,8 +188,10 @@ public sealed class PanelLifecycle(
     {
         string value = Environment.GetEnvironmentVariable("INNO_ACCEPTANCE_PANEL_CYCLES") ?? "100";
         if (!int.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out int cycles)
-            || cycles < 100 || cycles > 10000 || cycles % 10 != 0)
+            || cycles < 100 || cycles > 10000 || cycles % 10 != 0
+        ) {
             throw new InvalidOperationException("The lifecycle acceptance requires 100–10000 cycles in ten-cycle intervals.");
+        }
         return cycles;
     }
 
@@ -160,7 +199,12 @@ public sealed class PanelLifecycle(
     {
         ManagedMemorySample memory = ManagedMemorySample.Capture();
         using Process process = Process.GetCurrentProcess();
-        string state = FormattableString.Invariant($"{observation}\t{memory.liveBytes}\t{process.PrivateMemorySize64}\t{interactions.selection.count}\t{workspace.scenes.Count}\t{interactions.history.residentBytes}\t{interactions.history.diskBytes}\t{interactions.events.pendingCount}");
-        return state + FormattableString.Invariant($"\t{memory.collectionIndex}\t{memory.generation}\t{memory.compacted}\t{memory.concurrent}\t{memory.heapBytes}\t{memory.fragmentedBytes}\t{memory.estimatedBytes}");
+        string state = FormattableString.Invariant(
+            $"{observation}\t{memory.liveBytes}\t{process.PrivateMemorySize64}\t{interactions.selection.count}\t{workspace.scenes.Count}\t{interactions.history.residentBytes}\t{interactions.history.diskBytes}\t{interactions.events.pendingCount}"
+        );
+        return state
+            + FormattableString.Invariant(
+                $"\t{memory.collectionIndex}\t{memory.generation}\t{memory.compacted}\t{memory.concurrent}\t{memory.heapBytes}\t{memory.fragmentedBytes}\t{memory.estimatedBytes}"
+            );
     }
 }

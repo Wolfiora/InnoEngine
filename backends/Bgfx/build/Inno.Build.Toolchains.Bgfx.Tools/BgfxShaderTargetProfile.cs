@@ -32,10 +32,16 @@ public sealed class BgfxShaderTargetProfile
         ArgumentNullException.ThrowIfNull(renderers);
         var snapshot = new Dictionary<GraphicsApi, BgfxShaderCompilerProfile>();
         foreach (BgfxShaderCompilerProfile renderer in renderers)
+        {
             if (renderer is null || !snapshot.TryAdd(renderer.capabilities.backend, renderer))
+            {
                 throw new ArgumentException("Shader renderers must be non-null and unique.", nameof(renderers));
+            }
+        }
         if (snapshot.Count == 0)
+        {
             throw new ArgumentException("A shader target requires at least one renderer.", nameof(renderers));
+        }
         this.id = id;
         m_renderers = new ReadOnlyDictionary<GraphicsApi, BgfxShaderCompilerProfile>(snapshot);
     }
@@ -58,15 +64,18 @@ public sealed class BgfxShaderTargetProfile
     /// The target has no configuration for this API.
     /// </exception>
     public BgfxShaderCompilerProfile Resolve(GraphicsApi backend)
-        => m_renderers.TryGetValue(backend, out BgfxShaderCompilerProfile? renderer) ? renderer
-            : throw new NotSupportedException($"Shader target '{id}' has no renderer profile for '{backend}'.");
+        => m_renderers.TryGetValue(backend, out BgfxShaderCompilerProfile? renderer)
+           ? renderer
+           : throw new NotSupportedException($"Shader target '{id}' has no renderer profile for '{backend}'.");
 
     internal BgfxShaderCompilerProfile Resolve(GraphicsCapabilities capabilities)
     {
         ArgumentNullException.ThrowIfNull(capabilities);
         BgfxShaderCompilerProfile renderer = Resolve(capabilities.backend);
         if (capabilities.Supports(GraphicsCapability.Compute) && renderer.computeProfile.Length == 0)
+        {
             throw new NotSupportedException($"Shader target '{id}' does not support compute.");
+        }
         return renderer;
     }
 

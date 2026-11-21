@@ -1,6 +1,6 @@
+using System;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
-using System;
 
 namespace Inno.Rendering.Runtime;
 
@@ -74,4 +74,3 @@ public interface IRenderTargetArtifactProvider
         out ReadOnlyMemory<byte> artifact
     );
 }
-

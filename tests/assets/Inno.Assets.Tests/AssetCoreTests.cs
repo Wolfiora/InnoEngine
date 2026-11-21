@@ -1,14 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Collections.Generic;
-
-using Inno.Assets;
-using Inno.Extensibility.Types;
-using Inno.Core.Execution;
-using Inno.References;
-
 using Xunit;
+using Inno.Assets;
+using Inno.Core.Execution;
+using Inno.Extensibility.Types;
+using Inno.References;
 
 namespace Inno.Assets.Tests;
 
@@ -19,7 +17,8 @@ public sealed class AssetCoreTests
     {
         IReferenceResolver resolver = new PendingResolver();
         Assert.Throws<RetirementPendingException>(() => resolver.Resolve(
-            new ReferenceDescriptor(AssetReferenceProtocol.id, Guid.NewGuid(), Guid.Empty)));
+            new ReferenceDescriptor(AssetReferenceProtocol.id, Guid.NewGuid(), Guid.Empty)
+        ));
     }
 
     [Fact]
@@ -131,21 +130,27 @@ public sealed class AssetCoreTests
             Guid.NewGuid(),
             new AssetArtifactKey(new string('A', 64)),
             new AssetArtifactKey(new string('B', 64)),
-            new[] { "diagnostic" });
+            new[] { "diagnostic" }
+        );
 
         Assert.Equal(id, info.persistentId);
         Assert.Equal(AssetSourceKind.File, info.sourceKind);
         Assert.Equal(AssetImportStatus.Imported, info.status);
         Assert.All(
             typeof(AssetInfo).GetProperties(BindingFlags.Instance | BindingFlags.Public),
-            static property => Assert.Null(property.SetMethod));
+            static property => Assert.Null(property.SetMethod)
+        );
     }
 
     private sealed class PendingResolver : IAssetReferenceResolver
     {
-        public AssetObject Resolve(Guid persistentId, Guid stableTypeId, string lastKnownPath,
-            Type expectedType, string propertyPath)
-            => throw new RetirementPendingException("The asset generation is still retiring.");
+        public AssetObject Resolve(
+            Guid persistentId,
+            Guid stableTypeId,
+            string lastKnownPath,
+            Type expectedType,
+            string propertyPath
+        ) => throw new RetirementPendingException("The asset generation is still retiring.");
     }
 
     [Fact]
@@ -156,7 +161,8 @@ public sealed class AssetCoreTests
             AssetChangeKind.Moved,
             id,
             AssetPath.Project("B/value.txt"),
-            AssetPath.Project("A/value.txt"));
+            AssetPath.Project("A/value.txt")
+        );
         var set = new AssetChangeSet(42, new List<AssetChange> { change });
 
         Assert.Equal(42, set.revision);

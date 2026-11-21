@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Inno.Tooling.Architecture;
 using Inno.Tooling.Validation;
+
 using DocumentationCommand = Inno.Tooling.Documentation.DocumentationCommand;
 
 namespace Inno.Build.Cli;
@@ -34,10 +35,17 @@ public static partial class BuildApplication
         ArgumentNullException.ThrowIfNull(arguments);
         if (arguments.Length == 0 || arguments[0] is "help" or "--help" or "-h")
         {
-            Console.WriteLine("InnoEngine.Build <docs|validate|native-dependencies|support|editor|clean|bindings|support-pack|game|plugin|scripts|import-sample|verify|verify-native|shader> [options]");
+            Console.WriteLine(
+                "InnoEngine.Build <docs|validate|native-dependencies|support|editor|clean|bindings|support-pack|game|plugin|scripts|import-sample|verify|style|verify-native|shader> [options]"
+            );
             Console.WriteLine("Default entry command: support --product editor (current SDK host and entry configuration).");
-            Console.WriteLine("support --product editor|player --target TARGET: prepare reusable target support without building the Editor's managed source.");
+            Console.WriteLine(
+                "support --product editor|player --target TARGET: prepare reusable target support without building the Editor's managed source."
+            );
             Console.WriteLine("editor [--clean]: build the complete Editor entry and its dependencies.");
+            Console.WriteLine(
+                "style check|fix ROOT [--rule ID]... [--paths-from FILE] [--report FILE]: check handwritten C# against the style rulebook or apply its automatic fixes."
+            );
             return 0;
         }
         try
@@ -54,19 +62,33 @@ public static partial class BuildApplication
                     return await ProjectBuildWorkflow.RunAsync(arguments, cancellationToken);
                 case "verify":
                     return ArchitectureValidator.Execute(options, cancellationToken);
+                case "style":
+                    return StyleCommand.Execute(options);
                 case "docs":
                     if (options.Length != 0 && options[0] == "export-plan")
+                    {
                         return await DocumentationReferences.PlanExportAsync(options[1..], cancellationToken);
+                    }
                     if (options.Length != 0 && options[0] == "export-projects")
+                    {
                         return DocumentationReferences.ExportProjects(options[1..], cancellationToken);
+                    }
                     if (options.Length > 0 && options[0] == "export-api")
+                    {
                         return DocumentationReferences.ExportApi(options[1..], cancellationToken);
+                    }
                     if (options.Length > 0 && options[0] == "validate-api")
+                    {
                         return await DocumentationReferences.ValidateApiAsync(options[1..], cancellationToken);
+                    }
                     if (options.Length > 0 && options[0] == "validate-examples")
+                    {
                         return await DocumentationExamples.ExecuteAsync(options[1..], cancellationToken);
+                    }
                     if (options.Length > 0 && options[0] == "example-plan")
+                    {
                         return await DocumentationExamples.ExecuteAsync([..options[1..], "--operation", "plan"], cancellationToken);
+                    }
                     return await DocumentationCommand.ExecuteAsync(options, cancellationToken);
                 case "validate":
                     return await ValidationCommand.ExecuteAsync(options, cancellationToken);
@@ -91,8 +113,18 @@ public static partial class BuildApplication
                         "shader" => ["assets", "shader", "renderer", "output"],
                         _ => []
                     };
-                    parsed.Validate(["engine-root", "dotnet", "target", "tools-target", "configuration",
-                        "cache-budget-gib", "cache-min-free-gib", "cache-time-seconds", "native-dependencies", ..specific]);
+                    parsed.Validate([
+                        "engine-root",
+                        "dotnet",
+                        "target",
+                        "tools-target",
+                        "configuration",
+                        "cache-budget-gib",
+                        "cache-min-free-gib",
+                        "cache-time-seconds",
+                        "native-dependencies",
+                        ..specific
+                    ]);
                     var context = new BuildCommandContext(parsed);
                     switch (command)
                     {

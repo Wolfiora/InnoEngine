@@ -43,26 +43,39 @@ public sealed class ShaderGraphLoweringRequest
         ArgumentNullException.ThrowIfNull(outputs);
         ArgumentException.ThrowIfNullOrWhiteSpace(implementationId);
         foreach (string name in outputs.Keys)
+        {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        }
         this.graph = graph.Clone();
-        this.outputs = new ReadOnlyDictionary<string, GraphEndpoint>(new Dictionary<string, GraphEndpoint>(outputs, StringComparer.Ordinal));
+        this.outputs = new ReadOnlyDictionary<string, GraphEndpoint>(
+            new Dictionary<string, GraphEndpoint>(outputs, StringComparer.Ordinal)
+        );
         this.implementationId = implementationId;
-        this.sourceModules = new ReadOnlyDictionary<GraphNodeId, ShaderSourceModuleAnalysis>(new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis>(sourceModules ?? new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis>()));
-        this.stageInputs = new ReadOnlyDictionary<GraphNodeId, ShaderIrStageInput>(new Dictionary<GraphNodeId, ShaderIrStageInput>(stageInputs ?? new Dictionary<GraphNodeId, ShaderIrStageInput>()));
+        this.sourceModules = new ReadOnlyDictionary<GraphNodeId, ShaderSourceModuleAnalysis>(
+            new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis>(
+                sourceModules ?? new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis>()
+            )
+        );
+        this.stageInputs = new ReadOnlyDictionary<GraphNodeId, ShaderIrStageInput>(
+            new Dictionary<GraphNodeId, ShaderIrStageInput>(stageInputs ?? new Dictionary<GraphNodeId, ShaderIrStageInput>())
+        );
     }
 
     /// <summary>
     /// Gets named region outputs by stable graph endpoint.
     /// </summary>
     public IReadOnlyDictionary<string, GraphEndpoint> outputs { get; }
+
     /// <summary>
     /// Gets the exact implementation key selected by the target.
     /// </summary>
     public string implementationId { get; }
+
     /// <summary>
     /// Gets frozen source modules, including unavailable/failed modules for accurate diagnostics.
     /// </summary>
     public IReadOnlyDictionary<GraphNodeId, ShaderSourceModuleAnalysis> sourceModules { get; }
+
     /// <summary>
     /// Gets target-assigned input descriptors; they contain no native expressions.
     /// </summary>
@@ -107,14 +120,17 @@ public sealed class ShaderGraphLoweringResult
         this.block = block;
         this.diagnostics = Array.AsReadOnly(diagnostics.ToArray());
     }
+
     /// <summary>
     /// Gets the immutable typed region, or null on failure.
     /// </summary>
     public ShaderIrBlock? block { get; }
+
     /// <summary>
     /// Gets located graph diagnostics, including missing definitions and stale source ports.
     /// </summary>
     public IReadOnlyList<ShaderGraphDiagnostic> diagnostics { get; }
+
     /// <summary>
     /// Gets whether lowering produced a complete region without errors; native compilation is a separate gate.
     /// </summary>

@@ -1,16 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Linq;
-using System.Collections.Generic;
-using System.Text.Json;
 using System.Security;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Testing.Source;
-using Xunit;
 
 namespace Inno.Tooling.Architecture.Tests;
 
@@ -40,24 +40,43 @@ public sealed class TestRepositoryInputsTests
             string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
             var arguments = new List<string>
             {
-                "msbuild", project, "-nologo", "-nr:false", "-t:GetAssemblyAttributes",
-                "-getProperty:ArtifactsPath", "-getItem:AssemblyAttribute",
+                "msbuild",
+                project,
+                "-nologo",
+                "-nr:false",
+                "-t:GetAssemblyAttributes",
+                "-getProperty:ArtifactsPath",
+                "-getItem:AssemblyAttribute",
                 "-p:UseArtifactsOutput=" + useArtifacts.ToString().ToLowerInvariant()
             };
             if (explicitOwner)
+            {
                 arguments.Add("-p:ArtifactsPath=" + Path.Combine(root, "independent"));
+            }
             using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(1));
-            string output = await ToolchainEnvironment.CaptureOutputAsync(dotnet, arguments,
-                root, timeout.Token, DotNetSdkEnvironment.Create(dotnet));
+            string output = await ToolchainEnvironment.CaptureOutputAsync(
+                dotnet,
+                arguments,
+                root,
+                timeout.Token,
+                DotNetSdkEnvironment.Create(dotnet)
+            );
             using JsonDocument result = JsonDocument.Parse(output);
             string? artifacts = result.RootElement.GetProperty("Properties").GetProperty("ArtifactsPath").GetString();
-            JsonElement[] declarations = result.RootElement.GetProperty("Items").GetProperty("AssemblyAttribute").EnumerateArray()
-                .Where(item => item.TryGetProperty("_Parameter1", out var key) && key.GetString() == "Inno.Testing.ArtifactsPath").ToArray();
+            JsonElement[] declarations = result.RootElement.GetProperty("Items")
+                .GetProperty("AssemblyAttribute")
+                .EnumerateArray()
+                .Where(item => item.TryGetProperty("_Parameter1", out var key) && key.GetString() == "Inno.Testing.ArtifactsPath")
+                .ToArray();
             if (useArtifacts)
             {
                 Assert.False(string.IsNullOrWhiteSpace(artifacts));
-                Assert.Equal(Path.GetFullPath(artifacts!), Path.TrimEndingDirectorySeparator(
-                    Assert.Single(declarations).GetProperty("_Parameter2").GetString()!));
+                Assert.Equal(
+                    Path.GetFullPath(artifacts!),
+                    Path.TrimEndingDirectorySeparator(
+                        Assert.Single(declarations).GetProperty("_Parameter2").GetString()!
+                    )
+                );
             }
             else
             {
@@ -94,10 +113,14 @@ public sealed class TestRepositoryInputsTests
     private static Assembly CreateAssembly(params string[] owners)
     {
         AssemblyBuilder assembly = AssemblyBuilder.DefineDynamicAssembly(
-            new AssemblyName("RepositoryInputs." + Guid.NewGuid().ToString("N")), AssemblyBuilderAccess.RunAndCollect);
+            new AssemblyName("RepositoryInputs." + Guid.NewGuid().ToString("N")),
+            AssemblyBuilderAccess.RunAndCollect
+        );
         ConstructorInfo constructor = typeof(AssemblyMetadataAttribute).GetConstructor([typeof(string), typeof(string)])!;
         foreach (string owner in owners)
+        {
             assembly.SetCustomAttribute(new CustomAttributeBuilder(constructor, ["Inno.Testing.ArtifactsPath", owner]));
+        }
         return assembly;
     }
 }

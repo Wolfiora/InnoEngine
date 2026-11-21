@@ -80,8 +80,7 @@ public abstract class InspectionDrawer<TTarget> : IInspectionDrawer
     protected virtual void DrawHeader(
         InspectionDrawContext context,
         TTarget target
-    ) {
-    }
+    ) {}
 
     /// <summary>
     /// Draws the target-specific Inspector body below the shared target header.
@@ -97,25 +96,22 @@ public abstract class InspectionDrawer<TTarget> : IInspectionDrawer
         TTarget target
     );
 
-    string IInspectionDrawer.GetIcon(InspectionDrawContext context)
-        => GetIcon(context, GetTarget(context));
+    string IInspectionDrawer.GetIcon(InspectionDrawContext context) => GetIcon(context, GetTarget(context));
 
-    (string name, Action<string>? setter) IInspectionDrawer.BindName(
-        InspectionDrawContext context)
+    (string name, Action<string>? setter) IInspectionDrawer.BindName(InspectionDrawContext context)
         => BindName(context, GetTarget(context));
 
-    void IInspectionDrawer.DrawHeader(InspectionDrawContext context)
-        => DrawHeader(context, GetTarget(context));
+    void IInspectionDrawer.DrawHeader(InspectionDrawContext context) => DrawHeader(context, GetTarget(context));
 
-    void IInspectionDrawer.Draw(InspectionDrawContext context)
-        => Draw(context, GetTarget(context));
+    void IInspectionDrawer.Draw(InspectionDrawContext context) => Draw(context, GetTarget(context));
 
     private static TTarget GetTarget(InspectionDrawContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
         return context.target as TTarget ?? throw new InvalidOperationException(
-            $"Inspector drawer for '{typeof(TTarget).FullName}' cannot draw target " +
-            $"'{context.target.GetType().FullName}'.");
+            $"Inspector drawer for '{typeof(TTarget).FullName}' cannot draw target "
+            + $"'{context.target.GetType().FullName}'."
+        );
     }
 }
 

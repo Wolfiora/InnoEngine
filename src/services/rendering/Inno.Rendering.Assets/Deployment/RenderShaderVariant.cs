@@ -1,8 +1,8 @@
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
@@ -36,9 +36,11 @@ public readonly struct RenderShaderVariant : IEquatable<RenderShaderVariant>
             ValidatePart(option, nameof(options));
         }
 
-        m_options = new ReadOnlyDictionary<string, string>(options
-            .OrderBy(static value => value.Key, StringComparer.Ordinal)
-            .ToDictionary(static value => value.Key, static value => value.Value, StringComparer.Ordinal));
+        m_options = new ReadOnlyDictionary<string, string>(
+            options
+                .OrderBy(static value => value.Key, StringComparer.Ordinal)
+                .ToDictionary(static value => value.Key, static value => value.Value, StringComparer.Ordinal)
+        );
         m_value = string.Join(";", m_options.Select(static pair => $"{pair.Key}={pair.Value}"));
     }
 
@@ -73,23 +75,31 @@ public readonly struct RenderShaderVariant : IEquatable<RenderShaderVariant>
     {
         ArgumentNullException.ThrowIfNull(value);
         if (value.Length == 0)
+        {
             return empty;
+        }
 
         var options = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (string selection in value.Split(';', StringSplitOptions.None))
         {
             int separator = selection.IndexOf('=', StringComparison.Ordinal);
             if (separator <= 0 || separator == selection.Length - 1 || selection.IndexOf('=', separator + 1) >= 0)
+            {
                 throw new FormatException($"Shader variant selection '{selection}' is malformed.");
+            }
             string keyword = selection[..separator];
             string option = selection[(separator + 1)..];
             if (!options.TryAdd(keyword, option))
+            {
                 throw new FormatException($"Shader variant repeats keyword '{keyword}'.");
+            }
         }
 
         var result = new RenderShaderVariant(options);
         if (!string.Equals(result.value, value, StringComparison.Ordinal))
+        {
             throw new FormatException("Shader variant selections are not in canonical order.");
+        }
         return result;
     }
 
@@ -109,9 +119,9 @@ public readonly struct RenderShaderVariant : IEquatable<RenderShaderVariant>
     {
         ArgumentNullException.ThrowIfNull(material);
         ShaderAsset shader = material.shader
-            ?? throw new InvalidOperationException($"Material '{material.assetPath}' has no shader reference.");
+                             ?? throw new InvalidOperationException($"Material '{material.assetPath}' has no shader reference.");
         ShaderDefinition definition = shader.definition
-            ?? throw new InvalidOperationException($"Shader '{shader.assetPath}' has no committed definition.");
+                                      ?? throw new InvalidOperationException($"Shader '{shader.assetPath}' has no committed definition.");
         return FromMaterial(material, definition);
     }
 
@@ -137,7 +147,9 @@ public readonly struct RenderShaderVariant : IEquatable<RenderShaderVariant>
         ArgumentNullException.ThrowIfNull(material);
         ArgumentNullException.ThrowIfNull(definition);
         if (material.keywords.Count == 0)
+        {
             return empty;
+        }
         HashSet<string> enabled = material.keywords.ToHashSet(StringComparer.Ordinal);
         var selections = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (ShaderKeywordDefinition keyword in definition.keywords)
@@ -146,18 +158,20 @@ public readonly struct RenderShaderVariant : IEquatable<RenderShaderVariant>
             if (selected.Length > 1)
             {
                 throw new InvalidOperationException(
-                    $"Material '{material.assetPath}' selects multiple options for keyword '{keyword.id}'.");
+                    $"Material '{material.assetPath}' selects multiple options for keyword '{keyword.id}'."
+                );
             }
             if (selected.Length == 1)
+            {
                 selections.Add(keyword.id, selected[0]);
+            }
         }
 
         string? unknown = enabled.FirstOrDefault(option => !definition.keywords.Any(keyword =>
             keyword.options.Contains(option, StringComparer.Ordinal)));
         if (unknown is not null)
         {
-            throw new InvalidOperationException(
-                $"Material '{material.assetPath}' enables unknown option '{unknown}'.");
+            throw new InvalidOperationException($"Material '{material.assetPath}' enables unknown option '{unknown}'.");
         }
         return new RenderShaderVariant(selections);
     }
@@ -242,8 +256,8 @@ public readonly struct RenderShaderVariant : IEquatable<RenderShaderVariant>
         {
             throw new ArgumentException(
                 "Shader variant identifiers and options must be non-empty and cannot contain ';' or '='.",
-                parameterName);
+                parameterName
+            );
         }
     }
 }
-

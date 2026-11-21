@@ -28,14 +28,17 @@ public sealed class ShaderSourceType
     /// Gets the open semantic type identifier, independent of source-language spelling.
     /// </summary>
     public string id { get; }
+
     /// <summary>
     /// Gets the array element type, or null for a non-array value.
     /// </summary>
     public ShaderSourceType? elementType { get; }
+
     /// <summary>
     /// Gets the fixed array length, or zero for a non-array value.
     /// </summary>
     public int elementCount { get; }
+
     /// <summary>
     /// Gets immutable structure fields in declaration order.
     /// </summary>
@@ -91,7 +94,9 @@ public sealed class ShaderSourceType
         ArgumentNullException.ThrowIfNull(element);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count);
         if (element.id == "void" || element.storage is not null)
+        {
             throw new ArgumentException("An array cannot contain void values or opaque storage bindings.", nameof(element));
+        }
         return new("array", element, count, []);
     }
 
@@ -116,11 +121,15 @@ public sealed class ShaderSourceType
     ) {
         ArgumentNullException.ThrowIfNull(fields);
         if (id == "void")
+        {
             throw new ArgumentException("Void is reserved for the absence of a return value.", nameof(id));
+        }
         ShaderSourceField[] snapshot = fields.ToArray();
-        if (snapshot.Length == 0 || snapshot.Any(static field => field is null) ||
-            snapshot.Select(static field => field.name).Distinct(StringComparer.Ordinal).Count() != snapshot.Length)
+        if (snapshot.Length == 0 || snapshot.Any(static field => field is null)
+            || snapshot.Select(static field => field.name).Distinct(StringComparer.Ordinal).Count() != snapshot.Length
+        ) {
             throw new ArgumentException("A structure requires unique named fields.", nameof(fields));
+        }
         return new(id, null, 0, snapshot);
     }
 
@@ -136,15 +145,25 @@ public sealed class ShaderSourceType
     public bool IsEquivalentTo(ShaderSourceType? other)
     {
         if (other is null || id != other.id || elementCount != other.elementCount || fields.Count != other.fields.Count)
+        {
             return false;
+        }
         if ((storage is null) != (other.storage is null) || storage is not null && !storage.IsEquivalentTo(other.storage))
+        {
             return false;
-        if ((elementType is null) != (other.elementType is null) ||
-            elementType is not null && !elementType.IsEquivalentTo(other.elementType))
+        }
+        if ((elementType is null) != (other.elementType is null)
+            || elementType is not null && !elementType.IsEquivalentTo(other.elementType)
+        ) {
             return false;
+        }
         for (int i = 0; i < fields.Count; i++)
+        {
             if (fields[i].name != other.fields[i].name || !fields[i].type.IsEquivalentTo(other.fields[i].type))
+            {
                 return false;
+            }
+        }
         return true;
     }
 }
@@ -172,14 +191,18 @@ public sealed class ShaderSourceField
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         if (type?.id == "void" || type?.storage is not null)
+        {
             throw new ArgumentException("A structure field cannot have void type or contain an opaque storage binding.", nameof(type));
+        }
         this.name = name;
         this.type = type ?? throw new ArgumentNullException(nameof(type));
     }
+
     /// <summary>
     /// Gets the public field name.
     /// </summary>
     public string name { get; }
+
     /// <summary>
     /// Gets the complete field type.
     /// </summary>

@@ -1,10 +1,10 @@
-using Inno.Adapter.Platform;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using Inno.Adapter.Platform;
 using Inno.Native.Bgfx;
 using Inno.Platform;
 using Inno.Rendering;
@@ -52,7 +52,8 @@ sealed unsafe partial class BgfxDevice
                     checked((uint)m_backbufferWidth),
                     checked((uint)m_backbufferHeight),
                     m_resetFlags,
-                    bgfx.TextureFormat.Count);
+                    bgfx.TextureFormat.Count
+                );
             }
         }
 
@@ -124,9 +125,13 @@ sealed unsafe partial class BgfxDevice
         EnsureApiThread();
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (size is RenderPresentationSize assigned && !assigned.isValid)
+        {
             throw new ArgumentException("A primary presentation extent must have positive pixel dimensions.", nameof(size));
+        }
         if (size.HasValue && !m_hasPrimarySurface)
+        {
             throw new NotSupportedException("A windowless BGFX device has no primary presentation surface.");
+        }
         m_pendingPresentationSize = size;
         m_presentationUpdatePending = true;
     }
@@ -143,10 +148,12 @@ sealed unsafe partial class BgfxDevice
         EnsureApiThread();
         ObjectDisposedException.ThrowIf(m_disposed, this);
         uint next = enabled
-            ? m_resetFlags | (uint)bgfx.ResetFlags.Vsync
-            : m_resetFlags & ~(uint)bgfx.ResetFlags.Vsync;
+                    ? m_resetFlags | (uint)bgfx.ResetFlags.Vsync
+                    : m_resetFlags & ~(uint)bgfx.ResetFlags.Vsync;
         if (next == m_resetFlags)
+        {
             return;
+        }
         m_resetFlags = next;
         m_resetPending = true;
     }
@@ -160,5 +167,4 @@ sealed unsafe partial class BgfxDevice
 
         m_nextViewId = 0;
     }
-
 }

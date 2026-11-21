@@ -40,7 +40,9 @@ public sealed class ToolchainWorkingDirectoryTests : IDisposable
         next.Dispose();
         next.Dispose();
         if (OperatingSystem.IsWindows())
+        {
             Assert.False(Directory.Exists(execution));
+        }
     }
 
     [Fact]
@@ -85,16 +87,19 @@ public sealed class ToolchainWorkingDirectoryTests : IDisposable
     public async Task OccupiedAliasFailsWithoutRemovingTheOccupantAndReleasesOwnership()
     {
         if (!OperatingSystem.IsWindows())
+        {
             return;
+        }
         string physical = Path.Combine(m_root, "Occupied");
         string alias;
         using (ToolchainWorkingDirectory owner = await CreateProvider().OpenAsync(physical))
+        {
             alias = owner.toolPath;
+        }
         Directory.CreateDirectory(alias);
         try
         {
-            await Assert.ThrowsAsync<IOException>(async () =>
-                await CreateProvider().OpenAsync(physical));
+            await Assert.ThrowsAsync<IOException>(async () => await CreateProvider().OpenAsync(physical));
             Assert.Null(new DirectoryInfo(alias).LinkTarget);
         }
         finally
@@ -120,12 +125,16 @@ public sealed class ToolchainWorkingDirectoryTests : IDisposable
         Assert.Equal("retained", File.ReadAllText(Path.Combine(physical, "output.txt")));
     }
 
-    private static IToolchainWorkspaceProvider CreateProvider() => OperatingSystem.IsWindows()
-        ? new WindowsToolchainWorkspaceProvider() : new PhysicalToolchainWorkspaceProvider();
+    private static IToolchainWorkspaceProvider CreateProvider()
+        => OperatingSystem.IsWindows()
+           ? new WindowsToolchainWorkspaceProvider()
+           : new PhysicalToolchainWorkspaceProvider();
 
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 }

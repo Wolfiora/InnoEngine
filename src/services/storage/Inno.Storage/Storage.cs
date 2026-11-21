@@ -1,8 +1,8 @@
-using Inno.Core.Execution;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.Execution;
 
 namespace Inno.Storage;
 
@@ -35,7 +35,6 @@ public static class StorageExecutionContext
         ArgumentNullException.ThrowIfNull(storage);
         return S_CURRENT_SCOPE.Enter(storage);
     }
-
 }
 
 /// <summary>
@@ -58,8 +57,7 @@ public static class Storage
     public static ValueTask<bool> ExistsAsync(
         StorageKey key,
         CancellationToken cancellationToken = default
-    )
-        => StorageExecutionContext.current.ExistsAsync(key, cancellationToken);
+    ) => StorageExecutionContext.current.ExistsAsync(key, cancellationToken);
 
     /// <summary>
     /// Reads a complete value.
@@ -76,8 +74,7 @@ public static class Storage
     public static ValueTask<byte[]?> ReadAsync(
         StorageKey key,
         CancellationToken cancellationToken = default
-    )
-        => StorageExecutionContext.current.ReadAsync(key, cancellationToken);
+    ) => StorageExecutionContext.current.ReadAsync(key, cancellationToken);
 
     /// <summary>
     /// Atomically replaces a complete value.
@@ -98,8 +95,7 @@ public static class Storage
         StorageKey key,
         ReadOnlyMemory<byte> value,
         CancellationToken cancellationToken = default
-    )
-        => StorageExecutionContext.current.WriteAsync(key, value, cancellationToken);
+    ) => StorageExecutionContext.current.WriteAsync(key, value, cancellationToken);
 
     /// <summary>
     /// Deletes one value.
@@ -116,8 +112,7 @@ public static class Storage
     public static ValueTask<bool> DeleteAsync(
         StorageKey key,
         CancellationToken cancellationToken = default
-    )
-        => StorageExecutionContext.current.DeleteAsync(key, cancellationToken);
+    ) => StorageExecutionContext.current.DeleteAsync(key, cancellationToken);
 
     /// <summary>
     /// Lists keys below an optional prefix.
@@ -134,6 +129,5 @@ public static class Storage
     public static ValueTask<IReadOnlyList<StorageKey>> ListAsync(
         StorageKey? prefix = null,
         CancellationToken cancellationToken = default
-    )
-        => StorageExecutionContext.current.ListAsync(prefix, cancellationToken);
+    ) => StorageExecutionContext.current.ListAsync(prefix, cancellationToken);
 }

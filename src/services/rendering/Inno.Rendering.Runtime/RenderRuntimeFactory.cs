@@ -1,7 +1,6 @@
-using Inno.Runtime.Contracts;
 using System;
-
 using Inno.Runtime;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Rendering.Runtime;
 
@@ -29,7 +28,8 @@ public sealed class RenderRuntimeFactory : IRuntimeSubsystemFactory
     public RuntimeSubsystemDescriptor descriptor { get; } = new(
         new RuntimeSubsystemId("inno.runtime.rendering"),
         order: 1000,
-        lifetime: RuntimeSubsystemLifetime.Host);
+        lifetime: RuntimeSubsystemLifetime.Host
+    );
 
     /// <summary>
     /// Creates a rendering feature over a newly allocated runtime layer.
@@ -44,7 +44,7 @@ public sealed class RenderRuntimeFactory : IRuntimeSubsystemFactory
     {
         ArgumentNullException.ThrowIfNull(context);
         RenderRuntime runtime = m_runtimeFactory(context)
-            ?? throw new InvalidOperationException("The rendering runtime factory returned null.");
+                                ?? throw new InvalidOperationException("The rendering runtime factory returned null.");
         return runtime;
     }
 }

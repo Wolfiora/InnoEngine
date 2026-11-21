@@ -20,8 +20,12 @@ public readonly record struct AudioBackendId
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         foreach (char character in value)
+        {
             if (char.IsWhiteSpace(character))
+            {
                 throw new ArgumentException("A backend identifier cannot contain whitespace.", nameof(value));
+            }
+        }
         this.value = value;
     }
 
@@ -48,4 +52,3 @@ public readonly record struct AudioBackendId
     /// </returns>
     public override string ToString() => value ?? string.Empty;
 }
-

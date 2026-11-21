@@ -29,7 +29,9 @@ public sealed class PresentationBackendCatalog : IPresentationBackendFactory
         foreach (PresentationBackendProvider provider in providers)
         {
             if (provider is null || !provider.id.isValid || !m_providers.TryAdd(provider.id, provider))
+            {
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
+            }
         }
         supportedBackends = new ReadOnlyCollection<PresentationBackendId>(new List<PresentationBackendId>(m_providers.Keys));
     }
@@ -47,8 +49,10 @@ public sealed class PresentationBackendCatalog : IPresentationBackendFactory
     ) {
         ArgumentNullException.ThrowIfNull(options);
         if (!m_providers.TryGetValue(backend, out PresentationBackendProvider? provider))
+        {
             throw new NotSupportedException("Presentation backend '" + backend + "' is not registered.");
+        }
         return provider.CreateContext(options)
-            ?? throw new InvalidOperationException("Presentation provider '" + backend + "' returned no context.");
+               ?? throw new InvalidOperationException("Presentation provider '" + backend + "' returned no context.");
     }
 }

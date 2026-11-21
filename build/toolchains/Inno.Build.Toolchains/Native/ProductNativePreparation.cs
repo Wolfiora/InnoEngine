@@ -41,24 +41,47 @@ public static class ProductNativePreparation
         NativeToolchainSelection tools = context.RequireToolchain();
         var identities = new List<string>
         {
-            NativeBuildFingerprint.Create(context, tools.declarations,
-                tools.inputPaths.Select(path => NativeBuildInput.FromPath(context.engineRoot, path)), cancellationToken)
+            NativeBuildFingerprint.Create(
+                context,
+                tools.declarations,
+                tools.inputPaths.Select(path => NativeBuildInput.FromPath(context.engineRoot, path)),
+                cancellationToken
+            )
         };
         foreach (NativeBuildRecipe recipe in plan.CreateRecipes(context))
+        {
             identities.Add(NativeBuildFingerprint.Create(context, recipe.declarations, recipe.inputs, cancellationToken));
+        }
         NativeComponentDescriptor[] components = plan.steps.Select(static step => step.component)
-            .Where(static component => component.bindingDefinition is not null).DistinctBy(static component => component.nativeProject).ToArray();
+            .Where(static component => component.bindingDefinition is not null)
+            .DistinctBy(static component => component.nativeProject)
+            .ToArray();
         if (components.Length != 0)
         {
             var options = plan.steps.Where(static step => step.component.bindingDefinition is not null)
                 .GroupBy(static step => step.component.nativeProject, StringComparer.Ordinal)
                 .ToDictionary(static group => group.Key, static group => group.First().options, StringComparer.Ordinal);
-            var request = new NativeBindingGenerationRequest(components, tools.targetId, NativeBindingOutputMode.TargetArtifacts, componentOptions: options);
-            identities.Add(await context.RequireBindingGenerator().ComputeInputFingerprintAsync(context, request, cancellationToken).ConfigureAwait(false));
+            var request = new NativeBindingGenerationRequest(
+                components,
+                tools.targetId,
+                NativeBindingOutputMode.TargetArtifacts,
+                componentOptions: options
+            );
+            identities.Add(
+                await context
+                    .RequireBindingGenerator()
+                    .ComputeInputFingerprintAsync(context, request, cancellationToken)
+                    .ConfigureAwait(false)
+            );
         }
         IEnumerable<string> declarations = new[] { context.engineRoot, context.configuration, plan.productId, tools.targetId }
-            .Concat(tools.environment.OrderBy(static pair => pair.Key, StringComparer.Ordinal).Select(static pair => pair.Key + "=" + pair.Value))
-            .Concat(tools.cmakeArguments).Concat(tools.inputPaths)
+            .Concat(
+                tools.environment
+                    .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                    .Select(static pair => pair.Key + "=" + pair.Value)
+            )
+            .Concat(tools.cmakeArguments)
+            .Concat(tools.inputPaths)
             .Concat(plan.steps.Select(static step => step.id + "|" + step.configuration + "|" + JsonSerializer.Serialize(step.options)))
             .Concat(identities);
         return NativeBuildFingerprint.Create(declarations, []);
@@ -94,21 +117,40 @@ public static class ProductNativePreparation
         ArgumentNullException.ThrowIfNull(products);
         ArgumentException.ThrowIfNullOrWhiteSpace(requestIdentity);
         if (products.aggregateDirectory is not null || products.Count != plan.steps.Count
-            || products.Any(static product => product.bindingGeneration is { artifactDirectory.Length: 0 }))
+            || products.Any(static product => product.bindingGeneration is { artifactDirectory.Length: 0 })
+        ) {
             return null;
+        }
         var rows = new List<string[]> { new[] { "request", requestIdentity } };
         foreach (NativeInputSnapshot.Entry input in context.inputState.CaptureRecordedInputs(context.engineRoot).entries)
+        {
             rows.Add(["input", input.physicalPath, Convert.ToHexStringLower(input.hash)]);
+        }
         foreach (string[] root in context.inputState.CaptureRootMembership())
+        {
             rows.Add(["root", ..root]);
+        }
         for (int index = 0; index < products.Count; index++)
         {
             NativeBuildProduct product = products[index];
             if (product.component != plan.steps[index].id)
+            {
                 throw new ArgumentException("The prepared products do not match their declaration order.", nameof(products));
-            rows.Add(["product", product.component, product.targetId, product.fingerprint, product.directory, product.sharedLibraryExtension ?? string.Empty]);
+            }
+            rows.Add(
+                [
+                    "product",
+                    product.component,
+                    product.targetId,
+                    product.fingerprint,
+                    product.directory,
+                    product.sharedLibraryExtension ?? string.Empty
+                ]
+            );
             if (product.bindingGeneration is NativeBindingGenerationDescriptor binding)
+            {
                 rows.Add(["binding", product.component, plan.steps[index].component.nativeProject, JsonSerializer.Serialize(binding)]);
+            }
         }
         return rows.ToArray();
     }
@@ -150,10 +192,14 @@ public static class ProductNativePreparation
         ArgumentNullException.ThrowIfNull(rows);
         ArgumentException.ThrowIfNullOrWhiteSpace(requestIdentity);
         cancellationToken.ThrowIfCancellationRequested();
-        if (rows.Length == 0 || rows.Any(static row => row is null || row.Length == 0
-                || row[0] is not ("request" or "input" or "root" or "product" or "binding"))
-            || rows[0].Length != 2 || rows[0][0] != "request" || rows[0][1] != requestIdentity)
+        if (rows.Length == 0 || rows.Any(static row => (
+            row is null || row.Length == 0
+            || row[0] is not ("request" or "input" or "root" or "product" or "binding")
+        ))
+            || rows[0].Length != 2 || rows[0][0] != "request" || rows[0][1] != requestIdentity
+        ) {
             return null;
+        }
         var products = new List<NativeBuildProduct>();
         var leases = new List<IDisposable>();
         var generations = new Dictionary<string, NativeBindingGenerationDescriptor>(StringComparer.Ordinal);
@@ -164,79 +210,139 @@ public static class ProductNativePreparation
             foreach (string[] row in rows.Where(static row => row[0] == "binding"))
             {
                 if (row.Length != 4)
+                {
                     return null;
+                }
                 NativeBindingGenerationDescriptor? binding = JsonSerializer.Deserialize<NativeBindingGenerationDescriptor>(row[3]);
                 if (binding is null || string.IsNullOrEmpty(binding.artifactDirectory))
+                {
                     return null;
+                }
                 binding.Validate();
                 BuildCacheCleanupPlan.RequireChild(context.engineRoot, binding.artifactOwnerDirectory);
                 if (!generations.TryGetValue(row[2], out NativeBindingGenerationDescriptor? shared))
                 {
-                    BuildArtifactReadLease? lease = await BuildArtifactReadLease.TryAcquireAsync(binding.artifactDirectory,
-                        binding.artifactOwnerDirectory, binding.fingerprint, ["Generated", "Native"], context, cancellationToken).ConfigureAwait(false);
+                    BuildArtifactReadLease? lease = await BuildArtifactReadLease.TryAcquireAsync(
+                        binding.artifactDirectory,
+                        binding.artifactOwnerDirectory,
+                        binding.fingerprint,
+                        ["Generated", "Native"],
+                        context,
+                        cancellationToken
+                    ).ConfigureAwait(false);
                     if (lease is null)
+                    {
                         return null;
+                    }
                     leases.Add(lease);
                     generations.Add(row[2], binding);
                 }
                 else if (JsonSerializer.Serialize(shared) != row[3])
+                {
                     return null;
+                }
                 byComponent.Add(row[1], binding);
             }
             string[][] productRows = rows.Where(static row => row[0] == "product").ToArray();
             if (productRows.Length != plan.steps.Count)
+            {
                 return null;
+            }
             for (int index = 0; index < productRows.Length; index++)
             {
                 string[] row = productRows[index];
                 if (row.Length != 6 || row[1] != plan.steps[index].id || row[2] != context.RequireToolchain().targetId)
+                {
                     return null;
+                }
                 string owner = Path.Combine(context.engineRoot, "artifacts", "native");
-                BuildArtifactReadLease? lease = await BuildArtifactReadLease.TryAcquireAsync(row[4], owner, row[3],
-                    ["Outputs", "Metadata"], context, cancellationToken).ConfigureAwait(false);
+                BuildArtifactReadLease? lease = await BuildArtifactReadLease.TryAcquireAsync(
+                    row[4],
+                    owner,
+                    row[3],
+                    ["Outputs", "Metadata"],
+                    context,
+                    cancellationToken
+                ).ConfigureAwait(false);
                 if (lease is null)
+                {
                     return null;
-                products.Add(new NativeBuildProduct(row[1], row[2], row[3], row[4], byComponent.GetValueOrDefault(row[1]),
-                    row[5].Length == 0 ? null : row[5], lease));
+                }
+                products.Add(
+                    new NativeBuildProduct(
+                        row[1],
+                        row[2],
+                        row[3],
+                        row[4],
+                        byComponent.GetValueOrDefault(row[1]),
+                        row[5].Length == 0 ? null : row[5],
+                        lease
+                    )
+                );
             }
             NativeBuildContext verification = context.BeginInputVerification("prepared-consumer");
             if (await FreezeAsync(verification, plan, cancellationToken).ConfigureAwait(false) != requestIdentity)
+            {
                 return null;
+            }
             foreach (string[] row in rows.Where(static row => row[0] == "root"))
             {
                 if (row.Length < 2)
+                {
                     return null;
+                }
                 NativeBuildInput root = NativeBuildInput.FromPath(context.engineRoot, row[1]);
                 NativeInputSnapshot membership = verification.CaptureInputs([root], cancellationToken);
-                if (!membership.entries.Select(entry => entry.logicalPath == root.logicalPath
-                        ? string.Empty : entry.logicalPath[(root.logicalPath.Length + 1)..])
-                    .Order(StringComparer.Ordinal).SequenceEqual(row.Skip(2), StringComparer.Ordinal))
+                if (!membership.entries
+                    .Select(entry => (
+                        entry.logicalPath == root.logicalPath
+                        ? string.Empty
+                        : entry.logicalPath[(root.logicalPath.Length + 1)..]
+                    ))
+                    .Order(StringComparer.Ordinal)
+                    .SequenceEqual(row.Skip(2), StringComparer.Ordinal)
+                ) {
                     return null;
+                }
             }
             foreach (string[] row in rows.Where(static row => row[0] == "input"))
             {
                 if (row.Length != 3)
+                {
                     return null;
-                NativeInputSnapshot input = verification.CaptureInputs([NativeBuildInput.FromPath(context.engineRoot, row[1])], cancellationToken);
+                }
+                NativeInputSnapshot input = verification.CaptureInputs(
+                    [NativeBuildInput.FromPath(context.engineRoot, row[1])],
+                    cancellationToken
+                );
                 if (input.entries.Count != 1 || Convert.ToHexStringLower(input.entries[0].hash) != row[2])
+                {
                     return null;
+                }
             }
             if (!rows.Any(static row => row[0] == "input"))
+            {
                 return null;
+            }
             cancellationToken.ThrowIfCancellationRequested();
             var bindings = new NativeBindingGenerationResult(generations, leases);
             var result = new ProductNativeBuildResult(products, bindings);
             transferred = true;
             return result;
         }
-        catch (Exception failure) when (failure is FileNotFoundException or DirectoryNotFoundException or InvalidDataException or JsonException)
+        catch (Exception failure) when (failure is FileNotFoundException
+                                        or DirectoryNotFoundException
+                                        or InvalidDataException
+                                        or JsonException)
         {
             return null;
         }
         finally
         {
             if (!transferred)
+            {
                 ProductNativeBuildResult.Release(products, new NativeBindingGenerationResult(generations, leases));
+            }
         }
     }
 }

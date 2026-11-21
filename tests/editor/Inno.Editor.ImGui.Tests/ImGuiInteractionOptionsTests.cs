@@ -1,6 +1,6 @@
 using System;
-using Inno.Adapter.Presentation.ImGui;
 using Xunit;
+using Inno.Adapter.Presentation.ImGui;
 
 namespace Inno.Editor.ImGui.Tests;
 

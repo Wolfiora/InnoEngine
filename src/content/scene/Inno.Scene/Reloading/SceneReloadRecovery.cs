@@ -22,22 +22,31 @@ internal sealed class SceneReloadRecovery : ISceneReloadStateTransfer
     ) {
         m_transfer = transfer;
         m_recovery = new ReferenceRecoveryTransaction(
-            ReferenceCatalog.Create(context.candidate.version,
-                [new SceneElementReferenceResolver(world, context.candidate), assets]),
-            transfer.CaptureRecoveryStates(), [transfer]);
+            ReferenceCatalog.Create(
+                context.candidate.version,
+                [new SceneElementReferenceResolver(world, context.candidate), assets]
+            ),
+            transfer.CaptureRecoveryStates(),
+            [transfer]
+        );
     }
 
     IReadOnlyList<object> ISceneReloadStateTransfer.retiredObjects => m_transfer?.retiredObjects ?? Array.Empty<object>();
     IReadOnlyList<SceneReloadDiagnostic> ISceneReloadStateTransfer.diagnostics => m_diagnostics;
     IReadOnlyList<ReferenceRecoveryChange> ISceneReloadStateTransfer.recoveryChanges => m_recovery.changes;
+
     void ISceneReloadStateTransfer.PrepareForActivation() => m_recovery.PrepareForActivation();
+
     void ISceneReloadStateTransfer.Apply()
     {
         m_recovery.Apply();
         CaptureDiagnostics();
     }
+
     void ISceneReloadStateTransfer.RollbackStructure() => m_recovery.RollbackStructure();
+
     void ISceneReloadStateTransfer.RestorePreviousState() => FinalizeRecovery(restore: true);
+
     void ISceneReloadStateTransfer.Complete() => FinalizeRecovery(restore: false);
 
     private void FinalizeRecovery(bool restore)
@@ -46,9 +55,13 @@ internal sealed class SceneReloadRecovery : ISceneReloadStateTransfer
         try
         {
             if (restore)
+            {
                 m_recovery.RestorePreviousState();
+            }
             else
+            {
                 m_recovery.Complete();
+            }
         }
         catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
         {
@@ -59,13 +72,17 @@ internal sealed class SceneReloadRecovery : ISceneReloadStateTransfer
         {
             CaptureDiagnostics();
             if (!pending)
+            {
                 m_transfer = null;
+            }
         }
     }
 
     private void CaptureDiagnostics()
     {
         if (m_transfer is not null)
+        {
             m_diagnostics = Array.AsReadOnly(m_transfer.diagnostics.ToArray());
+        }
     }
 }

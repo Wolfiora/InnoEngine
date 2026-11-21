@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using BGCS.Runtime;
+using Xunit;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Identity;
@@ -9,7 +10,7 @@ using Inno.Editor.Panel.Hierarchy;
 using Inno.Native.ImGui;
 using Inno.Scene;
 using Inno.Testing.Editor.Native;
-using Xunit;
+
 using NativeGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.Performance.Tests;
@@ -31,17 +32,25 @@ public sealed partial class LargePanelPerformanceTests
         {
             string? input = InputDirectory("assets");
             if (input is not null && Directory.Exists(input))
+            {
                 CopyDirectory(input, Path.Combine(host.projectRoot, "Assets"));
+            }
             else
+            {
                 for (int index = 0; index < 10_000; index++)
+                {
                     Directory.CreateDirectory(Path.Combine(host.projectRoot, "Assets", "Folder " + index.ToString("D5")));
+                }
+            }
             host.assets.Rescan();
         }
         EditorPanelExtension panel = host.native.GetPanel(hierarchy ? "scene.hierarchy" : "asset.file-browser");
         host.native.DrawPanel(panel);
         host.native.DrawPanel(panel);
         if (view == "grid")
+        {
             SelectGrid(host, panel);
+        }
         IdentityObject first = hierarchy ? scene!.GetObjects()[0] : Entry("Folder 00000");
         IdentityObject last = hierarchy ? scene!.GetObjects()[^1] : Entry("Folder 09999");
         string area = hierarchy ? "panel/scene.hierarchy" : "panel/asset.file-browser";
@@ -51,8 +60,11 @@ public sealed partial class LargePanelPerformanceTests
         {
             SetLargeQuery(host, panel, "Folder 00042");
             ImGuiWindow* filtered = FindInteractionWindow(windowName);
-            NativeGui.Raw.AddMousePosEvent(NativeGui.Raw.GetIO(), filtered->Pos.X + filtered->Size.X - 60f,
-                filtered->Pos.Y + filtered->Size.Y * 0.7f);
+            NativeGui.Raw.AddMousePosEvent(
+                NativeGui.Raw.GetIO(),
+                filtered->Pos.X + filtered->Size.X - 60f,
+                filtered->Pos.Y + filtered->Size.Y * 0.7f
+            );
             NativeGui.Raw.AddMouseButtonEvent(NativeGui.Raw.GetIO(), 0, 1);
             host.native.DrawPanel(panel);
             NativeGui.Raw.AddMouseButtonEvent(NativeGui.Raw.GetIO(), 0, 0);
@@ -62,8 +74,11 @@ public sealed partial class LargePanelPerformanceTests
             NativePanelInput.Key(host.native, panel, ImGuiKey.End);
             Assert.Same(Entry("Folder 00042"), interactions.selection.selectedTarget);
             SetLargeQuery(host, panel, string.Empty);
-            NativeGui.Raw.AddMousePosEvent(NativeGui.Raw.GetIO(), filtered->Pos.X + filtered->Size.X * 0.4f,
-                filtered->Pos.Y + filtered->Size.Y * 0.7f);
+            NativeGui.Raw.AddMousePosEvent(
+                NativeGui.Raw.GetIO(),
+                filtered->Pos.X + filtered->Size.X * 0.4f,
+                filtered->Pos.Y + filtered->Size.Y * 0.7f
+            );
             NativeGui.Raw.AddMouseButtonEvent(NativeGui.Raw.GetIO(), 0, 1);
             host.native.DrawPanel(panel);
             NativeGui.Raw.AddMouseButtonEvent(NativeGui.Raw.GetIO(), 0, 0);
@@ -103,15 +118,23 @@ public sealed partial class LargePanelPerformanceTests
             Assert.Equal(objectId, ((GameObject)last).identity.persistentId);
         }
         else
+        {
             last = Entry("Renamed last");
+        }
         Assert.True(interactions.history.Undo().succeeded);
         if (hierarchy)
+        {
             Assert.Equal(original, ((GameObject)last).name);
+        }
         else
+        {
             Assert.True(Directory.Exists(Path.Combine(host.projectRoot, "Assets", original)));
+        }
         Assert.True(interactions.history.Redo().succeeded);
         if (!hierarchy)
+        {
             last = Entry("Renamed last");
+        }
         interactions.SetSelection(last);
         RuntimeIdentity drag = interactions.For(area, last).BeginDrag(new EditorDragData(last, "Clipped source"));
         Assert.Equal(hierarchy ? ((GameObject)last).identity.runtimeIdentity : ((AssetFileEntry)last).identity.runtimeIdentity, drag);
@@ -125,8 +148,8 @@ public sealed partial class LargePanelPerformanceTests
         Assert.True(interactions.For(area).TryGetActiveDragIdentity(out RuntimeIdentity retained));
         Assert.Equal(drag, retained);
         EditorInteraction drop = hierarchy
-            ? interactions.For(area, new HierarchyObjectDropTarget((GameObject)first))
-            : interactions.For(area, ((AssetFileEntry)first).assetPath.ToString());
+                                 ? interactions.For(area, new HierarchyObjectDropTarget((GameObject)first))
+                                 : interactions.For(area, ((AssetFileEntry)first).assetPath.ToString());
         Assert.True(drop.QueryDrop(drag, EditorDropPlacement.Into).canDrop);
         Assert.True(drop.Drop(drag, EditorDropPlacement.Into).accepted);
         if (hierarchy)
@@ -135,12 +158,18 @@ public sealed partial class LargePanelPerformanceTests
             Assert.Equal(10_000, scene!.GetObjects().Count);
         }
         else
+        {
             Assert.True(Directory.Exists(Path.Combine(host.projectRoot, "Assets", "Folder 00000", "Renamed last")));
+        }
         Assert.True(interactions.history.Undo().succeeded);
         if (hierarchy)
+        {
             Assert.Null(((GameObject)last).transform.parent);
+        }
         else
+        {
             Assert.True(Directory.Exists(Path.Combine(host.projectRoot, "Assets", "Renamed last")));
+        }
         Assert.True(interactions.history.Redo().succeeded);
         host.native.DrawPanel(panel);
 
@@ -180,7 +209,9 @@ public sealed partial class LargePanelPerformanceTests
             host.native.DrawPanel(panel);
             host.runtime.SaveState();
             if (File.ReadAllText(Path.Combine(host.projectRoot, "editor.ini")).Contains("viewMode=\"Grid\"", StringComparison.Ordinal))
+            {
                 return;
+            }
         }
         throw new InvalidOperationException("Ordinary pointer input did not select the actual Browser grid.");
     }

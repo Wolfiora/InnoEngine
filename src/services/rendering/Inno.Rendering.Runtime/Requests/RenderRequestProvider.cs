@@ -1,7 +1,7 @@
+using System;
 using Inno.Core.Execution;
 using Inno.References;
 using Inno.Rendering;
-using System;
 
 namespace Inno.Rendering.Runtime;
 
@@ -93,15 +93,18 @@ public sealed class RenderRequestProviderContext
         this.capabilities = capabilities ?? throw new ArgumentNullException(nameof(capabilities));
         this.primaryPresentationSize = primaryPresentationSize;
         if (primaryPresentationSize.HasValue != primaryPresentationViewport.HasValue)
+        {
             throw new ArgumentException("Primary presentation size and viewport must have the same availability.");
+        }
         if (primaryPresentationSize is RenderPresentationSize size && primaryPresentationViewport is RenderViewport viewport
             && (!size.isValid || viewport.width <= 0 || viewport.height <= 0
                 || (long)viewport.x + viewport.width > size.width
-                || (long)viewport.y + viewport.height > size.height))
-        {
+                || (long)viewport.y + viewport.height > size.height)
+        ) {
             throw new ArgumentException(
                 "The primary presentation viewport must fit inside the primary presentation surface.",
-                nameof(primaryPresentationViewport));
+                nameof(primaryPresentationViewport)
+            );
         }
         this.primaryPresentationViewport = primaryPresentationViewport;
         this.frameIndex = frameIndex;
@@ -149,6 +152,7 @@ public sealed class RenderRequestProviderContext
     /// Gets the active generation's world-content collector.
     /// </summary>
     public IViewContentCollector viewContent { get; }
+
     /// <summary>
     /// Gets viewport-local input for the primary output.
     /// </summary>
@@ -180,7 +184,9 @@ public abstract class RenderRequestProvider : IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         try
         {
             Dispose(true);
@@ -207,6 +213,5 @@ public abstract class RenderRequestProvider : IDisposable
     /// <exception cref="RetirementPendingException">
     /// Retirement cannot complete yet; subsequent calls resume this hook with its remaining owned resources.
     /// </exception>
-    protected virtual void Dispose(bool disposing) { }
+    protected virtual void Dispose(bool disposing) {}
 }
-

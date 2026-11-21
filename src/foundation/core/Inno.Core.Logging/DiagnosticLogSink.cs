@@ -33,6 +33,7 @@ public sealed class DiagnosticLogSink : IDiagnosticSink, IDisposable
         m_logs = logs ?? throw new ArgumentNullException(nameof(logs));
         m_hub.RegisterSink(this);
     }
+
     /// <summary>
     /// Replaces the current report for one diagnostic source.
     /// </summary>
@@ -45,23 +46,36 @@ public sealed class DiagnosticLogSink : IDiagnosticSink, IDisposable
         Diagnostic[] previous = m_previous.GetValueOrDefault(report.source.id, []);
         foreach (Diagnostic issue in report.diagnostics)
         {
-            if (previous.Any(old => old.code == issue.code && old.semanticId == issue.semanticId &&
-                old.objectId == issue.objectId && old.message == issue.message && old.severity == issue.severity &&
-                Equals(old.location, issue.location)))
+            if (previous.Any(old => (
+                old.code == issue.code && old.semanticId == issue.semanticId
+                && old.objectId == issue.objectId && old.message == issue.message && old.severity == issue.severity
+                && Equals(old.location, issue.location)
+            ))) {
                 continue;
+            }
             LogLevel level = issue.severity switch
             {
                 DiagnosticSeverity.Error => LogLevel.Error,
                 DiagnosticSeverity.Warning => LogLevel.Warn,
                 _ => LogLevel.Info
             };
-            m_logs.Dispatch(new LogEntry(level, AssemblyDomain.InnoInternal, AssemblyScope.Runtime,
-                report.source.displayName, $"{issue.code}: {issue.message}",
-                issue.location?.sourcePath ?? string.Empty, issue.location?.line ?? 0,
-                string.Empty, LogSessionContext.current));
+            m_logs.Dispatch(
+                new LogEntry(
+                    level,
+                    AssemblyDomain.InnoInternal,
+                    AssemblyScope.Runtime,
+                    report.source.displayName,
+                    $"{issue.code}: {issue.message}",
+                    issue.location?.sourcePath ?? string.Empty,
+                    issue.location?.line ?? 0,
+                    string.Empty,
+                    LogSessionContext.current
+                )
+            );
         }
         m_previous[report.source.id] = report.diagnostics.ToArray();
     }
+
     /// <summary>
     /// Removes the current report for one diagnostic source.
     /// </summary>
@@ -76,7 +90,9 @@ public sealed class DiagnosticLogSink : IDiagnosticSink, IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_hub.UnregisterSink(this);
         m_disposed = true;
         m_previous.Clear();

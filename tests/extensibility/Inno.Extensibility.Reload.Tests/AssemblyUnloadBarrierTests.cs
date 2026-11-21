@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
-using Inno.Extensibility.Reload;
 using Xunit;
+using Inno.Extensibility.Reload;
 
 namespace Inno.Extensibility.Reload.Tests;
 
@@ -18,7 +18,8 @@ public sealed class AssemblyUnloadBarrierTests
             {
                 collectionInterval = TimeSpan.Zero,
                 retentionTimeout = TimeSpan.FromSeconds(2)
-            });
+            }
+        );
 
         first.isCompleted = true;
         Assert.False(barrier.Advance());
@@ -39,7 +40,8 @@ public sealed class AssemblyUnloadBarrierTests
             {
                 collectionInterval = TimeSpan.Zero,
                 retentionTimeout = TimeSpan.FromMilliseconds(20)
-            });
+            }
+        );
 
         Thread.Sleep(30);
         AssemblyUnloadException first = Assert.Throws<AssemblyUnloadException>(() => barrier.Advance());

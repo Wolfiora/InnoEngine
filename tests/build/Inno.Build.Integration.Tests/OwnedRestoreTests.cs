@@ -5,11 +5,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Build.TaskHosting;
-using Inno.Core.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Xunit;
+using Inno.Build.TaskHosting;
+using Inno.Core.IO;
 
 namespace Inno.Build.Integration.Tests;
 
@@ -134,12 +134,18 @@ public sealed class OwnedRestoreTests : IDisposable
         public int ColumnNumberOfTaskNode => 0;
         public string ProjectFileOfTaskNode => string.Empty;
         public bool IsRunningMultipleNodes => true;
+
         public void Yield() => m_yielded = true;
+
         public void Reacquire() => reacquired = true;
-        public void LogErrorEvent(BuildErrorEventArgs error) { }
-        public void LogWarningEvent(BuildWarningEventArgs warning) { }
-        public void LogMessageEvent(BuildMessageEventArgs message) { }
-        public void LogCustomEvent(CustomBuildEventArgs custom) { }
+
+        public void LogErrorEvent(BuildErrorEventArgs error) {}
+
+        public void LogWarningEvent(BuildWarningEventArgs warning) {}
+
+        public void LogMessageEvent(BuildMessageEventArgs message) {}
+
+        public void LogCustomEvent(CustomBuildEventArgs custom) {}
 
         public BuildEngineResult BuildProjectFilesInParallel(
             string[] projects,

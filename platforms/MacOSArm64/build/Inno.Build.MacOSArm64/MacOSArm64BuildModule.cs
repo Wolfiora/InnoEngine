@@ -14,7 +14,13 @@ public static class MacOSArm64BuildModule
     /// Gets the explicit implemented product target, independent of the tool execution host.
     /// </summary>
     public static PlatformTargetDescriptor target { get; } = new(
-        new BuildTargetId("macos-arm64"), "MacOS", "arm64", "darwin-arm64", "osx-arm64", true);
+        new BuildTargetId("macos-arm64"),
+        "MacOS",
+        "arm64",
+        "darwin-arm64",
+        "osx-arm64",
+        true
+    );
 
     /// <summary>
     /// Contributes the platform's target, product inputs and SDK resolver as one registration.
@@ -51,11 +57,15 @@ public static class MacOSArm64BuildModule
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(nativePlan);
         ArgumentNullException.ThrowIfNull(editorNativePlan);
-        return new(target,
+        return new(
+            target,
             () => new MacOSArm64GameBuildTarget(supportPackValidator),
-            new MacOSArm64PlayerSupportPackSource(nativePlan, context.host, context.dotnetHost, bindingGenerator, supportPackValidator), new MacOSArm64NativeToolchainProvider(context.dotnetHost),
+            new MacOSArm64PlayerSupportPackSource(nativePlan, context.host, context.dotnetHost, bindingGenerator, supportPackValidator),
+            new MacOSArm64NativeToolchainProvider(context.dotnetHost),
             "platforms/MacOSArm64/editor/Inno.Editor.MacOSArm64/Inno.Editor.MacOSArm64.csproj",
-            [nativePlan, editorNativePlan, shaderToolsPlan], bindingGenerator,
-            [ManagedDeploymentId.coreClr, ManagedDeploymentId.nativeAot]);
+            [nativePlan, editorNativePlan, shaderToolsPlan],
+            bindingGenerator,
+            [ManagedDeploymentId.coreClr, ManagedDeploymentId.nativeAot]
+        );
     }
 }

@@ -1,11 +1,12 @@
-using Inno.Editor.Shaders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Inno.Editor.Shaders;
 using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Shaders.ImGui;
+
 /// <summary>
 /// Shares generation-scoped node presentation between graph and Inspector hosts.
 /// </summary>
@@ -13,6 +14,7 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
 {
     private readonly TypeCatalog m_types;
     private readonly Registry m_registry;
+
     /// <summary>
     /// Creates a presentation registry owned by the current editor feature lifetime.
     /// </summary>
@@ -43,7 +45,9 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
     ) {
         using IDisposable operation = m_types.AcquireOperation("Draw shader node controls");
         if (!m_registry.snapshot.drawers.TryGetValue(definitionId, out ShaderNodeDrawer? drawer))
+        {
             return false;
+        }
         drawer.Draw(context);
         return true;
     }
@@ -87,6 +91,7 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
     /// Retires the current presentation providers through the shared lifecycle.
     /// </summary>
     public void Dispose() => m_registry.Dispose();
+
     private sealed class Registry(TypeCatalog types) : TypeRegistry<Snapshot>(types)
     {
         internal Snapshot snapshot => current;
@@ -107,15 +112,22 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
             var presentations = new Dictionary<string, ShaderNodePresentation>(StringComparer.Ordinal);
             try
             {
-                foreach (Type type in snapshot.GetTypesWithAttribute<ShaderNodeDrawerAttribute>().Select(reference => reference.Resolve(snapshot)))
-                {
+                foreach (Type type in snapshot
+                    .GetTypesWithAttribute<ShaderNodeDrawerAttribute>()
+                    .Select(reference => reference.Resolve(snapshot))
+                ) {
                     ShaderNodeDrawerAttribute attribute = type.GetCustomAttribute<ShaderNodeDrawerAttribute>()!;
                     string id = attribute.definitionId;
                     if (result.ContainsKey(id))
+                    {
                         throw new InvalidOperationException($"Shader node drawer '{id}' is registered twice.");
+                    }
                     result.Add(id, CreateExtension<ShaderNodeDrawer>(type));
                     names.Add(id, attribute.displayName);
-                    presentations.Add(id, new(attribute.displayName, Normalize(attribute.createPath), attribute.createOrder, attribute.separatorBefore));
+                    presentations.Add(
+                        id,
+                        new(attribute.displayName, Normalize(attribute.createPath), attribute.createOrder, attribute.separatorBefore)
+                    );
                 }
 
                 return new(result, names, presentations);
@@ -144,7 +156,9 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
         protected override void DisposeSnapshot(Snapshot snapshot) => DisposeExtensions(snapshot.drawers.Values);
     }
 
-    private static string Normalize(string value) => string.Join('/', value.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+    private static string Normalize(string value)
+        => string.Join('/', value.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+
     private sealed record Snapshot(
         IReadOnlyDictionary<string, ShaderNodeDrawer> drawers,
         IReadOnlyDictionary<string, string> names,

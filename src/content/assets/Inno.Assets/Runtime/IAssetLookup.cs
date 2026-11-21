@@ -62,8 +62,7 @@ public interface IAssetLookup
     bool TryLoad<TAsset>(
         AssetPath path,
         out TAsset? asset
-    )
-        where TAsset : AssetObject;
+    ) where TAsset : AssetObject;
 
     /// <summary>
     /// Tries to load the canonical asset with a persistent identity.
@@ -84,6 +83,5 @@ public interface IAssetLookup
     bool TryLoad<TAsset>(
         Guid persistentId,
         out TAsset? asset
-    )
-        where TAsset : AssetObject;
+    ) where TAsset : AssetObject;
 }

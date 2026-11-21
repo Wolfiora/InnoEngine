@@ -1,15 +1,15 @@
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using Inno.Core.Graphs;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
-using Xunit;
 
 namespace Inno.Rendering.Shaders.Tests;
 
@@ -36,8 +36,13 @@ public sealed class ShaderTargetTests : IDisposable
         byte[] before = GraphDocumentCodec.Encode(authored, m_serialization);
         GraphDocument expanded = m_targets.Expand(authored, m_serialization, SerializationContext.empty);
         using var nodes = new ShaderNodeCompilerRegistry(m_types);
-        ShaderGraphProgramResult result = new ShaderGraphProgramCompiler(nodes).Lower(expanded, "bgfx",
-            new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis>(), m_serialization, SerializationContext.empty);
+        ShaderGraphProgramResult result = new ShaderGraphProgramCompiler(nodes).Lower(
+            expanded,
+            "bgfx",
+            new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis>(),
+            m_serialization,
+            SerializationContext.empty
+        );
         Assert.True(result.succeeded, string.Join("\n", result.diagnostics.Select(static value => value.message)));
         Assert.Equal(before, GraphDocumentCodec.Encode(authored, m_serialization));
         Assert.Contains("tests.surface-target", m_targets.ids);
@@ -50,8 +55,12 @@ public sealed class ShaderTargetTests : IDisposable
         GraphDocument authored = ShaderGraphTemplates.CreateRaster(m_serialization, SerializationContext.empty);
         ShaderGraphDocument.SetTarget(authored, "tests.unavailable-target", m_serialization, SerializationContext.empty);
         byte[] before = GraphDocumentCodec.Encode(authored, m_serialization);
-        Assert.Contains("tests.unavailable-target", Assert.Throws<ShaderTargetUnavailableException>(
-            () => m_targets.Expand(authored, m_serialization, SerializationContext.empty)).Message);
+        Assert.Contains(
+            "tests.unavailable-target",
+            Assert.Throws<ShaderTargetUnavailableException>(
+                () => m_targets.Expand(authored, m_serialization, SerializationContext.empty)
+            ).Message
+        );
         Assert.Equal(before, GraphDocumentCodec.Encode(authored, m_serialization));
     }
 
@@ -60,8 +69,12 @@ public sealed class ShaderTargetTests : IDisposable
     {
         GraphDocument authored = ShaderGraphTemplates.CreateRaster(m_serialization, SerializationContext.empty);
         byte[] before = GraphDocumentCodec.Encode(authored, m_serialization);
-        Assert.Throws<OperationCanceledException>(() => m_targets.Expand(authored, m_serialization,
-            SerializationContext.empty, new CancellationToken(true)));
+        Assert.Throws<OperationCanceledException>(() => m_targets.Expand(
+            authored,
+            m_serialization,
+            SerializationContext.empty,
+            new CancellationToken(true)
+        ));
         Assert.Equal(before, GraphDocumentCodec.Encode(authored, m_serialization));
     }
 
@@ -79,20 +92,29 @@ public sealed class ShaderTargetTests : IDisposable
     }
 
     public void Dispose()
-    { m_targets.Dispose(); m_serialization.Dispose(); m_types.Dispose(); m_modules.Dispose(); }
+    {
+        m_targets.Dispose();
+        m_serialization.Dispose();
+        m_types.Dispose();
+        m_modules.Dispose();
+    }
 
     [ShaderTarget("tests.surface-target")]
     public sealed class SurfaceTarget : ShaderTarget
     {
-        public override GraphDocument Expand(ShaderTargetContext context, CancellationToken cancellationToken)
-            => ShaderGraphTemplates.CreateRaster(context.serialization, context.references);
+        public override GraphDocument Expand(
+            ShaderTargetContext context,
+            CancellationToken cancellationToken
+        ) => ShaderGraphTemplates.CreateRaster(context.serialization, context.references);
     }
 
     [ShaderGraphTemplate("tests.surface-template", "Test Surface")]
     public sealed class SurfaceTemplate : ShaderGraphTemplate
     {
-        public override GraphDocument Create(SerializationRegistry serialization, SerializationContext context)
-        {
+        public override GraphDocument Create(
+            SerializationRegistry serialization,
+            SerializationContext context
+        ) {
             GraphDocument graph = ShaderGraphDocument.Create(new("Surface", [], [], []), serialization, context);
             ShaderGraphDocument.SetTarget(graph, "tests.surface-target", serialization, context);
             return graph;

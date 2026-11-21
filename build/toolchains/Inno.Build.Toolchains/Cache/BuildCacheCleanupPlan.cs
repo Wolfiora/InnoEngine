@@ -108,7 +108,9 @@ public sealed class BuildCacheCleanupPlan
         {
             BuildCacheCleanupPlan plan = CreateCore(workspace, owners, policy, retireAll, targetId, bounded.Token, elapsed);
             if (elapsed.Elapsed >= policy.timeBudget)
+            {
                 throw new TimeoutException("Cache inventory exceeded its operation time budget; no artifact was retired.");
+            }
             return plan;
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
@@ -130,7 +132,9 @@ public sealed class BuildCacheCleanupPlan
         ArgumentNullException.ThrowIfNull(owners);
         ArgumentNullException.ThrowIfNull(policy);
         if (!Path.IsPathFullyQualified(workspace))
+        {
             throw new ArgumentException("Cache cleanup requires an absolute checkout boundary.", nameof(workspace));
+        }
         cancellationToken.ThrowIfCancellationRequested();
         string root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(workspace));
         BuildCacheOwnerDescriptor[] frozen = owners.ToArray();
@@ -140,23 +144,33 @@ public sealed class BuildCacheCleanupPlan
         if (targetId is not null)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
-            protectedPaths.UnionWith(inventory.Protect(inventory.artifacts.Values
-                .Where(entry => entry.artifact.targetId != targetId).Select(static entry => entry.artifact.directory)));
+            protectedPaths.UnionWith(
+                inventory.Protect(
+                    inventory.artifacts.Values
+                        .Where(entry => entry.artifact.targetId != targetId)
+                        .Select(static entry => entry.artifact.directory)
+                )
+            );
         }
         long total = inventory.artifacts.Values.Sum(static entry => entry.artifact.bytes);
         long protectedSize = protectedPaths.Sum(path => inventory.artifacts[path].artifact.bytes);
         long free = new DriveInfo(Path.GetPathRoot(root)!).AvailableFreeSpace;
-        long requested = retireAll ? long.MaxValue : Math.Max(Math.Max(0, total - policy.maximumBytes),
-            Math.Max(0, policy.minimumFreeBytes - free));
+        long requested = retireAll ? long.MaxValue : Math.Max(
+            Math.Max(0, total - policy.maximumBytes),
+            Math.Max(0, policy.minimumFreeBytes - free)
+        );
         var selected = new List<BuildCacheArtifactDescriptor>();
         long proposed = 0;
         foreach (BuildCacheArtifactDescriptor artifact in inventory.artifacts.Values.Select(static entry => entry.artifact)
             .Where(entry => !protectedPaths.Contains(entry.directory))
-            .OrderBy(static entry => entry.lastUseUtc).ThenBy(static entry => entry.directory, StringComparer.Ordinal))
-        {
+            .OrderBy(static entry => entry.lastUseUtc)
+            .ThenBy(static entry => entry.directory, StringComparer.Ordinal)
+        ) {
             cancellationToken.ThrowIfCancellationRequested();
             if (proposed >= requested && artifact.role != BuildCacheArtifactRole.ProcessWorkingDirectory)
+            {
                 continue;
+            }
             selected.Add(artifact);
             proposed = checked(proposed + artifact.bytes);
         }
@@ -188,13 +202,34 @@ public sealed class BuildCacheCleanupPlan
         cancellationToken.ThrowIfCancellationRequested();
         TimeSpan remaining = m_policy.timeBudget - m_elapsed.Elapsed;
         if (!dryRun && remaining <= TimeSpan.Zero)
-            return ValueTask.FromResult(new BuildCacheCleanupResult([], candidates.Select(static entry => entry.directory),
-                new Dictionary<string, string>(), 0, true));
+        {
+            return ValueTask.FromResult(
+                new BuildCacheCleanupResult(
+                    [],
+                    candidates.Select(static entry => entry.directory),
+                    new Dictionary<string, string>(),
+                    0,
+                    true
+                )
+            );
+        }
         return dryRun
-            ? ValueTask.FromResult(new BuildCacheCleanupResult([], candidates.Select(static entry => entry.directory),
-                new Dictionary<string, string>(), 0, false))
-            : BuildCacheRetirement.ExecuteAsync(m_workspace, m_owners,
-                new BuildCachePolicy(m_policy.maximumBytes, m_policy.minimumFreeBytes, remaining), candidates, cancellationToken);
+               ? ValueTask.FromResult(
+                   new BuildCacheCleanupResult(
+                       [],
+                       candidates.Select(static entry => entry.directory),
+                       new Dictionary<string, string>(),
+                       0,
+                       false
+                   )
+               )
+               : BuildCacheRetirement.ExecuteAsync(
+                   m_workspace,
+                   m_owners,
+                   new BuildCachePolicy(m_policy.maximumBytes, m_policy.minimumFreeBytes, remaining),
+                   candidates,
+                   cancellationToken
+               );
     }
 
     private static void ValidateOwners(
@@ -206,12 +241,18 @@ public sealed class BuildCacheCleanupPlan
         {
             BuildCacheOwnerDescriptor owner = owners[index] ?? throw new ArgumentException("A cache owner is null.", nameof(owners));
             if (!identities.Add(owner.id))
+            {
                 throw new ArgumentException("Cache owner identities must be unique.", nameof(owners));
+            }
             RequireChild(workspace, owner.directory);
             RequireChild(owner.directory, owner.coordinationPath);
             for (int previous = 0; previous < index; previous++)
+            {
                 if (IsContained(owners[previous].directory, owner.directory) || IsContained(owner.directory, owners[previous].directory))
+                {
                     throw new ArgumentException("Registered cache boundaries must not overlap.", nameof(owners));
+                }
+            }
         }
     }
 
@@ -220,9 +261,13 @@ public sealed class BuildCacheCleanupPlan
         string path
     ) {
         if (!Path.IsPathFullyQualified(path) || !IsContained(root, path)
-            || BuildCacheInventory.pathComparer.Equals(Path.TrimEndingDirectorySeparator(Path.GetFullPath(root)),
-                Path.TrimEndingDirectorySeparator(Path.GetFullPath(path))))
+            || BuildCacheInventory.pathComparer.Equals(
+                Path.TrimEndingDirectorySeparator(Path.GetFullPath(root)),
+                Path.TrimEndingDirectorySeparator(Path.GetFullPath(path))
+            )
+        ) {
             throw new IOException($"Cache path '{path}' is not a child of owner '{root}'.");
+        }
         PathBoundary.RequireUnlinkedPath(root, path);
     }
 
@@ -232,6 +277,6 @@ public sealed class BuildCacheCleanupPlan
     ) {
         string relative = Path.GetRelativePath(root, path);
         return !Path.IsPathRooted(relative) && relative != ".."
-            && !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal);
+               && !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal);
     }
 }

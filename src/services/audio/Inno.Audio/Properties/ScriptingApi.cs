@@ -1,10 +1,7 @@
 using Inno.Audio;
 using Inno.Scripting.Api;
 
-[assembly: ScriptingApiNamespace(
-    "InnoEngine.Audio",
-    "Inno.Audio",
-    ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiNamespace("InnoEngine.Audio", "Inno.Audio", ScriptingApiScope.Runtime)]
 
 [assembly: ScriptingApiExport(typeof(Audio), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AudioClipAsset), ScriptingApiScope.Runtime)]

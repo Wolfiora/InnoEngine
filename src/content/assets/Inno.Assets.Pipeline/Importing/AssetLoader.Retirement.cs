@@ -7,18 +7,17 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Collections;
 using Inno.Core.Diagnostics;
-using Inno.Core.Identity;
-using Inno.References;
 using Inno.Core.Execution;
 using Inno.Core.IO;
+using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
-using Inno.Core.Collections;
+using Inno.Extensibility.Types;
+using Inno.References;
 
 using IOFile = System.IO.File;
 
@@ -40,13 +39,17 @@ sealed partial class AssetLoader
         lock (m_asyncSync)
         {
             if (m_disposed)
+            {
                 return;
+            }
             m_disposeRequested = true;
             bool pending = m_inFlightPathLoads.Values
                 .Concat(m_inFlightIdLoads.Values)
                 .Any(static task => !task.IsCompleted);
             if (pending || m_admittedOperations > 0 || m_retirementActive)
+            {
                 throw new RetirementPendingException("Asset operations must complete before their loader retires.");
+            }
             m_retirementActive = true;
         }
         AssetLoader? previous = t_activeLoader;
@@ -59,16 +62,18 @@ sealed partial class AssetLoader
         {
             t_activeLoader = previous;
             if (m_disposed)
+            {
                 m_operationGate.Dispose();
+            }
             lock (m_asyncSync)
+            {
                 m_retirementActive = false;
+            }
         }
     }
 
     private void RetireUnmountedRecordLocked(AssetRecord record)
-        => RetireRecordLocked(
-            record,
-            $"Asset source mount for '{record.relativePath}' is not active.");
+        => RetireRecordLocked(record, $"Asset source mount for '{record.relativePath}' is not active.");
 
     private void RetireRecordLocked(
         AssetRecord record,
@@ -101,7 +106,8 @@ sealed partial class AssetLoader
             record.meta.sourceHash,
             ReadOnlyMemory<byte>.Empty,
             true,
-            record.asset.contentVersion + 1);
+            record.asset.contentVersion + 1
+        );
         PublishReloaded(record.asset);
     }
 
@@ -112,14 +118,16 @@ sealed partial class AssetLoader
         {
             AssetObject? asset = record.asset;
             if (asset is null)
+            {
                 continue;
+            }
             bool isCurrent = m_types.TryGetTypeRef(asset.GetType(), out _);
             TypeRef persistedType = new(record.stableTypeId);
-            if (isCurrent &&
-                (record.stableTypeId == Guid.Empty ||
-                 !m_types.TryResolve(persistedType, out Type? resolvedType) ||
-                 resolvedType == asset.GetType()))
-            {
+            if (isCurrent
+                && (record.stableTypeId == Guid.Empty
+                    || !m_types.TryResolve(persistedType, out Type? resolvedType)
+                    || resolvedType == asset.GetType())
+            ) {
                 continue;
             }
 
@@ -135,7 +143,8 @@ sealed partial class AssetLoader
                 m_log.Write(
                     LogLevel.Error,
                     "Retired asset '{0}' was released, but an identity observer failed: {1}",
-                    [record.relativePath, exception]);
+                    [record.relativePath, exception]
+                );
             }
             finally
             {
@@ -149,7 +158,9 @@ sealed partial class AssetLoader
     private void DisposeLocked()
     {
         if (m_disposed)
+        {
             return;
+        }
         if (m_retirement is null)
         {
             m_retirement = new LifetimeScope();
@@ -159,7 +170,9 @@ sealed partial class AssetLoader
             foreach (AssetRecord record in m_recordsById.Values)
             {
                 if (record.asset is not null)
+                {
                     m_retirement.Own(new AssetRecordRetirement(this, record));
+                }
             }
         }
         try
@@ -209,7 +222,9 @@ sealed partial class AssetLoader
         public void Dispose()
         {
             if (record.asset is null)
+            {
                 return;
+            }
             if (!m_released)
             {
                 try
@@ -240,8 +255,9 @@ sealed partial class AssetLoader
             }
             record.asset = null;
             if (m_failures.Count > 0)
+            {
                 throw new AggregateException("Canonical Asset retirement failed after releasing its registration.", m_failures);
+            }
         }
     }
-
 }

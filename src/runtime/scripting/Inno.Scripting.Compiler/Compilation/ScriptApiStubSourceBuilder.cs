@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-
 using Inno.Scripting.Api;
 
 namespace Inno.Scripting.Compiler;
@@ -12,11 +11,11 @@ namespace Inno.Scripting.Compiler;
 internal static class ScriptApiStubSourceBuilder
 {
     private const BindingFlags C_DECLARED_MEMBERS =
-        BindingFlags.Public |
-        BindingFlags.NonPublic |
-        BindingFlags.Instance |
-        BindingFlags.Static |
-        BindingFlags.DeclaredOnly;
+        BindingFlags.Public
+        | BindingFlags.NonPublic
+        | BindingFlags.Instance
+        | BindingFlags.Static
+        | BindingFlags.DeclaredOnly;
 
     [ThreadStatic]
     private static IReadOnlySet<Type>? s_exportedTypes;
@@ -33,25 +32,25 @@ internal static class ScriptApiStubSourceBuilder
     internal static string BuildImplementation(
         ScriptApiAssembly export,
         IReadOnlySet<Type> exportedTypes
-    )
-        => Build(
-            export.exports.Select(static value => value.type).ToArray(),
-            exportedTypes,
-            export.assembly.GetName().Version ?? new Version(1, 0, 0, 0),
-            namespaceMappings: null,
-            typeNames: null);
+    ) => Build(
+        export.exports.Select(static value => value.type).ToArray(),
+        exportedTypes,
+        export.assembly.GetName().Version ?? new Version(1, 0, 0, 0),
+        namespaceMappings: null,
+        typeNames: null
+    );
 
     internal static string BuildLogical(
         IReadOnlyList<ScriptApiTypeExport> exports,
         IReadOnlySet<Type> exportedTypes,
         IReadOnlyDictionary<string, string> namespaceMappings
-    )
-        => Build(
-            exports.Select(static value => value.type).ToArray(),
-            exportedTypes,
-            new Version(1, 0, 0, 0),
-            namespaceMappings,
-            exports.ToDictionary(static value => value.type, static value => value.name));
+    ) => Build(
+        exports.Select(static value => value.type).ToArray(),
+        exportedTypes,
+        new Version(1, 0, 0, 0),
+        namespaceMappings,
+        exports.ToDictionary(static value => value.type, static value => value.name)
+    );
 
     private static string Build(
         IReadOnlyList<Type> types,
@@ -112,13 +111,19 @@ internal static class ScriptApiStubSourceBuilder
         if (type.IsClass)
         {
             if (type.IsAbstract && type.IsSealed)
+            {
                 builder.Append("static ");
+            }
             else
             {
                 if (type.IsAbstract)
+                {
                     builder.Append("abstract ");
+                }
                 if (type.IsSealed)
+                {
                     builder.Append("sealed ");
+                }
             }
             builder.Append("class ");
         }
@@ -129,7 +134,9 @@ internal static class ScriptApiStubSourceBuilder
         else
         {
             if (type.IsDefined(typeof(System.Runtime.CompilerServices.IsReadOnlyAttribute), inherit: false))
+            {
                 builder.Append("readonly ");
+            }
             builder.Append("struct ");
         }
         AppendNamedType(builder, type);
@@ -149,9 +156,11 @@ internal static class ScriptApiStubSourceBuilder
         Type type
     ) {
         if (!typeof(Attribute).IsAssignableFrom(type))
+        {
             return;
+        }
         AttributeUsageAttribute usage = type.GetCustomAttribute<AttributeUsageAttribute>(inherit: true)
-            ?? new AttributeUsageAttribute(AttributeTargets.All);
+                                        ?? new AttributeUsageAttribute(AttributeTargets.All);
         builder.Append("[global::System.AttributeUsage((global::System.AttributeTargets)")
             .Append(((int)usage.ValidOn).ToString(CultureInfo.InvariantCulture))
             .Append(", AllowMultiple = ")
@@ -188,7 +197,7 @@ internal static class ScriptApiStubSourceBuilder
         Type type
     ) {
         MethodInfo invoke = type.GetMethod("Invoke")
-            ?? throw new InvalidOperationException($"Delegate '{type.FullName}' has no Invoke method.");
+                            ?? throw new InvalidOperationException($"Delegate '{type.FullName}' has no Invoke method.");
         builder.Append("public delegate ")
             .Append(FormatParameterType(invoke.ReturnParameter))
             .Append(' ');
@@ -209,18 +218,26 @@ internal static class ScriptApiStubSourceBuilder
             .Where(static argument => argument.DeclaringMethod is null)
             .ToArray();
         if (arguments.Length == 0)
+        {
             return;
+        }
         builder.Append('<');
         for (int i = 0; i < arguments.Length; i++)
         {
             if (i > 0)
+            {
                 builder.Append(", ");
-            GenericParameterAttributes variance = arguments[i].GenericParameterAttributes &
-                                                  GenericParameterAttributes.VarianceMask;
+            }
+            GenericParameterAttributes variance = arguments[i].GenericParameterAttributes
+                                                  & GenericParameterAttributes.VarianceMask;
             if (variance == GenericParameterAttributes.Covariant)
+            {
                 builder.Append("out ");
+            }
             else if (variance == GenericParameterAttributes.Contravariant)
+            {
                 builder.Append("in ");
+            }
             builder.Append(arguments[i].Name);
         }
         builder.Append('>');
@@ -231,25 +248,27 @@ internal static class ScriptApiStubSourceBuilder
         Type type
     ) {
         var baseTypes = new List<Type>();
-        if (type.IsClass &&
-            !type.IsStaticClass() &&
-            type.BaseType is not null &&
-            type.BaseType != typeof(object) &&
-            IsApiType(type.BaseType))
-        {
+        if (type.IsClass
+            && !type.IsStaticClass()
+            && type.BaseType is not null
+            && type.BaseType != typeof(object)
+            && IsApiType(type.BaseType)
+        ) {
             baseTypes.Add(type.BaseType);
         }
         foreach (Type interfaceType in type.GetInterfaces())
         {
-            if ((interfaceType.IsPublic || interfaceType.IsNestedPublic) &&
-                IsApiType(interfaceType) &&
-                CanExposeInterface(type, interfaceType))
-            {
+            if ((interfaceType.IsPublic || interfaceType.IsNestedPublic)
+                && IsApiType(interfaceType)
+                && CanExposeInterface(type, interfaceType)
+            ) {
                 baseTypes.Add(interfaceType);
             }
         }
         if (baseTypes.Count == 0)
+        {
             return;
+        }
         builder.Append(" : ")
             .Append(string.Join(", ", baseTypes.Distinct().Select(FormatType)));
     }
@@ -259,7 +278,9 @@ internal static class ScriptApiStubSourceBuilder
         Type interfaceType
     ) {
         if (type.IsInterface)
+        {
             return true;
+        }
         InterfaceMapping mapping = type.GetInterfaceMap(interfaceType);
         return mapping.TargetMethods.All(IsVisible);
     }
@@ -273,16 +294,24 @@ internal static class ScriptApiStubSourceBuilder
             GenericParameterAttributes attributes = parameter.GenericParameterAttributes;
             var constraints = new List<string>();
             if ((attributes & GenericParameterAttributes.ReferenceTypeConstraint) != 0)
+            {
                 constraints.Add("class");
+            }
             bool isStruct = (attributes & GenericParameterAttributes.NotNullableValueTypeConstraint) != 0;
             if (isStruct)
+            {
                 constraints.Add("struct");
-            constraints.AddRange(parameter
-                .GetGenericParameterConstraints()
-                .Where(constraint => constraint != typeof(ValueType))
-                .Select(FormatType));
+            }
+            constraints.AddRange(
+                parameter
+                    .GetGenericParameterConstraints()
+                    .Where(constraint => constraint != typeof(ValueType))
+                    .Select(FormatType)
+            );
             if (!isStruct && (attributes & GenericParameterAttributes.DefaultConstructorConstraint) != 0)
+            {
                 constraints.Add("new()");
+            }
             if (constraints.Count > 0)
             {
                 builder.Append(" where ")
@@ -300,7 +329,9 @@ internal static class ScriptApiStubSourceBuilder
         foreach (FieldInfo field in type.GetFields(C_DECLARED_MEMBERS))
         {
             if (!IsVisible(field) || field.IsSpecialName)
+            {
                 continue;
+            }
             if (!IsApiType(field.FieldType))
             {
                 RejectUnclosedMember(field, field.FieldType);
@@ -310,19 +341,27 @@ internal static class ScriptApiStubSourceBuilder
                 .Append(GetAccessibility(field))
                 .Append(' ');
             if (field.IsLiteral)
+            {
                 builder.Append("const ");
+            }
             else
             {
                 if (field.IsStatic)
+                {
                     builder.Append("static ");
+                }
                 if (field.IsInitOnly)
+                {
                     builder.Append("readonly ");
+                }
             }
             builder.Append(FormatType(field.FieldType, s_nullability!.Create(field), new(field.GetCustomAttributesData(), field)))
                 .Append(' ')
                 .Append(EscapeIdentifier(field.Name));
             if (field.IsLiteral)
+            {
                 builder.Append(" = ").Append(FormatConstant(field.GetRawConstantValue(), field.FieldType));
+            }
             builder.AppendLine(";");
         }
     }
@@ -332,11 +371,15 @@ internal static class ScriptApiStubSourceBuilder
         Type type
     ) {
         if (type.IsStaticClass() || type.IsInterface)
+        {
             return;
+        }
         foreach (ConstructorInfo constructor in type.GetConstructors(C_DECLARED_MEMBERS))
         {
             if (!IsVisible(constructor) || type.IsValueType && constructor.GetParameters().Length == 0)
+            {
                 continue;
+            }
             if (!AreApiParameters(constructor.GetParameters()))
             {
                 RejectUnclosedMember(constructor, constructor.GetParameters().Select(static value => value.ParameterType));
@@ -362,13 +405,17 @@ internal static class ScriptApiStubSourceBuilder
             MethodInfo? setter = IsVisible(property.SetMethod) ? property.SetMethod : null;
             MethodInfo? representative = MoreVisible(getter, setter);
             if (representative is null)
+            {
                 continue;
+            }
             if (!IsApiType(property.PropertyType) || !AreApiParameters(property.GetIndexParameters()))
             {
                 RejectUnclosedMember(
                     property,
                     new[] { property.PropertyType }.Concat(
-                        property.GetIndexParameters().Select(static value => value.ParameterType)));
+                        property.GetIndexParameters().Select(static value => value.ParameterType)
+                    )
+                );
                 continue;
             }
             string accessibility = GetAccessibility(representative);
@@ -376,7 +423,11 @@ internal static class ScriptApiStubSourceBuilder
                 .Append(accessibility)
                 .Append(' ');
             AppendMethodModifiers(builder, representative, type.IsInterface);
-            builder.Append(FormatType(property.PropertyType, s_nullability!.Create(property), new(property.GetCustomAttributesData(), property))).Append(' ');
+            builder
+                .Append(
+                    FormatType(property.PropertyType, s_nullability!.Create(property), new(property.GetCustomAttributesData(), property))
+                )
+                .Append(' ');
             ParameterInfo[] indexParameters = property.GetIndexParameters();
             if (indexParameters.Length > 0)
             {
@@ -402,16 +453,24 @@ internal static class ScriptApiStubSourceBuilder
         string propertyAccessibility
     ) {
         if (method is null)
+        {
             return;
+        }
         builder.Append("        ");
         string accessibility = GetAccessibility(method);
         if (!string.Equals(accessibility, propertyAccessibility, StringComparison.Ordinal))
+        {
             builder.Append(accessibility).Append(' ');
+        }
         builder.Append(keyword);
         if (method.IsAbstract)
+        {
             builder.AppendLine(";");
+        }
         else
+        {
             builder.AppendLine(" => throw new global::System.NotImplementedException();");
+        }
     }
 
     private static void AppendEvents(
@@ -422,7 +481,9 @@ internal static class ScriptApiStubSourceBuilder
         {
             MethodInfo? accessor = MoreVisible(eventInfo.AddMethod, eventInfo.RemoveMethod);
             if (!IsVisible(accessor))
+            {
                 continue;
+            }
             if (!IsApiType(eventInfo.EventHandlerType!))
             {
                 RejectUnclosedMember(eventInfo, eventInfo.EventHandlerType!);
@@ -432,9 +493,17 @@ internal static class ScriptApiStubSourceBuilder
                 .Append(GetAccessibility(accessor!))
                 .Append(' ');
             if (accessor!.IsStatic)
+            {
                 builder.Append("static ");
+            }
             builder.Append("event ")
-                .Append(FormatType(eventInfo.EventHandlerType!, s_nullability!.Create(eventInfo), new(eventInfo.GetCustomAttributesData(), eventInfo)))
+                .Append(
+                    FormatType(
+                        eventInfo.EventHandlerType!,
+                        s_nullability!.Create(eventInfo),
+                        new(eventInfo.GetCustomAttributesData(), eventInfo)
+                    )
+                )
                 .Append(' ')
                 .Append(EscapeIdentifier(eventInfo.Name))
                 .AppendLine(";");
@@ -447,14 +516,16 @@ internal static class ScriptApiStubSourceBuilder
     ) {
         foreach (MethodInfo method in type.GetMethods(C_DECLARED_MEMBERS))
         {
-            if (!IsVisible(method) ||
-                method.Name == "Finalize" && method.GetParameters().Length == 0 ||
-                method.Name.Contains('<', StringComparison.Ordinal))
+            if (!IsVisible(method)
+                || method.Name == "Finalize" && method.GetParameters().Length == 0
+                || method.Name.Contains('<', StringComparison.Ordinal)
+            ) {
                 continue;
-            if (method.IsSpecialName &&
-                method.Name is not "op_Implicit" and not "op_Explicit" &&
-                !TryGetOperator(method.Name, out _))
-            {
+            }
+            if (method.IsSpecialName
+                && method.Name is not "op_Implicit" and not "op_Explicit"
+                && !TryGetOperator(method.Name, out _)
+            ) {
                 continue;
             }
             if (!IsApiMethod(method))
@@ -463,16 +534,23 @@ internal static class ScriptApiStubSourceBuilder
                     method,
                     new[] { method.ReturnType }
                         .Concat(method.GetParameters().Select(static value => value.ParameterType))
-                        .Concat(method.GetGenericArguments()
-                            .SelectMany(static argument => argument.GetGenericParameterConstraints())));
+                        .Concat(
+                            method.GetGenericArguments()
+                                .SelectMany(static argument => argument.GetGenericParameterConstraints())
+                        )
+                );
                 continue;
             }
             if (method.IsSpecialName)
             {
                 if (method.Name is "op_Implicit" or "op_Explicit")
+                {
                     AppendConversionOperator(builder, method);
+                }
                 else if (TryGetOperator(method.Name, out string? symbol))
+                {
                     AppendOperator(builder, method, symbol!);
+                }
                 continue;
             }
             builder.Append("    ")
@@ -484,7 +562,9 @@ internal static class ScriptApiStubSourceBuilder
                 .Append(EscapeIdentifier(method.Name));
             Type[] genericArguments = method.GetGenericArguments();
             if (genericArguments.Length > 0)
+            {
                 builder.Append('<').Append(string.Join(", ", genericArguments.Select(static value => value.Name))).Append('>');
+            }
             builder.Append('(');
             AppendParameters(builder, method.GetParameters());
             builder.Append(')');
@@ -531,17 +611,25 @@ internal static class ScriptApiStubSourceBuilder
             return;
         }
         if (declaringTypeIsInterface)
+        {
             return;
+        }
         if (method.IsAbstract)
+        {
             builder.Append("abstract ");
+        }
         else if (method.GetBaseDefinition() != method)
         {
             if (method.IsFinal)
+            {
                 builder.Append("sealed ");
+            }
             builder.Append("override ");
         }
         else if (method.IsVirtual && !method.IsFinal)
+        {
             builder.Append("virtual ");
+        }
     }
 
     private static void AppendMethodBody(
@@ -549,9 +637,13 @@ internal static class ScriptApiStubSourceBuilder
         MethodInfo method
     ) {
         if (method.IsAbstract)
+        {
             builder.AppendLine(";");
+        }
         else
+        {
             builder.AppendLine(" => throw new global::System.NotImplementedException();");
+        }
     }
 
     private static void AppendParameters(
@@ -561,51 +653,71 @@ internal static class ScriptApiStubSourceBuilder
         for (int i = 0; i < parameters.Count; i++)
         {
             if (i > 0)
+            {
                 builder.Append(", ");
+            }
             ParameterInfo parameter = parameters[i];
             AppendFlowAttributes(builder, parameter.GetCustomAttributesData());
             if (parameter.IsDefined(typeof(ParamArrayAttribute), inherit: false))
+            {
                 builder.Append("params ");
+            }
             Type parameterType = parameter.ParameterType;
             if (parameterType.IsByRef)
             {
                 if (parameter.IsOut)
+                {
                     builder.Append("out ");
+                }
                 else if (parameter.IsIn)
+                {
                     builder.Append("in ");
+                }
                 else
+                {
                     builder.Append("ref ");
+                }
                 parameterType = parameterType.GetElementType()!;
             }
             builder.Append(FormatParameterType(parameter))
                 .Append(' ')
                 .Append(EscapeIdentifier(parameter.Name ?? "value"));
             if (parameter.IsOptional)
+            {
                 builder.Append(" = ").Append(FormatConstant(parameter.DefaultValue, parameterType));
+            }
         }
     }
 
     private static bool IsVisible(MethodBase? method)
-        => method is not null &&
-           (method.IsPublic || method.IsFamily || method.IsFamilyOrAssembly);
+        => method is not null
+           && (method.IsPublic || method.IsFamily || method.IsFamilyOrAssembly);
 
     private static bool IsVisible(FieldInfo field) => field.IsPublic || field.IsFamily || field.IsFamilyOrAssembly;
 
     private static string GetAccessibility(MethodBase method)
     {
         if (method.IsPublic)
+        {
             return "public";
+        }
         if (method.IsFamilyOrAssembly)
+        {
             return "protected internal";
+        }
         return "protected";
     }
 
     private static string GetAccessibility(FieldInfo field)
     {
         if (field.IsPublic)
+        {
             return "public";
+        }
         if (field.IsFamilyOrAssembly)
+        {
             return "protected internal";
+        }
         return "protected";
     }
 
@@ -614,9 +726,13 @@ internal static class ScriptApiStubSourceBuilder
         MethodInfo? second
     ) {
         if (!IsVisible(first))
+        {
             return IsVisible(second) ? second : null;
+        }
         if (!IsVisible(second))
+        {
             return first;
+        }
         return VisibilityRank(first!) >= VisibilityRank(second!) ? first : second;
     }
 
@@ -625,7 +741,11 @@ internal static class ScriptApiStubSourceBuilder
     private static string FormatType(Type type) => FormatType(type, null);
 
     private static string FormatParameterType(ParameterInfo parameter)
-        => FormatType(parameter.ParameterType, s_nullability!.Create(parameter), new(parameter.GetCustomAttributesData(), parameter.Member));
+        => FormatType(
+            parameter.ParameterType,
+            s_nullability!.Create(parameter),
+            new(parameter.GetCustomAttributesData(), parameter.Member)
+        );
 
     private static void AppendFlowAttributes(
         StringBuilder builder,
@@ -635,21 +755,37 @@ internal static class ScriptApiStubSourceBuilder
         {
             if (attribute.AttributeType.Namespace == "System.Runtime.CompilerServices"
                 && attribute.AttributeType.Name is "CallerFilePathAttribute" or "CallerLineNumberAttribute"
-                    or "CallerMemberNameAttribute" or "CallerArgumentExpressionAttribute")
-            {
-                builder.Append("[global::").Append(attribute.AttributeType.FullName).Append('(')
-                    .Append(string.Join(", ", attribute.ConstructorArguments.Select(static argument =>
-                        FormatConstant(argument.Value, argument.ArgumentType))))
+                   or "CallerMemberNameAttribute" or "CallerArgumentExpressionAttribute"
+            ) {
+                builder.Append("[global::")
+                    .Append(attribute.AttributeType.FullName)
+                    .Append('(')
+                    .Append(
+                        string.Join(
+                            ", ",
+                            attribute.ConstructorArguments.Select(static argument =>
+                                FormatConstant(argument.Value, argument.ArgumentType))
+                        )
+                    )
                     .Append(")] ");
                 continue;
             }
             if (attribute.AttributeType.Namespace != "System.Diagnostics.CodeAnalysis"
                 || attribute.AttributeType.Name is not ("AllowNullAttribute" or "DisallowNullAttribute"
-                    or "MaybeNullAttribute" or "NotNullAttribute" or "NotNullWhenAttribute"
-                    or "MaybeNullWhenAttribute" or "NotNullIfNotNullAttribute" or "DoesNotReturnIfAttribute"))
+                or "MaybeNullAttribute" or "NotNullAttribute" or "NotNullWhenAttribute"
+                or "MaybeNullWhenAttribute" or "NotNullIfNotNullAttribute" or "DoesNotReturnIfAttribute")
+            ) {
                         continue;
-            builder.Append("[global::").Append(attribute.AttributeType.FullName).Append('(')
-                .Append(string.Join(", ", attribute.ConstructorArguments.Select(static argument => FormatConstant(argument.Value, argument.ArgumentType))))
+            }
+            builder.Append("[global::")
+                .Append(attribute.AttributeType.FullName)
+                .Append('(')
+                .Append(
+                    string.Join(
+                        ", ",
+                        attribute.ConstructorArguments.Select(static argument => FormatConstant(argument.Value, argument.ArgumentType))
+                    )
+                )
                 .Append(")] ");
         }
     }
@@ -670,21 +806,36 @@ internal static class ScriptApiStubSourceBuilder
         bool nullable = type.IsGenericParameter ? flag == 2 : nullability?.ReadState == NullabilityState.Nullable;
         string annotation = !type.IsValueType && nullable ? "?" : string.Empty;
         if (type.IsArray)
-            return FormatType(type.GetElementType()!, nullability?.ElementType, annotations) + "[" + new string(',', type.GetArrayRank() - 1) + "]" + annotation;
+        {
+            return FormatType(type.GetElementType()!, nullability?.ElementType, annotations)
+                   + "["
+                   + new string(',', type.GetArrayRank() - 1)
+                   + "]"
+                   + annotation;
+        }
         if (type.IsGenericParameter)
+        {
             return type.Name + annotation;
+        }
         if (C_TYPE_ALIASES.TryGetValue(type, out string? alias))
+        {
             return alias + annotation;
+        }
         if (!type.IsGenericType)
+        {
             return "global::" + FormatNamedTypeName(type, removeGenericArities: false) + annotation;
+        }
         Type definition = type.GetGenericTypeDefinition();
         string name = FormatNamedTypeName(definition, removeGenericArities: true);
-        return "global::" + name + "<" +
-               string.Join(", ", type.GetGenericArguments().Select((
-                   argument,
-                   index
-               ) =>
-                   FormatType(argument, nullability?.GenericTypeArguments.ElementAtOrDefault(index), annotations))) + ">" + annotation;
+        return "global::" + name + "<"
+               + string.Join(
+                   ", ",
+                   type.GetGenericArguments().Select((
+                       argument,
+                       index
+                   ) =>
+                       FormatType(argument, nullability?.GenericTypeArguments.ElementAtOrDefault(index), annotations))
+               ) + ">" + annotation;
     }
 
     private sealed class NullableAnnotations
@@ -697,8 +848,9 @@ internal static class ScriptApiStubSourceBuilder
             IEnumerable<CustomAttributeData> attributes,
             MemberInfo owner
         ) {
-            CustomAttributeData? transform = attributes.FirstOrDefault(static attribute =>
-                attribute.AttributeType.FullName == "System.Runtime.CompilerServices.NullableAttribute");
+            CustomAttributeData? transform = attributes.FirstOrDefault(static attribute => (
+                attribute.AttributeType.FullName == "System.Runtime.CompilerServices.NullableAttribute"
+            ));
             m_flags = transform?.ConstructorArguments[0].Value switch
             {
                 byte flag => [flag],
@@ -707,10 +859,13 @@ internal static class ScriptApiStubSourceBuilder
             };
             for (MemberInfo? current = owner; current is not null; current = current.DeclaringType)
             {
-                CustomAttributeData? context = current.GetCustomAttributesData().FirstOrDefault(static attribute =>
-                    attribute.AttributeType.FullName == "System.Runtime.CompilerServices.NullableContextAttribute");
+                CustomAttributeData? context = current.GetCustomAttributesData().FirstOrDefault(static attribute => (
+                    attribute.AttributeType.FullName == "System.Runtime.CompilerServices.NullableContextAttribute"
+                ));
                 if (context is null)
+                {
                     continue;
+                }
                 m_context = (byte)context.ConstructorArguments[0].Value!;
                 break;
             }
@@ -719,7 +874,9 @@ internal static class ScriptApiStubSourceBuilder
         internal byte Next(Type type)
         {
             if (type.IsValueType && !type.IsGenericType)
+            {
                 return 0;
+            }
             int index = m_index++;
             return index < m_flags.Length ? m_flags[index] : m_context;
         }
@@ -734,37 +891,41 @@ internal static class ScriptApiStubSourceBuilder
         {
             string aliasNamespace = ResolveNamespace(implementationNamespace);
             return string.IsNullOrEmpty(aliasNamespace)
-                ? typeName
-                : aliasNamespace + "." + typeName;
+                   ? typeName
+                   : aliasNamespace + "." + typeName;
         }
         string fullName = type.FullName ?? type.Name;
         string relativeName = string.IsNullOrEmpty(implementationNamespace)
-            ? fullName
-            : fullName[(implementationNamespace.Length + 1)..];
+                              ? fullName
+                              : fullName[(implementationNamespace.Length + 1)..];
         if (removeGenericArities)
+        {
             relativeName = RemoveGenericArities(relativeName);
+        }
         relativeName = relativeName.Replace('+', '.');
         string targetNamespace = ResolveNamespace(implementationNamespace);
         return string.IsNullOrEmpty(targetNamespace)
-            ? relativeName
-            : targetNamespace + "." + relativeName;
+               ? relativeName
+               : targetNamespace + "." + relativeName;
     }
 
     private static string ResolveNamespace(string implementationNamespace)
-        => s_namespaceMappings is not null &&
-           s_namespaceMappings.TryGetValue(implementationNamespace, out string? apiNamespace)
-            ? apiNamespace
-            : implementationNamespace;
+        => s_namespaceMappings is not null
+           && s_namespaceMappings.TryGetValue(implementationNamespace, out string? apiNamespace)
+           ? apiNamespace
+           : implementationNamespace;
 
     private static string GetTypeName(Type type)
         => s_typeNames is not null && s_typeNames.TryGetValue(type, out string? name)
-            ? name
-            : RemoveArity(type.Name);
+           ? name
+           : RemoveArity(type.Name);
 
     private static bool IsApiMethod(MethodInfo method)
     {
         if (!IsApiType(method.ReturnType) || !AreApiParameters(method.GetParameters()))
+        {
             return false;
+        }
         return method.GetGenericArguments()
             .SelectMany(static argument => argument.GetGenericParameterConstraints())
             .All(IsApiType);
@@ -776,15 +937,21 @@ internal static class ScriptApiStubSourceBuilder
     private static bool IsApiType(Type type)
     {
         if (type.IsByRef || type.IsPointer || type.IsArray)
+        {
             return IsApiType(type.GetElementType()!);
+        }
         if (type.IsGenericParameter)
+        {
             return type.GetGenericParameterConstraints().All(IsApiType);
+        }
         if (C_TYPE_ALIASES.ContainsKey(type) || type == typeof(void))
+        {
             return true;
+        }
         if (type.IsGenericType)
         {
-            return IsApiNamedType(type.GetGenericTypeDefinition()) &&
-                   type.GetGenericArguments().All(IsApiType);
+            return IsApiNamedType(type.GetGenericTypeDefinition())
+                   && type.GetGenericArguments().All(IsApiType);
         }
         return IsApiNamedType(type);
     }
@@ -799,18 +966,22 @@ internal static class ScriptApiStubSourceBuilder
         IEnumerable<Type> dependencies
     ) {
         if (member.IsDefined(typeof(ScriptingApiIgnoreAttribute), inherit: false))
+        {
             return;
+        }
         string missing = string.Join(
             ", ",
             dependencies
                 .SelectMany(GetUnexportedTypes)
                 .Select(static type => type.FullName ?? type.Name)
                 .Distinct(StringComparer.Ordinal)
-                .OrderBy(static name => name, StringComparer.Ordinal));
+                .OrderBy(static name => name, StringComparer.Ordinal)
+        );
         throw new InvalidOperationException(
-            $"Scripting API member '{member.DeclaringType?.FullName}.{member.Name}' depends on " +
-            $"unexported type(s): {missing}. Export the dependency or mark the member with " +
-            $"{nameof(ScriptingApiIgnoreAttribute)}.");
+            $"Scripting API member '{member.DeclaringType?.FullName}.{member.Name}' depends on "
+            + $"unexported type(s): {missing}. Export the dependency or mark the member with "
+            + $"{nameof(ScriptingApiIgnoreAttribute)}."
+        );
     }
 
     private static IEnumerable<Type> GetUnexportedTypes(Type type)
@@ -818,39 +989,55 @@ internal static class ScriptApiStubSourceBuilder
         if (type.IsByRef || type.IsPointer || type.IsArray)
         {
             foreach (Type missing in GetUnexportedTypes(type.GetElementType()!))
+            {
                 yield return missing;
+            }
             yield break;
         }
         if (type.IsGenericParameter)
         {
             foreach (Type constraint in type.GetGenericParameterConstraints())
+            {
             foreach (Type missing in GetUnexportedTypes(constraint))
+            {
                 yield return missing;
+            }
+            }
             yield break;
         }
         if (C_TYPE_ALIASES.ContainsKey(type) || type == typeof(void))
+        {
             yield break;
+        }
         if (type.IsGenericType)
         {
             if (!IsApiNamedType(type.GetGenericTypeDefinition()))
+            {
                 yield return type.GetGenericTypeDefinition();
+            }
             foreach (Type argument in type.GetGenericArguments())
+            {
             foreach (Type missing in GetUnexportedTypes(argument))
+            {
                 yield return missing;
+            }
+            }
             yield break;
         }
         if (!IsApiNamedType(type))
+        {
             yield return type;
+        }
     }
 
     private static bool IsApiNamedType(Type type)
     {
         Assembly assembly = type.Assembly;
         string name = assembly.GetName().Name ?? string.Empty;
-        if (assembly == typeof(object).Assembly ||
-            name.StartsWith("System.", StringComparison.Ordinal) ||
-            name.StartsWith("Microsoft.", StringComparison.Ordinal))
-        {
+        if (assembly == typeof(object).Assembly
+            || name.StartsWith("System.", StringComparison.Ordinal)
+            || name.StartsWith("Microsoft.", StringComparison.Ordinal)
+        ) {
             return true;
         }
         return s_exportedTypes?.Contains(type) == true;
@@ -861,13 +1048,12 @@ internal static class ScriptApiStubSourceBuilder
         Type type
     ) {
         if (value is null || value == DBNull.Value || value == Missing.Value)
+        {
             return "default";
+        }
         if (type.IsEnum)
         {
-            object numeric = Convert.ChangeType(
-                value,
-                Enum.GetUnderlyingType(type),
-                CultureInfo.InvariantCulture);
+            object numeric = Convert.ChangeType(value, Enum.GetUnderlyingType(type), CultureInfo.InvariantCulture);
             return "(" + FormatType(type) + ")" + FormatNumericConstant(numeric);
         }
         return value switch
@@ -937,7 +1123,9 @@ internal static class ScriptApiStubSourceBuilder
                 continue;
             }
             while (i + 1 < value.Length && char.IsDigit(value[i + 1]))
+            {
                 i++;
+            }
         }
         return builder.ToString();
     }

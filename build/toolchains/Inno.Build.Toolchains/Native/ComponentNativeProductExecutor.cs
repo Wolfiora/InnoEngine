@@ -22,27 +22,40 @@ public sealed class ComponentNativeProductExecutor : INativeProductExecutor
         ArgumentNullException.ThrowIfNull(plan);
         cancellationToken.ThrowIfCancellationRequested();
         if (plan.steps.Any(static step => step.build is null))
+        {
             throw new NotSupportedException("This closure requires its platform's static aggregate executor.");
+        }
         NativeToolchainSelection toolchain = context.RequireToolchain();
         plan.CreateRecipes(context);
-        NativeBindingGenerationResult bindings = await NativeBindingPreparation.PrepareAsync(context,
-            plan.steps.Select(static step => step.component).ToArray(), cancellationToken,
+        NativeBindingGenerationResult bindings = await NativeBindingPreparation.PrepareAsync(
+            context,
+            plan.steps.Select(static step => step.component).ToArray(),
+            cancellationToken,
             plan.steps.Where(static step => step.component.bindingDefinition is not null)
                 .GroupBy(static step => step.component.nativeProject, StringComparer.Ordinal)
-                .ToDictionary(static group => group.Key, static group => group.First().options, StringComparer.Ordinal)).ConfigureAwait(false);
+                .ToDictionary(static group => group.Key, static group => group.First().options, StringComparer.Ordinal)
+        ).ConfigureAwait(false);
         var completed = new Dictionary<string, NativeBuildProduct>(StringComparer.Ordinal);
         var borrowed = new ReadOnlyDictionary<string, NativeBuildProduct>(completed);
         try
         {
             context = context.WithBindings(bindings);
             if (await ProductNativeCacheLookup.TryAcquireAsync(context, plan.steps, cancellationToken).ConfigureAwait(false)
-                is IReadOnlyList<NativeBuildProduct> cached)
+                is IReadOnlyList<NativeBuildProduct> cached
+            ) {
                 return new ProductNativeBuildResult(cached, bindings);
+            }
             foreach (ProductNativeBuildStep step in plan.steps)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                NativeBuildContext configured = step.configuration is string configuration ? context.WithConfiguration(configuration) : context;
-                NativeBuildProduct product = await step.build!(configured.WithComponentOptions(step.component, step.options), borrowed, cancellationToken).ConfigureAwait(false);
+                NativeBuildContext configured = step.configuration is string configuration
+                                                ? context.WithConfiguration(configuration)
+                                                : context;
+                NativeBuildProduct product = await step.build!(
+                    configured.WithComponentOptions(step.component, step.options),
+                    borrowed,
+                    cancellationToken
+                ).ConfigureAwait(false);
                 if (product.component != step.id || product.targetId != toolchain.targetId)
                 {
                     product.Dispose();
@@ -60,11 +73,13 @@ public sealed class ComponentNativeProductExecutor : INativeProductExecutor
             }
             catch (Exception releaseFailure)
             {
-                throw new AggregateException("Native preparation failed and reading ownership could not be completely released.",
-                    buildFailure, releaseFailure);
+                throw new AggregateException(
+                    "Native preparation failed and reading ownership could not be completely released.",
+                    buildFailure,
+                    releaseFailure
+                );
             }
             throw;
         }
     }
-
 }

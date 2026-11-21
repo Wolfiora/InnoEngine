@@ -1,8 +1,8 @@
-using Inno.Core.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Inno.Core.Diagnostics;
 
 namespace Inno.Scripting.Compiler;
 
@@ -106,7 +106,8 @@ internal static class ScriptCompilerCacheSerialization
                 reader.ReadInt32(),
                 reader.ReadInt32(),
                 reader.ReadBoolean(),
-                reader.ReadBoolean());
+                reader.ReadBoolean()
+            );
         }
 
         ValidateEndOfArtifact(stream, "script type manifest cache");
@@ -132,7 +133,9 @@ internal static class ScriptCompilerCacheSerialization
     ) {
         byte[] bytes = reader.ReadBytes(16);
         if (bytes.Length != 16)
+        {
             throw new InvalidDataException($"The script compiler cache truncated its {fieldName}.");
+        }
         return new Guid(bytes);
     }
 

@@ -11,7 +11,8 @@ public sealed class EventInputBackendProvider : InputBackendProvider
     /// <summary>
     /// Creates an explicitly composed registration for the bundled implementation.
     /// </summary>
-    public EventInputBackendProvider() : base(InputBackendId.events) { }
+    public EventInputBackendProvider()
+        : base(InputBackendId.events) {}
 
     /// <inheritdoc />
     public override IInputEventSource CreateEventSource(
@@ -22,4 +23,3 @@ public sealed class EventInputBackendProvider : InputBackendProvider
         return new EventInputSource(acceptAllWindows ? 0 : window.windowId);
     }
 }
-

@@ -1,14 +1,12 @@
-using System.Runtime.CompilerServices;
-using NativeVector2 = Inno.Native.ImGui.ImVec2C;
-using BGCS.Runtime;
 using System.Collections.Generic;
 using System.Numerics;
-
+using System.Runtime.CompilerServices;
+using BGCS.Runtime;
+using Xunit;
 using Inno.Native.ImGui;
 
 using NativeImGui = Inno.Native.ImGui.ImGui;
-
-using Xunit;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 
 namespace Inno.Editor.PlayMode.Tests;
 
@@ -82,13 +80,13 @@ public sealed unsafe class ConsoleEntryLayoutTests
         {
             NativeImGui.PushID(identities[i]);
             if (NativeImGui.BeginChild(
-                    "##ConsoleEntryCard",
-                    Vector2.Zero,
-                    (int)(ImGuiChildFlags.FrameStyle | ImGuiChildFlags.AutoResizeY),
-                    (int)(ImGuiWindowFlags.NoScrollbar |
-                    ImGuiWindowFlags.NoScrollWithMouse |
-                    ImGuiWindowFlags.NoSavedSettings)))
-            {
+                "##ConsoleEntryCard",
+                Vector2.Zero,
+                (int)(ImGuiChildFlags.FrameStyle | ImGuiChildFlags.AutoResizeY),
+                (int)(ImGuiWindowFlags.NoScrollbar
+                      | ImGuiWindowFlags.NoScrollWithMouse
+                      | ImGuiWindowFlags.NoSavedSettings)
+            )) {
                 NativeImGui.TextUnformatted($"Entry {i}");
             }
             NativeImGui.EndChild();

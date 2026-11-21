@@ -1,6 +1,5 @@
 using System;
 using System.Text;
-
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 
@@ -42,21 +41,27 @@ public readonly record struct ProjectId
         foreach (char character in name.Trim())
         {
             if (character is >= 'A' and <= 'Z')
+            {
                 Append((char)(character + ('a' - 'A')));
+            }
             else if (character is >= 'a' and <= 'z' or >= '0' and <= '9')
+            {
                 Append(character);
+            }
             else
+            {
                 pendingSeparator = builder.Length > 0;
+            }
         }
         string value = builder.Length == 0 ? "inno.project" : builder.ToString();
-        return new ProjectId(string.Equals(value, "project", StringComparison.Ordinal)
-            ? "inno.project"
-            : value);
+        return new ProjectId(string.Equals(value, "project", StringComparison.Ordinal) ? "inno.project" : value);
 
         void Append(char character)
         {
             if (pendingSeparator)
+            {
                 builder.Append('-');
+            }
             pendingSeparator = false;
             builder.Append(character);
         }
@@ -97,7 +102,9 @@ public readonly record struct ProjectId
         string parameterName
     ) {
         if (value.Length > 128)
+        {
             throw new ArgumentException($"{label} cannot exceed 128 characters.", parameterName);
+        }
         for (int index = 0; index < value.Length; index++)
         {
             char character = value[index];
@@ -108,13 +115,18 @@ public readonly record struct ProjectId
             {
                 throw new ArgumentException(
                     $"{label} must use lowercase ASCII letters, digits, dots, hyphens, or underscores.",
-                    parameterName);
+                    parameterName
+                );
             }
         }
         if (value[0] is '.' or '-' or '_' || value[^1] is '.' or '-' or '_')
+        {
             throw new ArgumentException($"{label} must begin and end with a letter or digit.", parameterName);
+        }
         if (value.Contains("..", StringComparison.Ordinal))
+        {
             throw new ArgumentException($"{label} cannot contain empty namespace segments.", parameterName);
+        }
     }
 }
 
@@ -176,11 +188,14 @@ public readonly record struct ProjectLocalId
             {
                 throw new ArgumentException(
                     "A project-scoped name must use ASCII letters, digits, spaces, dots, hyphens, or underscores.",
-                    nameof(name));
+                    nameof(name)
+                );
             }
         }
         if (builder.Length == 0)
+        {
             throw new ArgumentException("A project-scoped name must contain a letter or digit.", nameof(name));
+        }
         return new ProjectLocalId(builder.ToString());
     }
 
@@ -197,7 +212,9 @@ public readonly record struct ProjectLocalId
         ref bool pendingSeparator
     ) {
         if (pendingSeparator && builder.Length > 0)
+        {
             builder.Append('-');
+        }
         pendingSeparator = false;
     }
 }
@@ -221,9 +238,13 @@ public readonly record struct ProjectScopedId
         ProjectLocalId name
     ) {
         if (!projectId.isValid)
+        {
             throw new ArgumentException("A valid Project ID is required.", nameof(projectId));
+        }
         if (string.IsNullOrEmpty(name.value))
+        {
             throw new ArgumentException("A valid project-local ID is required.", nameof(name));
+        }
         this.projectId = projectId;
         this.name = name;
     }

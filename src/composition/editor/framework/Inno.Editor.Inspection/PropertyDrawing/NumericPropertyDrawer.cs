@@ -1,10 +1,12 @@
-using Inno.Editor.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Globalization;
+using Inno.Editor.ImGui;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
+
 [PropertyDrawer(typeof(byte))]
 [PropertyDrawer(typeof(sbyte))]
 [PropertyDrawer(typeof(short))]
@@ -20,6 +22,7 @@ internal sealed class NumericPropertyDrawer : IPropertyDrawer
 {
     private const int C_BUFFER_SIZE = 128;
     private const string C_TEXT_STATE = "numeric";
+
     /// <summary>
     /// Renders the value presentation for the current editor frame.
     /// </summary>
@@ -34,20 +37,14 @@ internal sealed class NumericPropertyDrawer : IPropertyDrawer
         {
             int value = rawValue is int current ? current : 0;
             bool changed = context.minimum is double minimum
-                && context.maximum is double maximum ? Ui.SliderInt(
-                $"##{context.path}",
-                ref value,
-                (int)Math.Clamp(Math.Ceiling(minimum), int.MinValue, int.MaxValue),
-                (int)Math.Clamp(Math.Floor(maximum), int.MinValue, int.MaxValue)
-            ) : Ui.DragInt(
-                $"##{context.path}",
-                ref value,
-                1f,
-                0,
-                0,
-                "%d",
-                0
-            );
+                           && context.maximum is double maximum
+                           ? Ui.SliderInt(
+                               $"##{context.path}",
+                               ref value,
+                               (int)Math.Clamp(Math.Ceiling(minimum), int.MinValue, int.MaxValue),
+                               (int)Math.Clamp(Math.Floor(maximum), int.MinValue, int.MaxValue)
+                           )
+                           : Ui.DragInt($"##{context.path}", ref value, 1f, 0, 0, "%d", 0);
             if (changed)
             {
                 context.SetValue(value);
@@ -60,16 +57,14 @@ internal sealed class NumericPropertyDrawer : IPropertyDrawer
         {
             float value = rawValue is float current ? current : 0f;
             bool changed = context.minimum is double minimum
-                && context.maximum is double maximum ? EditorUI.current.widgets.CompactSliderFloat(
-                $"##{context.path}",
-                ref value,
-                (float)minimum,
-                (float)maximum
-            ) : EditorUI.current.widgets.CompactDragFloat(
-                $"##{context.path}",
-                ref value,
-                0.1f
-            );
+                           && context.maximum is double maximum
+                           ? EditorUI.current.widgets.CompactSliderFloat(
+                               $"##{context.path}",
+                               ref value,
+                               (float)minimum,
+                               (float)maximum
+                           )
+                           : EditorUI.current.widgets.CompactDragFloat($"##{context.path}", ref value, 0.1f);
             if (changed)
             {
                 context.SetValue(value);
@@ -118,7 +113,9 @@ internal sealed class NumericPropertyDrawer : IPropertyDrawer
         double? maximum
     ) {
         if (value is null || minimum is null || maximum is null)
+        {
             return value;
+        }
         double numeric = Convert.ToDouble(value, CultureInfo.InvariantCulture);
         double clamped = Math.Clamp(numeric, minimum.Value, maximum.Value);
         return Convert.ChangeType(clamped, type, CultureInfo.InvariantCulture);

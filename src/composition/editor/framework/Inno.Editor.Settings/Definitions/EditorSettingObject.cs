@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-
 using Inno.Core.Serialization;
 
 namespace Inno.Editor.Settings;
@@ -18,9 +17,7 @@ public sealed class EditorSettingObject : ISerializable
     /// <summary>
     /// Creates an empty Settings object.
     /// </summary>
-    public EditorSettingObject()
-    {
-    }
+    public EditorSettingObject() {}
 
     private EditorSettingObject(Dictionary<string, EditorSettingValue> values)
     {
@@ -216,7 +213,9 @@ public sealed class EditorSettingObject : ISerializable
         float value
     ) {
         if (!float.IsFinite(value))
+        {
             throw new ArgumentOutOfRangeException(nameof(value), "Settings numbers must be finite.");
+        }
         Set(name, value);
     }
 
@@ -254,7 +253,9 @@ public sealed class EditorSettingObject : ISerializable
         double value
     ) {
         if (!double.IsFinite(value))
+        {
             throw new ArgumentOutOfRangeException(nameof(value), "Settings numbers must be finite.");
+        }
         Set(name, value);
     }
 
@@ -479,7 +480,9 @@ public sealed class EditorSettingObject : ISerializable
     {
         var values = new Dictionary<string, EditorSettingValue>(m_values.Count, StringComparer.Ordinal);
         foreach ((string name, EditorSettingValue value) in m_values)
+        {
             values.Add(name, value.Copy());
+        }
         return new EditorSettingObject(values);
     }
 
@@ -487,12 +490,14 @@ public sealed class EditorSettingObject : ISerializable
     {
         ArgumentNullException.ThrowIfNull(other);
         if (m_values.Count != other.m_values.Count)
+        {
             return false;
+        }
         foreach ((string name, EditorSettingValue value) in m_values)
         {
             if (!other.m_values.TryGetValue(name, out EditorSettingValue? candidate)
-                || !value.ValueEquals(candidate))
-            {
+                || !value.ValueEquals(candidate)
+            ) {
                 return false;
             }
         }
@@ -502,12 +507,16 @@ public sealed class EditorSettingObject : ISerializable
     internal void Validate(string settingPath)
     {
         if (m_values is null)
+        {
             throw new InvalidDataException($"Settings path '{settingPath}' has no value map.");
+        }
         foreach ((string name, EditorSettingValue value) in m_values)
         {
             ValidateName(name);
             if (value is null)
+            {
                 throw new InvalidDataException($"Settings property '{settingPath}/{name}' is null.");
+            }
             value.Validate($"{settingPath}/{name}");
         }
     }
@@ -518,7 +527,9 @@ public sealed class EditorSettingObject : ISerializable
     ) {
         ValidateName(name);
         if (!m_values.TryGetValue(name, out EditorSettingValue? value))
+        {
             return defaultValue;
+        }
         return value.Read(defaultValue, name);
     }
 
@@ -534,8 +545,8 @@ public sealed class EditorSettingObject : ISerializable
         ValidateName(name);
         EditorSettingValue next = EditorSettingValue.Create(value);
         if (m_values.TryGetValue(name, out EditorSettingValue? current)
-            && current.ValueEquals(next))
-        {
+            && current.ValueEquals(next)
+        ) {
             return;
         }
         m_values[name] = next;

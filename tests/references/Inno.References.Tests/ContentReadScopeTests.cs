@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Inno.Core.Identity;
 using Xunit;
+using Inno.Core.Identity;
 
 namespace Inno.References.Tests;
 

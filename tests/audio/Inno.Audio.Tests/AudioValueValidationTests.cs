@@ -1,7 +1,7 @@
 using System;
+using Xunit;
 using Inno.Core.Mathematics;
 using Inno.References;
-using Xunit;
 
 namespace Inno.Audio.Tests;
 
@@ -63,8 +63,18 @@ public sealed class AudioValueValidationTests
         Assert.Equal(0, options.volume);
         Assert.Equal(float.Epsilon, options.pitch);
         Assert.Equal(-1, options.pan);
-        var spatial = new AudioSpatialOptions(default, default, default, minDistance: 0, maxDistance: 0,
-            rolloff: 0, coneInnerAngle: 0, coneOuterAngle: 360, coneOuterGain: 0, dopplerFactor: 0);
+        var spatial = new AudioSpatialOptions(
+            default,
+            default,
+            default,
+            minDistance: 0,
+            maxDistance: 0,
+            rolloff: 0,
+            coneInnerAngle: 0,
+            coneOuterAngle: 360,
+            coneOuterGain: 0,
+            dopplerFactor: 0
+        );
         Assert.Equal(360, spatial.coneOuterAngle);
     }
 

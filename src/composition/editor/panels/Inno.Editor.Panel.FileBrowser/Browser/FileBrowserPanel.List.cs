@@ -1,6 +1,3 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Inno.Editor.Assets;
-using Inno.Editor.Assets.ImGui;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,13 +5,19 @@ using System.Linq;
 using System.Numerics;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
+
 internal sealed partial class FileBrowserPanel
 {
     private void DrawListRegion(
@@ -27,7 +30,9 @@ internal sealed partial class FileBrowserPanel
             if (entriesVisible)
             {
                 if (Ui.IsWindowFocused())
+                {
                     m_rename.MarkInteraction(FileBrowserPresentation.List);
+                }
                 float rowHeight = Ui.GetTextLineHeight() + Ui.GetLayout().cellPadding.Y * 2f + CurrentBrowserStyle.listRowSpacing;
                 HandleEntryKeyboardNavigation(Math.Max(1, (int)(Ui.GetContentRegionAvailable().Y / rowHeight)));
                 DrawEntriesTable(context, entries, m_assets.browser.currentDirectory);
@@ -46,7 +51,10 @@ internal sealed partial class FileBrowserPanel
         IReadOnlyList<FileBrowserDisplayEntry> entries,
         string currentDirectory
     ) {
-        ImGuiTableFlags flags = ImGuiTableFlags.RowBg | ImGuiTableFlags.NoPadOuterX | ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings;
+        ImGuiTableFlags flags = ImGuiTableFlags.RowBg
+                                | ImGuiTableFlags.NoPadOuterX
+                                | ImGuiTableFlags.SizingStretchProp
+                                | ImGuiTableFlags.NoSavedSettings;
         EditorUiLayout style = Ui.GetLayout();
         Vector2 tableOrigin = Ui.GetCursorScreenPosition();
         Vector2 tableSize = Ui.GetContentRegionAvailable();
@@ -62,17 +70,32 @@ internal sealed partial class FileBrowserPanel
 
             try
             {
-                Ui.TableSetupColumn("Name", (ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize), m_listNameSeparatorPosition);
-                Ui.TableSetupColumn("Type", (ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize), m_listTypeSeparatorPosition - m_listNameSeparatorPosition);
-                Ui.TableSetupColumn("Source", (ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize), 1f - m_listTypeSeparatorPosition);
+                Ui.TableSetupColumn(
+                    "Name",
+                    (ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize),
+                    m_listNameSeparatorPosition
+                );
+                Ui.TableSetupColumn(
+                    "Type",
+                    (ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize),
+                    m_listTypeSeparatorPosition - m_listNameSeparatorPosition
+                );
+                Ui.TableSetupColumn(
+                    "Source",
+                    (ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize),
+                    1f - m_listTypeSeparatorPosition
+                );
                 DrawHeaderRow();
                 uint rowBg = Ui.ToPackedColor(EditorPalette.collectionRow);
                 uint rowAltBg = Ui.ToPackedColor(EditorPalette.collectionRowAlternate);
                 float entryRowHeight = Ui.GetTextLineHeight() + style.cellPadding.Y * 2f + CurrentBrowserStyle.listRowSpacing;
                 Span<int> preserved = stackalloc int[3];
                 int preservedCount = CollectPreservedEntryRows(entries, preserved);
-                m_ui.widgets.ClippedRows(entries.Count, -1f,
-                    (panel: this, context, entries, currentDirectory, rowBg, rowAltBg, entryRowHeight), static (
+                m_ui.widgets.ClippedRows(
+                    entries.Count,
+                    -1f,
+                    (panel: this, context, entries, currentDirectory, rowBg, rowAltBg, entryRowHeight),
+                    static (
                         state,
                         start,
                         end
@@ -83,13 +106,17 @@ internal sealed partial class FileBrowserPanel
                         FileBrowserDisplayEntry item = state.entries[index];
                         Ui.TableNextRow(ImGuiTableRowFlags.None, state.entryRowHeight);
                         if (!state.panel.m_data.TryResolve(item, out AssetFileEntry? entry))
+                        {
                             continue;
+                        }
                         Ui.TableSetBgColor(ImGuiTableBgTarget.RowBg0, index % 2 == 0 ? state.rowBg : state.rowAltBg);
                         state.panel.DrawNameCell(state.context, item, entry);
                         DrawTextCell(item.isPluginRoot ? "IPLUGIN" : GetTypeText(entry), EditorPalette.contentText);
                         DrawTextCell(item.isPluginRoot ? "~" : GetSourceText(entry, state.currentDirectory), EditorPalette.contentText);
                     }
-                }, preserved[..preservedCount]);
+                },
+                    preserved[..preservedCount]
+                );
             }
             finally
             {
@@ -130,7 +157,9 @@ internal sealed partial class FileBrowserPanel
         nameHovered = Ui.IsItemHovered();
         nameActive = Ui.IsItemActive();
         if (nameHovered || nameActive)
+        {
             Ui.SetMouseCursor(ImGuiMouseCursor.ResizeEw);
+        }
         if (nameActive)
         {
             float requested = (Ui.GetMousePos().X - origin.X) / width;
@@ -144,7 +173,9 @@ internal sealed partial class FileBrowserPanel
         typeHovered = Ui.IsItemHovered();
         typeActive = Ui.IsItemActive();
         if (typeHovered || typeActive)
+        {
             Ui.SetMouseCursor(ImGuiMouseCursor.ResizeEw);
+        }
         if (typeActive)
         {
             float requested = (Ui.GetMousePos().X - origin.X) / width;
@@ -221,7 +252,9 @@ internal sealed partial class FileBrowserPanel
         try
         {
             Vector2 iconTextPos = Ui.GetCursorScreenPosition();
-            ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags.SpanAllColumns | ImGuiSelectableFlags.AllowDoubleClick | ImGuiSelectableFlags.AllowOverlap;
+            ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags.SpanAllColumns
+                                                   | ImGuiSelectableFlags.AllowDoubleClick
+                                                   | ImGuiSelectableFlags.AllowOverlap;
             RequestEntryKeyboardFocus(entry);
             bool activated = Ui.Selectable($"##entry_{entry.assetPath.ToString()}", selected, selectableFlags);
             bool itemHovered = Ui.IsItemHovered();
@@ -234,7 +267,12 @@ internal sealed partial class FileBrowserPanel
             bool itemActive = Ui.IsItemActive();
             if (!editing)
             {
-                m_contextMenu.DrawEntry(context, $"##asset_context_{entry.assetPath.ToString()}", entry.assetPath.ToString(), FileBrowserPresentation.List);
+                m_contextMenu.DrawEntry(
+                    context,
+                    $"##asset_context_{entry.assetPath.ToString()}",
+                    entry.assetPath.ToString(),
+                    FileBrowserPresentation.List
+                );
             }
 
             if (selected || itemHovered)
@@ -247,7 +285,9 @@ internal sealed partial class FileBrowserPanel
             {
                 m_dragDrop.DrawAssetSource(context, entry);
                 if (entry.isDirectory && !entry.isReadOnly)
+                {
                     m_dragDrop.DrawDirectoryTarget(context, entry.assetPath.ToString());
+                }
             }
 
             Ui.SameLine(iconTextPos.X - Ui.GetWindowPos().X, 0f);

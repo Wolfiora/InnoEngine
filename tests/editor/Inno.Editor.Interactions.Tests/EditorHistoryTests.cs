@@ -1,15 +1,16 @@
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Inno.Extensibility.Modules;
-using Inno.Extensibility.Types;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
 using Inno.Core.Logging;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
-using Xunit;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Interactions.Tests;
+
 public sealed class EditorHistoryTests
 {
     [Fact]
@@ -19,7 +20,9 @@ public sealed class EditorHistoryTests
         for (int step = 0; step < 2; step++)
         {
             using var gesture = new EditorEditGesture(fixture.history, "Drag Value");
-            Assert.True(fixture.history.Execute("Update", NeutralValueHistoryHandler.CreateChange(1, step, step + 1, gesture.mergeKey)).succeeded);
+            Assert.True(
+                fixture.history.Execute("Update", NeutralValueHistoryHandler.CreateChange(1, step, step + 1, gesture.mergeKey)).succeeded
+            );
             gesture.Commit();
         }
 
@@ -87,7 +90,10 @@ public sealed class EditorHistoryTests
     public void ExecuteUndoAndRedoMoveNeutralChangeBetweenStacks()
     {
         using var fixture = new HistoryFixture();
-        EditorHistoryResult applied = fixture.history.Execute("Change Value", NeutralValueHistoryHandler.CreateChange(slot: 1, before: 0, after: 10));
+        EditorHistoryResult applied = fixture.history.Execute(
+            "Change Value",
+            NeutralValueHistoryHandler.CreateChange(slot: 1, before: 0, after: 10)
+        );
         Assert.True(applied.succeeded);
         Assert.Equal(10, NeutralValueHistoryHandler.GetValue(1));
         Assert.Equal("Change Value", fixture.history.undoName);
@@ -102,7 +108,9 @@ public sealed class EditorHistoryTests
     public void FailedTransitionRemainsAvailableForRetry()
     {
         using var fixture = new HistoryFixture();
-        Assert.True(fixture.history.Execute("Conditional", NeutralValueHistoryHandler.CreateChange(slot: 1, before: 0, after: 1)).succeeded);
+        Assert.True(
+            fixture.history.Execute("Conditional", NeutralValueHistoryHandler.CreateChange(slot: 1, before: 0, after: 1)).succeeded
+        );
         NeutralValueHistoryHandler.Block(slot: 1, EditorHistoryDirection.Undo);
         Assert.False(fixture.history.Undo().succeeded);
         Assert.True(fixture.history.canUndo);
@@ -230,7 +238,10 @@ public sealed class EditorHistoryTests
     public void MissingHandlerCreatesAnExplicitAvailabilityBarrier()
     {
         using var fixture = new HistoryFixture();
-        fixture.history.RecordApplied("Unavailable Change", new EditorHistoryChange("tests/missing-history-handler", EditorHistoryPayload.FromBytes([1, 2, 3])));
+        fixture.history.RecordApplied(
+            "Unavailable Change",
+            new EditorHistoryChange("tests/missing-history-handler", EditorHistoryPayload.FromBytes([1, 2, 3]))
+        );
         Assert.False(fixture.history.canUndo);
         Assert.Contains("tests/missing-history-handler", fixture.history.undoUnavailableReason);
         Assert.False(fixture.history.Undo().succeeded);
@@ -246,7 +257,10 @@ public sealed class EditorHistoryTests
         BitConverter.GetBytes(9).CopyTo(payload, sizeof(int));
         BitConverter.GetBytes(32).CopyTo(payload, sizeof(int) * 2);
         NeutralValueHistoryHandler.SetValue(slot: 1, value: 32);
-        fixture.history.RecordApplied("Large Neutral Change", new EditorHistoryChange(NeutralValueHistoryHandler.KIND, EditorHistoryPayload.FromBytes(payload)));
+        fixture.history.RecordApplied(
+            "Large Neutral Change",
+            new EditorHistoryChange(NeutralValueHistoryHandler.KIND, EditorHistoryPayload.FromBytes(payload))
+        );
         Assert.Equal(0, fixture.history.residentBytes);
         Assert.Equal(payload.LongLength, fixture.history.diskBytes);
         Assert.True(fixture.history.Undo().succeeded);
@@ -272,11 +286,14 @@ public sealed class EditorHistoryTests
         private readonly string m_projectRoot = Path.Combine(Path.GetTempPath(), "InnoEditorHistoryTests", Guid.NewGuid().ToString("N"));
         private readonly ModuleHost m_modules;
         private readonly LogRouter m_logs = new();
+
         internal HistoryFixture()
         {
             Directory.CreateDirectory(Path.Combine(m_projectRoot, "Assets"));
             NeutralValueHistoryHandler.Reset();
-            m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorHistoryTests).Assembly) });
+            m_modules = new ModuleHost(
+                new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorHistoryTests).Assembly) }
+            );
             types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
             runtime = new EditorInteractionRuntime(
                 new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
@@ -298,7 +315,9 @@ public sealed class EditorHistoryTests
             m_modules.Dispose();
             m_logs.Dispose();
             if (Directory.Exists(m_projectRoot))
+            {
                 Directory.Delete(m_projectRoot, recursive: true);
+            }
         }
     }
 }
@@ -309,6 +328,7 @@ public sealed class NeutralValueHistoryHandler : EditorHistoryHandler
     public const string KIND = "tests/neutral-values";
     private static readonly HashSet<(int Slot, EditorHistoryDirection Direction)> S_BLOCKED = [];
     private static readonly Dictionary<int, int> S_VALUES = [];
+
     public static EditorHistoryChange CreateChange(
         int slot,
         int before,
@@ -323,18 +343,22 @@ public sealed class NeutralValueHistoryHandler : EditorHistoryHandler
     }
 
     public static int GetValue(int slot) => S_VALUES.TryGetValue(slot, out int value) ? value : 0;
+
     public static void SetValue(
         int slot,
         int value
     ) => S_VALUES[slot] = value;
+
     public static void Block(
         int slot,
         EditorHistoryDirection direction
     ) => S_BLOCKED.Add((slot, direction));
+
     public static void Unblock(
         int slot,
         EditorHistoryDirection direction
     ) => S_BLOCKED.Remove((slot, direction));
+
     public static void Reset()
     {
         S_BLOCKED.Clear();
@@ -345,7 +369,10 @@ public sealed class NeutralValueHistoryHandler : EditorHistoryHandler
         EditorHistoryContext context,
         EditorHistoryChange change,
         EditorHistoryDirection direction
-    ) => change.payload.length >= sizeof(int) * 3 ? EditorHistoryAvailability.Available() : EditorHistoryAvailability.Unavailable("The neutral value payload is truncated.");
+    ) => change.payload.length >= sizeof(int) * 3
+         ? EditorHistoryAvailability.Available()
+         : EditorHistoryAvailability.Unavailable("The neutral value payload is truncated.");
+
     protected override EditorHistoryResult Apply(
         EditorHistoryContext context,
         EditorHistoryChange change,
@@ -354,7 +381,9 @@ public sealed class NeutralValueHistoryHandler : EditorHistoryHandler
         byte[] bytes = change.payload.ReadBytes();
         int slot = BitConverter.ToInt32(bytes, 0);
         if (S_BLOCKED.Contains((slot, direction)))
+        {
             return EditorHistoryResult.Failure($"Slot {slot} is blocked for {direction}.");
+        }
         int offset = direction == EditorHistoryDirection.Undo ? sizeof(int) : sizeof(int) * 2;
         S_VALUES[slot] = BitConverter.ToInt32(bytes, offset);
         return EditorHistoryResult.Success();
@@ -374,7 +403,12 @@ public sealed class NeutralValueHistoryHandler : EditorHistoryHandler
             return false;
         }
 
-        merged = CreateChange(slot, BitConverter.ToInt32(olderBytes, sizeof(int)), BitConverter.ToInt32(newerBytes, sizeof(int) * 2), older.mergeKey);
+        merged = CreateChange(
+            slot,
+            BitConverter.ToInt32(olderBytes, sizeof(int)),
+            BitConverter.ToInt32(newerBytes, sizeof(int) * 2),
+            older.mergeKey
+        );
         return true;
     }
 }

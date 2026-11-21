@@ -1,14 +1,15 @@
-using Inno.Editor.Assets;
-using Inno.Editor.Assets.ImGui;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Diagnostics.CodeAnalysis;
-using Inno.Core.Identity;
+using System.Linq;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Identity;
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
+
 internal enum FileBrowserEntryTypeFilter
 {
     All,
@@ -30,6 +31,7 @@ internal readonly record struct FileBrowserDisplayEntry(
     bool isDirectory,
     bool isPluginRoot = false
 );
+
 internal sealed class FileBrowserData(AssetBrowserModule assets)
 {
     private ViewInput? m_input;
@@ -41,9 +43,18 @@ internal sealed class FileBrowserData(AssetBrowserModule assets)
         FileBrowserEntryScopeFilter scopeFilter,
         string searchFilter
     ) {
-        var input = new ViewInput(assets.edits.pipeline.revision, assets.browser.root, assets.browser.currentDirectory, typeFilter, scopeFilter, searchFilter);
+        var input = new ViewInput(
+            assets.edits.pipeline.revision,
+            assets.browser.root,
+            assets.browser.currentDirectory,
+            typeFilter,
+            scopeFilter,
+            searchFilter
+        );
         if (m_input == input)
+        {
             return m_entries;
+        }
         List<FileBrowserDisplayEntry> entries = [];
         if (assets.browser.root == AssetBrowserRoot.Plugins && string.IsNullOrEmpty(assets.browser.currentDirectory))
         {
@@ -53,10 +64,14 @@ internal sealed class FileBrowserData(AssetBrowserModule assets)
         {
             IReadOnlyList<AssetFileEntry> children = GetVisibleChildren(assets.browser.currentDirectory);
             for (int i = 0; i < children.Count; i++)
+            {
                 entries.Add(Describe(children[i], children[i].name));
+            }
         }
         else
+        {
             CollectEntriesRecursive(assets.browser.currentDirectory, entries);
+        }
         ApplyTypeFilter(entries, typeFilter);
         ApplySearchFilter(entries, searchFilter);
         entries.Sort(static (
@@ -66,7 +81,9 @@ internal sealed class FileBrowserData(AssetBrowserModule assets)
         {
             int byName = string.Compare(left.displayName, right.displayName, StringComparison.OrdinalIgnoreCase);
             if (byName != 0)
+            {
                 return byName;
+            }
             int byExtension = string.Compare(left.extension, right.extension, StringComparison.OrdinalIgnoreCase);
             return byExtension != 0 ? byExtension : string.CompareOrdinal(left.path.ToString(), right.path.ToString());
         });
@@ -81,8 +98,8 @@ internal sealed class FileBrowserData(AssetBrowserModule assets)
         [NotNullWhen(true)] out AssetFileEntry? entry
     ) {
         if (assets.edits.interactions.TryResolveIdentity(item.identity, out IdentityObject? target)
-            && target is AssetFileEntry resolved && resolved.assetPath == item.path)
-        {
+            && target is AssetFileEntry resolved && resolved.assetPath == item.path
+        ) {
             entry = resolved;
             return true;
         }
@@ -94,8 +111,14 @@ internal sealed class FileBrowserData(AssetBrowserModule assets)
         AssetFileEntry entry,
         string label,
         bool pluginRoot = false
-    ) => new(entry.identity.runtimeIdentity ?? throw new InvalidOperationException("A visible asset requires a registered identity."),
-        entry.assetPath, label, entry.extension, entry.isDirectory, pluginRoot);
+    ) => new(
+        entry.identity.runtimeIdentity ?? throw new InvalidOperationException("A visible asset requires a registered identity."),
+        entry.assetPath,
+        label,
+        entry.extension,
+        entry.isDirectory,
+        pluginRoot
+    );
 
     private static void ApplyTypeFilter(
         List<FileBrowserDisplayEntry> entries,
@@ -136,10 +159,14 @@ internal sealed class FileBrowserData(AssetBrowserModule assets)
             AssetSourceMount mount = mounts[i];
             var rootPath = new AssetPath(mount.id, string.Empty);
             if (!assets.edits.pipeline.TryGetFileSystemEntry(rootPath, out AssetFileEntry root))
+            {
                 continue;
+            }
             entries.Add(Describe(root, mount.id.value, pluginRoot: true));
             if (scopeFilter == FileBrowserEntryScopeFilter.Recursive)
+            {
                 CollectEntriesRecursive(root.assetPath.ToString(), entries);
+            }
         }
     }
 
@@ -155,7 +182,9 @@ internal sealed class FileBrowserData(AssetBrowserModule assets)
             {
                 entries.Add(Describe(child, child.name));
                 if (child.isDirectory)
+                {
                     pending.Push(child.assetPath.ToString());
+                }
             }
         }
     }
@@ -169,7 +198,9 @@ internal sealed class FileBrowserData(AssetBrowserModule assets)
         ) =>
         {
             if (left.isDirectory != right.isDirectory)
+            {
                 return left.isDirectory ? -1 : 1;
+            }
             return string.Compare(left.name, right.name, StringComparison.OrdinalIgnoreCase);
         });
         return sorted;
@@ -180,12 +211,16 @@ internal sealed class FileBrowserData(AssetBrowserModule assets)
         AssetSourceId source = AssetPath.Parse(relativePath).source;
         IReadOnlyList<AssetFileEntry> children = assets.edits.pipeline.GetFileSystemChildren(AssetPath.Parse(relativePath));
         if (children.Count == 0)
+        {
             return children;
+        }
         List<AssetFileEntry> isolated = [];
         for (int i = 0; i < children.Count; i++)
         {
             if (children[i].source == source)
+            {
                 isolated.Add(children[i]);
+            }
         }
 
         return isolated;

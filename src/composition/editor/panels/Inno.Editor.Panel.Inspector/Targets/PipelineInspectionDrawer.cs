@@ -1,18 +1,20 @@
-using Inno.Editor.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Inno.Editor.Rendering;
 using System;
 using System.Linq;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Serialization;
 using Inno.Editor.Assets;
+using Inno.Editor.ImGui;
 using Inno.Editor.Inspection;
+using Inno.Editor.Rendering;
 using Inno.Rendering;
-using ImGuiApi = Inno.Editor.ImGui.ImGui;
 using Inno.Rendering.Assets;
 
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using ImGuiApi = Inno.Editor.ImGui.ImGui;
+
 namespace Inno.Editor.Panel.Inspector;
+
 [InspectionDrawer(typeof(RenderPipelineAsset))]
 internal sealed class PipelineInspectionDrawer(IInspectionIconProvider<AssetFileEntry> icons) : InspectionDrawer<RenderPipelineAsset>
 {
@@ -37,16 +39,14 @@ internal sealed class PipelineInspectionDrawer(IInspectionIconProvider<AssetFile
         InspectionDrawContext context,
         RenderPipelineAsset target
     ) => context.interactions.TryGetModule<PipelineDocuments>(out var documents)
-        && documents is not null
-        && documents.assets.TryGetInfo(
-        target.identity.persistentId,
-        out AssetInfo? info
-    )
-        && info is not null
-        && documents.assets.TryGetFileSystemEntry(
-        info.assetPath,
-        out AssetFileEntry entry
-    ) ? icons.GetIcon(entry) : icon;
+         && documents is not null
+         && documents.assets.TryGetInfo(target.identity.persistentId, out AssetInfo? info)
+         && info is not null
+         && documents.assets.TryGetFileSystemEntry(
+             info.assetPath,
+             out AssetFileEntry entry
+         ) ? icons.GetIcon(entry) : icon;
+
     /// <summary>
     /// Binds a caller-visible label to the current inspection target.
     /// </summary>
@@ -63,6 +63,7 @@ internal sealed class PipelineInspectionDrawer(IInspectionIconProvider<AssetFile
         InspectionDrawContext context,
         RenderPipelineAsset target
     ) => (target.name, null);
+
     /// <summary>
     /// Renders the header presentation for the current editor frame.
     /// </summary>
@@ -78,12 +79,11 @@ internal sealed class PipelineInspectionDrawer(IInspectionIconProvider<AssetFile
     ) {
         if (context.interactions.TryGetModule<PipelineDocuments>(out var documents)
             && documents is not null
-            && documents.assets.TryGetInfo(
-            target.identity.persistentId,
-            out AssetInfo? info
-        )
-            && info is not null)
+            && documents.assets.TryGetInfo(target.identity.persistentId, out AssetInfo? info)
+            && info is not null
+        ) {
             PipelineInspector.DrawHeader(context, documents, documents.Open(info.assetPath));
+        }
     }
 
     /// <summary>
@@ -101,12 +101,11 @@ internal sealed class PipelineInspectionDrawer(IInspectionIconProvider<AssetFile
     ) {
         if (context.interactions.TryGetModule<PipelineDocuments>(out var documents)
             && documents is not null
-            && documents.assets.TryGetInfo(
-            target.identity.persistentId,
-            out AssetInfo? info
-        )
-            && info is not null)
+            && documents.assets.TryGetInfo(target.identity.persistentId, out AssetInfo? info)
+            && info is not null
+        ) {
             PipelineInspector.Draw(context, documents, documents.Open(info.assetPath));
+        }
     }
 }
 
@@ -134,6 +133,7 @@ internal sealed class PipelineSourceDrawer(IInspectionIconProvider<AssetFileEntr
         InspectionDrawContext context,
         AssetFileEntry target
     ) => icons.GetIcon(target);
+
     /// <summary>
     /// Checks whether this drawer supports the selected Inspector target.
     /// </summary>
@@ -143,7 +143,9 @@ internal sealed class PipelineSourceDrawer(IInspectionIconProvider<AssetFileEntr
     /// <returns>
     /// <see langword="true"/> when the documented condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    protected override bool CanInspect(AssetFileEntry target) => !target.isDirectory && target.extension.Equals(".irenderpipeline", StringComparison.OrdinalIgnoreCase);
+    protected override bool CanInspect(AssetFileEntry target)
+        => !target.isDirectory && target.extension.Equals(".irenderpipeline", StringComparison.OrdinalIgnoreCase);
+
     /// <summary>
     /// Binds a caller-visible label to the current inspection target.
     /// </summary>
@@ -160,6 +162,7 @@ internal sealed class PipelineSourceDrawer(IInspectionIconProvider<AssetFileEntr
         InspectionDrawContext context,
         AssetFileEntry target
     ) => (target.nameWithoutExtension, null);
+
     /// <summary>
     /// Renders the header presentation for the current editor frame.
     /// </summary>
@@ -174,7 +177,9 @@ internal sealed class PipelineSourceDrawer(IInspectionIconProvider<AssetFileEntr
         AssetFileEntry target
     ) {
         if (context.interactions.TryGetModule<PipelineDocuments>(out var documents) && documents is not null)
+        {
             PipelineInspector.DrawHeader(context, documents, documents.Open(target.assetPath));
+        }
     }
 
     /// <summary>
@@ -191,7 +196,9 @@ internal sealed class PipelineSourceDrawer(IInspectionIconProvider<AssetFileEntr
         AssetFileEntry target
     ) {
         if (context.interactions.TryGetModule<PipelineDocuments>(out var documents) && documents is not null)
+        {
             PipelineInspector.Draw(context, documents, documents.Open(target.assetPath));
+        }
     }
 }
 
@@ -207,10 +214,14 @@ internal static class PipelineInspector
         try
         {
             if (ImGuiApi.Button("Save"))
+            {
                 _ = context.interactions.documents.Save(draft.documentId);
+            }
             ImGuiApi.SameLine(0f, -1f);
             if (ImGuiApi.Button("Revert"))
+            {
                 _ = context.interactions.documents.Revert(draft.documentId);
+            }
         }
         finally
         {
@@ -232,13 +243,18 @@ internal static class PipelineInspector
             if (EditorUI.current.widgets.SectionHeader(
                 "Render Pipeline",
                 "This source is the configuration authority. Unsaved settings do not change Scene, Game or Player content."
-            ))
-            {
-                EditorUI.current.widgets.Hint(draft.isDirty ? "Unsaved changes · rendering unchanged" : "Saved · import and activation are separate");
+            )) {
+                EditorUI.current.widgets.Hint(
+                    draft.isDirty ? "Unsaved changes · rendering unchanged" : "Saved · import and activation are separate"
+                );
                 if (draft.error.Length != 0)
+                {
                     EditorUI.current.widgets.Hint(draft.error);
+                }
                 if (draft.readOnly)
+                {
                     EditorUI.current.widgets.Hint("Installed Pipeline · copy into the project to edit");
+                }
                 EditorUI.current.widgets.Hint("Pipeline: " + pipeline.pipelineTypeId);
                 DrawSettings("pipeline.settings", pipeline.pipelineState, value => pipeline.pipelineState = value);
             }
@@ -255,11 +271,23 @@ internal static class PipelineInspector
                 try
                 {
                     RenderFeatureConfiguration feature = features[slot];
-                    context.properties.DrawValue(context.editorContext, draft, "pipeline.features." + slot + ".enabled", feature.featureTypeId, typeof(bool), () => features[slot].enabled, value =>
+                    context.properties.DrawValue(
+                        context.editorContext,
+                        draft,
+                        "pipeline.features."
+                        + slot
+                        + ".enabled",
+                        feature.featureTypeId,
+                        typeof(bool),
+                        () => features[slot].enabled,
+                        value =>
                     {
                         features[slot].enabled = (bool)value!;
                         pipeline.features = features;
-                    }, edits, draft.readOnly);
+                    },
+                        edits,
+                        draft.readOnly
+                    );
                     DrawSettings("pipeline.features." + slot, feature.state, value =>
                     {
                         features[slot].state = value;
@@ -279,7 +307,9 @@ internal static class PipelineInspector
                         if (slot + 1 < features.Length)
                         {
                             if (slot > 0)
+                            {
                                 ImGuiApi.SameLine(0f, -1f);
+                            }
                             if (ImGuiApi.SmallButton("Move Down"))
                             {
                                 (features[slot + 1], features[slot]) = (features[slot], features[slot + 1]);
@@ -301,7 +331,9 @@ internal static class PipelineInspector
             }
 
             if (featuresOpen && features.Length == 0)
+            {
                 EditorUI.current.widgets.Hint("No additional features");
+            }
         }
         finally
         {
@@ -324,12 +356,28 @@ internal static class PipelineInspector
 
                 var settingsEdits = new SettingsEdits(edits, () => assign(new(documents.assets.CaptureProperties(settings))));
                 foreach (SerializedProperty property in documents.serialization.GetProperties(settings))
-                    context.properties.DrawDraftProperty(context.editorContext, draft, settings, path, property, settingsEdits, draft.readOnly);
+                {
+                    context.properties.DrawDraftProperty(
+                        context.editorContext,
+                        draft,
+                        settings,
+                        path,
+                        property,
+                        settingsEdits,
+                        draft.readOnly
+                    );
+                }
             }
-            catch (Exception error) when ((error is System.IO.IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException or FormatException)
-                && Inno.Core.Execution.RetirementPendingException.Find(error) is null)
+            catch (Exception error) when ((error is System.IO.IOException
+                                           or UnauthorizedAccessException
+                                           or InvalidOperationException
+                                           or ArgumentException
+                                           or FormatException)
+                                          && Inno.Core.Execution.RetirementPendingException.Find(error) is null)
             {
-                EditorUI.current.widgets.Hint("Settings unavailable · " + state.stableTypeId + " · " + error.Message + " · Stored properties and dependencies are retained.");
+                EditorUI.current.widgets.Hint(
+                    "Settings unavailable · " + state.stableTypeId + " · " + error.Message + " · Stored properties and dependencies are retained."
+                );
             }
         }
     }

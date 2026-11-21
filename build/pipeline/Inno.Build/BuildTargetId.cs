@@ -22,7 +22,9 @@ public readonly record struct BuildTargetId
         foreach (char character in value)
         {
             if (!(character is >= 'a' and <= 'z' || character is >= '0' and <= '9' || character == '-'))
+            {
                 throw new ArgumentException("Build target IDs must use lowercase portable characters.", nameof(value));
+            }
         }
         this.value = value;
     }

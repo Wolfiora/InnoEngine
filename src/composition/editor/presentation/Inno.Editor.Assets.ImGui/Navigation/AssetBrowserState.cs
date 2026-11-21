@@ -1,13 +1,14 @@
-using Inno.Editor.Assets;
 using System;
 using System.Linq;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Editor.Assets;
 using Inno.Editor.Core;
-using Inno.Editor.Interactions;
 using Inno.Editor.Inspection;
+using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Assets.ImGui;
+
 /// <summary>
 /// Identifies the authoring or installed-content root displayed by the Asset Browser.
 /// </summary>
@@ -32,6 +33,7 @@ public sealed class AssetBrowserState
     private readonly AssetPipeline m_assets;
     private string m_assetsDirectory = string.Empty;
     private string m_pluginsDirectory = string.Empty;
+
     /// <summary>
     /// Creates Asset Browser navigation state.
     /// </summary>
@@ -56,10 +58,12 @@ public sealed class AssetBrowserState
     /// Gets the root currently displayed by the Asset Browser.
     /// </summary>
     public AssetBrowserRoot root { get; private set; }
+
     /// <summary>
     /// Gets the current directory inside <see cref="root"/>. An empty value identifies that root's overview.
     /// </summary>
     public string currentDirectory => root == AssetBrowserRoot.Assets ? m_assetsDirectory : m_pluginsDirectory;
+
     /// <summary>
     /// Gets the most recently visited writable project directory, independently of the displayed root.
     /// </summary>
@@ -99,6 +103,7 @@ public sealed class AssetBrowserState
         EditorContext context,
         AssetFileEntry entry
     ) => m_interactions.selection.Contains(entry);
+
     /// <summary>
     /// Adds or removes an asset from the current selection without retaining runtime asset objects.
     /// </summary>
@@ -122,6 +127,7 @@ public sealed class AssetBrowserState
     /// The authoring or installed-content root to display.
     /// </param>
     public void SetRoot(AssetBrowserRoot value) => root = value;
+
     /// <summary>
     /// Sets the current Asset Browser directory and infers its root from the isolated source identity.
     /// </summary>
@@ -163,8 +169,10 @@ public sealed class AssetBrowserState
         object? target = null;
         if (!string.IsNullOrWhiteSpace(relativePath))
         {
-            if (m_assets.TryGetFileSystemEntry(Inno.Assets.AssetPath.Parse(Normalize(relativePath)), out Inno.Assets.Pipeline.AssetFileEntry entry))
-            {
+            if (m_assets.TryGetFileSystemEntry(
+                Inno.Assets.AssetPath.Parse(Normalize(relativePath)),
+                out Inno.Assets.Pipeline.AssetFileEntry entry
+            )) {
                 target = entry;
             }
         }
@@ -181,7 +189,9 @@ public sealed class AssetBrowserState
     /// <returns>
     /// The source-relative directory, or an empty string for the root.
     /// </returns>
-    public string GetDirectory(AssetBrowserRoot targetRoot) => targetRoot == AssetBrowserRoot.Assets ? m_assetsDirectory : m_pluginsDirectory;
+    public string GetDirectory(AssetBrowserRoot targetRoot)
+        => targetRoot == AssetBrowserRoot.Assets ? m_assetsDirectory : m_pluginsDirectory;
+
     internal void Restore(
         AssetBrowserRoot restoredRoot,
         string assetsDirectory,
@@ -228,15 +238,21 @@ public sealed class AssetBrowserState
         string directory
     ) {
         if (targetRoot == AssetBrowserRoot.Assets)
+        {
             m_assetsDirectory = directory;
+        }
         else
+        {
             m_pluginsDirectory = directory;
+        }
     }
 
     private static string Normalize(string? relativePath)
     {
         if (string.IsNullOrWhiteSpace(relativePath))
+        {
             return string.Empty;
+        }
         return AssetPath.Parse(relativePath.Replace('\\', '/').Trim()).ToString();
     }
 }

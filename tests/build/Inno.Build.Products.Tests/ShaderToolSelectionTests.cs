@@ -20,21 +20,49 @@ public sealed class ShaderToolSelectionTests
             string owner = Path.Combine(root, "platforms", "WindowsX64", "integrations", "Inno.Integration.WindowsX64.Bgfx");
             Directory.CreateDirectory(owner);
             foreach (string file in new[] { "WindowsX64BgfxToolContribution.cs", "WindowsX64BgfxBuildProfile.cs" })
+            {
                 File.WriteAllText(Path.Combine(owner, file), "declared integration input");
+            }
             var tools = new Dictionary<string, string>();
             foreach (string name in new[] { "cl", "msbuild", "genie", "cmake", "dotnet" })
             {
                 tools[name] = Path.Combine(root, name + ".exe");
                 File.WriteAllText(tools[name], "frozen executable input");
             }
-            var sdk = new NativeToolchainSelection("windows-x64", new BuildHostDescriptor("Windows", "x64"),
-                tools, new Dictionary<string, string>(), [], ["-G", "Fixture"], new NativeLinkPlan(".dll"), true);
-            NativeToolchainSelection first = WindowsX64BgfxIntegration.nativeProfile.SelectTools(new NativeBuildContext(root, "release").WithToolchain(sdk), true);
-            NativeToolchainSelection runtime = WindowsX64BgfxIntegration.nativeProfile.SelectTools(new NativeBuildContext(root, "release").WithToolchain(sdk), false);
+            var sdk = new NativeToolchainSelection(
+                "windows-x64",
+                new BuildHostDescriptor("Windows", "x64"),
+                tools,
+                new Dictionary<string, string>(),
+                [],
+                ["-G", "Fixture"],
+                new NativeLinkPlan(".dll"),
+                true
+            );
+            NativeToolchainSelection first = WindowsX64BgfxIntegration.nativeProfile.SelectTools(
+                new NativeBuildContext(root, "release").WithToolchain(sdk),
+                true
+            );
+            NativeToolchainSelection runtime = WindowsX64BgfxIntegration.nativeProfile.SelectTools(
+                new NativeBuildContext(root, "release").WithToolchain(sdk),
+                false
+            );
             tools["dotnet"] = Path.Combine(root, "another-dotnet.exe");
             File.WriteAllText(tools["dotnet"], "another managed SDK");
-            var otherSdk = new NativeToolchainSelection("windows-x64", sdk.host, tools, sdk.environment, [], sdk.cmakeArguments, new NativeLinkPlan(".dll"), true);
-            NativeToolchainSelection second = WindowsX64BgfxIntegration.nativeProfile.SelectTools(new NativeBuildContext(root, "release").WithToolchain(otherSdk), true);
+            var otherSdk = new NativeToolchainSelection(
+                "windows-x64",
+                sdk.host,
+                tools,
+                sdk.environment,
+                [],
+                sdk.cmakeArguments,
+                new NativeLinkPlan(".dll"),
+                true
+            );
+            NativeToolchainSelection second = WindowsX64BgfxIntegration.nativeProfile.SelectTools(
+                new NativeBuildContext(root, "release").WithToolchain(otherSdk),
+                true
+            );
 
             Assert.Equal(first.declarations, second.declarations);
             Assert.Equal(first.inputPaths, second.inputPaths);

@@ -33,8 +33,10 @@ public sealed class StaticAssemblyCatalogSource : IAssemblyCatalogSource
         ArgumentNullException.ThrowIfNull(assemblies);
         ArgumentNullException.ThrowIfNull(frameworkAssemblies);
         if (assemblies.Any(static assembly => assembly is null || assembly.IsCollectible)
-            || frameworkAssemblies.Any(static assembly => assembly is null || assembly.IsCollectible))
+            || frameworkAssemblies.Any(static assembly => assembly is null || assembly.IsCollectible)
+        ) {
             throw new ArgumentException("A static catalog requires noncollectible linked assemblies.", nameof(assemblies));
+        }
         m_assemblies = Array.AsReadOnly(assemblies.Distinct().ToArray());
         m_framework = frameworkAssemblies.ToHashSet();
         m_frameworkNames = frameworkAssemblies.Select(static assembly => assembly.GetName().Name!)
@@ -45,8 +47,11 @@ public sealed class StaticAssemblyCatalogSource : IAssemblyCatalogSource
     /// <inheritdoc />
     public event Action? changed
     {
-        add { ObjectDisposedException.ThrowIf(m_disposed, this); }
-        remove { }
+        add
+        {
+            ObjectDisposedException.ThrowIf(m_disposed, this);
+        }
+        remove {}
     }
 
     /// <inheritdoc />
@@ -70,6 +75,7 @@ public sealed class StaticAssemblyCatalogSource : IAssemblyCatalogSource
         ArgumentException.ThrowIfNullOrWhiteSpace(assemblyName);
         return m_frameworkNames.Contains(assemblyName);
     }
+
     /// <inheritdoc />
     public bool IsFrameworkAssembly(Assembly assembly)
     {
@@ -77,6 +83,7 @@ public sealed class StaticAssemblyCatalogSource : IAssemblyCatalogSource
         ArgumentNullException.ThrowIfNull(assembly);
         return m_framework.Contains(assembly);
     }
+
     /// <inheritdoc />
     public void Dispose() => m_disposed = true;
 }

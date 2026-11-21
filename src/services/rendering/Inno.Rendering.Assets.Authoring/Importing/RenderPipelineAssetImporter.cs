@@ -1,12 +1,12 @@
-using Inno.Assets;
-using Inno.Assets.Pipeline;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Assets;
+using Inno.Assets.Pipeline;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Assets.Authoring;
 
@@ -42,9 +42,12 @@ internal sealed class RenderPipelineAssetImporter : AssetImporter<RenderPipeline
         RenderPipelineAsset asset = NativeAssetSourceSerialization.Import<RenderPipelineAsset>(
             context.sourceBytes.Span,
             context.services,
-            out IReadOnlyList<AssetDependency> dependencies);
+            out IReadOnlyList<AssetDependency> dependencies
+        );
         foreach (AssetDependency dependency in dependencies)
+        {
             output.DependsOnAsset(dependency);
+        }
         Validate(asset);
         output.SetAsset(asset);
         await output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken)
@@ -73,9 +76,9 @@ internal sealed class RenderPipelineAssetImporter : AssetImporter<RenderPipeline
     ) {
         cancellationToken.ThrowIfCancellationRequested();
         Validate(asset);
-        return ValueTask.FromResult<ReadOnlyMemory<byte>?>(NativeAssetSourceSerialization.Export(
-            asset,
-            context.services));
+        return ValueTask.FromResult<ReadOnlyMemory<byte>?>(
+            NativeAssetSourceSerialization.Export(asset, context.services)
+        );
     }
 
     private static void Validate(RenderPipelineAsset asset)
@@ -85,9 +88,12 @@ internal sealed class RenderPipelineAssetImporter : AssetImporter<RenderPipeline
             .GroupBy(static feature => feature.featureTypeId, StringComparer.Ordinal)
             .FirstOrDefault(static group => group.Count() > 1)?.Key;
         if (duplicate is not null)
+        {
             throw new InvalidOperationException($"Pipeline feature '{duplicate}' is configured more than once.");
+        }
         if (asset.features.Any(static feature => feature.enabled && string.IsNullOrWhiteSpace(feature.featureTypeId)))
+        {
             throw new InvalidOperationException("Every enabled pipeline feature requires a stable extension ID.");
+        }
     }
 }
-

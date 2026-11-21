@@ -1,17 +1,15 @@
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
-
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using Inno.Assets;
-using Inno.Extensibility.Modules;
 using Inno.Core.Diagnostics;
 using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
-
-using Xunit;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Types;
 
 namespace Inno.Scene.Tests;
 
@@ -26,7 +24,8 @@ public sealed class SceneTestsFixture : IDisposable
     private readonly string m_cacheDirectory = Path.Combine(
         Path.GetTempPath(),
         "InnoSceneTests",
-        Guid.NewGuid().ToString("N"));
+        Guid.NewGuid().ToString("N")
+    );
 
     public ModuleHost modules { get; }
     public TypeCatalog types { get; }
@@ -42,7 +41,9 @@ public sealed class SceneTestsFixture : IDisposable
     {
         _ = typeof(Inno.Scene.SceneAsset);
         modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(SceneTestsCollection).Assembly)        });
+        {
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(SceneTestsCollection).Assembly)
+        });
         types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
         world = new Inno.Scene.SceneWorld(identities, types);
@@ -58,7 +59,9 @@ public sealed class SceneTestsFixture : IDisposable
         modules.Dispose();
         logs.Dispose();
         if (Directory.Exists(m_cacheDirectory))
+        {
             Directory.Delete(m_cacheDirectory, recursive: true);
+        }
     }
 
     private sealed class RejectingAssetReferenceResolver : IAssetReferenceResolver
@@ -68,8 +71,7 @@ public sealed class SceneTestsFixture : IDisposable
             Guid stableTypeId,
             string lastKnownPath,
             Type expectedType,
-            string propertyPath)
-            => throw new InvalidOperationException(
-                $"Unexpected asset reference '{persistentId:D}' at '{propertyPath}'.");
+            string propertyPath
+        ) => throw new InvalidOperationException($"Unexpected asset reference '{persistentId:D}' at '{propertyPath}'.");
     }
 }

@@ -83,15 +83,29 @@ public sealed class EditorApplicationTests
             "dotnet",
             AppContext.BaseDirectory,
             new BuildHostDescriptor("Windows", "x64"),
-            new BuildTargetId("windows-x64"));
+            new BuildTargetId("windows-x64")
+        );
         StandardBuildDistribution standard = StandardBuildDistribution.Create(build);
-        var adapters = new DefaultAuthoringAdapterCatalog(new DefaultAdapterCatalogOptions
-        {
-            platform = new Inno.Adapter.Platform.PlatformBackendCatalog([new Inno.Adapter.Platform.Sdl3.Sdl3PlatformBackendProvider(new Inno.Integration.WindowsX64.Sdl3.WindowsX64Sdl3HostIntegration())]),
-            rendering = new Inno.Adapter.Rendering.RenderingBackendCatalog([new Inno.Adapter.Rendering.Bgfx.BgfxRenderingBackendProvider(new Inno.Integration.WindowsX64.Bgfx.Runtime.WindowsX64BgfxSurfaceIntegration())]),
-            storage = new StorageBackendCatalog([new FileSystemStorageBackendProvider(Path.Combine(project, "Data"))])
-        }, [new BgfxAuthoringProvider(standard.ResolveShaderTarget(new BuildTargetId("windows-x64")))],
-            [new Inno.Adapter.Presentation.ImGui.ImGuiPresentationProvider(new Inno.Adapter.Presentation.ImGui.ImGuiInteractionOptions(false, 1))]);
+        var adapters = new DefaultAuthoringAdapterCatalog(
+            new DefaultAdapterCatalogOptions
+            {
+                platform = new Inno.Adapter.Platform.PlatformBackendCatalog(
+                    [new Inno.Adapter.Platform.Sdl3.Sdl3PlatformBackendProvider(
+                        new Inno.Integration.WindowsX64.Sdl3.WindowsX64Sdl3HostIntegration()
+                    )]
+                ),
+                rendering = new Inno.Adapter.Rendering.RenderingBackendCatalog(
+                    [new Inno.Adapter.Rendering.Bgfx.BgfxRenderingBackendProvider(
+                        new Inno.Integration.WindowsX64.Bgfx.Runtime.WindowsX64BgfxSurfaceIntegration()
+                    )]
+                ),
+                storage = new StorageBackendCatalog([new FileSystemStorageBackendProvider(Path.Combine(project, "Data"))])
+            },
+            [new BgfxAuthoringProvider(standard.ResolveShaderTarget(new BuildTargetId("windows-x64")))],
+            [new Inno.Adapter.Presentation.ImGui.ImGuiPresentationProvider(
+                new Inno.Adapter.Presentation.ImGui.ImGuiInteractionOptions(false, 1)
+            )]
+        );
         return new EditorLaunchOptions
         {
             projectDirectory = project,

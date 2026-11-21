@@ -6,7 +6,7 @@ using System.Threading;
 namespace Inno.Core.Collections;
 
 sealed partial class IndexedObjectStore<T>
-where T : class
+    where T : class
 {
     /// <summary>
     /// Finds items by key and returns a lazy fail-fast enumerable.
@@ -85,7 +85,9 @@ where T : class
 
         var set = index.FindUnsafe(value);
         if (set == null || set.Count == 0)
+        {
             yield break;
+        }
 
         foreach (var item in set)
         {
@@ -144,7 +146,9 @@ where T : class
         try
         {
             if (GetIndex(key).TryGetSingle(value, out var item))
+            {
                 return item;
+            }
             return null;
         }
         finally
@@ -332,7 +336,9 @@ where T : class
         }
 
         if (seedCount == 0)
+        {
             yield break;
+        }
 
         if (seedCount == 1 && conditions[seedIndex].TryGetSingle(this, out var single))
         {
@@ -347,7 +353,9 @@ where T : class
             }
 
             if (ok)
+            {
                 yield return single;
+            }
 
             yield break;
         }
@@ -378,7 +386,9 @@ where T : class
         }
 
         if (seed.Count == 0)
+        {
             yield break;
+        }
 
         foreach (var item in seed)
         {
@@ -406,7 +416,9 @@ where T : class
         try
         {
             if (conditions.Count == 0)
+            {
                 return m_activeList.Count > 0 ? m_activeList[0] : null;
+            }
 
             int seedIndex = 0;
             int seedCount = conditions[0].GetCandidateCount(this);
@@ -422,14 +434,18 @@ where T : class
             }
 
             if (seedCount == 0)
+            {
                 return null;
+            }
 
             if (seedCount == 1 && conditions[seedIndex].TryGetSingle(this, out var single))
             {
                 for (int i = 0; i < conditions.Count; i++)
                 {
                     if (!conditions[i].Validate(this, single))
+                    {
                         return null;
+                    }
                 }
 
                 return single;
@@ -451,14 +467,18 @@ where T : class
                     }
 
                     if (ok)
+                    {
                         return item;
+                    }
                 }
 
                 return null;
             }
 
             if (seed.Count == 0)
+            {
                 return null;
+            }
 
             foreach (var item in seed)
             {
@@ -473,7 +493,9 @@ where T : class
                 }
 
                 if (ok)
+                {
                     return item;
+                }
             }
 
             return null;
@@ -492,9 +514,10 @@ where T : class
         for (int i = 0; i < conditions.Count; i++)
         {
             if (!conditions[i].Validate(this, item))
+            {
                 return false;
+            }
         }
         return true;
     }
-
 }

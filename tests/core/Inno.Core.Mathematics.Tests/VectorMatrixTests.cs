@@ -1,8 +1,6 @@
 using System;
-
-using Inno.Core.Mathematics;
-
 using Xunit;
+using Inno.Core.Mathematics;
 
 namespace Inno.Core.Mathematics.Tests;
 
@@ -32,7 +30,8 @@ public sealed class VectorMatrixTests
             original.x * roundTrip.x
             + original.y * roundTrip.y
             + original.z * roundTrip.z
-            + original.w * roundTrip.w);
+            + original.w * roundTrip.w
+        );
         Assert.InRange(alignment, 0.99999f, 1.00001f);
     }
 
@@ -138,14 +137,20 @@ public sealed class VectorMatrixTests
         var rotation = Quaternion.FromEulerAnglesXYZ(new Vector3(0.2f, 0.3f, 0.4f));
         var translation = new Vector3(5f, 6f, 7f);
         Matrix matrix = Matrix.CreateTranslation(translation)
-            * Matrix.CreateFromQuaternion(rotation)
-            * Matrix.CreateScale(scale);
+                        * Matrix.CreateFromQuaternion(rotation)
+                        * Matrix.CreateScale(scale);
 
-        Assert.True(Matrix.Decompose(matrix, out Vector3 resultScale,
-            out Quaternion resultRotation, out Vector3 resultTranslation));
+        Assert.True(
+            Matrix.Decompose(
+                matrix,
+                out Vector3 resultScale,
+                out Quaternion resultRotation,
+                out Vector3 resultTranslation
+            )
+        );
         Matrix reconstructed = Matrix.CreateTranslation(resultTranslation)
-            * Matrix.CreateFromQuaternion(resultRotation)
-            * Matrix.CreateScale(resultScale);
+                               * Matrix.CreateFromQuaternion(resultRotation)
+                               * Matrix.CreateScale(resultScale);
         Assert.True(matrix == reconstructed);
     }
 
@@ -218,11 +223,7 @@ public sealed class VectorMatrixTests
     [Fact]
     public void Matrix_ToColumnMajorArray_Layout()
     {
-        var m = new Matrix(
-            1f, 2f, 3f, 4f,
-            5f, 6f, 7f, 8f,
-            9f, 10f, 11f, 12f,
-            13f, 14f, 15f, 16f);
+        var m = new Matrix(1f, 2f, 3f, 4f, 5f, 6f, 7f, 8f, 9f, 10f, 11f, 12f, 13f, 14f, 15f, 16f);
 
         var data = m.ToColumnMajorArray();
 
@@ -264,8 +265,10 @@ public sealed class VectorMatrixTests
         Assert.True(MathF.Abs(q.w - q2.w) < epsilon);
     }
 
-    private static float Dot(Quaternion a, Quaternion b)
-    {
+    private static float Dot(
+        Quaternion a,
+        Quaternion b
+    ) {
         return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
     }
 

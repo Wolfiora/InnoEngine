@@ -44,7 +44,9 @@ public static class NativeProcessTestHost
         ArgumentException.ThrowIfNullOrWhiteSpace(contract);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(timeoutMilliseconds);
         if (!Path.IsPathFullyQualified(assembly))
+        {
             throw new ArgumentException("A contract assembly requires an absolute path.", nameof(assembly));
+        }
         var start = new ProcessStartInfo(Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet")
         {
             UseShellExecute = false,
@@ -69,7 +71,9 @@ public static class NativeProcessTestHost
         ) => Capture(data, error, errorClosed);
         Stopwatch elapsed = Stopwatch.StartNew();
         if (!process.Start())
+        {
             throw new InvalidOperationException("The native contract host did not start.");
+        }
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
         bool timedOut = !process.WaitForExit(timeoutMilliseconds);
@@ -80,7 +84,9 @@ public static class NativeProcessTestHost
             {
                 process.Kill(entireProcessTree: true);
                 if (!process.WaitForExit(10_000))
+                {
                     cleanup = "The process tree did not exit within the cleanup budget.";
+                }
             }
             catch (Exception failure)
             {
@@ -91,12 +97,14 @@ public static class NativeProcessTestHost
         if (timedOut || !drained || process.ExitCode != 0)
         {
             string diagnostic = $"Native contract '{contract}', PID {process.Id}, elapsed {elapsed.Elapsed}.\n"
-                + $"Command: {start.FileName} {assembly} {contract}\n"
-                + $"TimedOut={timedOut}; OutputDrained={drained}. {cleanup}\n"
-                + "stdout:\n" + string.Join(Environment.NewLine, output)
-                + "\nstderr:\n" + string.Join(Environment.NewLine, error);
+                                + $"Command: {start.FileName} {assembly} {contract}\n"
+                                + $"TimedOut={timedOut}; OutputDrained={drained}. {cleanup}\n"
+                                + "stdout:\n" + string.Join(Environment.NewLine, output)
+                                + "\nstderr:\n" + string.Join(Environment.NewLine, error);
             if (timedOut)
+            {
                 throw new TimeoutException(diagnostic);
+            }
             throw new InvalidOperationException(diagnostic);
         }
     }
@@ -107,8 +115,12 @@ public static class NativeProcessTestHost
         TaskCompletionSource closed
     ) {
         if (data.Data is string line)
+        {
             destination.Enqueue(line);
+        }
         else
+        {
             closed.TrySetResult();
+        }
     }
 }

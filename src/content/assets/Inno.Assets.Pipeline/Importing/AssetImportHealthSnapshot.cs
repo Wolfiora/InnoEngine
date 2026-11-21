@@ -13,8 +13,7 @@ namespace Inno.Assets.Pipeline;
 /// </remarks>
 public sealed class AssetImportHealthSnapshot
 {
-    private static readonly AssetImportHealthSnapshot S_EMPTY = new(
-        new HashSet<AssetImportFailureFingerprint>());
+    private static readonly AssetImportHealthSnapshot S_EMPTY = new(new HashSet<AssetImportFailureFingerprint>());
 
     private readonly IReadOnlySet<AssetImportFailureFingerprint> m_failures;
 

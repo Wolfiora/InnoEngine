@@ -12,11 +12,28 @@ public sealed class GraphicsProgramArtifactTests
     {
         byte[] vertex = [1, 2, 3];
         byte[] fragment = [4, 5];
-        var raster = new RenderRasterState(RenderCullMode.None, RenderFrontFace.CounterClockwise,
-            RenderDepthCompare.Always, false, RenderBlendState.premultiplied, 0xF, true, RenderPrimitiveTopology.TriangleList);
-        var descriptor = new GraphicsPipelineDescriptor(vertex, fragment,
-            [new RenderShaderBindingDescriptor(new RenderBindingId("s_tex"), RenderShaderBindingKind.Texture,
-                slot: 3, nativeName: "native_sampler")], null, raster);
+        var raster = new RenderRasterState(
+            RenderCullMode.None,
+            RenderFrontFace.CounterClockwise,
+            RenderDepthCompare.Always,
+            false,
+            RenderBlendState.premultiplied,
+            0xF,
+            true,
+            RenderPrimitiveTopology.TriangleList
+        );
+        var descriptor = new GraphicsPipelineDescriptor(
+            vertex,
+            fragment,
+            [new RenderShaderBindingDescriptor(
+                new RenderBindingId("s_tex"),
+                RenderShaderBindingKind.Texture,
+                slot: 3,
+                nativeName: "native_sampler"
+            )],
+            null,
+            raster
+        );
         byte[] bytes = GraphicsProgramArtifactCodec.Encode(descriptor);
         Assert.Equal(bytes, GraphicsProgramArtifactCodec.Encode(descriptor));
         GraphicsPipelineDescriptor decoded = GraphicsProgramArtifactCodec.Decode(bytes);
@@ -39,13 +56,17 @@ public sealed class GraphicsProgramArtifactTests
     public void InvalidBindingAndRasterValuesCannotBeEncodedAsValidArtifacts()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => new RenderShaderBindingDescriptor(
-            new("invalid"), RenderShaderBindingKind.Uniform, uniformType: (RenderUniformType)99));
+            new("invalid"),
+            RenderShaderBindingKind.Uniform,
+            uniformType: (RenderUniformType)99
+        ));
         var invalidRaster = new RenderRasterState { colorWriteMask = 0xFF };
         var descriptor = new GraphicsPipelineDescriptor([1], [2], [], null, invalidRaster);
         Assert.Throws<InvalidDataException>(() => GraphicsProgramArtifactCodec.Encode(descriptor));
         var invalidBlend = new RenderRasterState { blend = new RenderBlendState { colorSource = (RenderBlendFactor)99 } };
         Assert.Throws<InvalidDataException>(() => GraphicsProgramArtifactCodec.Encode(
-            new GraphicsPipelineDescriptor([1], [2], [], null, invalidBlend)));
+            new GraphicsPipelineDescriptor([1], [2], [], null, invalidBlend)
+        ));
     }
 
     [Fact]
@@ -53,7 +74,9 @@ public sealed class GraphicsProgramArtifactTests
     {
         byte[] bytes = GraphicsProgramArtifactCodec.Encode(new GraphicsPipelineDescriptor([1], [2], [], null));
         for (int length = 0; length < bytes.Length; length++)
+        {
             Assert.Throws<InvalidDataException>(() => GraphicsProgramArtifactCodec.Decode(bytes.AsSpan(0, length)));
+        }
         byte[] excessive = (byte[])bytes.Clone();
         BinaryPrimitives.WriteInt32LittleEndian(excessive.AsSpan("INNOGPU"u8.Length), int.MaxValue);
         Assert.Throws<InvalidDataException>(() => GraphicsProgramArtifactCodec.Decode(excessive));

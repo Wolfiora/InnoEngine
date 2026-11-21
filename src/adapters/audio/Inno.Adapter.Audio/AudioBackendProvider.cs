@@ -24,7 +24,9 @@ public abstract class AudioBackendProvider
     protected AudioBackendProvider(AudioBackendId id)
     {
         if (!id.isValid)
+        {
             throw new ArgumentException("A provider requires an assigned backend ID.", nameof(id));
+        }
         this.id = id;
     }
 
@@ -44,4 +46,3 @@ public abstract class AudioBackendProvider
     /// </returns>
     public abstract IAudioDevice CreateDevice(AudioBackendOptions options);
 }
-

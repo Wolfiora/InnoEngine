@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
-using Inno.Extensibility.Types;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Settings;
 
@@ -84,7 +83,8 @@ public sealed class ProjectSettingsEditor : EditorModule
         if (!m_settings.TryClone(definition.settingId, out ISerializable? setting) || setting is null)
         {
             throw new InvalidOperationException(
-                $"Project setting '{definition.settingId}' has no active runtime definition.");
+                $"Project setting '{definition.settingId}' has no active runtime definition."
+            );
         }
         definition.ValidateValue(setting);
         return setting;
@@ -108,12 +108,11 @@ public sealed class ProjectSettingsEditor : EditorModule
     public ISerializable GetComposedDefault(ProjectSettingEditor definition)
     {
         ArgumentNullException.ThrowIfNull(definition);
-        if (!m_settings.TryCloneComposedDefault(
-                definition.settingId,
-                out ISerializable? setting) || setting is null)
+        if (!m_settings.TryCloneComposedDefault(definition.settingId, out ISerializable? setting) || setting is null)
         {
             throw new InvalidOperationException(
-                $"Project setting '{definition.settingId}' has no active runtime definition.");
+                $"Project setting '{definition.settingId}' has no active runtime definition."
+            );
         }
         definition.ValidateValue(setting);
         return setting;
@@ -141,7 +140,9 @@ public sealed class ProjectSettingsEditor : EditorModule
         ArgumentNullException.ThrowIfNull(values);
         byte[] before = m_settings.CaptureDocument();
         if (!m_settings.ApplyProjectOverrides(values, resets))
+        {
             return false;
+        }
         byte[] after = m_settings.CaptureDocument();
         try
         {
@@ -166,5 +167,4 @@ public sealed class ProjectSettingsEditor : EditorModule
     internal void ValidateDocument(ReadOnlySpan<byte> document) => m_settings.ValidateDocument(document);
 
     internal void RestoreFromHistory(ReadOnlySpan<byte> document) => m_settings.RestoreDocument(document);
-
 }

@@ -45,10 +45,16 @@ public static class DotNetSdkEnvironment
         string host = ToolchainEnvironment.ResolveExecutable(hostPath);
         var selected = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         if (environment is not null)
+        {
             foreach ((string name, string value) in environment)
+            {
                 selected[name] = value;
+            }
+        }
         foreach (string variable in AmbientSdkVariables)
+        {
             selected[variable] = null;
+        }
         selected["DOTNET_HOST_PATH"] = host;
         selected["DOTNET_ROOT"] = Path.GetDirectoryName(host)!;
         return new ReadOnlyDictionary<string, string?>(selected);

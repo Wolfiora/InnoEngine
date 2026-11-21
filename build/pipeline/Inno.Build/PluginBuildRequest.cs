@@ -1,7 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 
 namespace Inno.Build;
 
@@ -49,19 +49,23 @@ public sealed class PluginBuildRequest
             || pluginId.Any(static character =>
                 !(character is >= 'a' and <= 'z'
                   || character is >= '0' and <= '9'
-                  || character is '.' or '_' or '-')))
-        {
+                  || character is '.' or '_' or '-'))
+        ) {
             throw new InvalidDataException("Plugin ID must be a non-reserved lowercase portable identifier.");
         }
         if (string.IsNullOrWhiteSpace(displayName))
-            throw new InvalidDataException("A Plugin display name is required.");
-        if (string.IsNullOrWhiteSpace(outputPath)
-            || !string.Equals(Path.GetExtension(outputPath), ".iplugin", StringComparison.OrdinalIgnoreCase))
         {
+            throw new InvalidDataException("A Plugin display name is required.");
+        }
+        if (string.IsNullOrWhiteSpace(outputPath)
+            || !string.Equals(Path.GetExtension(outputPath), ".iplugin", StringComparison.OrdinalIgnoreCase)
+        ) {
             throw new InvalidDataException("Plugin destination must use the .iplugin extension.");
         }
         if (dependencies is null || dependencies.Any(string.IsNullOrWhiteSpace)
-            || dependencies.Distinct(StringComparer.Ordinal).Count() != dependencies.Count)
+            || dependencies.Distinct(StringComparer.Ordinal).Count() != dependencies.Count
+        ) {
             throw new InvalidDataException("Plugin dependencies must be distinct non-empty IDs.");
+        }
     }
 }

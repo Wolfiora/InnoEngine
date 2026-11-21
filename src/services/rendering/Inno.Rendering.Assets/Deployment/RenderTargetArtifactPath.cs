@@ -1,8 +1,8 @@
-using Inno.Rendering;
 using System;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
@@ -36,13 +36,17 @@ public static class RenderTargetArtifactPath
         RenderShaderVariant variant
     ) {
         if (shaderId == Guid.Empty)
+        {
             throw new ArgumentException("A target shader path requires a persistent asset identity.", nameof(shaderId));
-        return string.Join('/',
+        }
+        return string.Join(
+            '/',
             "TargetArtifacts",
             "Shaders",
             backend.ToString(),
             shaderId.ToString("D", CultureInfo.InvariantCulture),
-            HashVariant(variant.value) + ".shader");
+            HashVariant(variant.value) + ".shader"
+        );
     }
 
     /// <summary>
@@ -60,12 +64,16 @@ public static class RenderTargetArtifactPath
     public static string GetTexturePath(RenderTextureArtifactReference texture)
     {
         if (texture.assetId == Guid.Empty || string.IsNullOrWhiteSpace(texture.slot.id))
+        {
             throw new ArgumentException("A target texture path requires a valid artifact reference.", nameof(texture));
-        return string.Join('/',
+        }
+        return string.Join(
+            '/',
             "TargetArtifacts",
             "Textures",
             texture.assetId.ToString("D", CultureInfo.InvariantCulture),
-            HashSlot(texture.slot.id) + ".ktx");
+            HashSlot(texture.slot.id) + ".ktx"
+        );
     }
 
     private static string HashVariant(string value)
@@ -73,4 +81,3 @@ public static class RenderTargetArtifactPath
 
     private static string HashSlot(string value) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
 }
-

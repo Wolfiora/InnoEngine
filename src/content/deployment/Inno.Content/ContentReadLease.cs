@@ -57,7 +57,7 @@ public sealed class ContentReadLease : IDisposable
         {
             Func<Stream> openRead = m_openRead ?? throw new ObjectDisposedException(nameof(ContentReadLease));
             Stream input = openRead()
-                ?? throw new InvalidOperationException("The content provider returned a null stream.");
+                           ?? throw new InvalidOperationException("The content provider returned a null stream.");
             if (!input.CanRead)
             {
                 input.Dispose();

@@ -3,6 +3,7 @@ using Inno.Editor.Scene;
 using Inno.Scene;
 
 namespace Inno.Editor.Panel.Inspector;
+
 [EditorAction(InspectorInteractionIds.C_RESET_COMPONENT, priority: 100)]
 [EditorMenu(InspectorInteractionIds.C_COMPONENT_AREA, "Reset Component", order: 100)]
 internal sealed class ResetComponentCommand(SceneEdits edits) : EditorAction<GameComponent>
@@ -16,8 +17,10 @@ internal sealed class ResetComponentCommand(SceneEdits edits) : EditorAction<Gam
     /// <returns>
     /// The validated editor action state that represents the completed operation.
     /// </returns>
-    protected override EditorActionState Query(EditorActionContext<GameComponent> context) => !context.target.isDestroyed
-        && context.target is not MissingGameComponent ? EditorActionState.enabled : EditorActionState.disabled;
+    protected override EditorActionState Query(EditorActionContext<GameComponent> context)
+        => !context.target.isDestroyed
+           && context.target is not MissingGameComponent ? EditorActionState.enabled : EditorActionState.disabled;
+
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.
     /// </summary>

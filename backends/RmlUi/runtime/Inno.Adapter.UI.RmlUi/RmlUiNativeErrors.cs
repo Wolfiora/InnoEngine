@@ -25,16 +25,22 @@ internal static unsafe class RmlUiNativeErrors
         BgcsInnoRmluiError* error
     ) {
         if (status == 0 && error == null)
+        {
             return;
+        }
         try
         {
             string? message = error == null ? null : Marshal.PtrToStringUTF8((nint)UiNative.Raw.BgcsInnoRmluiErrorMessage(error));
-            throw new InvalidOperationException($"The UI bridge failed with status {status}: {message ?? "No native error text is available."}");
+            throw new InvalidOperationException(
+                $"The UI bridge failed with status {status}: {message ?? "No native error text is available."}"
+            );
         }
         finally
         {
             if (error != null)
+            {
                 UiNative.Raw.BgcsInnoRmluiErrorRelease(error);
+            }
         }
     }
 }

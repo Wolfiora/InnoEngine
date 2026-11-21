@@ -27,7 +27,9 @@ public sealed class RenderingBackendCatalog : IRenderingBackendFactory
         foreach (RenderingBackendProvider provider in providers)
         {
             if (provider is null || !provider.id.isValid || !m_providers.TryAdd(provider.id, provider))
+            {
                 throw new ArgumentException("Rendering providers require unique, assigned backend IDs.", nameof(providers));
+            }
         }
         supportedBackends = new ReadOnlyCollection<RenderingBackendId>(new List<RenderingBackendId>(m_providers.Keys));
     }
@@ -58,9 +60,11 @@ public sealed class RenderingBackendCatalog : IRenderingBackendFactory
     ) {
         ArgumentNullException.ThrowIfNull(options);
         if (!m_providers.TryGetValue(backend, out RenderingBackendProvider? provider))
+        {
             throw new NotSupportedException($"Rendering backend '{backend}' is not registered.");
+        }
         return provider.CreateDevice(options)
-            ?? throw new InvalidOperationException($"Rendering provider '{backend}' returned no device.");
+               ?? throw new InvalidOperationException($"Rendering provider '{backend}' returned no device.");
     }
 
     /// <summary>
@@ -78,8 +82,10 @@ public sealed class RenderingBackendCatalog : IRenderingBackendFactory
     public IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider(RenderingBackendId backend)
     {
         if (!m_providers.TryGetValue(backend, out RenderingBackendProvider? provider))
+        {
             throw new NotSupportedException($"Rendering backend '{backend}' is not registered.");
+        }
         return provider.CreateCompositionProgramProvider()
-            ?? throw new InvalidOperationException($"Rendering provider '{backend}' returned no composition program provider.");
+               ?? throw new InvalidOperationException($"Rendering provider '{backend}' returned no composition program provider.");
     }
 }

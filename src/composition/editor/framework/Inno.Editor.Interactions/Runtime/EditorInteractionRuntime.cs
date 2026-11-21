@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Core.Events;
 using Inno.Core.Execution;
 using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Editor.Core;
+using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Interactions;
 
@@ -48,10 +47,7 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
         TypeCatalog types,
         LogRouter logs,
         EditorKeyboardPolicy keyboard
-    )
-        : this(new EditorContext(projectDirectory, keyboard), types, logs)
-    {
-    }
+    ) : this(new EditorContext(projectDirectory, keyboard), types, logs) {}
 
     /// <summary>
     /// Creates an interaction runtime for an existing passive editor context.
@@ -72,10 +68,7 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
         EditorContext context,
         TypeCatalog types,
         LogRouter logs
-    )
-        : this(context, types, logs, Array.Empty<object>())
-    {
-    }
+    ) : this(context, types, logs, Array.Empty<object>()) {}
 
     /// <summary>
     /// Creates an interaction runtime with stable host-owned extension services.
@@ -100,25 +93,22 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
         TypeCatalog types,
         LogRouter logs,
         IEnumerable<object> hostServices
-    )
-        : base(context)
+    ) : base(context)
     {
         ArgumentNullException.ThrowIfNull(types);
         ArgumentNullException.ThrowIfNull(logs);
         ArgumentNullException.ThrowIfNull(hostServices);
         Logger logger = logs.CreateLogger<EditorInteractionRuntime>();
         object[] services = hostServices.ToArray();
-        m_interactions = new EditorInteractions(
-            context,
-            services.OfType<IdentityAllocator>(),
-            logger);
+        m_interactions = new EditorInteractions(context, services.OfType<IdentityAllocator>(), logger);
         m_catalog = new EditorExtensionCatalog(
             types,
             context,
             m_interactions,
             logger,
             new object[] { logs }.Concat(services),
-            InvalidateDescriptions);
+            InvalidateDescriptions
+        );
         m_interactions.Attach(m_catalog);
     }
 
@@ -163,9 +153,13 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_stopping)
+        {
             throw new InvalidOperationException("A retiring editor runtime cannot restart.");
+        }
         if (m_started)
+        {
             return;
+        }
         _ = m_catalog.extensions;
         m_started = true;
     }
@@ -180,9 +174,13 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_stopping)
+        {
             throw new InvalidOperationException("A retiring editor runtime cannot update.");
+        }
         if (!m_started)
+        {
             Start();
+        }
         SetFrame(frame);
         m_interactions.Update();
         m_catalog.UpdateModules();
@@ -233,7 +231,9 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
     {
         ArgumentNullException.ThrowIfNull(keyEvent);
         if (m_interactions.DispatchShortcut(keyEvent))
+        {
             keyEvent.HandleInGlobal();
+        }
     }
 
     /// <summary>
@@ -248,7 +248,9 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
     public override void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         if (!m_stopping)
         {
             m_stopping = true;
@@ -275,7 +277,8 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
         {
             var failure = new AggregateException(
                 "One or more editor interaction shutdown stages failed.",
-                m_shutdownFailures);
+                m_shutdownFailures
+            );
             m_shutdownFailures.Clear();
             throw failure;
         }
@@ -285,21 +288,28 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
     {
         EditorExtensionCatalog.Snapshot snapshot = m_catalog.extensions;
         if (ReferenceEquals(snapshot, m_describedSnapshot))
+        {
             return;
+        }
 
         var panels = new List<EditorPanelExtension>(snapshot.panels.Length);
         for (int i = 0; i < snapshot.panels.Length; i++)
         {
             EditorExtensionCatalog.PanelRegistration registration = snapshot.panels[i];
             if (snapshot.quarantinedPanels.Contains(registration.panel))
+            {
                 continue;
-            panels.Add(new EditorPanelExtension(
-                registration.attribute.id,
-                registration.attribute.title,
-                registration.attribute.order,
-                registration.panel,
-                () => m_catalog.TakePanelFocusRequest(registration.attribute.id),
-                exception => m_catalog.QuarantinePanel(snapshot, registration, exception)));
+            }
+            panels.Add(
+                new EditorPanelExtension(
+                    registration.attribute.id,
+                    registration.attribute.title,
+                    registration.attribute.order,
+                    registration.panel,
+                    () => m_catalog.TakePanelFocusRequest(registration.attribute.id),
+                    exception => m_catalog.QuarantinePanel(snapshot, registration, exception)
+                )
+            );
         }
         m_panels = panels.ToArray();
 
@@ -308,13 +318,18 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
         {
             EditorExtensionCatalog.ModalRegistration registration = snapshot.modals[i];
             if (snapshot.quarantinedModals.Contains(registration.modal))
+            {
                 continue;
-            modals.Add(new EditorModalExtension(
-                registration.attribute.id,
-                registration.attribute.title,
-                registration.attribute.order,
-                registration.modal,
-                exception => m_catalog.QuarantineModal(snapshot, registration, exception)));
+            }
+            modals.Add(
+                new EditorModalExtension(
+                    registration.attribute.id,
+                    registration.attribute.title,
+                    registration.attribute.order,
+                    registration.modal,
+                    exception => m_catalog.QuarantineModal(snapshot, registration, exception)
+                )
+            );
         }
         m_modals = modals.ToArray();
         m_describedSnapshot = snapshot;

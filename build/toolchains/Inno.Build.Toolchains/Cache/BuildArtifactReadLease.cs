@@ -59,8 +59,15 @@ public sealed class BuildArtifactReadLease : IDisposable
         IReadOnlyList<string> outputDirectories,
         CancellationToken cancellationToken = default,
         NativeBuildContext? statistics = null
-    ) => await TryAcquireAsync(directory, ownerDirectory, fingerprint, outputDirectories, statistics, cancellationToken).ConfigureAwait(false)
-        ?? throw new InvalidDataException($"Build artifact '{directory}' is missing, damaged or has a different identity.");
+    ) => await TryAcquireAsync(
+        directory,
+        ownerDirectory,
+        fingerprint,
+        outputDirectories,
+        statistics,
+        cancellationToken
+    ).ConfigureAwait(false)
+         ?? throw new InvalidDataException($"Build artifact '{directory}' is missing, damaged or has a different identity.");
 
     /// <summary>
     /// Ends artifact access and allows repair or retirement; repeated disposal has no effect.
@@ -79,11 +86,18 @@ public sealed class BuildArtifactReadLease : IDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(fingerprint);
         ArgumentNullException.ThrowIfNull(outputDirectories);
         if (!Path.IsPathFullyQualified(directory))
+        {
             throw new ArgumentException("Artifact reading requires an absolute owner path.", nameof(directory));
+        }
         string path = GetLeasePath(directory);
         BuildCacheCleanupPlan.RequireChild(ownerDirectory, directory);
-        CoordinatedFileLease lease = await CoordinatedFileLease.AcquireAsync(Path.Combine(ownerDirectory, "owner.lock"),
-            path, TimeSpan.FromSeconds(30), shared: true, cancellationToken: cancellationToken).ConfigureAwait(false);
+        CoordinatedFileLease lease = await CoordinatedFileLease.AcquireAsync(
+            Path.Combine(ownerDirectory, "owner.lock"),
+            path,
+            TimeSpan.FromSeconds(30),
+            shared: true,
+            cancellationToken: cancellationToken
+        ).ConfigureAwait(false);
         try
         {
             cancellationToken.ThrowIfCancellationRequested();

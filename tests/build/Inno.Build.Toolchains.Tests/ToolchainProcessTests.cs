@@ -5,8 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Build.Toolchains;
 using Xunit;
+using Inno.Build.Toolchains;
 
 namespace Inno.Build.Toolchains.Tests;
 
@@ -21,9 +21,11 @@ public sealed class ToolchainProcessTests : IDisposable
     {
         string root = Path.GetFullPath(m_root);
         string owner = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "InnoToolchainProcessTests"))
-            + Path.DirectorySeparatorChar;
+                       + Path.DirectorySeparatorChar;
         if (!root.StartsWith(owner, StringComparison.Ordinal))
+        {
             throw new InvalidOperationException("The process fixture directory escaped its temporary owner.");
+        }
         long started = Stopwatch.GetTimestamp();
         while (Directory.Exists(root))
         {
@@ -33,8 +35,8 @@ public sealed class ToolchainProcessTests : IDisposable
                 return;
             }
             catch (IOException exception) when ((exception.HResult is unchecked((int)0x80070020)
-                or unchecked((int)0x80070021))
-                && Stopwatch.GetElapsedTime(started).TotalMilliseconds < C_RETIREMENT_WINDOW_MILLISECONDS)
+                                                 or unchecked((int)0x80070021))
+                                                && Stopwatch.GetElapsedTime(started).TotalMilliseconds < C_RETIREMENT_WINDOW_MILLISECONDS)
             {
                 // Process termination does not promise that filesystem observers have released the directory.
                 // Retry only sharing/lock violations; persistent failures and all other errors remain visible.
@@ -79,14 +81,16 @@ public sealed class ToolchainProcessTests : IDisposable
 
         using var cancellation = new CancellationTokenSource();
         Task running = rawArguments
-            ? ToolchainEnvironment.RunAsync(executable, string.Join(' ', arguments.Select(Quote)), m_root, cancellation.Token)
-            : ToolchainEnvironment.RunAsync(executable, arguments, m_root, cancellation.Token);
+                       ? ToolchainEnvironment.RunAsync(executable, string.Join(' ', arguments.Select(Quote)), m_root, cancellation.Token)
+                       : ToolchainEnvironment.RunAsync(executable, arguments, m_root, cancellation.Token);
         int[] processes = [];
         try
         {
             DateTime deadline = DateTime.UtcNow.AddSeconds(15);
             while (!File.Exists(marker) && !running.IsCompleted && DateTime.UtcNow < deadline)
+            {
                 await Task.Delay(25);
+            }
             Assert.True(File.Exists(marker), "The process tree did not reach its waiting stage.");
             processes = File.ReadAllText(marker).Trim().Split(',').Select(int.Parse).ToArray();
             Assert.Equal(2, processes.Length);
@@ -103,7 +107,9 @@ public sealed class ToolchainProcessTests : IDisposable
             foreach (int processId in processes)
             {
                 if (!IsRunning(processId))
+                {
                     continue;
+                }
                 using Process process = Process.GetProcessById(processId);
                 process.Kill(entireProcessTree: true);
             }
@@ -115,11 +121,19 @@ public sealed class ToolchainProcessTests : IDisposable
     {
         Directory.CreateDirectory(m_root);
         await Assert.ThrowsAsync<InvalidOperationException>(() => ToolchainEnvironment.RunAsync(
-            "dotnet", "--inno-invalid-option", m_root, CancellationToken.None));
+            "dotnet",
+            "--inno-invalid-option",
+            m_root,
+            CancellationToken.None
+        ));
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => ToolchainEnvironment.RunAsync(
-            "inno-missing-tool", string.Empty, m_root, cancellation.Token));
+            "inno-missing-tool",
+            string.Empty,
+            m_root,
+            cancellation.Token
+        ));
     }
 
     [Theory]
@@ -167,9 +181,13 @@ public sealed class ToolchainProcessTests : IDisposable
         try
         {
             if (standardError)
+            {
                 Console.SetError(failing);
+            }
             else
+            {
                 Console.SetOut(failing);
+            }
             running = ToolchainEnvironment.RunAsync(executable, arguments, m_root, cancellation.Token);
 
             IOException failure = await Assert.ThrowsAsync<IOException>(() => running.WaitAsync(TimeSpan.FromSeconds(10)));
@@ -183,9 +201,13 @@ public sealed class ToolchainProcessTests : IDisposable
         finally
         {
             if (standardError)
+            {
                 Console.SetError(original);
+            }
             else
+            {
                 Console.SetOut(original);
+            }
             cancellation.Cancel();
             if (running is not null)
             {

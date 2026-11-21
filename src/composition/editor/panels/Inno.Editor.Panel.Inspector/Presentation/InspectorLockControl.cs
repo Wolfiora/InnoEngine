@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Identity;
 using Inno.Editor.Interactions;
 using Inno.Scene;
@@ -70,7 +69,9 @@ internal sealed class InspectorLockControl
         }
 
         if (!IsValid(displayedTarget))
+        {
             return;
+        }
         m_isLocked = true;
         if (displayedTarget is IdentityObject identityObject)
         {
@@ -105,14 +106,18 @@ internal sealed class InspectorLockControl
         if (m_lockedIdentity is RuntimeIdentity identity)
         {
             if (interactions.TryResolveIdentity(identity, out IdentityObject? target))
+            {
                 return target;
+            }
             return interactions.TryResolveIdentity(identity.domainId, m_lockedPersistentId, out target)
-                ? target
-                : null;
+                   ? target
+                   : null;
         }
 
         if (m_collectibleTarget is not null)
+        {
             return m_collectibleTarget.TryGetTarget(out object? target) ? target : null;
+        }
         return m_lockedTarget;
     }
 

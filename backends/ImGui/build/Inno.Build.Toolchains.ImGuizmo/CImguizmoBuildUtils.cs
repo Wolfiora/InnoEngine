@@ -21,13 +21,15 @@ internal static class CImguizmoBuildUtils
         if (!Directory.Exists(cimguizmoDir))
         {
             throw new DirectoryNotFoundException(
-                $"cimguizmo source not found at {cimguizmoDir}. Place the cimguizmo repository in extern/cimguizmo before running this tool.");
+                $"cimguizmo source not found at {cimguizmoDir}. Place the cimguizmo repository in extern/cimguizmo before running this tool."
+            );
         }
 
         if (!Directory.Exists(cimguiDir))
         {
             throw new DirectoryNotFoundException(
-                $"cimgui source not found at {cimguiDir}. Place the cimgui repository in extern/cimgui before running this tool.");
+                $"cimgui source not found at {cimguiDir}. Place the cimgui repository in extern/cimgui before running this tool."
+            );
         }
 
         var cimguizmoCpp = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.CIMGUIMO_CPP_FILE);

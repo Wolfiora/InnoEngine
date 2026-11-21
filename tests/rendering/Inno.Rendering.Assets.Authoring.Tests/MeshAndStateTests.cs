@@ -1,17 +1,17 @@
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Inno.Assets;
-using Inno.Extensibility.Modules;
-using Inno.Core.Mathematics;
-using Inno.Extensibility.Types;
-using Inno.Core.Serialization;
-using Inno.Rendering;
 using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Assets;
+using Inno.Core.Mathematics;
+using Inno.Core.Serialization;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Types;
+using Inno.Rendering;
 using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Assets.Authoring.Tests;
@@ -26,7 +26,9 @@ public sealed class MeshAndStateTests : IDisposable
     public MeshAndStateTests()
     {
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(MeshAndStateTests).Assembly)        });
+        {
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(MeshAndStateTests).Assembly)
+        });
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
     }
@@ -53,8 +55,10 @@ public sealed class MeshAndStateTests : IDisposable
                     RenderSamplerFilter.Point,
                     RenderSamplerAddressMode.Repeat,
                     RenderSamplerAddressMode.Mirror,
-                    RenderSamplerAddressMode.Clamp)
-            });
+                    RenderSamplerAddressMode.Clamp
+                )
+            }
+        );
         material.SetKeyword("Cutout", enabled: true);
         material.SetMetadata("tests.sort", "2450");
         byte[] materialState = m_serialization.Encode(writer => writer.WriteProperties(material));
@@ -84,7 +88,8 @@ public sealed class MeshAndStateTests : IDisposable
             new RenderFeatureConfiguration(
                 "tests.feature",
                 new SerializedRenderExtensionState(Guid.Empty, [4, 5]),
-                enabled: true)
+                enabled: true
+            )
         ]);
         byte[] pipelineState = m_serialization.Encode(writer => writer.WriteProperties(pipeline));
         var restoredPipeline = new RenderPipelineAsset();
@@ -107,49 +112,66 @@ public sealed class MeshAndStateTests : IDisposable
         var advancedPass = new ShaderPassDefinition(
             "advanced-draw",
             ShaderProgramKind.Raster,
-            requiredFeatures: GraphicsCapability.Compute);
+            requiredFeatures: GraphicsCapability.Compute
+        );
         var basicPass = new ShaderPassDefinition("basic-draw", ShaderProgramKind.Raster);
         var shader = new ShaderAsset();
-        shader.SetDefinition(new ShaderDefinition(
-            "Provider-owned shader",
-            [],
-            [],
-            [advancedPass, basicPass],
-            [
-                new ShaderTechniqueDefinition(
-                    new ShaderTechniqueId("advanced"),
-                    new ShaderContractId("example.2d.sprite"),
-                    [new ShaderTechniquePass(new ShaderPassRoleId("draw"), advancedPass.name)],
-                    GraphicsCapability.Compute),
-                new ShaderTechniqueDefinition(
-                    new ShaderTechniqueId("basic"),
-                    new ShaderContractId("example.2d.sprite"),
-                    [new ShaderTechniquePass(new ShaderPassRoleId("draw"), basicPass.name)])
-            ]), m_serialization, SerializationContext.empty);
+        shader.SetDefinition(
+            new ShaderDefinition(
+                "Provider-owned shader",
+                [],
+                [],
+                [advancedPass, basicPass],
+                [
+                    new ShaderTechniqueDefinition(
+                        new ShaderTechniqueId("advanced"),
+                        new ShaderContractId("example.2d.sprite"),
+                        [new ShaderTechniquePass(new ShaderPassRoleId("draw"), advancedPass.name)],
+                        GraphicsCapability.Compute
+                    ),
+                    new ShaderTechniqueDefinition(
+                        new ShaderTechniqueId("basic"),
+                        new ShaderContractId("example.2d.sprite"),
+                        [new ShaderTechniquePass(new ShaderPassRoleId("draw"), basicPass.name)]
+                    )
+                ]
+            ),
+            m_serialization,
+            SerializationContext.empty
+        );
         var material = new MaterialAsset { shader = shader };
         GraphicsCapabilities basicCapabilities = CreateCapabilities(GraphicsCapability.None);
         GraphicsCapabilities computeCapabilities = CreateCapabilities(GraphicsCapability.Compute);
 
-        MaterialPassResolution basic = Assert.IsType<MaterialPassResolution>(MaterialPassResolver.Resolve(
-            material,
-            new ShaderContractId("example.2d.sprite"),
-            new ShaderPassRoleId("draw"),
-            basicCapabilities));
-        MaterialPassResolution advanced = Assert.IsType<MaterialPassResolution>(MaterialPassResolver.Resolve(
-            material,
-            new ShaderContractId("example.2d.sprite"),
-            new ShaderPassRoleId("draw"),
-            computeCapabilities));
+        MaterialPassResolution basic = Assert.IsType<MaterialPassResolution>(
+            MaterialPassResolver.Resolve(
+                material,
+                new ShaderContractId("example.2d.sprite"),
+                new ShaderPassRoleId("draw"),
+                basicCapabilities
+            )
+        );
+        MaterialPassResolution advanced = Assert.IsType<MaterialPassResolution>(
+            MaterialPassResolver.Resolve(
+                material,
+                new ShaderContractId("example.2d.sprite"),
+                new ShaderPassRoleId("draw"),
+                computeCapabilities
+            )
+        );
 
         Assert.Equal("basic", basic.technique.id.value);
         Assert.Equal("basic-draw", basic.pass.name);
         Assert.Equal("advanced", advanced.technique.id.value);
         Assert.Equal("advanced-draw", advanced.pass.name);
-        Assert.Null(MaterialPassResolver.Resolve(
-            material,
-            new ShaderContractId("unrelated.contract"),
-            new ShaderPassRoleId("draw"),
-            computeCapabilities));
+        Assert.Null(
+            MaterialPassResolver.Resolve(
+                material,
+                new ShaderContractId("unrelated.contract"),
+                new ShaderPassRoleId("draw"),
+                computeCapabilities
+            )
+        );
     }
 
     [Fact]
@@ -161,16 +183,18 @@ public sealed class MeshAndStateTests : IDisposable
         sourceState.frontFace = RenderFrontFace.Clockwise;
         sourceState.multisampling = false;
         var source = new ShaderAsset();
-        source.SetDefinition(new ShaderDefinition(
-            "Tests/RasterState",
-            [],
-            [],
-            [
-                new ShaderPassDefinition(
-                    "wire",
-                    ShaderProgramKind.Raster,
-                    renderState: sourceState)
-            ]), m_serialization, SerializationContext.empty);
+        source.SetDefinition(
+            new ShaderDefinition(
+                "Tests/RasterState",
+                [],
+                [],
+                [
+                    new ShaderPassDefinition("wire", ShaderProgramKind.Raster, renderState: sourceState)
+                ]
+            ),
+            m_serialization,
+            SerializationContext.empty
+        );
 
         byte[] state = m_serialization.Encode(writer => writer.WriteProperties(source));
         var restored = new ShaderAsset();
@@ -217,10 +241,9 @@ public sealed class MeshAndStateTests : IDisposable
             [],
             [],
             originBottomLeft: false,
-            homogeneousDepth: false);
+            homogeneousDepth: false
+        );
 }
 
 [CollectionDefinition("Rendering assets serialization", DisableParallelization = true)]
-public sealed class RenderingAssetsSerializationCollection
-{
-}
+public sealed class RenderingAssetsSerializationCollection;

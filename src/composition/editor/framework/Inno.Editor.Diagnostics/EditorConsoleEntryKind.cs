@@ -9,7 +9,6 @@ public enum EditorConsoleEntryKind
     /// The occurrence was emitted through the runtime logging pipeline.
     /// </summary>
     Log,
-
     /// <summary>
     /// The occurrence represents current state from a diagnostic producer.
     /// </summary>

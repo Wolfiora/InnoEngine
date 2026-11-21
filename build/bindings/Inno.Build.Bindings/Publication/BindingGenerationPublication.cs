@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
-using Inno.Core.IO;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using Inno.Core.IO;
 
 namespace Inno.Build.Bindings;
 
@@ -29,7 +29,9 @@ internal sealed class BindingGenerationPublication : IDisposable
         m_target = target;
         m_candidates.Add(destination, Path.Combine(m_owner.directory, "Managed"));
         if (native is not null)
+        {
             m_candidates.Add(native, Path.Combine(m_owner.directory, "Native"));
+        }
     }
 
     internal string managedDestination { get; }
@@ -94,9 +96,13 @@ internal sealed class BindingGenerationPublication : IDisposable
                 try
                 {
                     if (installed.Contains(destination))
+                    {
                         Directory.Move(destination, m_candidates[destination]);
+                    }
                     if (previous.TryGetValue(destination, out string? backup))
+                    {
                         Directory.Move(backup, destination);
+                    }
                 }
                 catch (Exception rollbackFailure)
                 {
@@ -107,7 +113,13 @@ internal sealed class BindingGenerationPublication : IDisposable
             {
                 m_preserveRecovery = true;
                 new Inno.Build.Toolchains.BuildCachePublisher(m_workingRoot, Inno.Build.Toolchains.BuildCacheArtifactRole.ImmutableArtifact)
-                    .Record(m_owner.directory, m_owner.directory + ".work.lock", [], "binding-recovery:" + Path.GetFileName(m_owner.directory), null);
+                    .Record(
+                        m_owner.directory,
+                        m_owner.directory + ".work.lock",
+                        [],
+                        "binding-recovery:" + Path.GetFileName(m_owner.directory),
+                        null
+                    );
                 throw new AggregateException("Binding publication failed; owned recovery trees could not be fully restored.", failures);
             }
             throw;
@@ -120,6 +132,8 @@ internal sealed class BindingGenerationPublication : IDisposable
     public void Dispose()
     {
         if (!m_preserveRecovery)
+        {
             m_owner.Dispose();
+        }
     }
 }

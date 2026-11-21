@@ -88,7 +88,9 @@ public sealed class ShaderBuildInputs
     {
         string actual = ComputeFingerprint(Discover(m_sourceRoot, cancellationToken), cancellationToken);
         if (!string.Equals(actual, fingerprint, StringComparison.Ordinal))
+        {
             throw new InvalidDataException("Shader authoring inputs changed during compilation; the candidate cannot be published.");
+        }
     }
 
     internal string Materialize(
@@ -112,11 +114,15 @@ public sealed class ShaderBuildInputs
             Directory.CreateDirectory(Path.GetDirectoryName(copy)!);
             using (var reading = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read))
             using (var writing = new FileStream(copy, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
                 reading.CopyToAsync(writing, cancellationToken).GetAwaiter().GetResult();
+            }
             copies.Add(new NativeBuildInput(input.logicalPath, copy));
         }
         if (ComputeFingerprint(new Inventory([.. copies], m_directories), cancellationToken) != fingerprint)
+        {
             throw new InvalidDataException("Shader inputs changed while copying the frozen compilation tree.");
+        }
         VerifyUnchanged(cancellationToken);
         return destination;
     }
@@ -125,14 +131,19 @@ public sealed class ShaderBuildInputs
         Inventory inventory,
         CancellationToken cancellationToken
     ) => NativeBuildFingerprint.Create(
-        inventory.directories.Select(static path => "shader-directory/" + path), inventory.files, cancellationToken);
+        inventory.directories.Select(static path => "shader-directory/" + path),
+        inventory.files,
+        cancellationToken
+    );
 
     private static Inventory Discover(
         string root,
         CancellationToken cancellationToken
     ) {
         if (!Directory.Exists(root))
+        {
             throw new DirectoryNotFoundException($"Shader authoring root '{root}' does not exist.");
+        }
         var pending = new Stack<string>();
         List<NativeBuildInput> files = [];
         List<string> directories = [];
@@ -146,23 +157,31 @@ public sealed class ShaderBuildInputs
             foreach (string child in Directory.EnumerateDirectories(directory))
             {
                 if (!policy.IsIgnored(Path.GetRelativePath(root, child), isDirectory: true))
+                {
                     pending.Push(child);
+                }
             }
             foreach (string path in Directory.EnumerateFiles(directory))
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 string relative = Path.GetRelativePath(root, path).Replace('\\', '/');
                 if (AtomicFile.IsCandidatePath(relative))
+                {
                     continue;
+                }
                 bool metadata = relative.EndsWith(".imeta", StringComparison.OrdinalIgnoreCase);
                 if (!metadata && policy.IsIgnored(relative, isDirectory: false))
+                {
                     continue;
+                }
                 PathBoundary.RequireUnlinkedPath(root, path);
                 files.Add(new NativeBuildInput("shader-source/" + relative, path));
             }
         }
-        return new Inventory(files.OrderBy(static input => input.logicalPath, StringComparer.Ordinal).ToArray(),
-            directories.Order(StringComparer.Ordinal).ToArray());
+        return new Inventory(
+            files.OrderBy(static input => input.logicalPath, StringComparer.Ordinal).ToArray(),
+            directories.Order(StringComparer.Ordinal).ToArray()
+        );
     }
 
     private sealed record Inventory(

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
-using Xunit;
 
 namespace Inno.Build.Toolchains.Tests;
 
@@ -76,7 +76,9 @@ public sealed class BuildCacheInventoryProgressTests : IDisposable
         await PrepareAsync("first", "first payload");
         await MaintainAsync();
         string directory = Path.Combine(m_root, "cache", "first");
-        string checkpoint = Assert.Single(Directory.GetFiles(Path.Combine(m_root, "artifacts", "cache-owners", "inventory"), "*.inventory"));
+        string checkpoint = Assert.Single(
+            Directory.GetFiles(Path.Combine(m_root, "artifacts", "cache-owners", "inventory"), "*.inventory")
+        );
         using (FileLease reader = await FileLease.AcquireSharedAsync(directory + ".lock", TimeSpan.FromSeconds(5)))
         {
             await MaintainAsync(retireAll: true);
@@ -93,7 +95,9 @@ public sealed class BuildCacheInventoryProgressTests : IDisposable
     {
         const int C_COUNT = 64;
         for (int index = 0; index < C_COUNT; index++)
+        {
             await PrepareAsync("shard-" + index.ToString("D3"), new string('x', 4096));
+        }
         string directory = Path.Combine(m_root, "artifacts", "cache-owners", "inventory");
         Directory.CreateDirectory(directory);
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(30));
@@ -118,8 +122,14 @@ public sealed class BuildCacheInventoryProgressTests : IDisposable
         {
             Assert.True(observing.Wait(TimeSpan.FromSeconds(30)), "The checkpoint observer did not start.");
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Task.Run(() =>
-                BuildMaintenanceApplication.CleanAsync(m_root, new(long.MaxValue, 0, TimeSpan.FromMinutes(2)),
-                    true, false, null, cancellation.Token)));
+                BuildMaintenanceApplication.CleanAsync(
+                    m_root,
+                    new(long.MaxValue, 0, TimeSpan.FromMinutes(2)),
+                    true,
+                    false,
+                    null,
+                    cancellation.Token
+                )));
         }
         finally
         {
@@ -128,8 +138,14 @@ public sealed class BuildCacheInventoryProgressTests : IDisposable
         }
         string[] completed = Directory.GetFiles(directory, "*.inventory");
         Assert.NotEmpty(completed);
-        Assert.True(completed.Length < C_COUNT, "The first checkpoint must interrupt discovery before the complete protection graph exists.");
-        var snapshots = completed.ToDictionary(static path => path, static path => (File.ReadAllText(path), File.GetLastWriteTimeUtc(path)));
+        Assert.True(
+            completed.Length < C_COUNT,
+            "The first checkpoint must interrupt discovery before the complete protection graph exists."
+        );
+        var snapshots = completed.ToDictionary(
+            static path => path,
+            static path => (File.ReadAllText(path), File.GetLastWriteTimeUtc(path))
+        );
         Assert.Equal(C_COUNT, Directory.GetDirectories(Path.Combine(m_root, "cache")).Length);
         await MaintainAsync();
         Assert.Equal(C_COUNT, Directory.GetFiles(directory, "*.inventory").Length);
@@ -143,8 +159,10 @@ public sealed class BuildCacheInventoryProgressTests : IDisposable
         Assert.Empty(Directory.GetFiles(directory, "*.inventory"));
     }
 
-    private async Task PrepareAsync(string name, string content)
-    {
+    private async Task PrepareAsync(
+        string name,
+        string content
+    ) {
         string root = Path.Combine(m_root, "cache");
         var publisher = new BuildCachePublisher(root, BuildCacheArtifactRole.ReusableWorkspace);
         BuildCacheOwnerCatalog.Register(m_root, root, "fixture", publisher.role);
@@ -160,16 +178,26 @@ public sealed class BuildCacheInventoryProgressTests : IDisposable
         bool retireAll = false
     ) {
         // Full inventory and retirement assertions are foreground work, not a five-second automatic maintenance slice.
-        return BuildMaintenanceApplication.CleanAsync(m_root, new(long.MaxValue, 0, TimeSpan.FromMinutes(2)),
-            retireAll, dryRun, null, CancellationToken.None);
+        return BuildMaintenanceApplication.CleanAsync(
+            m_root,
+            new(long.MaxValue, 0, TimeSpan.FromMinutes(2)),
+            retireAll,
+            dryRun,
+            null,
+            CancellationToken.None
+        );
     }
 
     public void Dispose()
     {
         string parent = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "InnoInventoryProgress")) + Path.DirectorySeparatorChar;
         if (!Path.GetFullPath(m_root).StartsWith(parent, StringComparison.OrdinalIgnoreCase))
+        {
             throw new InvalidOperationException("The inventory fixture escaped its owner.");
+        }
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 }

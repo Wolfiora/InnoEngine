@@ -54,16 +54,22 @@ public sealed class ReferenceCatalog
         IEnumerable<IReferenceResolver> resolvers
     ) {
         if (generation <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(generation), "A published reference catalog requires a positive generation.");
+        }
         ArgumentNullException.ThrowIfNull(resolvers);
         var byKind = new Dictionary<ReferenceKindId, IReferenceResolver>();
         foreach (IReferenceResolver? resolver in resolvers)
         {
             ArgumentNullException.ThrowIfNull(resolver);
             if (!resolver.kindId.isValid)
+            {
                 throw new InvalidOperationException("A reference resolver declared an invalid kind identifier.");
+            }
             if (!byKind.TryAdd(resolver.kindId, resolver))
+            {
                 throw new InvalidOperationException($"Reference kind '{resolver.kindId}' has more than one resolver.");
+            }
         }
         return new ReferenceCatalog(generation, byKind);
     }
@@ -87,18 +93,23 @@ public sealed class ReferenceCatalog
     {
         ArgumentNullException.ThrowIfNull(descriptor);
         if (descriptor.isUnassigned)
+        {
             return new ReferenceResolution(descriptor, ReferenceResolutionState.Unassigned);
+        }
         if (!m_resolvers.TryGetValue(descriptor.kindId, out IReferenceResolver? resolver))
         {
             return new ReferenceResolution(
                 descriptor,
                 ReferenceResolutionState.Missing,
-                diagnostic: $"No resolver for reference kind '{descriptor.kindId}' is active in generation {generation}.");
+                diagnostic: $"No resolver for reference kind '{descriptor.kindId}' is active in generation {generation}."
+            );
         }
         ReferenceResolution result = resolver.Resolve(descriptor)
-            ?? throw new InvalidOperationException($"Reference resolver '{descriptor.kindId}' returned null.");
+                                     ?? throw new InvalidOperationException($"Reference resolver '{descriptor.kindId}' returned null.");
         if (!ReferenceEquals(result.descriptor, descriptor))
+        {
             throw new InvalidOperationException($"Reference resolver '{descriptor.kindId}' replaced the supplied descriptor.");
+        }
         return result;
     }
 }

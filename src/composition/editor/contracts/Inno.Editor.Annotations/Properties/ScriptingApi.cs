@@ -1,5 +1,5 @@
-using Inno.Scripting.Api;
 using Inno.Editor.Annotations;
+using Inno.Scripting.Api;
 
 [assembly: ScriptingApiNamespace("InnoEditor.Annotations", "Inno.Editor.Annotations", ScriptingApiScope.Authoring)]
 [assembly: ScriptingApiExport(typeof(InspectorPresentationAttribute), ScriptingApiScope.Authoring)]

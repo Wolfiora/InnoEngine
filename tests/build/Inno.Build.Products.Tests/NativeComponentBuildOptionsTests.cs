@@ -24,11 +24,17 @@ public sealed class NativeComponentBuildOptionsTests
         Assert.Equal("-DA=one", options.cmakeArguments[0]);
         Assert.Equal("config/profile.cs", Assert.Single(options.inputPaths));
         Assert.Throws<ArgumentException>(() => new NativeComponentBuildOptions((NativeLibraryKind)99));
-        foreach (string[] invalid in new[] {
-            new[] { "-DCMAKE_TOOLCHAIN_FILE=other" }, new[] { "-DINNO_COMPONENT_BRIDGE=other" }, new[] { "-DINNO_LIBRARY_KIND=SHARED" },
-            new[] { "-DA=one", "-DA:STRING=two" }, new[] { "--build" }, new[] { "-DA=one\0two" }
-        })
+        foreach (string[] invalid in new[]
+        {
+            new[] { "-DCMAKE_TOOLCHAIN_FILE=other" },
+            new[] { "-DINNO_COMPONENT_BRIDGE=other" },
+            new[] { "-DINNO_LIBRARY_KIND=SHARED" },
+            new[] { "-DA=one", "-DA:STRING=two" },
+            new[] { "--build" },
+            new[] { "-DA=one\0two" }
+        }) {
             Assert.Throws<ArgumentException>(() => new NativeComponentBuildOptions(NativeLibraryKind.Shared, invalid));
+        }
         Assert.Throws<ArgumentException>(() => new NativeComponentBuildOptions(NativeLibraryKind.Static, inputPaths: ["../escape"]));
         Assert.Throws<ArgumentException>(() => new NativeComponentBuildOptions(NativeLibraryKind.Static, inputPaths: ["C:/absolute"]));
     }
@@ -44,12 +50,28 @@ public sealed class NativeComponentBuildOptionsTests
             string tool = Path.Combine(root, "unexecutable.fixture");
             File.WriteAllText(tool, "This file must never execute.");
             var owner = new NativeComponentDescriptor("fixture", "Native.csproj", "Build.csproj");
-            var selection = new NativeToolchainSelection("fixture-target", new BuildHostDescriptor("Windows", "x64"),
-                new Dictionary<string, string> { ["cmake"] = tool }, new Dictionary<string, string>(), [], [], new NativeLinkPlan(".dll"), false);
+            var selection = new NativeToolchainSelection(
+                "fixture-target",
+                new BuildHostDescriptor("Windows", "x64"),
+                new Dictionary<string, string> { ["cmake"] = tool },
+                new Dictionary<string, string>(),
+                [],
+                [],
+                new NativeLinkPlan(".dll"),
+                false
+            );
             var context = new NativeBuildContext(root, "debug").WithToolchain(selection).WithComponentOptions(
-                owner, new NativeComponentBuildOptions(NativeLibraryKind.Shared, ["-DLINKAGE:BOOL=OFF"]));
-            await Assert.ThrowsAsync<ArgumentException>(() => NativeCMakeExecutor.BuildAsync(context, owner, root,
-                "fixture", ["-DLINKAGE=ON"], CancellationToken.None));
+                owner,
+                new NativeComponentBuildOptions(NativeLibraryKind.Shared, ["-DLINKAGE:BOOL=OFF"])
+            );
+            await Assert.ThrowsAsync<ArgumentException>(() => NativeCMakeExecutor.BuildAsync(
+                context,
+                owner,
+                root,
+                "fixture",
+                ["-DLINKAGE=ON"],
+                CancellationToken.None
+            ));
             Assert.Equal(0, context.statistics.nativeProcesses);
             Assert.False(Directory.Exists(Path.Combine(root, "obj")));
         }
@@ -62,19 +84,28 @@ public sealed class NativeComponentBuildOptionsTests
     [Fact]
     public void StaticRecipesDeclareOnlyNativeSourceRootsThatTheyActuallyConsume()
     {
-        var source = new NativeStaticBuildDefinition("build/Static.cmake", ["native/include", "native/src"],
-            ["fixture"], "native");
+        var source = new NativeStaticBuildDefinition(
+            "build/Static.cmake",
+            ["native/include", "native/src"],
+            ["fixture"],
+            "native"
+        );
         Assert.Equal("native", source.nativeSourceDirectory);
         Assert.Null(new NativeStaticBuildDefinition("build/Static.cmake", ["vendor"], ["fixture"]).nativeSourceDirectory);
-        Assert.Throws<ArgumentException>(() => new NativeStaticBuildDefinition("build/Static.cmake", ["vendor"],
-            ["fixture"], "undeclared/native"));
+        Assert.Throws<ArgumentException>(() => new NativeStaticBuildDefinition(
+            "build/Static.cmake",
+            ["vendor"],
+            ["fixture"],
+            "undeclared/native"
+        ));
     }
 
     [Fact]
     public void ProductPlanDeclaresStaticArchivesAndDoesNotGuessLinkageFromTheHost()
     {
         ProductNativeBuildPlan plan = BuildTestProducts.StaticPlayer();
-        Assert.All(plan.steps, static step => {
+        Assert.All(plan.steps, static step =>
+        {
             Assert.Equal(NativeLibraryKind.Static, step.options.libraryKind);
             Assert.NotEmpty(step.component.staticBuild!.logicalOutputs);
         });
@@ -99,11 +130,21 @@ public sealed class NativeComponentBuildOptionsTests
             string Identity(NativeComponentBuildOptions options)
             {
                 var context = new NativeBuildContext(root, "debug").WithComponentOptions(owner, options);
-                NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(context, owner, "fixture", "fixture-target", [], [], [config]);
+                NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(
+                    context,
+                    owner,
+                    "fixture",
+                    "fixture-target",
+                    [],
+                    [],
+                    [config]
+                );
                 foreach (NativeBuildInput input in recipe.inputs)
                 {
                     if (File.Exists(input.physicalPath) || Directory.Exists(input.physicalPath))
+                    {
                         continue;
+                    }
                     Directory.CreateDirectory(Path.GetDirectoryName(input.physicalPath)!);
                     File.WriteAllText(input.physicalPath, "executor");
                 }

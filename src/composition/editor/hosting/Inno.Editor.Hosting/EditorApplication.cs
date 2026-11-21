@@ -1,7 +1,7 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
 
 namespace Inno.Editor.Hosting;
 
@@ -53,14 +53,22 @@ public static class EditorApplication
         ArgumentException.ThrowIfNullOrWhiteSpace(options.projectDirectory);
         ArgumentException.ThrowIfNullOrWhiteSpace(options.supportPackRoot);
         if (options.smokeFrameLimit is <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(options), "A smoke frame limit must be positive.");
+        }
         if (!options.distribution.availableTargets.Contains(options.defaultBuildTarget))
+        {
             throw new ArgumentException("The explicit default build target is absent from the distribution.", nameof(options));
+        }
         options.shell.adapters.Validate(options.adapterCatalog);
         if (!options.presentation.isValid || !options.adapterCatalog.presentation.supportedBackends.Contains(options.presentation))
+        {
             throw new NotSupportedException("The selected presentation backend is not registered.");
+        }
         if (!options.adapterCatalog.renderingAuthoring.supportedBackends.Contains(options.shell.adapters.rendering))
+        {
             throw new NotSupportedException("The selected rendering backend requires a matching authoring provider.");
+        }
         cancellationToken.ThrowIfCancellationRequested();
         EditorHost host = EditorHost.Create(options);
         int result;

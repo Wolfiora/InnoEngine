@@ -1,13 +1,13 @@
 using System;
 using System.IO;
-using System.Runtime.Versioning;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.SupportPacks;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
-using Xunit;
 
 namespace Inno.Build.SupportPacks.Tests;
 
@@ -32,12 +32,16 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         var publisher = new PlayerSupportPackPublisher([m_source]);
         string directory;
         using (PlayerSupportPackPublication first = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+        {
             directory = first.directory;
+        }
         string current = Path.Combine(output, S_TARGET.value, "current");
         File.SetLastWriteTimeUtc(current, DateTime.UtcNow.AddDays(-1));
         DateTime selectedAt = File.GetLastWriteTimeUtc(current);
         using (PlayerSupportPackPublication repeated = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+        {
             Assert.Equal(directory, repeated.directory);
+        }
         Assert.Equal(selectedAt, File.GetLastWriteTimeUtc(current));
         Assert.Equal(1, m_source.preparations);
         string file = Path.Combine(directory, "References", "Inno.Fixture.dll");
@@ -45,11 +49,15 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         File.WriteAllText(file, "other");
         File.SetLastWriteTimeUtc(file, timestamp);
         using (PlayerSupportPackPublication repaired = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+        {
             Assert.Equal("first", File.ReadAllText(Path.Combine(repaired.directory, "References", "Inno.Fixture.dll")));
+        }
         Assert.Equal(2, m_source.preparations);
         File.WriteAllText(Path.Combine(directory, "References", "Extra.dll"), "extra");
         using (PlayerSupportPackPublication repaired = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+        {
             Assert.Single(Directory.EnumerateFiles(Path.Combine(repaired.directory, "References")));
+        }
         Assert.Equal(3, m_source.preparations);
         Assert.Empty(Directory.EnumerateDirectories(output, ".support-pack-*"));
     }
@@ -61,16 +69,24 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         var publisher = new PlayerSupportPackPublisher([m_source]);
         string previous;
         using (PlayerSupportPackPublication first = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+        {
             previous = first.directory;
+        }
         string indexes = Path.Combine(output, S_TARGET.value, ".preparations");
         string oldIndex = Assert.Single(Directory.GetFiles(indexes));
         File.WriteAllText(Path.Combine(m_root, "input.txt"), "changed");
         string current;
         using (PlayerSupportPackPublication second = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+        {
             current = second.directory;
+        }
 
-        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(m_root,
-            [new BuildCachePublisher(output, BuildCacheArtifactRole.ImmutableArtifact).Describe("packs")], new(), retireAll: true);
+        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(
+            m_root,
+            [new BuildCachePublisher(output, BuildCacheArtifactRole.ImmutableArtifact).Describe("packs")],
+            new(),
+            retireAll: true
+        );
         Assert.Empty((await plan.ExecuteAsync()).failures);
         Assert.False(Directory.Exists(previous));
         Assert.False(File.Exists(oldIndex));
@@ -83,8 +99,10 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
     {
         string output = Path.Combine(m_root, "Packs");
         var publisher = new PlayerSupportPackPublisher([m_source]);
-        PlayerSupportPackPublication[] readers = await Task.WhenAll(Enumerable.Range(0, 4)
-            .Select(_ => publisher.PublishAsync(m_root, output, S_TARGET, "unused").AsTask()));
+        PlayerSupportPackPublication[] readers = await Task.WhenAll(
+            Enumerable.Range(0, 4)
+                .Select(_ => publisher.PublishAsync(m_root, output, S_TARGET, "unused").AsTask())
+        );
         try
         {
             Assert.All(readers, reader => Assert.Equal(readers[0].directory, reader.directory));
@@ -93,7 +111,9 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         finally
         {
             foreach (PlayerSupportPackPublication reader in readers)
+            {
                 reader.Dispose();
+            }
         }
     }
 
@@ -123,7 +143,9 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         string output = Path.Combine(m_root, "Packs");
         var publisher = new PlayerSupportPackPublisher([m_source]);
         using (PlayerSupportPackPublication first = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+        {
             Assert.Empty(first.diagnostics);
+        }
         string current = Path.Combine(output, S_TARGET.value, "current");
         string previous = File.ReadAllText(current);
         File.WriteAllText(Path.Combine(m_root, "input.txt"), "other");
@@ -146,7 +168,9 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
     public async Task PostCommitStagingCleanupFailurePreservesReadingOwnership()
     {
         if (!OperatingSystem.IsWindows())
+        {
             return;
+        }
         string output = Path.Combine(m_root, "Packs");
         FileStream? blocker = null;
         m_source.onPrepared = staging =>
@@ -223,12 +247,15 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
             Source owner,
             string identity,
             string content
-        ) : PlayerSupportPackPlan(S_TARGET, identity) {
+        ) : PlayerSupportPackPlan(S_TARGET, identity)
+        {
             public override ValueTask VerifyInputsAsync(CancellationToken cancellationToken)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 if (owner.Identity() != preparationIdentity)
+                {
                     throw new InvalidOperationException("Fixture source input changed after planning.");
+                }
                 return ValueTask.CompletedTask;
             }
 

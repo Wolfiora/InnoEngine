@@ -1,9 +1,10 @@
-using Inno.Editor.ImGui;
 using Inno.Editor.Assets;
 using Inno.Editor.Core;
+using Inno.Editor.ImGui;
 using Inno.Editor.Settings;
 
 namespace Inno.Editor.Assets.ImGui;
+
 [AssetIcon(".txt", ImGuiIcon.FileLines)]
 [AssetIcon(".json", ImGuiIcon.FileLines)]
 [AssetIcon(".yaml", ImGuiIcon.FileLines)]

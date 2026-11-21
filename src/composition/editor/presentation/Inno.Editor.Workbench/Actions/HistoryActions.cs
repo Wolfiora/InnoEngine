@@ -2,6 +2,7 @@ using Inno.Core.Input;
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Workbench;
+
 [EditorAction(GlobalInteractionIds.C_UNDO, priority: 1000)]
 [EditorMenu(GlobalInteractionIds.C_MAIN_MENU_AREA, "Edit/Undo", order: 100)]
 [EditorShortcut(KeyCode.Z, primary: true)]
@@ -16,12 +17,14 @@ internal sealed class UndoEditorAction : EditorAction
     /// <returns>
     /// The validated editor action state that represents the completed operation.
     /// </returns>
-    protected override EditorActionState Query(EditorActionContext context) => new(
-        isVisible: true,
-        isEnabled: context.history.canUndo,
-        displayName: context.history.undoName is { } name ? $"Undo {name}" : "Undo",
-        unavailableReason: context.history.undoUnavailableReason
-    );
+    protected override EditorActionState Query(EditorActionContext context)
+        => new(
+            isVisible: true,
+            isEnabled: context.history.canUndo,
+            displayName: context.history.undoName is { } name ? $"Undo {name}" : "Undo",
+            unavailableReason: context.history.undoUnavailableReason
+        );
+
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.
     /// </summary>
@@ -46,12 +49,14 @@ internal sealed class RedoEditorAction : EditorAction
     /// <returns>
     /// The validated editor action state that represents the completed operation.
     /// </returns>
-    protected override EditorActionState Query(EditorActionContext context) => new(
-        isVisible: true,
-        isEnabled: context.history.canRedo,
-        displayName: context.history.redoName is { } name ? $"Redo {name}" : "Redo",
-        unavailableReason: context.history.redoUnavailableReason
-    );
+    protected override EditorActionState Query(EditorActionContext context)
+        => new(
+            isVisible: true,
+            isEnabled: context.history.canRedo,
+            displayName: context.history.redoName is { } name ? $"Redo {name}" : "Redo",
+            unavailableReason: context.history.redoUnavailableReason
+        );
+
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.
     /// </summary>

@@ -26,7 +26,9 @@ public sealed class EditorModuleAttribute : Attribute
         int order = 0
     ) {
         if (string.IsNullOrWhiteSpace(id))
+        {
             throw new ArgumentException("An editor module identifier is required.", nameof(id));
+        }
         this.id = id;
         this.order = order;
     }

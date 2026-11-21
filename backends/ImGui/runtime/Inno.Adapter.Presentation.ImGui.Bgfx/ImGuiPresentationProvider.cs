@@ -19,7 +19,8 @@ public sealed class ImGuiPresentationProvider : PresentationBackendProvider
     /// <exception cref="ArgumentNullException">
     /// Interaction configuration is absent.
     /// </exception>
-    public ImGuiPresentationProvider(ImGuiInteractionOptions interaction) : base(PresentationBackendId.imGui)
+    public ImGuiPresentationProvider(ImGuiInteractionOptions interaction)
+        : base(PresentationBackendId.imGui)
     {
         ArgumentNullException.ThrowIfNull(interaction);
         m_interaction = interaction;

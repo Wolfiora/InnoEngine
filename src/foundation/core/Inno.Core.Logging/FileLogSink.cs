@@ -106,9 +106,11 @@ public class FileLogSink : ILogSink, IDisposable
             string line = FormatEntry(entry);
             int bytes = S_ENCODING.GetByteCount(line) + S_NEWLINE_BYTES;
             if (m_currentSize > 0 && bytes > m_maxFileSize - m_currentSize)
+            {
                 RotateFile();
+            }
             StreamWriter writer = m_writer
-                ?? throw new InvalidOperationException("The file log sink has no writable file after a failed rotation.");
+                                  ?? throw new InvalidOperationException("The file log sink has no writable file after a failed rotation.");
             writer.WriteLine(line);
             writer.Flush();
             m_currentSize += bytes;
@@ -126,7 +128,9 @@ public class FileLogSink : ILogSink, IDisposable
         lock (m_lifecycleSync)
         {
             if (m_disposed)
+            {
                 return;
+            }
             m_disposed = true;
             CloseWriter();
         }
@@ -160,7 +164,8 @@ public class FileLogSink : ILogSink, IDisposable
                     FileAccess.Read,
                     FileShare.None,
                     bufferSize: 1,
-                    FileOptions.DeleteOnClose);
+                    FileOptions.DeleteOnClose
+                );
             }
             catch (IOException)
             {
@@ -186,7 +191,8 @@ public class FileLogSink : ILogSink, IDisposable
             FileAccess.Write,
             FileShare.Read,
             bufferSize: 16 * 1024,
-            FileOptions.SequentialScan);
+            FileOptions.SequentialScan
+        );
         try
         {
             m_writer = new StreamWriter(stream, S_ENCODING);

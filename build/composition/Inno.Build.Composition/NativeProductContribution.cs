@@ -31,6 +31,7 @@ public sealed class NativeProductContribution
     /// Gets the immutable product graph.
     /// </summary>
     public ProductNativeBuildPlan plan { get; }
+
     /// <summary>
     /// Gets the platform-selected executor.
     /// </summary>

@@ -33,7 +33,9 @@ internal sealed class NativeInputSnapshot
                 if (paths.TryGetValue(logical, out string? previous))
                 {
                     if (!cache.pathComparer.Equals(previous, physical))
+                    {
                         throw new ArgumentException($"Native input identity '{logical}' maps to different reading locations.");
+                    }
                     continue;
                 }
                 paths.Add(logical, physical);
@@ -41,9 +43,11 @@ internal sealed class NativeInputSnapshot
         }
         var ordered = paths.OrderBy(static pair => pair.Key, StringComparer.Ordinal).ToArray();
         byte[][] hashes = cache.Hash(ordered.Select(static pair => pair.Value).ToArray(), cancellationToken);
-        return new NativeInputSnapshot(ordered.Select((
-            pair,
-            index
-        ) => new Entry(pair.Key, pair.Value, hashes[index])));
+        return new NativeInputSnapshot(
+            ordered.Select((
+                pair,
+                index
+            ) => new Entry(pair.Key, pair.Value, hashes[index]))
+        );
     }
 }

@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
-using Xunit;
 
 namespace Inno.Build.Toolchains.Tests;
 
@@ -31,8 +31,12 @@ public sealed class ImmutableRegistrationTests : IDisposable
             Assert.Equal(time, File.GetLastWriteTimeUtc(record));
             publisher.Record(generation, generation + ".lock", [page], "selected", null);
         }
-        BuildCacheCleanupPlan protectedPlan = BuildCacheCleanupPlan.Create(Path.GetDirectoryName(m_root)!,
-            [publisher.Describe("documentation")], new(0, 0), retireAll: true);
+        BuildCacheCleanupPlan protectedPlan = BuildCacheCleanupPlan.Create(
+            Path.GetDirectoryName(m_root)!,
+            [publisher.Describe("documentation")],
+            new(0, 0),
+            retireAll: true
+        );
         Assert.Empty((await protectedPlan.ExecuteAsync()).retired);
         Assert.True(Directory.Exists(page));
     }
@@ -53,11 +57,15 @@ public sealed class ImmutableRegistrationTests : IDisposable
             string record = Assert.Single(Directory.GetFiles(m_root, "*.cache.json"));
             byte[] bytes = File.ReadAllBytes(record);
             if (change == "payload")
+            {
                 File.WriteAllText(Path.Combine(page, "extra"), "unaccounted bytes");
-            Assert.Throws<InvalidDataException>(() => publisher.EnsureImmutableRegistration(page,
+            }
+            Assert.Throws<InvalidDataException>(() => publisher.EnsureImmutableRegistration(
+                page,
                 change == "lease" ? page + ".other.lock" : page + ".lock",
                 change == "dependency" ? [Path.Combine(m_root, "dependency")] : [],
-                change == "target" ? "another-target" : null));
+                change == "target" ? "another-target" : null
+            ));
             Assert.Equal(bytes, File.ReadAllBytes(record));
         }
     }
@@ -73,19 +81,30 @@ public sealed class ImmutableRegistrationTests : IDisposable
             using var cancellation = new CancellationTokenSource();
             cancellation.Cancel();
             Assert.Throws<OperationCanceledException>(() => publisher.EnsureImmutableRegistration(
-                page, page + ".lock", [], null, cancellation.Token));
+                page,
+                page + ".lock",
+                [],
+                null,
+                cancellation.Token
+            ));
             Assert.Empty(Directory.GetFiles(m_root, "*.cache.json"));
             var workspace = new BuildCachePublisher(m_root, BuildCacheArtifactRole.ReusableWorkspace);
             Assert.Throws<InvalidOperationException>(() => workspace.EnsureImmutableRegistration(page, page + ".lock", [], null));
             Assert.Throws<IOException>(() => publisher.EnsureImmutableRegistration(
-                Path.Combine(m_root, "..", "foreign"), page + ".lock", [], null));
+                Path.Combine(m_root, "..", "foreign"),
+                page + ".lock",
+                [],
+                null
+            ));
         }
     }
 
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     private string Create(string name)

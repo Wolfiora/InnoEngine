@@ -20,7 +20,10 @@ public sealed class ContentCacheCancellationTests
         using CancellationTokenSource cancellation = new();
         fixture.source.onRead = cancellation.Cancel;
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => FileContentPreparation.PrepareAsync(
-            fixture.source, fixture.options, cancellation.Token).AsTask());
+            fixture.source,
+            fixture.options,
+            cancellation.Token
+        ).AsTask());
         Assert.Equal(previous, fixture.current);
         Assert.Empty(Directory.GetDirectories(Path.Combine(fixture.cache, "staging")));
         fixture.source.onRead = null;
@@ -33,7 +36,10 @@ public sealed class ContentCacheCancellationTests
     {
         using ContentCacheFixture fixture = new();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => FileContentPreparation.PrepareAsync(
-            fixture.source, fixture.options, new CancellationToken(true)).AsTask());
+            fixture.source,
+            fixture.options,
+            new CancellationToken(true)
+        ).AsTask());
         Assert.False(Directory.Exists(fixture.root));
     }
 }

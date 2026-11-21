@@ -22,12 +22,16 @@ public readonly record struct ContentKey
         foreach (string segment in value.Split('/'))
         {
             if (segment.Length == 0 || segment is "." or ".." || segment.EndsWith('.')
-                || segment.EndsWith(' ') || IsReserved(segment))
+                || segment.EndsWith(' ') || IsReserved(segment)
+            ) {
                 throw new ArgumentException("Content keys require portable relative segments.", nameof(value));
+            }
             foreach (char character in segment)
             {
                 if (char.IsControl(character) || character is '\\' or ':' or '*' or '?' or '"' or '<' or '>' or '|')
+                {
                     throw new ArgumentException("Content keys contain a nonportable character.", nameof(value));
+                }
             }
         }
         this.value = value;
@@ -46,13 +50,15 @@ public readonly record struct ContentKey
         ReadOnlySpan<char> stem = segment.AsSpan();
         int extension = stem.IndexOf('.');
         if (extension >= 0)
+        {
             stem = stem[..extension];
+        }
         return stem.Equals("CON", StringComparison.OrdinalIgnoreCase)
-            || stem.Equals("PRN", StringComparison.OrdinalIgnoreCase)
-            || stem.Equals("AUX", StringComparison.OrdinalIgnoreCase)
-            || stem.Equals("NUL", StringComparison.OrdinalIgnoreCase)
-            || (stem.Length == 4 && stem[3] is >= '1' and <= '9'
-                && (stem[..3].Equals("COM", StringComparison.OrdinalIgnoreCase)
-                    || stem[..3].Equals("LPT", StringComparison.OrdinalIgnoreCase)));
+               || stem.Equals("PRN", StringComparison.OrdinalIgnoreCase)
+               || stem.Equals("AUX", StringComparison.OrdinalIgnoreCase)
+               || stem.Equals("NUL", StringComparison.OrdinalIgnoreCase)
+               || (stem.Length == 4 && stem[3] is >= '1' and <= '9'
+                   && (stem[..3].Equals("COM", StringComparison.OrdinalIgnoreCase)
+                       || stem[..3].Equals("LPT", StringComparison.OrdinalIgnoreCase)));
     }
 }

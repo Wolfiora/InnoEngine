@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported slider flags choices at the Editor presentation boundary.
 /// </summary>
@@ -50,5 +51,5 @@ public enum ImGuiSliderFlags : int
     /// <summary>
     /// Selects the invalid mask presentation behavior.
     /// </summary>
-    InvalidMask = (int)Inno.Native.ImGui.ImGuiSliderFlags.InvalidMask,
+    InvalidMask = (int)Inno.Native.ImGui.ImGuiSliderFlags.InvalidMask
 }

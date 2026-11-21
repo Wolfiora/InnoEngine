@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Inno.Core.Serialization;
 using Inno.Core.Graphs;
+using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 
 namespace Inno.Rendering.Shaders;
@@ -21,7 +21,8 @@ public sealed class ShaderNodeCompilerRegistry : TypeRegistry<ShaderNodeCompiler
     /// <param name="types">
     /// Owner catalog, which must outlive this registry.
     /// </param>
-    public ShaderNodeCompilerRegistry(TypeCatalog types) : base(types) => m_types = types;
+    public ShaderNodeCompilerRegistry(TypeCatalog types)
+        : base(types) => m_types = types;
 
     /// <summary>
     /// Gets stable compiler identities without exposing provider instances.
@@ -112,8 +113,11 @@ public sealed class ShaderNodeCompilerRegistry : TypeRegistry<ShaderNodeCompiler
     {
         var providers = new List<IShaderNodeCompiler>();
         foreach (Type type in types.GetTypesImplementing<IShaderNodeCompiler>()
-                     .Select(reference => reference.Resolve(types)).OrderBy(static type => type.FullName, StringComparer.Ordinal))
+            .Select(reference => reference.Resolve(types))
+            .OrderBy(static type => type.FullName, StringComparer.Ordinal)
+        ) {
             providers.Add(CreateExtension<IShaderNodeCompiler>(type));
+        }
         return new(providers);
     }
 

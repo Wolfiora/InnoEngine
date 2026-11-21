@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported table bg target choices at the Editor presentation boundary.
 /// </summary>
@@ -21,5 +22,5 @@ public enum ImGuiTableBgTarget : int
     /// <summary>
     /// Set cell background color (top-most color)
     /// </summary>
-    CellBg = (int)Inno.Native.ImGui.ImGuiTableBgTarget.CellBg,
+    CellBg = (int)Inno.Native.ImGui.ImGuiTableBgTarget.CellBg
 }

@@ -36,8 +36,11 @@ public sealed class GraphClipboardData
 public sealed class GraphDocumentController
 {
     private readonly Identity m_identity;
-    private GraphDocumentSession session => m_identity.Resolve<GraphDocumentSession>()
-        ?? throw new InvalidOperationException("The Graph document controller belongs to a closed identity generation.");
+
+    private GraphDocumentSession session
+        => m_identity.Resolve<GraphDocumentSession>()
+           ?? throw new InvalidOperationException("The Graph document controller belongs to a closed identity generation.");
+
     private readonly IEditorHistory m_history;
     private readonly SerializationRegistry m_serialization;
 
@@ -101,7 +104,11 @@ public sealed class GraphDocumentController
         ArgumentNullException.ThrowIfNull(replacement);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         GraphDocument snapshot = replacement.Clone();
-        Mutate(historyName, gestureId is null ? null : $"graph:{documentId}:document:{gestureId}", () => document.ReplaceContents(snapshot));
+        Mutate(
+            historyName,
+            gestureId is null ? null : $"graph:{documentId}:document:{gestureId}",
+            () => document.ReplaceContents(snapshot)
+        );
     }
 
     /// <summary>
@@ -199,7 +206,8 @@ public sealed class GraphDocumentController
                 {
                     document.FindNode(id)!.position = position;
                 }
-            });
+            }
+        );
     }
 
     /// <summary>
@@ -289,7 +297,8 @@ public sealed class GraphDocumentController
         Mutate(
             "Edit Node Property",
             gestureId is null ? null : $"graph:{documentId}:value:{nodeId.value}:{propertyId}:{gestureId}",
-            () => node.SetValue(propertyId, value.Clone()));
+            () => node.SetValue(propertyId, value.Clone())
+        );
     }
 
     /// <summary>
@@ -339,8 +348,8 @@ public sealed class GraphDocumentController
         }
 
         foreach (GraphEdgeRecord edge in document.edges.Where(
-            edge => selected.Contains(edge.output.nodeId) && selected.Contains(edge.input.nodeId)))
-        {
+            edge => selected.Contains(edge.output.nodeId) && selected.Contains(edge.input.nodeId)
+        )) {
             fragment.AddEdge(new GraphEdgeRecord(edge.id, edge.output, edge.input));
         }
 
@@ -382,17 +391,21 @@ public sealed class GraphDocumentController
                 GraphNodeRecord clone = CloneNode(
                     source,
                     remap[source.id],
-                    new GraphPosition(source.position.x + offset.x, source.position.y + offset.y));
+                    new GraphPosition(source.position.x + offset.x, source.position.y + offset.y)
+                );
                 remapNode?.Invoke(clone, remap);
                 document.AddNode(clone);
             }
 
             foreach (GraphEdgeRecord edge in fragment.edges)
             {
-                document.AddEdge(new GraphEdgeRecord(
-                    NewEdgeId(),
-                    new GraphEndpoint(remap[edge.output.nodeId], edge.output.portId),
-                    new GraphEndpoint(remap[edge.input.nodeId], edge.input.portId)));
+                document.AddEdge(
+                    new GraphEdgeRecord(
+                        NewEdgeId(),
+                        new GraphEndpoint(remap[edge.output.nodeId], edge.output.portId),
+                        new GraphEndpoint(remap[edge.input.nodeId], edge.input.portId)
+                    )
+                );
             }
         });
         return fragment.nodes.Select(node => remap[node.id]).ToArray();
@@ -441,7 +454,7 @@ public sealed class GraphDocumentController
 
     private GraphNodeRecord RequireNode(GraphNodeId nodeId)
         => document.FindNode(nodeId)
-            ?? throw new ArgumentException($"Node '{nodeId}' is not present in '{documentId}'.", nameof(nodeId));
+           ?? throw new ArgumentException($"Node '{nodeId}' is not present in '{documentId}'.", nameof(nodeId));
 
     private static GraphNodeRecord CloneNode(
         GraphNodeRecord source,
@@ -458,5 +471,6 @@ public sealed class GraphDocumentController
     }
 
     private static GraphNodeId NewNodeId() => new(Guid.NewGuid().ToString("N"));
+
     private static GraphEdgeId NewEdgeId() => new(Guid.NewGuid().ToString("N"));
 }

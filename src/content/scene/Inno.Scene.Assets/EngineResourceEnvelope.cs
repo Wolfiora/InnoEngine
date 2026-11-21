@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Assets;
 using Inno.Core.Serialization;
 
@@ -24,9 +23,12 @@ internal sealed class EngineResourceEnvelope : ISerializable
         if (!string.Equals(resourceKind, expectedKind, StringComparison.Ordinal))
         {
             throw new InvalidOperationException(
-                $"Engine resource kind '{resourceKind}' does not match expected kind '{expectedKind}'.");
+                $"Engine resource kind '{resourceKind}' does not match expected kind '{expectedKind}'."
+            );
         }
         if (payload.Length == 0)
+        {
             throw new InvalidOperationException($"Engine resource '{resourceKind}' has an empty graph payload.");
+        }
     }
 }

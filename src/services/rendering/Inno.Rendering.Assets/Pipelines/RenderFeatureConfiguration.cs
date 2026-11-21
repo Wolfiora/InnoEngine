@@ -1,11 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Scripting.Api;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
@@ -18,9 +18,7 @@ public struct RenderFeatureConfiguration
     /// <summary>
     /// Creates an empty feature configuration for deserialization.
     /// </summary>
-    public RenderFeatureConfiguration()
-    {
-    }
+    public RenderFeatureConfiguration() {}
 
     /// <summary>
     /// Creates a feature configuration.
@@ -63,4 +61,3 @@ public struct RenderFeatureConfiguration
     [SerializableProperty]
     public bool enabled { get; set; } = true;
 }
-

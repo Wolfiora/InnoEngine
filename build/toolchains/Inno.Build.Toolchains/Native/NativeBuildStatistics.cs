@@ -57,5 +57,4 @@ public sealed record NativeBuildStatistics
     /// Gets managed SDK processes started for generator extension preparation and managed input evaluation.
     /// </summary>
     public long managedProcesses { get; init; }
-
 }

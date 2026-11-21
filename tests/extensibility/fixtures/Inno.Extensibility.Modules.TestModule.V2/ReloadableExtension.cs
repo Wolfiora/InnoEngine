@@ -1,5 +1,5 @@
-using Inno.Extensibility.Types;
 using Reloadable.PrivateDependency;
+using Inno.Extensibility.Types;
 
 namespace Inno.Extensibility.Modules.TestModule;
 

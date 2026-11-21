@@ -1,4 +1,3 @@
-using Inno.Testing.Source;
 using System;
 using System.IO;
 using System.Linq;
@@ -6,9 +5,10 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
-using Xunit;
+using Inno.Testing.Source;
 
 namespace Inno.Build.ProductProfiles.Integration.Tests;
 
@@ -21,40 +21,81 @@ public sealed class EditorShaderProfileTests
         string platform = OperatingSystem.IsWindows() ? "WindowsX64" : "MacOSArm64";
         string target = OperatingSystem.IsWindows() ? "windows-x64" : "macos-arm64";
         string profile = Path.Combine(root, "platforms", platform, "build", "Inno.Build." + platform, "EditorProduct.props");
-        string backend = Path.Combine(root, "backends", "Sdl3", "runtime",
-            "Inno.Adapter.Platform.Sdl3", "Inno.Adapter.Platform.Sdl3.csproj");
+        string backend = Path.Combine(
+            root,
+            "backends",
+            "Sdl3",
+            "runtime",
+            "Inno.Adapter.Platform.Sdl3",
+            "Inno.Adapter.Platform.Sdl3.csproj"
+        );
         string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
-        using ProcessOwnedDirectory outputs = await ProcessOwnedDirectory.CreateAsync(Path.Combine(Path.GetTempPath(), "InnoShaderReferenceTests"));
-        string configuration = typeof(EditorShaderProfileTests).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration;
-        string[] buildProperties = ["-p:InnoProductBuildProperties=" + profile, "-p:InnoNativeTarget=" + target,
-            "-p:InnoToolTarget=" + target, "-p:Configuration=" + configuration, "-p:ArtifactsPath=" + outputs.directory];
+        using ProcessOwnedDirectory outputs = await ProcessOwnedDirectory.CreateAsync(
+            Path.Combine(Path.GetTempPath(), "InnoShaderReferenceTests")
+        );
+        string configuration = typeof(EditorShaderProfileTests)
+            .Assembly
+            .GetCustomAttribute<AssemblyConfigurationAttribute>()!
+            .Configuration;
+        string[] buildProperties =
+        [
+            "-p:InnoProductBuildProperties=" + profile,
+            "-p:InnoNativeTarget=" + target,
+            "-p:InnoToolTarget=" + target,
+            "-p:Configuration=" + configuration,
+            "-p:ArtifactsPath=" + outputs.directory
+        ];
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(3));
-        await ToolchainEnvironment.RunAsync(host, ["restore", backend, "--disable-build-servers", "-m:1", "-nr:false", ..buildProperties],
-            root, cancellation.Token, DotNetSdkEnvironment.Create(host));
-        string output = await ToolchainEnvironment.CaptureOutputAsync(host,
-            ["msbuild", backend, "-nologo", "-nodeReuse:false", "-t:IncludeTransitiveProjectReferences",
-                "-getItem:ProjectReference", ..buildProperties],
-            root, cancellation.Token, DotNetSdkEnvironment.Create(host));
+        await ToolchainEnvironment.RunAsync(
+            host,
+            ["restore", backend, "--disable-build-servers", "-m:1", "-nr:false", ..buildProperties],
+            root,
+            cancellation.Token,
+            DotNetSdkEnvironment.Create(host)
+        );
+        string output = await ToolchainEnvironment.CaptureOutputAsync(
+            host,
+            [
+                "msbuild",
+                backend,
+                "-nologo",
+                "-nodeReuse:false",
+                "-t:IncludeTransitiveProjectReferences",
+                "-getItem:ProjectReference",
+                ..buildProperties
+            ],
+            root,
+            cancellation.Token,
+            DotNetSdkEnvironment.Create(host)
+        );
         using JsonDocument document = JsonDocument.Parse(output);
         JsonElement references = document.RootElement.GetProperty("Items").GetProperty("ProjectReference");
         Assert.Contains(references.EnumerateArray(), reference => reference.GetProperty("Filename").GetString() == "Inno.Native.Sdl3");
         Assert.DoesNotContain(references.EnumerateArray(), reference => reference.GetProperty("Filename").GetString() == "BGCS.Runtime");
-        Assert.All(references.EnumerateArray().Where(reference =>
-            !reference.TryGetProperty("OutputItemType", out JsonElement kind) || kind.GetString() != "Analyzer"), reference =>
+        Assert.All(
+            references.EnumerateArray().Where(reference => (
+                !reference.TryGetProperty("OutputItemType", out JsonElement kind) || kind.GetString() != "Analyzer"
+            )),
+            reference =>
         {
             string properties = reference.GetProperty("AdditionalProperties").GetString()!;
             Assert.Contains("InnoNativeTarget=" + target, properties);
             Assert.Contains("InnoProductBuildProperties=" + profile, properties);
-        });
-        Assert.All(references.EnumerateArray().Where(reference =>
-            reference.TryGetProperty("OutputItemType", out JsonElement kind) && kind.GetString() == "Analyzer"), reference =>
+        }
+        );
+        Assert.All(
+            references.EnumerateArray().Where(reference => (
+                reference.TryGetProperty("OutputItemType", out JsonElement kind) && kind.GetString() == "Analyzer"
+            )),
+            reference =>
         {
             Assert.Equal("all", reference.GetProperty("PrivateAssets").GetString());
             string removed = reference.GetProperty("GlobalPropertiesToRemove").GetString()!;
             Assert.Contains("InnoNativeTarget", removed);
             Assert.Contains("InnoProductBuildProperties", removed);
             Assert.Contains("RuntimeIdentifier", removed);
-        });
+        }
+        );
     }
 
     [Theory]
@@ -68,16 +109,38 @@ public sealed class EditorShaderProfileTests
     ) {
         string root = TestRepository.GetRoot(typeof(EditorShaderProfileTests).Assembly);
         string profile = Path.Combine(root, "platforms", platform, "build", "Inno.Build." + platform, "ProductBuild.props");
-        string backend = Path.Combine(root, "backends", "Bgfx", "runtime",
-            "Inno.Adapter.Rendering.Bgfx", "Inno.Adapter.Rendering.Bgfx.csproj");
+        string backend = Path.Combine(
+            root,
+            "backends",
+            "Bgfx",
+            "runtime",
+            "Inno.Adapter.Rendering.Bgfx",
+            "Inno.Adapter.Rendering.Bgfx.csproj"
+        );
         string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
-        string output = await ToolchainEnvironment.CaptureOutputAsync(host,
-            ["msbuild", backend, "-nologo", "-nodeReuse:false", "-getProperty:InnoBgfxShaderTarget",
-                "-getItem:_CompositionShaderApi", "-p:InnoProductBuildProperties=" + profile,
-                "-p:InnoNativeTarget=fixture-new-cpu"], root, CancellationToken.None, DotNetSdkEnvironment.Create(host));
+        string output = await ToolchainEnvironment.CaptureOutputAsync(
+            host,
+            [
+                "msbuild",
+                backend,
+                "-nologo",
+                "-nodeReuse:false",
+                "-getProperty:InnoBgfxShaderTarget",
+                "-getItem:_CompositionShaderApi",
+                "-p:InnoProductBuildProperties=" + profile,
+                "-p:InnoNativeTarget=fixture-new-cpu"
+            ],
+            root,
+            CancellationToken.None,
+            DotNetSdkEnvironment.Create(host)
+        );
         using JsonDocument document = JsonDocument.Parse(output);
-        Assert.Equal(shaderPlatform, document.RootElement.GetProperty("Properties")
-            .GetProperty("InnoBgfxShaderTarget").GetString());
+        Assert.Equal(
+            shaderPlatform,
+            document.RootElement.GetProperty("Properties")
+                .GetProperty("InnoBgfxShaderTarget")
+                .GetString()
+        );
         Assert.Equal(apiCount, document.RootElement.GetProperty("Items").GetProperty("_CompositionShaderApi").GetArrayLength());
     }
 
@@ -92,37 +155,84 @@ public sealed class EditorShaderProfileTests
     ) {
         string root = TestRepository.GetRoot(typeof(EditorShaderProfileTests).Assembly);
         string profile = Path.Combine(root, "platforms", platform, "build", "Inno.Build." + platform, "EditorProduct.props");
-        string backend = Path.Combine(root, "backends", "ImGui", "runtime",
-            "Inno.Adapter.Presentation.ImGui.Bgfx", "Inno.Adapter.Presentation.ImGui.Bgfx.csproj");
+        string backend = Path.Combine(
+            root,
+            "backends",
+            "ImGui",
+            "runtime",
+            "Inno.Adapter.Presentation.ImGui.Bgfx",
+            "Inno.Adapter.Presentation.ImGui.Bgfx.csproj"
+        );
         string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
-        string output = await ToolchainEnvironment.CaptureOutputAsync(host,
-            ["msbuild", backend, "-nologo", "-nodeReuse:false", "-getProperty:InnoImGuiShaderTarget",
-                "-getItem:_ImGuiShaderApi,ProjectReference", "-p:InnoProductBuildProperties=" + profile,
-                "-p:InnoNativeTarget=" + nativeTarget], root, CancellationToken.None, DotNetSdkEnvironment.Create(host));
+        string output = await ToolchainEnvironment.CaptureOutputAsync(
+            host,
+            [
+                "msbuild",
+                backend,
+                "-nologo",
+                "-nodeReuse:false",
+                "-getProperty:InnoImGuiShaderTarget",
+                "-getItem:_ImGuiShaderApi,ProjectReference",
+                "-p:InnoProductBuildProperties=" + profile,
+                "-p:InnoNativeTarget=" + nativeTarget
+            ],
+            root,
+            CancellationToken.None,
+            DotNetSdkEnvironment.Create(host)
+        );
         using JsonDocument document = JsonDocument.Parse(output);
-        Assert.Equal(shaderPlatform, document.RootElement.GetProperty("Properties")
-            .GetProperty("InnoImGuiShaderTarget").GetString());
+        Assert.Equal(
+            shaderPlatform,
+            document.RootElement.GetProperty("Properties")
+                .GetProperty("InnoImGuiShaderTarget")
+                .GetString()
+        );
         JsonElement items = document.RootElement.GetProperty("Items");
         Assert.Equal(apiCount, items.GetProperty("_ImGuiShaderApi").GetArrayLength());
-        Assert.All(items.GetProperty("ProjectReference").EnumerateArray()
-            .Where(reference => !reference.TryGetProperty("OutputItemType", out JsonElement kind)
-                || kind.GetString() != "Analyzer"), reference =>
-            Assert.Contains("InnoProductBuildProperties=" + profile,
-                reference.GetProperty("AdditionalProperties").GetString()));
+        Assert.All(
+            items.GetProperty("ProjectReference")
+                .EnumerateArray()
+                .Where(reference => (
+                    !reference.TryGetProperty("OutputItemType", out JsonElement kind)
+                    || kind.GetString() != "Analyzer"
+                )),
+            reference =>
+        Assert.Contains(
+            "InnoProductBuildProperties=" + profile,
+            reference.GetProperty("AdditionalProperties").GetString()
+        )
+        );
     }
 
     [Fact]
     public async Task FrozenProductSourcesKeepTheExplicitOfflineToolOwner()
     {
         string root = TestRepository.GetRoot(typeof(EditorShaderProfileTests).Assembly);
-        string backend = Path.Combine(root, "backends", "Bgfx", "runtime",
-            "Inno.Adapter.Rendering.Bgfx", "Inno.Adapter.Rendering.Bgfx.csproj");
+        string backend = Path.Combine(
+            root,
+            "backends",
+            "Bgfx",
+            "runtime",
+            "Inno.Adapter.Rendering.Bgfx",
+            "Inno.Adapter.Rendering.Bgfx.csproj"
+        );
         string host = ToolchainEnvironment.ResolveExecutable("dotnet");
         string selectedOwner = Path.Combine(root, "artifacts", "fixture-tool-source-owner");
-        string selected = await ToolchainEnvironment.CaptureOutputAsync(host,
-            ["msbuild", backend, "-nologo", "-nodeReuse:false", "-p:DesignTimeBuild=true",
-                "-p:InnoShaderToolSourceRoot=" + selectedOwner, "-getProperty:InnoShaderToolSourceRoot"],
-            root, CancellationToken.None, DotNetSdkEnvironment.Create(host));
+        string selected = await ToolchainEnvironment.CaptureOutputAsync(
+            host,
+            [
+                "msbuild",
+                backend,
+                "-nologo",
+                "-nodeReuse:false",
+                "-p:DesignTimeBuild=true",
+                "-p:InnoShaderToolSourceRoot=" + selectedOwner,
+                "-getProperty:InnoShaderToolSourceRoot"
+            ],
+            root,
+            CancellationToken.None,
+            DotNetSdkEnvironment.Create(host)
+        );
         Assert.Equal(selectedOwner, selected.Trim());
     }
 }

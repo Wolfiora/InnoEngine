@@ -21,7 +21,9 @@ public abstract class RenderingAuthoringBackendProvider
     protected RenderingAuthoringBackendProvider(RenderingBackendId id)
     {
         if (!id.isValid)
+        {
             throw new ArgumentException("A provider requires an assigned backend ID.", nameof(id));
+        }
         this.id = id;
     }
 

@@ -66,7 +66,7 @@ public static class StandardBuildEnvironment
     public static string ResolveManagedHost(string? dotnetHost = null)
     {
         string host = dotnetHost ?? Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
-            ?? CurrentRuntimeHost("dotnet" + StandardBuildHosts.Capture().services.executableExtension);
+                      ?? CurrentRuntimeHost("dotnet" + StandardBuildHosts.Capture().services.executableExtension);
         return ToolchainEnvironment.ResolveExecutable(host);
     }
 
@@ -79,7 +79,9 @@ public static class StandardBuildEnvironment
         {
             string runtimeHost = Path.Combine(installation.FullName, executable);
             if (File.Exists(runtimeHost))
+            {
                 return runtimeHost;
+            }
         }
         return executable;
     }

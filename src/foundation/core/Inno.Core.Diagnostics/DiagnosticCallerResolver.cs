@@ -22,13 +22,15 @@ internal static class DiagnosticCallerResolver
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(group);
         if (targetId == Guid.Empty)
+        {
             throw new ArgumentException("A diagnostic target identifier cannot be empty.", nameof(targetId));
+        }
 
         Type callerType = ResolveCallerType();
         CallerInfo caller = CALLERS.GetValue(callerType, static type =>
         {
             string assemblyName = type.Assembly.GetName().Name
-                ?? throw new InvalidOperationException("The diagnostic caller assembly has no simple name.");
+                                  ?? throw new InvalidOperationException("The diagnostic caller assembly has no simple name.");
             string typeName = type.FullName ?? type.Name;
             return new CallerInfo
             {
@@ -37,11 +39,11 @@ internal static class DiagnosticCallerResolver
         });
 
         string id = targetId.HasValue
-            ? $"{caller.sourcePrefix}/{group}/{targetId.Value:N}"
-            : $"{caller.sourcePrefix}/{group}";
+                    ? $"{caller.sourcePrefix}/{group}/{targetId.Value:N}"
+                    : $"{caller.sourcePrefix}/{group}";
         string resolvedDisplayName = string.IsNullOrWhiteSpace(displayName)
-            ? group
-            : displayName;
+                                     ? group
+                                     : displayName;
         return new DiagnosticSource(id, resolvedDisplayName);
     }
 
@@ -55,7 +57,9 @@ internal static class DiagnosticCallerResolver
         {
             Type? declaringType = frames[i].GetMethod()?.DeclaringType;
             if (declaringType is null || declaringType.Assembly == infrastructureAssembly)
+            {
                 continue;
+            }
             return NormalizeCompilerGeneratedType(declaringType);
         }
 
@@ -65,9 +69,9 @@ internal static class DiagnosticCallerResolver
     private static Type NormalizeCompilerGeneratedType(Type type)
     {
         Type current = type;
-        while (current.DeclaringType is not null &&
-               current.IsDefined(typeof(CompilerGeneratedAttribute), inherit: false))
-        {
+        while (current.DeclaringType is not null
+               && current.IsDefined(typeof(CompilerGeneratedAttribute), inherit: false)
+        ) {
             current = current.DeclaringType;
         }
         return current;

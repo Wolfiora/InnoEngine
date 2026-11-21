@@ -1,10 +1,3 @@
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Extensibility.Reload;
-using Inno.Adapter.Modules.DotNet;
-using Inno.References;
-using Inno.Runtime.Contracts;
-using Inno.Core.Diagnostics;
-using Inno.Core.Execution;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,15 +5,22 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using Inno.Assets;
-using Inno.Extensibility.Modules;
+using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
 using Inno.Core.Identity;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
 using Inno.Extensibility.Types;
+using Inno.References;
 using Inno.Rendering;
-using Xunit;
 using Inno.Rendering.Assets;
 using Inno.Rendering.Runtime;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Rendering.Runtime.Tests;
 
@@ -30,11 +30,17 @@ public sealed class EmptyRenderingKernelTests
     public void OutputRouteAssignsEachWorldContentSourceOnlyOnce()
     {
         Assert.Throws<ArgumentException>(() => new RenderOutputRoute(
-        [new RenderOutputLayer("model-a", ["canvas"]),
-            new RenderOutputLayer("model-b", ["canvas"])]));
+            [
+                new RenderOutputLayer("model-a", ["canvas"]),
+                new RenderOutputLayer("model-b", ["canvas"])
+            ]
+        ));
         var route = new RenderOutputRoute(
-            [new RenderOutputLayer("model-a", ["canvas"]),
-                new RenderOutputLayer("model-b", [])]);
+            [
+                new RenderOutputLayer("model-a", ["canvas"]),
+                new RenderOutputLayer("model-b", [])
+            ]
+        );
         Assert.Equal("canvas", Assert.Single(route.layers[0].sourceIds));
         Assert.Empty(route.layers[1].sourceIds);
     }
@@ -55,8 +61,9 @@ public sealed class EmptyRenderingKernelTests
     public void OpenShaderProtocolsRemainBackendNeutral()
     {
         Type[] publicTypes = typeof(ShaderContractId).Assembly.GetExportedTypes();
-        Assert.DoesNotContain(publicTypes, static type =>
-            type.FullName?.Contains("Bgfx", StringComparison.OrdinalIgnoreCase) == true);
+        Assert.DoesNotContain(publicTypes, static type => (
+            type.FullName?.Contains("Bgfx", StringComparison.OrdinalIgnoreCase) == true
+        ));
         Assert.Contains(publicTypes, static type => type == typeof(ShaderContractId));
         Assert.Contains(publicTypes, static type => type == typeof(ShaderPassRoleId));
     }
@@ -67,7 +74,9 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     private readonly string m_cacheDirectory = Path.Combine(
         Path.GetTempPath(),
         "InnoRenderRuntimeTests",
-        Guid.NewGuid().ToString("N"));
+        Guid.NewGuid().ToString("N")
+    );
+
     private readonly IdentityAllocator m_identities;
     private readonly IDisposable m_identityScope;
     private readonly ModuleHost m_modules;
@@ -79,7 +88,9 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         _ = typeof(TextureAsset);
         m_identities = new IdentityAllocator();
         m_identityScope = m_identities.EnterScope();
-        m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(EmptyRenderingKernelTests).Assembly)});
+        m_modules = new ModuleHost(
+            new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(EmptyRenderingKernelTests).Assembly)}
+        );
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         ResourceProbePipeline.action = null;
@@ -104,7 +115,9 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         m_modules.Dispose();
         m_identityScope.Dispose();
         if (Directory.Exists(m_cacheDirectory))
+        {
             Directory.Delete(m_cacheDirectory, recursive: true);
+        }
     }
 
     [Fact]
@@ -115,9 +128,13 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         var owner = new AssetRuntimeOwner();
         var geometry = new GeometryAsset(3, 3, 1, default, default);
         m_identities.Register(geometry);
-        byte[] bytes = GeometryArtifact.Encode(new GeometryData(
-            [new(default, default, default, default), new(default, default, default, default), new(default, default, default, default)],
-            [0, 1, 2], [new GeometrySection(0, 3)]));
+        byte[] bytes = GeometryArtifact.Encode(
+            new GeometryData(
+                [new(default, default, default, default), new(default, default, default, default), new(default, default, default, default)],
+                [0, 1, 2],
+                [new GeometrySection(0, 3)]
+            )
+        );
         owner.Initialize(geometry, AssetPath.Project("triangle.obj"), "first", bytes, false, 1);
         RenderGeometry? first = null;
         ResourceProbePipeline.action = resources => resources.TryResolveGeometry(geometry, out first);
@@ -149,8 +166,12 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     public void PersistentResourceAdmissionAndReplacementStayBoundedAcrossFrames()
     {
         IRenderDevice backend = TestDeviceProxy.Create(out TestDeviceProxy device);
-        using var runtime = new RenderRuntime(m_types, backend, new TestDiagnosticSink(),
-            resourceLimits: new RenderResourceLimits { resourcesPerKind = 1 });
+        using var runtime = new RenderRuntime(
+            m_types,
+            backend,
+            new TestDiagnosticSink(),
+            resourceLimits: new RenderResourceLimits { resourcesPerKind = 1 }
+        );
         var descriptor = new PersistentBufferDescriptor(new RenderBufferDescriptor(4, 4, RenderBufferUsage.Storage));
         int rejected = 0;
         for (int frame = 0; frame < 256; frame++)
@@ -159,8 +180,14 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             ResourceProbePipeline.action = resources =>
             {
                 _ = resources.AcquireBuffer(new RenderPersistentResourceId("owned"), revision, descriptor, new byte[16], "owned");
-                try { resources.AcquireBuffer(new RenderPersistentResourceId("overflow"), revision, descriptor, new byte[16], "overflow"); }
-                catch (InvalidOperationException) { rejected++; }
+                try
+                {
+                    resources.AcquireBuffer(new RenderPersistentResourceId("overflow"), revision, descriptor, new byte[16], "overflow");
+                }
+                catch (InvalidOperationException)
+                {
+                    rejected++;
+                }
             };
             RunResourceFrame(runtime);
             Assert.Equal(1, runtime.resourceStatistics.activeResources);
@@ -177,15 +204,25 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     public async Task ReadbackAdmissionIsRejectedBeforeAllocatingASecondNativeOperation()
     {
         var device = new RecordingRenderDevice(supportsReadback: true);
-        using var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink(),
-            resourceLimits: new RenderResourceLimits { pendingReadbacks = 1 });
+        using var runtime = new RenderRuntime(
+            m_types,
+            device,
+            new TestDiagnosticSink(),
+            resourceLimits: new RenderResourceLimits { pendingReadbacks = 1 }
+        );
         Task<RenderTextureReadbackResult>? readback = null;
         bool rejected = false;
         ResourceProbePipeline.action = resources =>
         {
             readback = resources.ReadTextureAsync(device.textureHandle).AsTask();
-            try { _ = resources.ReadTextureAsync(device.textureHandle); }
-            catch (InvalidOperationException) { rejected = true; }
+            try
+            {
+                _ = resources.ReadTextureAsync(device.textureHandle);
+            }
+            catch (InvalidOperationException)
+            {
+                rejected = true;
+            }
         };
         RunResourceFrame(runtime);
         ResourceProbePipeline.action = null;
@@ -210,10 +247,14 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     {
         internal const string extensionId = "tests.runtime.resource-owner";
         internal static Action<IRenderResourceService>? action;
+
         public override void Build(RenderPipelineContext context)
         {
             action?.Invoke(context.resourceService);
-            context.graph.AddRasterPass("Resources", new RenderPhaseId("tests.resources"), 0, static (_, _) => { }).HasSideEffect();
+            context.graph.AddRasterPass("Resources", new RenderPhaseId("tests.resources"), 0, static (
+                _,
+                _
+            ) => {}).HasSideEffect();
         }
     }
 
@@ -259,7 +300,11 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         var contributor = new SideEffectContributor();
         IRenderFrameGraphContributor[] contributors = duplicate ? [contributor, contributor] : [null!];
         Assert.Throws<ArgumentException>(() => new RenderRuntime(
-            m_types, TestDeviceProxy.Create(out _), new TestDiagnosticSink(), contributors));
+            m_types,
+            TestDeviceProxy.Create(out _),
+            new TestDiagnosticSink(),
+            contributors
+        ));
         m_types.Rebuild();
         Assert.Equal(0, TestRequestProvider.retirementAttempts);
     }
@@ -268,11 +313,13 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     public void PendingFeatureRetirementKeepsItsPipelineAliveUntilQuiescent()
     {
         var runtime = new RenderRuntime(m_types, TestDeviceProxy.Create(out TestDeviceProxy device), new TestDiagnosticSink());
-        Assert.True(runtime.TryActivateDefaultPipeline(new RenderPipelineAsset
-        {
-            pipelineTypeId = DisposablePipeline.extensionId,
-            features = [new RenderFeatureConfiguration(PendingFeature.extensionId)]
-        }));
+        Assert.True(
+            runtime.TryActivateDefaultPipeline(new RenderPipelineAsset
+            {
+                pipelineTypeId = DisposablePipeline.extensionId,
+                features = [new RenderFeatureConfiguration(PendingFeature.extensionId)]
+            })
+        );
         PendingFeature.pendingRetirements = 2;
         DisposablePipeline.pendingRetirements = 1;
 
@@ -316,9 +363,13 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         DisposablePipeline.pendingRetirements = 2;
 
         if (commit)
+        {
             transaction.Complete();
+        }
         else
+        {
             transaction.Rollback();
+        }
 
         Assert.Equal(3, DisposablePipeline.retirementAttempts);
         Assert.Equal(1, DisposablePipeline.disposedCount);
@@ -401,7 +452,9 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     public void TerminalPipelineRetirementBlocksAdmissionAndPreservesLowerOwners(bool duringFrame)
     {
         var modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(EmptyRenderingKernelTests).Assembly)        });
+        {
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(EmptyRenderingKernelTests).Assembly)
+        });
         var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         var runtime = new RenderRuntime(types, TestDeviceProxy.Create(out TestDeviceProxy device), new TestDiagnosticSink());
         var asset = new RenderPipelineAsset { pipelineTypeId = DisposablePipeline.extensionId };
@@ -419,7 +472,9 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                 Assert.True(device.frameOpen);
             }
             else
+            {
                 Assert.Throws<RetirementTimeoutException>(runtime.Dispose);
+            }
             Assert.Throws<InvalidOperationException>(() => runtime.Submit(CreateRequest("Late", new RenderPipelineAsset())));
             Assert.Throws<InvalidOperationException>(() => runtime.RegisterContributor(new SideEffectContributor()));
             Assert.Throws<InvalidOperationException>(() => runtime.BeginExtensionReload());
@@ -447,10 +502,18 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     {
         IRenderDevice device = TestDeviceProxy.Create(out TestDeviceProxy proxy);
         var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink());
-        var target = new RenderTexture("Pending Target", new RenderTextureDescriptor(
-            16, 16, RenderTextureFormat.RGBA8, RenderTextureUsage.ColorAttachment));
-        runtime.Submit(new RenderRequest("Target", RenderTarget.FromTexture(target),
-            new RenderViewport(0, 0, 16, 16), new RenderPipelineAsset { pipelineTypeId = SideEffectPipeline.extensionId }));
+        var target = new RenderTexture(
+            "Pending Target",
+            new RenderTextureDescriptor(16, 16, RenderTextureFormat.RGBA8, RenderTextureUsage.ColorAttachment)
+        );
+        runtime.Submit(
+            new RenderRequest(
+                "Target",
+                RenderTarget.FromTexture(target),
+                new RenderViewport(0, 0, 16, 16),
+                new RenderPipelineAsset { pipelineTypeId = SideEffectPipeline.extensionId }
+            )
+        );
         BeginRenderFrame(runtime, 0f);
         runtime.AfterRender(default);
         runtime.EndFrame(default);
@@ -504,7 +567,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         Assert.Equal(1, proxy.executeCount);
         Assert.DoesNotContain(
             diagnostics.items,
-            static diagnostic => diagnostic.code == "RENDER_EXTENSION_RELOAD_REJECTED");
+            static diagnostic => diagnostic.code == "RENDER_EXTENSION_RELOAD_REJECTED"
+        );
 
         IRenderRuntimeReloadTransaction renderingRecovery = runtime.BeginExtensionReload();
         using (AssemblyReloadSession recovery = m_modules.BeginReload([plugin]))
@@ -551,18 +615,16 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         IRenderDevice device = TestDeviceProxy.Create(out TestDeviceProxy proxy);
         proxy.frameCounters = new RenderDeviceFrameCounters(3, 2);
         proxy.allocationCounters = reportsAllocations
-            ? new RenderDeviceAllocationCounters(device.generation, 17, 23, 11)
-            : null;
+                                   ? new RenderDeviceAllocationCounters(device.generation, 17, 23, 11)
+                                   : null;
         var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink());
         using IDisposable executionScope = runtime.EnterExecutionScope();
         var asset = new RenderPipelineAsset { pipelineTypeId = StatisticsPipeline.extensionId };
         runtime.Attach();
         Assert.True(runtime.TryActivateDefaultPipeline(asset));
-        runtime.Submit(new RenderRequest(
-            "Statistics",
-            RenderTarget.backbuffer,
-            new RenderViewport(0, 0, 64, 64),
-            asset));
+        runtime.Submit(
+            new RenderRequest("Statistics", RenderTarget.backbuffer, new RenderViewport(0, 0, 64, 64), asset)
+        );
 
         BeginRenderFrame(runtime, 0f);
         runtime.AfterRender(default);
@@ -668,11 +730,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         Assert.True(scope.TryGetValue(contentId, out TestContent? resolved));
         Assert.Same(content, resolved);
         TestRequestProvider.enabled = true;
-        var runtime = new RenderRuntime(
-            m_types,
-            device,
-            new TestDiagnosticSink(),
-            contentScopeProvider: () => scope);
+        var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink(), contentScopeProvider: () => scope);
         runtime.Attach();
 
         BeginRenderFrame(runtime, 0f);
@@ -699,7 +757,9 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                 0,
                 (size.height - 562) / 2,
                 size.width,
-                562));
+                562
+            )
+        );
         runtime.Attach();
 
         BeginRenderFrame(runtime, 0f);
@@ -721,20 +781,25 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         IRenderDevice device = TestDeviceProxy.Create(out TestDeviceProxy proxy);
         proxy.presentationSize = new RenderPresentationSize(2560, 1440);
         TestRequestProvider.enabled = true;
-        var snapshot = new Inno.Input.InputSnapshot(1,
+        var snapshot = new Inno.Input.InputSnapshot(
+            1,
             mousePosition: new Inno.Core.Mathematics.Vector2(400f, 274f),
-            mouseButtonsPressed: [Inno.Core.Input.MouseButton.Left]);
-        using var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink(),
+            mouseButtonsPressed: [Inno.Core.Input.MouseButton.Left]
+        );
+        using var runtime = new RenderRuntime(
+            m_types,
+            device,
+            new TestDiagnosticSink(),
             inputSnapshotProvider: () => snapshot,
-            primaryInputSurfaceSizeProvider: static () => new RenderPresentationSize(1280, 720));
+            primaryInputSurfaceSizeProvider: static () => new RenderPresentationSize(1280, 720)
+        );
 
         BeginRenderFrame(runtime, 0f);
         runtime.Render(default);
         runtime.AfterRender(default);
         runtime.EndFrame(default);
 
-        Assert.Equal(new Inno.Core.Mathematics.Vector2(800f, 548f),
-            TestRequestProvider.lastInput.pointerPosition);
+        Assert.Equal(new Inno.Core.Mathematics.Vector2(800f, 548f), TestRequestProvider.lastInput.pointerPosition);
         Assert.Single(TestRequestProvider.lastInput.buttonsPressed);
     }
 
@@ -743,16 +808,27 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     {
         IRenderDevice device = TestDeviceProxy.Create(out TestDeviceProxy proxy);
         var diagnostics = new TestDiagnosticSink();
-        proxy.capabilities = new GraphicsCapabilities(GraphicsApi.Metal, GraphicsCapability.None,
-            new GraphicsLimits(64, 4, 4096, 8), Enum.GetValues<RenderTextureFormat>(),
-            Enum.GetValues<RenderTextureFormat>(), [], [], originBottomLeft: false,
-            homogeneousDepth: false);
+        proxy.capabilities = new GraphicsCapabilities(
+            GraphicsApi.Metal,
+            GraphicsCapability.None,
+            new GraphicsLimits(64, 4, 4096, 8),
+            Enum.GetValues<RenderTextureFormat>(),
+            Enum.GetValues<RenderTextureFormat>(),
+            [],
+            [],
+            originBottomLeft: false,
+            homogeneousDepth: false
+        );
         proxy.presentationSize = new RenderPresentationSize(1000, 1000);
         FirstTestRenderModel.enabled = true;
         SecondTestRenderModel.enabled = true;
-        using var runtime = new RenderRuntime(m_types, device, diagnostics,
+        using var runtime = new RenderRuntime(
+            m_types,
+            device,
+            diagnostics,
             primaryPresentationViewportProvider: static _ => new RenderViewport(100, 200, 800, 600),
-            compositionProgramProvider: new TestCompositionProgramProvider());
+            compositionProgramProvider: new TestCompositionProgramProvider()
+        );
 
         BeginRenderFrame(runtime, 0f);
         runtime.Render(default);
@@ -760,29 +836,40 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         runtime.EndFrame(default);
         Assert.Equal(0, FirstTestRenderModel.buildCount);
         Assert.Equal(0, SecondTestRenderModel.buildCount);
-        Assert.Contains(diagnostics.items, item => item.code == "RENDER_OUTPUT_MODEL_UNAVAILABLE"
-            && item.message.Contains("Multiple rendering models", StringComparison.Ordinal));
+        Assert.Contains(diagnostics.items, item => (
+            item.code == "RENDER_OUTPUT_MODEL_UNAVAILABLE"
+            && item.message.Contains("Multiple rendering models", StringComparison.Ordinal)
+        ));
 
-        runtime.SetPrimaryRoute(new RenderOutputRoute(
-            [new RenderOutputLayer(SecondTestRenderModel.extensionId, []),
-                new RenderOutputLayer(FirstTestRenderModel.extensionId, [])]));
+        runtime.SetPrimaryRoute(
+            new RenderOutputRoute(
+                [
+                    new RenderOutputLayer(SecondTestRenderModel.extensionId, []),
+                    new RenderOutputLayer(FirstTestRenderModel.extensionId, [])
+                ]
+            )
+        );
         BeginRenderFrame(runtime, 0f);
         runtime.Render(default);
         runtime.AfterRender(default);
         runtime.EndFrame(default);
         Assert.Equal(1, FirstTestRenderModel.buildCount);
         Assert.Equal(1, SecondTestRenderModel.buildCount);
-        Assert.Equal([new RenderViewport(0, 0, 800, 600), new RenderViewport(0, 0, 800, 600)],
-            CompositionLayerPipeline.viewports);
+        Assert.Equal(
+            [new RenderViewport(0, 0, 800, 600), new RenderViewport(0, 0, 800, 600)],
+            CompositionLayerPipeline.viewports
+        );
         Assert.DoesNotContain(diagnostics.items, item => item.code == "RENDER_OUTPUT_MODEL_UNAVAILABLE");
-        Assert.DoesNotContain(diagnostics.items, item => item.code == "RENDER_OUTPUT_MODEL_UNAVAILABLE"
-            && item.message.Contains("independent model targets", StringComparison.Ordinal));
-        Assert.True(diagnostics.items.All(item => item.code != "RENDER_OUTPUT_COMPOSITION_FAILED"),
-            string.Join("\n", diagnostics.items.Select(item => item.message)));
-        Assert.True(proxy.lastGraph is not null,
-            string.Join("\n", diagnostics.items.Select(item => item.message)));
-        Assert.Contains(proxy.lastGraph.passes,
-            pass => pass.name.Contains("Layer 2", StringComparison.Ordinal));
+        Assert.DoesNotContain(diagnostics.items, item => (
+            item.code == "RENDER_OUTPUT_MODEL_UNAVAILABLE"
+            && item.message.Contains("independent model targets", StringComparison.Ordinal)
+        ));
+        Assert.True(
+            diagnostics.items.All(item => item.code != "RENDER_OUTPUT_COMPOSITION_FAILED"),
+            string.Join("\n", diagnostics.items.Select(item => item.message))
+        );
+        Assert.True(proxy.lastGraph is not null, string.Join("\n", diagnostics.items.Select(item => item.message)));
+        Assert.Contains(proxy.lastGraph.passes, pass => pass.name.Contains("Layer 2", StringComparison.Ordinal));
         runtime.Detach();
     }
 
@@ -795,8 +882,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         runtime.Render(default);
         runtime.AfterRender(default);
         runtime.EndFrame(default);
-        Assert.Contains(diagnostics.items, item => item.code == "RENDER_OUTPUT_MODEL_UNAVAILABLE"
-            && item.message.Contains("No rendering model", StringComparison.Ordinal));
+        Assert.Contains(diagnostics.items, item => (
+            item.code == "RENDER_OUTPUT_MODEL_UNAVAILABLE"
+            && item.message.Contains("No rendering model", StringComparison.Ordinal)
+        ));
         runtime.Detach();
     }
 
@@ -813,12 +902,16 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             m_types,
             device,
             diagnostics,
-            compositionProgramProvider: new TestCompositionProgramProvider());
-        runtime.SetPrimaryRoute(new RenderOutputRoute(
-            [
-                new RenderOutputLayer(FirstTestRenderModel.extensionId, []),
-                new RenderOutputLayer(SecondTestRenderModel.extensionId, [])
-            ]));
+            compositionProgramProvider: new TestCompositionProgramProvider()
+        );
+        runtime.SetPrimaryRoute(
+            new RenderOutputRoute(
+                [
+                    new RenderOutputLayer(FirstTestRenderModel.extensionId, []),
+                    new RenderOutputLayer(SecondTestRenderModel.extensionId, [])
+                ]
+            )
+        );
 
         BeginRenderFrame(runtime, 0f);
         runtime.Render(default);
@@ -829,11 +922,12 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         Assert.NotNull(proxy.lastGraph);
         Assert.Single(proxy.lastGraph.passes.Where(pass => pass.name.Contains("Output Transfer", StringComparison.Ordinal)));
         Assert.Contains("Output Transfer", proxy.lastGraph.passes[^1].name, StringComparison.Ordinal);
-        Assert.Contains(proxy.lastGraph.textures, texture =>
+        Assert.Contains(proxy.lastGraph.textures, texture => (
             texture.name.EndsWith("/Composition", StringComparison.Ordinal)
             && texture.descriptor.width == 800
             && texture.descriptor.height == 600
-            && texture.descriptor.format == RenderTextureFormat.RGBA8Srgb);
+            && texture.descriptor.format == RenderTextureFormat.RGBA8Srgb
+        ));
         runtime.Detach();
     }
 
@@ -851,7 +945,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             m_types,
             device,
             diagnostics,
-            compositionProgramProvider: new TestCompositionProgramProvider());
+            compositionProgramProvider: new TestCompositionProgramProvider()
+        );
 
         BeginRenderFrame(runtime, 0f);
         runtime.Render(default);
@@ -861,16 +956,21 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         Assert.Equal(1, FirstTestRenderModel.buildCount);
         Assert.DoesNotContain(diagnostics.items, item => item.code == "RENDER_OUTPUT_COMPOSITION_FAILED");
         Assert.NotNull(proxy.lastGraph);
-        Assert.Equal(presentationEncodesSrgb ? 0 : 1,
-            proxy.lastGraph.passes.Count(pass => pass.name.Contains("Output Transfer", StringComparison.Ordinal)));
-        Assert.DoesNotContain(proxy.lastGraph.textures,
-            texture => texture.name.EndsWith("/Composition", StringComparison.Ordinal));
+        Assert.Equal(
+            presentationEncodesSrgb ? 0 : 1,
+            proxy.lastGraph.passes.Count(pass => pass.name.Contains("Output Transfer", StringComparison.Ordinal))
+        );
+        Assert.DoesNotContain(
+            proxy.lastGraph.textures,
+            texture => texture.name.EndsWith("/Composition", StringComparison.Ordinal)
+        );
         if (!presentationEncodesSrgb)
         {
             Assert.Contains("Output Transfer", proxy.lastGraph.passes[^1].name, StringComparison.Ordinal);
-            Assert.Contains(proxy.lastGraph.textures, texture =>
+            Assert.Contains(proxy.lastGraph.textures, texture => (
                 texture.name.Contains("Model Layer 1", StringComparison.Ordinal)
-                && texture.descriptor.format == RenderTextureFormat.RGBA8Srgb);
+                && texture.descriptor.format == RenderTextureFormat.RGBA8Srgb
+            ));
         }
         runtime.Detach();
     }
@@ -936,7 +1036,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                 new PresentationObservation("Base", false),
                 new PresentationObservation("Overlay", true)
             },
-            PresentationPipeline.observations);
+            PresentationPipeline.observations
+        );
         Assert.Equal(1, proxy.executeCount);
         runtime.Detach();
     }
@@ -947,16 +1048,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         IRenderDevice device = TestDeviceProxy.Create(out _);
         var asset = new RenderPipelineAsset { pipelineTypeId = PresentationPipeline.extensionId };
         var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink());
-        runtime.Submit(new RenderRequest(
-            "Left",
-            RenderTarget.backbuffer,
-            new RenderViewport(0, 0, 32, 64),
-            asset));
-        runtime.Submit(new RenderRequest(
-            "Right",
-            RenderTarget.backbuffer,
-            new RenderViewport(32, 0, 32, 64),
-            asset));
+        runtime.Submit(new RenderRequest("Left", RenderTarget.backbuffer, new RenderViewport(0, 0, 32, 64), asset));
+        runtime.Submit(new RenderRequest("Right", RenderTarget.backbuffer, new RenderViewport(32, 0, 32, 64), asset));
 
         BeginRenderFrame(runtime, 0f);
         runtime.AfterRender(default);
@@ -968,7 +1061,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                 new PresentationObservation("Left", false),
                 new PresentationObservation("Right", false)
             },
-            PresentationPipeline.observations);
+            PresentationPipeline.observations
+        );
         runtime.Detach();
     }
 
@@ -986,9 +1080,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         runtime.AfterRender(default);
         runtime.EndFrame(default);
 
-        Assert.Equal(
-            new[] { new PresentationObservation("Recovery", false) },
-            PresentationPipeline.observations);
+        Assert.Equal(new[] { new PresentationObservation("Recovery", false) }, PresentationPipeline.observations);
         runtime.Detach();
     }
 
@@ -1003,7 +1095,9 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                 32,
                 32,
                 RenderTextureFormat.RGBA8,
-                RenderTextureUsage.ColorAttachment | RenderTextureUsage.Sampled));
+                RenderTextureUsage.ColorAttachment | RenderTextureUsage.Sampled
+            )
+        );
 
         device.BeginFrame();
         registry.PrepareFrame();
@@ -1011,11 +1105,14 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         _ = device.EndFrame();
         PersistentTextureHandle first = Assert.Single(proxy.createdTextures);
 
-        target.Resize(new RenderTextureDescriptor(
-            64,
-            64,
-            RenderTextureFormat.RGBA8,
-            RenderTextureUsage.ColorAttachment | RenderTextureUsage.Sampled));
+        target.Resize(
+            new RenderTextureDescriptor(
+                64,
+                64,
+                RenderTextureFormat.RGBA8,
+                RenderTextureUsage.ColorAttachment | RenderTextureUsage.Sampled
+            )
+        );
         device.BeginFrame();
         registry.PrepareFrame();
         _ = registry.Import(new RenderGraphBuilder(2, device.capabilities), target);
@@ -1057,16 +1154,11 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         var asset = new RenderPipelineAsset { pipelineTypeId = SideEffectPipeline.extensionId };
         var target = new RenderTexture(
             "Detach Target",
-            new RenderTextureDescriptor(
-                16,
-                16,
-                RenderTextureFormat.RGBA8,
-                RenderTextureUsage.ColorAttachment));
-        runtime.Submit(new RenderRequest(
-            "Detach",
-            RenderTarget.FromTexture(target),
-            new RenderViewport(0, 0, 16, 16),
-            asset));
+            new RenderTextureDescriptor(16, 16, RenderTextureFormat.RGBA8, RenderTextureUsage.ColorAttachment)
+        );
+        runtime.Submit(
+            new RenderRequest("Detach", RenderTarget.FromTexture(target), new RenderViewport(0, 0, 16, 16), asset)
+        );
 
         BeginRenderFrame(runtime, 0f);
         runtime.AfterRender(default);
@@ -1148,11 +1240,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         var device = new RecordingRenderDevice();
         var asset = new RenderPipelineAsset { pipelineTypeId = TexturePrewarmPipeline.extensionId };
         var artifacts = new DelayedArtifactProvider(compiler);
-        var runtime = new RenderRuntime(
-            m_types,
-            device,
-            new TestDiagnosticSink(),
-            targetArtifacts: artifacts);
+        var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink(), targetArtifacts: artifacts);
         runtime.Submit(CreateRequest("Prewarm", asset));
 
         BeginRenderFrame(runtime, 0f);
@@ -1183,9 +1271,12 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                 [new ShaderTechniqueDefinition(
                     new ShaderTechniqueId("default"),
                     contract,
-                    [new ShaderTechniquePass(role, pass.name)])]),
+                    [new ShaderTechniquePass(role, pass.name)]
+                )]
+            ),
             m_serialization,
-            SerializationContext.empty);
+            SerializationContext.empty
+        );
         PendingShaderPipeline.material = new MaterialAsset { shader = shader };
         PendingShaderPipeline.contract = contract;
         PendingShaderPipeline.role = role;
@@ -1196,7 +1287,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             m_types,
             new RecordingRenderDevice(),
             diagnostics,
-            targetArtifacts: new DelayedArtifactProvider(compiler));
+            targetArtifacts: new DelayedArtifactProvider(compiler)
+        );
         var asset = new RenderPipelineAsset { pipelineTypeId = PendingShaderPipeline.extensionId };
         runtime.Submit(CreateRequest("Pending Shader", asset));
 
@@ -1207,7 +1299,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         Assert.False(PendingShaderPipeline.resolved);
         Assert.DoesNotContain(
             diagnostics.items,
-            static diagnostic => diagnostic.code == "RENDER_SHADER_TARGET_UNAVAILABLE");
+            static diagnostic => diagnostic.code == "RENDER_SHADER_TARGET_UNAVAILABLE"
+        );
         runtime.Detach();
     }
 
@@ -1227,7 +1320,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         Assert.Equal(new RenderTextureRegion(0, 1, 1, 0, 2, 2), device.updatedRegion);
         Assert.Equal(Enumerable.Range(0, 16).Select(static value => (byte)value), device.updatedBytes);
         Task<RenderTextureReadbackResult> readback = Assert.IsType<Task<RenderTextureReadbackResult>>(
-            ReadbackPipeline.readback);
+            ReadbackPipeline.readback
+        );
         Assert.False(readback.IsCompleted);
 
         device.readbackReady = true;
@@ -1285,7 +1379,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         runtime.EndFrame(default);
         cancellation.Cancel();
         Task<RenderTextureReadbackResult> readback = Assert.IsType<Task<RenderTextureReadbackResult>>(
-            ReadbackPipeline.readback);
+            ReadbackPipeline.readback
+        );
         Assert.False(readback.IsCompleted);
         BeginRenderFrame(runtime, 0f);
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await readback);
@@ -1299,40 +1394,37 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     private static RenderRequest CreateRequest(
         string name,
         RenderPipelineAsset pipeline,
-        int priority = 0)
-        => new(
-            name,
-            RenderTarget.backbuffer,
-            new RenderViewport(0, 0, 64, 64),
-            pipeline,
-            priority: priority);
+        int priority = 0
+    ) => new(name, RenderTarget.backbuffer, new RenderViewport(0, 0, 64, 64), pipeline, priority: priority);
 
     private DotNetModuleSource CreateRenderingPluginRequest()
         => new()
-        {
-            moduleName = "RenderingRuntimeReloadTests",
-            artifactRootDirectory = Path.Combine(m_cacheDirectory, "Modules"),
-            mainAssemblyPath = Path.Combine(
-                AppContext.BaseDirectory,
-                "Modules",
-                "RenderingReload",
-                "Inno.Rendering.Runtime.Reload.TestModule.dll"),
-            domain = AssemblyDomain.InnoPlugin,
-            scope = AssemblyScope.Runtime
-        };
+    {
+        moduleName = "RenderingRuntimeReloadTests",
+        artifactRootDirectory = Path.Combine(m_cacheDirectory, "Modules"),
+        mainAssemblyPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Modules",
+            "RenderingReload",
+            "Inno.Rendering.Runtime.Reload.TestModule.dll"
+        ),
+        domain = AssemblyDomain.InnoPlugin,
+        scope = AssemblyScope.Runtime
+    };
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static (
         IAssemblyUnloadProbe monitor,
         IRenderRuntimeReloadTransaction transaction) RemoveRenderingPlugin(
-        RenderRuntime runtime,
-        ModuleHost modules,
-        DotNetModuleSource plugin)
-    {
+            RenderRuntime runtime,
+            ModuleHost modules,
+            DotNetModuleSource plugin
+        ) {
         IRenderRuntimeReloadTransaction rendering = runtime.BeginExtensionReload();
         using AssemblyReloadSession removal = modules.BeginReload(
             Array.Empty<DotNetModuleSource>(),
-            [plugin.moduleName]);
+            [plugin.moduleName]
+        );
         removal.Activate();
         rendering.Prepare();
         rendering.Activate();
@@ -1344,11 +1436,12 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static IAssemblyUnloadProbe RemoveUnusedPlugin(
         ModuleHost modules,
-        DotNetModuleSource plugin)
-    {
+        DotNetModuleSource plugin
+    ) {
         using AssemblyReloadSession removal = modules.BeginReload(
             Array.Empty<DotNetModuleSource>(),
-            [plugin.moduleName]);
+            [plugin.moduleName]
+        );
         removal.Activate();
         return removal.Complete();
     }
@@ -1357,24 +1450,28 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     private static void QueueCollectiblePayload(
         RenderRuntime runtime,
         TypeCatalog types,
-        RenderPipelineAsset pipeline)
-    {
+        RenderPipelineAsset pipeline
+    ) {
         Type payloadType = types.current.types
             .Select(type => type.Resolve(types))
             .Single(type => string.Equals(
                 type.FullName,
                 "Inno.Rendering.Runtime.Reload.TestModule.ReloadableFramePayload",
-                StringComparison.Ordinal));
+                StringComparison.Ordinal
+            ));
         object payload = Activator.CreateInstance(payloadType)
-            ?? throw new InvalidOperationException("The collectible frame payload could not be created.");
+                         ?? throw new InvalidOperationException("The collectible frame payload could not be created.");
         var data = new RenderFrameData();
         data.Set(new RenderDataChannelId("tests.runtime.collectible-payload"), payload);
-        runtime.Submit(new RenderRequest(
-            "Collectible Pending Request",
-            RenderTarget.backbuffer,
-            new RenderViewport(0, 0, 64, 64),
-            pipeline,
-            data));
+        runtime.Submit(
+            new RenderRequest(
+                "Collectible Pending Request",
+                RenderTarget.backbuffer,
+                new RenderViewport(0, 0, 64, 64),
+                pipeline,
+                data
+            )
+        );
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -1387,10 +1484,14 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         }
     }
 
-    private static void BeginRenderFrame(RenderRuntime runtime, float deltaTime)
-    {
+    private static void BeginRenderFrame(
+        RenderRuntime runtime,
+        float deltaTime
+    ) {
         if (!runtime.isStarted)
+        {
             runtime.Attach();
+        }
         var frame = new RuntimeFrame(0, deltaTime, deltaTime, 0, 0, 1, false);
         runtime.BeginFrame(frame);
         runtime.BeforeRender(frame);
@@ -1404,15 +1505,26 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         internal const string extensionId = "tests.runtime.model.first";
         internal static bool enabled;
         internal static int buildCount;
+
         public bool CanRender(RenderOutputSession session) => enabled;
+
         public RenderModelOutput Build(RenderOutputSession session)
         {
             buildCount++;
-            return new RenderModelOutput("First Model",
-                new RenderPipelineAsset { pipelineTypeId = CompositionLayerPipeline.extensionId }, new RenderFrameData());
+            return new RenderModelOutput(
+                "First Model",
+                new RenderPipelineAsset { pipelineTypeId = CompositionLayerPipeline.extensionId },
+                new RenderFrameData()
+            );
         }
-        public void Dispose() { }
-        internal static void Reset() { enabled = false; buildCount = 0; }
+
+        public void Dispose() {}
+
+        internal static void Reset()
+        {
+            enabled = false;
+            buildCount = 0;
+        }
     }
 
     [RenderModelExtension(extensionId)]
@@ -1421,15 +1533,26 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         internal const string extensionId = "tests.runtime.model.second";
         internal static bool enabled;
         internal static int buildCount;
+
         public bool CanRender(RenderOutputSession session) => enabled;
+
         public RenderModelOutput Build(RenderOutputSession session)
         {
             buildCount++;
-            return new RenderModelOutput("Second Model",
-                new RenderPipelineAsset { pipelineTypeId = CompositionLayerPipeline.extensionId }, new RenderFrameData());
+            return new RenderModelOutput(
+                "Second Model",
+                new RenderPipelineAsset { pipelineTypeId = CompositionLayerPipeline.extensionId },
+                new RenderFrameData()
+            );
         }
-        public void Dispose() { }
-        internal static void Reset() { enabled = false; buildCount = 0; }
+
+        public void Dispose() {}
+
+        internal static void Reset()
+        {
+            enabled = false;
+            buildCount = 0;
+        }
     }
 
     [RenderPipelineExtension(extensionId)]
@@ -1448,11 +1571,15 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
         public override void Build(RenderPipelineContext context) => _ = context;
 
-        protected override void OnConfigure(SerializedRenderExtensionState state, RenderExtensionStateContext settings)
-        {
+        protected override void OnConfigure(
+            SerializedRenderExtensionState state,
+            RenderExtensionStateContext settings
+        ) {
             _ = state;
             if (rejectConfiguration)
+            {
                 throw new InvalidOperationException("Rejected pipeline configuration candidate.");
+            }
         }
 
         internal static void Reset()
@@ -1470,7 +1597,9 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             _ = disposing;
             retirementAttempts++;
             if (retirementExpired)
+            {
                 throw new RetirementTimeoutException("The pipeline-owned device work exceeded its deadline.");
+            }
             if (pendingRetirements > 0)
             {
                 pendingRetirements--;
@@ -1487,7 +1616,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         internal static int pendingRetirements { get; set; }
         internal static int retirementAttempts { get; private set; }
 
-        public override void AddRenderPasses(RenderFeatureContext context) { }
+        public override void AddRenderPasses(RenderFeatureContext context) {}
 
         public void Dispose()
         {
@@ -1519,13 +1648,21 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                     "Visible",
                     new RenderPhaseId("tests.statistics.visible"),
                     0,
-                    static (_, _) => { })
+                    static (
+                        _,
+                        _
+                    ) => {}
+                )
                 .HasSideEffect();
             context.graph.AddRasterPass(
                 "Culled",
                 new RenderPhaseId("tests.statistics.culled"),
                 0,
-                static (_, _) => { });
+                static (
+                    _,
+                    _
+                ) => {}
+            );
         }
     }
 
@@ -1538,15 +1675,29 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         public override void Build(RenderPipelineContext context)
         {
             viewports.Add(context.request.viewport);
-            RasterPassBuilder pass = context.graph.AddRasterPass("Scene Color",
-                    new RenderPhaseId("tests.runtime.composition-layer"), 0,
-                    static (_, _) => { });
+            RasterPassBuilder pass = context.graph.AddRasterPass(
+                "Scene Color",
+                new RenderPhaseId("tests.runtime.composition-layer"),
+                0,
+                static (
+                    _,
+                    _
+                ) => {}
+            );
             if (context.outputTexture.isValid)
-                pass.UseColorAttachment(context.outputTexture, 0,
-                    RenderLoadAction.Clear, RenderStoreAction.Store,
-                    new RenderClearColor(0f, 0f, 0f, 0f));
+            {
+                pass.UseColorAttachment(
+                    context.outputTexture,
+                    0,
+                    RenderLoadAction.Clear,
+                    RenderStoreAction.Store,
+                    new RenderClearColor(0f, 0f, 0f, 0f)
+                );
+            }
             else
+            {
                 pass.ClearPresentationTarget(default).HasSideEffect();
+            }
         }
     }
 
@@ -1562,7 +1713,11 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                     "Visible",
                     new RenderPhaseId("tests.runtime.visible"),
                     0,
-                    static (_, _) => { })
+                    static (
+                        _,
+                        _
+                    ) => {}
+                )
                 .HasSideEffect();
         }
     }
@@ -1576,15 +1731,17 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
         public override void Build(RenderPipelineContext context)
         {
-            observations.Add(new PresentationObservation(
-                context.request.name,
-                context.preservePresentationTarget));
+            observations.Add(new PresentationObservation(context.request.name, context.preservePresentationTarget));
             context.graph
                 .AddRasterPass(
                     "Presentation",
                     new RenderPhaseId("tests.runtime.presentation"),
                     0,
-                    static (_, _) => { })
+                    static (
+                        _,
+                        _
+                    ) => {}
+                )
                 .HasSideEffect();
         }
 
@@ -1603,7 +1760,11 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                     "Rolled Back",
                     new RenderPhaseId("tests.runtime.rolled-back"),
                     0,
-                    static (_, _) => { })
+                    static (
+                        _,
+                        _
+                    ) => {}
+                )
                 .HasSideEffect();
             throw new InvalidOperationException("Expected request failure.");
         }
@@ -1611,7 +1772,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
     private readonly record struct PresentationObservation(
         string requestName,
-        bool preserveTarget);
+        bool preserveTarget
+    );
 
     [RenderPipelineExtension(extensionId)]
     private sealed class UploadPipeline : RenderPipeline
@@ -1625,20 +1787,15 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         public override void Build(RenderPipelineContext context)
         {
             var layout = new RenderVertexLayout(
-            [
-                new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3)
-            ]);
-            var descriptor = new RenderBufferUploadDescriptor(
-                layout.stride,
-                RenderBufferUsage.Vertex,
-                layout);
+                [
+                    new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3)
+                ]
+            );
+            var descriptor = new RenderBufferUploadDescriptor(layout.stride, RenderBufferUsage.Vertex, layout);
             firstSlice = context.uploads.UploadBuffer(descriptor, new byte[layout.stride * 3], "Vertices");
             if (!singleUpload)
             {
-                secondSlice = context.uploads.UploadBuffer(
-                    descriptor,
-                    new byte[layout.stride * 3],
-                    "Vertices");
+                secondSlice = context.uploads.UploadBuffer(descriptor, new byte[layout.stride * 3], "Vertices");
             }
         }
 
@@ -1660,13 +1817,18 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         public override void Build(RenderPipelineContext context)
         {
             context.resourceService.PrewarmTexture(
-                texture ?? throw new InvalidOperationException("A test texture is required."));
+                texture ?? throw new InvalidOperationException("A test texture is required.")
+            );
             context.graph
                 .AddRasterPass(
                     "Submit While Prewarming",
                     new RenderPhaseId("tests.runtime.prewarm"),
                     0,
-                    static (_, _) => { })
+                    static (
+                        _,
+                        _
+                    ) => {}
+                )
                 .HasSideEffect();
         }
     }
@@ -1689,13 +1851,18 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                 role,
                 null,
                 null,
-                out _);
+                out _
+            );
             context.graph
                 .AddRasterPass(
                     "Submit While Compiling",
                     new RenderPhaseId("tests.runtime.pending-shader"),
                     0,
-                    static (_, _) => { })
+                    static (
+                        _,
+                        _
+                    ) => {}
+                )
                 .HasSideEffect();
         }
 
@@ -1720,10 +1887,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         public override void Build(RenderPipelineContext context)
         {
             byte[] update = Enumerable.Range(0, 16).Select(static value => (byte)value).ToArray();
-            context.resourceService.UpdateTexture(
-                texture,
-                new RenderTextureRegion(0, 1, 1, 0, 2, 2),
-                update);
+            context.resourceService.UpdateTexture(texture, new RenderTextureRegion(0, 1, 1, 0, 2, 2), update);
             readback ??= context.resourceService
                 .ReadTextureAsync(texture, cancellationToken: cancellationToken)
                 .AsTask();
@@ -1732,7 +1896,11 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                     "Readback Submission",
                     new RenderPhaseId("tests.runtime.readback"),
                     0,
-                    static (_, _) => { })
+                    static (
+                        _,
+                        _
+                    ) => {}
+                )
                 .HasSideEffect();
         }
 
@@ -1761,16 +1929,18 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         public override void Submit(RenderRequestProviderContext context)
         {
             if (!enabled)
+            {
                 return;
+            }
             submitCount++;
             lastContent = context.content;
             lastPresentationViewport = context.primaryPresentationViewport;
             lastInput = context.input;
             if (pipeline is null)
+            {
                 return;
-            context.requests.Submit(CreateRequest(
-                "Provider Request",
-                pipeline));
+            }
+            context.requests.Submit(CreateRequest("Provider Request", pipeline));
         }
 
         internal static void Reset()
@@ -1800,14 +1970,21 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     {
         public void PrepareFrame(ulong frameIndex) => _ = frameIndex;
 
-        public void AddRenderPasses(RenderGraphBuilder graph, ulong frameIndex)
-        {
+        public void AddRenderPasses(
+            RenderGraphBuilder graph,
+            ulong frameIndex
+        ) {
             _ = frameIndex;
-            graph.AddRasterPass(
+            graph
+                .AddRasterPass(
                     "Overlay",
                     new RenderPhaseId("tests.runtime.overlay"),
                     0,
-                    static (_, _) => { })
+                    static (
+                        _,
+                        _
+                    ) => {}
+                )
                 .HasSideEffect();
         }
     }
@@ -1818,10 +1995,14 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
         public void Publish(Diagnostic diagnostic) => items.Add(diagnostic);
 
-        public void Resolve(string code, string? semanticId = null, Guid? objectId = null)
-            => items.RemoveAll(diagnostic =>
-                string.Equals(diagnostic.code, code, StringComparison.Ordinal) &&
-                string.Equals(diagnostic.semanticId, semanticId, StringComparison.Ordinal) && diagnostic.objectId == objectId);
+        public void Resolve(
+            string code,
+            string? semanticId = null,
+            Guid? objectId = null
+        ) => items.RemoveAll(diagnostic => (
+            string.Equals(diagnostic.code, code, StringComparison.Ordinal)
+            && string.Equals(diagnostic.semanticId, semanticId, StringComparison.Ordinal) && diagnostic.objectId == objectId
+        ));
 
         public void Replace(IEnumerable<Diagnostic> diagnostics)
         {
@@ -1841,12 +2022,15 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             [],
             [],
             originBottomLeft: false,
-            homogeneousDepth: false);
+            homogeneousDepth: false
+        );
 
         public RenderDeviceFrameCounters frameCounters { get; internal set; }
         public RenderDeviceAllocationCounters? allocationCounters { get; internal set; }
         internal bool verticalSync { get; private set; }
+
         public void SetVerticalSync(bool enabled) => verticalSync = enabled;
+
         internal List<PersistentBufferHandle> createdBuffers { get; } = [];
         internal List<PersistentBufferHandle> destroyedBuffers { get; } = [];
         internal int failBufferCreationAt { get; set; }
@@ -1872,11 +2056,13 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         public GraphicsCapabilities capabilities { get; internal set; } = S_CAPABILITIES;
         public uint generation => 1;
         public RenderPresentationSize? presentationSize { get; set; } = new(1, 1);
+
         public RenderPresentationSize? primaryPresentationSize
         {
             get => presentationSize;
             private set => presentationSize = value;
         }
+
         public bool primaryPresentationEncodesSrgb { get; set; } = true;
 
         public void BeginFrame()
@@ -1885,8 +2071,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             frameOpen = true;
         }
 
-        public void Execute(CompiledRenderGraph graph, ulong frameIndex)
-        {
+        public void Execute(
+            CompiledRenderGraph graph,
+            ulong frameIndex
+        ) {
             Assert.True(frameOpen);
             _ = frameIndex;
             executeCount++;
@@ -1906,14 +2094,17 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             primaryPresentationSize = size;
         }
 
-        public PersistentTextureHandle CreateTexture(RenderTextureDescriptor descriptor, string name)
-        {
+        public PersistentTextureHandle CreateTexture(
+            RenderTextureDescriptor descriptor,
+            string name
+        ) {
             Assert.True(frameOpen);
             _ = descriptor;
             _ = name;
             PersistentTextureHandle texture = CreatePersistentTextureHandle(
                 checked((ulong)createdTextures.Count + 1),
-                generation);
+                generation
+            );
             createdTextures.Add(texture);
             return texture;
         }
@@ -1922,8 +2113,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             PersistentTextureHandle texture,
             ReadOnlySpan<byte> data,
             int mipLevel = 0,
-            int arrayLayer = 0)
-        {
+            int arrayLayer = 0
+        ) {
             _ = texture;
             _ = data;
             _ = mipLevel;
@@ -1933,8 +2124,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         public void UpdateTextureRegion(
             PersistentTextureHandle texture,
             RenderTextureRegion region,
-            ReadOnlySpan<byte> data)
-        {
+            ReadOnlySpan<byte> data
+        ) {
             _ = texture;
             _ = region;
             _ = data;
@@ -1942,8 +2133,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
         public RenderTextureReadbackHandle BeginTextureReadback(
             PersistentTextureHandle texture,
-            int mipLevel = 0)
-        {
+            int mipLevel = 0
+        ) {
             _ = texture;
             _ = mipLevel;
             return default;
@@ -1951,8 +2142,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
         public bool TryGetTextureReadback(
             RenderTextureReadbackHandle readback,
-            out RenderTextureReadbackResult? result)
-        {
+            out RenderTextureReadbackResult? result
+        ) {
             _ = readback;
             result = null;
             return false;
@@ -1977,10 +2168,16 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             destroyedTextures.Add(texture);
         }
 
-        public PersistentBufferHandle CreateBuffer(PersistentBufferDescriptor descriptor, ReadOnlySpan<byte> initialData, string name)
-        {
+        public PersistentBufferHandle CreateBuffer(
+            PersistentBufferDescriptor descriptor,
+            ReadOnlySpan<byte> initialData,
+            string name
+        ) {
             m_bufferCreationCount++;
-            if (m_bufferCreationCount == failBufferCreationAt) throw new InvalidOperationException("Native allocation rejected.");
+            if (m_bufferCreationCount == failBufferCreationAt)
+            {
+                throw new InvalidOperationException("Native allocation rejected.");
+            }
             PersistentBufferHandle handle = CreatePersistentBufferHandle((ulong)m_bufferCreationCount, generation);
             createdBuffers.Add(handle);
             return handle;
@@ -1989,8 +2186,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         public void UpdateBuffer(
             PersistentBufferHandle buffer,
             ReadOnlySpan<byte> data,
-            int startElement = 0)
-        {
+            int startElement = 0
+        ) {
             _ = buffer;
             _ = data;
             _ = startElement;
@@ -2004,8 +2201,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
         public GraphicsPipelineHandle CreateGraphicsPipeline(
             GraphicsPipelineDescriptor descriptor,
-            string name)
-        {
+            string name
+        ) {
             _ = descriptor;
             _ = name;
             return default;
@@ -2015,8 +2212,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
         public ComputePipelineHandle CreateComputePipeline(
             ComputePipelineDescriptor descriptor,
-            string name)
-        {
+            string name
+        ) {
             _ = descriptor;
             _ = name;
             return default;
@@ -2024,7 +2221,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
         public void DestroyComputePipeline(ComputePipelineHandle pipeline) => _ = pipeline;
 
-        public void Dispose() { }
+        public void Dispose() {}
     }
 
     private sealed class RecordingRenderDevice : RenderDevice, IRenderDevice
@@ -2037,13 +2234,16 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         internal int failedProgramRetirements { get; set; }
         internal int programRetirementAttempts { get; private set; }
         internal bool verticalSync { get; private set; }
+
         public void SetVerticalSync(bool enabled) => verticalSync = enabled;
 
         private readonly RenderTextureDescriptor m_readbackDescriptor = new(
             4,
             4,
             RenderTextureFormat.RGBA8,
-            RenderTextureUsage.Readback);
+            RenderTextureUsage.Readback
+        );
+
         private readonly RenderTextureReadbackHandle m_readbackHandle;
 
         internal List<int> bufferUpdateOffsets { get; } = [];
@@ -2070,7 +2270,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                 [],
                 [],
                 originBottomLeft: false,
-                homogeneousDepth: false);
+                homogeneousDepth: false
+            );
             textureHandle = CreatePersistentTextureHandle(1UL, generation);
             m_readbackHandle = CreateRenderTextureReadbackHandle(1UL, generation);
         }
@@ -2081,10 +2282,12 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         public RenderPresentationSize? primaryPresentationSize { get; private set; } = new(1, 1);
         public bool primaryPresentationEncodesSrgb => true;
 
-        public void BeginFrame() { }
+        public void BeginFrame() {}
 
-        public void Execute(CompiledRenderGraph graph, ulong frameIndex)
-        {
+        public void Execute(
+            CompiledRenderGraph graph,
+            ulong frameIndex
+        ) {
             _ = graph;
             _ = frameIndex;
             executeCount++;
@@ -2098,8 +2301,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
         public void SetPrimaryPresentationSize(RenderPresentationSize? size) => primaryPresentationSize = size;
 
-        public PersistentTextureHandle CreateTexture(RenderTextureDescriptor descriptor, string name)
-        {
+        public PersistentTextureHandle CreateTexture(
+            RenderTextureDescriptor descriptor,
+            string name
+        ) {
             _ = descriptor;
             _ = name;
             return default;
@@ -2109,8 +2314,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             PersistentTextureHandle texture,
             ReadOnlySpan<byte> data,
             int mipLevel = 0,
-            int arrayLayer = 0)
-        {
+            int arrayLayer = 0
+        ) {
             _ = texture;
             _ = data;
             _ = mipLevel;
@@ -2120,8 +2325,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         public void UpdateTextureRegion(
             PersistentTextureHandle texture,
             RenderTextureRegion region,
-            ReadOnlySpan<byte> data)
-        {
+            ReadOnlySpan<byte> data
+        ) {
             Assert.Equal(textureHandle, texture);
             updatedRegion = region;
             updatedBytes = data.ToArray();
@@ -2129,8 +2334,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
         public RenderTextureReadbackHandle BeginTextureReadback(
             PersistentTextureHandle texture,
-            int mipLevel = 0)
-        {
+            int mipLevel = 0
+        ) {
             Assert.Equal(textureHandle, texture);
             _ = mipLevel;
             return m_readbackHandle;
@@ -2138,16 +2343,17 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
         public bool TryGetTextureReadback(
             RenderTextureReadbackHandle readback,
-            out RenderTextureReadbackResult? result)
-        {
+            out RenderTextureReadbackResult? result
+        ) {
             Assert.Equal(m_readbackHandle, readback);
             result = readbackReady
-                ? new RenderTextureReadbackResult(
-                    m_readbackDescriptor,
-                    0,
-                    16,
-                    Enumerable.Repeat((byte)37, 64).ToArray())
-                : null;
+                     ? new RenderTextureReadbackResult(
+                         m_readbackDescriptor,
+                         0,
+                         16,
+                         Enumerable.Repeat((byte)37, 64).ToArray()
+                     )
+                     : null;
             return result is not null;
         }
 
@@ -2169,8 +2375,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         public PersistentBufferHandle CreateBuffer(
             PersistentBufferDescriptor descriptor,
             ReadOnlySpan<byte> initialData,
-            string name)
-        {
+            string name
+        ) {
             _ = descriptor;
             _ = initialData;
             _ = name;
@@ -2181,8 +2387,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         public void UpdateBuffer(
             PersistentBufferHandle buffer,
             ReadOnlySpan<byte> data,
-            int startElement = 0)
-        {
+            int startElement = 0
+        ) {
             _ = buffer;
             _ = data;
             bufferUpdateOffsets.Add(startElement);
@@ -2203,8 +2409,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
         public GraphicsPipelineHandle CreateGraphicsPipeline(
             GraphicsPipelineDescriptor descriptor,
-            string name)
-        {
+            string name
+        ) {
             if (name == failProgramName) throw new InvalidOperationException("Injected program allocation failure.");
             GraphicsPipelineHandle handle = CreateGraphicsPipelineHandle(checked((ulong)createdPrograms.Count + 1), generation);
             createdPrograms.Add(handle);
@@ -2231,8 +2437,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
         public ComputePipelineHandle CreateComputePipeline(
             ComputePipelineDescriptor descriptor,
-            string name)
-        {
+            string name
+        ) {
             _ = descriptor;
             _ = name;
             return default;
@@ -2240,14 +2446,14 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
         public void DestroyComputePipeline(ComputePipelineHandle pipeline) => _ = pipeline;
 
-        public void Dispose() { }
-
+        public void Dispose() {}
     }
 
     private sealed class DelayedTextureArtifactSource
     {
         private readonly TaskCompletionSource<byte[]> m_completion = new(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
 
         internal ManualResetEventSlim started { get; } = new(initialState: false);
         internal bool isCompleted => m_completion.Task.IsCompleted;
@@ -2261,8 +2467,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         internal void Complete(byte[] data) => m_completion.TrySetResult(data);
     }
 
-    private sealed class DelayedArtifactProvider(DelayedTextureArtifactSource compiler)
-        : IRenderTargetArtifactProvider
+    private sealed class DelayedArtifactProvider(DelayedTextureArtifactSource compiler) : IRenderTargetArtifactProvider
     {
         private Task<byte[]>? m_texture;
 
@@ -2273,8 +2478,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             ShaderAsset shader,
             RenderShaderVariant variant,
             GraphicsCapabilities capabilities,
-            out RenderShaderArtifact? artifact)
-        {
+            out RenderShaderArtifact? artifact
+        ) {
             _ = shader;
             _ = variant;
             _ = capabilities;
@@ -2284,8 +2489,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
         public RenderTargetArtifactStatus GetTextureArtifact(
             RenderTextureArtifactReference texture,
-            out ReadOnlyMemory<byte> artifact)
-        {
+            out ReadOnlyMemory<byte> artifact
+        ) {
             _ = texture;
             m_texture ??= compiler.LoadAsync();
             if (m_texture.IsCompletedSuccessfully)
@@ -2301,18 +2506,26 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     private sealed class TestCompositionProgramProvider : IRenderLayerCompositionProgramProvider
     {
         public GraphicsPipelineDescriptor CreateDescriptor(
-            GraphicsCapabilities capabilities, RenderVertexLayout vertexLayout)
-        {
+            GraphicsCapabilities capabilities,
+            RenderVertexLayout vertexLayout
+        ) {
             _ = capabilities;
             return new GraphicsPipelineDescriptor(
-                [1], [1],
+                [1],
+                [1],
                 [new RenderShaderBindingDescriptor(
-                    new RenderBindingId("s_tex"), RenderShaderBindingKind.Texture, 0, nativeName: "s_tex")],
-                vertexLayout);
+                    new RenderBindingId("s_tex"),
+                    RenderShaderBindingKind.Texture,
+                    0,
+                    nativeName: "s_tex"
+                )],
+                vertexLayout
+            );
         }
 
         public GraphicsPipelineDescriptor CreateOutputTransferDescriptor(
-            GraphicsCapabilities capabilities, RenderVertexLayout vertexLayout)
-            => CreateDescriptor(capabilities, vertexLayout);
+            GraphicsCapabilities capabilities,
+            RenderVertexLayout vertexLayout
+        ) => CreateDescriptor(capabilities, vertexLayout);
     }
 }

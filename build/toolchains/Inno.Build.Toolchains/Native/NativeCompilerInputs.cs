@@ -59,41 +59,50 @@ public sealed class NativeCompilerInputs
     /// Gets the explicit C compiler, or null when unavailable.
     /// </summary>
     public string? cCompiler { get; }
+
     /// <summary>
     /// Gets the explicit C++ compiler, or null when unavailable.
     /// </summary>
     public string? cppCompiler { get; }
+
     /// <summary>
     /// Gets the target SDK root, or null when unnecessary.
     /// </summary>
     public string? sysRoot { get; }
+
     /// <summary>
     /// Gets ordered SDK header directories.
     /// </summary>
     public IReadOnlyList<string> systemIncludeDirectories { get; }
+
     /// <summary>
     /// Gets ordered C++ standard library directories.
     /// </summary>
     public IReadOnlyList<string> cppSystemIncludeDirectories { get; }
+
     /// <summary>
     /// Gets ordered target definitions.
     /// </summary>
     public IReadOnlyList<string> defines { get; }
+
     /// <summary>
     /// Gets ordered target parser arguments.
     /// </summary>
     public IReadOnlyList<string> arguments { get; }
 
-    internal IEnumerable<string> declarations => new[] { "cCompiler=" + cCompiler, "cppCompiler=" + cppCompiler, "sysRoot=" + sysRoot }
-        .Concat(systemIncludeDirectories.Select(static path => "systemInclude=" + path))
-        .Concat(cppSystemIncludeDirectories.Select(static path => "cppSystemInclude=" + path))
-        .Concat(defines.Select(static value => "compilerDefine=" + value))
-        .Concat(arguments.Select(static value => "compilerArgument=" + value));
+    internal IEnumerable<string> declarations
+        => new[] { "cCompiler=" + cCompiler, "cppCompiler=" + cppCompiler, "sysRoot=" + sysRoot }
+            .Concat(systemIncludeDirectories.Select(static path => "systemInclude=" + path))
+            .Concat(cppSystemIncludeDirectories.Select(static path => "cppSystemInclude=" + path))
+            .Concat(defines.Select(static value => "compilerDefine=" + value))
+            .Concat(arguments.Select(static value => "compilerArgument=" + value));
 
     private static string? Validate(string? path)
     {
         if (path is not null && (string.IsNullOrWhiteSpace(path) || !Path.IsPathFullyQualified(path)))
+        {
             throw new ArgumentException("Native compiler inputs require explicit absolute paths.", nameof(path));
+        }
         return path;
     }
 }

@@ -1,15 +1,14 @@
-using Inno.Core.IO;
-using Inno.Build;
 using System;
 using System.IO;
 using System.Linq;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Plugins.Authoring;
+using Inno.Build;
+using Inno.Core.IO;
 using Inno.Core.Identity;
 using Inno.Core.Logging;
 using Inno.Core.Settings;
+using Inno.Plugins.Authoring;
 using Inno.Runtime;
 using Inno.Scripting.Compiler;
 
@@ -68,14 +67,12 @@ internal sealed class EditorAuthoringServices : IDisposable
         PluginEnvironment? plugins = null;
         try
         {
-            var pluginSources = new PluginSourceService(
-                engineHost.serialization,
-                pluginRoot,
-                libraryRoot);
+            var pluginSources = new PluginSourceService(engineHost.serialization, pluginRoot, libraryRoot);
             PluginScanResult pluginScan = pluginSources.Scan();
             AssetPipelineOptions defaultOptions = AssetPipelineOptions.Create(assetRoot, libraryRoot);
             AssetSourceMount projectMount = defaultOptions.sourceMounts!.Single(
-                static mount => mount.id == AssetSourceId.project);
+                static mount => mount.id == AssetSourceId.project
+            );
             assets = new AssetPipeline(
                 engineHost.modules,
                 engineHost.types,
@@ -91,13 +88,15 @@ internal sealed class EditorAuthoringServices : IDisposable
                     projectMount,
                     .. PluginSourceService.GetActivatableMounts(pluginScan)
                 ]
-            });
+            }
+            );
             settings = new ProjectSettingsStore(
                 new FileByteDocumentStore(Path.GetFullPath(Path.Combine(projectRoot, SettingsFileNames.project))),
                 engineHost.types,
                 engineHost.serialization,
                 ProjectId.FromName(new DirectoryInfo(projectRoot).Name),
-                AssetSerializationContext.Create(assets));
+                AssetSerializationContext.Create(assets)
+            );
             plugins = new PluginEnvironment(
                 assets,
                 settings,
@@ -105,13 +104,15 @@ internal sealed class EditorAuthoringServices : IDisposable
                 pluginRoot,
                 libraryRoot,
                 pluginScan,
-                engineHost.modules.generations);
+                engineHost.modules.generations
+            );
             foreach (PluginDiagnostic diagnostic in plugins.discovery.diagnostics)
             {
                 log.Write(
                     LogLevel.Warn,
                     "Plugin source '{0}' was excluded from the active candidate: {1}",
-                    [diagnostic.sourcePath, diagnostic.message]);
+                    [diagnostic.sourcePath, diagnostic.message]
+                );
             }
             var compiler = new ScriptCompiler(
                 new ScriptCompilerOptions
@@ -120,7 +121,8 @@ internal sealed class EditorAuthoringServices : IDisposable
                     compilationEnvironment = new SdkScriptCompilationEnvironment(dotnetHost, projectRoot)
                 },
                 assets,
-                plugins);
+                plugins
+            );
             return new EditorAuthoringServices(settings, assets, identities, plugins, compiler);
         }
         catch
@@ -145,7 +147,9 @@ internal sealed class EditorAuthoringServices : IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_disposed = true;
         plugins.Dispose();
         assets.Dispose();

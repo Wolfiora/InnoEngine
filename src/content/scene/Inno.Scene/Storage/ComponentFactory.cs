@@ -15,7 +15,9 @@ internal static class ComponentFactory
         ArgumentNullException.ThrowIfNull(componentType);
         ArgumentNullException.ThrowIfNull(types);
         if (!typeof(GameComponent).IsAssignableFrom(componentType) || componentType.IsAbstract || !componentType.IsClass)
+        {
             throw new ArgumentException($"Type '{componentType.FullName}' is not a concrete GameComponent.", nameof(componentType));
+        }
         return (GameComponent)types.CreateInstance(componentType);
     }
 }

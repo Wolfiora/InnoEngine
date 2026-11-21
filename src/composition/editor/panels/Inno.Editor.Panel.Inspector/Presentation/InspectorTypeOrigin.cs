@@ -1,12 +1,14 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Reflection;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Extensibility.Modules;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
+
 internal static class InspectorTypeOrigin
 {
     internal static void Draw(Type type)

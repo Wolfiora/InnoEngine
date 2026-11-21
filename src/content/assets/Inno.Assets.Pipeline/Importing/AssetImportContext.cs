@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-
 using Inno.Assets;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 using Inno.Scripting.Api;
 
 namespace Inno.Assets.Pipeline;
@@ -82,9 +81,10 @@ public sealed class AssetImportContext
             types,
             serialization,
             references,
-            dependency => m_runtimeDependencies.Add(dependency));
+            dependency => m_runtimeDependencies.Add(dependency)
+        );
         m_dependencyResolver = dependencyResolver
-            ?? throw new ArgumentNullException(nameof(dependencyResolver));
+                               ?? throw new ArgumentNullException(nameof(dependencyResolver));
         m_sourceReader = sourceReader ?? throw new ArgumentNullException(nameof(sourceReader));
         m_artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
     }
@@ -199,7 +199,9 @@ public sealed class AssetImportContext
     public ReadOnlyMemory<byte> ReadSourceBytes(AssetPath path)
     {
         if (!path.isValid)
+        {
             throw new ArgumentException("An import source dependency path is required.", nameof(path));
+        }
         DependsOnSource(path);
         return m_sourceReader(path.ToString());
     }
@@ -230,7 +232,9 @@ public sealed class AssetImportContext
     public void DependsOnAsset(AssetPath path)
     {
         if (!path.isValid)
+        {
             throw new ArgumentException("A runtime dependency path is required.", nameof(path));
+        }
         m_runtimeDependencyPaths.Add(path.ToString());
     }
 
@@ -272,8 +276,9 @@ public sealed class AssetImportContext
         DependsOnAsset(path);
         AssetObject? resolved = m_dependencyResolver(normalized, typeof(TAsset));
         return resolved as TAsset
-            ?? throw new InvalidOperationException(
-                $"Asset dependency '{normalized}' cannot be resolved as '{typeof(TAsset).FullName}'.");
+               ?? throw new InvalidOperationException(
+                   $"Asset dependency '{normalized}' cannot be resolved as '{typeof(TAsset).FullName}'."
+               );
     }
 
     /// <summary>
@@ -285,11 +290,12 @@ public sealed class AssetImportContext
     public void DependsOnSource(AssetPath path)
     {
         if (!path.isValid)
+        {
             throw new ArgumentException("An import source dependency path is required.", nameof(path));
-        m_importDependencies.Add(new AssetImportDependency(
-            AssetImportDependencyKind.Source,
-            path.ToString(),
-            string.Empty));
+        }
+        m_importDependencies.Add(
+            new AssetImportDependency(AssetImportDependencyKind.Source, path.ToString(), string.Empty)
+        );
     }
 
     /// <summary>
@@ -301,11 +307,12 @@ public sealed class AssetImportContext
     public void DependsOnArtifact(Guid persistentId)
     {
         if (persistentId == Guid.Empty)
+        {
             throw new ArgumentException("An artifact dependency identity is required.", nameof(persistentId));
-        m_importDependencies.Add(new AssetImportDependency(
-            AssetImportDependencyKind.Artifact,
-            persistentId.ToString("D"),
-            string.Empty));
+        }
+        m_importDependencies.Add(
+            new AssetImportDependency(AssetImportDependencyKind.Artifact, persistentId.ToString("D"), string.Empty)
+        );
     }
 
     /// <summary>
@@ -322,17 +329,17 @@ public sealed class AssetImportContext
         string fingerprint
     ) {
         if (string.IsNullOrWhiteSpace(key))
+        {
             throw new ArgumentException("A custom dependency key is required.", nameof(key));
-        m_importDependencies.Add(new AssetImportDependency(
-            AssetImportDependencyKind.Custom,
-            key,
-            fingerprint ?? string.Empty));
+        }
+        m_importDependencies.Add(
+            new AssetImportDependency(AssetImportDependencyKind.Custom, key, fingerprint ?? string.Empty)
+        );
     }
 
     internal IReadOnlyList<string> runtimeDependencyPaths => m_runtimeDependencyPaths;
     internal IReadOnlyList<AssetDependency> runtimeDependencies => m_runtimeDependencies;
     internal IReadOnlyList<AssetImportDependency> importDependencies => m_importDependencies;
-
 }
 
 internal enum AssetImportDependencyKind

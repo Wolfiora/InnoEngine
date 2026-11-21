@@ -1,8 +1,8 @@
-using Inno.Core.Mathematics;
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Inno.Core.Mathematics;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
@@ -105,7 +105,8 @@ public static class GeometryArtifact
                     new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()),
                     new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()),
                     new Vector4(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()),
-                    new Vector2(reader.ReadSingle(), reader.ReadSingle()));
+                    new Vector2(reader.ReadSingle(), reader.ReadSingle())
+                );
             }
 
             for (int index = 0; index < indices.Length; index++)
@@ -142,9 +143,7 @@ public static class GeometryArtifact
     private static int RequireCount(
         int value,
         string kind
-    )
-        => value >= 0 && value <= 100_000_000
-            ? value
-            : throw new InvalidDataException($"Mesh artifact {kind} count is invalid.");
+    ) => value >= 0 && value <= 100_000_000
+         ? value
+         : throw new InvalidDataException($"Mesh artifact {kind} count is invalid.");
 }
-

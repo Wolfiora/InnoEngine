@@ -7,8 +7,8 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Core.IO;
 using Xunit;
+using Inno.Core.IO;
 
 namespace Inno.Tooling.Documentation.Tests;
 
@@ -26,9 +26,18 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     public async Task ProjectGuideBecomesAuthoredOnEditAndTracksSubsequentSourceChanges()
     {
         const string C_PAGE = "content/en/architecture/projects/probe.md";
-        Write("reference/projects/content.json", JsonSerializer.Serialize(new { schema = "inno-project-guides/1",
-            entries = new[] { new { path = C_PAGE, uid = "project.probe", project = "Inno.Probe" } } }));
-        Write(C_PAGE, "---\nuid: project.probe\nsymbol: project:Inno.Probe\ntitle: Inno.Probe\nkind: project\nowners: [Inno.Probe]\nsource: xml\n---\n");
+        Write(
+            "reference/projects/content.json",
+            JsonSerializer.Serialize(new
+            {
+                schema = "inno-project-guides/1",
+                entries = new[] { new { path = C_PAGE, uid = "project.probe", project = "Inno.Probe" } }
+            })
+        );
+        Write(
+            C_PAGE,
+            "---\nuid: project.probe\nsymbol: project:Inno.Probe\ntitle: Inno.Probe\nkind: project\nowners: [Inno.Probe]\nsource: xml\n---\n"
+        );
         Bind(description: "The value\ncontract.");
         await Sync();
         string path = Path.Combine(m_root, C_PAGE);
@@ -37,14 +46,19 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         await Sync();
         Assert.Equal(first, File.ReadAllText(path));
         string manual = first.Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
-            + "\nIndependent lifetime guidance.\n";
+                        + "\nIndependent lifetime guidance.\n";
         File.WriteAllText(path, manual);
         await Sync();
         Assert.Equal(manual, File.ReadAllText(path));
         string cache = Path.Combine(m_root, "artifacts/project-query");
         var initial = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using (var initialSnapshot = await DocumentationStore.OpenAsync(cache, initial.snapshot))
-            Assert.Contains("[!AUTHORED]", (await initialSnapshot.ExportCatalogAsync()).pages.Single(page => page.id == "project.probe").markdown);
+        {
+            Assert.Contains(
+                "[!AUTHORED]",
+                (await initialSnapshot.ExportCatalogAsync()).pages.Single(page => page.id == "project.probe").markdown
+            );
+        }
         string original = File.ReadAllText(path);
         Bind(description: "The value\r\ncontract.");
         await Sync();
@@ -68,10 +82,106 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     public async Task ProjectGuideRegistryCannotClaimUnrelatedManualPages()
     {
         Write("content/en/manual/keep.md", "Preserve this unrelated guide.");
-        Write("reference/projects/content.json", JsonSerializer.Serialize(new { schema = "inno-project-guides/1",
-            entries = new[] { new { path = "content/en/manual/keep.md", uid = "manual.keep", project = "Inno.Probe" } } }));
+        Write(
+            "reference/projects/content.json",
+            JsonSerializer.Serialize(new
+            {
+                schema = "inno-project-guides/1",
+                entries = new[] { new { path = "content/en/manual/keep.md", uid = "manual.keep", project = "Inno.Probe" } }
+            })
+        );
         await Assert.ThrowsAsync<InvalidDataException>(() => Sync(CancellationToken.None));
         Assert.Equal("Preserve this unrelated guide.", File.ReadAllText(Path.Combine(m_root, "content/en/manual/keep.md")));
+    }
+
+    [Fact]
+    public async Task NewProjectsReceiveSynchronizedGuidesBesideTheirOwnerKind()
+    {
+        const string C_AUTHORED = "content/en/contributing/testing/projects/authored.md";
+        const string C_AUTHORED_TEXT = "---\nuid: project.authored\ntitle: Authored\nkind: project\nowners:\n  - Inno.Authored.Tests\n---\n# Authored\n";
+        WriteGuideRegistry();
+        Write(C_AUTHORED, C_AUTHORED_TEXT);
+        SetProjects(
+            ("Inno.Probe", "src/Inno.Probe.csproj"),
+            ("Inno.Probe.Tests", "tests/Inno.Probe.Tests/Inno.Probe.Tests.csproj"),
+            ("Inno.Adapter.Probe", "backends/Probe/Inno.Adapter.Probe.csproj"),
+            ("Inno.Platform.Probe", "platforms/Probe/Inno.Platform.Probe.csproj"),
+            ("Inno.Authored.Tests", "tests/Inno.Authored.Tests/Inno.Authored.Tests.csproj")
+        );
+        await Sync();
+        string source = File.ReadAllText(Path.Combine(m_root, "content/en/architecture/projects/inno-probe.md"));
+        Assert.Contains(
+            "uid: project.inno-probe\nsymbol: project:Inno.Probe\ntitle: Inno.Probe\nkind: project\nowners:\n- Inno.Probe\n",
+            source
+        );
+        Assert.Contains("source: xml", source);
+        Assert.Contains("The value contract.", source);
+        Assert.Contains(
+            "source: xml",
+            File.ReadAllText(Path.Combine(m_root, "content/en/contributing/testing/projects/inno-probe-tests.md"))
+        );
+        Assert.Contains("source: xml", File.ReadAllText(Path.Combine(m_root, "content/en/backends/projects/inno-adapter-probe.md")));
+        string[] expected = ["content/en/architecture/projects/inno-probe.md", "content/en/backends/projects/inno-adapter-probe.md",
+            "content/en/contributing/testing/projects/inno-probe-tests.md"];
+        Assert.Equal(expected, GuideRegistry());
+        Assert.Equal(C_AUTHORED_TEXT, File.ReadAllText(Path.Combine(m_root, C_AUTHORED)));
+        Assert.Single(
+            Directory.GetFiles(Path.Combine(m_root, "content/en/contributing/testing/projects")),
+            path => path.EndsWith("inno-probe-tests.md", StringComparison.Ordinal)
+        );
+        Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-check", "--docs-root", m_root]));
+        string cache = Path.Combine(m_root, "artifacts/project-query");
+        var indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
+        using var snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
+        Assert.Contains(
+            "[!SYNCED]",
+            (await snapshot.ExportCatalogAsync()).pages.Single(page => page.id == "project.inno-probe-tests").markdown
+        );
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RemovedProjectsDeleteSynchronizedGuidesAndPreserveAuthoredGuides(bool manual)
+    {
+        const string C_PAGE = "content/en/architecture/projects/inno-retired.md";
+        WriteGuideRegistry();
+        SetProjects(("Inno.Probe", "src/Inno.Probe.csproj"), ("Inno.Retired", "tools/Inno.Retired/Inno.Retired.csproj"));
+        await Sync();
+        string path = Path.Combine(m_root, C_PAGE);
+        if (manual)
+        {
+            File.WriteAllText(
+                path,
+                File.ReadAllText(path).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal) + "\nRetained guidance.\n"
+            );
+        }
+        SetProjects(("Inno.Probe", "src/Inno.Probe.csproj"));
+        await Sync();
+        Assert.Equal(manual, File.Exists(path));
+        Assert.Equal(manual, GuideRegistry().Contains(C_PAGE));
+        if (manual) Assert.Contains("Retained guidance.", File.ReadAllText(path));
+        Assert.Contains("content/en/architecture/projects/inno-probe.md", GuideRegistry());
+        Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-check", "--docs-root", m_root]));
+    }
+
+    [Fact]
+    public async Task NewProjectGuidesCannotOverwriteUnregisteredFiles()
+    {
+        const string C_PAGE = "content/en/architecture/projects/inno-probe.md";
+        WriteGuideRegistry();
+        Write(C_PAGE, "Preserve this unregistered page.");
+        await Assert.ThrowsAsync<InvalidDataException>(() => Sync(CancellationToken.None));
+        Assert.Equal("Preserve this unregistered page.", File.ReadAllText(Path.Combine(m_root, C_PAGE)));
+        Assert.Empty(GuideRegistry());
+    }
+
+    [Fact]
+    public async Task CheckoutsWithoutAGuideRegistryDoNotManageProjectGuides()
+    {
+        await Sync();
+        Assert.False(File.Exists(Path.Combine(m_root, "reference/projects/content.json")));
+        Assert.False(Directory.Exists(Path.Combine(m_root, "content/en/architecture/projects")));
     }
 
     [Theory]
@@ -80,7 +190,11 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     [InlineData("T:Inno.Probe.Outer`1.Value`1", "public class Inno.Probe.Outer<TOwner>.Value<TValue>", "Value<TValue>")]
     [InlineData("T:Inno.Probe.Outer`1.Value", "public class Inno.Probe.Outer<TOwner>.Value", "Value")]
     [InlineData("T:Inno.Probe.class`1", "public class Inno.Probe.@class<TValue>", "@class<TValue>")]
-    [InlineData("T:Inno.Probe.Factory`2", "public delegate TResult Inno.Probe.Factory<TValue, TResult>(TValue value)", "Factory<TValue, TResult>")]
+    [InlineData(
+        "T:Inno.Probe.Factory`2",
+        "public delegate TResult Inno.Probe.Factory<TValue, TResult>(TValue value)",
+        "Factory<TValue, TResult>"
+    )]
     public async Task GenericTitlesUseDeclaredNamesAndRenderAsText(
         string id,
         string signature,
@@ -103,20 +217,24 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         const string C_ONE = "T:Inno.Probe.Value`1";
         const string C_TWO = "T:Inno.Probe.Value`2";
         const string C_OTHER = "T:Other.Value`1";
-        SetTypes((C_TYPE, "public class Inno.Probe.Value"),
+        SetTypes(
+            (C_TYPE, "public class Inno.Probe.Value"),
             (C_ONE, "public class Inno.Probe.Value<TValue>"),
             (C_TWO, "public class Inno.Probe.Value<TTarget, TArgument>"),
-            (C_OTHER, "public class Other.Value<TValue>"));
+            (C_OTHER, "public class Other.Value<TValue>")
+        );
         await Sync();
         string[] paths = new[] { C_TYPE, C_ONE, C_TWO, C_OTHER }.Select(Fragment).ToArray();
         Assert.Equal(4, paths.Distinct().Count());
         string manual = File.ReadAllText(paths[2]).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
-            + "\nKeep the target alive while the operation runs.\n";
+                        + "\nKeep the target alive while the operation runs.\n";
         File.WriteAllText(paths[2], manual);
-        SetTypes((C_TYPE, "public class Inno.Probe.Value"),
+        SetTypes(
+            (C_TYPE, "public class Inno.Probe.Value"),
             (C_ONE, "public class Inno.Probe.Value<TValue>"),
             (C_TWO, "public class Inno.Probe.Value<TOwner, TArgument>"),
-            (C_OTHER, "public class Other.Value<TValue>"));
+            (C_OTHER, "public class Other.Value<TValue>")
+        );
         await Sync();
         Assert.Equal(paths, new[] { C_TYPE, C_ONE, C_TWO, C_OTHER }.Select(Fragment));
         Assert.Equal(Body(manual), Body(File.ReadAllText(paths[2])));
@@ -143,7 +261,8 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Write("content/en/manual/task.md", "A hand-written guide without source metadata.");
         await Sync();
         string[] paths = Directory.GetFiles(Path.Combine(m_root, "content/en/api"), "*.md", SearchOption.AllDirectories)
-            .Where(path => File.ReadAllText(path).Contains("symbol:", StringComparison.Ordinal)).ToArray();
+            .Where(path => File.ReadAllText(path).Contains("symbol:", StringComparison.Ordinal))
+            .ToArray();
         Assert.Equal(2, paths.Length);
         Assert.All(paths, path => Assert.Contains("source: xml", File.ReadAllText(path)));
         DateTime[] times = paths.Select(File.GetLastWriteTimeUtc).ToArray();
@@ -158,7 +277,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         await Sync();
         string member = Fragment(C_MEMBER);
         string manual = File.ReadAllText(member).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
-            + "\nUse this count after the owner has published the snapshot.\n";
+                        + "\nUse this count after the owner has published the snapshot.\n";
         File.WriteAllText(member, manual);
         Bind(description: "Updated source documentation.");
         await Sync();
@@ -171,8 +290,10 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         DocumentationPageInfo[] pages = (await snapshot.ExportCatalogAsync()).pages.Where(page => page.kind == "api").ToArray();
         Assert.All(pages, page => Assert.Contains("Updated source documentation.", page.markdown));
         DocumentationPageInfo memberPage = Assert.Single(pages.Where(page => page.symbols.ContainsKey(C_MEMBER)));
-        Assert.True(memberPage.markdown.IndexOf("> [!OUTDATED]", StringComparison.Ordinal)
-            < memberPage.markdown.IndexOf("Updated source documentation.", StringComparison.Ordinal));
+        Assert.True(
+            memberPage.markdown.IndexOf("> [!OUTDATED]", StringComparison.Ordinal)
+            < memberPage.markdown.IndexOf("Updated source documentation.", StringComparison.Ordinal)
+        );
         Assert.Contains("Use this count after the owner has published the snapshot.", memberPage.markdown);
         Assert.Contains("Updated source documentation.", File.ReadAllText(Path.Combine(m_root, "content/en/api/engine/probe/index.md")));
         Assert.Contains("| Updated source documentation. |", Assert.Single(pages.Where(page => page.symbols.ContainsKey(C_TYPE))).markdown);
@@ -194,7 +315,10 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
             Assert.Contains("> [!" + status + "]", (await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe"))).hits.Single().text);
         }
         await AssertStatus("OUTDATED");
-        File.WriteAllText(member, File.ReadAllText(member).Replace("description: null", "description:\n- An updated explanation.", StringComparison.Ordinal));
+        File.WriteAllText(
+            member,
+            File.ReadAllText(member).Replace("description: null", "description:\n- An updated explanation.", StringComparison.Ordinal)
+        );
         Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-check", "--docs-root", m_root]));
         await AssertStatus("AUTHORED");
         Bind(description: "A changed\r\ncontract.");
@@ -223,8 +347,10 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     {
         await Sync();
         string member = Fragment(C_MEMBER);
-        string legacy = File.ReadAllText(member).Replace("sourceFingerprint:", "reviewed:", StringComparison.Ordinal)
-            .Replace("source: xml", "source: Ada", StringComparison.Ordinal).Replace("outdated: false", "outdated: true", StringComparison.Ordinal);
+        string legacy = File.ReadAllText(member)
+            .Replace("sourceFingerprint:", "reviewed:", StringComparison.Ordinal)
+            .Replace("source: xml", "source: Ada", StringComparison.Ordinal)
+            .Replace("outdated: false", "outdated: true", StringComparison.Ordinal);
         File.WriteAllText(member, legacy);
         await Sync();
         Assert.Contains("outdatedFor:", File.ReadAllText(member));
@@ -253,7 +379,10 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     {
         await Sync();
         string member = Fragment(C_MEMBER);
-        if (manual) File.WriteAllText(member, File.ReadAllText(member).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal));
+        if (manual)
+        {
+            File.WriteAllText(member, File.ReadAllText(member).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal));
+        }
         string before = File.ReadAllText(member);
         Bind(member: false);
         await Sync();
@@ -357,7 +486,10 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         {
             JsonNode projected = host.DeepClone();
             projected["model"] = surface;
-            foreach (JsonNode? symbol in projected["projects"]![0]!["symbols"]!.AsArray()) symbol!["scriptingScope"] = scope;
+            foreach (JsonNode? symbol in projected["projects"]![0]!["symbols"]!.AsArray())
+            {
+                symbol!["scriptingScope"] = scope;
+            }
             string text = projected.ToJsonString();
             string file = "reference/api/" + surface + ".json";
             Write(file, text);
@@ -377,7 +509,9 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
         DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
-        DocumentationPageInfo script = Assert.Single(catalog.pages.Where(page => page.kind == "api" && page.scope == scope && page.symbols.ContainsKey(C_MEMBER)));
+        DocumentationPageInfo script = Assert.Single(
+            catalog.pages.Where(page => page.kind == "api" && page.scope == scope && page.symbols.ContainsKey(C_MEMBER))
+        );
         Assert.Contains("scripting/" + scope.ToLowerInvariant(), script.path);
         string scopeDirectory = "content/en/api/scripting/" + scope.ToLowerInvariant();
         DocumentationPageInfo scopePage = catalog.pages.Single(page => page.path == scopeDirectory + "/index.md");
@@ -385,18 +519,24 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         DocumentationPageInfo projectPage = catalog.pages.Single(page => page.path == scopeDirectory + "/_projects/probe/index.md");
         Assert.Contains("## Types", projectPage.markdown);
         Assert.Contains("| [Value]", projectPage.markdown);
-        DocumentationPageInfo typePage = Assert.Single(catalog.pages.Where(page => page.kind == "api" && page.scope == scope && page.symbols.ContainsKey(C_TYPE)));
+        DocumentationPageInfo typePage = Assert.Single(
+            catalog.pages.Where(page => page.kind == "api" && page.scope == scope && page.symbols.ContainsKey(C_TYPE))
+        );
         string typeLink = Path.GetRelativePath(Path.GetDirectoryName(projectPage.path)!, typePage.path).Replace('\\', '/');
         Assert.Contains("](" + typeLink + ")", projectPage.markdown);
         Assert.DoesNotContain("/_projects/", script.path);
         foreach (string surface in new[] { "runtime-script", "editor-script" })
         {
-            DocumentationHit hit = Assert.Single((await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe", surface, scope: scope))).hits);
+            DocumentationHit hit = Assert.Single(
+                (await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe", surface, scope: scope))).hits
+            );
             Assert.Equal(script.id, hit.pageId);
             Assert.Equal(scope, hit.scope);
             Assert.Equal(new[] { "editor-script", "runtime-script" }, hit.surfaces);
         }
-        Assert.Empty((await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe", scope: scope == "Editor" ? "Runtime" : "Editor"))).hits);
+        Assert.Empty(
+            (await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe", scope: scope == "Editor" ? "Runtime" : "Editor"))).hits
+        );
     }
 
     [Fact]
@@ -405,13 +545,24 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         await Sync();
         string member = Fragment(C_MEMBER);
         string manual = File.ReadAllText(member).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
-            + "\nRead the count only after publication.\n";
+                        + "\nRead the count only after publication.\n";
         File.WriteAllText(member, manual);
         Bind(description: "Updated XML.", countType: "long");
         await Sync();
-        Write("content/en/manual/ownership.md", "---\nuid: manual.ownership\ntitle: Ownership and retirement\nkind: explanation\n---\n\n# Ownership and retirement\n\n## Release\n\nKeep the owner alive until all borrows end.\n");
+        Write(
+            "content/en/manual/ownership.md",
+            "---\nuid: manual.ownership\ntitle: Ownership and retirement\nkind: explanation\n---\n\n# Ownership and retirement\n\n## Release\n\nKeep the owner alive until all borrows end.\n"
+        );
         string typePath = Fragment(C_TYPE);
-        File.WriteAllText(typePath, File.ReadAllText(typePath).Replace("contracts: []", "contracts: [manual.ownership#release]\nexampleMode: host\nexampleProjects: [Inno.Probe]", StringComparison.Ordinal));
+        File.WriteAllText(
+            typePath,
+            File.ReadAllText(typePath)
+                .Replace(
+                    "contracts: []",
+                    "contracts: [manual.ownership#release]\nexampleMode: host\nexampleProjects: [Inno.Probe]",
+                    StringComparison.Ordinal
+                )
+        );
         string cache = Path.Combine(m_root, "artifacts", "query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
@@ -458,12 +609,17 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Write("reference/engine.lock.json", binding.ToJsonString());
         await Sync();
         string member = Fragment(C_MEMBER);
-        File.WriteAllText(member, File.ReadAllText(member).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
-            + "\n```csharp\nvar count = value.count;\n```\n");
+        File.WriteAllText(
+            member,
+            File.ReadAllText(member).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
+            + "\n```csharp\nvar count = value.count;\n```\n"
+        );
         string cache = Path.Combine(m_root, "artifacts/query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
-        DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages.Where(page => page.kind == "api" && page.symbols.ContainsKey(C_MEMBER)));
+        DocumentationPageInfo page = Assert.Single(
+            (await snapshot.ExportCatalogAsync()).pages.Where(page => page.kind == "api" && page.symbols.ContainsKey(C_MEMBER))
+        );
         Assert.Equal(2, page.codeBlocks.Count(block => block.declarationSymbols.Count != 0));
         Assert.Equal("var count = value.count;", Assert.Single(page.codeBlocks.Where(block => block.declarationSymbols.Count == 0)).text);
         Assert.Contains(C_VARIANT, page.symbols[C_MEMBER].code);
@@ -473,8 +629,10 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     [InlineData("xml", true)]
     [InlineData("Ada Example", false)]
     [InlineData("", true)]
-    public async Task EditorialNoticeFollowsOwnershipAndSourceLinkEndsThePage(string source, bool notice)
-    {
+    public async Task EditorialNoticeFollowsOwnershipAndSourceLinkEndsThePage(
+        string source,
+        bool notice
+    ) {
         await Sync();
         string member = Fragment(C_MEMBER);
         string original = File.ReadAllText(member);
@@ -482,9 +640,19 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         string cache = Path.Combine(m_root, "artifacts/query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
-        DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages.Where(page => page.symbols.ContainsKey(C_MEMBER)));
+        DocumentationPageInfo page = Assert.Single(
+            (await snapshot.ExportCatalogAsync()).pages.Where(page => page.symbols.ContainsKey(C_MEMBER))
+        );
         Assert.Equal(notice, page.markdown.Contains("> [!SYNCED]", StringComparison.Ordinal));
-        if (notice) Assert.True(page.markdown.IndexOf("> [!SYNCED]", StringComparison.Ordinal) < page.markdown.IndexOf("## Required contracts", StringComparison.Ordinal));
+        if (notice)
+        {
+            Assert.True(
+                page.markdown.IndexOf("> [!SYNCED]", StringComparison.Ordinal) < page.markdown.IndexOf(
+                    "## Required contracts",
+                    StringComparison.Ordinal
+                )
+            );
+        }
         Assert.DoesNotContain("Available in:", page.markdown);
         Assert.DoesNotContain("XML-synced", page.markdown);
         Assert.DoesNotContain("Edit this explanation", page.markdown);
@@ -528,8 +696,12 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Contains(pages.Single(page => page.symbols.ContainsKey(C_DEEP)).id, field.contracts);
         Assert.DoesNotContain("_members", field.path);
 
-        void Add(string id, string kind, string signature, string parent)
-        {
+        void Add(
+            string id,
+            string kind,
+            string signature,
+            string parent
+        ) {
             JsonNode symbol = symbols[0]!.DeepClone();
             symbol["id"] = id; symbol["kind"] = kind; symbol["signature"] = signature;
             symbol["signatureHash"] = Hash(signature); symbol["containingType"] = parent;
@@ -545,16 +717,23 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         string legacy = Path.Combine(Path.GetDirectoryName(current)!, "_members/count.md");
         Directory.CreateDirectory(Path.GetDirectoryName(legacy)!);
         string text = File.ReadAllText(current).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
-            + "\nKeep the original explanation. [Owner](../index.md).\n";
+                      + "\nKeep the original explanation. [Owner](../index.md).\n";
         File.WriteAllText(legacy, text);
         File.Delete(current);
         string registryPath = Path.Combine(m_root, "reference/api/content.json");
         JsonNode registry = JsonNode.Parse(File.ReadAllText(registryPath))!;
-        registry["entries"]!.AsArray().Single(entry => entry!["symbol"]!.GetValue<string>().EndsWith(C_MEMBER, StringComparison.Ordinal))!["path"]
+        registry["entries"]!
+            .AsArray()
+            .Single(entry => entry!["symbol"]!.GetValue<string>().EndsWith(C_MEMBER, StringComparison.Ordinal))!["path"]
             = Path.GetRelativePath(m_root, legacy).Replace('\\', '/');
         File.WriteAllText(registryPath, registry.ToJsonString());
-        Write("content/en/manual/count.md", "---\nuid: manual.count\ntitle: Count\nkind: how-to\n---\n\n# Count\n\n"
-            + "[Old member](../api/engine/probe/value/_members/count.md) and [exact member](../api/engine/probe/value/index.md#api-" + Hash(C_MEMBER)[..16] + ").\n");
+        Write(
+            "content/en/manual/count.md",
+            "---\nuid: manual.count\ntitle: Count\nkind: how-to\n---\n\n# Count\n\n"
+            + "[Old member](../api/engine/probe/value/_members/count.md) and [exact member](../api/engine/probe/value/index.md#api-"
+            + Hash(C_MEMBER)[..16]
+            + ").\n"
+        );
         await Sync();
         Assert.False(File.Exists(legacy));
         Assert.Contains("Keep the original explanation. [Owner](index.md).", File.ReadAllText(current));
@@ -583,7 +762,12 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     {
         await Sync();
         string type = Fragment(C_TYPE);
-        string text = File.ReadAllText(type).Replace("contracts: []", "contracts: [manual.ownership#release]\naliases: [persistent value]\nexampleMode: host\nexampleProjects: [Inno.Probe]", StringComparison.Ordinal);
+        string text = File.ReadAllText(type)
+            .Replace(
+                "contracts: []",
+                "contracts: [manual.ownership#release]\naliases: [persistent value]\nexampleMode: host\nexampleProjects: [Inno.Probe]",
+                StringComparison.Ordinal
+            );
         File.WriteAllText(type, text);
         Bind(description: "Fresh XML still needs shared ownership guidance.");
         await Sync();
@@ -641,7 +825,10 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
                 ["Inno.ScriptApi.Runtime"] = new string(mismatch && surface == "editor-script" ? 'f' : 'e', 64),
                 ["Inno.ScriptApi.Editor"] = new string('d', 64)
             };
-            foreach (JsonNode? symbol in projected["projects"]![0]!["symbols"]!.AsArray()) symbol!["scriptingScope"] = "Runtime";
+            foreach (JsonNode? symbol in projected["projects"]![0]!["symbols"]!.AsArray())
+            {
+                symbol!["scriptingScope"] = "Runtime";
+            }
             if (surface == "editor-script") projected["projects"]![0]!["symbols"] = new JsonArray();
             string file = "reference/api/" + surface + ".json";
             string text = projected.ToJsonString();
@@ -667,7 +854,9 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         string cache = Path.Combine(m_root, "artifacts/query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
-        DocumentationHit hit = Assert.Single((await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe", "editor-script", scope: "Runtime"))).hits);
+        DocumentationHit hit = Assert.Single(
+            (await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe", "editor-script", scope: "Runtime"))).hits
+        );
         Assert.Equal(new[] { "editor-script", "runtime-script" }, hit.surfaces);
     }
 
@@ -677,7 +866,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         await Sync();
         string member = Fragment(C_MEMBER);
         string manual = File.ReadAllText(member).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
-            + "\nRead this value only after publication.\n";
+                        + "\nRead this value only after publication.\n";
         File.WriteAllText(member, manual);
         Bind(description: "Updated package XML.");
         string package = Path.Combine(m_root, "artifacts/api-package.json");
@@ -691,7 +880,9 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         JsonNode next = JsonNode.Parse(File.ReadAllText(package))!;
         next["revision"] = new string('c', 40);
         JsonNode bindingFile = next["files"]!.AsArray().Single(file => file!["path"]!.GetValue<string>() == "reference/engine.lock.json")!;
-        string revised = bindingFile["text"]!.GetValue<string>().Replace(new string('a', 40), new string('c', 40), StringComparison.Ordinal);
+        string revised = bindingFile["text"]!
+            .GetValue<string>()
+            .Replace(new string('a', 40), new string('c', 40), StringComparison.Ordinal);
         bindingFile["text"] = revised;
         bindingFile["sha256"] = Hash(revised);
         next["toolingRevision"] = new string('c', 40);
@@ -715,13 +906,18 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         JsonNode packet = JsonNode.Parse(File.ReadAllText(package))!;
         JsonArray files = packet["files"]!.AsArray();
         if (corruption == "tampered") files[0]!["text"] = "{}";
-        if (corruption == "extra-file") files.Add(new JsonObject { ["path"] = "content/en/manual/task.md", ["text"] = "replace", ["sha256"] = Hash("replace") });
+        if (corruption == "extra-file")
+        {
+            files.Add(new JsonObject { ["path"] = "content/en/manual/task.md", ["text"] = "replace", ["sha256"] = Hash("replace") });
+        }
         if (corruption == "escape") files[0]!["path"] = "reference/api/../../AGENTS.md";
         if (corruption == "mixed-revisions") packet["revision"] = new string('d', 40);
         File.WriteAllText(package, packet.ToJsonString());
         byte[] binding = File.ReadAllBytes(Path.Combine(m_root, "reference/engine.lock.json"));
         string before = File.ReadAllText(Fragment(C_TYPE));
-        await Assert.ThrowsAsync<InvalidDataException>(() => DocumentationCommand.ExecuteAsync(["api-import", "--docs-root", m_root, "--package", package]));
+        await Assert.ThrowsAsync<InvalidDataException>(
+            () => DocumentationCommand.ExecuteAsync(["api-import", "--docs-root", m_root, "--package", package])
+        );
         Assert.Equal(binding, File.ReadAllBytes(Path.Combine(m_root, "reference/engine.lock.json")));
         Assert.Equal(before, File.ReadAllText(Fragment(C_TYPE)));
     }
@@ -736,10 +932,15 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Bind();
         byte[] binding = File.ReadAllBytes(Path.Combine(m_root, "reference/engine.lock.json"));
         byte[] facts = File.ReadAllBytes(Path.Combine(m_root, "reference/api/probe.json"));
-        using (FileLease writer = await FileLease.AcquireAsync(Path.Combine(m_root, "artifacts/api-sync/writer.lock"), Timeout.InfiniteTimeSpan))
-        {
+        using (FileLease writer = await FileLease.AcquireAsync(
+            Path.Combine(m_root, "artifacts/api-sync/writer.lock"),
+            Timeout.InfiniteTimeSpan
+        )) {
             using var cancellation = new CancellationTokenSource();
-            Task<int> import = DocumentationCommand.ExecuteAsync(["api-import", "--docs-root", m_root, "--package", package], cancellation.Token);
+            Task<int> import = DocumentationCommand.ExecuteAsync(
+                ["api-import", "--docs-root", m_root, "--package", package],
+                cancellation.Token
+            );
             Assert.False(import.IsCompleted);
             Assert.Equal(binding, File.ReadAllBytes(Path.Combine(m_root, "reference/engine.lock.json")));
             Assert.Equal(facts, File.ReadAllBytes(Path.Combine(m_root, "reference/api/probe.json")));
@@ -764,7 +965,9 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         File.WriteAllText(member, invalid);
         byte[] binding = File.ReadAllBytes(Path.Combine(m_root, "reference/engine.lock.json"));
         byte[] facts = File.ReadAllBytes(Path.Combine(m_root, "reference/api/probe.json"));
-        await Assert.ThrowsAsync<InvalidDataException>(() => DocumentationCommand.ExecuteAsync(["api-import", "--docs-root", m_root, "--package", package]));
+        await Assert.ThrowsAsync<InvalidDataException>(
+            () => DocumentationCommand.ExecuteAsync(["api-import", "--docs-root", m_root, "--package", package])
+        );
         Assert.Equal(binding, File.ReadAllBytes(Path.Combine(m_root, "reference/engine.lock.json")));
         Assert.Equal(facts, File.ReadAllBytes(Path.Combine(m_root, "reference/api/probe.json")));
         Assert.Equal(invalid, File.ReadAllText(member));
@@ -793,12 +996,21 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         string cache = Path.Combine(m_root, "artifacts/query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
-        DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages.Where(page => page.symbols.ContainsKey(C_TYPE)));
+        DocumentationPageInfo page = Assert.Single(
+            (await snapshot.ExportCatalogAsync()).pages.Where(page => page.symbols.ContainsKey(C_TYPE))
+        );
         Assert.Contains("# Value\n\n> - Owns a value.\n>   \n>   Release it when finished.", page.markdown);
         Assert.Contains("> - Owns", page.markdown);
-        Assert.True(page.markdown.IndexOf("> [!SYNCED]", StringComparison.Ordinal) < page.markdown.IndexOf("# Value", StringComparison.Ordinal));
+        Assert.True(
+            page.markdown.IndexOf("> [!SYNCED]", StringComparison.Ordinal) < page.markdown.IndexOf("# Value", StringComparison.Ordinal)
+        );
         Assert.Contains("**API:** engine  \n**Inherits:** `System.Object`  \n**Project:** `Inno.Probe`", page.markdown);
-        Assert.True(page.markdown.IndexOf("## Declaration", StringComparison.Ordinal) < page.markdown.IndexOf("## Remarks", StringComparison.Ordinal));
+        Assert.True(
+            page.markdown.IndexOf(
+                "## Declaration",
+                StringComparison.Ordinal
+            ) < page.markdown.IndexOf("## Remarks", StringComparison.Ordinal)
+        );
         Assert.DoesNotContain("#### Remarks", page.markdown);
         DocumentationHit hit = Assert.Single((await snapshot.QueryAsync(new("symbol", C_TYPE, "Inno.Probe"))).hits);
         Assert.Contains("Owns a value.", hit.text);
@@ -812,8 +1024,13 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         await Sync();
         string typePath = Fragment(C_TYPE);
         string memberPath = Fragment(C_MEMBER);
-        File.WriteAllText(typePath, File.ReadAllText(typePath).Replace("description: null", "description: [Custom type introduction, Second type paragraph]", StringComparison.Ordinal));
-        string original = File.ReadAllText(memberPath).Replace("source: xml", "source: Ada Lovelace", StringComparison.Ordinal)
+        File.WriteAllText(
+            typePath,
+            File.ReadAllText(typePath)
+                .Replace("description: null", "description: [Custom type introduction, Second type paragraph]", StringComparison.Ordinal)
+        );
+        string original = File.ReadAllText(memberPath)
+            .Replace("source: xml", "source: Ada Lovelace", StringComparison.Ordinal)
             .Replace("description: null", "description: [Custom member introduction, Second member paragraph]", StringComparison.Ordinal);
         string body = "\n\n## Remarks\n\nKeep this author explanation byte for byte.\n";
         File.WriteAllText(memberPath, original[..(original.Length - Body(original).Length)] + body);
@@ -823,7 +1040,9 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Contains("source: Ada Lovelace", saved);
         Assert.Contains("outdatedFor:", saved);
         Assert.Equal(body, Body(saved));
-        Assert.True(saved.IndexOf("contracts:", StringComparison.Ordinal) < saved.IndexOf("# Authoring metadata", StringComparison.Ordinal));
+        Assert.True(
+            saved.IndexOf("contracts:", StringComparison.Ordinal) < saved.IndexOf("# Authoring metadata", StringComparison.Ordinal)
+        );
         string cache = Path.Combine(m_root, "artifacts/query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
@@ -834,7 +1053,10 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Contains("Custom member introduction<br><br>Second member paragraph", type.markdown);
         Assert.Contains("> - Second member paragraph", member.markdown);
         Assert.Contains("public long", member.markdown);
-        Assert.Contains(catalog.pages, page => page.markdown.Contains("Custom type introduction<br><br>Second type paragraph", StringComparison.Ordinal));
+        Assert.Contains(
+            catalog.pages,
+            page => page.markdown.Contains("Custom type introduction<br><br>Second type paragraph", StringComparison.Ordinal)
+        );
         DocumentationHit hit = Assert.Single((await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe"))).hits);
         Assert.Contains("Custom member introduction", hit.text);
         Assert.DoesNotContain("Changed XML.", member.markdown);
@@ -865,8 +1087,13 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         string cache = Path.Combine(m_root, "artifacts/query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
-        DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages.Where(page => page.symbols.ContainsKey(C_TYPE)));
-        Assert.Contains("> - First declaration.\n>   \n>   Still the first summary.\n> \n> - Second declaration with `Value`.", page.markdown);
+        DocumentationPageInfo page = Assert.Single(
+            (await snapshot.ExportCatalogAsync()).pages.Where(page => page.symbols.ContainsKey(C_TYPE))
+        );
+        Assert.Contains(
+            "> - First declaration.\n>   \n>   Still the first summary.\n> \n> - Second declaration with `Value`.",
+            page.markdown
+        );
         string html = Markdig.Markdown.ToHtml(page.markdown);
         string summaryHtml = html[html.IndexOf("<blockquote>\n<ul>", StringComparison.Ordinal)..];
         summaryHtml = summaryHtml[..summaryHtml.IndexOf("</blockquote>", StringComparison.Ordinal)];
@@ -894,9 +1121,13 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         string cache = Path.Combine(m_root, "artifacts/query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
-        DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages.Where(page => page.symbols.ContainsKey(C_TYPE)));
+        DocumentationPageInfo page = Assert.Single(
+            (await snapshot.ExportCatalogAsync()).pages.Where(page => page.symbols.ContainsKey(C_TYPE))
+        );
         Assert.Contains("# Value\n\n> - Updated source summary.", page.markdown);
-        Assert.True(page.markdown.IndexOf("> [!OUTDATED]", StringComparison.Ordinal) < page.markdown.IndexOf("# Value", StringComparison.Ordinal));
+        Assert.True(
+            page.markdown.IndexOf("> [!OUTDATED]", StringComparison.Ordinal) < page.markdown.IndexOf("# Value", StringComparison.Ordinal)
+        );
         Assert.Contains("## Remarks\n\nMy independently maintained ownership explanation.", page.markdown);
         Assert.DoesNotContain("#### Remarks", page.markdown);
         Assert.DoesNotContain("Changed source remarks.", page.markdown);
@@ -1015,6 +1246,39 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Write("reference/engine.lock.json", binding.ToJsonString());
     }
 
+    private void WriteGuideRegistry()
+        => Write(
+            "reference/projects/content.json",
+            JsonSerializer.Serialize(new { schema = "inno-project-guides/1", entries = Array.Empty<object>() })
+        );
+
+    private string[] GuideRegistry()
+    {
+        using JsonDocument registry = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(m_root, "reference/projects/content.json")));
+        return registry.RootElement
+            .GetProperty("entries")
+            .EnumerateArray()
+            .Select(entry => entry.GetProperty("path").GetString()!)
+            .ToArray();
+    }
+
+    private void SetProjects(params (string name, string path)[] projects)
+    {
+        string inventory = JsonSerializer.Serialize(
+            projects.Select(project => new
+            {
+                project.name,
+                project.path,
+                surfaces = new[] { "source-clr" },
+                isTest = project.path.StartsWith("tests/", StringComparison.Ordinal)
+            })
+        );
+        Write("reference/projects/catalog.json", inventory);
+        JsonNode binding = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/engine.lock.json")))!;
+        binding["projectManifestIdentity"] = Hash(inventory);
+        Write("reference/engine.lock.json", binding.ToJsonString());
+    }
+
     private void SetTypeDocumentation(string xml)
     {
         JsonNode facts = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/api/probe.json")))!;
@@ -1026,43 +1290,93 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Write("reference/engine.lock.json", binding.ToJsonString());
     }
 
-    private Task<int> Sync(CancellationToken cancellation) => DocumentationCommand.ExecuteAsync(["api-sync", "--docs-root", m_root], cancellation);
+    private Task<int> Sync(CancellationToken cancellation)
+        => DocumentationCommand.ExecuteAsync(["api-sync", "--docs-root", m_root], cancellation);
 
     private string Fragment(string id)
     {
         using JsonDocument registry = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(m_root, "reference/api/content.json")));
-        string path = registry.RootElement.GetProperty("entries").EnumerateArray()
-            .Single(entry => entry.GetProperty("symbol").GetString() == "engine:Inno.Probe:" + id).GetProperty("path").GetString()!;
+        string path = registry.RootElement.GetProperty("entries")
+            .EnumerateArray()
+            .Single(entry => entry.GetProperty("symbol").GetString() == "engine:Inno.Probe:" + id)
+            .GetProperty("path")
+            .GetString()!;
         return Path.Combine(m_root, path);
     }
 
-    private void Bind(bool member = true, string description = "The value contract.", string countType = "int")
-    {
-        string inventory = JsonSerializer.Serialize(new[] { new { name = "Inno.Probe", path = "src/Inno.Probe.csproj", surfaces = new[] { "source-clr" }, isTest = false } });
+    private void Bind(
+        bool member = true,
+        string description = "The value contract.",
+        string countType = "int"
+    ) {
+        string inventory = JsonSerializer.Serialize(
+            new[] { new { name = "Inno.Probe", path = "src/Inno.Probe.csproj", surfaces = new[] { "source-clr" }, isTest = false } }
+        );
         Write("reference/projects/catalog.json", inventory);
-        object Symbol(string id, string kind, string signature, string? parent) => new
+        object Symbol(
+            string id,
+            string kind,
+            string signature,
+            string? parent
+        ) => new
         {
-            project = "Inno.Probe", id, kind, signature, signatureHash = Hash(signature), source = "src/Value.cs", line = 1,
-            documentation = "<member><summary>" + description + "</summary></member>", containingType = parent,
-            baseType = (string?)null, interfaces = Array.Empty<string>()
+            project = "Inno.Probe",
+            id,
+            kind,
+            signature,
+            signatureHash = Hash(signature),
+            source = "src/Value.cs",
+            line = 1,
+            documentation = "<member><summary>" + description + "</summary></member>",
+            containingType = parent,
+            baseType = (string?)null,
+            interfaces = Array.Empty<string>()
         };
         object[] symbols = member
-            ? [Symbol(C_TYPE, "NamedType", "public class Inno.Probe.Value", null), Symbol(C_MEMBER, "Property", "public " + countType + " Inno.Probe.Value.count { get; }", C_TYPE)]
-            : [Symbol(C_TYPE, "NamedType", "public class Inno.Probe.Value", null)];
-        string facts = JsonSerializer.Serialize(new { model = "source-clr", configuration = "Debug", target = (string?)null,
-            projects = new[] { new { name = "Inno.Probe", project = "src/Inno.Probe.csproj", symbols } } });
-        Write("reference/api/probe.json", facts);
-        Write("reference/engine.lock.json", JsonSerializer.Serialize(new
+                           ? [
+                               Symbol(C_TYPE, "NamedType", "public class Inno.Probe.Value", null),
+                               Symbol(C_MEMBER, "Property", "public " + countType + " Inno.Probe.Value.count { get; }", C_TYPE)
+                           ]
+                           : [Symbol(C_TYPE, "NamedType", "public class Inno.Probe.Value", null)];
+        string facts = JsonSerializer.Serialize(new
         {
-            repository = "https://github.com/Wolfiora/InnoEngine", revision = new string('a', 40), sourceTree = new string('b', 40),
-            toolingRevision = new string('a', 40), projectManifest = "reference/projects/catalog.json", projectManifestIdentity = Hash(inventory),
-            apiManifests = new[] { new { path = "reference/api/probe.json", sha256 = Hash(facts), model = "source-clr", configuration = "Debug",
-                sourceRevision = new string('a', 40), sourceTree = new string('b', 40), target = (string?)null } }
-        }));
+            model = "source-clr",
+            configuration = "Debug",
+            target = (string?)null,
+            projects = new[] { new { name = "Inno.Probe", project = "src/Inno.Probe.csproj", symbols } }
+        });
+        Write("reference/api/probe.json", facts);
+        Write(
+            "reference/engine.lock.json",
+            JsonSerializer.Serialize(new
+            {
+                repository = "https://github.com/Wolfiora/InnoEngine",
+                revision = new string('a', 40),
+                sourceTree = new string('b', 40),
+                toolingRevision = new string('a', 40),
+                projectManifest = "reference/projects/catalog.json",
+                projectManifestIdentity = Hash(inventory),
+                apiManifests = new[]
+                {
+                    new
+                    {
+                        path = "reference/api/probe.json",
+                        sha256 = Hash(facts),
+                        model = "source-clr",
+                        configuration = "Debug",
+                        sourceRevision = new string('a', 40),
+                        sourceTree = new string('b', 40),
+                        target = (string?)null
+                    }
+                }
+            })
+        );
     }
 
-    private void Write(string relative, string text)
-    {
+    private void Write(
+        string relative,
+        string text
+    ) {
         string path = Path.Combine(m_root, relative);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         File.WriteAllText(path, text);

@@ -1,10 +1,10 @@
-using Inno.References;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Inno.References;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 
@@ -32,4 +32,3 @@ public sealed class RenderModelExtensionAttribute : Attribute
     /// </summary>
     public string id { get; }
 }
-

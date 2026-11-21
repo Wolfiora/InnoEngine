@@ -1,12 +1,12 @@
 using System;
 using System.Runtime.CompilerServices;
+using Xunit;
 using Inno.Core.Serialization;
 using Inno.Core.Serialization.Converters;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Scripting.Compiler;
 using Inno.Scripting.Reload;
-using Xunit;
 
 namespace Inno.Editor.Scripting.Tests;
 

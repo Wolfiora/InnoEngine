@@ -1,5 +1,5 @@
-using Inno.Adapter.Platform;
 using System;
+using Inno.Adapter.Platform;
 using Inno.Platform;
 
 namespace Inno.Adapter.Platform.Sdl3;

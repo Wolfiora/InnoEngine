@@ -1,13 +1,13 @@
-using Inno.Assets;
-using Inno.Assets.Pipeline;
-using Inno.Core.Mathematics;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Assets;
+using Inno.Assets.Pipeline;
+using Inno.Core.Mathematics;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Assets.Authoring;
 
@@ -54,13 +54,15 @@ internal sealed class GeometryAssetImporter : AssetImporter<GeometryAsset>
                 context.sourceBytes.Span,
                 isBinary: false,
                 ReadDependency,
-                path => output.DependsOnSource(AssetPath.Parse(path))),
+                path => output.DependsOnSource(AssetPath.Parse(path))
+            ),
             ".glb" => MeshSourceParser.ParseGltf(
                 context.assetPath.ToString(),
                 context.sourceBytes.Span,
                 isBinary: true,
                 ReadDependency,
-                path => output.DependsOnSource(AssetPath.Parse(path))),
+                path => output.DependsOnSource(AssetPath.Parse(path))
+            ),
             _ => throw new RenderingAssetFormatException(context.assetPath.ToString(), "Unsupported geometry container.")
         };
         (Vector3 boundsCenter, Vector3 boundsExtents) = CalculateBounds(data);
@@ -69,7 +71,8 @@ internal sealed class GeometryAssetImporter : AssetImporter<GeometryAsset>
             data.indices.Count,
             data.sections.Count,
             boundsCenter,
-            boundsExtents);
+            boundsExtents
+        );
         output.SetAsset(asset);
         byte[] artifact = GeometryArtifact.Encode(data);
         await output.WriteArtifactAsync("runtime", artifact, cancellationToken).ConfigureAwait(false);
@@ -91,15 +94,15 @@ internal sealed class GeometryAssetImporter : AssetImporter<GeometryAsset>
             minimum = new Vector3(
                 MathF.Min(minimum.x, position.x),
                 MathF.Min(minimum.y, position.y),
-                MathF.Min(minimum.z, position.z));
+                MathF.Min(minimum.z, position.z)
+            );
             maximum = new Vector3(
                 MathF.Max(maximum.x, position.x),
                 MathF.Max(maximum.y, position.y),
-                MathF.Max(maximum.z, position.z));
+                MathF.Max(maximum.z, position.z)
+            );
         }
 
         return ((minimum + maximum) * 0.5f, (maximum - minimum) * 0.5f);
     }
-
 }
-

@@ -6,7 +6,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Xml.Linq;
-
 using Microsoft.CodeAnalysis;
 
 namespace Inno.Tooling.Architecture;
@@ -16,9 +15,7 @@ internal sealed class AssemblyDocumentationProvider : DocumentationProvider
     private readonly Lazy<IReadOnlyDictionary<string, string>> m_members;
 
     internal AssemblyDocumentationProvider(string path)
-        : this(path, File.ReadAllBytes(path))
-    {
-    }
+        : this(path, File.ReadAllBytes(path)) {}
 
     internal AssemblyDocumentationProvider(
         string path,
@@ -77,7 +74,8 @@ internal sealed class AssemblyDocumentationProvider : DocumentationProvider
         try
         {
             using var input = new MemoryStream(document, writable: false);
-            return XDocument.Load(input).Descendants("member")
+            return XDocument.Load(input)
+                .Descendants("member")
                 .Where(static element => element.Attribute("name") is not null)
                 .GroupBy(static element => (string)element.Attribute("name")!, StringComparer.Ordinal)
                 .ToDictionary(static group => group.Key, static group => group.First().ToString(), StringComparer.Ordinal);

@@ -59,7 +59,9 @@ public sealed class ScheduledShellFrameDriver : IShellFrameDriver
             await m_nextFrame(cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             if (!advanceFrame())
+            {
                 return;
+            }
         }
     }
 }

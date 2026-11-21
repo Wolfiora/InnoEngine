@@ -11,9 +11,7 @@ public interface IInspectorAttributeDrawer
     /// <param name="context">
     /// Mutable presentation state for the annotated property.
     /// </param>
-    void Update(InspectorAttributeDrawContext context)
-    {
-    }
+    void Update(InspectorAttributeDrawContext context) {}
 
     /// <summary>
     /// Draws a decorator immediately before the property row.
@@ -21,9 +19,7 @@ public interface IInspectorAttributeDrawer
     /// <param name="context">
     /// Current presentation state for the annotated property.
     /// </param>
-    void DrawBefore(InspectorAttributeDrawContext context)
-    {
-    }
+    void DrawBefore(InspectorAttributeDrawContext context) {}
 
     /// <summary>
     /// Draws a decorator immediately after the property row.
@@ -31,7 +27,5 @@ public interface IInspectorAttributeDrawer
     /// <param name="context">
     /// Current presentation state for the annotated property.
     /// </param>
-    void DrawAfter(InspectorAttributeDrawContext context)
-    {
-    }
+    void DrawAfter(InspectorAttributeDrawContext context) {}
 }

@@ -2,9 +2,11 @@ using System;
 using System.Numerics;
 using Inno.Core.Logging;
 using Inno.Editor.ImGui;
+
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Logging;
+
 internal sealed class ConsolePanelContent
 {
     private const string C_ICON_BUG = ImGuiIcon.Bug;
@@ -13,6 +15,7 @@ internal sealed class ConsolePanelContent
     private const string C_ICON_ERROR = ImGuiIcon.CircleXmark;
     private const string C_ICON_FATAL = ImGuiIcon.SkullCrossbones;
     private const string C_ICON_DEFAULT = ImGuiIcon.FileLines;
+
     internal void DrawDisabledHint(string text)
     {
         Ui.BeginDisabled(true);
@@ -29,20 +32,28 @@ internal sealed class ConsolePanelContent
             LogLevel.Warn => (ConsoleStyle.warning, C_ICON_WARN),
             LogLevel.Error => (ConsoleStyle.error, C_ICON_ERROR),
             LogLevel.Fatal => (ConsoleStyle.fatal, C_ICON_FATAL),
-            _ => (EditorPalette.text, C_ICON_DEFAULT)};
+            _ => (EditorPalette.text, C_ICON_DEFAULT)
+        };
     }
 
     internal Vector4 GetCollapsedBgColor() => ConsoleStyle.collapsedCard;
+
     internal Vector4 GetCollapsedBorderColor() => ConsoleStyle.collapsedBorder;
+
     internal Vector4 GetExpandedBgColor(Vector4 levelColor) => ConsoleStyle.GetExpandedCard(levelColor);
+
     internal string GetFirstLine(string text)
     {
         if (string.IsNullOrEmpty(text))
+        {
             return string.Empty;
+        }
         for (int i = 0; i < text.Length; i++)
         {
             if (text[i] is '\n' or '\r')
+            {
                 return text[..i];
+            }
         }
 
         return text;
@@ -54,14 +65,22 @@ internal sealed class ConsolePanelContent
     ) {
         const string c_ellipsis = "...";
         if (string.IsNullOrEmpty(text))
+        {
             return string.Empty;
+        }
         if (maxWidth <= 1f)
+        {
             return c_ellipsis;
+        }
         if (Ui.MeasureText(text).X <= maxWidth)
+        {
             return text;
+        }
         float ellipsisWidth = Ui.MeasureText(c_ellipsis).X;
         if (ellipsisWidth >= maxWidth)
+        {
             return c_ellipsis;
+        }
         float maxTextWidth = maxWidth - ellipsisWidth;
         int low = 0;
         int high = text.Length;
@@ -69,9 +88,13 @@ internal sealed class ConsolePanelContent
         {
             int middle = (low + high + 1) / 2;
             if (Ui.MeasureText(text[..middle]).X <= maxTextWidth)
+            {
                 low = middle;
+            }
             else
+            {
                 high = middle - 1;
+            }
         }
 
         return low <= 0 ? c_ellipsis : text[..low] + c_ellipsis;

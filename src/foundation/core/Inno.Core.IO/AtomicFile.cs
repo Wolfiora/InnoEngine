@@ -31,7 +31,7 @@ public static class AtomicFile
         ReadOnlySpan<char> name = Path.GetFileName(path.AsSpan());
         int marker = name.Length - C_CANDIDATE_MARKER.Length - 32;
         return marker > 0 && name.Slice(marker, C_CANDIDATE_MARKER.Length).SequenceEqual(C_CANDIDATE_MARKER)
-            && Guid.TryParseExact(name[(marker + C_CANDIDATE_MARKER.Length)..], "N", out _);
+               && Guid.TryParseExact(name[(marker + C_CANDIDATE_MARKER.Length)..], "N", out _);
     }
 
     /// <summary>
@@ -63,13 +63,13 @@ public static class AtomicFile
         try
         {
             using (var stream = new FileStream(
-                       candidate,
-                       FileMode.CreateNew,
-                       FileAccess.Write,
-                       FileShare.None,
-                       32 * 1024,
-                       FileOptions.WriteThrough))
-            {
+                candidate,
+                FileMode.CreateNew,
+                FileAccess.Write,
+                FileShare.None,
+                32 * 1024,
+                FileOptions.WriteThrough
+            )) {
                 stream.Write(data);
                 stream.Flush(flushToDisk: true);
             }
@@ -78,7 +78,9 @@ public static class AtomicFile
         finally
         {
             if (File.Exists(candidate))
+            {
                 File.Delete(candidate);
+            }
         }
     }
 
@@ -116,16 +118,23 @@ public static class AtomicFile
         string candidate = Path.GetFullPath(source);
         string target = NormalizeDestination(destination);
         if (!File.Exists(candidate))
+        {
             throw new FileNotFoundException("The atomic file candidate does not exist.", candidate);
+        }
         if (string.Equals(candidate, target, StringComparison.OrdinalIgnoreCase))
+        {
             throw new ArgumentException("The atomic file candidate and destination must be different paths.", nameof(source));
+        }
 
         string candidateDirectory = Path.GetDirectoryName(candidate)!;
         string targetDirectory = Path.GetDirectoryName(target)!;
         if (!string.Equals(candidateDirectory, targetDirectory, StringComparison.Ordinal))
+        {
             throw new ArgumentException(
                 "Atomic file installation requires the candidate and destination to share a directory.",
-                nameof(source));
+                nameof(source)
+            );
+        }
 
         FileSystemRename.MoveFile(candidate, target, overwrite);
     }
@@ -136,9 +145,10 @@ public static class AtomicFile
         string destination = Path.GetFullPath(path);
         string? directory = Path.GetDirectoryName(destination);
         if (string.IsNullOrEmpty(directory))
+        {
             throw new IOException($"File path '{destination}' has no owning directory.");
+        }
         Directory.CreateDirectory(directory);
         return destination;
     }
-
 }

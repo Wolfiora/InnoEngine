@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 
 namespace Inno.Assets.Pipeline;
@@ -41,9 +40,11 @@ public abstract class AssetBuildProcessor
     /// <summary>
     /// Gets the stable processor identifier used by build cache keys.
     /// </summary>
-    public string processorId => m_processorId
-        ?? throw new InvalidOperationException(
-            $"Asset build processor '{GetType().FullName}' has not been bound to discovery metadata.");
+    public string processorId
+        => m_processorId
+           ?? throw new InvalidOperationException(
+               $"Asset build processor '{GetType().FullName}' has not been bound to discovery metadata."
+           );
 
     /// <summary>
     /// Gets the definition type accepted by this processor.
@@ -63,7 +64,8 @@ public abstract class AssetBuildProcessor
         if (m_processorId is not null && !string.Equals(m_processorId, id, StringComparison.Ordinal))
         {
             throw new InvalidOperationException(
-                $"Asset build processor '{GetType().FullName}' cannot be bound to more than one protocol ID.");
+                $"Asset build processor '{GetType().FullName}' cannot be bound to more than one protocol ID."
+            );
         }
         m_processorId = id;
     }
@@ -114,7 +116,8 @@ public abstract class AssetBuildProcessor<TDefinition> : AssetBuildProcessor
         {
             throw new ArgumentException(
                 $"Build definition must be assignable to '{typeof(TDefinition).FullName}'.",
-                nameof(definition));
+                nameof(definition)
+            );
         }
         return BuildAsync(new AssetBuildContext<TDefinition>(typed, inputs), output, cancellationToken);
     }

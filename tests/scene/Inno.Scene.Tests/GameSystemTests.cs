@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Inno.Extensibility.Types;
-using Inno.Core.Serialization;
-using Inno.Scene;
-
 using Xunit;
+using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
+using Inno.Scene;
 
 namespace Inno.Scene.Tests;
 
@@ -148,12 +146,19 @@ public sealed class GameSystemTests : IDisposable
         internal int lateCount;
 
         protected override void Awake() => awakeCount++;
+
         protected override void Start() => startCount++;
+
         protected override void OnEnable() => enableCount++;
+
         protected override void OnDisable() => disableCount++;
+
         protected override void OnDestroy() => destroyCount++;
+
         protected override void OnFixedUpdate() => fixedCount++;
+
         protected override void OnUpdate() => updateCount++;
+
         protected override void OnLateUpdate() => lateCount++;
     }
 
@@ -161,7 +166,8 @@ public sealed class GameSystemTests : IDisposable
     private sealed class OrderedSystem(
         string label,
         int executionOrder,
-        ICollection<string> execution) : GameSystem
+        ICollection<string> execution
+    ) : GameSystem
     {
         public override int order => executionOrder;
 

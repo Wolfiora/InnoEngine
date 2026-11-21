@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-
 using Inno.Core.Execution;
 
 namespace Inno.Extensibility.Types;
@@ -53,7 +52,9 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
         ArgumentNullException.ThrowIfNull(types);
         m_retirementTimeout = retirementTimeout ?? TimeSpan.FromSeconds(30);
         if (m_retirementTimeout <= TimeSpan.Zero)
+        {
             throw new ArgumentOutOfRangeException(nameof(retirementTimeout));
+        }
         m_types = types;
         m_registryAdapter = new RegistryAdapter(this);
         m_registration = types.Register(m_registryAdapter);
@@ -67,7 +68,9 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
         get
         {
             lock (m_sync)
+            {
                 return m_current is not null;
+            }
         }
     }
 
@@ -84,9 +87,7 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
         ObjectDisposedException.ThrowIf(m_disposed, this);
         while (true)
         {
-            ITypeRegistryTransaction transaction = Prepare(
-                m_types.current,
-                allowDisposed: false);
+            ITypeRegistryTransaction transaction = Prepare(m_types.current, allowDisposed: false);
             try
             {
                 transaction.Activate();
@@ -112,9 +113,9 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
             TypeCacheSnapshot latest = m_types.current;
             lock (m_sync)
             {
-                if (m_activationInProgress ||
-                    m_current is not null && m_typeCacheVersion == latest.version)
-                {
+                if (m_activationInProgress
+                    || m_current is not null && m_typeCacheVersion == latest.version
+                ) {
                     return;
                 }
             }
@@ -137,7 +138,8 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
             if (m_activationInProgress)
             {
                 throw new InvalidOperationException(
-                    "A registry snapshot cannot be cleared while a refresh transaction is active.");
+                    "A registry snapshot cannot be cleared while a refresh transaction is active."
+                );
             }
             snapshot = m_current;
         }
@@ -145,7 +147,9 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
         try
         {
             if (snapshot is not null)
+            {
                 ReleaseSnapshot(snapshot);
+            }
         }
         finally
         {
@@ -173,7 +177,9 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
         lock (m_sync)
         {
             if (m_disposed)
+            {
                 return;
+            }
             m_disposed = true;
             snapshot = m_activationInProgress ? null : m_current;
         }
@@ -181,7 +187,9 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
         try
         {
             if (snapshot is not null)
+            {
                 ReleaseSnapshot(snapshot);
+            }
         }
         finally
         {
@@ -210,12 +218,16 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
             lock (m_sync)
             {
                 if (m_current is not null && m_typeCacheVersion == types.version)
+                {
                     return m_current;
+                }
             }
 
             Refresh();
             lock (m_sync)
+            {
                 return m_current ?? throw new InvalidOperationException("Registry refresh produced no snapshot.");
+            }
         }
     }
 
@@ -246,8 +258,7 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
     protected virtual void OnActivating(
         TSnapshot? previous,
         TSnapshot candidate
-    ) {
-    }
+    ) {}
 
     /// <summary>
     /// Reverses lifecycle work performed while activating a candidate snapshot.
@@ -265,8 +276,7 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
     protected virtual void OnActivationRolledBack(
         TSnapshot? previous,
         TSnapshot candidate
-    ) {
-    }
+    ) {}
 
     /// <summary>
     /// Finalizes a successfully activated candidate after every coordinated registry has activated.
@@ -284,8 +294,7 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
     protected virtual void OnActivationCompleted(
         TSnapshot? previous,
         TSnapshot currentSnapshot
-    ) {
-    }
+    ) {}
 
     /// <summary>
     /// Releases resources owned by a registry snapshot.
@@ -296,7 +305,9 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
     protected virtual void DisposeSnapshot(TSnapshot snapshot)
     {
         if (snapshot is IDisposable disposable)
+        {
             disposable.Dispose();
+        }
     }
 
     /// <summary>
@@ -315,12 +326,7 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
     protected virtual void OnCleanupFailed(
         string phase,
         Exception exception
-    )
-        => Trace.TraceError(
-            "Type registry '{0}' failed during {1}: {2}",
-            GetType().FullName,
-            phase,
-            exception);
+    ) => Trace.TraceError("Type registry '{0}' failed during {1}: {2}", GetType().FullName, phase, exception);
 
     /// <summary>
     /// Faults the shared generation gate when a resource composed from this registry cannot retire safely.
@@ -352,7 +358,8 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
         if (type.IsAbstract || !typeof(TExtension).IsAssignableFrom(type))
         {
             throw new InvalidOperationException(
-                $"Extension '{type.FullName}' must be a non-abstract {typeof(TExtension).FullName}.");
+                $"Extension '{type.FullName}' must be a non-abstract {typeof(TExtension).FullName}."
+            );
         }
 
         try
@@ -364,7 +371,8 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
         {
             throw new InvalidOperationException(
                 $"Extension '{type.FullName}' requires a parameterless constructor.",
-                exception);
+                exception
+            );
         }
     }
 
@@ -387,9 +395,13 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
     {
         ArgumentNullException.ThrowIfNull(extension);
         if (m_candidateResources is null)
+        {
             throw new InvalidOperationException("Candidate resources may only be owned while building a registry snapshot.");
+        }
         if (extension is IDisposable)
+        {
             m_candidateResources.Add(extension);
+        }
         return extension;
     }
 
@@ -410,7 +422,9 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
         ArgumentNullException.ThrowIfNull(extensions);
         var resources = new LifetimeScope();
         foreach (IDisposable resource in extensions.Distinct(ReferenceEqualityComparer.Instance).OfType<IDisposable>())
+        {
             resources.Own(resource);
+        }
         RetireResource("extension batch", resources.Dispose);
     }
 
@@ -454,13 +468,19 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
             if (m_disposed)
             {
                 if (allowDisposed)
+                {
                     return TypeRegistryNoopTransaction.instance;
+                }
                 throw new ObjectDisposedException(GetType().FullName);
             }
             if (m_activationInProgress)
+            {
                 return TypeRegistryNoopTransaction.instance;
+            }
             if (m_current is not null && m_typeCacheVersion == types.version)
+            {
                 return TypeRegistryNoopTransaction.instance;
+            }
 
             m_activationInProgress = true;
             m_candidateResources = [];
@@ -468,12 +488,7 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
             try
             {
                 TSnapshot candidate = Build(types);
-                return new RegistryTransaction(
-                    this,
-                    candidate,
-                    types.version,
-                    m_current,
-                    m_typeCacheVersion);
+                return new RegistryTransaction(this, candidate, types.version, m_current, m_typeCacheVersion);
             }
             catch (Exception failure)
             {
@@ -577,7 +592,9 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
             throw m_retirementFailure;
         }
         if (!m_disposed)
+        {
             m_types.EnsureRetirementSafe();
+        }
     }
 
     private void RetainFailedRetirement(
@@ -645,7 +662,9 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
             {
                 owner.OnActivating(previous, candidate);
                 lock (owner.m_sync)
+                {
                     ObjectDisposedException.ThrowIf(owner.m_disposed, owner);
+                }
             }
             catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
             {
@@ -662,7 +681,9 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
                 {
                     var combined = new AggregateException("Registry activation and rollback failed.", activationFailure, rollbackFailure);
                     if (RetirementPendingException.Find(combined) is not null)
+                    {
                         owner.RetainFailedRetirement(combined, this, "activation rollback");
+                    }
                     throw combined;
                 }
                 throw;
@@ -679,9 +700,13 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
             lock (owner.m_sync)
             {
                 if (m_finished)
+                {
                     return;
+                }
                 if (!m_activated)
+                {
                     throw new InvalidOperationException("Registry transaction has not been activated.");
+                }
                 m_finished = true;
                 snapshotToRelease = previous;
             }
@@ -689,7 +714,9 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
             List<Exception> failures = [];
             Attempt(() => owner.CompleteActivation(previous, candidate), failures);
             if (snapshotToRelease is not null)
+            {
                 Attempt(() => owner.ReleaseSnapshot(snapshotToRelease), failures);
+            }
             bool releaseCandidate;
             lock (owner.m_sync)
             {
@@ -697,7 +724,9 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
                 owner.m_activationInProgress = false;
             }
             if (releaseCandidate)
+            {
                 Attempt(() => owner.ReleaseSnapshot(candidate), failures);
+            }
             previous = null;
             candidate = null!;
             ThrowCleanupFailures(failures);
@@ -713,7 +742,9 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
             lock (owner.m_sync)
             {
                 if (m_finished)
+                {
                     return;
+                }
                 ownerWasDisposed = owner.m_disposed;
                 if (m_activated && !ownerWasDisposed)
                 {
@@ -731,10 +762,14 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
 
             List<Exception> failures = [];
             if (m_activationStarted)
+            {
                 Attempt(() => owner.RollbackActivation(previous, candidate), failures);
+            }
             Attempt(() => owner.ReleaseSnapshot(candidate), failures);
             if (ownerWasDisposed && previous is not null)
+            {
                 Attempt(() => owner.ReleaseSnapshot(previous), failures);
+            }
             previous = null;
             candidate = null!;
             ThrowCleanupFailures(failures);
@@ -751,7 +786,12 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
             catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
             {
                 if (failures.Count > 0)
-                    throw new AggregateException("Registry retirement remains pending after earlier cleanup failures.", [.. failures, pendingRetirement]);
+                {
+                    throw new AggregateException(
+                        "Registry retirement remains pending after earlier cleanup failures.",
+                        [.. failures, pendingRetirement]
+                    );
+                }
                 throw;
             }
             catch (Exception exception)
@@ -763,13 +803,17 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
         private static void ThrowCleanupFailures(List<Exception> failures)
         {
             if (failures.Count > 0)
+            {
                 throw new AggregateException("Registry retirement or rollback failed after every resource was attempted.", failures);
+            }
         }
 
         private void EnsureNotFinished()
         {
             if (m_finished)
+            {
                 throw new InvalidOperationException("Registry transaction is already finished.");
+            }
         }
     }
 }

@@ -28,7 +28,9 @@ public readonly record struct ProcessOwnerStamp
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(startedUtcTicks);
         if (startedUtcTicks > DateTime.MaxValue.Ticks)
+        {
             throw new ArgumentOutOfRangeException(nameof(startedUtcTicks));
+        }
         this.processId = processId;
         this.startedUtcTicks = startedUtcTicks;
     }
@@ -71,17 +73,33 @@ public readonly record struct ProcessOwnerStamp
     public ProcessOwnerState Query()
     {
         if (processId <= 0 || startedUtcTicks <= 0)
+        {
             return ProcessOwnerState.Unknown;
+        }
         try
         {
             using Process process = Process.GetProcessById(processId);
             if (process.HasExited || process.StartTime.ToUniversalTime().Ticks != startedUtcTicks)
+            {
                 return ProcessOwnerState.Exited;
+            }
             return ProcessOwnerState.Active;
         }
-        catch (ArgumentException) { return ProcessOwnerState.Exited; }
-        catch (InvalidOperationException) { return ProcessOwnerState.Unknown; }
-        catch (Win32Exception) { return ProcessOwnerState.Unknown; }
-        catch (NotSupportedException) { return ProcessOwnerState.Unknown; }
+        catch (ArgumentException)
+        {
+            return ProcessOwnerState.Exited;
+        }
+        catch (InvalidOperationException)
+        {
+            return ProcessOwnerState.Unknown;
+        }
+        catch (Win32Exception)
+        {
+            return ProcessOwnerState.Unknown;
+        }
+        catch (NotSupportedException)
+        {
+            return ProcessOwnerState.Unknown;
+        }
     }
 }

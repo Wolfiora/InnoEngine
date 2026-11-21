@@ -40,7 +40,9 @@ public sealed class TypeCacheReloadContext
     public bool IsRetired(TypeRef typeRef)
     {
         if (!previous.TryResolve(typeRef, out Type? previousType))
+        {
             return false;
+        }
         return !candidate.TryResolve(typeRef, out Type? replacement) || replacement != previousType;
     }
 
@@ -60,10 +62,10 @@ public sealed class TypeCacheReloadContext
         TypeRef previousType,
         out TypeRef replacement
     ) {
-        if (!previous.TryResolve(previousType, out Type? previousRuntimeType) ||
-            !candidate.TryResolve(previousType, out Type? replacementType) ||
-            replacementType == previousRuntimeType)
-        {
+        if (!previous.TryResolve(previousType, out Type? previousRuntimeType)
+            || !candidate.TryResolve(previousType, out Type? replacementType)
+            || replacementType == previousRuntimeType
+        ) {
             replacement = default;
             return false;
         }

@@ -1,12 +1,10 @@
 using System;
 using System.Linq;
-
-using Inno.Extensibility.Modules;
+using Xunit;
 using Inno.Core.Diagnostics;
 using Inno.Core.Logging;
 using Inno.Editor.Diagnostics;
-
-using Xunit;
+using Inno.Extensibility.Modules;
 
 namespace Inno.Editor.PlayMode.Tests;
 
@@ -43,7 +41,8 @@ public sealed class PlayModeLogRetentionTests : IDisposable
         Dispatch(LogLevel.Info, LogSessionId.none, "before-play");
         m_diagnosticHub.Set(
             new DiagnosticSource("test.compiler", "Test Compiler"),
-            [Diagnostic.Error("TEST001", "compiler-diagnostic")]);
+            [Diagnostic.Error("TEST001", "compiler-diagnostic")]
+        );
         m_logRouter.Flush();
 
         _ = m_playMode.Begin();
@@ -59,7 +58,8 @@ public sealed class PlayModeLogRetentionTests : IDisposable
     {
         Dispatch(LogLevel.Error, LogSessionId.none, "old failure");
         using DiagnosticReporter reporter = m_diagnosticHub.CreateReporter(
-            new DiagnosticSource("tests.current", "Current issue"));
+            new DiagnosticSource("tests.current", "Current issue")
+        );
         reporter.Publish(Diagnostic.Error("CURRENT", "still failing"));
         m_logRouter.Flush();
 
@@ -101,9 +101,7 @@ public sealed class PlayModeLogRetentionTests : IDisposable
         m_playMode.SetState(EditorPlayModeState.Failed);
         m_logRouter.Flush();
 
-        Assert.Contains(
-            m_console.Capture().occurrences,
-            static entry => entry.message == "entry-diagnostic");
+        Assert.Contains(m_console.Capture().occurrences, static entry => entry.message == "entry-diagnostic");
     }
 
     [Fact]
@@ -115,9 +113,7 @@ public sealed class PlayModeLogRetentionTests : IDisposable
 
         _ = m_playMode.Begin();
 
-        Assert.Contains(
-            m_console.Capture().occurrences,
-            static entry => entry.message == "before-play");
+        Assert.Contains(m_console.Capture().occurrences, static entry => entry.message == "before-play");
     }
 
     [Fact]
@@ -130,8 +126,9 @@ public sealed class PlayModeLogRetentionTests : IDisposable
         m_logRouter.Flush();
 
         EditorConsoleSnapshot snapshot = m_console.Capture();
-        EditorConsoleGroup repeated = Assert.Single(snapshot.groups.Where(
-            static group => group.latest.message == "repeated" && group.latest.file == "A.cs"));
+        EditorConsoleGroup repeated = Assert.Single(
+            snapshot.groups.Where(static group => group.latest.message == "repeated" && group.latest.file == "A.cs")
+        );
 
         Assert.Equal(2, repeated.count);
         Assert.Equal(3, snapshot.groups.Count);
@@ -149,9 +146,7 @@ public sealed class PlayModeLogRetentionTests : IDisposable
 
         EditorConsoleSnapshot snapshot = m_console.Capture();
 
-        Assert.Equal(
-            2,
-            snapshot.groups.Count(static group => group.latest.message == "session-entry"));
+        Assert.Equal(2, snapshot.groups.Count(static group => group.latest.message == "session-entry"));
     }
 
     [Fact]
@@ -174,8 +169,9 @@ public sealed class PlayModeLogRetentionTests : IDisposable
         LogSessionId sessionId,
         string message,
         string file = nameof(PlayModeLogRetentionTests),
-        int line = 0)
-        => m_logRouter.Dispatch(new LogEntry(
+        int line = 0
+    ) => m_logRouter.Dispatch(
+        new LogEntry(
             level,
             AssemblyDomain.InnoScripting,
             AssemblyScope.Runtime,
@@ -184,7 +180,9 @@ public sealed class PlayModeLogRetentionTests : IDisposable
             file,
             line,
             $"at {file}:{line}",
-            sessionId));
+            sessionId
+        )
+    );
 
     private sealed class FakePlayMode : IEditorPlayMode
     {
@@ -200,8 +198,10 @@ public sealed class PlayModeLogRetentionTests : IDisposable
         private readonly Inno.Core.Events.EventHub m_stateEvents;
 
         internal FakePlayMode() => m_stateEvents = m_stateDispatcher.CreateHub();
+
         public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener)
             => m_stateEvents.Listen<StateNotification>(notification => listener(notification.state));
+
         private sealed class StateNotification(EditorPlayModeState state) : Inno.Core.Events.Event
         {
             internal EditorPlayModeState state { get; } = state;

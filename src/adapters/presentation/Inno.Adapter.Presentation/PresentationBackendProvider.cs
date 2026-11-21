@@ -19,7 +19,9 @@ public abstract class PresentationBackendProvider
     protected PresentationBackendProvider(PresentationBackendId id)
     {
         if (!id.isValid)
+        {
             throw new ArgumentException("A provider requires an assigned backend ID.", nameof(id));
+        }
         this.id = id;
     }
 

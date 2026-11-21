@@ -16,14 +16,17 @@ public struct Color : IEquatable<Color>
     /// The red color component.
     /// </summary>
     public float r;
+
     /// <summary>
     /// The green color component.
     /// </summary>
     public float g;
+
     /// <summary>
     /// The blue color component.
     /// </summary>
     public float b;
+
     /// <summary>
     /// The alpha color component.
     /// </summary>
@@ -82,7 +85,7 @@ public struct Color : IEquatable<Color>
     ) {
         return new Color(r / 255f, g / 255f, b / 255f, a / 255f);
     }
-    
+
     /// <summary>
     /// Converts normalized color channels to bytes by multiplying by 255 and truncating.
     /// </summary>
@@ -98,7 +101,7 @@ public struct Color : IEquatable<Color>
             (byte)(a * 255)
         );
     }
-    
+
     /// <summary>
     /// Packs normalized channels into the existing unsigned 0xAABBGGRR representation.
     /// </summary>
@@ -118,6 +121,7 @@ public struct Color : IEquatable<Color>
 
         return (uint)((alpha << 24) | (blue << 16) | (green << 8) | red);
     }
+
     /// <summary>
     /// Formats this value as a human-readable component list.
     /// </summary>
@@ -125,78 +129,93 @@ public struct Color : IEquatable<Color>
     /// The validated text representation owned by the caller.
     /// </returns>
 
-    
     public override string ToString() => $"Color({r:F2}, {g:F2}, {b:F2}, {a:F2})";
-    
+
     /// <summary>
     /// The transparent value used as part of this type's public representation.
     /// </summary>
     public static readonly Color TRANSPARENT = new(0, 0, 0, 0);
+
     /// <summary>
     /// The white value used as part of this type's public representation.
     /// </summary>
     public static readonly Color WHITE = new(1, 1, 1, 1);
+
     /// <summary>
     /// The black value used as part of this type's public representation.
     /// </summary>
     public static readonly Color BLACK = new(0, 0, 0, 1);
+
     /// <summary>
     /// The red value used as part of this type's public representation.
     /// </summary>
     public static readonly Color RED = FromBytes(255, 0, 0);
+
     /// <summary>
     /// The green value used as part of this type's public representation.
     /// </summary>
     public static readonly Color GREEN = FromBytes(0, 255, 0);
+
     /// <summary>
     /// The blue value used as part of this type's public representation.
     /// </summary>
     public static readonly Color BLUE = FromBytes(0, 0, 255);
+
     /// <summary>
     /// The yellow value used as part of this type's public representation.
     /// </summary>
     public static readonly Color YELLOW = FromBytes(255, 255, 0);
+
     /// <summary>
     /// The magenta value used as part of this type's public representation.
     /// </summary>
     public static readonly Color MAGENTA = FromBytes(255, 0, 255);
+
     /// <summary>
     /// The cyan value used as part of this type's public representation.
     /// </summary>
     public static readonly Color CYAN = FromBytes(0, 255, 255);
+
     /// <summary>
     /// The gray value used as part of this type's public representation.
     /// </summary>
     public static readonly Color GRAY = FromBytes(128, 128, 128);
+
     /// <summary>
     /// The lightgray value used as part of this type's public representation.
     /// </summary>
     public static readonly Color LIGHTGRAY = FromBytes(211, 211, 211);
+
     /// <summary>
     /// The darkgray value used as part of this type's public representation.
     /// </summary>
     public static readonly Color DARKGRAY = FromBytes(64, 64, 64);
+
     /// <summary>
     /// The orange value used as part of this type's public representation.
     /// </summary>
     public static readonly Color ORANGE = FromBytes(255, 165, 0);
+
     /// <summary>
     /// The pink value used as part of this type's public representation.
     /// </summary>
     public static readonly Color PINK = FromBytes(255, 192, 203);
+
     /// <summary>
     /// The purple value used as part of this type's public representation.
     /// </summary>
     public static readonly Color PURPLE = FromBytes(128, 0, 128);
+
     /// <summary>
     /// The brown value used as part of this type's public representation.
     /// </summary>
     public static readonly Color BROWN = FromBytes(139, 69, 19);
+
     /// <summary>
     /// The cornflowerblue value used as part of this type's public representation.
     /// </summary>
     public static readonly Color CORNFLOWERBLUE = FromBytes(100, 149, 237);
-    
+
     /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
     /// </summary>
@@ -213,12 +232,7 @@ public struct Color : IEquatable<Color>
         Color c,
         float factor
     ) {
-        return new Color(
-            c.r * factor,
-            c.g * factor,
-            c.b * factor,
-            c.a * factor
-        );
+        return new Color(c.r * factor, c.g * factor, c.b * factor, c.a * factor);
     }
 
     /// <summary>
@@ -238,10 +252,10 @@ public struct Color : IEquatable<Color>
         Color a,
         Color b
     ) {
-        return MathHelper.AlmostEquals(a.r, b.r) &&
-               MathHelper.AlmostEquals(a.g, b.g) &&
-               MathHelper.AlmostEquals(a.b, b.b) &&
-               MathHelper.AlmostEquals(a.a, b.a);
+        return MathHelper.AlmostEquals(a.r, b.r)
+               && MathHelper.AlmostEquals(a.g, b.g)
+               && MathHelper.AlmostEquals(a.b, b.b)
+               && MathHelper.AlmostEquals(a.a, b.a);
     }
 
     /// <summary>

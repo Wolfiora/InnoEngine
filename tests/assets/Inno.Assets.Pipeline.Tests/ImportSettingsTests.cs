@@ -1,12 +1,12 @@
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using Inno.Assets;
 using Inno.Core.Diagnostics;
 using Inno.Core.Identity;
@@ -14,8 +14,6 @@ using Inno.Core.Logging;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
-
-using Xunit;
 
 namespace Inno.Assets.Pipeline.Tests;
 
@@ -70,8 +68,11 @@ public sealed class ImportSettingsTests
         AssetImportSettingsSnapshot original = loader.GetImportSettings(Fixture.path);
         Assert.True(loader.SaveImportSettings(Fixture.path, new ConfiguredSettings { multiplier = 2 }, original.fingerprint));
         byte[] current = File.ReadAllBytes(fixture.sourcePath + ".imeta");
-        Assert.Throws<IOException>(() => loader.SaveImportSettings(Fixture.path,
-            new ConfiguredSettings { multiplier = 3 }, original.fingerprint));
+        Assert.Throws<IOException>(() => loader.SaveImportSettings(
+            Fixture.path,
+            new ConfiguredSettings { multiplier = 3 },
+            original.fingerprint
+        ));
         Assert.Equal(current, File.ReadAllBytes(fixture.sourcePath + ".imeta"));
     }
 
@@ -133,7 +134,10 @@ public sealed class ImportSettingsTests
     public void ReadOnlySourcesAllowViewingButRejectSettingsWrites()
     {
         using var fixture = new Fixture();
-        using (AssetLoader writer = fixture.CreateLoader()) Assert.True(writer.Import(Fixture.path));
+        using (AssetLoader writer = fixture.CreateLoader())
+        {
+            Assert.True(writer.Import(Fixture.path));
+        }
         byte[] metadata = File.ReadAllBytes(fixture.sourcePath + ".imeta");
         var source = new AssetSourceId("tests.readonly.settings");
         using AssetLoader reader = fixture.CreateReadOnlyLoader(source);
@@ -174,18 +178,33 @@ public sealed class ImportSettingsTests
             Directory.CreateDirectory(Path.Combine(m_root, "EmptyProject"));
             File.WriteAllText(sourcePath, "source");
             m_scope = m_identities.EnterScope();
-            m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ImportSettingsTests).Assembly)});
+            m_modules = new ModuleHost(
+                new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ImportSettingsTests).Assembly)}
+            );
             m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
             m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         }
+
         internal string assetRoot => Path.Combine(m_root, "Assets");
         internal string sourcePath => Path.Combine(assetRoot, "value.configured");
+
         internal AssetLoader CreateLoader(string library = "Library")
             => new(m_types, m_serialization, m_identities, m_diagnostics, m_logs, assetRoot, Path.Combine(m_root, library));
+
         internal AssetLoader CreateReadOnlyLoader(AssetSourceId id)
-            => new(m_types, m_serialization, m_identities, m_diagnostics, m_logs,
-                [new AssetSourceMount(AssetSourceId.project, Path.Combine(m_root, "EmptyProject"), false),
-                 new AssetSourceMount(id, assetRoot, true)], Path.Combine(m_root, "ReadOnlyLibrary"));
+            => new(
+                m_types,
+                m_serialization,
+                m_identities,
+                m_diagnostics,
+                m_logs,
+                [
+                    new AssetSourceMount(AssetSourceId.project, Path.Combine(m_root, "EmptyProject"), false),
+                    new AssetSourceMount(id, assetRoot, true)
+                ],
+                Path.Combine(m_root, "ReadOnlyLibrary")
+            );
+
         public void Dispose()
         {
             m_serialization.Dispose();
@@ -215,9 +234,14 @@ internal sealed class ConfiguredAsset : AssetObject
 internal sealed class ConfiguredImporter : AssetImporter<ConfiguredAsset>
 {
     public override IReadOnlyList<string> supportedExtensions { get; } = [".configured"];
+
     public override ISerializable CreateImportSettings() => new ConfiguredSettings();
-    protected override ValueTask ImportAsync(AssetImportContext context, AssetImportWriter<ConfiguredAsset> output, CancellationToken cancellationToken)
-    {
+
+    protected override ValueTask ImportAsync(
+        AssetImportContext context,
+        AssetImportWriter<ConfiguredAsset> output,
+        CancellationToken cancellationToken
+    ) {
         var settings = (ConfiguredSettings)context.importSettings!;
         if (settings.multiplier < 0) throw new InvalidOperationException("A negative multiplier is invalid.");
         string value = $"{settings.multiplier}:{context.ReadUtf8Text()}";

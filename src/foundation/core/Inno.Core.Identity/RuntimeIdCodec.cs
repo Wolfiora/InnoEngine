@@ -11,6 +11,7 @@ internal static class RuntimeIdCodec
     /// The slot bits value used as part of this type's public representation.
     /// </summary>
     public const int SLOT_BITS = 20;
+
     /// <summary>
     /// The generation bits value used as part of this type's public representation.
     /// </summary>
@@ -20,6 +21,7 @@ internal static class RuntimeIdCodec
     /// The slot mask value used as part of this type's public representation.
     /// </summary>
     public const int SLOT_MASK = (1 << SLOT_BITS) - 1;
+
     /// <summary>
     /// The generation mask value used as part of this type's public representation.
     /// </summary>
@@ -42,9 +44,13 @@ internal static class RuntimeIdCodec
         int generation
     ) {
         if ((uint)slot > SLOT_MASK)
+        {
             throw new ArgumentOutOfRangeException(nameof(slot));
+        }
         if ((uint)generation > GENERATION_MASK)
+        {
             throw new ArgumentOutOfRangeException(nameof(generation));
+        }
 
         return (generation << SLOT_BITS) | (slot & SLOT_MASK);
     }

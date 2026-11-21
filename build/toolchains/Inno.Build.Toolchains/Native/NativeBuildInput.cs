@@ -27,12 +27,18 @@ public sealed record NativeBuildInput
         ArgumentException.ThrowIfNullOrWhiteSpace(logicalPath);
         ArgumentException.ThrowIfNullOrWhiteSpace(physicalPath);
         if (logicalPath.Contains('\\') || logicalPath.AsSpan().IndexOfAnyInRange('\0', '\x1f') >= 0)
+        {
             throw new ArgumentException("A native input identity must use portable, printable path segments.", nameof(logicalPath));
+        }
         if (!Path.IsPathFullyQualified(physicalPath))
+        {
             throw new ArgumentException("A native input reading location must be absolute.", nameof(physicalPath));
+        }
         this.logicalPath = logicalPath.TrimEnd('/');
         if (this.logicalPath.Length == 0)
+        {
             throw new ArgumentException("A native input identity requires a logical root.", nameof(logicalPath));
+        }
         this.physicalPath = Path.GetFullPath(physicalPath);
     }
 
@@ -67,9 +73,9 @@ public sealed record NativeBuildInput
         string physical = Path.GetFullPath(path, engineRoot);
         string relative = Path.GetRelativePath(engineRoot, physical).Replace('\\', '/');
         string logical = relative != ".." && !relative.StartsWith("../", StringComparison.Ordinal)
-            && !Path.IsPathRooted(relative)
-            ? "engine/" + relative
-            : "external/" + physical.Replace('\\', '/').TrimStart('/');
+                         && !Path.IsPathRooted(relative)
+                         ? "engine/" + relative
+                         : "external/" + physical.Replace('\\', '/').TrimStart('/');
         return new NativeBuildInput(logical, physical);
     }
 }

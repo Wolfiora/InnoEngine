@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Frozen;
+using System.Collections.Generic;
 using Inno.Core.Graphs;
 using Inno.Editor.Interactions;
 
@@ -60,7 +60,9 @@ public sealed class GraphCanvasState
         float zoom
     ) {
         if (!float.IsFinite(pan.x) || !float.IsFinite(pan.y))
+        {
             throw new ArgumentOutOfRangeException(nameof(pan));
+        }
         if (!float.IsFinite(zoom))
         {
             throw new ArgumentOutOfRangeException(nameof(zoom));

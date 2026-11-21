@@ -1,10 +1,10 @@
 using System;
+using Xunit;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
-using Xunit;
 
 namespace Inno.Rendering.Assets.Tests;
 
@@ -33,9 +33,16 @@ public sealed class RuntimeAssetSerializationTests
         });
         using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         using var serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
-        var definition = new ShaderDefinition("Fixture", [], [],
-            [new ShaderPassDefinition("color", ShaderProgramKind.Raster,
-                metadata: [new ShaderMetadataEntry("fixture", "value")])]);
+        var definition = new ShaderDefinition(
+            "Fixture",
+            [],
+            [],
+            [new ShaderPassDefinition(
+                "color",
+                ShaderProgramKind.Raster,
+                metadata: [new ShaderMetadataEntry("fixture", "value")]
+            )]
+        );
         byte[] bytes = serialization.Serialize(definition);
         ShaderDefinition decoded = serialization.Deserialize<ShaderDefinition>(bytes);
         Assert.Equal(definition.name, decoded.name);

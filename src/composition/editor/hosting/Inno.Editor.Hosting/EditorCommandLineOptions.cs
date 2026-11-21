@@ -51,8 +51,19 @@ public sealed class EditorCommandLineOptions
     /// </exception>
     public static EditorCommandLineOptions Parse(string[] arguments)
     {
-        if (!TryGetRunOptions(arguments, out string? project, out int? smoke, out GraphicsApi? graphics, out bool visible, out string? dependencies))
-            throw new ArgumentException("Usage: Editor <project-directory> [--graphics-api <renderer-id>] [--window-visible <true|false>] [--smoke-frames <positive-count>] [--native-dependencies <absolute-selection>].", nameof(arguments));
+        if (!TryGetRunOptions(
+            arguments,
+            out string? project,
+            out int? smoke,
+            out GraphicsApi? graphics,
+            out bool visible,
+            out string? dependencies
+        )) {
+            throw new ArgumentException(
+                "Usage: Editor <project-directory> [--graphics-api <renderer-id>] [--window-visible <true|false>] [--smoke-frames <positive-count>] [--native-dependencies <absolute-selection>].",
+                nameof(arguments)
+            );
+        }
         return new EditorCommandLineOptions(project)
         {
             smokeFrameLimit = smoke,
@@ -61,6 +72,7 @@ public sealed class EditorCommandLineOptions
             nativeDependencies = dependencies
         };
     }
+
     private static bool TryGetRunOptions(
         string[] args,
         [NotNullWhen(true)] out string? projectDirectory,
@@ -77,17 +89,21 @@ public sealed class EditorCommandLineOptions
         bool hasVisibility = false;
         projectDirectory = args.Length > 0 ? args[0] : null;
         if (projectDirectory is null)
+        {
             return false;
+        }
         for (int index = 1; index < args.Length; index += 2)
         {
             if (index + 1 >= args.Length)
+            {
                 return false;
+            }
             if (string.Equals(args[index], "--smoke-frames", StringComparison.Ordinal))
             {
                 if (smokeFrameLimit is not null
                     || !int.TryParse(args[index + 1], out int parsedFrameLimit)
-                    || parsedFrameLimit <= 0)
-                {
+                    || parsedFrameLimit <= 0
+                ) {
                     return false;
                 }
                 smokeFrameLimit = parsedFrameLimit;
@@ -96,21 +112,27 @@ public sealed class EditorCommandLineOptions
             if (string.Equals(args[index], "--graphics-api", StringComparison.Ordinal))
             {
                 if (graphicsApi is not null || !TryParseGraphicsApi(args[index + 1], out GraphicsApi parsedApi))
+                {
                     return false;
+                }
                 graphicsApi = parsedApi;
                 continue;
             }
             if (string.Equals(args[index], "--window-visible", StringComparison.Ordinal))
             {
                 if (hasVisibility || !bool.TryParse(args[index + 1], out windowVisible))
+                {
                     return false;
+                }
                 hasVisibility = true;
                 continue;
             }
             if (string.Equals(args[index], "--native-dependencies", StringComparison.Ordinal))
             {
                 if (nativeDependencies is not null || !Path.IsPathFullyQualified(args[index + 1]))
+                {
                     return false;
+                }
                 nativeDependencies = Path.GetFullPath(args[index + 1]);
                 continue;
             }

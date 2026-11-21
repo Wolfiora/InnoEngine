@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Xunit;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Editor.Assets.ImGui;
@@ -9,7 +10,6 @@ using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
 using Inno.Scene;
 using Inno.Testing.Editor.Native;
-using Xunit;
 
 namespace Inno.Editor.PlayMode.Tests;
 
@@ -138,7 +138,11 @@ public sealed class ListPanelKeyboardNativeTests
     public static IEnumerable<object[]> BrowserMetrics()
     {
         foreach (bool tree in new[] { false, true })
+        {
             foreach (object[] metric in VisualScaleMatrixTests.Metrics())
+            {
                 yield return [tree, .. metric];
+            }
+        }
     }
 }

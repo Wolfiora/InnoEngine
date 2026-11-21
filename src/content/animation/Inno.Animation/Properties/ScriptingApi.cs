@@ -1,10 +1,7 @@
 using Inno.Animation;
 using Inno.Scripting.Api;
 
-[assembly: ScriptingApiNamespace(
-    "InnoEngine.Animation",
-    "Inno.Animation",
-    ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiNamespace("InnoEngine.Animation", "Inno.Animation", ScriptingApiScope.Runtime)]
 
 [assembly: ScriptingApiExport(typeof(Animation), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AnimationBindingId), ScriptingApiScope.Runtime)]

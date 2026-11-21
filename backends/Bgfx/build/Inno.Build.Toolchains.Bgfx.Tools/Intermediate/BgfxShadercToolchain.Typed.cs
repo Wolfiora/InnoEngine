@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 using Inno.Core.Diagnostics;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
-using Inno.Rendering.Shaders;
 using Inno.Rendering.Assets.Authoring;
+using Inno.Rendering.Shaders;
 
 namespace Inno.Build.Toolchains.Bgfx.Tools;
 
@@ -66,14 +66,31 @@ public sealed partial class BgfxShadercToolchain
         {
             return new([], [], [new("BGFX_IR_GENERATION", DiagnosticSeverity.Error, failure.Message, failure.position)]);
         }
-        BgfxShadercResult native = await RunCompilerAsync(generated.source, generated.varying, request.stage.stage,
-            request.target, cancellationToken).ConfigureAwait(false);
+        BgfxShadercResult native = await RunCompilerAsync(
+            generated.source,
+            generated.varying,
+            request.stage.stage,
+            request.target,
+            cancellationToken
+        ).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
         List<ShaderSourceDiagnostic> diagnostics = ParseDiagnostics(native, generated.sourcePositions, new("inno-generated-stage", 0, 0));
-        if (native.exitCode != 0 || native.bytes is null || native.bytes.Length == 0 || diagnostics.Any(static value => value.severity == DiagnosticSeverity.Error))
-        {
+        if (native.exitCode != 0
+            || native.bytes is null
+            || native.bytes.Length == 0
+            || diagnostics.Any(static value => value.severity == DiagnosticSeverity.Error)
+        ) {
             if (!diagnostics.Any(static diagnostic => diagnostic.severity == DiagnosticSeverity.Error))
-                diagnostics.Add(new("BGFX_SHADER_COMPILE_FAILED", DiagnosticSeverity.Error, $"BGFX shaderc exited with code {native.exitCode} without a usable binary.", new("inno-generated-stage", 0, 0)));
+            {
+                diagnostics.Add(
+                    new(
+                        "BGFX_SHADER_COMPILE_FAILED",
+                        DiagnosticSeverity.Error,
+                        $"BGFX shaderc exited with code {native.exitCode} without a usable binary.",
+                        new("inno-generated-stage", 0, 0)
+                    )
+                );
+            }
             return new([], generated.bindings, diagnostics);
         }
         IReadOnlyList<ShaderStageBinding> reflectedBindings;
@@ -86,13 +103,21 @@ public sealed partial class BgfxShadercToolchain
                 return input.kind == ShaderIrInputKind.Storage || reflectedNames.Contains(binding.nativeName);
             }).ToArray();
             if (request.target.capabilities.backend == GraphicsApi.OpenGL
-                || request.target.capabilities.backend == GraphicsApi.OpenGLES)
+                || request.target.capabilities.backend == GraphicsApi.OpenGLES
+            ) {
                 native = native with { bytes = NormalizeGlslUniformTable(native.bytes, request.stage, reflectedBindings) };
+            }
         }
         catch (InvalidDataException failure)
         {
-            diagnostics.Add(new("BGFX_SHADER_REFLECTION", DiagnosticSeverity.Error, failure.Message,
-                new("inno-generated-stage", 0, 0)));
+            diagnostics.Add(
+                new(
+                    "BGFX_SHADER_REFLECTION",
+                    DiagnosticSeverity.Error,
+                    failure.Message,
+                    new("inno-generated-stage", 0, 0)
+                )
+            );
             return new([], [], diagnostics);
         }
         return new(native.bytes, reflectedBindings, diagnostics);
@@ -103,13 +128,20 @@ public sealed partial class BgfxShadercToolchain
         GraphicsApi backend
     ) {
         if (binary.Length < C_SHADER_BINARY_HEADER_SIZE + sizeof(ushort))
+        {
             throw new InvalidDataException("BGFX shaderc returned a truncated shader binary header.");
+        }
         if (binary[1] != (byte)'S' || binary[2] != (byte)'H'
-            || binary[0] is not ((byte)'V' or (byte)'F' or (byte)'C'))
+            || binary[0] is not ((byte)'V' or (byte)'F' or (byte)'C')
+        ) {
             throw new InvalidDataException("BGFX shaderc returned an unrecognized shader binary.");
+        }
         if (binary[3] != C_SHADER_BINARY_VERSION)
+        {
             throw new InvalidDataException(
-                $"BGFX shader binary version {binary[3]} does not match the bundled reader version {C_SHADER_BINARY_VERSION}.");
+                $"BGFX shader binary version {binary[3]} does not match the bundled reader version {C_SHADER_BINARY_VERSION}."
+            );
+        }
 
         int offset = C_SHADER_BINARY_HEADER_SIZE;
         ushort count = BinaryPrimitives.ReadUInt16LittleEndian(binary.Slice(offset, sizeof(ushort)));
@@ -122,7 +154,9 @@ public sealed partial class BgfxShadercToolchain
             RequireBinaryRange(binary, offset, nameLength + C_SHADER_UNIFORM_METADATA_SIZE);
             string name = Encoding.UTF8.GetString(binary.Slice(offset, nameLength));
             if (string.IsNullOrWhiteSpace(name) || !result.Add(name))
+            {
                 throw new InvalidDataException("BGFX shader binary contains an invalid reflected uniform table.");
+            }
             offset += nameLength + C_SHADER_UNIFORM_METADATA_SIZE;
         }
         if (backend == GraphicsApi.OpenGL || backend == GraphicsApi.OpenGLES)
@@ -140,17 +174,22 @@ public sealed partial class BgfxShadercToolchain
         RequireBinaryRange(payload, 0, sizeof(uint));
         uint length = BinaryPrimitives.ReadUInt32LittleEndian(payload);
         if (length > int.MaxValue - sizeof(uint) - 1)
+        {
             throw new InvalidDataException("BGFX shaderc returned an invalid GLSL payload length.");
+        }
         RequireBinaryRange(payload, sizeof(uint), (int)length + 1);
         if (payload[sizeof(uint) + (int)length] != 0)
+        {
             throw new InvalidDataException("BGFX shaderc returned an unterminated GLSL payload.");
+        }
 
         List<BgfxSourceToken> tokens;
         try
         {
             string source = S_GLSL_ENCODING.GetString(payload.Slice(sizeof(uint), (int)length));
             tokens = BgfxSourceLexer.Tokenize(new ShaderSourceFile("bgfx-compiled-stage", source))
-                .Where(static token => token.text != "\n").ToList();
+                .Where(static token => token.text != "\n")
+                .ToList();
         }
         catch (Exception failure) when (failure is DecoderFallbackException or BgfxSourceSyntaxException)
         {
@@ -161,7 +200,9 @@ public sealed partial class BgfxShadercToolchain
         foreach (BgfxSourceToken token in tokens)
         {
             if (token.isIdentifier)
+            {
                 identifierCounts[token.text] = identifierCounts.GetValueOrDefault(token.text) + 1;
+            }
         }
 
         // Desktop GLSL can retain layout qualifiers that shaderc's uniform table scanner does not recognize.
@@ -169,15 +210,19 @@ public sealed partial class BgfxShadercToolchain
         for (int index = 0; index < tokens.Count; index++)
         {
             if (tokens[index].text != "uniform")
+            {
                 continue;
+            }
             int typeIndex = index + 1;
             if (typeIndex < tokens.Count && tokens[typeIndex].text is "lowp" or "mediump" or "highp")
+            {
                 typeIndex++;
+            }
             int nameIndex = typeIndex + 1;
             if (nameIndex + 1 < tokens.Count && tokens[nameIndex].isIdentifier
                 && identifierCounts[tokens[nameIndex].text] > 1
-                && tokens[nameIndex + 1].text is ";" or "[")
-            {
+                && tokens[nameIndex + 1].text is ";" or "["
+            ) {
                 names.Add(tokens[nameIndex].text);
             }
         }
@@ -189,7 +234,9 @@ public sealed partial class BgfxShadercToolchain
         int length
     ) {
         if (length < 0 || offset < 0 || offset > binary.Length - length)
+        {
             throw new InvalidDataException("BGFX shaderc returned a truncated reflected uniform table.");
+        }
     }
 
     private static List<ShaderSourceDiagnostic> ParseDiagnostics(
@@ -198,32 +245,45 @@ public sealed partial class BgfxShadercToolchain
         ShaderSourcePosition fallback
     ) {
         var diagnostics = new List<ShaderSourceDiagnostic>();
-        string[] lines = (native.standardOutput + "\n" + native.standardError).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        string[] lines = (native.standardOutput + "\n" + native.standardError).Split(
+            '\n',
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
+        );
         var sourceMap = new Dictionary<int, ShaderSourcePosition>();
         foreach (string line in lines)
         {
             Match excerpt = SourceExcerptPattern().Match(line);
             if (!excerpt.Success || !int.TryParse(excerpt.Groups["line"].Value, out int physicalLine)
-                || !int.TryParse(excerpt.Groups["marker"].Value, out int marker))
+                || !int.TryParse(excerpt.Groups["marker"].Value, out int marker)
+            ) {
                     continue;
+            }
             if (marker >= 0 && marker < sourcePositions.Count)
+            {
                 sourceMap[physicalLine] = sourcePositions[marker];
+            }
         }
         foreach (string line in lines)
         {
             if (line == "Code:" || line == "---")
+            {
                 continue;
-            DiagnosticSeverity severity = ErrorSeverityPattern().IsMatch(line) ? DiagnosticSeverity.Error
-                : WarningSeverityPattern().IsMatch(line) ? DiagnosticSeverity.Warning : DiagnosticSeverity.Info;
+            }
+            DiagnosticSeverity severity = ErrorSeverityPattern().IsMatch(line)
+                                          ? DiagnosticSeverity.Error
+                                          : WarningSeverityPattern().IsMatch(line) ? DiagnosticSeverity.Warning : DiagnosticSeverity.Info;
             Match match = SourceDiagnosticPattern().Match(line);
             ShaderSourcePosition position = fallback;
             if (match.Success && int.TryParse(match.Groups["line"].Value, out int sourceLine))
             {
                 _ = int.TryParse(match.Groups["column"].Value, out int column);
-                position = sourceMap.TryGetValue(sourceLine, out ShaderSourcePosition original) ? original
-                    : new(fallback.assetPath, sourceLine, column);
+                position = sourceMap.TryGetValue(sourceLine, out ShaderSourcePosition original)
+                           ? original
+                           : new(fallback.assetPath, sourceLine, column);
             }
-            diagnostics.Add(new(severity == DiagnosticSeverity.Warning ? "BGFX_SHADER_WARNING" : "BGFX_SHADER_DIAGNOSTIC", severity, line, position));
+            diagnostics.Add(
+                new(severity == DiagnosticSeverity.Warning ? "BGFX_SHADER_WARNING" : "BGFX_SHADER_DIAGNOSTIC", severity, line, position)
+            );
         }
         return diagnostics;
     }
@@ -233,47 +293,88 @@ public sealed partial class BgfxShadercToolchain
         GraphicsCapabilities capabilities
     ) {
         if (stage.stage == ShaderStage.Compute)
+        {
             Require(GraphicsCapability.Compute);
+        }
         foreach (ShaderIrStageInput input in stage.inputs)
         {
             if (input.kind == ShaderIrInputKind.VertexAttribute && input.semantic == "instance-data")
+            {
                 Require(GraphicsCapability.Instancing);
+            }
             if (input.kind == ShaderIrInputKind.Builtin && input.semantic == "vertex-id")
+            {
                 Require(GraphicsCapability.ProceduralDraw);
+            }
             if (input.type.id == "sampled-texture2d-array")
+            {
                 Require(GraphicsCapability.Texture2DArray);
+            }
             if (input.type.id == "sampled-texture3d")
+            {
                 Require(GraphicsCapability.Texture3D);
+            }
             if (input.type.storage is ShaderStorageType storage)
             {
                 if (stage.stage != ShaderStage.Compute)
-                    throw new BgfxSourceSyntaxException("The BGFX runtime contract exposes storage bindings only for compute passes.", new("inno-generated-stage", 1, 1));
+                {
+                    throw new BgfxSourceSyntaxException(
+                        "The BGFX runtime contract exposes storage bindings only for compute passes.",
+                        new("inno-generated-stage", 1, 1)
+                    );
+                }
                 Require(storage.isImage ? GraphicsCapability.StorageTexture : GraphicsCapability.StorageBuffer);
                 if (input.location >= capabilities.limits.maxComputeBindings)
-                    throw new BgfxSourceSyntaxException("A storage binding exceeds the target compute binding limit.", new("inno-generated-stage", 1, 1));
+                {
+                    throw new BgfxSourceSyntaxException(
+                        "A storage binding exceeds the target compute binding limit.",
+                        new("inno-generated-stage", 1, 1)
+                    );
+                }
                 if (storage.isImage)
                 {
                     if (storage.array)
+                    {
                         Require(GraphicsCapability.Texture2DArray);
+                    }
                     if (storage.dimension == RenderTextureDimension.Texture3D)
+                    {
                         Require(GraphicsCapability.Texture3D);
+                    }
                     if (!capabilities.SupportsStorage(storage.format!.Value, storage.access))
-                        throw new BgfxSourceSyntaxException($"Storage format '{storage.format}' does not support '{storage.access}' on this target.", new("inno-generated-stage", 1, 1));
+                    {
+                        throw new BgfxSourceSyntaxException(
+                            $"Storage format '{storage.format}' does not support '{storage.access}' on this target.",
+                            new("inno-generated-stage", 1, 1)
+                        );
+                    }
                 }
             }
         }
         foreach (ShaderIrStageOutput output in stage.outputs)
         {
             if (output.kind == ShaderIrOutputKind.Depth)
+            {
                 Require(GraphicsCapability.FragmentDepth);
+            }
             if (output.kind == ShaderIrOutputKind.Color && output.location >= capabilities.limits.maxColorAttachments)
-                throw new BgfxSourceSyntaxException($"Color attachment {output.location} exceeds the target limit {capabilities.limits.maxColorAttachments}.", new("inno-generated-stage", 1, 1));
+            {
+                throw new BgfxSourceSyntaxException(
+                    $"Color attachment {output.location} exceeds the target limit {capabilities.limits.maxColorAttachments}.",
+                    new("inno-generated-stage", 1, 1)
+                );
+            }
         }
         return;
         void Require(GraphicsCapability capability)
         {
             if (!capabilities.Supports(capability))
-                throw new BgfxSourceSyntaxException($"The stage requires unsupported capability '{capability}'.", new("inno-generated-stage", 1, 1));
+            {
+                throw new BgfxSourceSyntaxException(
+                    $"The stage requires unsupported capability '{capability}'.",
+                    new("inno-generated-stage", 1, 1)
+                );
+            }
         }
     }
 

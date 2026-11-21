@@ -1,6 +1,3 @@
-using Inno.Core.IO;
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,19 +5,22 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Plugins.Authoring;
-using Inno.Plugins;
-using Inno.Extensibility.Modules;
-using Inno.Core.Identity;
 using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
+using Inno.Core.IO;
+using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
-using Xunit;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Types;
+using Inno.Plugins;
+using Inno.Plugins.Authoring;
 
 namespace Inno.Plugins.Authoring.Tests;
 
@@ -52,7 +52,9 @@ public sealed class PluginSourceServiceTests : IDisposable
         _ = typeof(TextAsset);
         _ = typeof(PluginSourceService);
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(PluginSourceServiceTests).Assembly)        });
+        {
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(PluginSourceServiceTests).Assembly)
+        });
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         m_settings = new ProjectSettingsStore(
@@ -60,7 +62,8 @@ public sealed class PluginSourceServiceTests : IDisposable
             m_types,
             m_serialization,
             new ProjectId("tests.plugins"),
-            SerializationContext.empty);
+            SerializationContext.empty
+        );
     }
 
     public void Dispose()
@@ -74,7 +77,9 @@ public sealed class PluginSourceServiceTests : IDisposable
         m_logs.Dispose();
         m_identityScope.Dispose();
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     [Fact]
@@ -157,20 +162,14 @@ public sealed class PluginSourceServiceTests : IDisposable
     [Fact]
     public void FolderPluginIsRejectedAsANonPackageInstallation()
     {
-        WriteDirectoryPlugin(
-            "InstalledPlugin",
-            Manifest("tests.directory"),
-            TextContent("content"));
+        WriteDirectoryPlugin("InstalledPlugin", Manifest("tests.directory"), TextContent("content"));
         var service = new PluginSourceService(m_serialization, m_plugins, m_library);
 
         PluginScanResult scan = service.Scan();
 
         Assert.Empty(scan.candidates);
         PluginDiagnostic diagnostic = Assert.Single(scan.diagnostics);
-        Assert.Contains(
-            ".iplugin package",
-            diagnostic.message,
-            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(".iplugin package", diagnostic.message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -185,7 +184,8 @@ public sealed class PluginSourceServiceTests : IDisposable
             {
                 ["Assets/Plugin.cs"] = "public sealed class RemovedPackageEntry { }"u8.ToArray(),
                 ["Assets/Plugin.cs.imeta"] = CreateTextSourceMeta()
-            });
+            }
+        );
         var service = new PluginSourceService(m_serialization, m_plugins, m_library);
         PluginScanResult initial = service.Scan();
         InitializeProjectAssets();
@@ -214,9 +214,7 @@ public sealed class PluginSourceServiceTests : IDisposable
         m_environment.CommitPending();
 
         Assert.Empty(m_environment.activePlugins);
-        Assert.Collection(
-            m_assets.sourceMounts,
-            mount => Assert.Equal(AssetSourceId.project, mount.id));
+        Assert.Collection(m_assets.sourceMounts, mount => Assert.Equal(AssetSourceId.project, mount.id));
     }
 
     [Fact]
@@ -231,7 +229,8 @@ public sealed class PluginSourceServiceTests : IDisposable
             {
                 ["Assets/Plugin.cs"] = "public sealed class InvalidatedPackageEntry { }"u8.ToArray(),
                 ["Assets/Plugin.cs.imeta"] = CreateTextSourceMeta()
-            });
+            }
+        );
         var service = new PluginSourceService(m_serialization, m_plugins, m_library);
         InitializeProjectAssets();
         StartEnvironment(service.Scan());
@@ -252,9 +251,7 @@ public sealed class PluginSourceServiceTests : IDisposable
         m_environment.CommitPending();
 
         Assert.Empty(m_environment.activePlugins);
-        Assert.Collection(
-            m_assets.sourceMounts,
-            mount => Assert.Equal(AssetSourceId.project, mount.id));
+        Assert.Collection(m_assets.sourceMounts, mount => Assert.Equal(AssetSourceId.project, mount.id));
     }
 
     [Fact]
@@ -268,7 +265,8 @@ public sealed class PluginSourceServiceTests : IDisposable
             {
                 ["Assets/Plugin.cs"] = "public sealed class InvalidAssetMetadataEntry { }"u8.ToArray(),
                 ["Assets/Plugin.cs.imeta"] = CreateTextSourceMeta()
-            });
+            }
+        );
         var service = new PluginSourceService(m_serialization, m_plugins, m_library);
         InitializeProjectAssets();
         StartEnvironment(service.Scan());
@@ -281,7 +279,8 @@ public sealed class PluginSourceServiceTests : IDisposable
             {
                 ["Assets/Plugin.cs"] = "public sealed class InvalidAssetMetadataEntry { }"u8.ToArray(),
                 ["Assets/Plugin.cs.imeta"] = [1]
-            });
+            }
+        );
 
         Assert.True(m_environment.Refresh());
         Assert.True(m_environment.hasPendingActivation);
@@ -296,9 +295,7 @@ public sealed class PluginSourceServiceTests : IDisposable
         m_environment.CommitPending();
 
         Assert.Empty(m_environment.activePlugins);
-        Assert.Collection(
-            m_assets.sourceMounts,
-            mount => Assert.Equal(AssetSourceId.project, mount.id));
+        Assert.Collection(m_assets.sourceMounts, mount => Assert.Equal(AssetSourceId.project, mount.id));
     }
 
     [Fact]
@@ -352,10 +349,7 @@ public sealed class PluginSourceServiceTests : IDisposable
 
         Assert.Equal("tests.same-source-id", Assert.Single(result.candidates).manifest.pluginId);
         PluginDiagnostic diagnostic = Assert.Single(result.diagnostics);
-        Assert.Contains(
-            ".iplugin package",
-            diagnostic.message,
-            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(".iplugin package", diagnostic.message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -381,8 +375,10 @@ public sealed class PluginSourceServiceTests : IDisposable
     [InlineData("../escape.txt", "non-portable segment")]
     [InlineData("Assets/missing.txt", "missing its required .imeta sidecar")]
     [InlineData("Assets/native.dll", "forbidden prebuilt binary")]
-    public void UnsafeOrIncompleteArchivesAreIsolatedAsDiagnostics(string entryPath, string expectedMessage)
-    {
+    public void UnsafeOrIncompleteArchivesAreIsolatedAsDiagnostics(
+        string entryPath,
+        string expectedMessage
+    ) {
         Dictionary<string, byte[]> entries = TextContent("safe");
         entries.Remove("Assets/content.txt");
         entries.Remove("Assets/content.txt.imeta");
@@ -421,8 +417,8 @@ public sealed class PluginSourceServiceTests : IDisposable
     [InlineData("Assets/e\u0301.txt", "Unicode-normalized")]
     public void PlatformSpecificAndNonNormalizedPathsAreRejected(
         string entryPath,
-        string expectedMessage)
-    {
+        string expectedMessage
+    ) {
         WritePlugin("portable.iplugin", Manifest("tests.portable"), new Dictionary<string, byte[]>
         {
             [entryPath] = [1],
@@ -461,7 +457,8 @@ public sealed class PluginSourceServiceTests : IDisposable
             m_serialization,
             m_plugins,
             m_library,
-            new PluginSourceLimits { maximumEntryCount = 2 });
+            new PluginSourceLimits { maximumEntryCount = 2 }
+        );
 
         PluginScanResult entryCount = entryCountService.Scan();
 
@@ -473,8 +470,10 @@ public sealed class PluginSourceServiceTests : IDisposable
     [InlineData("file", "file-size limit")]
     [InlineData("total", "total uncompressed-size limit")]
     [InlineData("ratio", "compression-ratio limit")]
-    public void ArchiveLimitsRejectOversizedOrSuspiciousContent(string scenario, string expectedMessage)
-    {
+    public void ArchiveLimitsRejectOversizedOrSuspiciousContent(
+        string scenario,
+        string expectedMessage
+    ) {
         byte[] first = scenario == "ratio" ? new byte[4096] : CreateNoise(1024, seed: 17);
         Dictionary<string, byte[]> entries = new()
         {
@@ -520,10 +519,7 @@ public sealed class PluginSourceServiceTests : IDisposable
     [Fact]
     public void CorruptManifestAndDuplicateEntriesAreIsolated()
     {
-        WritePluginWithManifestBytes(
-            "corrupt.iplugin",
-            [0x49, 0x4E, 0x4E, 0x4F],
-            TextContent("corrupt"));
+        WritePluginWithManifestBytes("corrupt.iplugin", [0x49, 0x4E, 0x4E, 0x4F], TextContent("corrupt"));
         WriteArchiveWithDuplicateEntry("duplicate.iplugin");
         var service = new PluginSourceService(m_serialization, m_plugins, m_library);
 
@@ -563,16 +559,18 @@ public sealed class PluginSourceServiceTests : IDisposable
         ProjectSettingRecord first = SettingRecord(10);
         ProjectSettingRecord second = SettingRecord(20);
         m_settings.Rebuild(
-        [
-            new ProjectSettingsContributor("tests.first", [], [], [first])
-        ]);
+            [
+                new ProjectSettingsContributor("tests.first", [], [], [first])
+            ]
+        );
         Assert.Equal(10, m_settings.Get<PluginDefaultTestSetting>(PluginDefaultTestSetting.id).value);
 
         Assert.Throws<InvalidOperationException>(() => m_settings.Rebuild(
-        [
-            new ProjectSettingsContributor("tests.first", [], [], [first]),
-            new ProjectSettingsContributor("tests.peer", [], [], [second])
-        ]));
+            [
+                new ProjectSettingsContributor("tests.first", [], [], [first]),
+                new ProjectSettingsContributor("tests.peer", [], [], [second])
+            ]
+        ));
         Assert.Equal(10, m_settings.Get<PluginDefaultTestSetting>(PluginDefaultTestSetting.id).value);
 
         ProjectSettingsContributor[] overridden =
@@ -586,11 +584,13 @@ public sealed class PluginSourceServiceTests : IDisposable
         m_settings.SetProjectOverride(
             PluginDefaultTestSetting.id,
             new PluginDefaultTestSetting { value = 30 },
-            overridden);
+            overridden
+        );
         m_settings.Rebuild(
-        [
-            new ProjectSettingsContributor("tests.first", [], [], [SettingRecord(40)])
-        ]);
+            [
+                new ProjectSettingsContributor("tests.first", [], [], [SettingRecord(40)])
+            ]
+        );
         Assert.Equal(30, m_settings.Get<PluginDefaultTestSetting>(PluginDefaultTestSetting.id).value);
     }
 
@@ -612,9 +612,7 @@ public sealed class PluginSourceServiceTests : IDisposable
         Assert.Single(m_environment!.discovery.candidates);
         Assert.Contains(m_environment!.discovery.diagnostics, diagnostic =>
             diagnostic.message.Contains("candidate activation failed", StringComparison.OrdinalIgnoreCase));
-        Assert.Collection(
-            m_assets!.sourceMounts,
-            mount => Assert.Equal(AssetSourceId.project, mount.id));
+        Assert.Collection(m_assets!.sourceMounts, mount => Assert.Equal(AssetSourceId.project, mount.id));
     }
 
     [Fact]
@@ -627,7 +625,8 @@ public sealed class PluginSourceServiceTests : IDisposable
             new ProjectSettingRecord(
                 PluginDefaultTestSetting.id,
                 m_types.GetTypeRef(typeof(PluginDefaultTestSetting)).stableId,
-                m_serialization.CapturePropertiesData(contributed))
+                m_serialization.CapturePropertiesData(contributed)
+            )
         ];
         WritePlugin("settings.iplugin", manifest, new Dictionary<string, byte[]>
         {
@@ -643,7 +642,8 @@ public sealed class PluginSourceServiceTests : IDisposable
         Assert.Equal("tests.settings", Assert.Single(m_environment!.activePlugins).manifest.pluginId);
         Assert.Equal(
             [AssetSourceId.project, new AssetSourceId("tests.settings")],
-            m_assets!.sourceMounts.Select(static mount => mount.id));
+            m_assets!.sourceMounts.Select(static mount => mount.id)
+        );
         Assert.Equal(42, m_settings.Get<PluginDefaultTestSetting>(PluginDefaultTestSetting.id).value);
     }
 
@@ -663,23 +663,18 @@ public sealed class PluginSourceServiceTests : IDisposable
 
         Assert.True(m_environment!.hasPendingActivation);
         Assert.Empty(m_environment!.activePlugins);
-        Assert.Collection(
-            m_assets!.sourceMounts,
-            mount => Assert.Equal(AssetSourceId.project, mount.id));
-        Assert.Equal(
-            "tests.staged-code",
-            Assert.Single(m_environment!.compilationPlugins).manifest.pluginId);
+        Assert.Collection(m_assets!.sourceMounts, mount => Assert.Equal(AssetSourceId.project, mount.id));
+        Assert.Equal("tests.staged-code", Assert.Single(m_environment!.compilationPlugins).manifest.pluginId);
         Assert.Contains(
             m_environment!.compilationAssets!.GetFileSystemEntries(includeDirectories: false),
-            entry => entry.assetPath == new AssetPath(new AssetSourceId("tests.staged-code"), "Plugin.cs"));
+            entry => entry.assetPath == new AssetPath(new AssetSourceId("tests.staged-code"), "Plugin.cs")
+        );
 
         m_environment!.RollbackPending();
 
         Assert.False(m_environment!.hasPendingActivation);
         Assert.Empty(m_environment!.activePlugins);
-        Assert.Collection(
-            m_assets!.sourceMounts,
-            mount => Assert.Equal(AssetSourceId.project, mount.id));
+        Assert.Collection(m_assets!.sourceMounts, mount => Assert.Equal(AssetSourceId.project, mount.id));
     }
 
     [Theory]
@@ -712,7 +707,10 @@ public sealed class PluginSourceServiceTests : IDisposable
                 Assert.Contains(ordinary, failure.InnerExceptions);
                 Assert.Contains(pending, failure.InnerExceptions);
             }
-            else Assert.Same(pending, failure);
+            else
+            {
+                Assert.Same(pending, failure);
+            }
             Assert.False(laterCalled);
             Assert.True(m_environment.hasPendingActivation);
             Assert.NotNull(m_environment.compilationAssets);
@@ -780,9 +778,7 @@ public sealed class PluginSourceServiceTests : IDisposable
         InitializeProjectAssets();
         var service = new PluginSourceService(m_serialization, m_plugins, m_library);
         StartEnvironment(service.Scan());
-        Assert.True(m_assets!.TryGetFileSystemEntry(
-            AssetPath.Project(string.Empty),
-            out AssetFileEntry activeEntry));
+        Assert.True(m_assets!.TryGetFileSystemEntry(AssetPath.Project(string.Empty), out AssetFileEntry activeEntry));
         Assert.NotNull(activeEntry.identity.runtimeIdentity);
 
         WritePlugin(c_fileName, Manifest("tests.identity-handoff"), new Dictionary<string, byte[]>
@@ -793,10 +789,12 @@ public sealed class PluginSourceServiceTests : IDisposable
 
         Assert.True(m_environment!.Refresh());
         AssetSourceMountTransaction candidate = Assert.IsType<AssetSourceMountTransaction>(
-            m_environment.compilationAssets);
+            m_environment.compilationAssets
+        );
         AssetFileEntry candidateEntry = Assert.Single(
             candidate.GetFileSystemEntries(),
-            static entry => entry.assetPath == AssetPath.Project(string.Empty));
+            static entry => entry.assetPath == AssetPath.Project(string.Empty)
+        );
         Assert.Equal(activeEntry.identity.persistentId, candidateEntry.identity.persistentId);
         Assert.NotNull(activeEntry.identity.runtimeIdentity);
         Assert.Null(candidateEntry.identity.runtimeIdentity);
@@ -804,9 +802,7 @@ public sealed class PluginSourceServiceTests : IDisposable
         m_environment.ActivatePending();
 
         Assert.Null(activeEntry.identity.runtimeIdentity);
-        Assert.True(m_assets.TryGetFileSystemEntry(
-            AssetPath.Project(string.Empty),
-            out AssetFileEntry activatedEntry));
+        Assert.True(m_assets.TryGetFileSystemEntry(AssetPath.Project(string.Empty), out AssetFileEntry activatedEntry));
         Assert.Equal(activeEntry.identity.persistentId, activatedEntry.identity.persistentId);
         Assert.NotNull(activatedEntry.identity.runtimeIdentity);
 
@@ -814,9 +810,7 @@ public sealed class PluginSourceServiceTests : IDisposable
 
         Assert.NotNull(activeEntry.identity.runtimeIdentity);
         Assert.Null(activatedEntry.identity.runtimeIdentity);
-        Assert.True(m_assets.TryGetFileSystemEntry(
-            AssetPath.Project(string.Empty),
-            out AssetFileEntry restoredEntry));
+        Assert.True(m_assets.TryGetFileSystemEntry(AssetPath.Project(string.Empty), out AssetFileEntry restoredEntry));
         Assert.Same(activeEntry, restoredEntry);
     }
 
@@ -842,29 +836,33 @@ public sealed class PluginSourceServiceTests : IDisposable
         Assert.Equal("tests.watched", Assert.Single(m_environment.activePlugins).manifest.pluginId);
         Assert.Equal(
             [AssetSourceId.project, new AssetSourceId("tests.watched")],
-            m_assets!.sourceMounts.Select(static mount => mount.id));
+            m_assets!.sourceMounts.Select(static mount => mount.id)
+        );
     }
 
-    private static PluginManifest Manifest(string id, params string[] dependencies)
-        => new()
-        {
-            pluginId = id,
-            displayName = id,
-            dependencies = dependencies
-        };
+    private static PluginManifest Manifest(
+        string id,
+        params string[] dependencies
+    ) => new()
+    {
+        pluginId = id,
+        displayName = id,
+        dependencies = dependencies
+    };
 
     private static Dictionary<string, byte[]> TextContent(string value)
         => new()
-        {
-            ["Assets/content.txt"] = System.Text.Encoding.UTF8.GetBytes(value),
-            ["Assets/content.txt.imeta"] = [1]
-        };
+    {
+        ["Assets/content.txt"] = System.Text.Encoding.UTF8.GetBytes(value),
+        ["Assets/content.txt.imeta"] = [1]
+    };
 
     private ProjectSettingRecord SettingRecord(int value)
         => new(
             PluginDefaultTestSetting.id,
             m_types.GetTypeRef(typeof(PluginDefaultTestSetting)).stableId,
-            m_serialization.CapturePropertiesData(new PluginDefaultTestSetting { value = value }));
+            m_serialization.CapturePropertiesData(new PluginDefaultTestSetting { value = value })
+        );
 
     private PluginManifest ReadManifest(ZipArchive archive)
     {
@@ -877,37 +875,35 @@ public sealed class PluginSourceServiceTests : IDisposable
     private void WritePlugin(
         string fileName,
         PluginManifest manifest,
-        IReadOnlyDictionary<string, byte[]> entries)
-        => WritePluginWithManifestBytes(fileName, m_serialization.Serialize(manifest), entries);
+        IReadOnlyDictionary<string, byte[]> entries
+    ) => WritePluginWithManifestBytes(fileName, m_serialization.Serialize(manifest), entries);
 
     private void WritePluginWithManifestBytes(
         string fileName,
         byte[] manifestBytes,
-        IReadOnlyDictionary<string, byte[]> entries)
-    {
+        IReadOnlyDictionary<string, byte[]> entries
+    ) {
         string path = Path.Combine(m_plugins, fileName);
         using FileStream stream = System.IO.File.Create(path);
         using var archive = new ZipArchive(stream, ZipArchiveMode.Create);
         WriteEntry(archive, "Plugin.inno", manifestBytes);
         foreach ((string entryPath, byte[] bytes) in entries)
+        {
             WriteEntry(archive, entryPath, bytes);
+        }
     }
 
     private void WriteDirectoryPlugin(
         string directoryName,
         PluginManifest manifest,
-        IReadOnlyDictionary<string, byte[]> entries)
-    {
+        IReadOnlyDictionary<string, byte[]> entries
+    ) {
         string root = Path.Combine(m_plugins, directoryName);
         Directory.CreateDirectory(root);
-        System.IO.File.WriteAllBytes(
-            Path.Combine(root, "Plugin.inno"),
-            m_serialization.Serialize(manifest));
+        System.IO.File.WriteAllBytes(Path.Combine(root, "Plugin.inno"), m_serialization.Serialize(manifest));
         foreach ((string entryPath, byte[] bytes) in entries)
         {
-            string physicalPath = Path.Combine(
-                root,
-                entryPath.Replace('/', Path.DirectorySeparatorChar));
+            string physicalPath = Path.Combine(root, entryPath.Replace('/', Path.DirectorySeparatorChar));
             Directory.CreateDirectory(Path.GetDirectoryName(physicalPath)!);
             System.IO.File.WriteAllBytes(physicalPath, bytes);
         }
@@ -924,8 +920,10 @@ public sealed class PluginSourceServiceTests : IDisposable
         WriteEntry(archive, "Assets/value.txt.imeta", [1]);
     }
 
-    private static byte[] CreateNoise(int length, int seed)
-    {
+    private static byte[] CreateNoise(
+        int length,
+        int seed
+    ) {
         var result = new byte[length];
         new Random(seed).NextBytes(result);
         return result;
@@ -947,7 +945,8 @@ public sealed class PluginSourceServiceTests : IDisposable
             defaults with
             {
                 enableFileSystemWatcher = false
-            });
+            }
+        );
     }
 
     private void StartEnvironment(PluginScanResult scan)
@@ -959,7 +958,8 @@ public sealed class PluginSourceServiceTests : IDisposable
             m_plugins,
             m_library,
             scan,
-            m_modules.generations);
+            m_modules.generations
+        );
     }
 
     private byte[] CreateTextSourceMeta()
@@ -970,8 +970,11 @@ public sealed class PluginSourceServiceTests : IDisposable
             importerId = "inno.assets.text"
         });
 
-    private static void WriteEntry(ZipArchive archive, string path, byte[] bytes)
-    {
+    private static void WriteEntry(
+        ZipArchive archive,
+        string path,
+        byte[] bytes
+    ) {
         ZipArchiveEntry entry = archive.CreateEntry(path, CompressionLevel.Optimal);
         using Stream output = entry.Open();
         output.Write(bytes);
@@ -979,9 +982,7 @@ public sealed class PluginSourceServiceTests : IDisposable
 }
 
 [CollectionDefinition("Plugin source serialization", DisableParallelization = true)]
-public sealed class PluginSourceSerializationCollection
-{
-}
+public sealed class PluginSourceSerializationCollection;
 
 [StableTypeId("706c1248-478b-43f1-a44d-98a1a8f7b919")]
 [ProjectSettingDefinition("tests.plugins.default")]

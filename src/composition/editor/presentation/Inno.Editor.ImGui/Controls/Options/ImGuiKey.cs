@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported key choices at the Editor presentation boundary.
 /// </summary>
@@ -665,5 +666,5 @@ public enum ImGuiKey : int
     /// <summary>
     /// Identifies the ImGuiModMask presentation key or modifier.
     /// </summary>
-    ImGuiModMask = (int)Inno.Native.ImGui.ImGuiKey.ImGuiModMask,
+    ImGuiModMask = (int)Inno.Native.ImGui.ImGuiKey.ImGuiModMask
 }

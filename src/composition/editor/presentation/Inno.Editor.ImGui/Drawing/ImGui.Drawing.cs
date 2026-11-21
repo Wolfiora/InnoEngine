@@ -1,7 +1,9 @@
 using System.Numerics;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Copies presentation values and creates frame-bounded drawing borrows.
 /// </summary>
@@ -73,7 +75,9 @@ public static unsafe partial class ImGui
         _ = EditorUiSession.current.RequireDrawingFrame();
         var table = NativeImGui.Raw.GetCurrentTable();
         if (table is null)
+        {
             throw new System.InvalidOperationException("A table row layout requires an active table.");
+        }
         return (table->OuterRect.Min.X, table->OuterRect.Max.X, table->RowPosY1, table->RowPosY2);
     }
 
@@ -116,6 +120,7 @@ public static unsafe partial class ImGui
     /// A value that rejects use after a window, frame, context or session change.
     /// </returns>
     public static EditorDrawList GetDrawList() => new(EditorUiSession.current);
+
     /// <summary>
     /// Checks the active payload's logical protocol without exposing its native buffer.
     /// </summary>
@@ -130,7 +135,9 @@ public static unsafe partial class ImGui
         EditorUiSession.current.EnsureDrawing();
         var payload = NativeImGui.Raw.GetDragDropPayload();
         if (payload is null)
+        {
             return false;
+        }
         using var text = BGCS.Runtime.Utf8Codec.EncodeNullTerminated(protocol, allowsNull: false);
         return NativeImGui.Raw.IsDataType(payload, (sbyte*)text.pointer) != 0;
     }

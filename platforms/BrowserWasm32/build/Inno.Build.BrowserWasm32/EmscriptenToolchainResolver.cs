@@ -58,29 +58,48 @@ public static class EmscriptenToolchainResolver
         host = File.ResolveLinkTarget(host, returnFinalTarget: true)?.FullName ?? host;
         string project = Path.GetFullPath(projectPath);
         if (!File.Exists(project))
+        {
             throw new FileNotFoundException("The browser toolchain project is missing.", project);
-        string output = await ToolchainEnvironment.CaptureOutputAsync(host,
-            ["msbuild", project, "-nologo", "-nodeReuse:false",
-                "-getProperty:EmscriptenSdkToolsPath,EmscriptenNodeToolsPath,EmscriptenPythonToolsPath,EmscriptenCacheSdkCacheDir"],
-            Path.GetDirectoryName(project)!, cancellationToken,
-            DotNetSdkEnvironment.Create(host, new Dictionary<string, string> { ["DOTNET_NOLOGO"] = "true" })).ConfigureAwait(false);
+        }
+        string output = await ToolchainEnvironment.CaptureOutputAsync(
+            host,
+            [
+                "msbuild",
+                project,
+                "-nologo",
+                "-nodeReuse:false",
+                "-getProperty:EmscriptenSdkToolsPath,EmscriptenNodeToolsPath,EmscriptenPythonToolsPath,EmscriptenCacheSdkCacheDir"
+            ],
+            Path.GetDirectoryName(project)!,
+            cancellationToken,
+            DotNetSdkEnvironment.Create(host, new Dictionary<string, string> { ["DOTNET_NOLOGO"] = "true" })
+        ).ConfigureAwait(false);
         using JsonDocument document = JsonDocument.Parse(output);
         JsonElement properties = document.RootElement.GetProperty("Properties");
         string root = Path.GetDirectoryName(host)!;
         string sdk = ReadToolPath(properties, "EmscriptenSdkToolsPath");
         string cache = ReadToolPath(properties, "EmscriptenCacheSdkCacheDir");
-        string node = Path.Combine(ReadToolPath(properties, "EmscriptenNodeToolsPath"), "bin",
-            OperatingSystem.IsWindows() ? "node.exe" : "node");
+        string node = Path.Combine(
+            ReadToolPath(properties, "EmscriptenNodeToolsPath"),
+            "bin",
+            OperatingSystem.IsWindows() ? "node.exe" : "node"
+        );
         string python = OperatingSystem.IsWindows()
-            ? Path.Combine(ReadToolPath(properties, "EmscriptenPythonToolsPath"), "python.exe")
-            : ToolchainEnvironment.ResolveExecutable("python3");
+                        ? Path.Combine(ReadToolPath(properties, "EmscriptenPythonToolsPath"), "python.exe")
+                        : ToolchainEnvironment.ResolveExecutable("python3");
         string clang = Path.Combine(sdk, "bin", OperatingSystem.IsWindows() ? "clang.exe" : "clang");
         string clangCpp = Path.Combine(sdk, "bin", OperatingSystem.IsWindows() ? "clang++.exe" : "clang++");
         foreach (string file in new[] { host, node, python, clang, clangCpp })
+        {
             if (!File.Exists(file))
+            {
                 throw new FileNotFoundException("An installed WebAssembly toolchain executable is missing.", file);
+            }
+        }
         if (!Directory.Exists(Path.Combine(cache, "sysroot")))
+        {
             throw new DirectoryNotFoundException($"The WebAssembly SDK sysroot is missing at '{cache}'.");
+        }
         return new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["DOTNET_HOST_PATH"] = host,
@@ -100,11 +119,16 @@ public static class EmscriptenToolchainResolver
         string name
     ) {
         if (!properties.TryGetProperty(name, out JsonElement value) || string.IsNullOrWhiteSpace(value.GetString()))
-            throw new InvalidOperationException($"The browser application SDK did not select '{name}'. Verify its WebAssembly SDK and the selected host's wasm-tools workload.");
+        {
+            throw new InvalidOperationException(
+                $"The browser application SDK did not select '{name}'. Verify its WebAssembly SDK and the selected host's wasm-tools workload."
+            );
+        }
         string path = Path.GetFullPath(value.GetString()!);
         if (!Directory.Exists(path))
+        {
             throw new DirectoryNotFoundException($"The browser SDK's '{name}' directory is missing at '{path}'.");
+        }
         return path;
     }
-
 }

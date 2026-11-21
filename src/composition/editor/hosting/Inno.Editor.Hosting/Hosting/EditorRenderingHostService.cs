@@ -1,18 +1,17 @@
-using Inno.Extensibility.Reload;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-
-using Inno.Extensibility.Modules;
 using Inno.Adapter.Presentation;
-using Inno.Editor.Core;
-using Inno.Editor.Rendering;
 using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
+using Inno.Editor.Core;
+using Inno.Editor.Rendering;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
 using Inno.Rendering;
-using Inno.Rendering.Runtime;
 using Inno.Rendering.Assets;
+using Inno.Rendering.Runtime;
 
 namespace Inno.Editor.Hosting;
 
@@ -91,14 +90,16 @@ internal sealed class EditorRenderingHostService :
     ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (documentId == Guid.Empty)
+        {
             throw new ArgumentException("Shader validation requires a document identity.", nameof(documentId));
+        }
         ArgumentNullException.ThrowIfNull(artifact);
         lock (m_shaderValidationLock)
         {
             if (!m_shaderValidations.TryGetValue(documentId, out ShaderValidationState? state)
                 || state.revision != revision
-                || !string.Equals(state.contentHash, artifact.contentHash, StringComparison.Ordinal))
-            {
+                || !string.Equals(state.contentHash, artifact.contentHash, StringComparison.Ordinal)
+            ) {
                 state = new ShaderValidationState(documentId, revision, artifact);
                 m_shaderValidations[documentId] = state;
             }
@@ -115,9 +116,13 @@ internal sealed class EditorRenderingHostService :
     public void Release(Guid documentId)
     {
         if (documentId == Guid.Empty)
+        {
             return;
+        }
         lock (m_shaderValidationLock)
+        {
             m_shaderValidations.Remove(documentId);
+        }
     }
 
     /// <summary>
@@ -131,9 +136,11 @@ internal sealed class EditorRenderingHostService :
         _ = frameIndex;
         ShaderValidationState[] pending;
         lock (m_shaderValidationLock)
+        {
             pending = m_shaderValidations.Values
                 .Where(static state => state.artifact is not null)
                 .ToArray();
+        }
         foreach (ShaderValidationState state in pending)
         {
             EditorShaderArtifactValidationSnapshot snapshot;
@@ -148,14 +155,16 @@ internal sealed class EditorRenderingHostService :
             }
             catch (Exception failure)
             {
-                snapshot = new(EditorShaderCompilationState.Failed,
-                    [new ShaderDiagnostic("SHADER_DEVICE_VALIDATION", DiagnosticSeverity.Error, failure.Message)]);
+                snapshot = new(
+                    EditorShaderCompilationState.Failed,
+                    [new ShaderDiagnostic("SHADER_DEVICE_VALIDATION", DiagnosticSeverity.Error, failure.Message)]
+                );
             }
             lock (m_shaderValidationLock)
             {
                 if (m_shaderValidations.TryGetValue(state.documentId, out ShaderValidationState? current)
-                    && ReferenceEquals(current, state))
-                {
+                    && ReferenceEquals(current, state)
+                ) {
                     state.snapshot = snapshot;
                     state.artifact = null;
                 }
@@ -200,21 +209,27 @@ internal sealed class EditorRenderingHostService :
         if (!output.isReady)
         {
             if (m_renderedPreviews.Remove(composition.viewportId, out PreviewState? stale))
+            {
                 m_previewsById.Remove(stale.handle.value);
+            }
             handle = default;
             return false;
         }
         if (m_renderedPreviews.TryGetValue(composition.viewportId, out PreviewState? current)
-            && current.presentationTexture == output.texture && current.handle.deviceGeneration == deviceGeneration)
-        {
+            && current.presentationTexture == output.texture && current.handle.deviceGeneration == deviceGeneration
+        ) {
             handle = current.handle;
             return true;
         }
         if (current is not null)
+        {
             m_previewsById.Remove(current.handle.value);
+        }
         ulong value = ++m_nextPreviewId;
         if (value == 0)
+        {
             value = ++m_nextPreviewId;
+        }
         handle = new(value, deviceGeneration, output.pixelWidth, output.pixelHeight);
         var preview = new PreviewState(default, handle, default, output.texture, composition.viewportId);
         m_renderedPreviews[composition.viewportId] = preview;
@@ -247,11 +262,7 @@ internal sealed class EditorRenderingHostService :
         out EditorPreviewHandle handle
     ) {
         ArgumentNullException.ThrowIfNull(texture);
-        return TryGetTextureArtifact(
-            texture.GetTextureArtifactReference(),
-            texture.width,
-            texture.height,
-            out handle);
+        return TryGetTextureArtifact(texture.GetTextureArtifactReference(), texture.width, texture.height, out handle);
     }
 
     /// <summary>
@@ -290,8 +301,8 @@ internal sealed class EditorRenderingHostService :
         if (m_previews.TryGetValue(texture, out PreviewState? existing))
         {
             if (existing.residentTexture == resident && existing.handle.deviceGeneration == deviceGeneration
-                && existing.handle.pixelWidth == pixelWidth && existing.handle.pixelHeight == pixelHeight)
-            {
+                && existing.handle.pixelWidth == pixelWidth && existing.handle.pixelHeight == pixelHeight
+            ) {
                 handle = existing.handle;
                 return true;
             }
@@ -299,12 +310,15 @@ internal sealed class EditorRenderingHostService :
         }
         ulong value = ++m_nextPreviewId;
         if (value == 0)
+        {
             value = ++m_nextPreviewId;
+        }
         var preview = new PreviewState(
             texture,
             new EditorPreviewHandle(value, deviceGeneration, pixelWidth, pixelHeight),
             resident,
-            m_presentation.RegisterTexture(resident));
+            m_presentation.RegisterTexture(resident)
+        );
         m_previews.Add(texture, preview);
         m_previewsById.Add(value, preview);
         handle = preview.handle;
@@ -327,12 +341,14 @@ internal sealed class EditorRenderingHostService :
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (!handle.isValid || handle.deviceGeneration != deviceGeneration
             || !m_previewsById.TryGetValue(handle.value, out PreviewState? preview)
-            || preview.handle != handle)
-        {
+            || preview.handle != handle
+        ) {
             throw new InvalidOperationException("The editor preview handle is stale or does not belong to this host.");
         }
         if (logicalSize.X <= 0f || logicalSize.Y <= 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(logicalSize), "Preview size must be positive.");
+        }
         m_presentation.DrawImage(preview.presentationTexture, logicalSize);
     }
 
@@ -349,12 +365,14 @@ internal sealed class EditorRenderingHostService :
     {
         if (!handle.isValid || handle.deviceGeneration != deviceGeneration
             || !m_previewsById.Remove(handle.value, out PreviewState? preview)
-            || preview.handle != handle)
-        {
+            || preview.handle != handle
+        ) {
             return false;
         }
         if (preview.viewportId is not null)
+        {
             ReleaseRendered(preview.viewportId);
+        }
         else
         {
             m_previews.Remove(preview.reference);
@@ -371,9 +389,13 @@ internal sealed class EditorRenderingHostService :
     private void ReleaseAllPreviews()
     {
         foreach (string viewportId in new List<string>(m_renderedPreviews.Keys))
+        {
             ReleaseRendered(viewportId);
+        }
         foreach (PreviewState preview in m_previews.Values)
+        {
             _ = m_presentation.UnregisterTexture(preview.presentationTexture);
+        }
         m_previews.Clear();
         m_previewsById.Clear();
     }
@@ -412,16 +434,26 @@ internal sealed class EditorRenderingHostService :
                 viewport,
                 layer.pipeline,
                 layer.data,
-                layer.order)).ToArray();
+                layer.order
+            )).ToArray();
         if (layers.Length == 1)
+        {
             m_runtime.Submit(layers[0]);
+        }
         else
-            m_runtime.SubmitComposition($"Editor:{composition.viewportId}", target,
-                viewport, composition.targetFormat, layers);
+        {
+            m_runtime.SubmitComposition(
+                $"Editor:{composition.viewportId}",
+                target,
+                viewport,
+                composition.targetFormat,
+                layers
+            );
+        }
 
         if (m_runtime.targets.TryGetTexture(state.target, out PersistentTextureHandle resident)
-            && resident != state.residentTexture)
-        {
+            && resident != state.residentTexture
+        ) {
             Unregister(state);
             state.presentationTexture = m_presentation.RegisterTexture(resident);
             state.residentTexture = resident;
@@ -431,7 +463,8 @@ internal sealed class EditorRenderingHostService :
             composition.viewportId,
             state.presentationTexture,
             composition.pixelWidth,
-            composition.pixelHeight);
+            composition.pixelHeight
+        );
     }
 
     /// <summary>
@@ -451,7 +484,8 @@ internal sealed class EditorRenderingHostService :
         if (!output.isReady)
         {
             throw new InvalidOperationException(
-                $"Editor viewport '{output.viewportId}' has no completed render texture yet.");
+                $"Editor viewport '{output.viewportId}' has no completed render texture yet."
+            );
         }
         m_presentation.DrawImage(output.texture, logicalSize);
     }
@@ -467,10 +501,14 @@ internal sealed class EditorRenderingHostService :
         ObjectDisposedException.ThrowIf(m_disposed, this);
         ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
         if (m_renderedPreviews.Remove(viewportId, out PreviewState? preview))
+        {
             m_previewsById.Remove(preview.handle.value);
+        }
         m_runtime.resources.Release(new RenderPersistentResourceId(viewportId));
         if (!m_viewports.Remove(viewportId, out ViewportState? state))
+        {
             return;
+        }
         Unregister(state);
         m_runtime.targets.Release(state.target);
     }
@@ -481,16 +519,22 @@ internal sealed class EditorRenderingHostService :
     public void ReleaseAll()
     {
         if (m_disposed)
+        {
             return;
+        }
         foreach (ViewportState state in m_viewports.Values)
         {
             Unregister(state);
             m_runtime.targets.Release(state.target);
         }
         foreach (string viewportId in m_viewports.Keys)
+        {
             m_runtime.resources.Release(new RenderPersistentResourceId(viewportId));
+        }
         foreach (PreviewState preview in m_renderedPreviews.Values)
+        {
             m_previewsById.Remove(preview.handle.value);
+        }
         m_renderedPreviews.Clear();
         m_viewports.Clear();
     }
@@ -501,13 +545,17 @@ internal sealed class EditorRenderingHostService :
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         _ = m_runtime.UnregisterContributor(this);
         m_reloadRegistration.Dispose();
         ReleaseAll();
         ReleaseAllPreviews();
         lock (m_shaderValidationLock)
+        {
             m_shaderValidations.Clear();
+        }
         m_disposed = true;
     }
 
@@ -517,21 +565,22 @@ internal sealed class EditorRenderingHostService :
         return new RenderingReloadTransaction(this, m_runtime.BeginExtensionReload());
     }
 
-    void IEditorReloadParticipant.RefreshDiagnostics()
-    {
-    }
+    void IEditorReloadParticipant.RefreshDiagnostics() {}
 
     private static RenderTextureDescriptor CreateDescriptor(EditorViewportComposition composition)
         => new(
             composition.pixelWidth,
             composition.pixelHeight,
             composition.targetFormat,
-            RenderTextureUsage.ColorAttachment | RenderTextureUsage.Sampled);
+            RenderTextureUsage.ColorAttachment | RenderTextureUsage.Sampled
+        );
 
     private void Unregister(ViewportState state)
     {
         if (state.presentationTexture.isValid)
+        {
             _ = m_presentation.UnregisterTexture(state.presentationTexture);
+        }
         state.presentationTexture = default;
         state.residentTexture = default;
     }
@@ -556,7 +605,9 @@ internal sealed class EditorRenderingHostService :
             owner.ReleaseAll();
             owner.ReleaseAllPreviews();
             lock (owner.m_shaderValidationLock)
+            {
                 owner.m_shaderValidations.Clear();
+            }
         }
 
         /// <summary>
@@ -581,9 +632,7 @@ internal sealed class EditorRenderingHostService :
         /// <summary>
         /// Restores the state captured before the current transaction began.
         /// </summary>
-        public void RestorePreviousState()
-        {
-        }
+        public void RestorePreviousState() {}
     }
 
     private sealed record PreviewState(

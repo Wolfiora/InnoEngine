@@ -1,6 +1,7 @@
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Workbench;
+
 [EditorAction(ExportInteractionIds.C_EXPORT_PLUGIN)]
 [EditorMenu(ExportInteractionIds.C_MAIN_MENU_AREA, "File/Export as Plugin...", order: 800, separatorBefore: true)]
 internal sealed class ExportPluginAction(ExportWindowModule window) : EditorAction

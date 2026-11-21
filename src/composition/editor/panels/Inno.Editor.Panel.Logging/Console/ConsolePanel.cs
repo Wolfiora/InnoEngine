@@ -1,4 +1,3 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,12 +5,15 @@ using System.Numerics;
 using Inno.Core.Logging;
 using Inno.Editor.Core;
 using Inno.Editor.Diagnostics;
-using Inno.Editor.Interactions;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+using Inno.Editor.Interactions;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Logging;
+
 /// <summary>
 /// Displays append-only logs and current diagnostics in the unified editor Console.
 /// </summary>
@@ -104,7 +106,12 @@ internal sealed partial class ConsolePanel : EditorPanel
     /// </param>
     protected override void OnDraw(EditorContext context)
     {
-        Ui.BeginChild("ConsoleChild", Vector2.Zero, (ImGuiChildFlags.None), (ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse));
+        Ui.BeginChild(
+            "ConsoleChild",
+            Vector2.Zero,
+            (ImGuiChildFlags.None),
+            (ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
+        );
         try
         {
             DrawToolbar();
@@ -124,7 +131,9 @@ internal sealed partial class ConsolePanel : EditorPanel
     private void DrawToolbar()
     {
         if (EditorUI.current.widgets.SearchInput("console", "Search messages, sources and files", ref m_query, 1024))
+        {
             m_requestScrollToBottom = false;
+        }
         bool collapseChanged = Ui.Checkbox("Collapse", ref m_collapse);
         if (collapseChanged)
         {
@@ -190,7 +199,9 @@ internal sealed partial class ConsolePanel : EditorPanel
         {
             EditorConsoleSnapshot snapshot = m_console.Capture();
             if (m_lastRevision != snapshot.revision)
+            {
                 RemoveStaleOpenEntries(snapshot);
+            }
             bool viewChanged = m_view.Update(snapshot, m_query, m_filterLevels, m_collapse);
             if (viewChanged)
             {
@@ -200,7 +211,9 @@ internal sealed partial class ConsolePanel : EditorPanel
                     ClearFocus();
                 }
                 else if (m_interactions.focusedArea == LoggingInteractionIds.C_ENTRY_AREA)
+                {
                     FocusRow(m_view.rows[focused], select: false);
+                }
             }
             bool hasNewEntries = m_lastRevision >= 0 && snapshot.revision != m_lastRevision;
             m_lastRevision = snapshot.revision;
@@ -208,7 +221,9 @@ internal sealed partial class ConsolePanel : EditorPanel
             bool shouldScrollToBottom = m_requestScrollToBottom || (hasNewEntries && scrollAtBottom);
             HandleKeyboardNavigation();
             if (m_keyboardHandled)
+            {
                 m_requestScrollToBottom = false;
+            }
             DrawEntries(snapshot);
             DrawEntryContextMenu();
             if (shouldScrollToBottom && !m_keyboardHandled)
@@ -233,7 +248,9 @@ internal sealed partial class ConsolePanel : EditorPanel
         m_contextKey = null;
         m_requestContextMenu = false;
         if (m_interactions.focusedArea == LoggingInteractionIds.C_ENTRY_AREA)
+        {
             m_interactions.For(LoggingInteractionIds.C_ENTRY_AREA).Focus();
+        }
     }
 
     private void DrawEntries(EditorConsoleSnapshot snapshot)
@@ -272,8 +289,9 @@ internal sealed partial class ConsolePanel : EditorPanel
     ) {
         bool open = m_openEntries.Contains(row.key);
         Vector4 cardBg = open ? m_content.GetExpandedBgColor(levelColor) : m_content.GetCollapsedBgColor();
-        Vector4 cardBorder = row.key == m_selectedKey ? EditorPalette.contentAccent
-            : open ? ConsoleStyle.GetExpandedBorder(levelColor) : m_content.GetCollapsedBorderColor();
+        Vector4 cardBorder = row.key == m_selectedKey
+                             ? EditorPalette.contentAccent
+                             : open ? ConsoleStyle.GetExpandedBorder(levelColor) : m_content.GetCollapsedBorderColor();
         Ui.PushStyleColor((ImGuiCol.FrameBg), cardBg);
         Ui.PushStyleColor((ImGuiCol.Border), cardBorder);
         Ui.PushStyleVar((ImGuiStyleVar.FrameRounding), Ui.GetLayout().frameRounding);
@@ -283,8 +301,12 @@ internal sealed partial class ConsolePanel : EditorPanel
         {
             ImGuiChildFlags childFlags = ImGuiChildFlags.FrameStyle | (open ? ImGuiChildFlags.AutoResizeY : ImGuiChildFlags.None);
             if (open && measure)
+            {
                 childFlags |= ImGuiChildFlags.AlwaysAutoResize;
-            ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoSavedSettings;
+            }
+            ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoScrollbar
+                                           | ImGuiWindowFlags.NoScrollWithMouse
+                                           | ImGuiWindowFlags.NoSavedSettings;
             float height = open ? 0f : Ui.GetFrameHeight() + Ui.GetLayout().framePadding.Y * 2f;
             bool visible = Ui.BeginChild(AcquireCardWindow(row.key), new Vector2(0f, height), childFlags, windowFlags);
             try
@@ -296,9 +318,13 @@ internal sealed partial class ConsolePanel : EditorPanel
                     {
                         DrawHeader(row.latest, row.occurrences.Count, levelColor, levelIcon, open, cardBg, out bool toggled);
                         if (toggled)
+                        {
                             ToggleEntry(row.key);
+                        }
                         if (open)
+                        {
                             DrawOccurrences(row.occurrences, cardBg);
+                        }
                     }
                     finally
                     {
@@ -312,7 +338,9 @@ internal sealed partial class ConsolePanel : EditorPanel
             }
             float measuredHeight = Ui.GetItemMaximum().Y - Ui.GetItemMinimum().Y;
             if (Ui.IsItemClicked(ImGuiMouseButton.Left) || Ui.IsItemClicked(ImGuiMouseButton.Right))
+            {
                 FocusRow(row, select: true);
+            }
             if (Ui.IsItemHovered() && Ui.IsMouseReleased(ImGuiMouseButton.Right))
             {
                 m_contextKey = row.key;
@@ -338,7 +366,9 @@ internal sealed partial class ConsolePanel : EditorPanel
             for (int i = 0; i < occurrences.Count; i++)
             {
                 if (i > 0)
+                {
                     Ui.Separator();
+                }
                 Ui.PushId(unchecked((int)occurrences[i].sequence));
                 try
                 {
@@ -385,7 +415,11 @@ internal sealed partial class ConsolePanel : EditorPanel
         }
 
         Vector2 tableOuterSize = new(tableOuterW, 0f);
-        ImGuiTableFlags flags = ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoHostExtendX | ImGuiTableFlags.NoPadOuterX | ImGuiTableFlags.NoPadInnerX | ImGuiTableFlags.NoSavedSettings;
+        ImGuiTableFlags flags = ImGuiTableFlags.SizingFixedFit
+                                | ImGuiTableFlags.NoHostExtendX
+                                | ImGuiTableFlags.NoPadOuterX
+                                | ImGuiTableFlags.NoPadInnerX
+                                | ImGuiTableFlags.NoSavedSettings;
         if (Ui.BeginTable("##HeaderTable", 3, flags, tableOuterSize))
         {
             try
@@ -412,7 +446,6 @@ internal sealed partial class ConsolePanel : EditorPanel
                     {
                         toggled = true;
                     }
-
                 }
                 finally
                 {
@@ -439,7 +472,6 @@ internal sealed partial class ConsolePanel : EditorPanel
                     Ui.SetCursorPosX(Ui.GetCursorPosX() + suffixOffsetX);
                     Ui.Text(repeatText);
                 }
-
             }
             finally
             {
@@ -468,11 +500,17 @@ internal sealed partial class ConsolePanel : EditorPanel
             DrawStackedField("File:", fileWithLineText);
             DrawStackedField("Source:", sourceText);
             if (entry.sessionId.isAssigned)
+            {
                 DrawStackedField("Session:", entry.sessionId.ToString());
+            }
             DrawStackedField("Time:", timeText);
         }
-        else if (Ui.BeginTable("##ConsoleEntryDetails", 2, (ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings), new Vector2(availableWidth, 0)))
-        {
+        else if (Ui.BeginTable(
+            "##ConsoleEntryDetails",
+            2,
+            (ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings),
+            new Vector2(availableWidth, 0)
+        )) {
             try
             {
                 Ui.TableSetupColumn("##label", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), labelWidth);
@@ -481,7 +519,9 @@ internal sealed partial class ConsolePanel : EditorPanel
                 DrawDetailFieldRow("File:", fileWithLineText);
                 DrawDetailFieldRow("Source:", sourceText);
                 if (entry.sessionId.isAssigned)
+                {
                     DrawDetailFieldRow("Session:", entry.sessionId.ToString());
+                }
                 DrawDetailFieldRow("Time:", timeText);
             }
             finally
@@ -514,7 +554,9 @@ internal sealed partial class ConsolePanel : EditorPanel
             }
         }
         if (navigation.cancel)
+        {
             ClearFocus();
+        }
     }
 
     private void FocusRow(
@@ -523,7 +565,9 @@ internal sealed partial class ConsolePanel : EditorPanel
     ) {
         m_focusedKey = row.key;
         if (select)
+        {
             m_selectedKey = row.key;
+        }
         // The view owns this neutral boxed payload while Core keeps only a weak action target.
         m_focusedCopyTarget = row.copyTarget;
         m_interactions.For(LoggingInteractionIds.C_ENTRY_AREA, m_focusedCopyTarget).Focus();
@@ -533,7 +577,9 @@ internal sealed partial class ConsolePanel : EditorPanel
     {
         const string popupId = "##ConsoleEntryContextMenu";
         if (m_contextKey is null)
+        {
             return;
+        }
         int index = m_view.FindIndex(m_contextKey);
         if (index < 0)
         {
@@ -557,20 +603,29 @@ internal sealed partial class ConsolePanel : EditorPanel
             Ui.OpenPopup(popupId);
             m_requestContextMenu = false;
         }
-        if (!EditorUI.current.menus.ContextMenu(popupId,
-                m_interactions.For(LoggingInteractionIds.C_ENTRY_AREA, m_view.rows[index].copyTarget)))
+        if (!EditorUI.current.menus.ContextMenu(
+            popupId,
+            m_interactions.For(LoggingInteractionIds.C_ENTRY_AREA, m_view.rows[index].copyTarget)
+        )) {
             m_contextKey = null;
+        }
     }
 
     private void RemoveStaleOpenEntries(EditorConsoleSnapshot snapshot)
     {
         if (m_openEntries.Count == 0)
+        {
             return;
+        }
         var activeIds = new HashSet<string>(StringComparer.Ordinal);
         for (int i = 0; i < snapshot.groups.Count; i++)
+        {
             activeIds.Add($"group/{snapshot.groups[i].identity}");
+        }
         for (int i = 0; i < snapshot.occurrences.Count; i++)
+        {
             activeIds.Add($"occurrence/{snapshot.occurrences[i].sequence}");
+        }
         m_openEntries.RemoveWhere(id => !activeIds.Contains(id));
     }
 

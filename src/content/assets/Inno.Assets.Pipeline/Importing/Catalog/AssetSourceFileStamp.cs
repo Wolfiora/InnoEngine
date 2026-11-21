@@ -35,10 +35,7 @@ internal readonly struct AssetSourceFileStamp : IEquatable<AssetSourceFileStamp>
                 return false;
             }
 
-            stamp = new AssetSourceFileStamp(
-                info.Length,
-                info.LastWriteTimeUtc.Ticks,
-                info.CreationTimeUtc.Ticks);
+            stamp = new AssetSourceFileStamp(info.Length, info.LastWriteTimeUtc.Ticks, info.CreationTimeUtc.Ticks);
             return true;
         }
         catch (IOException)
@@ -63,10 +60,10 @@ internal readonly struct AssetSourceFileStamp : IEquatable<AssetSourceFileStamp>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool Equals(AssetSourceFileStamp other)
-        => isValid == other.isValid &&
-           length == other.length &&
-           lastWriteUtcTicks == other.lastWriteUtcTicks &&
-           creationTimeUtcTicks == other.creationTimeUtcTicks;
+        => isValid == other.isValid
+           && length == other.length
+           && lastWriteUtcTicks == other.lastWriteUtcTicks
+           && creationTimeUtcTicks == other.creationTimeUtcTicks;
 
     /// <summary>
     /// Determines whether this value and the supplied value represent the same logical state.

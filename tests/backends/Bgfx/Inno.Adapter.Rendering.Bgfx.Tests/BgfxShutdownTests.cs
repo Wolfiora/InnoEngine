@@ -1,9 +1,9 @@
 using System;
+using Xunit;
 using Inno.Adapter.Platform;
 using Inno.Adapter.Platform.Sdl3;
 using Inno.Platform;
 using Inno.Rendering;
-using Xunit;
 
 namespace Inno.Adapter.Rendering.Bgfx.Tests;
 
@@ -14,17 +14,23 @@ public sealed class BgfxShutdownTests
     [Fact]
     public void ShutdownAfterAnOffscreenGraphReleasesTheProcessOwner()
     {
-        if (NativeWindowTestHost.RunIfRequired(nameof(BgfxShutdownTests) + "." + nameof(ShutdownAfterAnOffscreenGraphReleasesTheProcessOwner)))
+        if (NativeWindowTestHost.RunIfRequired(
+            nameof(BgfxShutdownTests) + "." + nameof(ShutdownAfterAnOffscreenGraphReleasesTheProcessOwner)
+        )) {
             return;
+        }
 
         string? requestedBackend = Environment.GetEnvironmentVariable("INNO_TEST_GRAPHICS_API");
         GraphicsApi backend = requestedBackend is null
-            ? OperatingSystem.IsWindows() ? GraphicsApi.Direct3D11 : GraphicsApi.Metal
-            : new GraphicsApi(requestedBackend);
+                              ? OperatingSystem.IsWindows() ? GraphicsApi.Direct3D11 : GraphicsApi.Metal
+                              : new GraphicsApi(requestedBackend);
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions
         {
-            title = "Resource retirement", width = 100, height = 90, visible = false
+            title = "Resource retirement",
+            width = 100,
+            height = 90,
+            visible = false
         });
         var options = new BgfxDeviceOptions
         {
@@ -41,12 +47,14 @@ public sealed class BgfxShutdownTests
                 32,
                 32,
                 RenderTextureFormat.RGBA8,
-                RenderTextureUsage.ColorAttachment | RenderTextureUsage.Sampled);
+                RenderTextureUsage.ColorAttachment | RenderTextureUsage.Sampled
+            );
             RenderTextureHandle target = builder.CreateTexture("Retired target", descriptor);
-            builder.AddRasterPass("Offscreen clear", new RenderPhaseId("tests.shutdown"), 0, static (
-                _,
-                _
-            ) => { })
+            builder
+                .AddRasterPass("Offscreen clear", new RenderPhaseId("tests.shutdown"), 0, static (
+                    _,
+                    _
+                ) => {})
                 .UseColorAttachment(target, 0, RenderLoadAction.Clear)
                 .HasSideEffect();
             RenderGraphCompileResult result = builder.Compile();

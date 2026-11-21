@@ -101,5 +101,4 @@ public sealed class EditorDocumentContext
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         return m_viewParameters.TryGetValue(key, out value!);
     }
-
 }

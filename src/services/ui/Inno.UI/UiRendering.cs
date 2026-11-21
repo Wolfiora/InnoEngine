@@ -76,14 +76,17 @@ public sealed class UiMeshUpdate
     /// Gets the generation-scoped mesh handle.
     /// </summary>
     public UiMeshHandle mesh { get; }
+
     /// <summary>
     /// Gets the monotonically increasing mesh content revision.
     /// </summary>
     public ulong revision { get; }
+
     /// <summary>
     /// Gets immutable local-space vertices.
     /// </summary>
     public IReadOnlyList<UiVertex> vertices => m_vertices;
+
     /// <summary>
     /// Gets immutable triangle indices.
     /// </summary>
@@ -115,18 +118,22 @@ public sealed class UiTextureUpdate
     /// Gets the generation-scoped texture handle.
     /// </summary>
     public UiTextureHandle texture { get; }
+
     /// <summary>
     /// Gets the monotonically increasing content revision.
     /// </summary>
     public ulong revision { get; }
+
     /// <summary>
     /// Gets the texture width.
     /// </summary>
     public int width { get; }
+
     /// <summary>
     /// Gets the texture height.
     /// </summary>
     public int height { get; }
+
     /// <summary>
     /// Gets immutable tightly packed premultiplied RGBA8 pixels.
     /// </summary>
@@ -204,27 +211,36 @@ public sealed class UiRenderFrame
         ArgumentNullException.ThrowIfNull(meshes);
         ArgumentNullException.ThrowIfNull(textures);
         if (Array.Exists(meshes, static value => !value.isValid))
+        {
             throw new ArgumentException("Retirement meshes must be assigned.", nameof(meshes));
+        }
         if (Array.Exists(textures, static value => !value.isValid))
+        {
             throw new ArgumentException("Retirement textures must be assigned.", nameof(textures));
+        }
         return new([], (UiMeshHandle[])meshes.Clone(), [], (UiTextureHandle[])textures.Clone(), []);
     }
+
     /// <summary>
     /// Gets created or replaced mesh generations.
     /// </summary>
     public IReadOnlyList<UiMeshUpdate> meshUpdates => m_meshUpdates;
+
     /// <summary>
     /// Gets mesh generations that must be retired.
     /// </summary>
     public IReadOnlyList<UiMeshHandle> releasedMeshes => m_releasedMeshes;
+
     /// <summary>
     /// Gets created or replaced texture generations.
     /// </summary>
     public IReadOnlyList<UiTextureUpdate> textureUpdates => m_textureUpdates;
+
     /// <summary>
     /// Gets texture generations that must be retired.
     /// </summary>
     public IReadOnlyList<UiTextureHandle> releasedTextures => m_releasedTextures;
+
     /// <summary>
     /// Gets ordered draws referencing published resources.
     /// </summary>
@@ -269,16 +285,26 @@ public sealed class UiRenderFrameBuilder
     ) {
         EnsureMutable();
         if (!mesh.isValid)
+        {
             throw new ArgumentException("A mesh update requires an assigned handle.", nameof(mesh));
+        }
         if (revision == 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(revision));
+        }
         ArgumentNullException.ThrowIfNull(vertices);
         ArgumentNullException.ThrowIfNull(indices);
         if (vertices.Length == 0 || indices.Length == 0)
+        {
             throw new ArgumentException("A mesh update requires nonempty geometry.");
+        }
         foreach (uint index in indices)
+        {
             if (index >= vertices.Length)
+            {
                 throw new ArgumentException("A mesh index references a vertex outside the update.", nameof(indices));
+            }
+        }
         m_meshUpdates.Add(new(mesh, revision, vertices, indices));
     }
 
@@ -292,7 +318,9 @@ public sealed class UiRenderFrameBuilder
     {
         EnsureMutable();
         if (!mesh.isValid)
+        {
             throw new ArgumentException("A released mesh requires an assigned handle.", nameof(mesh));
+        }
         m_releasedMeshes.Add(mesh);
     }
 
@@ -323,14 +351,20 @@ public sealed class UiRenderFrameBuilder
     ) {
         EnsureMutable();
         if (!texture.isValid)
+        {
             throw new ArgumentException("A texture update requires an assigned handle.", nameof(texture));
+        }
         if (revision == 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(revision));
+        }
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
         ArgumentNullException.ThrowIfNull(pixels);
         if (pixels.Length != checked(width * height * 4))
+        {
             throw new ArgumentException("Texture pixels must be tightly packed RGBA8.", nameof(pixels));
+        }
         m_textureUpdates.Add(new(texture, revision, width, height, pixels));
     }
 
@@ -344,7 +378,9 @@ public sealed class UiRenderFrameBuilder
     {
         EnsureMutable();
         if (!texture.isValid)
+        {
             throw new ArgumentException("A released texture requires an assigned handle.", nameof(texture));
+        }
         m_releasedTextures.Add(texture);
     }
 
@@ -358,7 +394,9 @@ public sealed class UiRenderFrameBuilder
     {
         EnsureMutable();
         if (!command.mesh.isValid)
+        {
             throw new ArgumentException("A draw command requires an assigned mesh.", nameof(command));
+        }
         m_commands.Add(command);
     }
 
@@ -377,12 +415,15 @@ public sealed class UiRenderFrameBuilder
             m_releasedMeshes.ToArray(),
             m_textureUpdates.ToArray(),
             m_releasedTextures.ToArray(),
-            m_commands.ToArray());
+            m_commands.ToArray()
+        );
     }
 
     private void EnsureMutable()
     {
         if (m_built)
+        {
             throw new InvalidOperationException("A UI render-frame builder can only build one frame.");
+        }
     }
 }

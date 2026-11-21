@@ -32,10 +32,14 @@ public sealed class GameRuntimeAssembly : ISerializable
     public void Validate()
     {
         if (string.IsNullOrWhiteSpace(name)
-            || name.Any(static character => !(char.IsAsciiLetterOrDigit(character) || character is '.' or '_' or '-')))
+            || name.Any(static character => !(char.IsAsciiLetterOrDigit(character) || character is '.' or '_' or '-'))
+        ) {
             throw new InvalidDataException("A code assembly requires a portable simple name.");
+        }
         if (contentFingerprint is null || contentFingerprint.Length != 64
-            || contentFingerprint.Any(static character => !(character is >= '0' and <= '9' or >= 'a' and <= 'f')))
+            || contentFingerprint.Any(static character => !(character is >= '0' and <= '9' or >= 'a' and <= 'f'))
+        ) {
             throw new InvalidDataException($"Code assembly '{name}' requires a lowercase SHA-256 fingerprint.");
+        }
     }
 }

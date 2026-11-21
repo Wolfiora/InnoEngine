@@ -29,12 +29,16 @@ internal sealed class ScriptArtifactCache
         string assemblyRoot = Path.Combine(m_root, ".assemblies");
         IEnumerable<string> candidates = Directory.EnumerateDirectories(m_root);
         if (Directory.Exists(assemblyRoot))
+        {
             candidates = candidates.Concat(Directory.EnumerateDirectories(assemblyRoot));
+        }
         var discoveredEntries = new List<Entry>();
         foreach (string path in candidates.Where(IsArtifactDirectory))
         {
             if (TryCreateEntry(path, out Entry entry))
+            {
                 discoveredEntries.Add(entry);
+            }
         }
         Entry[] entries = discoveredEntries
             .OrderBy(static entry => entry.lastWriteUtc)
@@ -44,9 +48,13 @@ internal sealed class ScriptArtifactCache
         foreach (Entry entry in entries)
         {
             if (protectedPaths.Contains(entry.path))
+            {
                 continue;
+            }
             if (entry.lastWriteUtc > cutoff && totalSize <= C_DEFAULT_MAXIMUM_SIZE)
+            {
                 continue;
+            }
             try
             {
                 Directory.Delete(entry.path, recursive: true);
@@ -72,7 +80,9 @@ internal sealed class ScriptArtifactCache
         DateTime cutoff
     ) {
         if (!Directory.Exists(root))
+        {
             return 0;
+        }
 
         int removed = 0;
         foreach (string path in Directory.EnumerateDirectories(root))
@@ -80,7 +90,9 @@ internal sealed class ScriptArtifactCache
             try
             {
                 if (Directory.GetLastWriteTimeUtc(path) > cutoff)
+                {
                     continue;
+                }
                 Directory.Delete(path, recursive: true);
                 removed++;
             }
@@ -99,8 +111,8 @@ internal sealed class ScriptArtifactCache
     private static bool IsArtifactDirectory(string path)
     {
         string name = Path.GetFileName(path);
-        return name.Length == C_BUILD_KEY_LENGTH &&
-               name.All(static character => char.IsAsciiHexDigit(character));
+        return name.Length == C_BUILD_KEY_LENGTH
+               && name.All(static character => char.IsAsciiHexDigit(character));
     }
 
     private static bool TryCreateEntry(
@@ -112,10 +124,7 @@ internal sealed class ScriptArtifactCache
             long size = new DirectoryInfo(path)
                 .EnumerateFiles("*", SearchOption.AllDirectories)
                 .Sum(static file => file.Length);
-            entry = new Entry(
-                Path.GetFullPath(path),
-                Directory.GetLastWriteTimeUtc(path),
-                size);
+            entry = new Entry(Path.GetFullPath(path), Directory.GetLastWriteTimeUtc(path), size);
             return true;
         }
         catch (IOException)

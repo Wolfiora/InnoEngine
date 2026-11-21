@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Inno.Native.ImGui;
 using Inno.Native.Sdl3;
+
 using ImGuiNative = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Adapter.Presentation.ImGui;
@@ -20,19 +21,25 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend
             if (displays != null && displayCount > 0)
             {
                 if (primary != 0)
+                {
                     AddDisplayMonitor(primary, monitors);
+                }
                 for (int index = 0; index < displayCount; index++)
                 {
                     uint display = displays[index];
                     if (display != 0 && display != primary)
+                    {
                         AddDisplayMonitor(display, monitors);
+                    }
                 }
             }
             if (monitors.Count == 0 && fallbackWindow != null)
             {
                 uint fallback = SDL.Raw.GetDisplayForWindow(fallbackWindow);
                 if (fallback != 0)
+                {
                     AddDisplayMonitor(fallback, monitors);
+                }
             }
         }
         finally
@@ -47,7 +54,9 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend
             uint bytes = checked((uint)monitors.Count * (uint)sizeof(ImGuiPlatformMonitor));
             var replacement = (ImGuiPlatformMonitor*)ImGuiNative.Raw.MemAlloc(bytes);
             if (replacement == null)
+            {
                 throw new OutOfMemoryException("Cannot allocate the ImGui monitor snapshot.");
+            }
             CollectionsMarshal.AsSpan(monitors).CopyTo(new Span<ImGuiPlatformMonitor>(replacement, monitors.Count));
             ImGuiPlatformMonitor* previous = storage.Data;
             storage.Data = replacement;
@@ -69,7 +78,9 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend
     ) {
         SDLRect main = default;
         if (SDL.Raw.GetDisplayBounds(displayId, &main) == 0)
+        {
             return;
+        }
         SDLRect work = main;
         _ = SDL.Raw.GetDisplayUsableBounds(displayId, &work);
         float scale = SDL.GetDisplayContentScale(displayId);

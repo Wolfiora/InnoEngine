@@ -3,9 +3,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Core.IO;
-using Inno.Build.Toolchains;
 using Xunit;
+using Inno.Build.Toolchains;
+using Inno.Core.IO;
 
 namespace Inno.Build.Toolchains.Tests;
 
@@ -29,7 +29,9 @@ public sealed class ProcessOwnershipTests
         finally
         {
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
 
@@ -56,7 +58,9 @@ public sealed class ProcessOwnershipTests
         finally
         {
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
 
@@ -79,9 +83,12 @@ public sealed class ProcessOwnershipTests
         finally
         {
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
+
     [Fact]
     public void ProcessIdentityIncludesItsStartTimeAndInvalidIdentityIsConservative()
     {
@@ -115,7 +122,9 @@ public sealed class ProcessOwnershipTests
         finally
         {
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
 
@@ -131,9 +140,15 @@ public sealed class ProcessOwnershipTests
             File.WriteAllText(Path.Combine(workspace, "payload"), "owned");
             var publisher = new BuildCachePublisher(cache, BuildCacheArtifactRole.ReusableWorkspace);
             using (await publisher.AcquireUseAsync())
+            {
                 publisher.Record(workspace, workspace + ".lock", [], "preferred", "fixture");
-            BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(root, [publisher.Describe("workspace")],
-                new BuildCachePolicy(0, 0, TimeSpan.FromSeconds(10)), retireAll: true);
+            }
+            BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(
+                root,
+                [publisher.Describe("workspace")],
+                new BuildCachePolicy(0, 0, TimeSpan.FromSeconds(10)),
+                retireAll: true
+            );
             Assert.Single(plan.candidates);
             BuildCacheCleanupResult result = await plan.ExecuteAsync();
             Assert.Single(result.retired);
@@ -142,7 +157,9 @@ public sealed class ProcessOwnershipTests
         finally
         {
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
 
@@ -167,7 +184,9 @@ public sealed class ProcessOwnershipTests
         finally
         {
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
 }

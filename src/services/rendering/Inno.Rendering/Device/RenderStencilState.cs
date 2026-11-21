@@ -143,9 +143,7 @@ public sealed class RenderStencilState
     /// <summary>
     /// Creates the default disabled stencil state.
     /// </summary>
-    public RenderStencilState()
-    {
-    }
+    public RenderStencilState() {}
 
     /// <summary>
     /// Creates a complete immutable stencil configuration without relying on init-only setters.
@@ -216,7 +214,8 @@ public sealed class RenderStencilState
         RenderStencilCompare.Always,
         RenderStencilOperation.Keep,
         RenderStencilOperation.Keep,
-        RenderStencilOperation.Keep);
+        RenderStencilOperation.Keep
+    );
 
     /// <summary>
     /// Gets back-face stencil behavior.
@@ -225,6 +224,6 @@ public sealed class RenderStencilState
         RenderStencilCompare.Always,
         RenderStencilOperation.Keep,
         RenderStencilOperation.Keep,
-        RenderStencilOperation.Keep);
+        RenderStencilOperation.Keep
+    );
 }
-

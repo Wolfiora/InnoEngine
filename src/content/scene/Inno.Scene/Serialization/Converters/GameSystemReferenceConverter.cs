@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-
 using Inno.Core.Serialization;
 using Inno.Core.Serialization.Converters;
 using Inno.Scene;
@@ -43,9 +42,12 @@ internal sealed class GameSystemReferenceConverter : SerializationConverter<Game
         ArgumentNullException.ThrowIfNull(reader);
         var token = new EngineReferenceToken(
             (EngineReferenceKind)reader.Read<int>("kind"),
-            reader.Read<Guid>("sourceId"));
+            reader.Read<Guid>("sourceId")
+        );
         if (token.kind != EngineReferenceKind.GameSystem)
+        {
             throw new InvalidDataException($"Reference token at '{reader.path}' is not a GameSystem reference.");
+        }
         return (GameSystem)SceneReferenceScope.current.Resolve(token, reader.valueType, reader.path);
     }
 }

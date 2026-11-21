@@ -7,7 +7,9 @@ internal static class SceneLifecycle
         GameScene scene
     ) {
         if (target.lifecycleIsDestroyed || target.lifecycleDestroyCalled)
+        {
             return false;
+        }
 
         bool active = target.lifecycleIsActive;
         if (active && !target.lifecycleAwakeCalled)
@@ -15,7 +17,9 @@ internal static class SceneLifecycle
             target.lifecycleAwakeCalled = true;
             target.DispatchAwake();
             if (!scene.canDispatch || target.lifecycleIsDestroyed)
+            {
                 return false;
+            }
         }
 
         return PrepareActivation(target, scene);
@@ -31,14 +35,18 @@ internal static class SceneLifecycle
             target.lifecycleWasEnabled = true;
             target.DispatchEnable();
             if (!scene.canDispatch || target.lifecycleIsDestroyed)
+            {
                 return false;
+            }
         }
         else if (!active && target.lifecycleWasEnabled)
         {
             target.lifecycleWasEnabled = false;
             target.DispatchDisable();
             if (!scene.canDispatch || target.lifecycleIsDestroyed)
+            {
                 return false;
+            }
         }
 
         return true;
@@ -49,7 +57,9 @@ internal static class SceneLifecycle
     private static void Disable(ISceneLifecycleObject target)
     {
         if (!target.lifecycleWasEnabled)
+        {
             return;
+        }
         target.lifecycleWasEnabled = false;
         target.DispatchDisable();
     }
@@ -57,7 +67,9 @@ internal static class SceneLifecycle
     internal static void Destroy(ISceneLifecycleObject target)
     {
         if (target.lifecycleDestroyCalled)
+        {
             return;
+        }
         target.lifecycleDestroyCalled = true;
         if (target.lifecycleWasEnabled)
         {
@@ -65,7 +77,8 @@ internal static class SceneLifecycle
             target.DispatchDisable();
         }
         if (target.lifecycleAwakeCalled)
+        {
             target.DispatchDestroy();
+        }
     }
-
 }

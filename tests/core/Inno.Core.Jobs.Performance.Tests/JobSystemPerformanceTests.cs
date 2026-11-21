@@ -2,9 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using Xunit;
-
 using Inno.Core.Jobs;
-
 
 namespace Inno.Core.JobsSystem.Tests;
 
@@ -30,7 +28,8 @@ public sealed class JobSystemPerformanceTests
 
         Assert.True(
             multiWorkerBest < oneWorkerBest,
-            $"Expected same schedule flow to be faster with more workers. oneWorker={oneWorkerBest.TotalMilliseconds:F2}ms, multiWorker={multiWorkerBest.TotalMilliseconds:F2}ms, workers={multiWorkerCount}");
+            $"Expected same schedule flow to be faster with more workers. oneWorker={oneWorkerBest.TotalMilliseconds:F2}ms, multiWorker={multiWorkerBest.TotalMilliseconds:F2}ms, workers={multiWorkerCount}"
+        );
     }
 
     [Fact]
@@ -53,7 +52,8 @@ public sealed class JobSystemPerformanceTests
 
         Assert.True(
             multiBest < singleBest,
-            $"Expected work-stealing to be faster. single={singleBest.TotalMilliseconds:F2}ms, multi={multiBest.TotalMilliseconds:F2}ms, workers={workerCount}");
+            $"Expected work-stealing to be faster. single={singleBest.TotalMilliseconds:F2}ms, multi={multiBest.TotalMilliseconds:F2}ms, workers={workerCount}"
+        );
     }
 
     [Fact]
@@ -77,7 +77,8 @@ public sealed class JobSystemPerformanceTests
 
         Assert.True(
             multiBest < singleBest,
-            $"Expected work-stealing parallel-for to be faster. single={singleBest.TotalMilliseconds:F2}ms, multi={multiBest.TotalMilliseconds:F2}ms, workers={workerCount}");
+            $"Expected work-stealing parallel-for to be faster. single={singleBest.TotalMilliseconds:F2}ms, multi={multiBest.TotalMilliseconds:F2}ms, workers={workerCount}"
+        );
     }
 
     private static JobScheduler CreateWorkStealing(int workerCount)

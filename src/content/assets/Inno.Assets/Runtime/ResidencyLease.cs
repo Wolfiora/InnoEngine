@@ -4,7 +4,8 @@ using Inno.Core.Execution;
 
 namespace Inno.Assets;
 
-internal sealed class ResidencyLease<TValue> : IDisposable where TValue : class
+internal sealed class ResidencyLease<TValue> : IDisposable
+    where TValue : class
 {
     private readonly object m_sync = new();
     private TValue? m_value;
@@ -25,7 +26,9 @@ internal sealed class ResidencyLease<TValue> : IDisposable where TValue : class
         get
         {
             lock (m_sync)
+            {
                 return m_value ?? throw new ObjectDisposedException("Residency lease");
+            }
         }
     }
 
@@ -41,9 +44,13 @@ internal sealed class ResidencyLease<TValue> : IDisposable where TValue : class
         lock (m_sync)
         {
             if (m_release is null)
+            {
                 return;
+            }
             if (m_releasing)
+            {
                 throw new RetirementPendingException("Residency release is already being advanced by another invocation.");
+            }
             m_releasing = true;
             release = m_release;
         }
@@ -56,7 +63,9 @@ internal sealed class ResidencyLease<TValue> : IDisposable where TValue : class
             m_completedFailures ??= [];
             RetirementPendingException.CollectCompletedFailures(pendingRetirement, m_completedFailures);
             lock (m_sync)
+            {
                 m_releasing = false;
+            }
             throw;
         }
         catch (Exception exception)
@@ -71,7 +80,9 @@ internal sealed class ResidencyLease<TValue> : IDisposable where TValue : class
         }
         Finish();
         if (m_completedFailures is { Count: > 0 })
+        {
             throw TakeCompletedFailure();
+        }
     }
 
     private void Finish()

@@ -1,16 +1,15 @@
 using System.IO;
+using Xunit;
 using Inno.Build;
 using Inno.Core.Input;
 using Inno.Editor.Core;
 using Inno.Editor.Exporting;
 using Inno.Testing.Build;
-using Xunit;
 
 namespace Inno.Editor.Exporting.Tests;
 
 public sealed class ExportWorkflowTests : BuildPipelineFixture
 {
-
     [Fact]
     public void ExportPresentationKeepsUnknownProgressAndRejectsStaleCancellation()
     {
@@ -18,12 +17,19 @@ public sealed class ExportWorkflowTests : BuildPipelineFixture
         var settings = new BuildSettingsStore(Path.Combine(m_projectRoot, "Settings.Build.inno"), m_engine.serialization, defaults);
         m_engine.modules.Register("Tests.ExportProgress", [typeof(EditorExportService).Assembly]);
         var context = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Ctrl"));
-        using var runtime = new Inno.Editor.Interactions.EditorInteractionRuntime(context, m_engine.types, m_engine.logs,
-            [m_pipeline, settings, m_settings]);
+        using var runtime = new Inno.Editor.Interactions.EditorInteractionRuntime(
+            context,
+            m_engine.types,
+            m_engine.logs,
+            [m_pipeline, settings, m_settings]
+        );
         runtime.Start();
         Assert.True(runtime.interactions.TryGetModule<EditorExportService>(out var exports));
-        exports!.StartGame(new GameBuildRequest { profile = CreateProfile(new BuildTargetId("macos-arm64")),
-            outputDirectory = Path.Combine(m_root, "ProgressOutput") });
+        exports!.StartGame(new GameBuildRequest
+        {
+            profile = CreateProfile(new BuildTargetId("macos-arm64")),
+            outputDirectory = Path.Combine(m_root, "ProgressOutput")
+        });
         var observed = exports.progress;
         Assert.Null(observed.fraction);
         Assert.True(observed.isBusy);

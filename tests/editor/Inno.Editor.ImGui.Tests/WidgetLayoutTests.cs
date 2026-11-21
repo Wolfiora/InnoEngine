@@ -1,19 +1,21 @@
-using ImGuiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
-using ImGuiMouseButton = Inno.Editor.ImGui.ImGuiMouseButton;
-using ImGuiCond = Inno.Editor.ImGui.ImGuiCond;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using System.Runtime.CompilerServices;
-using NativeVector2 = Inno.Native.ImGui.ImVec2C;
-using BGCS.Runtime;
 using System;
 using System.Numerics;
-using Inno.Native.ImGui;
+using System.Runtime.CompilerServices;
+using BGCS.Runtime;
 using Xunit;
-using NativeImGui = Inno.Native.ImGui.ImGui;
-using Widget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
+using Inno.Native.ImGui;
+
 using EditorImGui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using ImGuiCond = Inno.Editor.ImGui.ImGuiCond;
+using ImGuiMouseButton = Inno.Editor.ImGui.ImGuiMouseButton;
+using ImGuiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
+using NativeImGui = Inno.Native.ImGui.ImGui;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using Widget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 
 namespace Inno.Editor.ImGui.Tests;
+
 public sealed unsafe class WidgetLayoutTests
 {
     [Fact]
@@ -41,8 +43,16 @@ public sealed unsafe class WidgetLayoutTests
                     }
                     var random = new Random(0x2DCA);
                     for (int index = 0; index < 4096; index++)
-                        Verify(new(random.NextSingle() * 3f - 1f, random.NextSingle() * 3f - 1f,
-                            random.NextSingle() * 3f - 1f, random.NextSingle() * 3f - 1f));
+                    {
+                        Verify(
+                            new(
+                                random.NextSingle() * 3f - 1f,
+                                random.NextSingle() * 3f - 1f,
+                                random.NextSingle() * 3f - 1f,
+                                random.NextSingle() * 3f - 1f
+                            )
+                        );
+                    }
                 }
                 finally
                 {
@@ -196,10 +206,17 @@ public sealed unsafe class WidgetLayoutTests
                     Assert.True(root.isOpen);
                     Assert.True(widgets.IsTreeNodeOpen("root"));
                     Assert.Equal(nativeDepth, NativeImGui.Raw.GetCurrentWindow()->DC.TreeDepth);
-                    var child = widgets.TreeNode("child", _ => NativeImGui.TextUnformatted("Deep child"), new() { depth = 7, isLeaf = true });
+                    var child = widgets.TreeNode(
+                        "child",
+                        _ => NativeImGui.TextUnformatted("Deep child"),
+                        new() { depth = 7, isLeaf = true }
+                    );
                     Assert.True(child.contentMin.X > root.contentMin.X);
                     var failure = new InvalidOperationException("Rejected flat content");
-                    Assert.Same(failure, Assert.Throws<InvalidOperationException>(() => widgets.TreeNode("failed", _ => throw failure, new() { depth = 2 })));
+                    Assert.Same(
+                        failure,
+                        Assert.Throws<InvalidOperationException>(() => widgets.TreeNode("failed", _ => throw failure, new() { depth = 2 }))
+                    );
                     Assert.Equal(nativeDepth, NativeImGui.Raw.GetCurrentWindow()->DC.TreeDepth);
                     widgets.SetTreeNodeOpen("root", false);
                     Assert.True(widgets.treeExpansionRevision > revision);
@@ -229,10 +246,14 @@ public sealed unsafe class WidgetLayoutTests
                     NativeImGui.TextUnformatted("Visible content");
                 };
                 for (int row = 0; row < 10_000; row++)
+                {
                     _ = EditorUI.current.widgets.TreeNode("row-" + row, draw, new() { isLeaf = true });
+                }
                 Assert.InRange(drawn, 1, 64);
                 if (frame == 1)
+                {
                     NativeImGui.SetScrollY(100_000f);
+                }
                 NativeImGui.End();
             });
         }
@@ -257,7 +278,9 @@ public sealed unsafe class WidgetLayoutTests
                 submitted += end - start;
                 preserved |= start <= 9999 && end > 9999;
                 for (int row = start; row < end; row++)
+                {
                     NativeImGui.Dummy(new(100f, NativeImGui.GetTextLineHeight()));
+                }
             }, [9999]);
             Assert.InRange(submitted, 1, 64);
             Assert.True(preserved);
@@ -276,12 +299,19 @@ public sealed unsafe class WidgetLayoutTests
                 BeginWindow("Clipper failure", new(400f, 300f));
                 int before = NativeImGui.Raw.GetCurrentContext()->ClipperTempDataStacked;
                 var failure = new InvalidOperationException("Row extension rejected drawing.");
-                Assert.Same(failure, Assert.Throws<InvalidOperationException>(() => EditorUI.current.widgets.ClippedRows(
-                    10_000, NativeImGui.GetTextLineHeightWithSpacing(), 0, (
-                        state,
-                        start,
-                        end
-                    ) => throw failure)));
+                Assert.Same(
+                    failure,
+                    Assert.Throws<InvalidOperationException>(() => EditorUI.current.widgets.ClippedRows(
+                        10_000,
+                        NativeImGui.GetTextLineHeightWithSpacing(),
+                        0,
+                        (
+                            state,
+                            start,
+                            end
+                        ) => throw failure
+                    ))
+                );
                 Assert.Equal(before, NativeImGui.Raw.GetCurrentContext()->ClipperTempDataStacked);
                 NativeImGui.End();
             });
@@ -328,13 +358,17 @@ public sealed unsafe class WidgetLayoutTests
             {
                 catalogSource = new Inno.Adapter.Modules.DotNet.DotNetAssemblyCatalogSource(typeof(WidgetLayoutTests).Assembly)
             });
-            using var types = new Inno.Extensibility.Types.TypeCatalog(modules, new Inno.Adapter.Modules.DotNet.ReflectionTypeCatalogSource());
+            using var types = new Inno.Extensibility.Types.TypeCatalog(
+                modules,
+                new Inno.Adapter.Modules.DotNet.ReflectionTypeCatalogSource()
+            );
             using var logs = new Inno.Core.Logging.LogRouter();
             using var runtime = new Inno.Editor.Interactions.EditorInteractionRuntime(
                 root,
                 types,
                 logs,
-                new Inno.Editor.Core.EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"));
+                new Inno.Editor.Core.EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")
+            );
             runtime.Start();
             using NativeContext context = new(1f);
             NativeImGui.Raw.GetIO()->ConfigFlags |= (int)Inno.Native.ImGui.ImGuiConfigFlags.NavEnableKeyboard;
@@ -432,7 +466,8 @@ public sealed unsafe class WidgetLayoutTests
                             drawLeadingControl: failure == "card-leading" ? rejected : null,
                             drawTrailingControl: failure == "card-trailing" ? rejected : null,
                             dimmed: true,
-                            drawContextMenu: failure == "card-menu" ? rejected : null);
+                            drawContextMenu: failure == "card-menu" ? rejected : null
+                        );
                     }
                     else
                     {
@@ -440,7 +475,9 @@ public sealed unsafe class WidgetLayoutTests
                         _ = widgets.TreeNode("failed-tree", _ =>
                         {
                             if (failure == "tree-content")
+                            {
                                 rejected();
+                            }
                             EditorImGui.Text("Extension");
                         }, new() { drawViewportOverlay = failure == "tree-overlay" ? rejected : null });
                     }
@@ -529,7 +566,9 @@ public sealed unsafe class WidgetLayoutTests
                             if (EditorUI.current.widgets.SectionHeader("Frames"))
                             {
                                 for (int index = 0; index < 40; index++)
+                                {
                                     EditorImGui.Text("Frame " + index);
+                                }
                             }
                         });
                     }
@@ -606,17 +645,21 @@ public sealed unsafe class WidgetLayoutTests
             {
                 BeginWindow("Property layout", new Vector2(320f, 270f));
                 fontHeight = NativeImGui.GetTextLineHeight();
-                EditorUI.current.widgets.PropertyRow("persistence", () =>
-                {
-                    labelWidth = NativeImGui.GetContentRegionAvail().X;
-                    EditorUI.current.widgets.PropertyLabel("Persistent data directory for this exported application");
-                    labelSize = NativeImGui.GetItemRectSize();
-                }, () =>
-                {
-                    valueWidth = NativeImGui.GetContentRegionAvail().X;
-                    string value = "Application data";
-                    EditorUI.current.widgets.SearchInput("directory", "Directory", ref value);
-                });
+                EditorUI.current.widgets.PropertyRow(
+                    "persistence",
+                    () =>
+                    {
+                        labelWidth = NativeImGui.GetContentRegionAvail().X;
+                        EditorUI.current.widgets.PropertyLabel("Persistent data directory for this exported application");
+                        labelSize = NativeImGui.GetItemRectSize();
+                    },
+                    () =>
+                    {
+                        valueWidth = NativeImGui.GetContentRegionAvail().X;
+                        string value = "Application data";
+                        EditorUI.current.widgets.SearchInput("directory", "Directory", ref value);
+                    }
+                );
                 scroll = new Vector2(NativeImGui.GetScrollMaxX(), NativeImGui.GetScrollMaxY());
                 NativeImGui.End();
             });
@@ -658,7 +701,9 @@ public sealed unsafe class WidgetLayoutTests
             {
                 opened = true;
                 for (int index = 0; index < itemCount; index++)
+                {
                     NativeImGui.Selectable($"Tag {index}");
+                }
                 popupPosition = NativeImGui.GetWindowPos();
                 popupSize = NativeImGui.GetWindowSize();
                 scroll = new Vector2(NativeImGui.GetScrollMaxX(), NativeImGui.GetScrollMaxY());
@@ -675,7 +720,9 @@ public sealed unsafe class WidgetLayoutTests
         context.Frame(draw);
         context.Click((controlMinimum + controlMaximum) * 0.5f, 0, draw);
         for (int frame = 0; frame < 6; frame++)
+        {
             context.Frame(draw);
+        }
         Assert.True(opened);
         Assert.InRange(popupPosition.Y, controlMaximum.Y - 1f, controlMaximum.Y + 1f);
         Assert.True(popupPosition.X >= 20f);
@@ -706,7 +753,9 @@ public sealed unsafe class WidgetLayoutTests
             {
                 opened = true;
                 for (int index = 0; index < 100; index++)
+                {
                     NativeImGui.Selectable($"Object {index}");
+                }
                 popupPosition = NativeImGui.GetWindowPos();
                 popupSize = NativeImGui.GetWindowSize();
                 EditorUI.current.widgets.EndBoundedCombo();
@@ -722,7 +771,9 @@ public sealed unsafe class WidgetLayoutTests
         context.Frame(draw);
         context.Click((controlMinimum + controlMaximum) * 0.5f, 0, draw);
         for (int frame = 0; frame < 6; frame++)
+        {
             context.Frame(draw);
+        }
         Assert.True(opened);
         Assert.InRange(popupPosition.Y, controlMaximum.Y - 1f, controlMaximum.Y + 1f);
         Assert.True(popupPosition.Y + popupSize.Y <= 381f);
@@ -768,7 +819,9 @@ public sealed unsafe class WidgetLayoutTests
         context.Frame(draw);
         context.Click((controlMinimum + controlMaximum) * 0.5f, 1, draw);
         for (int frame = 0; frame < 6; frame++)
+        {
             context.Frame(draw);
+        }
         Assert.True(opened);
         Assert.InRange(availableWidth - searchWidth, 0f, 1.1f);
         Assert.Equal(Vector2.Zero, scroll);
@@ -786,12 +839,16 @@ public sealed unsafe class WidgetLayoutTests
             BeginWindow("Background panel", new Vector2(400f, 300f));
             NativeImGui.SetCursorScreenPos(new Vector2(100f, 100f));
             if (EditorUI.current.widgets.ClickableText("close", "X", new Vector2(40f, 40f)))
+            {
                 backgroundPresses++;
+            }
             NativeImGui.End();
             BeginWindow("Foreground shader", new Vector2(400f, 300f));
             NativeImGui.SetCursorScreenPos(new Vector2(100f, 100f));
             if (EditorUI.current.widgets.ClickableText("action", "Edit", new Vector2(40f, 40f)))
+            {
                 foregroundPresses++;
+            }
             hit = (NativeImGui.GetItemRectMin() + NativeImGui.GetItemRectMax()) * 0.5f;
             NativeImGui.End();
         };
@@ -817,21 +874,29 @@ public sealed unsafe class WidgetLayoutTests
         Action draw = () =>
         {
             BeginWindow("Tree content", new Vector2(400f, 300f));
-            var result = EditorUI.current.widgets.TreeNode($"content-{isLeaf}-{zoom}", _ => EditorUI.current.widgets.IconText(
-                "O",
-                "Selected object",
-                false
-            ), new() { isLeaf = isLeaf, drawViewportOverlay = () =>
-            {
-                float rowY = NativeImGui.GetItemRectMin().Y;
-                NativeImGui.SetCursorScreenPos(new Vector2(360f, rowY));
-                _ = EditorUI.current.widgets.ClickableIcon("visibility", "V", "Visibility");
-            } });
+            var result = EditorUI.current.widgets.TreeNode(
+                $"content-{isLeaf}-{zoom}",
+                _ => EditorUI.current.widgets.IconText("O", "Selected object", false),
+                new()
+                {
+                    isLeaf = isLeaf,
+                    drawViewportOverlay = () =>
+                    {
+                        float rowY = NativeImGui.GetItemRectMin().Y;
+                        NativeImGui.SetCursorScreenPos(new Vector2(360f, rowY));
+                        _ = EditorUI.current.widgets.ClickableIcon("visibility", "V", "Visibility");
+                    }
+                }
+            );
             hit = new Vector2(result.contentMin.X + 80f, (result.min.Y + result.max.Y) * 0.5f);
             if (result.isClicked)
+            {
                 presses++;
+            }
             if (result.isOpen)
+            {
                 NativeImGui.TreePop();
+            }
             NativeImGui.End();
         };
         context.Frame(draw);
@@ -850,13 +915,21 @@ public sealed unsafe class WidgetLayoutTests
         Action draw = () =>
         {
             BeginWindow("Tree disclosure", new Vector2(400f, 300f));
-            var result = EditorUI.current.widgets.TreeNode("disclosure", _ => NativeImGui.TextUnformatted("Parent"), new() { isLeaf = false });
+            var result = EditorUI.current.widgets.TreeNode(
+                "disclosure",
+                _ => NativeImGui.TextUnformatted("Parent"),
+                new() { isLeaf = false }
+            );
             hit = new Vector2(result.contentMin.X - NativeImGui.GetTreeNodeToLabelSpacing() * 0.5f, (result.min.Y + result.max.Y) * 0.5f);
             opened = result.isOpen;
             if (result.isClicked)
+            {
                 presses++;
+            }
             if (result.isOpen)
+            {
                 NativeImGui.TreePop();
+            }
             NativeImGui.End();
         };
         context.Frame(draw);
@@ -879,16 +952,28 @@ public sealed unsafe class WidgetLayoutTests
         Action draw = () =>
         {
             BeginWindow("Tree overlay", new Vector2(400f, 300f));
-            var result = EditorUI.current.widgets.TreeNode($"overlay-{settleHover}", _ => NativeImGui.TextUnformatted("Object"), new() { isLeaf = true, drawViewportOverlay = () =>
-            {
-                float rowY = NativeImGui.GetItemRectMin().Y;
-                NativeImGui.SetCursorScreenPos(new Vector2(360f, rowY));
-                if (NativeImGui.SmallButton("Eye"))
-                    overlayPresses++;
-                overlayHit = (NativeImGui.GetItemRectMin() + NativeImGui.GetItemRectMax()) * 0.5f;
-            } });
+            var result = EditorUI.current.widgets.TreeNode(
+                $"overlay-{settleHover}",
+                _ => NativeImGui.TextUnformatted("Object"),
+                new()
+                {
+                    isLeaf = true,
+                    drawViewportOverlay = () =>
+                    {
+                        float rowY = NativeImGui.GetItemRectMin().Y;
+                        NativeImGui.SetCursorScreenPos(new Vector2(360f, rowY));
+                        if (NativeImGui.SmallButton("Eye"))
+                        {
+                            overlayPresses++;
+                        }
+                        overlayHit = (NativeImGui.GetItemRectMin() + NativeImGui.GetItemRectMax()) * 0.5f;
+                    }
+                }
+            );
             if (result.isClicked)
+            {
                 rowPresses++;
+            }
             NativeImGui.End();
         };
         context.Frame(draw);
@@ -909,15 +994,25 @@ public sealed unsafe class WidgetLayoutTests
         Action draw = () =>
         {
             BeginWindow("Tree double click", new Vector2(400f, 300f));
-            var result = EditorUI.current.widgets.TreeNode("double-click", _ => NativeImGui.TextUnformatted("Parent"), new() { isLeaf = false });
+            var result = EditorUI.current.widgets.TreeNode(
+                "double-click",
+                _ => NativeImGui.TextUnformatted("Parent"),
+                new() { isLeaf = false }
+            );
             hit = new Vector2(result.contentMin.X + 80f, (result.min.Y + result.max.Y) * 0.5f);
             opened = result.isOpen;
             if (result.isClicked)
+            {
                 presses++;
+            }
             if (result.isDoubleClicked)
+            {
                 doublePresses++;
+            }
             if (result.isOpen)
+            {
                 NativeImGui.TreePop();
+            }
             NativeImGui.End();
         };
         context.Frame(draw);
@@ -946,7 +1041,9 @@ public sealed unsafe class WidgetLayoutTests
                 Assert.True(widgets.isMixedValue);
             });
             Assert.False(widgets.isMixedValue);
-            Assert.Throws<InvalidOperationException>(() => widgets.MixedValue(true, () => throw new InvalidOperationException("rejected draw")));
+            Assert.Throws<InvalidOperationException>(
+                () => widgets.MixedValue(true, () => throw new InvalidOperationException("rejected draw"))
+            );
             Assert.False(widgets.isMixedValue);
             NativeImGui.End();
         });
@@ -979,6 +1076,7 @@ public sealed unsafe class WidgetLayoutTests
         private readonly ImGuiNativeContext* m_context;
         private readonly Inno.Editor.ImGui.EditorUiSession m_ui = new();
         private readonly IDisposable m_uiScope;
+
         public NativeContext(float zoom)
         {
             m_context = NativeImGui.Raw.CreateContext(null);
@@ -1009,7 +1107,9 @@ public sealed unsafe class WidgetLayoutTests
             ImGuiIO* io = NativeImGui.Raw.GetIO();
             NativeImGui.Raw.AddMousePosEvent(io, position.X, position.Y);
             if (settleHover)
+            {
                 Frame(draw);
+            }
             NativeImGui.Raw.AddMouseButtonEvent(io, button, (true ? (byte)1 : (byte)0));
             Frame(draw);
             NativeImGui.Raw.AddMouseButtonEvent(io, button, (false ? (byte)1 : (byte)0));

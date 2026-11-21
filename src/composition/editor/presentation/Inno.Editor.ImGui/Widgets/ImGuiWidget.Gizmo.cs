@@ -1,12 +1,14 @@
 using System;
 using System.Numerics;
+
 using Matrix = Inno.Core.Mathematics.Matrix;
-using NativeImGui = Inno.Native.ImGui.ImGui;
 using NativeGizmo = Inno.Native.ImGuizmo.ImGuizmo;
+using NativeImGui = Inno.Native.ImGui.ImGui;
 using NativeOperation = Inno.Native.ImGuizmo.ImGuizmoOperation;
 using NativeSpace = Inno.Native.ImGuizmo.ImGuizmoMode;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
+
 /// <summary>
 /// Chooses the transform handles rendered by the viewport presenter.
 /// </summary>
@@ -63,42 +65,52 @@ public readonly record struct TransformGizmoOptions
     /// Gets the viewport's screen-space minimum.
     /// </summary>
     public Vector2 minimum { get; init; }
+
     /// <summary>
     /// Gets the viewport's screen-space maximum.
     /// </summary>
     public Vector2 maximum { get; init; }
+
     /// <summary>
     /// Gets the column-vector view matrix.
     /// </summary>
     public Matrix view { get; init; }
+
     /// <summary>
     /// Gets the projection matrix supplied by the viewport owner.
     /// </summary>
     public Matrix projection { get; init; }
+
     /// <summary>
     /// Gets whether this viewport uses an orthographic projection.
     /// </summary>
     public bool orthographic { get; init; }
+
     /// <summary>
     /// Gets whether manipulation can consume pointer input.
     /// </summary>
     public bool enabled { get; init; }
+
     /// <summary>
     /// Gets the requested handles.
     /// </summary>
     public TransformGizmoOperation operation { get; init; }
+
     /// <summary>
     /// Gets the handle coordinate space.
     /// </summary>
     public TransformGizmoSpace space { get; init; }
+
     /// <summary>
     /// Gets whether the X translation axis is excluded by the viewport plane.
     /// </summary>
     public bool maskX { get; init; }
+
     /// <summary>
     /// Gets whether the Y translation axis is excluded by the viewport plane.
     /// </summary>
     public bool maskY { get; init; }
+
     /// <summary>
     /// Gets whether the Z translation axis is excluded by the viewport plane.
     /// </summary>
@@ -126,6 +138,7 @@ public readonly record struct TransformGizmoResult(
     bool isUsing,
     bool isOver
 );
+
 /// <summary>
 /// Owns session-local controls, native adaptation and reversible edit gestures.
 /// </summary>
@@ -157,7 +170,12 @@ public sealed unsafe partial class ImGuiWidget
         NativeOperation operation = ToNativeOperation(options.operation);
         NativeGizmo.BeginFrame();
         NativeGizmo.Raw.SetDrawlist((Inno.Native.ImGuizmo.ImDrawList*)(nint)NativeImGui.Raw.GetWindowDrawList());
-        NativeGizmo.SetRect(options.minimum.X, options.minimum.Y, MathF.Max(1f, options.maximum.X - options.minimum.X), MathF.Max(1f, options.maximum.Y - options.minimum.Y));
+        NativeGizmo.SetRect(
+            options.minimum.X,
+            options.minimum.Y,
+            MathF.Max(1f, options.maximum.X - options.minimum.X),
+            MathF.Max(1f, options.maximum.Y - options.minimum.Y)
+        );
         NativeGizmo.SetOrthographic(options.orthographic);
         NativeGizmo.SetGizmoSizeClipSpace(0.21f);
         var style = NativeGizmo.Raw.GetStyle();
@@ -199,18 +217,30 @@ public sealed unsafe partial class ImGuiWidget
     private static NativeOperation ToNativeOperation(TransformGizmoOperation operation)
     {
         if (operation == TransformGizmoOperation.Translate)
+        {
             return NativeOperation.Translate;
+        }
         if (operation == TransformGizmoOperation.Rotate)
+        {
             return NativeOperation.Rotate;
+        }
         NativeOperation result = 0;
         if (operation.HasFlag(TransformGizmoOperation.ScaleX))
+        {
             result |= NativeOperation.ScaleX;
+        }
         if (operation.HasFlag(TransformGizmoOperation.ScaleY))
+        {
             result |= NativeOperation.ScaleY;
+        }
         if (operation.HasFlag(TransformGizmoOperation.ScaleZ))
+        {
             result |= NativeOperation.ScaleZ;
+        }
         if (result == 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(operation));
+        }
         return result;
     }
 
@@ -236,22 +266,23 @@ public sealed unsafe partial class ImGuiWidget
         destination[15] = matrix.m44;
     }
 
-    private static unsafe Matrix ReadColumnMajor(float* source) => new(
-        source[0],
-        source[4],
-        source[8],
-        source[12],
-        source[1],
-        source[5],
-        source[9],
-        source[13],
-        source[2],
-        source[6],
-        source[10],
-        source[14],
-        source[3],
-        source[7],
-        source[11],
-        source[15]
-    );
+    private static unsafe Matrix ReadColumnMajor(float* source)
+        => new(
+            source[0],
+            source[4],
+            source[8],
+            source[12],
+            source[1],
+            source[5],
+            source[9],
+            source[13],
+            source[2],
+            source[6],
+            source[10],
+            source[14],
+            source[3],
+            source[7],
+            source[11],
+            source[15]
+        );
 }

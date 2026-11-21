@@ -1,11 +1,12 @@
 using System;
 using System.Numerics;
+using Xunit;
 using Inno.Core.Graphs;
 using Inno.Editor.Graph;
 using Inno.Editor.Graph.ImGui;
-using Xunit;
 
 namespace Inno.Editor.Presentation.Tests;
+
 public sealed class GraphCanvasViewTests
 {
     [Fact]

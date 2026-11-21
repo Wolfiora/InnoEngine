@@ -14,7 +14,9 @@ internal static class SerializationNodeReuse
         if (!ReferenceEquals(result.captureKey, key))
         {
             if (ReferenceEquals(result, previous))
+            {
                 result = CopyObject(result);
+            }
             result.captureKey = key;
         }
         return result;
@@ -25,11 +27,17 @@ internal static class SerializationNodeReuse
         object previous
     ) {
         if (typeof(T) == typeof(float))
+        {
             return BitConverter.SingleToInt32Bits(Unsafe.As<T, float>(ref value)) == BitConverter.SingleToInt32Bits((float)previous);
+        }
         if (typeof(T) == typeof(double))
+        {
             return BitConverter.DoubleToInt64Bits(Unsafe.As<T, double>(ref value)) == BitConverter.DoubleToInt64Bits((double)previous);
+        }
         if (typeof(T) == typeof(decimal))
+        {
             return SameScalar((object)Unsafe.As<T, decimal>(ref value), previous);
+        }
         return EqualityComparer<T>.Default.Equals(value, (T)previous);
     }
 
@@ -38,7 +46,9 @@ internal static class SerializationNodeReuse
         var result = new ObjectSerializationNode();
         result.values.EnsureCapacity(previous.values.Count);
         foreach (var pair in previous.values)
+        {
             result.values.Add(pair.Key, pair.Value);
+        }
         return result;
     }
 
@@ -46,26 +56,32 @@ internal static class SerializationNodeReuse
         object value,
         SerializationNode? previous
     ) => previous is ScalarSerializationNode scalar && SameScalar(value, scalar.value)
-        ? scalar
-        : new ScalarSerializationNode(value);
+         ? scalar
+         : new ScalarSerializationNode(value);
 
     internal static SerializationNode Binary(
         byte[] value,
         SerializationNode? previous
     ) => previous is BinarySerializationNode binary && value.AsSpan().SequenceEqual(binary.value)
-        ? binary
-        : new BinarySerializationNode((byte[])value.Clone());
+         ? binary
+         : new BinarySerializationNode((byte[])value.Clone());
 
     internal static bool SameScalar(
         object value,
         object previous
     ) {
         if (value.GetType() != previous.GetType())
+        {
             return false;
+        }
         if (value is float number)
+        {
             return BitConverter.SingleToInt32Bits(number) == BitConverter.SingleToInt32Bits((float)previous);
+        }
         if (value is double real)
+        {
             return BitConverter.DoubleToInt64Bits(real) == BitConverter.DoubleToInt64Bits((double)previous);
+        }
         if (value is decimal precision)
         {
             Span<int> left = stackalloc int[4];

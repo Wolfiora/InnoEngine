@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-
-using Inno.Scripting.Api;
 using Inno.Core.Serialization;
+using Inno.Scripting.Api;
 
 namespace Inno.Scene;
 
@@ -26,10 +25,14 @@ public abstract class GameSystem : EngineObject, ISerializable, ISceneLifecycleO
         {
             bool next = value && this is not MissingGameSystem;
             if (m_enabled == next)
+            {
                 return;
+            }
             m_enabled = next;
             if (m_scene is { isLoaded: true })
+            {
                 m_scene.NotifyGameSystemActivationChanged(this);
+            }
         }
     }
 
@@ -48,70 +51,53 @@ public abstract class GameSystem : EngineObject, ISerializable, ISceneLifecycleO
     /// </summary>
     protected GameScene scene
         => m_scene ?? throw new InvalidOperationException(
-            $"System '{GetType().FullName}' is not registered with a scene.");
+            $"System '{GetType().FullName}' is not registered with a scene."
+        );
 
     /// <summary>
     /// Restores this system to defaults when added or explicitly reset.
     /// </summary>
-    protected virtual void Reset()
-    {
-    }
+    protected virtual void Reset() {}
 
     /// <summary>
     /// Called once before the system first becomes active.
     /// </summary>
-    protected virtual void Awake()
-    {
-    }
+    protected virtual void Awake() {}
 
     /// <summary>
     /// Called once immediately before the first update.
     /// </summary>
-    protected virtual void Start()
-    {
-    }
+    protected virtual void Start() {}
 
     /// <summary>
     /// Called when the system becomes active and enabled.
     /// </summary>
-    protected virtual void OnEnable()
-    {
-    }
+    protected virtual void OnEnable() {}
 
     /// <summary>
     /// Called when the system stops being active and enabled.
     /// </summary>
-    protected virtual void OnDisable()
-    {
-    }
+    protected virtual void OnDisable() {}
 
     /// <summary>
     /// Called before a system that entered runtime lifecycle is destroyed.
     /// </summary>
-    protected virtual void OnDestroy()
-    {
-    }
+    protected virtual void OnDestroy() {}
 
     /// <summary>
     /// Called during the fixed-rate scene stage. Use <c>Time.fixedDeltaTime</c> for step timing.
     /// </summary>
-    protected virtual void OnFixedUpdate()
-    {
-    }
+    protected virtual void OnFixedUpdate() {}
 
     /// <summary>
     /// Called during the variable-rate scene stage. Use <c>Time.deltaTime</c> for frame timing.
     /// </summary>
-    protected virtual void OnUpdate()
-    {
-    }
+    protected virtual void OnUpdate() {}
 
     /// <summary>
     /// Called during the late scene stage. Use <c>Time.deltaTime</c> for frame timing.
     /// </summary>
-    protected virtual void OnLateUpdate()
-    {
-    }
+    protected virtual void OnLateUpdate() {}
 
     /// <summary>
     /// Gets all scene components assignable to a requested type.
@@ -122,7 +108,8 @@ public abstract class GameSystem : EngineObject, ISerializable, ISceneLifecycleO
     /// <returns>
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
-    protected IReadOnlyList<TComponent> GetComponents<TComponent>() where TComponent : GameComponent => scene.GetComponents<TComponent>();
+    protected IReadOnlyList<TComponent> GetComponents<TComponent>()
+        where TComponent : GameComponent => scene.GetComponents<TComponent>();
 
     /// <summary>
     /// Gets all committed live game objects in deterministic scene storage order.
@@ -141,7 +128,8 @@ public abstract class GameSystem : EngineObject, ISerializable, ISceneLifecycleO
     /// <returns>
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
-    protected IReadOnlyList<GameObject> Query<T1>() where T1 : GameComponent => scene.Query<T1>();
+    protected IReadOnlyList<GameObject> Query<T1>()
+        where T1 : GameComponent => scene.Query<T1>();
 
     /// <summary>
     /// Queries game objects containing two required component types.
@@ -158,7 +146,7 @@ public abstract class GameSystem : EngineObject, ISerializable, ISceneLifecycleO
     protected IReadOnlyList<GameObject> Query<T1, T2>()
         where T1 : GameComponent
         where T2 : GameComponent
-        => scene.Query<T1, T2>();
+            => scene.Query<T1, T2>();
 
     /// <summary>
     /// Queries game objects containing three required component types.
@@ -179,7 +167,7 @@ public abstract class GameSystem : EngineObject, ISerializable, ISceneLifecycleO
         where T1 : GameComponent
         where T2 : GameComponent
         where T3 : GameComponent
-        => scene.Query<T1, T2, T3>();
+            => scene.Query<T1, T2, T3>();
 
     internal bool lifecycleAwakeCalled { get; set; }
     internal bool lifecycleStartCalled { get; set; }
@@ -191,7 +179,9 @@ public abstract class GameSystem : EngineObject, ISerializable, ISceneLifecycleO
     {
         ArgumentNullException.ThrowIfNull(owner);
         if (m_scene is not null)
+        {
             throw new InvalidOperationException($"System '{GetType().FullName}' is already registered.");
+        }
         m_scene = owner;
     }
 
@@ -202,35 +192,47 @@ public abstract class GameSystem : EngineObject, ISerializable, ISceneLifecycleO
     }
 
     internal void DispatchReset() => Reset();
+
     internal void DispatchFixedUpdate() => OnFixedUpdate();
+
     internal void DispatchUpdate() => OnUpdate();
+
     internal void DispatchLateUpdate() => OnLateUpdate();
 
     bool ISceneLifecycleObject.lifecycleIsActive => isActiveAndEnabled;
     bool ISceneLifecycleObject.lifecycleIsDestroyed => isDestroyed;
+
     bool ISceneLifecycleObject.lifecycleAwakeCalled
     {
         get => lifecycleAwakeCalled;
         set => lifecycleAwakeCalled = value;
     }
+
     bool ISceneLifecycleObject.lifecycleStartCalled
     {
         get => lifecycleStartCalled;
         set => lifecycleStartCalled = value;
     }
+
     bool ISceneLifecycleObject.lifecycleWasEnabled
     {
         get => lifecycleWasEnabled;
         set => lifecycleWasEnabled = value;
     }
+
     bool ISceneLifecycleObject.lifecycleDestroyCalled
     {
         get => lifecycleDestroyCalled;
         set => lifecycleDestroyCalled = value;
     }
+
     void ISceneLifecycleObject.DispatchAwake() => Awake();
+
     void ISceneLifecycleObject.DispatchStart() => Start();
+
     void ISceneLifecycleObject.DispatchEnable() => OnEnable();
+
     void ISceneLifecycleObject.DispatchDisable() => OnDisable();
+
     void ISceneLifecycleObject.DispatchDestroy() => OnDestroy();
 }

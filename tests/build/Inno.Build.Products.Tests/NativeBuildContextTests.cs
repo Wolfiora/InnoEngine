@@ -22,8 +22,9 @@ public sealed class NativeBuildContextTests : IDisposable
         var owner = new NativeComponentDescriptor("fixture", "native/fixture.csproj", "build/fixture.csproj");
         Directory.CreateDirectory(Path.Combine(m_root, "build"));
         File.WriteAllText(Path.Combine(m_root, "build", "fixture.csproj"), "<Project />");
-        NativeBuildContext Context(string path) => new NativeBuildContext(path, "release")
-            .WithComponentOptions(owner, new(NativeLibraryKind.Shared));
+        NativeBuildContext Context(string path)
+            => new NativeBuildContext(path, "release")
+                .WithComponentOptions(owner, new(NativeLibraryKind.Shared));
         var plain = Context(m_root);
         var separated = Context(m_root + Path.DirectorySeparatorChar);
         Assert.Equal(plain.engineRoot, separated.engineRoot);
@@ -37,7 +38,9 @@ public sealed class NativeBuildContextTests : IDisposable
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     [Fact]
@@ -51,8 +54,16 @@ public sealed class NativeBuildContextTests : IDisposable
 
         Assert.Equal(new PhysicalPathResolver().Resolve(m_root), context.engineRoot);
         Assert.Equal("release", context.configuration);
-        Assert.Equal(Path.Combine(context.engineRoot, "build", "toolchains", "Inno.Build.Toolchains", "obj", "native"),
-            context.GetNativeBuildRoot(new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj")));
+        Assert.Equal(
+            Path.Combine(context.engineRoot, "build", "toolchains", "Inno.Build.Toolchains", "obj", "native"),
+            context.GetNativeBuildRoot(
+                new NativeComponentDescriptor(
+                    "fixture",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
+                )
+            )
+        );
         Assert.NotEqual(TestRepository.GetRoot(typeof(NativeBuildContextTests).Assembly), context.engineRoot);
         Assert.False(Directory.Exists(Path.Combine(owner, "obj")));
     }
@@ -77,9 +88,11 @@ public sealed class NativeBuildContextTests : IDisposable
         cancellation.Cancel();
         var context = new NativeBuildContext(m_root, "debug");
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => editor
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => (
+            editor
             ? new ComponentNativeProductExecutor().BuildAsync(context, BuildTestProducts.Editor(), cancellation.Token)
-            : new ComponentNativeProductExecutor().BuildAsync(context, BuildTestProducts.Player(), cancellation.Token));
+            : new ComponentNativeProductExecutor().BuildAsync(context, BuildTestProducts.Player(), cancellation.Token)
+        ));
 
         Assert.Single(Directory.EnumerateFileSystemEntries(m_root));
     }
@@ -90,7 +103,8 @@ public sealed class NativeBuildContextTests : IDisposable
         CreateCheckout();
         var context = new NativeBuildContext(m_root, "release");
         InvalidOperationException failure = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => new ComponentNativeProductExecutor().BuildAsync(context, BuildTestProducts.Player(), CancellationToken.None));
+            () => new ComponentNativeProductExecutor().BuildAsync(context, BuildTestProducts.Player(), CancellationToken.None)
+        );
         Assert.Contains("explicit target toolchain", failure.Message, StringComparison.Ordinal);
         Assert.Single(Directory.EnumerateFileSystemEntries(m_root));
     }

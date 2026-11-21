@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Content;
 using Inno.Core.IO;
-using Xunit;
 
 namespace Inno.Adapter.Content.FileSystem.Tests;
 
@@ -33,10 +33,14 @@ public sealed class ContentCachePublicationTests
     public async Task AWriterLeaseEnforcesBoundedWaitingAndCancellationWithoutChangingContent()
     {
         using var fixture = new ContentCacheFixture();
-        using FileLease writer = await FileLease.AcquireAsync(Path.Combine(fixture.cache, "install.lock"),
-            TimeSpan.Zero);
-        await Assert.ThrowsAsync<TimeoutException>(() => FileContentPreparation.PrepareAsync(fixture.source,
-            new FileContentCacheOptions(fixture.root, TimeSpan.FromMilliseconds(40))).AsTask());
+        using FileLease writer = await FileLease.AcquireAsync(
+            Path.Combine(fixture.cache, "install.lock"),
+            TimeSpan.Zero
+        );
+        await Assert.ThrowsAsync<TimeoutException>(() => FileContentPreparation.PrepareAsync(
+            fixture.source,
+            new FileContentCacheOptions(fixture.root, TimeSpan.FromMilliseconds(40))
+        ).AsTask());
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(40));
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
             FileContentPreparation.PrepareAsync(fixture.source, fixture.options, cancellation.Token).AsTask());

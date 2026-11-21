@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Settings;
 
 namespace Inno.Scene.Layers;
@@ -18,7 +17,9 @@ public readonly record struct GameLayerId
     public GameLayerId(ProjectScopedId value)
     {
         if (string.IsNullOrEmpty(value.name.value))
+        {
             throw new ArgumentException("A GameLayer ID requires a valid project-local name.", nameof(value));
+        }
         this.value = value.value;
     }
 
@@ -34,17 +35,16 @@ public readonly record struct GameLayerId
     public GameLayerId(
         ProjectId projectId,
         ProjectLocalId name
-    )
-        : this(projectId.Qualify(name))
-    {
-    }
+    ) : this(projectId.Qualify(name)) {}
 
     internal GameLayerId(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         string normalized = value.Trim();
         if (!normalized.Contains('.', StringComparison.Ordinal))
+        {
             throw new ArgumentException("A GameLayer ID must contain project and local name segments.", nameof(value));
+        }
         for (int index = 0; index < normalized.Length; index++)
         {
             char character = normalized[index];
@@ -52,7 +52,9 @@ public readonly record struct GameLayerId
                          || character is >= '0' and <= '9'
                          || character is '.' or '-' or '_';
             if (!valid)
+            {
                 throw new ArgumentException("A GameLayer ID is not portable.", nameof(value));
+            }
         }
         this.value = normalized;
     }

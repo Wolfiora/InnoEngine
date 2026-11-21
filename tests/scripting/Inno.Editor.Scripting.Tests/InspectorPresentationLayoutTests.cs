@@ -1,24 +1,27 @@
-using ImGuiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using System.Runtime.CompilerServices;
-using NativeVector2 = Inno.Native.ImGui.ImVec2C;
-using NativeVector4 = Inno.Native.ImGui.ImVec4C;
-using BGCS.Runtime;
 using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using BGCS.Runtime;
+using Xunit;
 using Inno.Editor.ImGui;
 using Inno.Native.ImGui;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
+using ImGuiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
 using NativeImGui = Inno.Native.ImGui.ImGui;
-using Xunit;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using NativeVector4 = Inno.Native.ImGui.ImVec4C;
 
 namespace Inno.Editor.Scripting.Tests;
+
 [Trait("Acceptance", "Visual")]
 public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
 {
     private readonly ImGuiNativeContext* m_context = NativeImGui.Raw.CreateContext(null);
     private readonly Inno.Editor.ImGui.EditorUiSession m_ui = new();
     private readonly IDisposable m_uiScope;
+
     public InspectorPresentationLayoutTests()
     {
         m_uiScope = m_ui.Enter();
@@ -99,7 +102,9 @@ public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
         Frame();
         NativeImGui.Raw.AddMousePosEvent(io, hover.X, hover.Y);
         for (int index = 0; index < 4; index++)
+        {
             Frame();
+        }
         using NativeStringLease nativeTestText2 = Utf8Codec.EncodeNullTerminated("##Tooltip_00", allowsNull: false);
         ImGuiWindow* tooltip = NativeImGui.Raw.FindWindowByName((sbyte*)nativeTestText2.pointer);
         Assert.False((tooltip == null));
@@ -122,7 +127,11 @@ public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
             using NativeStringLease nativeTestText3 = Utf8Codec.EncodeNullTerminated("HelpBox acceptance", allowsNull: false);
             NativeImGui.Raw.Begin((sbyte*)nativeTestText3.pointer, null, 0);
             float width = NativeImGui.GetContentRegionAvail().X;
-            EditorUI.current.widgets.HelpBox("Assign a Sprite to enable atlas geometry, borders, pixel density, and sampling controls.", "i", EditorPalette.warning);
+            EditorUI.current.widgets.HelpBox(
+                "Assign a Sprite to enable atlas geometry, borders, pixel density, and sampling controls.",
+                "i",
+                EditorPalette.warning
+            );
             Vector2 size = NativeImGui.GetItemRectSize();
             Assert.Equal(width, size.X, 2);
             Assert.True(size.Y > NativeImGui.GetTextLineHeight() * 2);
@@ -167,14 +176,20 @@ public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
         {
             Vector2 point = new(window->Pos.X + window->Size.X * 0.47f, seam + sample * 0.1f);
             float coverage = CoverageAt(window->DrawList, point);
-            Assert.True(coverage >= 0.999f, $"Transparent title/body join: zoom={zoom}, scale={framebufferScale}, y={point.Y}, alpha={coverage}");
+            Assert.True(
+                coverage >= 0.999f,
+                $"Transparent title/body join: zoom={zoom}, scale={framebufferScale}, y={point.Y}, alpha={coverage}"
+            );
         }
 
         for (int pixel = -2; pixel <= 2; pixel++)
         {
             float y = (MathF.Floor(seam * framebufferScale) + pixel + 0.5f) / framebufferScale;
             Vector2 point = new(window->Pos.X + window->Size.X * 0.47f, y);
-            Assert.True(CoverageAt(window->DrawList, point) >= 0.999f, $"Transparent device pixel: zoom={zoom}, scale={framebufferScale}, y={y}");
+            Assert.True(
+                CoverageAt(window->DrawList, point) >= 0.999f,
+                $"Transparent device pixel: zoom={zoom}, scale={framebufferScale}, y={y}"
+            );
         }
 
         Assert.True(NativeImGui.Raw.GetStyle()->AntiAliasedFill != 0);
@@ -191,7 +206,9 @@ public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
             ImDrawCmd command = list->CmdBuffer.Data[commandIndex];
             Vector4 clip = Unsafe.BitCast<NativeVector4, Vector4>(command.ClipRect);
             if (point.X < clip.X || point.X >= clip.Z || point.Y < clip.Y || point.Y >= clip.W)
+            {
                 continue;
+            }
             for (uint index = command.IdxOffset; index < command.IdxOffset + command.ElemCount; index += 3)
             {
                 ImDrawVert a = list->VtxBuffer.Data[(int)command.VtxOffset + list->IdxBuffer.Data[(int)index]];
@@ -202,12 +219,16 @@ public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
                 Vector2 cPosition = Unsafe.BitCast<ImVec2C, Vector2>(c.Pos);
                 float area = Cross(bPosition - aPosition, cPosition - aPosition);
                 if (MathF.Abs(area) < 0.000001f)
+                {
                     continue;
+                }
                 float wa = Cross(bPosition - point, cPosition - point) / area;
                 float wb = Cross(cPosition - point, aPosition - point) / area;
                 float wc = 1 - wa - wb;
                 if (wa < 0 || wb < 0 || wc < 0)
+                {
                     continue;
+                }
                 float alpha = (wa * (a.Col >> 24) + wb * (b.Col >> 24) + wc * (c.Col >> 24)) / 255f;
                 result = alpha + result * (1 - alpha);
             }

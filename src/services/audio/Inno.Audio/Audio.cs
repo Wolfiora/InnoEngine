@@ -1,7 +1,7 @@
-using Inno.Core.Execution;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.Execution;
 
 namespace Inno.Audio;
 
@@ -37,7 +37,6 @@ public static class AudioExecutionContext
         ArgumentNullException.ThrowIfNull(audio);
         return S_CURRENT_SCOPE.Enter(audio);
     }
-
 }
 
 /// <summary>
@@ -112,8 +111,7 @@ public static class Audio
         AudioClipAsset clip,
         double scheduledDspTime,
         AudioPlayOptions options
-    )
-        => AudioExecutionContext.current.PlayScheduled(clip, scheduledDspTime, options);
+    ) => AudioExecutionContext.current.PlayScheduled(clip, scheduledDspTime, options);
 
     /// <summary>
     /// Stops a live voice.
@@ -180,8 +178,7 @@ public static class Audio
     public static bool SetVoiceParameters(
         AudioVoiceHandle voice,
         AudioVoiceParameters parameters
-    )
-        => AudioExecutionContext.current.SetVoiceParameters(voice, parameters);
+    ) => AudioExecutionContext.current.SetVoiceParameters(voice, parameters);
 
     /// <summary>
     /// Queries the current state of a voice.
@@ -198,8 +195,7 @@ public static class Audio
     public static bool TryGetVoiceState(
         AudioVoiceHandle voice,
         out AudioPlaybackState playbackState
-    )
-        => AudioExecutionContext.current.TryGetVoiceState(voice, out playbackState);
+    ) => AudioExecutionContext.current.TryGetVoiceState(voice, out playbackState);
 
     /// <summary>
     /// Updates linear gain for a semantic mixer bus.
@@ -271,8 +267,7 @@ public static class Audio
         AudioClipAsset clip,
         AudioClipLoadMode loadMode = AudioClipLoadMode.Automatic,
         CancellationToken cancellationToken = default
-    )
-        => AudioExecutionContext.current.PreloadAsync(clip, loadMode, cancellationToken);
+    ) => AudioExecutionContext.current.PreloadAsync(clip, loadMode, cancellationToken);
 
     /// <summary>
     /// Releases one explicit preload retention without interrupting active voices.

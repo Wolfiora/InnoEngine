@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Build.Cli;
 using Xunit;
+using Inno.Build.Cli;
 
 namespace Inno.Build.Cli.Tests;
 

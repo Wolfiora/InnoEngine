@@ -24,7 +24,9 @@ internal static class TargetBindingGeneration
             BindingGenerationDiagnostics.RequireEqual(native, Path.Combine(publication.managedDestination, "Native"), false);
         }
         else
+        {
             BuildArtifactManifest.Write(publication.targetCandidate, fingerprint, ["Native", "Generated"], context);
+        }
     }
 
     internal static NativeBindingGenerationDescriptor Describe(

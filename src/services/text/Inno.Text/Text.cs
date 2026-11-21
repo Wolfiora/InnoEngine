@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Execution;
 
 namespace Inno.Text;
@@ -56,8 +55,7 @@ public static class Text
         FontAsset font,
         string text,
         TextStyle style
-    )
-        => TextExecutionContext.current.Shape(font, text, style, TextShapingOptions.automatic);
+    ) => TextExecutionContext.current.Shape(font, text, style, TextShapingOptions.automatic);
 
     /// <summary>
     /// Shapes text with explicit language, script, and direction hints.
@@ -82,8 +80,7 @@ public static class Text
         string text,
         TextStyle style,
         TextShapingOptions options
-    )
-        => TextExecutionContext.current.Shape(font, text, style, options);
+    ) => TextExecutionContext.current.Shape(font, text, style, options);
 
     /// <summary>
     /// Rasterizes one shaped glyph into immutable 8-bit coverage.
@@ -108,6 +105,5 @@ public static class Text
         int faceIndex,
         uint glyphId,
         float fontSize
-    )
-        => TextExecutionContext.current.Rasterize(font, faceIndex, glyphId, fontSize);
+    ) => TextExecutionContext.current.Rasterize(font, faceIndex, glyphId, fontSize);
 }

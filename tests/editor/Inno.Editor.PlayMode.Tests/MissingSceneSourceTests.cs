@@ -1,10 +1,10 @@
 using System;
 using System.IO;
 using System.Threading;
+using Xunit;
 using Inno.Assets;
 using Inno.Scene;
 using Inno.Testing.Editor.Native;
-using Xunit;
 
 namespace Inno.Editor.PlayMode.Tests;
 
@@ -25,7 +25,9 @@ public sealed class MissingSceneSourceTests
         byte[] metadata = File.ReadAllBytes(physical + ".imeta");
         Guid id = host.assets.Load<SceneAsset>(AssetPath.Project(path)).identity.persistentId;
         if (edited)
+        {
             value.name = "Unsaved edit";
+        }
         File.Delete(physical);
         Assert.True(host.workspace.TryGetSourcePath(scene, out string pendingPath));
         Assert.Equal(path, pendingPath);

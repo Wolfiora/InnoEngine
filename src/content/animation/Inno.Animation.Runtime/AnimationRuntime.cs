@@ -1,10 +1,9 @@
-using Inno.Runtime.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-
 using Inno.Core.Events;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Animation.Runtime;
 
@@ -24,6 +23,7 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     private bool m_disposed;
     private readonly int m_maxPlaybacks;
     private long m_rejectedPlaybacks;
+
     /// <summary>
     /// Captures snapshots and binds service façades.
     /// </summary>
@@ -31,6 +31,7 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     /// The variable frame timing.
     /// </param>
     protected override void OnBeginFrame(RuntimeFrame frame) => OwnFrameScope(AnimationExecutionContext.EnterScope(this));
+
     /// <summary>
     /// Advances domain state on the variable clock.
     /// </summary>
@@ -87,8 +88,7 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     public AnimationPlaybackHandle Play(
         AnimationClipAsset clip,
         AnimationTarget target
-    )
-        => Play(clip, target, AnimationPlayOptions.defaultValue);
+    ) => Play(clip, target, AnimationPlayOptions.defaultValue);
 
     /// <summary>
     /// Starts one clip with an explicit clock, looping, speed, layer, and blend policy.
@@ -125,7 +125,9 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         ObjectDisposedException.ThrowIf(m_disposed, this);
         ArgumentNullException.ThrowIfNull(clip);
         if (!target.isValid)
+        {
             throw new ArgumentException("An explicit animation destination is required.", nameof(target));
+        }
         clip.Validate();
         ValidateOptions(options);
         if (m_playbacks.Count - m_freeSlots.Count >= m_maxPlaybacks)
@@ -147,9 +149,13 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         }
         var playback = new Playback(snapshot, target, options, generation);
         if (slot == m_playbacks.Count)
+        {
             m_playbacks.Add(playback);
+        }
         else
+        {
             m_playbacks[slot] = playback;
+        }
         return m_handles.Create(slot, generation);
     }
 
@@ -175,7 +181,9 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     public bool Stop(AnimationPlaybackHandle handle)
     {
         if (!TryGetPlayback(handle, out Playback? playback))
+        {
             return false;
+        }
         var identity = m_handles.Decode(handle);
         Retire(identity.slot, playback);
         return true;
@@ -193,7 +201,9 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     public bool Pause(AnimationPlaybackHandle handle)
     {
         if (!TryGetPlayback(handle, out Playback? playback) || playback.state == AnimationPlaybackState.Paused)
+        {
             return false;
+        }
         playback.state = AnimationPlaybackState.Paused;
         return true;
     }
@@ -210,7 +220,9 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     public bool Resume(AnimationPlaybackHandle handle)
     {
         if (!TryGetPlayback(handle, out Playback? playback) || playback.state == AnimationPlaybackState.Playing)
+        {
             return false;
+        }
         playback.state = AnimationPlaybackState.Playing;
         return true;
     }
@@ -235,9 +247,13 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         float time
     ) {
         if (!float.IsFinite(time))
+        {
             throw new ArgumentOutOfRangeException(nameof(time));
+        }
         if (!TryGetPlayback(handle, out Playback? playback))
+        {
             return false;
+        }
         playback.time = Math.Clamp(time, 0f, playback.clip.duration);
         return true;
     }
@@ -288,33 +304,35 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (!float.IsFinite(scaledDeltaTime) || scaledDeltaTime < 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(scaledDeltaTime));
+        }
         if (!float.IsFinite(unscaledDeltaTime) || unscaledDeltaTime < 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(unscaledDeltaTime));
+        }
 
         var samples = new Dictionary<(AnimationTarget target, AnimationBindingId binding), BlendAccumulator>();
         for (int slot = 0; slot < m_playbacks.Count; slot++)
         {
             Playback? playback = m_playbacks[slot];
             if (playback is null)
+            {
                 continue;
-            AnimationPlaybackHandle handle = m_handles.Create(
-                slot,
-                playback.generation);
+            }
+            AnimationPlaybackHandle handle = m_handles.Create(slot, playback.generation);
             float previousTime = playback.time;
             if (playback.state == AnimationPlaybackState.Playing)
             {
                 float delta = playback.options.clock == AnimationClock.Scaled
-                    ? scaledDeltaTime
-                    : unscaledDeltaTime;
-                bool completed = Advance(
-                    handle,
-                    playback,
-                    previousTime,
-                    delta * playback.options.speed);
+                              ? scaledDeltaTime
+                              : unscaledDeltaTime;
+                bool completed = Advance(handle, playback, previousTime, delta * playback.options.speed);
                 Sample(playback, samples);
                 if (completed)
+                {
                     Retire(slot, playback);
+                }
                 continue;
             }
             Sample(playback, samples);
@@ -334,7 +352,9 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     protected override void OnStop()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_disposed = true;
         m_playbacks.Clear();
         m_slotGenerations.Clear();
@@ -348,7 +368,9 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         float delta
     ) {
         if (delta <= 0f)
+        {
             return false;
+        }
         float duration = playback.clip.duration;
         float total = previousTime + delta;
         if (!playback.options.loop && total >= duration)
@@ -374,7 +396,9 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
             remaining -= segment;
             cursor += segment;
             if (cursor >= duration)
+            {
                 cursor = 0f;
+            }
         }
         playback.time = cursor;
         return false;
@@ -391,10 +415,7 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
             AnimationEventMarker marker = clip.events[index];
             if (marker.time > startExclusive && marker.time <= endInclusive)
             {
-                m_events.Enqueue(new AnimationMarkerEvent(
-                    handle,
-                    marker.eventId,
-                    marker.payload));
+                m_events.Enqueue(new AnimationMarkerEvent(handle, marker.eventId, marker.payload));
             }
         }
     }
@@ -404,20 +425,19 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         IDictionary<(AnimationTarget target, AnimationBindingId binding), BlendAccumulator> samples
     ) {
         if (playback.options.weight <= 0f)
+        {
             return;
+        }
         for (int index = 0; index < playback.clip.tracks.Length; index++)
         {
             AnimationTrack track = playback.clip.tracks[index];
             var binding = new AnimationBindingId(track.bindingId);
             var destination = (playback.target, binding);
             AnimationValue value = SampleTrack(track, playback.time);
-            if (!samples.TryGetValue(destination, out BlendAccumulator accumulator) ||
-                playback.options.layer > accumulator.layer)
-            {
-                samples[destination] = new BlendAccumulator(
-                    playback.options.layer,
-                    value,
-                    playback.options.weight);
+            if (!samples.TryGetValue(destination, out BlendAccumulator accumulator)
+                || playback.options.layer > accumulator.layer
+            ) {
+                samples[destination] = new BlendAccumulator(playback.options.layer, value, playback.options.weight);
                 continue;
             }
             if (playback.options.layer == accumulator.layer)
@@ -434,19 +454,26 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     ) {
         AnimationKeyframe[] keys = track.keyframes;
         if (time <= keys[0].time)
+        {
             return keys[0].value;
+        }
         for (int index = 1; index < keys.Length; index++)
         {
             if (time > keys[index].time)
+            {
                 continue;
+            }
             AnimationKeyframe left = keys[index - 1];
             AnimationKeyframe right = keys[index];
             if (track.interpolation == AnimationInterpolation.Step || right.time <= left.time)
+            {
                 return left.value;
+            }
             return AnimationSampling.Interpolate(
                 left.value,
                 right.value,
-                (time - left.time) / (right.time - left.time));
+                (time - left.time) / (right.time - left.time)
+            );
         }
         return keys[^1].value;
     }
@@ -457,9 +484,9 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     ) {
         playback = null;
         var identity = m_handles.Decode(handle);
-        if (m_disposed || !handle.isValid || handle.runtimeGeneration != m_runtimeGeneration ||
-            identity.slot < 0 || identity.slot >= m_playbacks.Count)
-        {
+        if (m_disposed || !handle.isValid || handle.runtimeGeneration != m_runtimeGeneration
+            || identity.slot < 0 || identity.slot >= m_playbacks.Count
+        ) {
             return false;
         }
         playback = m_playbacks[identity.slot];
@@ -472,7 +499,9 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     ) {
         uint next = unchecked(playback.generation + 1);
         if (next == 0)
+        {
             next = 1;
+        }
         m_slotGenerations[slot] = next;
         m_playbacks[slot] = null;
         m_freeSlots.Push(slot);
@@ -481,9 +510,13 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     private static void ValidateOptions(AnimationPlayOptions options)
     {
         if (!float.IsFinite(options.speed) || options.speed < 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(options), "Animation speed must be finite and non-negative.");
+        }
         if (!float.IsFinite(options.weight) || options.weight < 0f || options.weight > 1f)
+        {
             throw new ArgumentOutOfRangeException(nameof(options), "Animation weight must be between zero and one.");
+        }
     }
 
     private sealed class Playback(
@@ -528,13 +561,6 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         private static AnimationValue Multiply(
             AnimationValue value,
             float weight
-        )
-            => new(
-                value.kind,
-                value.x * weight,
-                value.y * weight,
-                value.z * weight,
-                value.w * weight);
+        ) => new(value.kind, value.x * weight, value.y * weight, value.z * weight, value.w * weight);
     }
-
 }

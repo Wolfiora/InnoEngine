@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
-using Inno.Core.Collections;
-
 using Xunit;
+using Inno.Core.Collections;
 
 namespace Inno.Core.Collections.Tests;
 
@@ -159,22 +157,29 @@ public sealed class DependencyGraphTests
                 {
                     IReadOnlyList<int> dependencies = graph.GetDependencies(10);
                     Assert.True(
-                        dependencies.SequenceEqual(new[] { 1, 2, 3 }) ||
-                        dependencies.SequenceEqual(new[] { 4, 5, 6 }));
+                        dependencies.SequenceEqual(new[] { 1, 2, 3 })
+                        || dependencies.SequenceEqual(new[] { 4, 5, 6 })
+                    );
                 }
             }))
             .ToArray();
         for (int i = 0; i < 100; i++)
+        {
             graph.ReplaceDependencies(10, i % 2 == 0 ? [4, 5, 6] : [1, 2, 3]);
+        }
         await Task.WhenAll(readers);
     }
 
-    private static int IndexOf(IReadOnlyList<string> values, string value)
-    {
+    private static int IndexOf(
+        IReadOnlyList<string> values,
+        string value
+    ) {
         for (int i = 0; i < values.Count; i++)
         {
             if (values[i] == value)
+            {
                 return i;
+            }
         }
         return -1;
     }

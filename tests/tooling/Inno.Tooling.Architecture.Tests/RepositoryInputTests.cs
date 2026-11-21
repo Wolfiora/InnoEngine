@@ -2,8 +2,8 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
-using Inno.Testing.Source;
 using Xunit;
+using Inno.Testing.Source;
 
 namespace Inno.Tooling.Architecture.Tests;
 
@@ -39,8 +39,7 @@ public sealed class RepositoryInputTests : IDisposable
             CreateAssembly("relative-checkout"),
             CreateAssembly(Path.Combine(m_root, "absent")),
             CreateAssembly(m_root)
-        })
-        {
+        }) {
             Assert.Throws<InvalidOperationException>(() => TestRepository.GetRoot(assembly));
         }
     }
@@ -70,7 +69,9 @@ public sealed class RepositoryInputTests : IDisposable
         AssemblyBuilder assembly = AssemblyBuilder.DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndCollect);
         ConstructorInfo constructor = typeof(AssemblyMetadataAttribute).GetConstructor([typeof(string), typeof(string)])!;
         foreach (string directory in directories)
+        {
             assembly.SetCustomAttribute(new CustomAttributeBuilder(constructor, ["Inno.Testing.RepositoryRoot", directory]));
+        }
         return assembly;
     }
 }

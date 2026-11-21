@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Settings;
 
 namespace Inno.Scene.Layers;
@@ -27,7 +26,9 @@ public sealed class GameLayerDefinition
         string name
     ) {
         if (string.IsNullOrEmpty(localId.value))
+        {
             throw new ArgumentException("A layer definition requires a valid local identity.", nameof(localId));
+        }
         this.localId = localId;
         this.layer = layer;
         this.name = GameLayerCatalog.NormalizeName(name);

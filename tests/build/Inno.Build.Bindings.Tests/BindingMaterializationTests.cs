@@ -39,7 +39,9 @@ public sealed class BindingMaterializationTests : IDisposable
         Assert.True(second.Execute());
         Assert.Equal(timestamp, File.GetLastWriteTimeUtc(second.MaterializedSource));
         using (BuildArtifactWriteLease retirement = await BuildArtifactWriteLease.AcquireAsync(first.ArtifactDirectory, m_root))
+        {
             Directory.Delete(first.ArtifactDirectory, recursive: true);
+        }
         Assert.Equal(contents, File.ReadAllText(first.MaterializedSource));
     }
 
@@ -148,7 +150,8 @@ public sealed class BindingMaterializationTests : IDisposable
         return task;
     }
 
-    private MaterializeBindingsTask CreateTask() => new()
+    private MaterializeBindingsTask CreateTask()
+        => new()
     {
         Source = Path.Combine(m_root, "artifact", "Generated", "Bindings.cs"),
         ArtifactDirectory = Path.Combine(m_root, "artifact"),
@@ -170,23 +173,33 @@ public sealed class BindingMaterializationTests : IDisposable
         public int ColumnNumberOfTaskNode => 0;
         public string ProjectFileOfTaskNode => string.Empty;
         public bool IsRunningMultipleNodes => true;
+
         public void Yield() => yielded.TrySetResult();
+
         public void Reacquire()
         {
             if (failReacquire)
+            {
                 throw new InvalidOperationException("The build node is unavailable.");
+            }
             reacquired = true;
         }
+
         public void LogErrorEvent(BuildErrorEventArgs error) => errors.Add(error);
-        public void LogWarningEvent(BuildWarningEventArgs warning) { }
-        public void LogMessageEvent(BuildMessageEventArgs message) { }
-        public void LogCustomEvent(CustomBuildEventArgs custom) { }
+
+        public void LogWarningEvent(BuildWarningEventArgs warning) {}
+
+        public void LogMessageEvent(BuildMessageEventArgs message) {}
+
+        public void LogCustomEvent(CustomBuildEventArgs custom) {}
+
         public bool BuildProjectFile(
             string project,
             string[] targets,
             IDictionary properties,
             IDictionary outputs
         ) => throw new NotSupportedException();
+
         public bool BuildProjectFile(
             string project,
             string[] targets,

@@ -2,10 +2,7 @@ using Inno.Core.Diagnostics;
 using Inno.Core.Graphs;
 using Inno.Scripting.Api;
 
-[assembly: ScriptingApiNamespace(
-    "InnoEngine.Graphs",
-    "Inno.Core.Graphs",
-    ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiNamespace("InnoEngine.Graphs", "Inno.Core.Graphs", ScriptingApiScope.Runtime)]
 
 [assembly: ScriptingApiExport(typeof(GraphNodeId), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(GraphEdgeId), ScriptingApiScope.Runtime)]

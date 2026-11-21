@@ -115,20 +115,27 @@ public sealed class ShaderSourceRequest
         this.entryPoint = entryPoint;
         this.resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
         this.defines = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(
-            defines is null ? new Dictionary<string, string>(StringComparer.Ordinal) : new Dictionary<string, string>(defines, StringComparer.Ordinal));
+            defines is null
+            ? new Dictionary<string, string>(StringComparer.Ordinal)
+            : new Dictionary<string, string>(defines, StringComparer.Ordinal)
+        );
     }
+
     /// <summary>
     /// Gets the root source snapshot.
     /// </summary>
     public ShaderSourceFile source { get; }
+
     /// <summary>
     /// Gets the explicitly selected export function name.
     /// </summary>
     public string entryPoint { get; }
+
     /// <summary>
     /// Gets the candidate-scoped dependency resolver.
     /// </summary>
     public IShaderSourceResolver resolver { get; }
+
     /// <summary>
     /// Gets immutable preprocessing inputs included in analysis cache identity.
     /// </summary>
@@ -163,18 +170,22 @@ public sealed class ShaderSourceAnalysis
         this.dependencies = Array.AsReadOnly(dependencies.Distinct(StringComparer.Ordinal).ToArray());
         this.diagnostics = Array.AsReadOnly(diagnostics.ToArray());
     }
+
     /// <summary>
     /// Gets the parsed interface, or null after an analysis failure.
     /// </summary>
     public ShaderSourceFunction? function { get; }
+
     /// <summary>
     /// Gets original source dependencies for invalidation.
     /// </summary>
     public IReadOnlyList<string> dependencies { get; }
+
     /// <summary>
     /// Gets immutable, provider-neutral diagnostics.
     /// </summary>
     public IReadOnlyList<ShaderSourceDiagnostic> diagnostics { get; }
+
     /// <summary>
     /// Gets whether a usable interface was found without errors.
     /// </summary>
@@ -190,6 +201,7 @@ public interface IShaderSourceFrontend
     /// Gets the open source language identity, distinct from a rendering backend or GPU API.
     /// </summary>
     string languageId { get; }
+
     /// <summary>
     /// Analyzes an immutable source candidate with explicit preprocessing inputs.
     /// </summary>

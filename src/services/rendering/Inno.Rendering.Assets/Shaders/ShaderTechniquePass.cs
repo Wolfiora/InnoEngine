@@ -1,12 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Scripting.Api;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
@@ -30,7 +30,9 @@ public struct ShaderTechniquePass
         string passName
     ) {
         if (!role.isValid)
+        {
             throw new ArgumentException("A pass role must be valid.", nameof(role));
+        }
         ArgumentException.ThrowIfNullOrWhiteSpace(passName);
         this.role = role;
         this.passName = passName;
@@ -46,4 +48,3 @@ public struct ShaderTechniquePass
     /// </summary>
     public string passName { get; set; }
 }
-

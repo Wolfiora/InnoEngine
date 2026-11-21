@@ -49,7 +49,9 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
         ArgumentNullException.ThrowIfNull(reportDiagnostic);
         m_reportDiagnostic = reportDiagnostic;
         if (nativeDependencies is not null && !Path.IsPathFullyQualified(nativeDependencies))
+        {
             throw new ArgumentException("A native dependency selection must be absolute.", nameof(nativeDependencies));
+        }
         m_nativeDependencies = nativeDependencies;
         ArgumentException.ThrowIfNullOrWhiteSpace(dotnetHost);
         m_publisher = publisher;
@@ -57,7 +59,9 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
         ArgumentException.ThrowIfNullOrWhiteSpace(engineRoot);
         m_engineRoot = Path.GetFullPath(engineRoot);
         if (!IsEngineRoot(m_engineRoot))
+        {
             throw new DirectoryNotFoundException($"Engine source checkout '{m_engineRoot}' is unavailable.");
+        }
     }
 
     /// <summary>
@@ -97,13 +101,23 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
         ArgumentException.ThrowIfNullOrWhiteSpace(dotnetHost);
         string? configured = Environment.GetEnvironmentVariable("INNO_ENGINE_ROOT");
         if (!string.IsNullOrWhiteSpace(configured))
+        {
             return new SourcePlayerSupportPackProvisioner(configured, publisher, dotnetHost, reportDiagnostic, nativeDependencies);
+        }
         for (DirectoryInfo? directory = new(Path.GetFullPath(startDirectory));
              directory is not null;
-             directory = directory.Parent)
-        {
+             directory = directory.Parent
+        ) {
             if (IsEngineRoot(directory.FullName))
-                return new SourcePlayerSupportPackProvisioner(directory.FullName, publisher, dotnetHost, reportDiagnostic, nativeDependencies);
+            {
+                return new SourcePlayerSupportPackProvisioner(
+                    directory.FullName,
+                    publisher,
+                    dotnetHost,
+                    reportDiagnostic,
+                    nativeDependencies
+                );
+            }
         }
         return null;
     }
@@ -134,13 +148,17 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
             target,
             m_dotnetHost,
             cancellationToken,
-            m_nativeDependencies).ConfigureAwait(false);
+            m_nativeDependencies
+        ).ConfigureAwait(false);
         foreach (string diagnostic in installed.diagnostics)
+        {
             m_reportDiagnostic(diagnostic);
+        }
     }
 
     private static bool IsEngineRoot(string path)
-        => File.Exists(Path.Combine(path, "InnoEngine.sln")) &&
-           File.Exists(Path.Combine(path, "build", "distributions", "Inno.Build.Distribution.Standard", "Inno.Build.Distribution.Standard.csproj"));
-
+        => File.Exists(Path.Combine(path, "InnoEngine.sln"))
+           && File.Exists(
+               Path.Combine(path, "build", "distributions", "Inno.Build.Distribution.Standard", "Inno.Build.Distribution.Standard.csproj")
+           );
 }

@@ -1,10 +1,10 @@
-using Inno.Core.Mathematics;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Inno.Core.Mathematics;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Assets.Authoring;
 
@@ -37,23 +37,34 @@ internal static partial class MeshSourceParser
             {
                 case "v":
                     RequirePartCount(parts, 4, sourcePath, lineIndex);
-                    positions.Add(new Vector3(
-                        ParseFloat(parts[1], sourcePath, lineIndex),
-                        ParseFloat(parts[2], sourcePath, lineIndex),
-                        ParseFloat(parts[3], sourcePath, lineIndex)));
+                    positions.Add(
+                        new Vector3(
+                            ParseFloat(parts[1], sourcePath, lineIndex),
+                            ParseFloat(parts[2], sourcePath, lineIndex),
+                            ParseFloat(parts[3], sourcePath, lineIndex)
+                        )
+                    );
                     break;
                 case "vn":
                     RequirePartCount(parts, 4, sourcePath, lineIndex);
-                    normals.Add(Vector3.NormalizeSafe(new Vector3(
-                        ParseFloat(parts[1], sourcePath, lineIndex),
-                        ParseFloat(parts[2], sourcePath, lineIndex),
-                        ParseFloat(parts[3], sourcePath, lineIndex))));
+                    normals.Add(
+                        Vector3.NormalizeSafe(
+                            new Vector3(
+                                ParseFloat(parts[1], sourcePath, lineIndex),
+                                ParseFloat(parts[2], sourcePath, lineIndex),
+                                ParseFloat(parts[3], sourcePath, lineIndex)
+                            )
+                        )
+                    );
                     break;
                 case "vt":
                     RequirePartCount(parts, 3, sourcePath, lineIndex);
-                    textureCoordinates.Add(new Vector2(
-                        ParseFloat(parts[1], sourcePath, lineIndex),
-                        ParseFloat(parts[2], sourcePath, lineIndex)));
+                    textureCoordinates.Add(
+                        new Vector2(
+                            ParseFloat(parts[1], sourcePath, lineIndex),
+                            ParseFloat(parts[2], sourcePath, lineIndex)
+                        )
+                    );
                     break;
                 case "f":
                     if (parts.Length < 4)
@@ -70,7 +81,8 @@ internal static partial class MeshSourceParser
                             normals,
                             textureCoordinates,
                             vertices,
-                            vertexMap))
+                            vertexMap
+                        ))
                         .ToArray();
                     for (int corner = 1; corner < polygon.Length - 1; corner++)
                     {
@@ -98,7 +110,8 @@ internal static partial class MeshSourceParser
             value.position,
             Vector3.NormalizeSafe(value.normal),
             ToTangent(value.tangent, value.tangentW),
-            value.textureCoordinate)).ToArray();
+            value.textureCoordinate
+        )).ToArray();
         return new GeometryData(resultVertices, [.. indices], [.. sections]);
     }
 
@@ -118,11 +131,17 @@ internal static partial class MeshSourceParser
             Vector3 edge2 = v2.position - v0.position;
             Vector3 faceNormal = Vector3.Cross(edge1, edge2);
             if (!v0.hasNormal)
+            {
                 v0.normal += faceNormal;
+            }
             if (!v1.hasNormal)
+            {
                 v1.normal += faceNormal;
+            }
             if (!v2.hasNormal)
+            {
                 v2.normal += faceNormal;
+            }
 
             Vector2 uv1 = v1.textureCoordinate - v0.textureCoordinate;
             Vector2 uv2 = v2.textureCoordinate - v0.textureCoordinate;
@@ -132,11 +151,17 @@ internal static partial class MeshSourceParser
                 float inverse = 1f / determinant;
                 Vector3 tangent = (edge1 * uv2.y - edge2 * uv1.y) * inverse;
                 if (!v0.hasTangent)
+                {
                     v0.tangent += tangent;
+                }
                 if (!v1.hasTangent)
+                {
                     v1.tangent += tangent;
+                }
                 if (!v2.hasTangent)
+                {
                     v2.tangent += tangent;
+                }
             }
         }
     }
@@ -154,11 +179,11 @@ internal static partial class MeshSourceParser
         string[] values = token.Split('/');
         int position = ResolveIndex(values[0], positions.Count, sourcePath, lineIndex, "position");
         int texture = values.Length > 1 && values[1].Length != 0
-            ? ResolveIndex(values[1], textureCoordinates.Count, sourcePath, lineIndex, "texture coordinate")
-            : -1;
+                      ? ResolveIndex(values[1], textureCoordinates.Count, sourcePath, lineIndex, "texture coordinate")
+                      : -1;
         int normal = values.Length > 2 && values[2].Length != 0
-            ? ResolveIndex(values[2], normals.Count, sourcePath, lineIndex, "normal")
-            : -1;
+                     ? ResolveIndex(values[2], normals.Count, sourcePath, lineIndex, "normal")
+                     : -1;
         var key = new ObjVertexKey(position, texture, normal);
         if (vertexMap.TryGetValue(key, out uint existing))
         {
@@ -185,8 +210,8 @@ internal static partial class MeshSourceParser
         string kind
     ) {
         if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed)
-            || parsed == 0)
-        {
+            || parsed == 0
+        ) {
             throw Error(sourcePath, lineIndex, $"Invalid OBJ {kind} index '{value}'.");
         }
 
@@ -203,11 +228,10 @@ internal static partial class MeshSourceParser
         string value,
         string sourcePath,
         int lineIndex
-    )
-        => float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float result)
-            && float.IsFinite(result)
-                ? result
-                : throw Error(sourcePath, lineIndex, $"Invalid finite float '{value}'.");
+    ) => float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float result)
+         && float.IsFinite(result)
+         ? result
+         : throw Error(sourcePath, lineIndex, $"Invalid finite float '{value}'.");
 
     private static void RequirePartCount(
         IReadOnlyList<string> values,
@@ -250,8 +274,7 @@ internal static partial class MeshSourceParser
         string path,
         int lineIndex,
         string message
-    )
-        => new($"{path}:{lineIndex + 1}", message);
+    ) => new($"{path}:{lineIndex + 1}", message);
 
     private readonly record struct ObjVertexKey(
         int position,
@@ -270,4 +293,3 @@ internal static partial class MeshSourceParser
         internal float tangentW = 1f;
     }
 }
-

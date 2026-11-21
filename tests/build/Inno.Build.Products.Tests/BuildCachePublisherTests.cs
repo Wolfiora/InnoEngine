@@ -24,8 +24,12 @@ public sealed class BuildCachePublisherTests : IDisposable
             publisher.Record(old, old + ".read.lock", [], "editor", null);
             publisher.Record(current, current + ".read.lock", [], "editor", null);
         }
-        using (BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(old, Path.Combine(m_root, "artifacts", "native"), "old", ["Outputs"]))
-        {
+        using (BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(
+            old,
+            Path.Combine(m_root, "artifacts", "native"),
+            "old",
+            ["Outputs"]
+        )) {
             BuildCacheCleanupResult busy = await Plan().ExecuteAsync();
             Assert.Empty(busy.retired);
             Assert.Contains(old, busy.skipped);
@@ -52,10 +56,14 @@ public sealed class BuildCachePublisherTests : IDisposable
             bindings.Record(newBinding, newBinding + ".read.lock", [], "component", null);
         }
         using (await native.AcquireUseAsync())
+        {
             native.Record(oldNative, oldNative + ".read.lock", [oldBinding], "component", null);
+        }
         Assert.Empty(Plan().candidates);
         using (await native.AcquireUseAsync())
+        {
             native.Record(newNative, newNative + ".read.lock", [newBinding], "component", null);
+        }
         BuildCacheCleanupResult result = await Plan().ExecuteAsync();
         Assert.Equal(2, result.retired.Count);
         Assert.Contains(oldNative, result.retired);
@@ -87,11 +95,15 @@ public sealed class BuildCachePublisherTests : IDisposable
         File.WriteAllText(Path.Combine(load, "runtime.dll"), "private bytes");
         var hosts = new BuildCachePublisher(Path.GetDirectoryName(host)!, BuildCacheArtifactRole.ImmutableArtifact);
         using (await hosts.AcquireUseAsync())
+        {
             hosts.Record(host, host + ".lock", [], null, null);
+        }
         string secondHost = Path.Combine(Path.GetDirectoryName(host)!, "second");
         Directory.CreateDirectory(secondHost);
         using (await hosts.AcquireUseAsync())
+        {
             hosts.Record(secondHost, secondHost + ".lock", [], null, null);
+        }
         var loads = new BuildCachePublisher(Path.GetDirectoryName(load)!, BuildCacheArtifactRole.ProcessWorkingDirectory);
         loads.RecordProcessUse(load, load + ".lock", [host]);
         loads.RecordProcessUse(load, load + ".lock", [secondHost]);
@@ -108,20 +120,26 @@ public sealed class BuildCachePublisherTests : IDisposable
         var publisher = new BuildCachePublisher(Path.Combine(m_root, "artifacts", "native"), BuildCacheArtifactRole.ImmutableArtifact);
         string artifact = Create("native", "owned");
         using (await publisher.AcquireUseAsync())
+        {
             publisher.Record(artifact, artifact + ".read.lock", [], null, null);
+        }
         long recorded = Plan().totalBytes;
         File.WriteAllText(Path.Combine(artifact, "Outputs", "payload"), "corrupted and larger");
         Assert.Equal(recorded, Plan().totalBytes);
         Assert.False(BuildArtifactManifest.IsComplete(artifact, "owned", ["Outputs"]));
         using (await publisher.AcquireUseAsync())
+        {
             publisher.Record(artifact, artifact + ".read.lock", [], null, null);
+        }
         Assert.True(Plan().totalBytes > recorded);
     }
 
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     private BuildCacheCleanupPlan Plan()

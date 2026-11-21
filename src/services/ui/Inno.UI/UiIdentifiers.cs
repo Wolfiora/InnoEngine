@@ -17,8 +17,12 @@ public readonly record struct UiDocumentLanguageId
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         foreach (char character in value)
+        {
             if (char.IsWhiteSpace(character))
+            {
                 throw new ArgumentException("A UI document language identifier cannot contain whitespace.", nameof(value));
+            }
+        }
         this.value = value;
     }
 

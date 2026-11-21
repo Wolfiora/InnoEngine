@@ -61,9 +61,12 @@ public static class NativeArtifactPublisher
         cancellationToken.ThrowIfCancellationRequested();
         NativeComponentDescriptor owner = recipe.owner;
         NativeBindingGenerationDescriptor? bindingGeneration = owner.bindingDefinition is null
-            ? null : context.RequireBindings(owner);
+                                                               ? null
+                                                               : context.RequireBindings(owner);
         if (bindingGeneration is not null)
+        {
             recipe = recipe.WithBindingGeneration(context.engineRoot, bindingGeneration);
+        }
         string component = recipe.component;
         string targetId = recipe.targetId;
         NativeInputSnapshot snapshot = context.inputState.CaptureInitial(recipe.inputs, cancellationToken);
@@ -72,53 +75,105 @@ public static class NativeArtifactPublisher
         NativeBuildContext scoped = context.WithIdentity(owner, targetId, workspaceIdentity);
         string intermediate = scoped.GetNativeBuildRoot(owner);
         string destination = Path.Combine(context.engineRoot, "artifacts", "native", component, targetId, fingerprint);
-        var cache = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "native"), BuildCacheArtifactRole.ImmutableArtifact);
-        BuildCacheOwnerCatalog.Register(context.engineRoot, Path.Combine(context.engineRoot, "artifacts", "native"), "native", cache.role, cancellationToken);
+        var cache = new BuildCachePublisher(
+            Path.Combine(context.engineRoot, "artifacts", "native"),
+            BuildCacheArtifactRole.ImmutableArtifact
+        );
+        BuildCacheOwnerCatalog.Register(
+            context.engineRoot,
+            Path.Combine(context.engineRoot, "artifacts", "native"),
+            "native",
+            cache.role,
+            cancellationToken
+        );
         using FileLease cacheUse = await cache.AcquireUseAsync(cancellationToken).ConfigureAwait(false);
-        var workspaces = new BuildCachePublisher(Path.Combine(owner.GetToolchainRoot(context.engineRoot), "obj", "native"), BuildCacheArtifactRole.ReusableWorkspace);
-        BuildCacheOwnerCatalog.Register(context.engineRoot, Path.Combine(owner.GetToolchainRoot(context.engineRoot), "obj", "native"),
-            "workspace:" + owner.toolchainProject, workspaces.role, cancellationToken);
+        var workspaces = new BuildCachePublisher(
+            Path.Combine(owner.GetToolchainRoot(context.engineRoot), "obj", "native"),
+            BuildCacheArtifactRole.ReusableWorkspace
+        );
+        BuildCacheOwnerCatalog.Register(
+            context.engineRoot,
+            Path.Combine(owner.GetToolchainRoot(context.engineRoot), "obj", "native"),
+            "workspace:" + owner.toolchainProject,
+            workspaces.role,
+            cancellationToken
+        );
         using FileLease workspaceUse = await workspaces.AcquireUseAsync(cancellationToken).ConfigureAwait(false);
-        using FileLease ownership = await FileLease.AcquireAsync(intermediate + ".lock",
-            Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+        using FileLease ownership = await FileLease.AcquireAsync(
+            intermediate + ".lock",
+            Timeout.InfiniteTimeSpan,
+            cancellationToken
+        ).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
-        if (NativeBuildFingerprint.Create(context.BeginInputVerification("native-lock:" + component),
-            recipe.declarations, recipe.inputs, cancellationToken) != fingerprint)
-            throw new InvalidOperationException($"Native inputs for '{component}' changed while waiting for ownership.");
-        workspaces.BeginWorkingDirectory(intermediate, intermediate + ".lock", targetId, cancellationToken);
-        AtomicFile.WriteAllBytes(Path.Combine(intermediate, "recipe.json"), JsonSerializer.SerializeToUtf8Bytes(new
-        {
-            component,
-            targetId,
-            context.configuration,
-            workspaceIdentity,
-            artifactFingerprint = fingerprint,
-            recipe.owner.nativeProject,
-            recipe.owner.toolchainProject,
+        if (NativeBuildFingerprint.Create(
+            context.BeginInputVerification("native-lock:" + component),
             recipe.declarations,
-            inputs = snapshot.entries.Select(static entry => new
+            recipe.inputs,
+            cancellationToken
+        ) != fingerprint
+        ) {
+            throw new InvalidOperationException($"Native inputs for '{component}' changed while waiting for ownership.");
+        }
+        workspaces.BeginWorkingDirectory(intermediate, intermediate + ".lock", targetId, cancellationToken);
+        AtomicFile.WriteAllBytes(
+            Path.Combine(intermediate, "recipe.json"),
+            JsonSerializer.SerializeToUtf8Bytes(new
             {
-                entry.logicalPath,
-                hash = Convert.ToHexStringLower(entry.hash)
+                component,
+                targetId,
+                context.configuration,
+                workspaceIdentity,
+                artifactFingerprint = fingerprint,
+                recipe.owner.nativeProject,
+                recipe.owner.toolchainProject,
+                recipe.declarations,
+                inputs = snapshot.entries.Select(static entry => new
+                {
+                    entry.logicalPath,
+                    hash = Convert.ToHexStringLower(entry.hash)
+                })
             })
-        }));
+        );
         BuildArtifactReadLease? cached = await BuildArtifactReadLease.TryAcquireAsync(
-            destination, Path.Combine(context.engineRoot, "artifacts", "native"), fingerprint, ["Outputs", "Metadata"], context, cancellationToken).ConfigureAwait(false);
+            destination,
+            Path.Combine(context.engineRoot, "artifacts", "native"),
+            fingerprint,
+            ["Outputs", "Metadata"],
+            context,
+            cancellationToken
+        ).ConfigureAwait(false);
         if (cached is not null)
         {
             Record(cached);
-            return new(component, targetId, fingerprint, destination, bindingGeneration, context.toolchain?.linkPlan.sharedLibraryExtension, cached);
+            return new(
+                component,
+                targetId,
+                fingerprint,
+                destination,
+                bindingGeneration,
+                context.toolchain?.linkPlan.sharedLibraryExtension,
+                cached
+            );
         }
         if (Directory.Exists(destination))
-            Console.Error.WriteLine($"Rejected incomplete or modified Native cache '{destination}'; it remains isolated from consumers until verified replacement succeeds.");
+        {
+            Console.Error.WriteLine(
+                $"Rejected incomplete or modified Native cache '{destination}'; it remains isolated from consumers until verified replacement succeeds."
+            );
+        }
 
         void Record(BuildArtifactReadLease reading)
         {
             try
             {
-                cache.Record(destination, destination + ".read.lock",
+                cache.Record(
+                    destination,
+                    destination + ".read.lock",
                     bindingGeneration is { artifactDirectory.Length: > 0 } ? [bindingGeneration.artifactDirectory] : [],
-                    component + "/" + targetId + "/" + context.configuration, targetId, cancellationToken);
+                    component + "/" + targetId + "/" + context.configuration,
+                    targetId,
+                    cancellationToken
+                );
             }
             catch
             {
@@ -127,7 +182,10 @@ public static class NativeArtifactPublisher
             }
         }
 
-        using ProcessOwnedDirectory candidateOwner = await ProcessOwnedDirectory.CreateAsync(Path.Combine(context.engineRoot, "artifacts", "native"), cancellationToken).ConfigureAwait(false);
+        using ProcessOwnedDirectory candidateOwner = await ProcessOwnedDirectory.CreateAsync(
+            Path.Combine(context.engineRoot, "artifacts", "native"),
+            cancellationToken
+        ).ConfigureAwait(false);
         string staging = candidateOwner.directory;
         string output = Path.Combine(staging, "Outputs");
         Directory.CreateDirectory(output);
@@ -135,25 +193,56 @@ public static class NativeArtifactPublisher
         {
             IToolchainWorkspaceProvider execution = context.toolchain?.host.services.workspaces ?? new PhysicalToolchainWorkspaceProvider();
             using (ToolchainWorkingDirectory workspace = await execution.OpenAsync(
-                intermediate, cancellationToken).ConfigureAwait(false))
-                await build(scoped.WithToolDirectory(workspace.toolPath).WithExecutionInputs(snapshot),
-                    output, cancellationToken).ConfigureAwait(false);
+                intermediate,
+                cancellationToken
+            ).ConfigureAwait(false)
+            ) {
+                await build(
+                    scoped.WithToolDirectory(workspace.toolPath).WithExecutionInputs(snapshot),
+                    output,
+                    cancellationToken
+                ).ConfigureAwait(false);
+            }
             cancellationToken.ThrowIfCancellationRequested();
             if (!PathBoundary.EnumerateFiles(output).Any())
+            {
                 throw new InvalidOperationException($"Native component '{component}' produced no output files.");
-            if (NativeBuildFingerprint.Create(context.BeginInputVerification("native-build:" + component),
-                recipe.declarations, recipe.inputs, cancellationToken) != fingerprint)
-                throw new InvalidOperationException($"Native inputs for '{component}' changed during preparation; the candidate was not published.");
+            }
+            if (NativeBuildFingerprint.Create(
+                context.BeginInputVerification("native-build:" + component),
+                recipe.declarations,
+                recipe.inputs,
+                cancellationToken
+            ) != fingerprint
+            ) {
+                throw new InvalidOperationException(
+                    $"Native inputs for '{component}' changed during preparation; the candidate was not published."
+                );
+            }
             // Validate compiler workspace links before publishing the immutable candidate.
-            workspaces.Record(intermediate, intermediate + ".lock", [],
-                targetId + "/" + context.configuration, targetId, cancellationToken);
-            NativeArtifact.Write(staging, describeOutputs?.Invoke(scoped, output)
-                ?? PathBoundary.EnumerateFiles(output).Select(file => new NativeArtifact(Path.GetRelativePath(output, file), file, NativeArtifactRole.SupportFile)).ToArray());
+            workspaces.Record(
+                intermediate,
+                intermediate + ".lock",
+                [],
+                targetId + "/" + context.configuration,
+                targetId,
+                cancellationToken
+            );
+            NativeArtifact.Write(
+                staging,
+                describeOutputs?.Invoke(scoped, output)
+                ?? PathBoundary.EnumerateFiles(output)
+                    .Select(file => new NativeArtifact(Path.GetRelativePath(output, file), file, NativeArtifactRole.SupportFile))
+                    .ToArray()
+            );
             BuildArtifactManifest.Write(staging, fingerprint, ["Outputs", "Metadata"], context);
             cancellationToken.ThrowIfCancellationRequested();
-            using (BuildArtifactWriteLease publication = await BuildArtifactWriteLease.AcquireAsync(destination, Path.Combine(context.engineRoot, "artifacts", "native"),
-                cancellationToken).ConfigureAwait(false))
-            {
+            using (BuildArtifactWriteLease publication = await BuildArtifactWriteLease.AcquireAsync(
+                destination,
+                Path.Combine(context.engineRoot, "artifacts", "native"),
+                cancellationToken
+            ).ConfigureAwait(false)
+            ) {
                 try
                 {
                     AtomicDirectory.Install(staging, destination);
@@ -163,15 +252,29 @@ public static class NativeArtifactPublisher
                     Console.Error.WriteLine(cleanupFailure.Message);
                 }
             }
-            BuildArtifactReadLease reading = await BuildArtifactReadLease.TryAcquireAsync(destination, Path.Combine(context.engineRoot, "artifacts", "native"), fingerprint, ["Outputs", "Metadata"], context, cancellationToken).ConfigureAwait(false)
+            BuildArtifactReadLease reading = await BuildArtifactReadLease.TryAcquireAsync(
+                destination,
+                Path.Combine(context.engineRoot, "artifacts", "native"),
+                fingerprint,
+                ["Outputs", "Metadata"],
+                context,
+                cancellationToken
+            ).ConfigureAwait(false)
                 ?? throw new InvalidDataException("The published Native artifact changed before reading ownership was acquired.");
             Record(reading);
-            return new(component, targetId, fingerprint, destination, bindingGeneration, context.toolchain?.linkPlan.sharedLibraryExtension, reading);
+            return new(
+                component,
+                targetId,
+                fingerprint,
+                destination,
+                bindingGeneration,
+                context.toolchain?.linkPlan.sharedLibraryExtension,
+                reading
+            );
         }
         finally
         {
             candidateOwner.Dispose();
         }
     }
-
 }

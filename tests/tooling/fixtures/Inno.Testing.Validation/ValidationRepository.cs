@@ -12,10 +12,18 @@ namespace Inno.Testing.Validation;
 
 public sealed class ValidationRepository : IDisposable
 {
-    private readonly string m_root = Path.Combine(new PhysicalPathResolver().Resolve(Path.GetTempPath()), "InnoValidation", Guid.NewGuid().ToString("N"));
+    private readonly string m_root = Path.Combine(
+        new PhysicalPathResolver().Resolve(Path.GetTempPath()),
+        "InnoValidation",
+        Guid.NewGuid().ToString("N")
+    );
+
     private readonly string m_dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
-        ?? Path.Combine(Environment.GetEnvironmentVariable("DOTNET_ROOT") ?? throw new InvalidOperationException("The test requires its selected SDK host."),
-            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
+                                       ?? Path.Combine(
+                                           Environment.GetEnvironmentVariable("DOTNET_ROOT")
+                                           ?? throw new InvalidOperationException("The test requires its selected SDK host."),
+                                           OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
+                                       );
 
     public ValidationRepository(string? source = null)
     {
@@ -40,7 +48,9 @@ public sealed class ValidationRepository : IDisposable
                     File.Copy(original, destination, overwrite: true);
                 }
                 else
+                {
                     File.Delete(destination);
+                }
             }
             if (changed.Length != 0 || added.Length != 0)
             {
@@ -54,10 +64,13 @@ public sealed class ValidationRepository : IDisposable
         Write("Shared.props", "<Project />");
         Write("src/Example/Example.csproj", Project("<Import Project=\"../../Shared.props\" />"));
         Write("src/Other/Other.csproj", Project());
-        Write("tests/Example.Tests/Example.Tests.csproj", Project("""
+        Write(
+            "tests/Example.Tests/Example.Tests.csproj",
+            Project("""
             <PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>domain</InnoValidationLayer></PropertyGroup>
             <ItemGroup><ProjectReference Include="../../src/Example/Example.csproj" /><InnoValidationInput Include="../../fixtures/plugin.txt" /></ItemGroup>
-            """));
+            """)
+        );
         Write("fixtures/plugin.txt", "initial input");
         Git("init", "-b", "master");
         Git("config", "user.name", "Aaron Liao");
@@ -69,12 +82,19 @@ public sealed class ValidationRepository : IDisposable
     public void Dispose()
     {
         string root = Path.GetFullPath(m_root);
-        string parent = Path.Combine(new PhysicalPathResolver().Resolve(Path.GetTempPath()), "InnoValidation") + Path.DirectorySeparatorChar;
+        string parent = Path.Combine(new PhysicalPathResolver().Resolve(Path.GetTempPath()), "InnoValidation")
+                        + Path.DirectorySeparatorChar;
         if (!root.StartsWith(parent, StringComparison.OrdinalIgnoreCase))
+        {
             throw new InvalidOperationException("The fixture owner escaped its temporary boundary.");
+        }
         foreach (string file in Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories))
+        {
             if (new FileInfo(file).LinkTarget is null)
+            {
                 File.SetAttributes(file, FileAttributes.Normal);
+            }
+        }
         Directory.Delete(root, recursive: true);
     }
 
@@ -95,15 +115,25 @@ public sealed class ValidationRepository : IDisposable
 
     public string Git(params string[] arguments)
     {
-        var start = new ProcessStartInfo("git") { WorkingDirectory = m_root, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
+        var start = new ProcessStartInfo("git")
+        {
+            WorkingDirectory = m_root,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
         foreach (string argument in arguments)
+        {
             start.ArgumentList.Add(argument);
+        }
         using Process process = Process.Start(start)!;
         Task<string> output = process.StandardOutput.ReadToEndAsync();
         Task<string> error = process.StandardError.ReadToEndAsync();
         process.WaitForExit();
         if (process.ExitCode != 0)
+        {
             throw new InvalidOperationException(output.Result + error.Result);
+        }
         return output.Result.Trim();
     }
 
@@ -120,55 +150,102 @@ public sealed class ValidationRepository : IDisposable
         string? baselinePlan = null
     ) {
         string output = PathOf("artifacts/plan");
-        await ValidationCommand.ExecuteAsync(["plan", "--engine-root", m_root, "--dotnet", m_dotnet, "--base", baseline, "--output", output,
-            "--extended", extended.ToString(), "--configuration", configuration,
+        await ValidationCommand.ExecuteAsync([
+            "plan",
+            "--engine-root",
+            m_root,
+            "--dotnet",
+            m_dotnet,
+            "--base",
+            baseline,
+            "--output",
+            output,
+            "--extended",
+            extended.ToString(),
+            "--configuration",
+            configuration,
             ..profile is null ? Array.Empty<string>() : new[] { "--profile", profile },
             ..baselinePlan is null ? Array.Empty<string>() : new[] { "--baseline-plan", baselinePlan },
             ..backendStore is null ? Array.Empty<string>() : new[] { "--backend-store", backendStore },
             ..nativeDependencies is null ? Array.Empty<string>() : new[] { "--native-dependencies", nativeDependencies },
             ..documentationCache is null ? Array.Empty<string>() : new[] { "--docs-cache-root", documentationCache },
             ..documentationSnapshot is null ? Array.Empty<string>() : new[] { "--docs-snapshot", documentationSnapshot },
-            ..documentationBaseline is null ? Array.Empty<string>() : new[] { "--docs-base-snapshot", documentationBaseline }]);
+            ..documentationBaseline is null ? Array.Empty<string>() : new[] { "--docs-base-snapshot", documentationBaseline }
+        ]);
         return JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "plan.json")));
     }
 
     public Task<int> EvidenceAsync(
         string evidence,
         string plan = "artifacts/plan/plan.json"
-    )
-        => ValidationCommand.ExecuteAsync(["evidence", "--engine-root", m_root, "--dotnet", m_dotnet,
-            "--plan", PathOf(plan), "--evidence", evidence]);
+    ) => ValidationCommand.ExecuteAsync([
+        "evidence",
+        "--engine-root",
+        m_root,
+        "--dotnet",
+        m_dotnet,
+        "--plan",
+        PathOf(plan),
+        "--evidence",
+        evidence
+    ]);
 
     public Task<int> RunCurrentAsync(
         CancellationToken cancellation,
         string output
-    )
-        => ValidationCommand.ExecuteAsync(["run", "--engine-root", m_root, "--dotnet", m_dotnet,
-            "--base", "HEAD", "--output", PathOf(output)], cancellation);
+    ) => ValidationCommand.ExecuteAsync([
+        "run",
+        "--engine-root",
+        m_root,
+        "--dotnet",
+        m_dotnet,
+        "--base",
+        "HEAD",
+        "--output",
+        PathOf(output)
+    ], cancellation);
 
     public Task<int> RunAsync(
         CancellationToken cancellation = default,
         string output = "artifacts/run",
         string? evidence = null
-    )
-        => ValidationCommand.ExecuteAsync(["run", "--engine-root", m_root, "--dotnet", m_dotnet,
-            "--plan", PathOf("artifacts/plan/plan.json"), "--output", PathOf(output),
-            ..evidence is null ? Array.Empty<string>() : new[] { "--evidence", PathOf(evidence) }], cancellation);
+    ) => ValidationCommand.ExecuteAsync([
+        "run",
+        "--engine-root",
+        m_root,
+        "--dotnet",
+        m_dotnet,
+        "--plan",
+        PathOf("artifacts/plan/plan.json"),
+        "--output",
+        PathOf(output),
+        ..evidence is null ? Array.Empty<string>() : new[] { "--evidence", PathOf(evidence) }
+    ], cancellation);
 
     public Task BuildAsync(params string[] arguments)
         => SdkAsync(["build", "--disable-build-servers", "-m:1", "-nr:false", ..arguments]);
 
     public async Task SdkAsync(params string[] arguments)
     {
-        var start = new ProcessStartInfo(m_dotnet) { WorkingDirectory = m_root, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
+        var start = new ProcessStartInfo(m_dotnet)
+        {
+            WorkingDirectory = m_root,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
         foreach (string argument in arguments)
+        {
             start.ArgumentList.Add(argument);
+        }
         using Process process = Process.Start(start)!;
         Task<string> output = process.StandardOutput.ReadToEndAsync();
         Task<string> error = process.StandardError.ReadToEndAsync();
         await process.WaitForExitAsync();
         if (process.ExitCode != 0)
+        {
             throw new InvalidOperationException(await output + await error);
+        }
     }
 
     public static string Project(string content = "")

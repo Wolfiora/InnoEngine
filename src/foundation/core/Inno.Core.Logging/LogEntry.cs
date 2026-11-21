@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Extensibility.Modules;
 
 namespace Inno.Core.Logging;

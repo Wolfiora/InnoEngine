@@ -29,7 +29,9 @@ public sealed unsafe partial class Sdl3PlatformApplication
         ValidateWindowRegistration();
         nint handle = m_hostIntegration.CreateWindow(options);
         if (handle == 0)
+        {
             throw new InvalidOperationException("The SDL host integration returned no window.");
+        }
         SDLWindow* nativeWindow = (SDLWindow*)handle;
         try
         {
@@ -64,7 +66,9 @@ public sealed unsafe partial class Sdl3PlatformApplication
     {
         ValidateWindowRegistration();
         if (windowHandle == 0)
+        {
             throw new ArgumentException("A live SDL window is required.", nameof(windowHandle));
+        }
         SDLWindow* window = (SDLWindow*)windowHandle;
         return RegisterWindow(window, Sdl3NativeText.ReadWindowTitle(window) ?? string.Empty, ownsNativeWindow: false);
     }
@@ -87,8 +91,10 @@ public sealed unsafe partial class Sdl3PlatformApplication
         ObjectDisposedException.ThrowIf(m_disposed, this);
         ArgumentNullException.ThrowIfNull(window);
         if (window.ownsNativeWindow || !m_windows.TryGetValue(window.windowId, out Sdl3PlatformWindow? registered)
-            || !ReferenceEquals(registered, window))
+            || !ReferenceEquals(registered, window)
+        ) {
             throw new ArgumentException("Only this application's adopted window can be released.", nameof(window));
+        }
         window.Dispose();
     }
 
@@ -99,7 +105,9 @@ public sealed unsafe partial class Sdl3PlatformApplication
     ) {
         uint id = SDL.Raw.GetWindowId(nativeWindow);
         if (id == 0 || m_windows.ContainsKey(id))
+        {
             throw new ArgumentException("The SDL window is invalid or already registered.", nameof(nativeWindow));
+        }
         var window = new Sdl3PlatformWindow(nativeWindow, title, ownsNativeWindow, m_hostIntegration, RemoveWindow, m_ownerThreadId);
         m_windows.Add(id, window);
         return window;
@@ -112,12 +120,16 @@ public sealed unsafe partial class Sdl3PlatformApplication
         ValidateOwnerThread();
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (!m_hostIntegration.capabilities.multipleWindows && m_windows.Count != 0)
+        {
             throw new NotSupportedException("The selected SDL host supports only one window.");
+        }
     }
 
     private void ValidateOwnerThread()
     {
         if (Environment.CurrentManagedThreadId != m_ownerThreadId)
+        {
             throw new InvalidOperationException("SDL application operations must run on their owner thread.");
+        }
     }
 }

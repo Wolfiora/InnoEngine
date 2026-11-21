@@ -40,7 +40,9 @@ internal static class EditorTypeDistance
             foreach (Type interfaceType in type.GetInterfaces())
             {
                 if (!visited.Add(interfaceType))
+                {
                     continue;
+                }
                 if (interfaceType == registeredType)
                 {
                     distance = currentDistance + 1;

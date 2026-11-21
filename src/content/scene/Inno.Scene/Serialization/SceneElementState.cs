@@ -37,8 +37,11 @@ internal sealed class SceneElementState : ISerializable
         => dependencyIds.Select((
             id,
             index
-        ) => new AssetDependency(id,
-            new Inno.Extensibility.Types.TypeRef(dependencyTypes[index]), dependencyPaths[index])).ToArray();
+        ) => new AssetDependency(
+            id,
+            new Inno.Extensibility.Types.TypeRef(dependencyTypes[index]),
+            dependencyPaths[index]
+        )).ToArray();
 
     internal IReadOnlyDictionary<Guid, Guid> GetAliases()
         => aliasIds.Select((
@@ -48,15 +51,17 @@ internal sealed class SceneElementState : ISerializable
 
     internal void Validate()
     {
-        if (typeId == Guid.Empty || string.IsNullOrWhiteSpace(typeName) || properties is null ||
-            dependencyIds is null || dependencyTypes is null || dependencyPaths is null ||
-            aliasIds is null || aliasTargets is null ||
-            dependencyIds.Length != dependencyTypes.Length || dependencyIds.Length != dependencyPaths.Length ||
-            aliasIds.Length != aliasTargets.Length ||
-            dependencyIds.Any(static id => id == Guid.Empty) ||
-            dependencyIds.Distinct().Count() != dependencyIds.Length ||
-            aliasIds.Any(static id => id == Guid.Empty) || aliasTargets.Any(static id => id == Guid.Empty) ||
-            aliasIds.Distinct().Count() != aliasIds.Length)
+        if (typeId == Guid.Empty || string.IsNullOrWhiteSpace(typeName) || properties is null
+            || dependencyIds is null || dependencyTypes is null || dependencyPaths is null
+            || aliasIds is null || aliasTargets is null
+            || dependencyIds.Length != dependencyTypes.Length || dependencyIds.Length != dependencyPaths.Length
+            || aliasIds.Length != aliasTargets.Length
+            || dependencyIds.Any(static id => id == Guid.Empty)
+            || dependencyIds.Distinct().Count() != dependencyIds.Length
+            || aliasIds.Any(static id => id == Guid.Empty) || aliasTargets.Any(static id => id == Guid.Empty)
+            || aliasIds.Distinct().Count() != aliasIds.Length
+        ) {
             throw new InvalidDataException("Scene element state contains invalid type, dependency or alias metadata.");
+        }
     }
 }

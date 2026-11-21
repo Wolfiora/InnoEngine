@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-
+using Xunit;
 using Inno.Core.Events;
 using Inno.Core.Execution;
 using Inno.Core.Layers;
-
-using Xunit;
 
 namespace Inno.Core.Layers.Tests;
 
@@ -71,7 +69,8 @@ public sealed class LayerStackTests
 
         Assert.Equal(
             ["first.before", "second.before", "first.render", "second.render", "second.after", "first.after"],
-            calls);
+            calls
+        );
     }
 
     [Fact]
@@ -177,16 +176,16 @@ public sealed class LayerStackTests
         Assert.Equal(0, layer.detachCount);
     }
 
-    private sealed class ProbeEvent : Event
-    {
-    }
+    private sealed class ProbeEvent : Event;
 
     private sealed class ProbeLayer : Layer
     {
         private readonly List<string>? m_calls;
 
-        internal ProbeLayer(string name, List<string>? calls = null)
-            : base(name)
+        internal ProbeLayer(
+            string name,
+            List<string>? calls = null
+        ) : base(name)
         {
             m_calls = calls;
         }
@@ -211,29 +210,35 @@ public sealed class LayerStackTests
                 m_calls?.Add(name);
             });
             if (throwOnAttach)
+            {
                 throw new InvalidOperationException("Attach failed.");
+            }
         }
 
         public override void OnDetach()
         {
             detachCount++;
             if (pendingDetaches-- > 0)
+            {
                 throw new RetirementPendingException("Expected unfinished layer work.");
+            }
             if (throwOnDetach)
+            {
                 throw new InvalidOperationException("Detach failed.");
+            }
         }
 
-        public override void OnBeforeRender(float deltaTime)
-            => m_calls?.Add($"{name}.before");
+        public override void OnBeforeRender(float deltaTime) => m_calls?.Add($"{name}.before");
 
         public override void OnRender(float deltaTime)
         {
             m_calls?.Add($"{name}.render");
             if (throwOnRender)
+            {
                 throw new InvalidOperationException("Render failed.");
+            }
         }
 
-        public override void OnAfterRender(float deltaTime)
-            => m_calls?.Add($"{name}.after");
+        public override void OnAfterRender(float deltaTime) => m_calls?.Add($"{name}.after");
     }
 }

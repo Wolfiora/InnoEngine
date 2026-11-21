@@ -1,16 +1,16 @@
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using Inno.Core.Diagnostics;
 using Inno.Core.Graphs;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
-using Xunit;
 using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Shaders.Tests;
@@ -40,7 +40,10 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
         Assert.Equal(bytes, GraphDocumentCodec.Encode(restored, m_serialization));
         ShaderGraphProgramResult result = Lower(restored);
         Assert.True(result.succeeded, string.Join("\n", result.diagnostics.Select(static value => value.message)));
-        Assert.Equal(new[] { ShaderStage.Vertex, ShaderStage.Fragment }, Assert.Single(result.passes).stages.Select(static value => value.stage));
+        Assert.Equal(
+            new[] { ShaderStage.Vertex, ShaderStage.Fragment },
+            Assert.Single(result.passes).stages.Select(static value => value.stage)
+        );
     }
 
     [Fact]
@@ -68,14 +71,19 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
         definition.passes = [definition.passes[0], definition.passes[0]];
         definition.keywords = [new("quality", ["low", "low"])];
         definition.techniques = [new(new("surface"), new("arbitrary.render-model"), [new(new("forward"), "absent")])];
-        string[] codes = ShaderDefinitionValidator.Validate(definition).Where(static value => value.severity == DiagnosticSeverity.Error)
-            .Select(static value => value.code).ToArray();
+        string[] codes = ShaderDefinitionValidator.Validate(definition)
+            .Where(static value => value.severity == DiagnosticSeverity.Error)
+            .Select(static value => value.code)
+            .ToArray();
         Assert.Contains("SHADER_DUPLICATE_PROPERTY", codes);
         Assert.Contains("SHADER_DUPLICATE_PASS", codes);
         Assert.Contains("SHADER_PROPERTY_STAGES_INVALID", codes);
         Assert.Contains("SHADER_DUPLICATE_KEYWORD_OPTION", codes);
         Assert.Contains("SHADER_UNKNOWN_TECHNIQUE_PASS", codes);
-        graph.SetMetadata(ShaderGraphDocument.definitionKey, ShaderGraphDocument.Encode(m_serialization.Serialize(definition), m_serialization, SerializationContext.empty));
+        graph.SetMetadata(
+            ShaderGraphDocument.definitionKey,
+            ShaderGraphDocument.Encode(m_serialization.Serialize(definition), m_serialization, SerializationContext.empty)
+        );
         Assert.False(Lower(graph).succeeded);
     }
 
@@ -87,10 +95,20 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
         pass.requiredFeatures = GraphicsCapability.Compute;
         definition.passes = [pass];
         RenderTextureFormat[] formats = Enum.GetValues<RenderTextureFormat>();
-        var capabilities = new GraphicsCapabilities(GraphicsApi.Noop, GraphicsCapability.None, new(64, 1, 4096, 0),
-            formats, formats, formats, formats, false, false);
-        Assert.Contains(ShaderDefinitionValidator.Validate(definition, capabilities), static value =>
-            value.code == "SHADER_CAPABILITY_UNAVAILABLE" && value.severity == DiagnosticSeverity.Warning);
+        var capabilities = new GraphicsCapabilities(
+            GraphicsApi.Noop,
+            GraphicsCapability.None,
+            new(64, 1, 4096, 0),
+            formats,
+            formats,
+            formats,
+            formats,
+            false,
+            false
+        );
+        Assert.Contains(ShaderDefinitionValidator.Validate(definition, capabilities), static value => (
+            value.code == "SHADER_CAPABILITY_UNAVAILABLE" && value.severity == DiagnosticSeverity.Warning
+        ));
         Assert.Equal(GraphicsCapability.Compute, definition.passes[0].requiredFeatures);
     }
 
@@ -101,7 +119,13 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
     {
         GraphDocument graph = Template();
         GraphNodeRecord color = graph.FindNode(new("color"))!;
-        ShaderGraphInputSettings input = ShaderGraphDocument.Read(color, "settings", new ShaderGraphInputSettings(), m_serialization, SerializationContext.empty);
+        ShaderGraphInputSettings input = ShaderGraphDocument.Read(
+            color,
+            "settings",
+            new ShaderGraphInputSettings(),
+            m_serialization,
+            SerializationContext.empty
+        );
         input.id = "tint";
         GraphDocument changed = ShaderGraphBindings.ChangeInput(graph, color.id, input, m_serialization, SerializationContext.empty);
         ShaderDefinition original = ShaderGraphDocument.ReadDefinition(graph, m_serialization, SerializationContext.empty);
@@ -116,7 +140,13 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
     public void PartiallyTypedInputRemainsSerializableInsteadOfDiscardingItsNodeOrEdges()
     {
         GraphDocument graph = Template();
-        ShaderGraphInputSettings input = ShaderGraphDocument.Read(graph.FindNode(new("color"))!, "settings", new ShaderGraphInputSettings(), m_serialization, SerializationContext.empty);
+        ShaderGraphInputSettings input = ShaderGraphDocument.Read(
+            graph.FindNode(new("color"))!,
+            "settings",
+            new ShaderGraphInputSettings(),
+            m_serialization,
+            SerializationContext.empty
+        );
         input.id = "";
         GraphDocument changed = ShaderGraphBindings.ChangeInput(graph, new("color"), input, m_serialization, SerializationContext.empty);
         Assert.Equal(graph.nodes.Count, changed.nodes.Count);
@@ -124,8 +154,15 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
         Assert.False(Lower(changed).succeeded);
         Assert.NotEmpty(GraphDocumentCodec.Encode(changed, m_serialization));
     }
-    private ShaderGraphProgramResult Lower(GraphDocument graph) => new ShaderGraphProgramCompiler(m_nodes).Lower(graph, "bgfx",
-        new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis>(), m_serialization, SerializationContext.empty);
+
+    private ShaderGraphProgramResult Lower(GraphDocument graph)
+        => new ShaderGraphProgramCompiler(m_nodes).Lower(
+            graph,
+            "bgfx",
+            new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis>(),
+            m_serialization,
+            SerializationContext.empty
+        );
 
     [Fact]
     public void RemovingLastParameterInputRemovesItsDeclarationWithoutMutatingTheOriginal()
@@ -148,10 +185,14 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
         graph.AddNode(node);
         var settings = new ShaderGraphInputSettings { id = "color", kind = ShaderIrInputKind.Uniform, type = new() { id = "float4" } };
         graph = ShaderGraphBindings.ChangeInput(graph, node.id, settings, m_serialization, SerializationContext.empty);
-        ShaderPropertyDefinition original = Assert.Single(ShaderGraphDocument.ReadDefinition(graph, m_serialization, SerializationContext.empty).properties);
+        ShaderPropertyDefinition original = Assert.Single(
+            ShaderGraphDocument.ReadDefinition(graph, m_serialization, SerializationContext.empty).properties
+        );
         Assert.Equal(ShaderStage.Vertex | ShaderStage.Fragment, original.stages);
         GraphDocument edited = ShaderGraphBindings.RemoveNodes(graph, [node.id], m_serialization, SerializationContext.empty);
-        ShaderPropertyDefinition remaining = Assert.Single(ShaderGraphDocument.ReadDefinition(edited, m_serialization, SerializationContext.empty).properties);
+        ShaderPropertyDefinition remaining = Assert.Single(
+            ShaderGraphDocument.ReadDefinition(edited, m_serialization, SerializationContext.empty).properties
+        );
         Assert.Equal(ShaderStage.Fragment, remaining.stages);
         Assert.Equal(original.defaultValue, remaining.defaultValue);
         Assert.True(Lower(edited).succeeded);

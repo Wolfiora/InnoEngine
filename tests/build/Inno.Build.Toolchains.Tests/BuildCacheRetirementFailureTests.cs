@@ -3,9 +3,9 @@ using System.IO;
 using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
-using Xunit;
 
 namespace Inno.Build.Toolchains.Tests;
 
@@ -32,10 +32,16 @@ public sealed class BuildCacheRetirementFailureTests : IDisposable
         Directory.CreateDirectory(output);
         File.WriteAllBytes(Path.Combine(output, "payload"), [1, 2, 3]);
         using (await healthy.AcquireUseAsync())
+        {
             healthy.Record(output, output + ".read.lock", [], null, null);
+        }
 
-        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(m_root,
-            [invalid.Describe("invalid"), healthy.Describe("healthy")], new(0, 0), retireAll: true);
+        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(
+            m_root,
+            [invalid.Describe("invalid"), healthy.Describe("healthy")],
+            new(0, 0),
+            retireAll: true
+        );
         BuildCacheCleanupResult result = await plan.ExecuteAsync();
 
         Assert.Equal(3, result.retiredBytes);
@@ -61,14 +67,22 @@ public sealed class BuildCacheRetirementFailureTests : IDisposable
         File.WriteAllText(claim + ".invalid.process", "unverifiable");
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => BuildMaintenanceApplication.CleanAsync(
-            m_root, new(timeBudget: TimeSpan.FromSeconds(30)), true, false, null, default));
+            m_root,
+            new(timeBudget: TimeSpan.FromSeconds(30)),
+            true,
+            false,
+            null,
+            default
+        ));
         Assert.True(File.Exists(claim));
     }
 
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     private static void MarkOwnerExited(string claim)

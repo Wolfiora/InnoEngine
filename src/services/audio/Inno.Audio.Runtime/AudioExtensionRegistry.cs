@@ -12,9 +12,7 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
     private Exception? m_retirementFailure;
 
     internal AudioExtensionRegistry(TypeCatalog types)
-        : base(types)
-    {
-    }
+        : base(types) {}
 
     internal Snapshot extensions => current;
 
@@ -40,7 +38,9 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
     internal void EnsureHealthy()
     {
         if (m_retirementFailure is not null)
+        {
             throw new InvalidOperationException("The audio generation owner is Faulted and requires a host restart.", m_retirementFailure);
+        }
     }
 
     /// <summary>
@@ -76,15 +76,15 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
             Discover<AudioMixerExtensionAttribute, AudioMixerExtension>(types, static value => value.id, "mixer"),
             Discover<AudioMixerFeatureExtensionAttribute, AudioMixerFeature>(types, static value => value.id, "mixer feature"),
             Discover<AudioContentProviderExtensionAttribute, AudioContentProvider>(types, static value => value.id, "content provider"),
-            CreateExtension<AudioContentProvider>);
+            CreateExtension<AudioContentProvider>
+        );
     }
 
     private static Dictionary<string, Type> Discover<TAttribute, TContract>(
         TypeCacheSnapshot types,
         Func<TAttribute, string> getId,
         string kind
-    )
-        where TAttribute : Attribute
+    ) where TAttribute : Attribute
     {
         var result = new Dictionary<string, Type>(StringComparer.Ordinal);
         foreach (TypeRef typeRef in types.GetTypesWithAttribute<TAttribute>())
@@ -93,7 +93,8 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
             if (type.IsAbstract || !typeof(TContract).IsAssignableFrom(type))
             {
                 throw new InvalidOperationException(
-                    $"Audio {kind} '{type.FullName}' must be a non-abstract {typeof(TContract).FullName}.");
+                    $"Audio {kind} '{type.FullName}' must be a non-abstract {typeof(TContract).FullName}."
+                );
             }
             if (!types.CanCreateInstance(typeRef))
             {
@@ -104,7 +105,8 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
             if (!result.TryAdd(id, type))
             {
                 throw new InvalidOperationException(
-                    $"Audio {kind} ID '{id}' is declared by both '{result[id].FullName}' and '{type.FullName}'.");
+                    $"Audio {kind} ID '{id}' is declared by both '{result[id].FullName}' and '{type.FullName}'."
+                );
             }
         }
         return result;
@@ -185,9 +187,13 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
             foreach (AudioMixerFeatureConfiguration configuration in asset.features)
             {
                 if (!configuration.enabled)
+                {
                     continue;
+                }
                 if (string.IsNullOrWhiteSpace(configuration.featureTypeId) || !configured.Add(configuration.featureTypeId))
+                {
                     throw new InvalidOperationException("Enabled audio mixer features require unique stable identifiers.");
+                }
                 if (!m_features.TryGetValue(configuration.featureTypeId, out Type? featureType))
                 {
                     mixer = null;
@@ -199,7 +205,8 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
             return true;
         }
 
-        private TContract Create<TContract>(Type type) where TContract : class
+        private TContract Create<TContract>(Type type)
+            where TContract : class
         {
             try
             {
@@ -224,7 +231,9 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
             this.typeCacheVersion = typeCacheVersion;
             this.providers = Array.AsReadOnly(providers.ToArray());
             foreach (ProviderEntry entry in providers)
+            {
                 m_lifetime.Own(entry.provider);
+            }
         }
 
         internal long typeCacheVersion { get; }
@@ -237,7 +246,9 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
         public void Dispose()
         {
             if (m_disposed)
+            {
                 return;
+            }
             try
             {
                 m_lifetime.Dispose();

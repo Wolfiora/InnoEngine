@@ -9,12 +9,10 @@ public enum BuildCacheArtifactRole
     /// A complete immutable generation remains protected by selected products and active readers.
     /// </summary>
     ImmutableArtifact,
-
     /// <summary>
     /// A mutable compiler workspace may retire when no producer or consumer is active.
     /// </summary>
     ReusableWorkspace,
-
     /// <summary>
     /// An operation directory remains protected until its exact process owners have exited.
     /// </summary>

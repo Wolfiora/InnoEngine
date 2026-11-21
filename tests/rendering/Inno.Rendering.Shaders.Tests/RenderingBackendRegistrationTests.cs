@@ -1,9 +1,9 @@
-using Inno.Integration.WindowsX64.Bgfx;
 using System;
+using Xunit;
 using Inno.Adapter.Rendering;
 using Inno.Build.Toolchains.Bgfx.Tools;
+using Inno.Integration.WindowsX64.Bgfx;
 using Inno.Rendering.Assets;
-using Xunit;
 using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Rendering.Shaders.Tests;
@@ -32,7 +32,9 @@ public sealed class RenderingBackendRegistrationTests
         Assert.Throws<ArgumentException>(() => new RenderingBackendCatalog([new RuntimeProvider(default)]));
         var runtime = new RenderingBackendCatalog([new RuntimeProvider(id)]);
         Assert.Throws<ArgumentException>(() => new RenderingAuthoringBackendCatalog(runtime, []));
-        Assert.Throws<ArgumentException>(() => new RenderingAuthoringBackendCatalog(runtime, [new AuthoringProvider(RenderingBackendId.bgfx)]));
+        Assert.Throws<ArgumentException>(
+            () => new RenderingAuthoringBackendCatalog(runtime, [new AuthoringProvider(RenderingBackendId.bgfx)])
+        );
         Assert.Throws<ArgumentException>(() => new RenderingBackendId("invalid id"));
         Assert.False(default(RenderingBackendId).isValid);
     }
@@ -40,15 +42,22 @@ public sealed class RenderingBackendRegistrationTests
     private sealed class RuntimeProvider(RenderingBackendId id) : RenderingBackendProvider(id)
     {
         public bool wasCreated { get; private set; }
+
         public override IRenderDevice CreateDevice(RenderingBackendOptions options)
-        { wasCreated = true; throw new InvalidOperationException("These registration tests must not create a GPU device."); }
+        {
+            wasCreated = true;
+            throw new InvalidOperationException("These registration tests must not create a GPU device.");
+        }
+
         public override IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider()
             => throw new InvalidOperationException("These registration tests do not create composition programs.");
     }
 
     private sealed class AuthoringProvider(RenderingBackendId id) : RenderingAuthoringBackendProvider(id)
     {
-        public override IShaderCompilerToolchain CreateShaderCompilerToolchain() => new BgfxShadercToolchain(Inno.Integration.WindowsX64.Bgfx.WindowsX64BgfxShaderProfiles.target);
+        public override IShaderCompilerToolchain CreateShaderCompilerToolchain()
+            => new BgfxShadercToolchain(Inno.Integration.WindowsX64.Bgfx.WindowsX64BgfxShaderProfiles.target);
+
         public override ITextureTargetCompiler CreateTextureTargetCompiler() => new BgfxTextureTargetCompiler();
     }
 }

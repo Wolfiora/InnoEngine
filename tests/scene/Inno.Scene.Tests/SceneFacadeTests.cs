@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Inno.Scene;
-using Inno.Runtime;
-using Inno.Scene.Components;
-
 using Xunit;
+using Inno.Runtime;
+using Inno.Scene;
+using Inno.Scene.Components;
 
 namespace Inno.Scene.Tests;
 
@@ -23,7 +21,9 @@ public sealed class SceneFacadeTests : IDisposable
         Transform destinationRoot = destination.CreateObject("Existing").transform;
         var roots = new List<Transform>();
         for (int index = 0; index < 64; index++)
+        {
             roots.Add(scene.CreateObject("Root " + index).transform);
+        }
         var random = new Random(27102026);
         for (int iteration = 0; iteration < 200; iteration++)
         {
@@ -73,7 +73,9 @@ public sealed class SceneFacadeTests : IDisposable
         void Verify()
         {
             for (int index = 0; index < roots.Count; index++)
+            {
                 Assert.Equal(index, roots[index].siblingIndex);
+            }
         }
     }
 
@@ -223,14 +225,16 @@ public sealed class SceneFacadeTests : IDisposable
 
         Assert.Equal(
             [typeof(Transform), typeof(OrderComponentB), typeof(OrderComponentA)],
-            gameObject.GetComponents().Select(static component => component.GetType()));
+            gameObject.GetComponents().Select(static component => component.GetType())
+        );
         Assert.Equal(1, gameObject.GetComponentIndex(second));
 
         gameObject.SetComponentIndex(gameObject.transform, 2);
 
         Assert.Equal(
             [typeof(OrderComponentB), typeof(OrderComponentA), typeof(Transform)],
-            gameObject.GetComponents().Select(static component => component.GetType()));
+            gameObject.GetComponents().Select(static component => component.GetType())
+        );
         Assert.Equal(2, gameObject.GetComponentIndex(gameObject.transform));
     }
 
@@ -367,11 +371,17 @@ public sealed class SceneFacadeTests : IDisposable
         public int disableCount;
 
         protected override void Awake() => awakeCount++;
+
         protected override void Start() => startCount++;
+
         protected override void Update() => updateCount++;
+
         protected override void FixedUpdate() => fixedUpdateCount++;
+
         protected override void LateUpdate() => lateUpdateCount++;
+
         protected override void OnEnable() => enableCount++;
+
         protected override void OnDisable() => disableCount++;
 
         protected override void Reset()

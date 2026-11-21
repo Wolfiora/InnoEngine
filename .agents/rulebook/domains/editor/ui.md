@@ -1,43 +1,9 @@
-# Editor
+---
+paths: ["src/composition/editor/presentation/**", "src/composition/editor/panels/**", "**/*ImGui*", "**/*ImGui*/**"]
+tags: [editor-layout, editor-acceptance, editor-standard]
+---
+# Editor UI
 
-Load complete rule units. The [registry](../coverage.json) owns routing and provenance.
-
-<!-- rule-unit: editor-projects -->
-<a id="editor-projects"></a>
-## 13. Editor projects and reference boundaries
-- Business source in each project under `src/composition/editor` uses a namespace exactly matching its csproj/assembly name. Feature directories organize files without adding namespace segments. For example, types under Inno.Editor.Inspection/PropertyDrawing still use namespace Inno.Editor.Inspection.
-- Reusable InspectionDrawers, PropertyDrawers, Registries and serialized-property renderers belong to Inno.Editor.Inspection. Business Panels implement specific Drawers in their own projects and must not reference Inno.Editor.Panel.Inspector merely to extend inspection presentation.
-- The sole namespace exception is Inno.Editor.ImGui/Widgets: all its types use namespace Inno.Editor.ImGui.ImGuiWidget.
-- Inno.Editor.ImGui/Widgets contains only ImGuiWidget.*.cs files. Each widget's presentation, options, results and private state belong together in ImGuiWidget.<Feature>.cs. Do not create separate Widget helper files.
-- Organize Editor project directories by independently understandable capabilities, such as Interactions, Documents, Zoom and PropertyDrawing. Do not mechanically scatter one feature's Actions, Menus, DragDrop, Runtime and Presentation into tiny type-role directories. Ambiguous Internal directories are prohibited; C# declarations, not directory names, express accessibility.
-- Group Editor csproj ProjectReferences by public API boundary: the first ItemGroup contains only implementation dependencies absent from all public/protected APIs, each with PrivateAssets="compile"; the second contains only dependencies actually exposed through public signatures, base classes or interfaces. Remove unused references.
-- Determine public reference visibility from actual API signatures, not merely runtime assembly use. Recheck the groups after changing public types, base classes, parameters, returns or properties.
-<!-- /rule-unit: editor-projects -->
-
-<!-- rule-unit: editor-state -->
-<a id="editor-state"></a>
-## 14. Editor History and Workspace state
-- Reversible Editor data changes use EditorInteractions.history. Do not keep another Undo stack in a Panel or treat a simple inverse Action as the general model.
-- Feature Modules apply the domain change first, then record it with RecordApplied(name, EditorHistoryChange). History payloads contain only stable protocol kinds, persistent IDs, Stable Type IDs, paths, indexes, scalars and neutral serialized bytes. They must not capture runtime objects, Plugin Types, extension instances or collectible-ALC delegates.
-- Every reload-safe protocol declares [EditorHistoryHandler(kind)]. Handler Query only checks current-generation availability; Apply rolls back partial modifications on failure. Its Registry participates in candidate construction and atomic switching with the other Editor Registries.
-- RecordValue, delegate-based Execute and derived EditorHistoryOperation are permitted only for Host-only compatibility workflows. These runtime-bound entries are truncated when extension generations change and must not serve EditorScripts or long-lived Scene/Asset records.
-- Stable mergeKeys apply only to continuous input for the same logical value. Do not merge boolean toggles, creation, deletion or ordering. Use BeginTransaction for multiple steps, with each child independently atomic.
-- Failed Undo/Redo leaves the operation on its original stack without moving pointers or overwriting new state. New operations release the Redo branch. Evicted/cleared operations release their files, objects and Plugin-generation references.
-- EditorHistoryOptions automatically spills large payloads to <Project>/Library/Editor/History. Entry, resident-byte and disk-byte budgets all constrain History. Its cache does not enter editor.ini, Asset metadata or Scene serialization.
-- Pure workflows such as saving, opening and selection do not enter data Undo by default. Record only the data portion when they actually modify Project data.
-- Cross-startup Project semantic state belongs directly to Modules/Panels. Their Attributes require stable, globally unique IDs, and protected Capture(EditorState)/Restore(EditorState) hooks participate in persistence. Extensions use only Get/Set on the parameter object, without exposing JSON implementations in public/protected APIs. Types that do not override Capture do not enter state IO. Do not restore separate Workspace interfaces, readers/writers or second state IDs. Persistent values must be neutral and resolvable again.
-- editor.ini is the unified readable Project-level Editor settings document. Standard ImGui sections store layout; each Module/Panel uses [InnoEditor][Module.<id>] or [InnoEditor][Panel.<id>]; Panel switches use [InnoEditor][Panels]. Do not wrap the entire Workspace in Base64 or one opaque payload. Do not persist Undo stacks, dirty Scene content, runtime references or compilation intermediate state.
-- The standard Host's embedded resource supplies a new Project's default layout. Core receives a neutral initial document and reuses Core IO atomic writing. Initialize only when the file does not exist; do not overwrite an existing or deliberately empty editor.ini. Templates contain no example Scenes, Asset IDs, Plugin state, Selection, History or temporary popups.
-- Editor Selection is transient interaction state for the current session and must not enter editor.ini. Workspace may save independently meaningful navigation positions, open documents and active documents. Startup must not automatically restore Asset, Scene, GameObject, Component or System selection.
-- Normal Editor shutdown captures every stateful Module/Panel, then the latest ImGui layout, then forces one atomic write of the complete editor.ini before stopping Modules or unloading Scenes. Throttled runtime saves remain allowed but do not replace shutdown saving.
-- All Editor Scene edits use Inno.Editor.Scene.SceneEdits. Ordinary properties store only one property's bytes; Components/Systems store element identity/type/index/state; GameObject deletion stores the minimal subtree; hierarchy changes store only affected placements. Do not serialize or restore an entire Scene for small edits.
-- Module/Panel restoration tolerates missing Assets, damaged payloads and script types not yet present in TypeCache. Do not destroy the current editable state before the candidate is fully prepared.
-- A stateful Module/Panel must successfully complete protected Restore once before Capture may overwrite its disk section. Extension Registry refresh may reenter during startup/script activation. The restoration coordinator weakly tracks restoring/restored state per instance, prevents reentrant callbacks and does not assume an instance retained in a new snapshot has already been restored.
-- Scene Workspace restoration distinguishes an actually missing source file from an Asset Source Index awaiting its first reconciliation. If physical source still exists, retain pending Scene setup and retry. Do not overwrite Project settings with a temporarily empty runtime Scene collection. Editor permits no loaded Scenes; restoration, startup and deletion of the last Scene must not implicitly create an Untitled Scene.
-<!-- /rule-unit: editor-state -->
-
-<!-- rule-unit: editor-layout -->
-<a id="editor-layout"></a>
 ## 24. Editor forms and scrolling
 
 - Each visible region has one scrolling owner. Parent Panel/Modal, layout Child and content Child must not produce scrollbars in the same direction for the same content. A parent hosting a fill-area scrollable Child disables the corresponding scrolling.
@@ -47,10 +13,7 @@ Load complete rule units. The [registry](../coverage.json) owns routing and prov
 - Align Popup size constraints to pixels at the Widget boundary: floor upper bounds and ceil required content sizes to prevent false overflow when ImGui truncates fractional padding. Regressions cover fractional zoom such as 85%, 90% and 110%, not only integer/half-integer padding. Do not conceal failures with NoScrollbar.
 - Custom hit regions check both rectangle containment and whether their owning ImGui window is the currently interactive foreground window. Floating windows, Popups and Modals must block underlying Panel close actions, canvas gestures and game input. Platform events still use Inno.Core.Events; ImGui determines visible-UI hits/focus only. Play Sessions have an independent Input backend receiving events filtered by Game View focus policy, without a second event bus.
 - Tree-row disclosure controls, text and overlay buttons each own an independent hit region. Native TreeNodes must not cover custom text using full-row SpanFullWidth/AllowOverlap. Regressions cover prior hover and same-frame move/press, text double-click, arrow expansion and overlay buttons. Clicking must not require an extra hover frame.
-<!-- /rule-unit: editor-layout -->
 
-<!-- rule-unit: editor-acceptance -->
-<a id="editor-acceptance"></a>
 ## 32. Editor UI ownership and acceptance
 
 - Domain editing in `features` must remain independent from native UI, Panels and Workbench. Panels compose feature APIs; they do not reference other Panels. Reusable controls belong to the session-owned ImGui adapter, and generic Graph presentation cannot depend on Shader semantics.
@@ -73,10 +36,7 @@ Load complete rule units. The [registry](../coverage.json) owns routing and prov
 - Workflow progress and cancellation are bound to the original owner and operation identity. Late callbacks cannot overwrite a newer request or a cancellation state, and progress presentation cannot weaken publication or generation retirement.
 
 - CI and local acceptance must follow the actual changed owners. Use scoped Editor verification for bounded UI changes; retain full verification for build, platform, backend, SDK, shared runtime or unknown owners. Record omitted checks explicitly and never bypass production validation to shorten CI.
-<!-- /rule-unit: editor-acceptance -->
 
-<!-- rule-unit: editor-standard-9 -->
-<a id="editor-standard-9"></a>
 ## Delivery and acceptance
 
 Changes update source, callers, project references, public XML, documentation and applicable tests together. Use real public contracts and replaceable boundaries, without IVT, private reflection or test backdoors.
@@ -92,10 +52,7 @@ Distinguish native-borrow verification from pure value conversion according to a
 EditorUiInput Control/Super values mean physical modifiers, not native controls' internal shortcut normalization. The presentation boundary reconstructs them from the current Context's keyboard configuration. List selection reuses those snapshot semantics; platforms still choose primary modifiers through EditorKeyboardPolicy. Native text controls retain that Context's input conventions. Tests explicitly declare their keyboard configuration and cover Control/Super combined with both native modes rather than relying on runner defaults.
 
 Final reports separately assess architecture, organization, state/lifetimes, abstraction, reuse, style, extensibility, interaction, Undo/Redo, menus and granularity, with evidence and limitations for each. Neat directories, test counts or successful startup do not replace visual/input acceptance, repeated reload, resource convergence and paired performance measurements.
-<!-- /rule-unit: editor-standard-9 -->
 
-<!-- rule-unit: editor-standard-10 -->
-<a id="editor-standard-10"></a>
 ## Dynamic Modal state and size
 
 - Window size, wrapping and drawing use one snapshot for the current frame, never the previous message's height.
@@ -112,4 +69,3 @@ Engine CI selects checks from the complete Git change set and actual SDK depende
 Inno.Tooling.Validation is the sole plan owner and does not weaken production-build integrity. Moves cover old and new owners; PRs use actual merge candidates and merge bases; local plans include staged, unstaged and untracked files. Record selection reasons and exclusions. A bounded pass is not a complete product/device matrix pass. Unavailable required environments, missing results and empty required tests fail or block.
 
 Cheap architecture rules remain repository-wide. Prepare compilation metadata and documentation examples from actual dependencies, sharing the batch graph across architecture, tests and documentation. Impact analysis includes project references, imports, source, resources and generated inputs. Text similarity cannot declare SDK/TFM/shared-build changes irrelevant. Log directories, reports, commits/pushes and session recovery do not justify repeated acceptance. Reuse only deterministic evidence with matching inputs, tools, environments and artifacts.
-<!-- /rule-unit: editor-standard-10 -->

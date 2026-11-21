@@ -29,7 +29,9 @@ public readonly struct GameLayer : IEquatable<GameLayer>, IComparable<GameLayer>
     public GameLayer(int index)
     {
         if ((uint)index >= C_MAX_COUNT)
+        {
             throw new ArgumentOutOfRangeException(nameof(index), index, "A layer index must be between 0 and 31.");
+        }
         this.index = index;
     }
 

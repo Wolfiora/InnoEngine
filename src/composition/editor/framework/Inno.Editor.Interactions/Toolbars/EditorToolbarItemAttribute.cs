@@ -42,15 +42,25 @@ public sealed class EditorToolbarItemAttribute : Attribute
         EditorToolbarIcon activeIcon = EditorToolbarIcon.None
     ) {
         if (string.IsNullOrWhiteSpace(area))
+        {
             throw new ArgumentException("An editor toolbar area is required.", nameof(area));
+        }
         if (!Enum.IsDefined(icon))
+        {
             throw new ArgumentOutOfRangeException(nameof(icon), icon, "Unknown editor toolbar icon.");
+        }
         if (icon == EditorToolbarIcon.None)
+        {
             throw new ArgumentException("A visible editor toolbar icon is required.", nameof(icon));
+        }
         if (string.IsNullOrWhiteSpace(tooltip))
+        {
             throw new ArgumentException("An editor toolbar tooltip is required.", nameof(tooltip));
+        }
         if (!Enum.IsDefined(activeIcon))
+        {
             throw new ArgumentOutOfRangeException(nameof(activeIcon), activeIcon, "Unknown active toolbar icon.");
+        }
 
         this.area = area;
         this.icon = icon;

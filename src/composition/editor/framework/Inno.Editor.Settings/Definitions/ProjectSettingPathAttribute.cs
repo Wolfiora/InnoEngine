@@ -27,9 +27,7 @@ public sealed class ProjectSettingPathAttribute : Attribute
         string normalized = EditorSettingsPathUtility.Normalize(path);
         if (!normalized.StartsWith("Project/", StringComparison.Ordinal))
         {
-            throw new ArgumentException(
-                "A project setting editor path must begin with 'Project/'.",
-                nameof(path));
+            throw new ArgumentException("A project setting editor path must begin with 'Project/'.", nameof(path));
         }
         this.path = normalized;
         this.order = order;

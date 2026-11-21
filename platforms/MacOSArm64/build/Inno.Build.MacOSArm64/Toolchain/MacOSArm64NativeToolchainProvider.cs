@@ -41,25 +41,51 @@ public sealed class MacOSArm64NativeToolchainProvider : INativeToolchainProvider
         ArgumentNullException.ThrowIfNull(host);
         cancellationToken.ThrowIfCancellationRequested();
         if (!(host.system == "MacOS" && host.architecture == "arm64" && targetId == "macos-arm64"))
+        {
             throw new PlatformNotSupportedException($"The MacOS SDK cannot build '{targetId}' on {host.system}/{host.architecture}.");
-        var tools = new Dictionary<string, string>(StringComparer.Ordinal) { ["dotnet"] = ToolchainEnvironment.ResolveExecutable(m_dotnetHost) };
+        }
+        var tools = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["dotnet"] = ToolchainEnvironment.ResolveExecutable(m_dotnetHost)
+        };
         Dictionary<string, string> environment = NativeToolchainPreparation.CreateEnvironment();
         var inputs = new List<string>();
         var cmakeArguments = new List<string>();
         string xcrun = ToolchainEnvironment.ResolveExecutable("xcrun");
-        tools["clang"] = (await ToolchainEnvironment.CaptureOutputAsync(xcrun,
-            ["--find", "clang"], context.engineRoot, cancellationToken).ConfigureAwait(false)).Trim();
-        tools["clang++"] = (await ToolchainEnvironment.CaptureOutputAsync(xcrun,
-            ["--find", "clang++"], context.engineRoot, cancellationToken).ConfigureAwait(false)).Trim();
-        string sdk = (await ToolchainEnvironment.CaptureOutputAsync(xcrun,
-            ["--sdk", "macosx", "--show-sdk-path"], context.engineRoot, cancellationToken).ConfigureAwait(false)).Trim();
+        tools["clang"] = (await ToolchainEnvironment.CaptureOutputAsync(
+            xcrun,
+            ["--find", "clang"],
+            context.engineRoot,
+            cancellationToken
+        ).ConfigureAwait(false)).Trim();
+        tools["clang++"] = (await ToolchainEnvironment.CaptureOutputAsync(
+            xcrun,
+            ["--find", "clang++"],
+            context.engineRoot,
+            cancellationToken
+        ).ConfigureAwait(false)).Trim();
+        string sdk = (await ToolchainEnvironment.CaptureOutputAsync(
+            xcrun,
+            ["--sdk", "macosx", "--show-sdk-path"],
+            context.engineRoot,
+            cancellationToken
+        ).ConfigureAwait(false)).Trim();
         environment["SDKROOT"] = sdk;
         inputs.AddRange([xcrun, Path.Combine(sdk, "usr", "include"), Path.Combine(sdk, "usr", "lib")]);
         cmakeArguments.AddRange(["-DCMAKE_OSX_SYSROOT=" + sdk, "-DCMAKE_OSX_ARCHITECTURES=arm64"]);
         ConfigureTools(tools, environment, cmakeArguments);
 
-        return NativeToolchainPreparation.Freeze(targetId, host, tools, environment, inputs,
-            cmakeArguments, MacOSArm64LinkerSettings.Create(), false, new NativeCompilerInputs(tools["clang"], tools["clang++"], sdk));
+        return NativeToolchainPreparation.Freeze(
+            targetId,
+            host,
+            tools,
+            environment,
+            inputs,
+            cmakeArguments,
+            MacOSArm64LinkerSettings.Create(),
+            false,
+            new NativeCompilerInputs(tools["clang"], tools["clang++"], sdk)
+        );
     }
 
     private static void ConfigureTools(
@@ -71,7 +97,9 @@ public sealed class MacOSArm64NativeToolchainProvider : INativeToolchainProvider
         tools["cmake"] = ToolchainEnvironment.ResolveExecutable("cmake");
         environment["CC"] = tools["clang"];
         environment["CXX"] = tools["clang++"];
-        cmakeArguments.AddRange(["-DCMAKE_C_COMPILER=" + environment["CC"],
-            "-DCMAKE_CXX_COMPILER=" + environment["CXX"]]);
+        cmakeArguments.AddRange([
+            "-DCMAKE_C_COMPILER=" + environment["CC"],
+            "-DCMAKE_CXX_COMPILER=" + environment["CXX"]
+        ]);
     }
 }

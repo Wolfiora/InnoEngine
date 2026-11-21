@@ -5,8 +5,8 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Testing.Source;
 using Xunit;
+using Inno.Testing.Source;
 
 namespace Inno.Build.ProductProfiles.Integration.Tests;
 
@@ -25,8 +25,10 @@ public sealed class ProductBindingSelectionTests
         string product
     ) {
         string root = TestRepository.GetRoot(typeof(ProductBindingSelectionTests).Assembly);
-        string dotnet = Path.Combine(Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
-            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
+        string dotnet = Path.Combine(
+            Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
+            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
+        );
         var start = new ProcessStartInfo(dotnet)
         {
             WorkingDirectory = root,
@@ -37,12 +39,16 @@ public sealed class ProductBindingSelectionTests
         };
         foreach (string argument in new[]
         {
-            "msbuild", "backends/Bgfx/native/Inno.Native.Bgfx/Inno.Native.Bgfx.csproj", "-nologo",
+            "msbuild",
+            "backends/Bgfx/native/Inno.Native.Bgfx/Inno.Native.Bgfx.csproj",
+            "-nologo",
             "-getProperty:InnoBindingProductId,InnoProductId,InnoProductRestoreProject,BindGenGeneratedBindings",
-            "-p:Configuration=Debug", "-p:InnoNativeTarget=" + target,
+            "-p:Configuration=Debug",
+            "-p:InnoNativeTarget=" + target,
             "-p:InnoProductBuildProperties=" + Path.Combine(root, "platforms", platform, "build", "Inno.Build." + platform, properties)
-        })
+        }) {
             start.ArgumentList.Add(argument);
+        }
         using Process process = Process.Start(start) ?? throw new InvalidOperationException("MSBuild did not start.");
         Task<string> output = process.StandardOutput.ReadToEndAsync();
         Task<string> errors = process.StandardError.ReadToEndAsync();
@@ -54,7 +60,9 @@ public sealed class ProductBindingSelectionTests
         catch
         {
             if (!process.HasExited)
+            {
                 process.Kill(entireProcessTree: true);
+            }
             await process.WaitForExitAsync();
             await output;
             await errors;

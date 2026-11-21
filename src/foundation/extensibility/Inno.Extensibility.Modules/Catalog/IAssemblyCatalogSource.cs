@@ -16,6 +16,7 @@ public interface IAssemblyCatalogSource : IDisposable
     /// Notifies the owner that the host assembly snapshot should be refreshed at a safe point.
     /// </summary>
     event Action? changed;
+
     /// <summary>
     /// Gets the complete host assemblies that participate in extension discovery.
     /// </summary>
@@ -23,6 +24,7 @@ public interface IAssemblyCatalogSource : IDisposable
     /// The current host snapshot; the caller must not retain it beyond its catalog generation.
     /// </returns>
     IReadOnlyList<Assembly> GetAssemblies();
+
     /// <summary>
     /// Gets host contracts and framework assemblies available to candidate modules.
     /// </summary>
@@ -30,6 +32,7 @@ public interface IAssemblyCatalogSource : IDisposable
     /// A snapshot of shareable assemblies owned by the host implementation.
     /// </returns>
     IReadOnlyList<Assembly> GetSharedAssemblies();
+
     /// <summary>
     /// Determines whether a referenced simple name belongs to the selected managed framework.
     /// </summary>
@@ -40,6 +43,7 @@ public interface IAssemblyCatalogSource : IDisposable
     /// Whether the framework owns this dependency.
     /// </returns>
     bool IsFrameworkReference(string assemblyName);
+
     /// <summary>
     /// Determines whether an assembly is a framework contract rather than a contributed module.
     /// </summary>

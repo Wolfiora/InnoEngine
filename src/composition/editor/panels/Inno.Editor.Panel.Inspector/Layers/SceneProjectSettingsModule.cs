@@ -1,11 +1,10 @@
 using System;
-
 using Inno.Core.Diagnostics;
 using Inno.Core.Settings;
 using Inno.Editor.Core;
+using Inno.Runtime;
 using Inno.Scene;
 using Inno.Scene.Layers;
-using Inno.Runtime;
 
 namespace Inno.Editor.Panel.Inspector;
 
@@ -40,8 +39,9 @@ internal sealed class SceneProjectSettingsModule : EditorModule
     /// <exception cref="InvalidOperationException">
     /// Thrown before the module has started.
     /// </exception>
-    internal GameLayerCatalog layerStack => m_layerStack
-        ?? throw new InvalidOperationException("The project layer settings are not available.");
+    internal GameLayerCatalog layerStack
+        => m_layerStack
+           ?? throw new InvalidOperationException("The project layer settings are not available.");
 
     /// <summary>
     /// Gets the effective project tag catalog snapshot.
@@ -49,8 +49,9 @@ internal sealed class SceneProjectSettingsModule : EditorModule
     /// <exception cref="InvalidOperationException">
     /// Thrown before the module has started.
     /// </exception>
-    internal GameTagCatalog tagCatalog => m_tagCatalog
-        ?? throw new InvalidOperationException("The project tag settings are not available.");
+    internal GameTagCatalog tagCatalog
+        => m_tagCatalog
+           ?? throw new InvalidOperationException("The project tag settings are not available.");
 
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.
@@ -69,7 +70,9 @@ internal sealed class SceneProjectSettingsModule : EditorModule
     protected override void OnUpdate(EditorContext context)
     {
         if (m_observedRevision != m_settings.revision)
+        {
             RefreshSettings();
+        }
         m_layerDiagnostics.Refresh(layerStack);
         m_tagDiagnostics.Refresh(tagCatalog);
     }

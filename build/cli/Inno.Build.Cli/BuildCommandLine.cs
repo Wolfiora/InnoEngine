@@ -14,17 +14,23 @@ internal sealed class BuildCommandLine
         {
             string key = arguments[index];
             if (!key.StartsWith("--", StringComparison.Ordinal))
+            {
                 throw new ArgumentException($"Expected '--name value'; incomplete option '{key}'.");
+            }
             bool flag = key is "--clean" or "--dry-run";
             string value = "true";
             if (!flag)
             {
                 if (++index >= arguments.Count || arguments[index].StartsWith("--", StringComparison.Ordinal))
+                {
                     throw new ArgumentException($"Missing value for '{key}'.");
+                }
                 value = arguments[index];
             }
             if (!result.m_values.TryAdd(key[2..], value))
+            {
                 throw new ArgumentException($"Duplicate option '{key}'.");
+            }
         }
         return result;
     }
@@ -35,8 +41,12 @@ internal sealed class BuildCommandLine
     {
         var names = new HashSet<string>(allowed, StringComparer.Ordinal);
         foreach (string key in m_values.Keys)
+        {
             if (!names.Contains(key))
+            {
                 throw new ArgumentException($"Unknown option '--{key}'.");
+            }
+        }
     }
 
     internal string Read(
@@ -46,5 +56,6 @@ internal sealed class BuildCommandLine
 
     internal string Require(string name)
         => m_values.TryGetValue(name, out string? value) && !string.IsNullOrWhiteSpace(value)
-            ? value : throw new ArgumentException($"Required option '--{name}' is missing.");
+           ? value
+           : throw new ArgumentException($"Required option '--{name}' is missing.");
 }

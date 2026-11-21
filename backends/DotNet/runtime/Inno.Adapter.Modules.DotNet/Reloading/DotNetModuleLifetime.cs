@@ -26,7 +26,9 @@ internal sealed class DotNetModuleLifetime : IModuleLifetime
     public IAssemblyUnloadProbe BeginRetirement()
     {
         if (m_retirement is not null)
+        {
             return m_retirement;
+        }
         var reference = new WeakReference(m_loadContext!, trackResurrection: false);
         m_loadContext!.Unload();
         m_loadContext = null;

@@ -14,17 +14,19 @@ internal sealed class EditorHistoryBlobStore : IDisposable
     internal EditorHistoryBlobStore(string? cacheDirectory)
     {
         if (string.IsNullOrWhiteSpace(cacheDirectory))
+        {
             return;
-        m_sessionDirectory = Path.Combine(
-            Path.GetFullPath(cacheDirectory),
-            Guid.NewGuid().ToString("N"));
+        }
+        m_sessionDirectory = Path.Combine(Path.GetFullPath(cacheDirectory), Guid.NewGuid().ToString("N"));
     }
 
     internal string Retain(ReadOnlySpan<byte> bytes)
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_sessionDirectory is null)
+        {
             throw new InvalidOperationException("The history does not have a disk payload store.");
+        }
         Directory.CreateDirectory(m_sessionDirectory);
         string hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
         string path = Path.Combine(m_sessionDirectory, hash + ".bin");
@@ -48,7 +50,9 @@ internal sealed class EditorHistoryBlobStore : IDisposable
     internal void Release(string path)
     {
         if (m_disposed || !m_references.TryGetValue(path, out int count))
+        {
             return;
+        }
         if (count > 1)
         {
             m_references[path] = count - 1;
@@ -58,7 +62,9 @@ internal sealed class EditorHistoryBlobStore : IDisposable
         try
         {
             if (File.Exists(path))
+            {
                 File.Delete(path);
+            }
         }
         catch
         {
@@ -72,7 +78,9 @@ internal sealed class EditorHistoryBlobStore : IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_disposed = true;
         m_references.Clear();
         if (m_sessionDirectory is not null)
@@ -80,7 +88,9 @@ internal sealed class EditorHistoryBlobStore : IDisposable
             try
             {
                 if (Directory.Exists(m_sessionDirectory))
+                {
                     Directory.Delete(m_sessionDirectory, recursive: true);
+                }
             }
             catch
             {

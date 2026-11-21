@@ -1,8 +1,8 @@
 using System;
-using System.Runtime.Serialization;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.Arm;
 using System.Runtime.Intrinsics.X86;
+using System.Runtime.Serialization;
 
 namespace Inno.Core.Mathematics;
 
@@ -32,14 +32,17 @@ public struct Matrix : IEquatable<Matrix>
     /// Row 1, Column 1.
     /// </summary>
     [DataMember] public float m11;
+
     /// <summary>
     /// Row 1, Column 2.
     /// </summary>
     [DataMember] public float m12;
+
     /// <summary>
     /// Row 1, Column 3.
     /// </summary>
     [DataMember] public float m13;
+
     /// <summary>
     /// Row 1, Column 4.
     /// </summary>
@@ -49,14 +52,17 @@ public struct Matrix : IEquatable<Matrix>
     /// Row 2, Column 1.
     /// </summary>
     [DataMember] public float m21;
+
     /// <summary>
     /// Row 2, Column 2.
     /// </summary>
     [DataMember] public float m22;
+
     /// <summary>
     /// Row 2, Column 3.
     /// </summary>
     [DataMember] public float m23;
+
     /// <summary>
     /// Row 2, Column 4.
     /// </summary>
@@ -66,14 +72,17 @@ public struct Matrix : IEquatable<Matrix>
     /// Row 3, Column 1.
     /// </summary>
     [DataMember] public float m31;
+
     /// <summary>
     /// Row 3, Column 2.
     /// </summary>
     [DataMember] public float m32;
+
     /// <summary>
     /// Row 3, Column 3.
     /// </summary>
     [DataMember] public float m33;
+
     /// <summary>
     /// Row 3, Column 4.
     /// </summary>
@@ -83,14 +92,17 @@ public struct Matrix : IEquatable<Matrix>
     /// Row 4, Column 1 (translation X component for affine transforms).
     /// </summary>
     [DataMember] public float m41;
+
     /// <summary>
     /// Row 4, Column 2 (translation Y component for affine transforms).
     /// </summary>
     [DataMember] public float m42;
+
     /// <summary>
     /// Row 4, Column 3 (translation Z component for affine transforms).
     /// </summary>
     [DataMember] public float m43;
+
     /// <summary>
     /// Row 4, Column 4.
     /// </summary>
@@ -178,11 +190,7 @@ public struct Matrix : IEquatable<Matrix>
     /// <summary>
     /// Gets the identity matrix.
     /// </summary>
-    public static Matrix identity => new Matrix(
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1);
+    public static Matrix identity => new Matrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
 
     #endregion
 
@@ -208,11 +216,7 @@ public struct Matrix : IEquatable<Matrix>
         float y,
         float z
     ) {
-        return new Matrix(
-            1, 0, 0, x,
-            0, 1, 0, y,
-            0, 0, 1, z,
-            0, 0, 0, 1);
+        return new Matrix(1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z, 0, 0, 0, 1);
     }
 
     /// <summary>
@@ -257,11 +261,7 @@ public struct Matrix : IEquatable<Matrix>
         float y,
         float z
     ) {
-        return new Matrix(
-            x, 0, 0, 0,
-            0, y, 0, 0,
-            0, 0, z, 0,
-            0, 0, 0, 1);
+        return new Matrix(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1);
     }
 
     /// <summary>
@@ -288,11 +288,7 @@ public struct Matrix : IEquatable<Matrix>
     {
         float c = MathF.Cos(radians);
         float s = MathF.Sin(radians);
-        return new Matrix(
-            1, 0, 0, 0,
-            0, c, -s, 0,
-            0, s, c, 0,
-            0, 0, 0, 1);
+        return new Matrix(1, 0, 0, 0, 0, c, -s, 0, 0, s, c, 0, 0, 0, 0, 1);
     }
 
     /// <summary>
@@ -308,11 +304,7 @@ public struct Matrix : IEquatable<Matrix>
     {
         float c = MathF.Cos(radians);
         float s = MathF.Sin(radians);
-        return new Matrix(
-            c, 0, s, 0,
-            0, 1, 0, 0,
-            -s, 0, c, 0,
-            0, 0, 0, 1);
+        return new Matrix(c, 0, s, 0, 0, 1, 0, 0, -s, 0, c, 0, 0, 0, 0, 1);
     }
 
     /// <summary>
@@ -328,11 +320,7 @@ public struct Matrix : IEquatable<Matrix>
     {
         float c = MathF.Cos(radians);
         float s = MathF.Sin(radians);
-        return new Matrix(
-            c, -s, 0, 0,
-            s, c, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1);
+        return new Matrix(c, -s, 0, 0, s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
     }
 
     /// <summary>
@@ -351,10 +339,23 @@ public struct Matrix : IEquatable<Matrix>
         float wx = q.w * q.x, wy = q.w * q.y, wz = q.w * q.z;
 
         return new Matrix(
-            1 - 2 * (yy + zz), 2 * (xy - wz),     2 * (xz + wy),     0,
-            2 * (xy + wz),     1 - 2 * (xx + zz), 2 * (yz - wx),     0,
-            2 * (xz - wy),     2 * (yz + wx),     1 - 2 * (xx + yy), 0,
-            0,                 0,                 0,                 1);
+            1 - 2 * (yy + zz),
+            2 * (xy - wz),
+            2 * (xz + wy),
+            0,
+            2 * (xy + wz),
+            1 - 2 * (xx + zz),
+            2 * (yz - wx),
+            0,
+            2 * (xz - wy),
+            2 * (yz + wx),
+            1 - 2 * (xx + yy),
+            0,
+            0,
+            0,
+            0,
+            1
+        );
     }
 
     #endregion
@@ -388,11 +389,7 @@ public struct Matrix : IEquatable<Matrix>
         float f  = 1f / MathF.Tan(fov * 0.5f);
         float nf = 1f / (far - near);
 
-        return new Matrix(
-            f / aspect, 0, 0,                0,
-            0,          f, 0,                0,
-            0,          0, far * nf,         -near * far * nf,
-            0,          0, 1,                0);
+        return new Matrix(f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, far * nf, -near * far * nf, 0, 0, 1, 0);
     }
 
     /// <summary>
@@ -422,11 +419,7 @@ public struct Matrix : IEquatable<Matrix>
         float f = 1f / MathF.Tan(fov * 0.5f);
         float nf = 1f / (near - far);
 
-        return new Matrix(
-            f / aspect, 0, 0,                  0,
-            0,          f, 0,                  0,
-            0,          0, far * nf,           near * far * nf,
-            0,          0, -1,                 0);
+        return new Matrix(f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, far * nf, near * far * nf, 0, 0, -1, 0);
     }
 
     /// <summary>
@@ -453,13 +446,7 @@ public struct Matrix : IEquatable<Matrix>
         float near,
         float far
     ) {
-        return CreateOrthographicOffCenter(
-            -width * 0.5f,
-            width * 0.5f,
-            -height * 0.5f,
-            height * 0.5f,
-            near,
-            far);
+        return CreateOrthographicOffCenter(-width * 0.5f, width * 0.5f, -height * 0.5f, height * 0.5f, near, far);
     }
 
     /// <summary>
@@ -501,12 +488,7 @@ public struct Matrix : IEquatable<Matrix>
         float m24 = -(top + bottom) / (top - bottom);
         float m34 = -near / (far - near);
 
-        return new Matrix(
-            m00, 0,   0,   m14,
-            0,   m11, 0,   m24,
-            0,   0,   m22, m34,
-            0,   0,   0,   1
-        );
+        return new Matrix(m00, 0,   0,   m14, 0,   m11, 0,   m24, 0,   0,   m22, m34, 0,   0,   0,   1);
     }
 
     #endregion
@@ -539,10 +521,23 @@ public struct Matrix : IEquatable<Matrix>
         Vector3 y = Vector3.Cross(z, x);                // up
 
         return new Matrix(
-            x.x, x.y, x.z, -Vector3.Dot(x, eye),
-            y.x, y.y, y.z, -Vector3.Dot(y, eye),
-            z.x, z.y, z.z, -Vector3.Dot(z, eye),
-            0,   0,   0,   1);
+            x.x,
+            x.y,
+            x.z,
+            -Vector3.Dot(x, eye),
+            y.x,
+            y.y,
+            y.z,
+            -Vector3.Dot(y, eye),
+            z.x,
+            z.y,
+            z.z,
+            -Vector3.Dot(z, eye),
+            0,
+            0,
+            0,
+            1
+        );
     }
 
     /// <summary>
@@ -571,12 +566,24 @@ public struct Matrix : IEquatable<Matrix>
         Vector3 y = Vector3.Cross(z, x);                // up
 
         return new Matrix(
-            x.x, x.y, x.z, -Vector3.Dot(x, eye),
-            y.x, y.y, y.z, -Vector3.Dot(y, eye),
-            z.x, z.y, z.z, -Vector3.Dot(z, eye),
-            0,   0,   0,   1);
+            x.x,
+            x.y,
+            x.z,
+            -Vector3.Dot(x, eye),
+            y.x,
+            y.y,
+            y.z,
+            -Vector3.Dot(y, eye),
+            z.x,
+            z.y,
+            z.z,
+            -Vector3.Dot(z, eye),
+            0,
+            0,
+            0,
+            1
+        );
     }
-
 
     #endregion
 
@@ -737,10 +744,23 @@ public struct Matrix : IEquatable<Matrix>
         }
 
         var rot = new Matrix(
-            col0.x / scale.x, col1.x / scale.y, col2.x / scale.z, 0f,
-            col0.y / scale.x, col1.y / scale.y, col2.y / scale.z, 0f,
-            col0.z / scale.x, col1.z / scale.y, col2.z / scale.z, 0f,
-            0f,               0f,               0f,               1f);
+            col0.x / scale.x,
+            col1.x / scale.y,
+            col2.x / scale.z,
+            0f,
+            col0.y / scale.x,
+            col1.y / scale.y,
+            col2.y / scale.z,
+            0f,
+            col0.z / scale.x,
+            col1.z / scale.y,
+            col2.z / scale.z,
+            0f,
+            0f,
+            0f,
+            0f,
+            1f
+        );
 
         rotation = Quaternion.FromRotationMatrix(rot);
         return true;
@@ -757,12 +777,7 @@ public struct Matrix : IEquatable<Matrix>
     /// </returns>
     public static Matrix Extract2DTransform(Matrix m)
     {
-        return new Matrix(
-            m.m11, m.m12, 0, m.m14,
-            m.m21, m.m22, 0, m.m24,
-            0,     0,     1, 0,
-            0,     0,     0, 1
-        );
+        return new Matrix(m.m11, m.m12, 0, m.m14, m.m21, m.m22, 0, m.m24, 0,     0,     1, 0, 0,     0,     0, 1);
     }
 
     /// <summary>
@@ -777,10 +792,22 @@ public struct Matrix : IEquatable<Matrix>
     public static Matrix Transpose(Matrix a)
     {
         return new Matrix(
-            a.m11, a.m21, a.m31, a.m41,
-            a.m12, a.m22, a.m32, a.m42,
-            a.m13, a.m23, a.m33, a.m43,
-            a.m14, a.m24, a.m34, a.m44
+            a.m11,
+            a.m21,
+            a.m31,
+            a.m41,
+            a.m12,
+            a.m22,
+            a.m32,
+            a.m42,
+            a.m13,
+            a.m23,
+            a.m33,
+            a.m43,
+            a.m14,
+            a.m24,
+            a.m34,
+            a.m44
         );
     }
 
@@ -815,7 +842,9 @@ public struct Matrix : IEquatable<Matrix>
 
         float det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
         if (MathF.Abs(det) < MathHelper.C_TOLERANCE)
+        {
             return identity;
+        }
 
         float invDet = 1f / det;
 
@@ -939,22 +968,22 @@ public struct Matrix : IEquatable<Matrix>
         Matrix matrix2
     ) {
         return
-            MathHelper.AlmostEquals(matrix1.m11, matrix2.m11) &&
-            MathHelper.AlmostEquals(matrix1.m12, matrix2.m12) &&
-            MathHelper.AlmostEquals(matrix1.m13, matrix2.m13) &&
-            MathHelper.AlmostEquals(matrix1.m14, matrix2.m14) &&
-            MathHelper.AlmostEquals(matrix1.m21, matrix2.m21) &&
-            MathHelper.AlmostEquals(matrix1.m22, matrix2.m22) &&
-            MathHelper.AlmostEquals(matrix1.m23, matrix2.m23) &&
-            MathHelper.AlmostEquals(matrix1.m24, matrix2.m24) &&
-            MathHelper.AlmostEquals(matrix1.m31, matrix2.m31) &&
-            MathHelper.AlmostEquals(matrix1.m32, matrix2.m32) &&
-            MathHelper.AlmostEquals(matrix1.m33, matrix2.m33) &&
-            MathHelper.AlmostEquals(matrix1.m34, matrix2.m34) &&
-            MathHelper.AlmostEquals(matrix1.m41, matrix2.m41) &&
-            MathHelper.AlmostEquals(matrix1.m42, matrix2.m42) &&
-            MathHelper.AlmostEquals(matrix1.m43, matrix2.m43) &&
-            MathHelper.AlmostEquals(matrix1.m44, matrix2.m44);
+            MathHelper.AlmostEquals(matrix1.m11, matrix2.m11)
+            && MathHelper.AlmostEquals(matrix1.m12, matrix2.m12)
+            && MathHelper.AlmostEquals(matrix1.m13, matrix2.m13)
+            && MathHelper.AlmostEquals(matrix1.m14, matrix2.m14)
+            && MathHelper.AlmostEquals(matrix1.m21, matrix2.m21)
+            && MathHelper.AlmostEquals(matrix1.m22, matrix2.m22)
+            && MathHelper.AlmostEquals(matrix1.m23, matrix2.m23)
+            && MathHelper.AlmostEquals(matrix1.m24, matrix2.m24)
+            && MathHelper.AlmostEquals(matrix1.m31, matrix2.m31)
+            && MathHelper.AlmostEquals(matrix1.m32, matrix2.m32)
+            && MathHelper.AlmostEquals(matrix1.m33, matrix2.m33)
+            && MathHelper.AlmostEquals(matrix1.m34, matrix2.m34)
+            && MathHelper.AlmostEquals(matrix1.m41, matrix2.m41)
+            && MathHelper.AlmostEquals(matrix1.m42, matrix2.m42)
+            && MathHelper.AlmostEquals(matrix1.m43, matrix2.m43)
+            && MathHelper.AlmostEquals(matrix1.m44, matrix2.m44);
     }
 
     /// <summary>
@@ -987,10 +1016,22 @@ public struct Matrix : IEquatable<Matrix>
     public static implicit operator System.Numerics.Matrix4x4(Matrix m)
     {
         return new System.Numerics.Matrix4x4(
-            m.m11, m.m12, m.m13, m.m14,
-            m.m21, m.m22, m.m23, m.m24,
-            m.m31, m.m32, m.m33, m.m34,
-            m.m41, m.m42, m.m43, m.m44
+            m.m11,
+            m.m12,
+            m.m13,
+            m.m14,
+            m.m21,
+            m.m22,
+            m.m23,
+            m.m24,
+            m.m31,
+            m.m32,
+            m.m33,
+            m.m34,
+            m.m41,
+            m.m42,
+            m.m43,
+            m.m44
         );
     }
 
@@ -1008,10 +1049,22 @@ public struct Matrix : IEquatable<Matrix>
     {
         return new Matrix
         {
-            m11 = m.M11, m12 = m.M12, m13 = m.M13, m14 = m.M14,
-            m21 = m.M21, m22 = m.M22, m23 = m.M23, m24 = m.M24,
-            m31 = m.M31, m32 = m.M32, m33 = m.M33, m34 = m.M34,
-            m41 = m.M41, m42 = m.M42, m43 = m.M43, m44 = m.M44
+            m11 = m.M11,
+            m12 = m.M12,
+            m13 = m.M13,
+            m14 = m.M14,
+            m21 = m.M21,
+            m22 = m.M22,
+            m23 = m.M23,
+            m24 = m.M24,
+            m31 = m.M31,
+            m32 = m.M32,
+            m33 = m.M33,
+            m34 = m.M34,
+            m41 = m.M41,
+            m42 = m.M42,
+            m43 = m.M43,
+            m44 = m.M44
         };
     }
 
@@ -1049,12 +1102,11 @@ public struct Matrix : IEquatable<Matrix>
     /// </returns>
     public override int GetHashCode()
     {
-        return this.m11.GetHashCode() + this.m12.GetHashCode() + this.m13.GetHashCode() + this.m14.GetHashCode() +
-               this.m21.GetHashCode() + this.m22.GetHashCode() + this.m23.GetHashCode() + this.m24.GetHashCode() +
-               this.m31.GetHashCode() + this.m32.GetHashCode() + this.m33.GetHashCode() + this.m34.GetHashCode() +
-               this.m41.GetHashCode() + this.m42.GetHashCode() + this.m43.GetHashCode() + this.m44.GetHashCode();
+        return this.m11.GetHashCode() + this.m12.GetHashCode() + this.m13.GetHashCode() + this.m14.GetHashCode()
+               + this.m21.GetHashCode() + this.m22.GetHashCode() + this.m23.GetHashCode() + this.m24.GetHashCode()
+               + this.m31.GetHashCode() + this.m32.GetHashCode() + this.m33.GetHashCode() + this.m34.GetHashCode()
+               + this.m41.GetHashCode() + this.m42.GetHashCode() + this.m43.GetHashCode() + this.m44.GetHashCode();
     }
-
 
     /// <summary>
     /// Returns a multi-line string representation of the matrix in row-major layout.
@@ -1064,11 +1116,11 @@ public struct Matrix : IEquatable<Matrix>
     /// </returns>
     public override string ToString()
     {
-        return $"[{m11}, {m12}, {m13}, {m14}]\n" +
-               $"[{m21}, {m22}, {m23}, {m24}]\n" +
-               $"[{m31}, {m32}, {m33}, {m34}]\n" +
-               $"[{m41}, {m42}, {m43}, {m44}]";
+        return $"[{m11}, {m12}, {m13}, {m14}]\n"
+               + $"[{m21}, {m22}, {m23}, {m24}]\n"
+               + $"[{m31}, {m32}, {m33}, {m34}]\n"
+               + $"[{m41}, {m42}, {m43}, {m44}]";
     }
-    
+
     #endregion
 }

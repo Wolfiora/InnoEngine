@@ -1,6 +1,6 @@
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
@@ -31,10 +31,14 @@ public readonly record struct RenderTextureArtifactReference
         RenderTextureArtifactSlot slot
     ) {
         if (assetId == Guid.Empty)
+        {
             throw new ArgumentException("A texture artifact reference requires a persistent asset identity.", nameof(assetId));
+        }
         ArgumentOutOfRangeException.ThrowIfNegative(contentRevision);
         if (string.IsNullOrWhiteSpace(slot.id) || string.IsNullOrWhiteSpace(slot.sourceOutputName))
+        {
             throw new ArgumentException("A texture artifact reference requires a valid slot.", nameof(slot));
+        }
         this.assetId = assetId;
         this.contentRevision = contentRevision;
         this.slot = slot;
@@ -54,6 +58,4 @@ public readonly record struct RenderTextureArtifactReference
     /// Gets the referenced stable texture slot.
     /// </summary>
     public RenderTextureArtifactSlot slot { get; }
-
 }
-

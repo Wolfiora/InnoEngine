@@ -1,6 +1,6 @@
-using Inno.Core.Execution;
 using System;
 using System.Threading;
+using Inno.Core.Execution;
 
 namespace Inno.Core.Logging;
 
@@ -9,7 +9,6 @@ namespace Inno.Core.Logging;
 /// </summary>
 public static class LogSessionContext
 {
-
     private static readonly ExecutionSlot<LogSessionId> S_CURRENT = new("sessionId");
 
     /// <summary>
@@ -32,7 +31,9 @@ public static class LogSessionContext
     public static IDisposable Enter(LogSessionId sessionId)
     {
         if (!sessionId.isAssigned)
+        {
             throw new ArgumentException("A runtime log session identifier is required.", nameof(sessionId));
+        }
         return S_CURRENT.Enter(sessionId);
     }
 }

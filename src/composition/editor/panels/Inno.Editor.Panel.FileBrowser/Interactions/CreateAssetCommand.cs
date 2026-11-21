@@ -9,6 +9,7 @@ using Inno.Editor.Assets.ImGui;
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Panel.FileBrowser;
+
 [EditorAction(FileBrowserInteractionIds.C_CREATE_ASSET, FileBrowserInteractionIds.C_AREA)]
 internal sealed class CreateAssetCommand(AssetBrowserModule assets) : EditorAction<string, string>
 {
@@ -21,10 +22,12 @@ internal sealed class CreateAssetCommand(AssetBrowserModule assets) : EditorActi
     /// <returns>
     /// The validated editor action state that represents the completed operation.
     /// </returns>
-    protected override EditorActionState Query(EditorActionContext<string, string> context) => assets.edits.CanCreateAsset(
-        context.target,
-        context.argument
-    ) ? EditorActionState.enabled : EditorActionState.disabled;
+    protected override EditorActionState Query(EditorActionContext<string, string> context)
+        => assets.edits.CanCreateAsset(
+            context.target,
+            context.argument
+        ) ? EditorActionState.enabled : EditorActionState.disabled;
+
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.
     /// </summary>
@@ -73,11 +76,18 @@ internal sealed class AssetCreationMenu(AssetBrowserModule assets) : EditorMenuS
                 {
                     string group = "Create/" + string.Join('/', segments.Take(depth + 1));
                     if (declaredGroups.Add(group))
+                    {
                         builder.AddGroup(group, declaration.itemOrder);
+                    }
                 }
             }
 
-            builder.Add("Create/" + declaration.menuPath, FileBrowserInteractionIds.C_CREATE_ASSET, declaration.itemOrder, argument: declaration.id);
+            builder.Add(
+                "Create/" + declaration.menuPath,
+                FileBrowserInteractionIds.C_CREATE_ASSET,
+                declaration.itemOrder,
+                argument: declaration.id
+            );
         }
     }
 }

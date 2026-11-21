@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using Inno.Core.Identity;
 
 namespace Inno.Editor.Interactions;
+
 /// <summary>
 /// Owns ordered transient selection through domain-qualified identities instead of retaining live objects.
 /// </summary>
@@ -14,6 +15,7 @@ public sealed class EditorSelectionState
     private HashSet<RuntimeIdentity> m_identityMembership = [];
     private EditorTargetReference? m_anchor;
     private EditorSelectionSnapshot? m_snapshot;
+
     internal EditorSelectionState(EditorInteractions interactions)
     {
         m_interactions = interactions;
@@ -23,14 +25,17 @@ public sealed class EditorSelectionState
     /// Gets the current primary target for this callback, or null when unavailable or unselected.
     /// </summary>
     public object? selectedTarget => m_targets.Length == 0 ? null : m_targets[^1].Resolve(m_interactions);
+
     /// <summary>
     /// Gets the number of selected identities, including temporarily unavailable members.
     /// </summary>
     public int count => m_targets.Length;
+
     /// <summary>
     /// Gets the current range anchor, or null when the anchor is unavailable.
     /// </summary>
     public object? anchor => m_anchor?.Resolve(m_interactions);
+
     /// <summary>
     /// Gets the selection revision, incremented only when membership, order or resolved generation changes.
     /// </summary>
@@ -48,13 +53,19 @@ public sealed class EditorSelectionState
     public bool Contains(object? target)
     {
         if (target is null)
+        {
             return false;
+        }
         if (target is IdentityObject identity)
+        {
             return identity.identity.runtimeIdentity is RuntimeIdentity runtime && m_identityMembership.Contains(runtime);
+        }
         foreach (EditorTargetReference entry in m_targets)
         {
             if (entry.Matches(m_interactions, target))
+            {
                 return true;
+            }
         }
 
         return false;
@@ -83,7 +94,9 @@ public sealed class EditorSelectionState
         foreach (EditorTargetReference entry in m_targets)
         {
             if (entry.Resolve(m_interactions) is TTarget target)
+            {
                 destination.Add(target);
+            }
         }
 
         return destination.Count;
@@ -98,7 +111,9 @@ public sealed class EditorSelectionState
     public EditorSelectionSnapshot Capture()
     {
         if (m_snapshot is not null)
+        {
             return m_snapshot;
+        }
         return m_snapshot = new EditorSelectionSnapshot(m_targets, m_anchor?.runtimeIdentity);
     }
 
@@ -130,7 +145,9 @@ public sealed class EditorSelectionState
     {
         ArgumentNullException.ThrowIfNull(target);
         if (m_targets.Length == 1 && m_targets[0].Matches(m_interactions, target))
+        {
             return;
+        }
         EditorTargetReference entry = EditorTargetReference.Capture(target);
         m_targets = [entry];
         m_anchor = entry;
@@ -149,15 +166,21 @@ public sealed class EditorSelectionState
             ArgumentNullException.ThrowIfNull(target);
             EditorTargetReference entry = EditorTargetReference.Capture(target);
             if (seen.Add(entry.runtimeIdentity!.Value))
+            {
                 entries.Add(entry);
+            }
         }
 
         EditorTargetReference? nextAnchor = anchor is null ? entries.Count == 0 ? null : entries[0] : EditorTargetReference.Capture(anchor);
         bool equal = entries.Count == m_targets.Length && nextAnchor?.runtimeIdentity == m_anchor?.runtimeIdentity;
         for (int i = 0; equal && i < entries.Count; i++)
+        {
             equal = entries[i].runtimeIdentity == m_targets[i].runtimeIdentity;
+        }
         if (equal)
+        {
             return;
+        }
         m_targets = entries.ToArray();
         m_anchor = nextAnchor;
         Changed(seen);
@@ -166,7 +189,9 @@ public sealed class EditorSelectionState
     internal void Clear()
     {
         if (m_targets.Length == 0)
+        {
             return;
+        }
         m_targets = [];
         m_anchor = null;
         Changed();
@@ -175,6 +200,7 @@ public sealed class EditorSelectionState
     internal EditorTargetReference? anchorReference => m_anchor;
 
     internal EditorTargetReference[] CaptureReferences() => (EditorTargetReference[])m_targets.Clone();
+
     internal void Restore(
         EditorTargetReference[] targets,
         EditorTargetReference? anchor
@@ -191,15 +217,21 @@ public sealed class EditorSelectionState
         {
             EditorTargetReference rebound = m_targets[i].Rebind(m_interactions);
             if (rebound.runtimeIdentity == m_targets[i].runtimeIdentity)
+            {
                 continue;
+            }
             m_targets[i] = rebound;
             changed = true;
         }
 
         if (m_anchor is not null)
+        {
             m_anchor = m_anchor.Rebind(m_interactions);
+        }
         if (changed)
+        {
             Changed();
+        }
     }
 
     private void Changed(HashSet<RuntimeIdentity>? identities = null)
@@ -208,8 +240,12 @@ public sealed class EditorSelectionState
         {
             identities = new HashSet<RuntimeIdentity>(m_targets.Length);
             foreach (EditorTargetReference target in m_targets)
+            {
                 if (target.runtimeIdentity is RuntimeIdentity identity)
+                {
                     identities.Add(identity);
+                }
+            }
         }
         m_identityMembership = identities;
         m_snapshot = null;

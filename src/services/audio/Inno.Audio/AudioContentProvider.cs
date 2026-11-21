@@ -1,7 +1,7 @@
-using Inno.References;
 using System;
 using System.Collections.Generic;
 using Inno.Core.Execution;
+using Inno.References;
 
 namespace Inno.Audio;
 
@@ -81,7 +81,9 @@ public sealed class AudioContentProviderContext : IDisposable
     ) {
         ArgumentNullException.ThrowIfNull(content);
         if (!float.IsFinite(deltaTime) || deltaTime < 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(deltaTime));
+        }
         ArgumentOutOfRangeException.ThrowIfNegative(capacity);
         m_content = content;
         this.deltaTime = deltaTime;
@@ -236,13 +238,17 @@ public sealed class AudioContentProviderContext : IDisposable
         EnsureOwnerThread();
         ObjectDisposedException.ThrowIf(m_content is null, this);
         if (m_rejected)
+        {
             throw new InvalidOperationException("The audio content contribution contains a rejected submission.");
+        }
     }
 
     private void EnsureOwnerThread()
     {
         if (Environment.CurrentManagedThreadId != m_ownerThread)
+        {
             throw new InvalidOperationException("Audio content collection requires its owning control thread.");
+        }
     }
 }
 
@@ -270,7 +276,9 @@ public abstract class AudioContentProvider : IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         try
         {
             Dispose(true);
@@ -294,7 +302,5 @@ public abstract class AudioContentProvider : IDisposable
     /// <param name="disposing">
     /// Always <see langword="true"/> for explicit disposal.
     /// </param>
-    protected virtual void Dispose(bool disposing)
-    {
-    }
+    protected virtual void Dispose(bool disposing) {}
 }

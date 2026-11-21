@@ -47,39 +47,48 @@ public sealed class ModuleCatalogContribution
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleName);
         ArgumentNullException.ThrowIfNull(assemblies);
         ArgumentNullException.ThrowIfNull(assemblyScopes);
-        if (assemblies.Count == 0 || assemblies.Any(static value => value is null || value.IsDynamic) ||
-            assemblies.Distinct().Count() != assemblies.Count ||
-            assemblies.Any(assembly => !assemblyScopes.ContainsKey(assembly)) ||
-            assemblyScopes.Count != assemblies.Count)
+        if (assemblies.Count == 0 || assemblies.Any(static value => value is null || value.IsDynamic)
+            || assemblies.Distinct().Count() != assemblies.Count
+            || assemblies.Any(assembly => !assemblyScopes.ContainsKey(assembly))
+            || assemblyScopes.Count != assemblies.Count
+        ) {
             throw new ArgumentException("A contribution requires distinct assemblies with complete scopes.");
+        }
         this.moduleName = moduleName;
         this.domain = domain;
         this.scope = scope;
         this.assemblies = Array.AsReadOnly(assemblies.ToArray());
         this.assemblyScopes = new ReadOnlyDictionary<Assembly, AssemblyScope>(
-            assemblyScopes.ToDictionary(static pair => pair.Key, static pair => pair.Value));
+            assemblyScopes.ToDictionary(static pair => pair.Key, static pair => pair.Value)
+        );
         this.lifetime = lifetime;
     }
+
     /// <summary>
     /// Gets the stable module name.
     /// </summary>
     public string moduleName { get; }
+
     /// <summary>
     /// Gets the ownership domain.
     /// </summary>
     public AssemblyDomain domain { get; }
+
     /// <summary>
     /// Gets the default dependency scope.
     /// </summary>
     public AssemblyScope scope { get; }
+
     /// <summary>
     /// Gets the immutable owned assembly set.
     /// </summary>
     public IReadOnlyList<Assembly> assemblies { get; }
+
     /// <summary>
     /// Gets the complete per-assembly scope map.
     /// </summary>
     public IReadOnlyDictionary<Assembly, AssemblyScope> assemblyScopes { get; }
+
     /// <summary>
     /// Gets the owned generation lifetime, or null for externally owned code.
     /// </summary>

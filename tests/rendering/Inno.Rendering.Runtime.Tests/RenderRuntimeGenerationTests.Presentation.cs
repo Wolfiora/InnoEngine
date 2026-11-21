@@ -1,7 +1,7 @@
 using System;
+using Xunit;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
-using Xunit;
 
 namespace Inno.Rendering.Runtime.Tests;
 
@@ -15,11 +15,21 @@ public sealed partial class RenderRuntimeGenerationTests
         TestRequestProvider.enabled = true;
         FirstTestRenderModel.enabled = true;
         using var runtime = new RenderRuntime(
-            m_types, device, new TestDiagnosticSink(),
-            primaryInputSurfaceSizeProvider: static () => throw new InvalidOperationException("There is no primary input surface."));
+            m_types,
+            device,
+            new TestDiagnosticSink(),
+            primaryInputSurfaceSizeProvider: static () => throw new InvalidOperationException("There is no primary input surface.")
+        );
         var asset = new RenderPipelineAsset { pipelineTypeId = CompositionLayerPipeline.extensionId };
-        var target = new RenderTexture("Offscreen", new RenderTextureDescriptor(
-            32, 24, RenderTextureFormat.RGBA8, RenderTextureUsage.ColorAttachment | RenderTextureUsage.Sampled));
+        var target = new RenderTexture(
+            "Offscreen",
+            new RenderTextureDescriptor(
+                32,
+                24,
+                RenderTextureFormat.RGBA8,
+                RenderTextureUsage.ColorAttachment | RenderTextureUsage.Sampled
+            )
+        );
         runtime.Submit(new RenderRequest("Offscreen", RenderTarget.FromTexture(target), new RenderViewport(0, 0, 32, 24), asset));
         runtime.Submit(new RenderRequest("Unavailable", RenderTarget.backbuffer, new RenderViewport(0, 0, 32, 24), asset));
         BeginRenderFrame(runtime, 0f);
@@ -78,7 +88,11 @@ public sealed partial class RenderRuntimeGenerationTests
         proxy.presentationSize = new RenderPresentationSize(1280, 720);
         TestRequestProvider.enabled = true;
         using var runtime = new RenderRuntime(
-            m_types, device, new TestDiagnosticSink(), primaryInputSurfaceSizeProvider: static () => null);
+            m_types,
+            device,
+            new TestDiagnosticSink(),
+            primaryInputSurfaceSizeProvider: static () => null
+        );
         BeginRenderFrame(runtime, 0f);
         runtime.Render(default);
         runtime.AfterRender(default);

@@ -1,18 +1,16 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Frozen;
+using System.Collections.Generic;
 using System.Linq;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 
 namespace Inno.Core.Settings;
 
 internal sealed class ProjectSettingsRegistry : TypeRegistry<ProjectSettingsRegistry.Snapshot>
 {
     internal ProjectSettingsRegistry(TypeCatalog types)
-        : base(types)
-    {
-    }
+        : base(types) {}
 
     internal Snapshot settings => current;
 
@@ -34,20 +32,26 @@ internal sealed class ProjectSettingsRegistry : TypeRegistry<ProjectSettingsRegi
             if (type.IsAbstract || !typeof(ISerializable).IsAssignableFrom(type))
             {
                 throw new InvalidOperationException(
-                    $"Project setting type '{type.FullName}' must be a non-abstract ISerializable class.");
+                    $"Project setting type '{type.FullName}' must be a non-abstract ISerializable class."
+                );
             }
             if (!types.CanCreateInstance(typeRef))
             {
                 throw new InvalidOperationException(
-                    $"Project setting type '{type.FullName}' requires a factory in the current type catalog.");
+                    $"Project setting type '{type.FullName}' requires a factory in the current type catalog."
+                );
             }
             if (!types.TryGetTypeRef(type, out TypeRef stableType))
+            {
                 throw new InvalidOperationException($"Project setting type '{type.FullName}' requires StableTypeId.");
+            }
             ProjectSettingDefinitionAttribute attribute =
                 types.GetAttribute<ProjectSettingDefinitionAttribute>(typeRef, inherit: false)!;
             var id = new ProjectSettingId(attribute.id);
             if (!settingTypes.TryAdd(id, (stableType.stableId, type, attribute.allowPluginContributions)))
+            {
                 throw new InvalidOperationException($"Project setting ID '{id}' is declared more than once.");
+            }
         }
 
         var composers = new Dictionary<ProjectSettingId, ProjectSettingComposer>();
@@ -57,31 +61,36 @@ internal sealed class ProjectSettingsRegistry : TypeRegistry<ProjectSettingsRegi
             if (type.IsAbstract || !typeof(ProjectSettingComposer).IsAssignableFrom(type))
             {
                 throw new InvalidOperationException(
-                    $"Project setting composer '{type.FullName}' must be a non-abstract ProjectSettingComposer.");
+                    $"Project setting composer '{type.FullName}' must be a non-abstract ProjectSettingComposer."
+                );
             }
             if (!types.CanCreateInstance(typeRef))
             {
                 throw new InvalidOperationException(
-                    $"Project setting composer '{type.FullName}' requires a factory in the current type catalog.");
+                    $"Project setting composer '{type.FullName}' requires a factory in the current type catalog."
+                );
             }
             ProjectSettingComposerAttribute attribute =
                 types.GetAttribute<ProjectSettingComposerAttribute>(typeRef, inherit: false)!;
             if (!settingTypes.TryGetValue(attribute.settingId, out var setting))
             {
                 throw new InvalidOperationException(
-                    $"Project setting composer '{type.FullName}' targets undefined setting '{attribute.settingId}'.");
+                    $"Project setting composer '{type.FullName}' targets undefined setting '{attribute.settingId}'."
+                );
             }
             var composer = OwnCandidateExtension((ProjectSettingComposer)types.CreateInstance(type));
             if (composer.settingType != setting.runtimeType)
             {
                 throw new InvalidOperationException(
-                    $"Project setting composer '{type.FullName}' expects '{composer.settingType.FullName}', " +
-                    $"but '{attribute.settingId}' is '{setting.runtimeType.FullName}'.");
+                    $"Project setting composer '{type.FullName}' expects '{composer.settingType.FullName}', "
+                    + $"but '{attribute.settingId}' is '{setting.runtimeType.FullName}'."
+                );
             }
             if (!composers.TryAdd(attribute.settingId, composer))
             {
                 throw new InvalidOperationException(
-                    $"Project setting '{attribute.settingId}' declares more than one composer.");
+                    $"Project setting '{attribute.settingId}' declares more than one composer."
+                );
             }
         }
 
@@ -89,8 +98,16 @@ internal sealed class ProjectSettingsRegistry : TypeRegistry<ProjectSettingsRegi
         foreach ((ProjectSettingId id, (Guid stableTypeId, Type runtimeType, bool allowPluginContributions)) in settingTypes)
         {
             composers.TryGetValue(id, out ProjectSettingComposer? composer);
-            definitions.Add(id, new Definition(stableTypeId, runtimeType, composer, allowPluginContributions,
-                () => (ISerializable)types.CreateInstance(runtimeType)));
+            definitions.Add(
+                id,
+                new Definition(
+                    stableTypeId,
+                    runtimeType,
+                    composer,
+                    allowPluginContributions,
+                    () => (ISerializable)types.CreateInstance(runtimeType)
+                )
+            );
         }
         return new Snapshot(types.version, definitions.ToFrozenDictionary());
     }

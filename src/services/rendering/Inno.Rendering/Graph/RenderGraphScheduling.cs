@@ -1,6 +1,6 @@
-using Inno.Core.Diagnostics;
 using System;
 using System.Collections.Generic;
+using Inno.Core.Diagnostics;
 
 namespace Inno.Rendering;
 

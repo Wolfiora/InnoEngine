@@ -171,9 +171,13 @@ public sealed class RangeAttribute : InspectorPresentationAttribute
         double maximum
     ) {
         if (!double.IsFinite(minimum))
+        {
             throw new ArgumentOutOfRangeException(nameof(minimum));
+        }
         if (!double.IsFinite(maximum) || maximum < minimum)
+        {
             throw new ArgumentOutOfRangeException(nameof(maximum));
+        }
         this.minimum = minimum;
         this.maximum = maximum;
     }
@@ -193,9 +197,7 @@ public sealed class RangeAttribute : InspectorPresentationAttribute
 /// Makes an otherwise writable serialized property read-only in the Inspector.
 /// </summary>
 [Conditional("INNO_EDITOR")]
-public sealed class InspectorReadOnlyAttribute : InspectorPresentationAttribute
-{
-}
+public sealed class InspectorReadOnlyAttribute : InspectorPresentationAttribute;
 
 /// <summary>
 /// Defines the comparison used by conditional Inspector presentation.
@@ -206,37 +208,30 @@ public enum InspectorCondition
     /// Shows a value when it evaluates as true or non-empty.
     /// </summary>
     Truthy,
-
     /// <summary>
     /// Shows a value when it evaluates as false, null, or empty.
     /// </summary>
     Falsy,
-
     /// <summary>
     /// Compares the value with the supplied expected constant.
     /// </summary>
     Equal,
-
     /// <summary>
     /// Requires the value to differ from the supplied expected constant.
     /// </summary>
     NotEqual,
-
     /// <summary>
     /// Requires a null value.
     /// </summary>
     Null,
-
     /// <summary>
     /// Requires a non-null value.
     /// </summary>
     NotNull,
-
     /// <summary>
     /// Requires a reference-like value to expose an assigned resource.
     /// </summary>
     Assigned,
-
     /// <summary>
     /// Requires a reference-like value not to expose an assigned resource.
     /// </summary>
@@ -256,9 +251,7 @@ public sealed class ShowIfAttribute : InspectorPresentationAttribute
     /// Sibling field or property name.
     /// </param>
     public ShowIfAttribute(string memberName)
-        : this(memberName, InspectorCondition.Truthy, null)
-    {
-    }
+        : this(memberName, InspectorCondition.Truthy, null) {}
 
     /// <summary>
     /// Creates an equality condition.
@@ -272,10 +265,7 @@ public sealed class ShowIfAttribute : InspectorPresentationAttribute
     public ShowIfAttribute(
         string memberName,
         object? expectedValue
-    )
-        : this(memberName, InspectorCondition.Equal, expectedValue)
-    {
-    }
+    ) : this(memberName, InspectorCondition.Equal, expectedValue) {}
 
     /// <summary>
     /// Creates a named condition that does not require an expected value.
@@ -289,10 +279,7 @@ public sealed class ShowIfAttribute : InspectorPresentationAttribute
     public ShowIfAttribute(
         string memberName,
         InspectorCondition condition
-    )
-        : this(memberName, condition, null)
-    {
-    }
+    ) : this(memberName, condition, null) {}
 
     private ShowIfAttribute(
         string memberName,
@@ -334,9 +321,7 @@ public sealed class HideIfAttribute : InspectorPresentationAttribute
     /// Sibling field or property name.
     /// </param>
     public HideIfAttribute(string memberName)
-        : this(memberName, InspectorCondition.Truthy, null)
-    {
-    }
+        : this(memberName, InspectorCondition.Truthy, null) {}
 
     /// <summary>
     /// Creates an equality condition.
@@ -350,10 +335,7 @@ public sealed class HideIfAttribute : InspectorPresentationAttribute
     public HideIfAttribute(
         string memberName,
         object? expectedValue
-    )
-        : this(memberName, InspectorCondition.Equal, expectedValue)
-    {
-    }
+    ) : this(memberName, InspectorCondition.Equal, expectedValue) {}
 
     /// <summary>
     /// Creates a named condition that does not require an expected value.
@@ -367,10 +349,7 @@ public sealed class HideIfAttribute : InspectorPresentationAttribute
     public HideIfAttribute(
         string memberName,
         InspectorCondition condition
-    )
-        : this(memberName, condition, null)
-    {
-    }
+    ) : this(memberName, condition, null) {}
 
     private HideIfAttribute(
         string memberName,
@@ -408,12 +387,10 @@ public enum InspectorMessageType
     /// Neutral explanatory information.
     /// </summary>
     Info,
-
     /// <summary>
     /// A non-blocking configuration warning.
     /// </summary>
     Warning,
-
     /// <summary>
     /// An invalid or unusable configuration.
     /// </summary>
@@ -438,10 +415,7 @@ public sealed class HelpBoxAttribute : InspectorPresentationAttribute
     public HelpBoxAttribute(
         string text,
         InspectorMessageType messageType = InspectorMessageType.Info
-    )
-        : this(text, messageType, string.Empty, InspectorCondition.Truthy, null)
-    {
-    }
+    ) : this(text, messageType, string.Empty, InspectorCondition.Truthy, null) {}
 
     /// <summary>
     /// Creates an Inspector help message shown when a sibling satisfies a named condition.
@@ -463,10 +437,7 @@ public sealed class HelpBoxAttribute : InspectorPresentationAttribute
         string conditionMember,
         InspectorCondition condition,
         InspectorMessageType messageType = InspectorMessageType.Info
-    )
-        : this(text, messageType, conditionMember, condition, null)
-    {
-    }
+    ) : this(text, messageType, conditionMember, condition, null) {}
 
     /// <summary>
     /// Creates an Inspector help message shown when a sibling equals a compile-time value.
@@ -488,10 +459,7 @@ public sealed class HelpBoxAttribute : InspectorPresentationAttribute
         string conditionMember,
         object? expectedValue,
         InspectorMessageType messageType = InspectorMessageType.Info
-    )
-        : this(text, messageType, conditionMember, InspectorCondition.Equal, expectedValue)
-    {
-    }
+    ) : this(text, messageType, conditionMember, InspectorCondition.Equal, expectedValue) {}
 
     private HelpBoxAttribute(
         string text,

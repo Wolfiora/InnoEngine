@@ -33,13 +33,19 @@ public override SyntaxNode? VisitGenericName(GenericNameSyntax node) => Qualify(
     private SyntaxNode? Qualify(SimpleNameSyntax node)
     {
         if (node.Parent is MemberAccessExpressionSyntax member && member.Name == node
-            || node.Parent is QualifiedNameSyntax or AliasQualifiedNameSyntax)
+            || node.Parent is QualifiedNameSyntax or AliasQualifiedNameSyntax
+        ) {
                 return null;
+        }
         if (model.GetSymbolInfo(node).Symbol is not IMethodSymbol { IsStatic: true, MethodKind: MethodKind.Ordinary } method
-            || !SymbolEqualityComparer.Default.Equals(method.ContainingAssembly, model.Compilation.Assembly))
+            || !SymbolEqualityComparer.Default.Equals(method.ContainingAssembly, model.Compilation.Assembly)
+        ) {
                 return null;
-        return SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+        }
+        return SyntaxFactory.MemberAccessExpression(
+            SyntaxKind.SimpleMemberAccessExpression,
             SyntaxFactory.ParseExpression(method.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)),
-            node.WithoutTrivia()).WithTriviaFrom(node);
+            node.WithoutTrivia()
+        ).WithTriviaFrom(node);
     }
 }

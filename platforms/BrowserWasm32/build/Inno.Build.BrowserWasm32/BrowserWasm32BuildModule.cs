@@ -14,7 +14,13 @@ public static class BrowserWasm32BuildModule
     /// Gets the explicit implemented product target, independent of the tool execution host.
     /// </summary>
     public static PlatformTargetDescriptor target { get; } = new(
-        new BuildTargetId("browser-wasm"), "Browser", "wasm32", "emscripten-wasm32", "browser-wasm", false);
+        new BuildTargetId("browser-wasm"),
+        "Browser",
+        "wasm32",
+        "emscripten-wasm32",
+        "browser-wasm",
+        false
+    );
 
     /// <summary>
     /// Contributes the platform's target, product inputs and SDK resolver as one registration.
@@ -42,11 +48,14 @@ public static class BrowserWasm32BuildModule
     ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(nativePlan);
-        return new(target,
+        return new(
+            target,
             () => new BrowserWasm32GameBuildTarget(supportPackValidator),
             new BrowserWasm32PlayerSupportPackSource(context.host, context.toolsTarget, nativePlan, bindingGenerator, supportPackValidator),
             new EmscriptenNativeToolchainProvider(context.dotnetHost),
-            nativeProducts: [nativePlan], bindingGenerator: bindingGenerator,
-            managedDeployments: [ManagedDeploymentId.monoWasm, ManagedDeploymentId.monoWasmAot]);
+            nativeProducts: [nativePlan],
+            bindingGenerator: bindingGenerator,
+            managedDeployments: [ManagedDeploymentId.monoWasm, ManagedDeploymentId.monoWasmAot]
+        );
     }
 }

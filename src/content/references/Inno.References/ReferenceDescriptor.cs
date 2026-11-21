@@ -36,7 +36,9 @@ public sealed class ReferenceDescriptor
         string? lastKnownPath = null
     ) {
         if (!kindId.isValid)
+        {
             throw new ArgumentException("A reference descriptor requires a valid kind identifier.", nameof(kindId));
+        }
         this.kindId = kindId;
         this.targetPersistentId = targetPersistentId;
         this.expectedStableTypeId = expectedStableTypeId;

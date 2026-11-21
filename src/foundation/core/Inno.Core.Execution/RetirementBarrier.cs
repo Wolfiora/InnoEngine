@@ -38,7 +38,9 @@ public sealed class RetirementBarrier
         m_owner = owner;
         m_timeout = timeout ?? TimeSpan.FromSeconds(30);
         if (m_timeout <= TimeSpan.Zero)
+        {
             throw new ArgumentOutOfRangeException(nameof(timeout));
+        }
     }
 
     /// <summary>
@@ -67,11 +69,17 @@ public sealed class RetirementBarrier
     {
         ArgumentNullException.ThrowIfNull(retire);
         if (m_ownerThread != Environment.CurrentManagedThreadId)
+        {
             throw new InvalidOperationException("Retirement must advance on its owner thread.");
+        }
         if (m_failure is not null)
+        {
             throw m_failure;
+        }
         if (m_completed)
+        {
             return true;
+        }
         m_elapsed ??= Stopwatch.StartNew();
         try
         {
@@ -87,24 +95,33 @@ public sealed class RetirementBarrier
                 throw;
             }
             if (m_elapsed.Elapsed < m_timeout)
+            {
                 return false;
+            }
             m_failure = new RetirementTimeoutException(
                 $"Owner '{m_owner}' could not retire within {m_timeout}: {pending.Message}",
                 m_completedFailures.Count == 0 ? exception : new AggregateException(
-                    "Retirement has unfinished work and earlier completed failures.", [.. m_completedFailures, exception]));
+                    "Retirement has unfinished work and earlier completed failures.",
+                    [.. m_completedFailures, exception]
+                )
+            );
             throw m_failure;
         }
         catch (Exception exception)
         {
             m_completed = true;
             if (m_completedFailures.Count == 0)
+            {
                 throw;
+            }
             RetirementPendingException.CollectCompletedFailures(exception, m_completedFailures);
             throw TakeCompletedFailure();
         }
         m_completed = true;
         if (m_completedFailures.Count > 0)
+        {
             throw TakeCompletedFailure();
+        }
         return true;
     }
 
@@ -120,7 +137,9 @@ public sealed class RetirementBarrier
     public void Wait(Action retire)
     {
         while (!TryComplete(retire))
+        {
             Thread.Sleep(1);
+        }
     }
 
     private AggregateException TakeCompletedFailure()

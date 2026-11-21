@@ -46,7 +46,9 @@ public sealed class SerializationSnapshot
     {
         ArgumentNullException.ThrowIfNull(destination);
         if (!destination.CanWrite)
+        {
             throw new ArgumentException("A writable serialization destination is required.", nameof(destination));
+        }
         BinarySerializationFormat.WriteTo(destination, root);
     }
 

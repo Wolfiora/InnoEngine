@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 
@@ -61,6 +60,5 @@ internal sealed class BinaryAssetImporter : AssetImporter<BinaryAsset>
         AssetExportContext context,
         BinaryAsset asset,
         CancellationToken cancellationToken
-    )
-        => ValueTask.FromResult<ReadOnlyMemory<byte>?>(asset.runtimePayload);
+    ) => ValueTask.FromResult<ReadOnlyMemory<byte>?>(asset.runtimePayload);
 }

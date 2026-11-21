@@ -1,4 +1,5 @@
 namespace Inno.Editor.Workbench;
+
 internal static class ExportInteractionIds
 {
     internal const string C_EXPORT_GAME = "export/game";

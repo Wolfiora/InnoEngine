@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Core.Serialization;
 
 namespace Inno.Editor.Settings;

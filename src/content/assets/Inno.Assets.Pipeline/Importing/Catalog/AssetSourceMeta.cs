@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Assets;
 using Inno.Core.Serialization;
 

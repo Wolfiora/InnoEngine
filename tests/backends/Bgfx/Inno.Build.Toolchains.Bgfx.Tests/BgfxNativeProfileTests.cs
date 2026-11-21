@@ -65,12 +65,15 @@ public sealed class BgfxNativeProfileTests : IDisposable
         var profile = new FixtureProfile("fixture-new-target");
         NativeBuildContext context = CreateContext(profile.targetId);
         foreach (string source in new[] { "bgfx", "bx", "bimg" })
+        {
             Directory.CreateDirectory(Path.Combine(m_root, "extern", source));
+        }
         string project = Path.Combine(m_root, BgfxNativeBuild.componentDescriptor.toolchainProject);
         Directory.CreateDirectory(Path.GetDirectoryName(project)!);
         File.WriteAllText(project, "<Project />");
-        NativeBuildRecipe recipe = tools ? BgfxToolsBuild.CreateRecipe(context, profile)
-            : BgfxNativeBuild.CreateRecipe(context, profile);
+        NativeBuildRecipe recipe = tools
+                                   ? BgfxToolsBuild.CreateRecipe(context, profile)
+                                   : BgfxNativeBuild.CreateRecipe(context, profile);
         Assert.Equal(tools ? "bgfx-tools" : "bgfx", recipe.component);
         Assert.Equal(tools ? null : BgfxNativeBuild.componentDescriptor.bindingDefinition, recipe.owner.bindingDefinition);
         Assert.Equal(1, profile.invocationCount);
@@ -89,7 +92,10 @@ public sealed class BgfxNativeProfileTests : IDisposable
         Assert.Equal(BgfxNativeBuild.componentDescriptor.toolchainProject, tools.toolchainProject);
         Assert.Null(tools.bindingDefinition);
         using NativeBindingGenerationResult generations = await NativeBindingPreparation.PrepareAsync(
-            CreateContext("fixture-new-target"), [tools], CancellationToken.None);
+            CreateContext("fixture-new-target"),
+            [tools],
+            CancellationToken.None
+        );
         Assert.Empty(generations);
     }
 
@@ -97,9 +103,19 @@ public sealed class BgfxNativeProfileTests : IDisposable
     {
         string compiler = Path.Combine(m_root, "fixture-compiler");
         File.WriteAllText(compiler, "Not executable: this fixture stops before source preparation.");
-        var selection = new NativeToolchainSelection(target, new BuildHostDescriptor("FixtureHost", "fixture-cpu"),
-            new Dictionary<string, string> { ["compiler"] = compiler, ["genie"] = compiler }, new Dictionary<string, string>(), [], [], new NativeLinkPlan(".fixture"), false);
-        return new NativeBuildContext(m_root, "debug").WithToolchain(selection).WithComponentOptions(BgfxNativeBuild.componentDescriptor, new(NativeLibraryKind.Shared));
+        var selection = new NativeToolchainSelection(
+            target,
+            new BuildHostDescriptor("FixtureHost", "fixture-cpu"),
+            new Dictionary<string, string> { ["compiler"] = compiler, ["genie"] = compiler },
+            new Dictionary<string, string>(),
+            [],
+            [],
+            new NativeLinkPlan(".fixture"),
+            false
+        );
+        return new NativeBuildContext(m_root, "debug")
+            .WithToolchain(selection)
+            .WithComponentOptions(BgfxNativeBuild.componentDescriptor, new(NativeLibraryKind.Shared));
     }
 
     private sealed class FixtureProfile(string target) : BgfxNativeBuildProfile
@@ -114,7 +130,9 @@ public sealed class BgfxNativeProfileTests : IDisposable
         public override IReadOnlyList<string> generatorArguments => ["fixture-generator"];
         public override string artifactPathToken => "/fixture-cpu/bin/";
         public override IReadOnlyList<string> bindingCmakeArguments => [];
-        public override (string reference, IReadOnlyList<string> arguments) CreateBindingLinkSettings(string archivePath) => (archivePath, []);
+
+        public override (string reference, IReadOnlyList<string> arguments) CreateBindingLinkSettings(string archivePath)
+            => (archivePath, []);
 
         public override BgfxBuildInvocation CreateBuildInvocation(
             NativeBuildContext context,

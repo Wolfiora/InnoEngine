@@ -32,10 +32,20 @@ public sealed class RetirementFailureTests
         bool ready = false;
         bool dependencyReleased = false;
         var ordinary = new InvalidOperationException("completed sibling");
-        var failure = new InvalidOperationException("resource context", new AggregateException(
-            ordinary, new AggregateException(new RetirementPendingException("callback remains active"))));
+        var failure = new InvalidOperationException(
+            "resource context",
+            new AggregateException(
+                ordinary,
+                new AggregateException(new RetirementPendingException("callback remains active"))
+            )
+        );
         lifetime.Own(new Resource(() => dependencyReleased = true));
-        lifetime.Own(new Resource(() => { if (!ready) throw failure; }));
+        lifetime.Own(
+            new Resource(() =>
+            {
+                if (!ready) throw failure;
+            })
+        );
         Assert.Same(failure, Assert.Throws<InvalidOperationException>(lifetime.Dispose));
         Assert.Same(failure, Assert.Throws<InvalidOperationException>(lifetime.Dispose));
         Assert.False(dependencyReleased);
@@ -54,7 +64,7 @@ public sealed class RetirementFailureTests
         var failure = new AggregateException(ordinary, new RetirementPendingException("pending"));
         Assert.False(barrier.TryComplete(() => throw failure));
         Assert.False(barrier.TryComplete(() => throw failure));
-        AggregateException completed = Assert.Throws<AggregateException>(() => barrier.TryComplete(() => { }));
+        AggregateException completed = Assert.Throws<AggregateException>(() => barrier.TryComplete(() => {}));
         Assert.Same(ordinary, Assert.Single(completed.InnerExceptions));
         Assert.True(barrier.TryComplete(() => throw new InvalidOperationException("must not run twice")));
     }
@@ -66,7 +76,7 @@ public sealed class RetirementFailureTests
         var timeout = new RetirementTimeoutException("inner deadline");
         var failure = new AggregateException(new InvalidOperationException("first"), timeout);
         Assert.Same(failure, Assert.Throws<AggregateException>(() => barrier.TryComplete(() => throw failure)));
-        Assert.Same(failure, Assert.Throws<AggregateException>(() => barrier.TryComplete(() => { })));
+        Assert.Same(failure, Assert.Throws<AggregateException>(() => barrier.TryComplete(() => {})));
     }
 
     [Fact]
@@ -75,9 +85,10 @@ public sealed class RetirementFailureTests
         var barrier = new RetirementBarrier("deadline", TimeSpan.FromTicks(1));
         var failure = new InvalidOperationException("context", new RetirementPendingException("pending callback"));
         RetirementTimeoutException timeout = Assert.Throws<RetirementTimeoutException>(
-            () => barrier.TryComplete(() => throw failure));
+            () => barrier.TryComplete(() => throw failure)
+        );
         Assert.Same(failure, timeout.InnerException);
-        Assert.Same(timeout, Assert.Throws<RetirementTimeoutException>(() => barrier.TryComplete(() => { })));
+        Assert.Same(timeout, Assert.Throws<RetirementTimeoutException>(() => barrier.TryComplete(() => {})));
     }
 
     [Theory]
@@ -90,9 +101,13 @@ public sealed class RetirementFailureTests
         lifetime.Own(new Resource(() => dependencyReleased = true));
         var failure = new AggregateException(new RetirementPendingException("unfinished owner outside completed task"));
         if (cancellation)
+        {
             lifetime.cancellationToken.Register(() => throw failure);
+        }
         else
+        {
             lifetime.Track(Task.FromException(failure));
+        }
         Exception first = Assert.ThrowsAny<Exception>(lifetime.Dispose);
         Assert.NotNull(RetirementPendingException.Find(first));
         Assert.Same(first, Assert.ThrowsAny<Exception>(lifetime.Dispose));
@@ -168,12 +183,14 @@ public sealed class RetirementFailureTests
         using var finish = new ManualResetEventSlim();
         var lifetime = new LifetimeScope();
         int released = 0;
-        lifetime.Own(new Resource(() =>
-        {
-            Interlocked.Increment(ref released);
-            started.Set();
-            Assert.True(finish.Wait(TimeSpan.FromSeconds(5)));
-        }));
+        lifetime.Own(
+            new Resource(() =>
+            {
+                Interlocked.Increment(ref released);
+                started.Set();
+                Assert.True(finish.Wait(TimeSpan.FromSeconds(5)));
+            })
+        );
         Task disposal = Task.Run(lifetime.Dispose);
         try
         {
@@ -197,11 +214,13 @@ public sealed class RetirementFailureTests
     {
         var lifetime = new LifetimeScope();
         int released = 0;
-        lifetime.Own(new Resource(() =>
-        {
-            Assert.Throws<RetirementPendingException>(lifetime.Dispose);
-            released++;
-        }));
+        lifetime.Own(
+            new Resource(() =>
+            {
+                Assert.Throws<RetirementPendingException>(lifetime.Dispose);
+                released++;
+            })
+        );
         lifetime.Dispose();
         Assert.Equal(1, released);
     }
@@ -218,8 +237,13 @@ public sealed class RetirementFailureTests
         {
             Assert.False(lifetime.isQuiescent);
             if (dispose)
+            {
                 Assert.Throws<RetirementPendingException>(lifetime.Dispose);
-            else lifetime.Cancel();
+            }
+            else
+            {
+                lifetime.Cancel();
+            }
             Assert.False(released);
             return ValueTask.FromResult(42);
         });

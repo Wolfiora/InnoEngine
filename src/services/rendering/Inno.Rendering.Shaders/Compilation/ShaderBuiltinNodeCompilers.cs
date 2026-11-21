@@ -14,6 +14,7 @@ public sealed class ShaderConstantNodeCompiler : IShaderNodeCompiler
     /// Gets the definition id text used by the current instance.
     /// </summary>
     public string definitionId => "inno.shader.constant";
+
     /// <summary>
     /// Gets a ports required by the implemented contract.
     /// </summary>
@@ -25,6 +26,7 @@ public sealed class ShaderConstantNodeCompiler : IShaderNodeCompiler
     /// </returns>
     public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext context)
         => [new("value", ShaderSourceType.Atomic(context.Read("type", "float")), GraphPortDirection.Output)];
+
     /// <summary>
     /// Lowers this graph node to typed shader IR after validating its inputs.
     /// </summary>
@@ -58,6 +60,7 @@ public sealed class ShaderBinaryNodeCompiler : IShaderNodeCompiler
     /// Gets the definition id text used by the current instance.
     /// </summary>
     public string definitionId => "inno.shader.binary";
+
     /// <summary>
     /// Gets a ports required by the implemented contract.
     /// </summary>
@@ -71,9 +74,17 @@ public sealed class ShaderBinaryNodeCompiler : IShaderNodeCompiler
     {
         ShaderSourceType type = ShaderSourceType.Atomic(context.Read("type", "float"));
         ShaderIrOperation operation = Operation(context);
-        return [new("left", type, GraphPortDirection.Input), new("right", type, GraphPortDirection.Input),
-            new("value", operation is ShaderIrOperation.Equal or ShaderIrOperation.LessThan ? ShaderSourceType.Atomic("bool") : type, GraphPortDirection.Output)];
+        return [
+            new("left", type, GraphPortDirection.Input),
+            new("right", type, GraphPortDirection.Input),
+            new(
+                "value",
+                operation is ShaderIrOperation.Equal or ShaderIrOperation.LessThan ? ShaderSourceType.Atomic("bool") : type,
+                GraphPortDirection.Output
+            )
+        ];
     }
+
     /// <summary>
     /// Lowers this graph node to typed shader IR after validating its inputs.
     /// </summary>
@@ -84,17 +95,24 @@ public sealed class ShaderBinaryNodeCompiler : IShaderNodeCompiler
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
     public IReadOnlyDictionary<string, ShaderIrValue> Lower(ShaderNodeLoweringContext context)
-        => new Dictionary<string, ShaderIrValue> { ["value"] = context.builder.Binary(Operation(context.description), context.Input("left"), context.Input("right")) };
+        => new Dictionary<string, ShaderIrValue>
+    {
+        ["value"] = context.builder.Binary(Operation(context.description), context.Input("left"), context.Input("right"))
+    };
 
     private static ShaderIrOperation Operation(ShaderNodeDescriptionContext context)
         => context.Read("operation", "add") switch
-        {
-            "add" => ShaderIrOperation.Add, "subtract" => ShaderIrOperation.Subtract,
-            "multiply" => ShaderIrOperation.Multiply, "divide" => ShaderIrOperation.Divide,
-            "minimum" => ShaderIrOperation.Minimum, "maximum" => ShaderIrOperation.Maximum,
-            "equal" => ShaderIrOperation.Equal, "less-than" => ShaderIrOperation.LessThan,
-            _ => throw new InvalidOperationException("Unknown binary shader operation.")
-        };
+    {
+        "add" => ShaderIrOperation.Add,
+        "subtract" => ShaderIrOperation.Subtract,
+        "multiply" => ShaderIrOperation.Multiply,
+        "divide" => ShaderIrOperation.Divide,
+        "minimum" => ShaderIrOperation.Minimum,
+        "maximum" => ShaderIrOperation.Maximum,
+        "equal" => ShaderIrOperation.Equal,
+        "less-than" => ShaderIrOperation.LessThan,
+        _ => throw new InvalidOperationException("Unknown binary shader operation.")
+    };
 }
 
 /// <summary>
@@ -106,6 +124,7 @@ public sealed class ShaderConstructNodeCompiler : IShaderNodeCompiler
     /// Gets the definition id text used by the current instance.
     /// </summary>
     public string definitionId => "inno.shader.construct";
+
     /// <summary>
     /// Gets a ports required by the implemented contract.
     /// </summary>
@@ -118,9 +137,12 @@ public sealed class ShaderConstructNodeCompiler : IShaderNodeCompiler
     public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext context)
     {
         (ShaderSourceType type, ShaderSourceType scalar, int count) = Shape(context);
-        return Enumerable.Range(0, count).Select(index => new ShaderNodePort("component." + index, scalar, GraphPortDirection.Input))
-            .Append(new("value", type, GraphPortDirection.Output)).ToArray();
+        return Enumerable.Range(0, count)
+            .Select(index => new ShaderNodePort("component." + index, scalar, GraphPortDirection.Input))
+            .Append(new("value", type, GraphPortDirection.Output))
+            .ToArray();
     }
+
     /// <summary>
     /// Lowers this graph node to typed shader IR after validating its inputs.
     /// </summary>
@@ -134,7 +156,12 @@ public sealed class ShaderConstructNodeCompiler : IShaderNodeCompiler
     {
         (ShaderSourceType type, _, int count) = Shape(context.description);
         return new Dictionary<string, ShaderIrValue>
-        { ["value"] = context.builder.Construct(type, Enumerable.Range(0, count).Select(index => context.Input("component." + index)).ToArray()) };
+        {
+            ["value"] = context.builder.Construct(
+                type,
+                Enumerable.Range(0, count).Select(index => context.Input("component." + index)).ToArray()
+            )
+        };
     }
 
     private static (ShaderSourceType type, ShaderSourceType scalar, int count) Shape(ShaderNodeDescriptionContext context)
@@ -143,10 +170,18 @@ public sealed class ShaderConstructNodeCompiler : IShaderNodeCompiler
         foreach (string scalar in new[] { "float", "int", "uint", "bool" })
         {
             if (id.Length == scalar.Length + 1 && id.StartsWith(scalar, StringComparison.Ordinal) && id[^1] is >= '2' and <= '4')
+            {
                 return (ShaderSourceType.Atomic(id), ShaderSourceType.Atomic(scalar), id[^1] - '0');
+            }
         }
-        if (id.Length == 8 && id.StartsWith("float", StringComparison.Ordinal) && id[5] is >= '2' and <= '4' && id[6] == 'x' && id[7] is >= '2' and <= '4')
+        if (id.Length == 8
+            && id.StartsWith("float", StringComparison.Ordinal)
+            && id[5] is >= '2' and <= '4'
+            && id[6] == 'x'
+            && id[7] is >= '2' and <= '4'
+        ) {
             return (ShaderSourceType.Atomic(id), ShaderSourceType.Atomic("float"), (id[5] - '0') * (id[7] - '0'));
+        }
         throw new InvalidOperationException("Construction requires a numeric vector or floating-point matrix.");
     }
 }
@@ -160,6 +195,7 @@ public sealed class ShaderStageInputNodeCompiler : IShaderNodeCompiler
     /// Gets the definition id text used by the current instance.
     /// </summary>
     public string definitionId => "inno.shader.stage-input";
+
     /// <summary>
     /// Gets a ports required by the implemented contract.
     /// </summary>
@@ -171,6 +207,7 @@ public sealed class ShaderStageInputNodeCompiler : IShaderNodeCompiler
     /// </returns>
     public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext context)
         => [new("value", RequireBinding(context).type, GraphPortDirection.Output)];
+
     /// <summary>
     /// Lowers this graph node to typed shader IR after validating its inputs.
     /// </summary>
@@ -185,6 +222,7 @@ public sealed class ShaderStageInputNodeCompiler : IShaderNodeCompiler
         ShaderIrStageInput input = RequireBinding(context.description);
         return new Dictionary<string, ShaderIrValue> { ["value"] = context.builder.Input(input.id, input.type) };
     }
+
     private static ShaderIrStageInput RequireBinding(ShaderNodeDescriptionContext context)
         => context.stageInput ?? throw new InvalidOperationException("The target has not resolved this stage input binding.");
 }
@@ -198,6 +236,7 @@ public sealed class ShaderSelectNodeCompiler : IShaderNodeCompiler
     /// Gets the definition id text used by the current instance.
     /// </summary>
     public string definitionId => "inno.shader.select";
+
     /// <summary>
     /// Gets a ports required by the implemented contract.
     /// </summary>
@@ -210,9 +249,14 @@ public sealed class ShaderSelectNodeCompiler : IShaderNodeCompiler
     public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext context)
     {
         ShaderSourceType type = ShaderSourceType.Atomic(context.Read("type", "float"));
-        return [new("condition", ShaderSourceType.Atomic("bool"), GraphPortDirection.Input), new("true", type, GraphPortDirection.Input),
-            new("false", type, GraphPortDirection.Input), new("value", type, GraphPortDirection.Output)];
+        return [
+            new("condition", ShaderSourceType.Atomic("bool"), GraphPortDirection.Input),
+            new("true", type, GraphPortDirection.Input),
+            new("false", type, GraphPortDirection.Input),
+            new("value", type, GraphPortDirection.Output)
+        ];
     }
+
     /// <summary>
     /// Lowers this graph node to typed shader IR after validating its inputs.
     /// </summary>
@@ -223,7 +267,10 @@ public sealed class ShaderSelectNodeCompiler : IShaderNodeCompiler
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
     public IReadOnlyDictionary<string, ShaderIrValue> Lower(ShaderNodeLoweringContext context)
-        => new Dictionary<string, ShaderIrValue> { ["value"] = context.builder.Select(context.Input("condition"), context.Input("true"), context.Input("false")) };
+        => new Dictionary<string, ShaderIrValue>
+    {
+        ["value"] = context.builder.Select(context.Input("condition"), context.Input("true"), context.Input("false"))
+    };
 }
 
 /// <summary>
@@ -235,6 +282,7 @@ public sealed class ShaderSourceNodeCompiler : IShaderNodeCompiler
     /// Gets the definition id text used by the current instance.
     /// </summary>
     public string definitionId => "inno.shader.source";
+
     /// <summary>
     /// Gets a ports required by the implemented contract.
     /// </summary>
@@ -251,12 +299,18 @@ public sealed class ShaderSourceNodeCompiler : IShaderNodeCompiler
         foreach (ShaderSourceParameter parameter in function.parameters)
         {
             if (parameter.direction != ShaderSourceParameterDirection.Output)
+            {
                 Add("input." + parameter.name, parameter.type, GraphPortDirection.Input);
+            }
             if (parameter.direction != ShaderSourceParameterDirection.Input)
+            {
                 Add("output." + parameter.name, parameter.type, GraphPortDirection.Output);
+            }
         }
         if (function.returnType.id != "void")
+        {
             Add("return", function.returnType, GraphPortDirection.Output);
+        }
         return ports.AsReadOnly();
         void Add(
             string name,
@@ -265,9 +319,12 @@ public sealed class ShaderSourceNodeCompiler : IShaderNodeCompiler
         ) {
             ports.Add(new(name, type, direction, required: false));
             foreach (ShaderSourceField field in type.fields)
+            {
                 Add(name + "." + field.name, field.type, direction);
+            }
         }
     }
+
     /// <summary>
     /// Lowers this graph node to typed shader IR after validating its inputs.
     /// </summary>
@@ -282,12 +339,18 @@ public sealed class ShaderSourceNodeCompiler : IShaderNodeCompiler
         ShaderSourceModuleAnalysis module = RequireModule(context.description);
         var arguments = new Dictionary<string, ShaderIrValue>(StringComparer.Ordinal);
         foreach (ShaderSourceParameter parameter in module.function!.parameters)
+        {
             if (parameter.direction != ShaderSourceParameterDirection.Output)
+            {
                 arguments.Add(parameter.name, Resolve("input." + parameter.name, parameter.type));
+            }
+        }
         IReadOnlyDictionary<string, ShaderIrValue> values = context.builder.Call(module, context.description.implementationId, arguments);
         var outputs = new Dictionary<string, ShaderIrValue>(StringComparer.Ordinal);
         foreach ((string name, ShaderIrValue value) in values)
+        {
             Add(name, value);
+        }
         return outputs;
 
         ShaderIrValue Resolve(
@@ -297,11 +360,17 @@ public sealed class ShaderSourceNodeCompiler : IShaderNodeCompiler
             if (context.inputs.TryGetValue(name, out ShaderIrValue? aggregate))
             {
                 if (context.inputs.Keys.Any(key => key.StartsWith(name + ".", StringComparison.Ordinal)))
-                    throw new InvalidOperationException($"'{name}' connects both its aggregate and a member; choose one representation explicitly.");
+                {
+                    throw new InvalidOperationException(
+                        $"'{name}' connects both its aggregate and a member; choose one representation explicitly."
+                    );
+                }
                 return aggregate;
             }
             if (type.fields.Count == 0)
+            {
                 return context.Input(name);
+            }
             return context.builder.Construct(type, type.fields.Select(field => Resolve(name + "." + field.name, field.type)).ToArray());
         }
 
@@ -311,7 +380,9 @@ public sealed class ShaderSourceNodeCompiler : IShaderNodeCompiler
         ) {
             outputs.Add(name, value);
             for (int index = 0; index < value.type.fields.Count; index++)
+            {
                 Add(name + "." + value.type.fields[index].name, context.builder.Extract(value, index));
+            }
         }
     }
 
@@ -319,9 +390,18 @@ public sealed class ShaderSourceNodeCompiler : IShaderNodeCompiler
     {
         ShaderSourceModuleAnalysis? module = context.sourceModule;
         if (module is null)
-            throw new InvalidOperationException("The source module is unassigned or unavailable; its stored reference and connections must remain intact.");
+        {
+            throw new InvalidOperationException(
+                "The source module is unassigned or unavailable; its stored reference and connections must remain intact."
+            );
+        }
         if (!module.succeeded)
-            throw new InvalidOperationException("The source module has no valid common interface: " + string.Join("; ", module.diagnostics.Select(static value => value.message)));
+        {
+            throw new InvalidOperationException(
+                "The source module has no valid common interface: "
+                + string.Join("; ", module.diagnostics.Select(static value => value.message))
+            );
+        }
         return module;
     }
 }

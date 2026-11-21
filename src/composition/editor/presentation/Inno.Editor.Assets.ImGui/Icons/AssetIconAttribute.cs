@@ -1,8 +1,9 @@
+using System;
 using Inno.Editor.Assets;
 using Inno.Editor.Core;
-using System;
 
 namespace Inno.Editor.Assets.ImGui;
+
 /// <summary>
 /// Declares the icon used by the Asset Browser for an imported asset type or source extension.
 /// </summary>
@@ -10,7 +11,11 @@ namespace Inno.Editor.Assets.ImGui;
 /// Apply one or more declarations to a container type. The container has no runtime responsibility;
 /// it only keeps related icon declarations together so the type catalog can discover them.
 /// </remarks>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface | AttributeTargets.Enum | AttributeTargets.Delegate, AllowMultiple = true, Inherited = false)]
+[AttributeUsage(
+    AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface | AttributeTargets.Enum | AttributeTargets.Delegate,
+    AllowMultiple = true,
+    Inherited = false
+)]
 public sealed class AssetIconAttribute : Attribute
 {
     /// <summary>
@@ -77,20 +82,24 @@ public sealed class AssetIconAttribute : Attribute
     /// an extension declaration.
     /// </summary>
     public Type? assetType { get; }
+
     /// <summary>
     /// Gets the normalized source extension represented by this declaration, or <see langword="null"/>
     /// for a type declaration.
     /// </summary>
     public string? extension { get; }
+
     /// <summary>
     /// Gets the Editor icon glyph to render.
     /// </summary>
     public string icon { get; }
+
     /// <summary>
     /// Gets whether a type declaration may also represent derived asset types. Extension declarations
     /// always return <see langword="false"/>.
     /// </summary>
     public bool useForChildren { get; }
+
     /// <summary>
     /// Gets the tie-breaking priority after target specificity.
     /// </summary>
@@ -99,21 +108,31 @@ public sealed class AssetIconAttribute : Attribute
     private static string NormalizeExtension(string extension)
     {
         if (string.IsNullOrWhiteSpace(extension))
+        {
             throw new ArgumentException("A source file extension is required.", nameof(extension));
+        }
         string normalized = extension.Trim();
         if (normalized.Contains('/') || normalized.Contains('\\'))
+        {
             throw new ArgumentException("A source file extension cannot contain path separators.", nameof(extension));
+        }
         if (!normalized.StartsWith(".", StringComparison.Ordinal))
+        {
             normalized = "." + normalized;
+        }
         if (normalized.Length == 1)
+        {
             throw new ArgumentException("A source file extension must contain a suffix.", nameof(extension));
+        }
         return normalized.ToLowerInvariant();
     }
 
     private static string ValidateIcon(string icon)
     {
         if (string.IsNullOrWhiteSpace(icon))
+        {
             throw new ArgumentException("An Editor icon glyph is required.", nameof(icon));
+        }
         return icon;
     }
 }

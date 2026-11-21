@@ -1,9 +1,9 @@
 using System;
+using Xunit;
 using Inno.Adapter.Platform;
 using Inno.Adapter.Platform.Sdl3;
 using Inno.Platform;
 using Inno.Rendering;
-using Xunit;
 
 namespace Inno.Adapter.Rendering.Bgfx.Tests;
 
@@ -14,29 +14,41 @@ public sealed class BgfxSurfaceRetirementTests
     [Fact]
     public void MultiThreadedSurfaceAcknowledgesDestructionAfterTheFollowingSubmission()
     {
-        if (NativeWindowTestHost.RunIfRequired(nameof(BgfxSurfaceRetirementTests) + "." + nameof(MultiThreadedSurfaceAcknowledgesDestructionAfterTheFollowingSubmission)))
+        if (NativeWindowTestHost.RunIfRequired(
+            nameof(BgfxSurfaceRetirementTests) + "." + nameof(MultiThreadedSurfaceAcknowledgesDestructionAfterTheFollowingSubmission)
+        )) {
             return;
+        }
         VerifyRetirement(false);
     }
 
     [Fact]
     public void InlineSurfaceUsesTheSameConservativeAcknowledgment()
     {
-        if (NativeWindowTestHost.RunIfRequired(nameof(BgfxSurfaceRetirementTests) + "." + nameof(InlineSurfaceUsesTheSameConservativeAcknowledgment)))
+        if (NativeWindowTestHost.RunIfRequired(
+            nameof(BgfxSurfaceRetirementTests) + "." + nameof(InlineSurfaceUsesTheSameConservativeAcknowledgment)
+        )) {
             return;
+        }
         VerifyRetirement(true);
     }
 
     [Fact]
     public void InvalidIntegrationFailsBeforeTakingTheProcessOwner()
     {
-        if (NativeWindowTestHost.RunIfRequired(nameof(BgfxSurfaceRetirementTests) + "." + nameof(InvalidIntegrationFailsBeforeTakingTheProcessOwner)))
+        if (NativeWindowTestHost.RunIfRequired(
+            nameof(BgfxSurfaceRetirementTests) + "." + nameof(InvalidIntegrationFailsBeforeTakingTheProcessOwner)
+        )) {
             return;
+        }
 
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions
         {
-            title = "Invalid integration", width = 100, height = 90, visible = false
+            title = "Invalid integration",
+            width = 100,
+            height = 90,
+            visible = false
         });
         Assert.Throws<ArgumentException>(() => new BgfxDevice(new BgfxDeviceOptions
         {
@@ -59,11 +71,17 @@ public sealed class BgfxSurfaceRetirementTests
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var primary = application.CreateWindow(new PlatformWindowOptions
         {
-            title = "Primary surface", width = 100, height = 90, visible = false
+            title = "Primary surface",
+            width = 100,
+            height = 90,
+            visible = false
         });
         using var additional = application.CreateWindow(new PlatformWindowOptions
         {
-            title = "Additional surface", width = 100, height = 90, visible = false
+            title = "Additional surface",
+            width = 100,
+            height = 90,
+            visible = false
         });
         var integration = new FixtureIntegration();
         using var device = new BgfxDevice(new BgfxDeviceOptions
@@ -76,7 +94,10 @@ public sealed class BgfxSurfaceRetirementTests
         });
         PlatformNativeHandles native = additional.nativeHandles;
         var handles = new PlatformNativeHandles(
-            native.windowHandle, native.displayHandle, new PlatformNativeHandleId("fixture.custom-surface"));
+            native.windowHandle,
+            native.displayHandle,
+            new PlatformNativeHandleId("fixture.custom-surface")
+        );
         RenderSurfaceHandle surface = device.CreateWindowSurface(handles, 100, 90, "Custom surface");
         device.ResizeWindowSurface(surface, 110, 95);
         device.ResizeWindowSurface(surface, 120, 100);
@@ -113,6 +134,7 @@ public sealed class BgfxSurfaceRetirementTests
     {
         internal int resolveCount;
         public bool supportsAdditionalSurfaces => true;
+
         public BgfxSurfaceDescriptor Resolve(
             PlatformNativeHandles handles,
             BgfxSurfaceRole role
@@ -125,6 +147,7 @@ public sealed class BgfxSurfaceRetirementTests
     private sealed class InvalidIntegration : IBgfxSurfaceIntegration
     {
         public bool supportsAdditionalSurfaces => true;
+
         public BgfxSurfaceDescriptor Resolve(
             PlatformNativeHandles handles,
             BgfxSurfaceRole role

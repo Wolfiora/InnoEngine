@@ -4,18 +4,17 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Extensibility.Modules;
-using Inno.Core.Identity;
 using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
+using Inno.Core.Identity;
 using Inno.Core.Logging;
+using Inno.Core.Serialization;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
 using Inno.Extensibility.Types;
 using Inno.Scripting.Api;
-using Inno.Core.Serialization;
-using Inno.Core.Execution;
-using Inno.Extensibility.Reload;
 
 namespace Inno.Assets.Pipeline;
 
@@ -137,10 +136,9 @@ sealed partial class AssetPipeline
         {
             GetFileSystem().Refresh();
             _ = loader.TryGetPersistentId(path, out Guid persistentId);
-            PublishMutation(new AssetChange(
-                existed ? AssetChangeKind.Modified : AssetChangeKind.Added,
-                persistentId,
-                path));
+            PublishMutation(
+                new AssetChange(existed ? AssetChangeKind.Modified : AssetChangeKind.Added, persistentId, path)
+            );
         }
         return saved;
     }
@@ -169,7 +167,9 @@ sealed partial class AssetPipeline
         string sourcePath = NormalizeMutationPath(source, nameof(source));
         string targetPath = NormalizeMutationPath(target, nameof(target));
         if (string.Equals(sourcePath, targetPath, StringComparison.Ordinal))
+        {
             return;
+        }
 
         AssetFileSystem fileSystem = GetFileSystem();
         AssetLoader loader = GetLoader();
@@ -177,18 +177,26 @@ sealed partial class AssetPipeline
         {
             IReadOnlyList<AssetChangedEvent> pending = fileSystem.WaitForIdle(out bool requiresFullRescan);
             if (pending.Count > 0 || requiresFullRescan)
+            {
                 ApplySourceChanges(pending, requiresFullRescan);
+            }
         }
 
         string absoluteSource = Path.Combine(assetRoot, sourcePath);
         string absoluteTarget = Path.Combine(assetRoot, targetPath);
         bool isDirectory = Directory.Exists(absoluteSource);
         if (!isDirectory && !System.IO.File.Exists(absoluteSource))
+        {
             throw new FileNotFoundException($"Asset source '{sourcePath}' does not exist.", absoluteSource);
+        }
         if (Directory.Exists(absoluteTarget) || System.IO.File.Exists(absoluteTarget))
+        {
             throw new IOException($"Asset move target '{targetPath}' already exists.");
+        }
         if (System.IO.File.Exists(absoluteTarget + ".imeta"))
+        {
             throw new IOException($"Asset move target metadata '{targetPath}.imeta' already exists.");
+        }
 
         bool restartWatcher = fileSystem.isWatching;
         fileSystem.Stop();
@@ -214,7 +222,9 @@ sealed partial class AssetPipeline
         finally
         {
             if (restartWatcher)
+            {
                 fileSystem.Start();
+            }
         }
     }
 
@@ -239,7 +249,9 @@ sealed partial class AssetPipeline
         string absoluteSource = Path.Combine(assetRoot, sourcePath);
         bool isDirectory = Directory.Exists(absoluteSource);
         if (!isDirectory && !System.IO.File.Exists(absoluteSource))
+        {
             throw new FileNotFoundException($"Asset source '{sourcePath}' does not exist.", absoluteSource);
+        }
 
         AssetChangedEvent[] changes = CreateDeletionEvents(fileSystem, sourcePath);
         Dictionary<string, Guid> previousIds = CapturePreviousIds(loader, changes);
@@ -247,7 +259,8 @@ sealed partial class AssetPipeline
             libraryRoot,
             "AssetDatabase",
             "Transactions",
-            Guid.NewGuid().ToString("N"));
+            Guid.NewGuid().ToString("N")
+        );
         string stagedSource = Path.Combine(transactionRoot, "source");
         string sourceMeta = absoluteSource + ".imeta";
         string stagedMeta = Path.Combine(transactionRoot, "source.imeta");
@@ -259,7 +272,9 @@ sealed partial class AssetPipeline
         {
             MovePhysicalSource(absoluteSource, stagedSource, isDirectory);
             if (System.IO.File.Exists(sourceMeta))
+            {
                 System.IO.File.Move(sourceMeta, stagedMeta);
+            }
             loader.ApplySourceChanges(changes);
             fileSystem.Refresh();
             committed = CreateCommittedChanges(loader, changes, previousIds, requiresFullRescan: false);
@@ -276,7 +291,9 @@ sealed partial class AssetPipeline
         finally
         {
             if (restartWatcher)
+            {
                 fileSystem.Start();
+            }
         }
         DeleteTransactionDirectorySafely(transactionRoot);
         InvokeObservers(Changed, new AssetChangeSet(Interlocked.Increment(ref m_revision), committed));
@@ -309,12 +326,17 @@ sealed partial class AssetPipeline
         if (!Directory.Exists(parentPath))
         {
             throw new DirectoryNotFoundException(
-                $"Asset directory parent '{Path.GetDirectoryName(sourcePath)}' does not exist.");
+                $"Asset directory parent '{Path.GetDirectoryName(sourcePath)}' does not exist."
+            );
         }
         if (Directory.Exists(absolutePath) || System.IO.File.Exists(absolutePath))
+        {
             throw new IOException($"Asset directory target '{sourcePath}' already exists.");
+        }
         if (System.IO.File.Exists(absolutePath + ".imeta"))
+        {
             throw new IOException($"Asset directory target metadata '{sourcePath}.imeta' already exists.");
+        }
 
         bool restartWatcher = fileSystem.isWatching;
         fileSystem.Stop();
@@ -328,15 +350,20 @@ sealed partial class AssetPipeline
                 loader,
                 [change],
                 new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase),
-                requiresFullRescan: false);
+                requiresFullRescan: false
+            );
             InvokeObservers(Changed, new AssetChangeSet(Interlocked.Increment(ref m_revision), committed));
         }
         catch
         {
             if (Directory.Exists(absolutePath))
+            {
                 Directory.Delete(absolutePath, recursive: true);
+            }
             if (System.IO.File.Exists(absolutePath + ".imeta"))
+            {
                 System.IO.File.Delete(absolutePath + ".imeta");
+            }
             loader.Rescan();
             fileSystem.Refresh();
             throw;
@@ -344,7 +371,9 @@ sealed partial class AssetPipeline
         finally
         {
             if (restartWatcher)
+            {
                 fileSystem.Start();
+            }
         }
     }
 
@@ -353,9 +382,13 @@ sealed partial class AssetPipeline
         string parameterName
     ) {
         if (!path.isValid || string.IsNullOrWhiteSpace(path.localPath))
+        {
             throw new ArgumentException("Asset source path is required.", parameterName);
+        }
         if (path.source != AssetSourceId.project)
+        {
             throw new InvalidOperationException($"Asset source '{path.source}' is read-only.");
+        }
         return path.localPath;
     }
 
@@ -365,9 +398,13 @@ sealed partial class AssetPipeline
         bool isDirectory
     ) {
         if (isDirectory)
+        {
             Directory.Move(sourcePath, targetPath);
+        }
         else
+        {
             System.IO.File.Move(sourcePath, targetPath);
+        }
     }
 
     private void TryRollbackPhysicalMove(
@@ -380,7 +417,9 @@ sealed partial class AssetPipeline
             bool targetExists = isDirectory ? Directory.Exists(targetPath) : System.IO.File.Exists(targetPath);
             bool sourceExists = isDirectory ? Directory.Exists(sourcePath) : System.IO.File.Exists(sourcePath);
             if (targetExists && !sourceExists)
+            {
                 MovePhysicalSource(targetPath, sourcePath, isDirectory);
+            }
         }
         catch
         {
@@ -395,7 +434,9 @@ sealed partial class AssetPipeline
         try
         {
             if (System.IO.File.Exists(targetPath) && !System.IO.File.Exists(sourcePath))
+            {
                 System.IO.File.Move(targetPath, sourcePath);
+            }
         }
         catch
         {
@@ -420,7 +461,9 @@ sealed partial class AssetPipeline
         string stagedMetaPath
     ) {
         if (!System.IO.File.Exists(stagedMetaPath))
+        {
             return;
+        }
         Directory.CreateDirectory(Path.GetDirectoryName(metaPath)!);
         System.IO.File.Move(stagedMetaPath, metaPath);
     }
@@ -430,7 +473,9 @@ sealed partial class AssetPipeline
         try
         {
             if (Directory.Exists(transactionRoot))
+            {
                 Directory.Delete(transactionRoot, recursive: true);
+            }
         }
         catch (IOException)
         {
@@ -441,5 +486,4 @@ sealed partial class AssetPipeline
             // Read-only transaction debris must not roll back an already committed deletion.
         }
     }
-
 }

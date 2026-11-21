@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
+using Xunit;
 using Inno.Assets;
 using Inno.Core.Serialization;
-using Xunit;
 
 namespace Inno.Scene.Tests;
 
@@ -43,7 +43,9 @@ public sealed partial class SceneSerializationTests
         probe.targetObject = original;
         IAssetReferenceResolver assets = m_serializationContext.GetRequired<IAssetReferenceResolver>();
         PropertyElementEnvelope envelope = m_serialization.Deserialize<PropertyElementEnvelope>(
-            SceneElementSerialization.CaptureState(probe, m_serialization, assets), m_serializationContext);
+            SceneElementSerialization.CaptureState(probe, m_serialization, assets),
+            m_serializationContext
+        );
         envelope.aliasIds = [original.identity.persistentId];
         envelope.aliasTargets = [replacement.identity.persistentId];
         probe.targetObject = null;
@@ -62,7 +64,12 @@ public sealed partial class SceneSerializationTests
         Assert.Null(probe.targetObject);
 
         void Restore()
-            => SceneElementSerialization.RestoreState(probe, m_serialization.Serialize(envelope, m_serializationContext), m_serialization, assets);
+            => SceneElementSerialization.RestoreState(
+                probe,
+                m_serialization.Serialize(envelope, m_serializationContext),
+                m_serialization,
+                assets
+            );
     }
 
     [Fact]
@@ -75,10 +82,21 @@ public sealed partial class SceneSerializationTests
         probe.targetComponent = probe;
         IAssetReferenceResolver assets = m_serializationContext.GetRequired<IAssetReferenceResolver>();
         PropertyElementEnvelope envelope = m_serialization.Deserialize<PropertyElementEnvelope>(
-            SceneElementSerialization.CaptureState(target, m_serialization, assets), m_serializationContext);
-        envelope.properties = ScenePropertySerialization.CaptureProperty(probe, nameof(PropertyReferenceProbe.targetComponent), m_serialization, assets);
+            SceneElementSerialization.CaptureState(target, m_serialization, assets),
+            m_serializationContext
+        );
+        envelope.properties = ScenePropertySerialization.CaptureProperty(
+            probe,
+            nameof(PropertyReferenceProbe.targetComponent),
+            m_serialization,
+            assets
+        );
         Exception failure = Assert.ThrowsAny<Exception>(() => SceneElementSerialization.RestoreState(
-            target, m_serialization.Serialize(envelope, m_serializationContext), m_serialization, assets));
+            target,
+            m_serialization.Serialize(envelope, m_serializationContext),
+            m_serialization,
+            assets
+        ));
         Assert.Contains("targetComponent", failure.ToString());
         Assert.Null(target.targetComponent);
     }
@@ -99,12 +117,19 @@ public sealed partial class SceneSerializationTests
         token.kind = int.MaxValue;
         byte[] invalid = m_serialization.Serialize(token, m_serializationContext);
         Assert.Equal(original.Length, invalid.Length);
-        byte[] payload = ScenePropertySerialization.CaptureProperty(probe, nameof(PropertyReferenceProbe.targetComponent), m_serialization, assets);
+        byte[] payload = ScenePropertySerialization.CaptureProperty(
+            probe,
+            nameof(PropertyReferenceProbe.targetComponent),
+            m_serialization,
+            assets
+        );
         int offset = payload.AsSpan().IndexOf(original);
         Assert.True(offset >= 0, "The public property document did not contain its independently encoded value.");
         invalid.CopyTo(payload.AsSpan(offset, invalid.Length));
         probe.targetComponent = null;
-        Exception failure = Assert.ThrowsAny<Exception>(() => ScenePropertySerialization.RestoreProperties(probe, payload, m_serialization, assets));
+        Exception failure = Assert.ThrowsAny<Exception>(
+            () => ScenePropertySerialization.RestoreProperties(probe, payload, m_serialization, assets)
+        );
         Assert.Contains("not a GameComponent reference", failure.ToString());
         Assert.Null(probe.targetComponent);
     }

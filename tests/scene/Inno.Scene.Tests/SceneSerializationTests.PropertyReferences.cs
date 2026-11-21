@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
+using Xunit;
 using Inno.Assets;
 using Inno.Core.Identity;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
-using Xunit;
 
 namespace Inno.Scene.Tests;
 
@@ -18,18 +18,26 @@ public sealed partial class SceneSerializationTests
         IAssetReferenceResolver assets = m_serializationContext.GetRequired<IAssetReferenceResolver>();
         long small = Measure();
         for (int index = 0; index < 5_000; index++)
+        {
             _ = scene.CreateObject("Unrelated " + index);
+        }
         long large = Measure();
-        Assert.True(large <= small + 64 * 1024,
-            $"Ten scalar property captures allocated {small} bytes in a small Scene and {large} with 5,000 unrelated objects.");
+        Assert.True(
+            large <= small + 64 * 1024,
+            $"Ten scalar property captures allocated {small} bytes in a small Scene and {large} with 5,000 unrelated objects."
+        );
 
         long Measure()
         {
             for (int index = 0; index < 10; index++)
+            {
                 _ = ScenePropertySerialization.CapturePropertySnapshots(owner.transform, m_serialization, assets);
+            }
             long before = GC.GetAllocatedBytesForCurrentThread();
             for (int index = 0; index < 10; index++)
+            {
                 Assert.Equal(3, ScenePropertySerialization.CapturePropertySnapshots(owner.transform, m_serialization, assets).Count);
+            }
             return GC.GetAllocatedBytesForCurrentThread() - before;
         }
     }
@@ -53,8 +61,11 @@ public sealed partial class SceneSerializationTests
         Assert.True(SceneManager.UnloadScene(scene));
         GameScene replacement = m_serialization.Deserialize<GameScene>(graph, m_serializationContext);
         SceneManager.LoadScene(replacement);
-        PropertyReferenceProbe restored = replacement.GetObjects().Single(value => value.name == "Owner").GetComponents()
-            .OfType<PropertyReferenceProbe>().Single();
+        PropertyReferenceProbe restored = replacement.GetObjects()
+            .Single(value => value.name == "Owner")
+            .GetComponents()
+            .OfType<PropertyReferenceProbe>()
+            .Single();
         GameObject current = replacement.GetObjects().Single(value => value.name == "Target");
         restored.targetObject = null;
         restored.targetComponent = null;
@@ -97,7 +108,12 @@ public sealed partial class SceneSerializationTests
         GameObject target = scene.CreateObject("Target");
         probe.targetObject = target;
         IAssetReferenceResolver assets = m_serializationContext.GetRequired<IAssetReferenceResolver>();
-        byte[] property = ScenePropertySerialization.CaptureProperty(probe, nameof(PropertyReferenceProbe.targetObject), m_serialization, assets);
+        byte[] property = ScenePropertySerialization.CaptureProperty(
+            probe,
+            nameof(PropertyReferenceProbe.targetObject),
+            m_serialization,
+            assets
+        );
         scene.DestroyObject(target);
         probe.targetObject = null;
         Assert.ThrowsAny<Exception>(() => ScenePropertySerialization.RestoreProperties(probe, property, m_serialization, assets));
@@ -119,7 +135,12 @@ public sealed partial class SceneSerializationTests
         IAssetReferenceResolver assets = m_serializationContext.GetRequired<IAssetReferenceResolver>();
         probe.beforeRead = () =>
         {
-            byte[] value = ScenePropertySerialization.CaptureProperty(nested, nameof(ReferenceComponent.targetObject), m_serialization, assets);
+            byte[] value = ScenePropertySerialization.CaptureProperty(
+                nested,
+                nameof(ReferenceComponent.targetObject),
+                m_serialization,
+                assets
+            );
             nested.targetObject = null;
             _ = ScenePropertySerialization.RestoreProperties(nested, value, m_serialization, assets);
             Assert.NotNull(nested.targetObject);
@@ -150,7 +171,7 @@ internal sealed class PropertyReferenceProbe : GameComponent
             beforeRead?.Invoke();
             return 0;
         }
-        set { }
+        set {}
     }
 
     [SerializableProperty]

@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported table column flags choices at the Editor presentation boundary.
 /// </summary>
@@ -118,5 +119,5 @@ public enum ImGuiTableColumnFlags : int
     /// <summary>
     /// Selects the no direct resize presentation behavior.
     /// </summary>
-    NoDirectResize = (int)Inno.Native.ImGui.ImGuiTableColumnFlags.NoDirectResize,
+    NoDirectResize = (int)Inno.Native.ImGui.ImGuiTableColumnFlags.NoDirectResize
 }

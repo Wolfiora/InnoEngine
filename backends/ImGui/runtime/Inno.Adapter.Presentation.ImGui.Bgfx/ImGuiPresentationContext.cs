@@ -1,6 +1,5 @@
 using System;
 using System.Numerics;
-
 using Inno.Adapter.Platform.Sdl3;
 using Inno.Adapter.Presentation;
 using Inno.Adapter.Presentation.ImGui;
@@ -22,11 +21,13 @@ internal sealed class ImGuiPresentationContext : IPresentationContext
     ) {
         ArgumentNullException.ThrowIfNull(options);
         m_application = options.platformApplication as Sdl3PlatformApplication
-            ?? throw new NotSupportedException(
-                "The built-in ImGui presentation requires the selected platform adapter to support SDL3 integration.");
+                        ?? throw new NotSupportedException(
+                            "The built-in ImGui presentation requires the selected platform adapter to support SDL3 integration."
+                        );
         m_window = options.window as Sdl3PlatformWindow
-            ?? throw new NotSupportedException(
-                "The built-in ImGui presentation requires a window created by the selected SDL3 platform adapter.");
+                   ?? throw new NotSupportedException(
+                       "The built-in ImGui presentation requires a window created by the selected SDL3 platform adapter."
+                   );
 
         GraphicsPipelineDescriptor pipeline = BgfxImGuiShaderArtifacts.Load(options.renderDevice.capabilities.backend);
         m_renderer = new BgfxImGuiRenderer(options.renderDevice, pipeline);
@@ -36,7 +37,8 @@ internal sealed class ImGuiPresentationContext : IPresentationContext
                 m_window,
                 ToImGuiFlags(options.features),
                 interaction,
-                m_renderer);
+                m_renderer
+            );
         }
         catch
         {
@@ -57,8 +59,7 @@ internal sealed class ImGuiPresentationContext : IPresentationContext
     bool IPresentationContext.TryCaptureLayout(
         out string settings,
         bool force
-    )
-        => m_context.TryCaptureIniSettings(out settings, force);
+    ) => m_context.TryCaptureIniSettings(out settings, force);
 
     void IPresentationContext.RenderFrame(
         Action drawFrame,
@@ -79,7 +80,9 @@ internal sealed class ImGuiPresentationContext : IPresentationContext
         Vector2 size
     ) {
         if (!texture.isValid)
+        {
             throw new ArgumentException("The presentation texture handle is invalid.", nameof(texture));
+        }
         m_context.DrawImage(new ImGuiTextureHandle(texture.value), size);
     }
 
@@ -88,27 +91,33 @@ internal sealed class ImGuiPresentationContext : IPresentationContext
     void IRenderFrameGraphContributor.AddRenderPasses(
         RenderGraphBuilder graph,
         ulong frameIndex
-    )
-        => m_renderer.AddRenderPasses(graph, frameIndex);
+    ) => m_renderer.AddRenderPasses(graph, frameIndex);
 
     void IDisposable.Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_application.DestroyImGuiContext(m_window);
         m_disposed = true;
     }
-
 
     private static ImGuiContextFlags ToImGuiFlags(PresentationFeatures features)
     {
         ImGuiContextFlags result = ImGuiContextFlags.None;
         if ((features & PresentationFeatures.MultipleWindows) != 0)
+        {
             result |= ImGuiContextFlags.EnableViewports;
+        }
         if ((features & PresentationFeatures.Docking) != 0)
+        {
             result |= ImGuiContextFlags.EnableDocking;
+        }
         if ((features & PresentationFeatures.SmoothResize) != 0)
+        {
             result |= ImGuiContextFlags.EnableSmoothResize;
+        }
         return result;
     }
 }

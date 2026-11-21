@@ -9,7 +9,6 @@ public enum EditorHistoryDirection
     /// Restores the state that existed before the change was committed.
     /// </summary>
     Undo = 0,
-
     /// <summary>
     /// Restores the state produced by the committed change.
     /// </summary>

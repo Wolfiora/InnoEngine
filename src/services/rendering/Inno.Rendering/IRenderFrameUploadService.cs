@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Rendering;
 
 namespace Inno.Rendering;

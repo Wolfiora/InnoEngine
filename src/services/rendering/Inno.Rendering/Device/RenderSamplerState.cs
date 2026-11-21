@@ -54,11 +54,13 @@ public struct RenderSamplerState : IEquatable<RenderSamplerState>
     /// <summary>
     /// Gets linear filtering with clamped addressing.
     /// </summary>
-    public static RenderSamplerState linearClamp => new(
-        RenderSamplerFilter.Linear,
-        RenderSamplerAddressMode.Clamp,
-        RenderSamplerAddressMode.Clamp,
-        RenderSamplerAddressMode.Clamp);
+    public static RenderSamplerState linearClamp
+        => new(
+            RenderSamplerFilter.Linear,
+            RenderSamplerAddressMode.Clamp,
+            RenderSamplerAddressMode.Clamp,
+            RenderSamplerAddressMode.Clamp
+        );
 
     /// <summary>
     /// Creates a sampler state.
@@ -175,4 +177,3 @@ public struct RenderSamplerState : IEquatable<RenderSamplerState>
         RenderSamplerState right
     ) => !left.Equals(right);
 }
-

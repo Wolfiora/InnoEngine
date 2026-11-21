@@ -6,7 +6,7 @@ using System.Threading;
 namespace Inno.Core.Collections;
 
 sealed partial class IndexedObjectStore<T>
-where T : class
+    where T : class
 {
     /// <summary>
     /// Defines a query key over stored items.
@@ -33,16 +33,25 @@ where T : class
     ) where TKey : notnull
     {
         if (string.IsNullOrWhiteSpace(name))
+        {
             throw new ArgumentException("Key name is required.", nameof(name));
+        }
 
         m_lock.EnterWriteLock();
         try
         {
             if (m_indexByName.TryGetValue(name, out _))
+            {
                 throw new InvalidOperationException($"Key '{name}' already exists.");
+            }
 
             if ((flags & IndexedObjectKeyFlags.Ordered) != 0 && orderComparer == null)
-                throw new ArgumentNullException(nameof(orderComparer), $"{nameof(orderComparer)} cannot be null when {nameof(flags)} is set to {nameof(IndexedObjectKeyFlags.Ordered)}.)");
+            {
+                throw new ArgumentNullException(
+                    nameof(orderComparer),
+                    $"{nameof(orderComparer)} cannot be null when {nameof(flags)} is set to {nameof(IndexedObjectKeyFlags.Ordered)}.)"
+                );
+            }
 
             var index = new IndexedObjectIndex<T, TKey>(name, flags, orderComparer);
             var id = m_nextIndexId++;
@@ -76,7 +85,9 @@ where T : class
         try
         {
             if (!m_indexes.Remove(key.id, out var removed))
+            {
                 return false;
+            }
 
             m_indexByName.Remove(removed.name);
             BumpVersion();
@@ -109,7 +120,9 @@ where T : class
     ) where TKey : notnull
     {
         if (string.IsNullOrWhiteSpace(name))
+        {
             throw new ArgumentException("Key name is required.", nameof(name));
+        }
 
         m_lock.EnterReadLock();
         try
@@ -172,19 +185,27 @@ where T : class
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal bool IsOrderedKey<TKey>(IndexedObjectKey<TKey> key) where TKey : notnull
-        => (GetIndex(key).flags & IndexedObjectKeyFlags.Ordered) != 0;
+    internal bool IsOrderedKey<TKey>(IndexedObjectKey<TKey> key)
+        where TKey : notnull
+            => (GetIndex(key).flags & IndexedObjectKeyFlags.Ordered) != 0;
 
-    private IndexedObjectIndex<T, TKey> GetIndex<TKey>(IndexedObjectKey<TKey> handle) where TKey : notnull
+    private IndexedObjectIndex<T, TKey> GetIndex<TKey>(IndexedObjectKey<TKey> handle)
+        where TKey : notnull
     {
         if (handle.storeRef == null || !handle.storeRef.TryGetTarget(out var owner) || !ReferenceEquals(owner, this))
+        {
             throw new InvalidOperationException($"Key '{handle.name}' does not belong to this store.");
+        }
 
         if (!m_indexes.TryGetValue(handle.id, out var index))
+        {
             throw new InvalidOperationException($"Key '{handle.name}' not found.");
+        }
 
         if (index.keyType != typeof(TKey))
+        {
             throw new InvalidOperationException($"Key '{handle.name}' type mismatch.");
+        }
 
         return (IndexedObjectIndex<T, TKey>)index;
     }
@@ -199,7 +220,9 @@ where T : class
         try
         {
             if (!m_activeIndex.ContainsKey(item))
+            {
                 throw new InvalidOperationException("Item is not in the store.");
+            }
 
             GetIndex(key).AddOrUpdate(item, value);
             BumpVersion();
@@ -235,5 +258,4 @@ where T : class
         TKey value,
         T item
     ) where TKey : notnull => GetIndex(key).Contains(value, item);
-
 }

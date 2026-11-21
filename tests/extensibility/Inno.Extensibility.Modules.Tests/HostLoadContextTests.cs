@@ -3,10 +3,10 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
-using Inno.Adapter.Modules.DotNet;
-using Xunit;
 
 namespace Inno.Extensibility.Modules.Tests;
 
@@ -31,7 +31,9 @@ public sealed class HostLoadContextTests
         finally
         {
             if (Directory.Exists(cache))
+            {
                 Directory.Delete(cache, recursive: true);
+            }
         }
     }
 
@@ -73,7 +75,9 @@ public sealed class HostLoadContextTests
         protected override Assembly? Load(AssemblyName assemblyName)
         {
             if (!(assemblyName.Name ?? string.Empty).StartsWith("Inno.", StringComparison.Ordinal))
+            {
                 return null;
+            }
             string path = Path.Combine(AppContext.BaseDirectory, assemblyName.Name + ".dll");
             return File.Exists(path) ? LoadFromAssemblyPath(path) : null;
         }

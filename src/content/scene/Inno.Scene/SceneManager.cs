@@ -72,8 +72,7 @@ public static class SceneManager
     public static void LoadSceneAdditive(
         GameScene scene,
         bool makeActive = true
-    )
-        => SceneWorld.current.LoadSceneAdditive(scene, makeActive);
+    ) => SceneWorld.current.LoadSceneAdditive(scene, makeActive);
 
     /// <summary>
     /// Creates and loads a new active scene in the current runtime session.
@@ -101,8 +100,7 @@ public static class SceneManager
     public static GameScene LoadNewSceneAdditive(
         string name = "Untitled Scene",
         bool makeActive = true
-    )
-        => SceneWorld.current.LoadNewSceneAdditive(name, makeActive);
+    ) => SceneWorld.current.LoadNewSceneAdditive(name, makeActive);
 
     /// <summary>
     /// Makes a loaded scene active in the current runtime session.
@@ -124,8 +122,7 @@ public static class SceneManager
     public static void MoveGameObjectToScene(
         GameObject gameObject,
         GameScene destination
-    )
-        => SceneWorld.current.MoveGameObjectToScene(gameObject, destination);
+    ) => SceneWorld.current.MoveGameObjectToScene(gameObject, destination);
 
     /// <summary>
     /// Unloads the active scene in the current runtime session when one exists.

@@ -39,8 +39,11 @@ internal sealed class WindowsToolchainDirectory : IDisposable
         Directory.CreateDirectory(alias);
         try
         {
-            byte[] substitute = Encoding.Unicode.GetBytes(physicalPath.StartsWith("\\\\", StringComparison.Ordinal)
-                ? "\\??\\UNC\\" + physicalPath[2..] : "\\??\\" + physicalPath);
+            byte[] substitute = Encoding.Unicode.GetBytes(
+                physicalPath.StartsWith("\\\\", StringComparison.Ordinal)
+                ? "\\??\\UNC\\" + physicalPath[2..]
+                : "\\??\\" + physicalPath
+            );
             byte[] printable = Encoding.Unicode.GetBytes(physicalPath);
             byte[] data = new byte[20 + substitute.Length + printable.Length];
             Write(data, 0, C_MOUNT_POINT_TAG);
@@ -53,10 +56,13 @@ internal sealed class WindowsToolchainDirectory : IDisposable
 
             using SafeFileHandle handle = CreateFile(alias, 0x40000000, 7, nint.Zero, 3, 0x02200000, nint.Zero);
             if (handle.IsInvalid)
+            {
                 throw new Win32Exception(Marshal.GetLastPInvokeError(), "Cannot open the owned toolchain directory alias.");
-            if (!DeviceIoControl(handle, C_SET_REPARSE_POINT, data, (uint)data.Length,
-                nint.Zero, 0, out _, nint.Zero))
+            }
+            if (!DeviceIoControl(handle, C_SET_REPARSE_POINT, data, (uint)data.Length, nint.Zero, 0, out _, nint.Zero))
+            {
                 throw new Win32Exception(Marshal.GetLastPInvokeError(), "Cannot create the owned toolchain directory alias.");
+            }
             return new(physicalPath, alias);
         }
         catch
@@ -70,7 +76,9 @@ internal sealed class WindowsToolchainDirectory : IDisposable
     public void Dispose()
     {
         if (toolPath == m_physicalPath || !Directory.Exists(toolPath))
+        {
             return;
+        }
         ValidateAlias(toolPath, m_physicalPath);
         Directory.Delete(toolPath, recursive: false);
     }
@@ -81,7 +89,9 @@ internal sealed class WindowsToolchainDirectory : IDisposable
     ) {
         string? target = new DirectoryInfo(alias).LinkTarget;
         if (target is null || !Path.GetFullPath(target).Equals(physicalPath, StringComparison.OrdinalIgnoreCase))
+        {
             throw new IOException($"Toolchain directory alias '{alias}' is occupied by a different directory.");
+        }
     }
 
     private static void Write(

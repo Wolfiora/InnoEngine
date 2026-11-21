@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported window flags choices at the Editor presentation boundary.
 /// </summary>
@@ -126,5 +127,5 @@ public enum ImGuiWindowFlags : int
     /// <summary>
     /// Don't use! For internal use by BeginMenu()
     /// </summary>
-    ChildMenu = (int)Inno.Native.ImGui.ImGuiWindowFlags.ChildMenu,
+    ChildMenu = (int)Inno.Native.ImGui.ImGuiWindowFlags.ChildMenu
 }

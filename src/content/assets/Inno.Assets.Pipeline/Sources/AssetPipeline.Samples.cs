@@ -4,13 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Core.Execution;
 using Inno.Core.Serialization;
-using Inno.Scripting.Api;
 using Inno.Extensibility.Reload;
 using Inno.References;
+using Inno.Scripting.Api;
 
 namespace Inno.Assets.Pipeline;
 
@@ -50,10 +49,14 @@ public sealed partial class AssetPipeline
         EnsureOwnerThread();
         m_generations.EnsureReady("import an Asset sample");
         if (m_sourceMountCandidate is not null)
+        {
             throw new InvalidOperationException("A source-mount candidate is already pending.");
+        }
         AssetFileSystem fileSystem = GetFileSystem();
         if (!fileSystem.TryGetEntry(source, out AssetFileEntry entry) || !entry.isDirectory || !entry.isSample)
+        {
             throw new ArgumentException($"Asset source '{source}' is not an installed Plugin sample directory.", nameof(source));
+        }
         AssetPath target = AssetPath.Project(AssetSample.GetImportName(source));
         RequireSampleDestination(target);
         AssetSourceMount sourceMount = sourceMounts.Single(mount => mount.id == source.source);
@@ -65,19 +68,29 @@ public sealed partial class AssetPipeline
         {
             serialization = m_serialization.CaptureGeneration();
             foreach (Type type in m_types.GetTypesWithAttribute<AssetSampleSourceRewriterAttribute>()
-                         .Select(reference => reference.Resolve(m_types))
-                         .OrderBy(type => type.GetCustomAttributes(typeof(AssetSampleSourceRewriterAttribute), false)
-                             .Cast<AssetSampleSourceRewriterAttribute>().Single().id, StringComparer.Ordinal))
-            {
+                .Select(reference => reference.Resolve(m_types))
+                .OrderBy(type => type.GetCustomAttributes(typeof(AssetSampleSourceRewriterAttribute), false)
+                    .Cast<AssetSampleSourceRewriterAttribute>()
+                    .Single().id, StringComparer.Ordinal)
+            ) {
                 if (type.IsAbstract || !typeof(IAssetSampleSourceRewriter).IsAssignableFrom(type)
-                    || Activator.CreateInstance(type) is not IAssetSampleSourceRewriter rewriter)
+                    || Activator.CreateInstance(type) is not IAssetSampleSourceRewriter rewriter
+                ) {
                     throw new InvalidOperationException($"Sample transformer '{type.FullName}' is not a concrete source rewriter.");
+                }
                 rewriters.Add(rewriter);
             }
             m_sampleImport = new AssetSampleImportTransaction(
-                this, source, target, sourceMount.Resolve(source.localPath), transactionRoot,
+                this,
+                source,
+                target,
+                sourceMount.Resolve(source.localPath),
+                transactionRoot,
                 m_options.sourcePolicy ?? AssetSourcePolicy.defaultPolicy,
-                generation, serialization, rewriters.ToArray());
+                generation,
+                serialization,
+                rewriters.ToArray()
+            );
             return m_sampleImport;
         }
         catch (Exception failure)
@@ -85,9 +98,13 @@ public sealed partial class AssetPipeline
             var cleanup = new LifetimeScope();
             cleanup.Own(generation);
             if (serialization is not null)
+            {
                 cleanup.Own(serialization);
+            }
             foreach (IDisposable rewriter in rewriters.OfType<IDisposable>())
+            {
                 cleanup.Own(rewriter);
+            }
             try
             {
                 cleanup.Dispose();
@@ -104,7 +121,9 @@ public sealed partial class AssetPipeline
     {
         EnsureInitializationThread();
         if (!ReferenceEquals(m_sampleImport, transaction))
+        {
             throw new InvalidOperationException("The sample transaction no longer belongs to this pipeline.");
+        }
     }
 
     internal Task<PreparedSourceMounts> PrepareSampleCatalogAsync(
@@ -139,10 +158,14 @@ public sealed partial class AssetPipeline
                     cancellationToken.ThrowIfCancellationRequested();
                     AssetPath candidate = AssetPath.Project(localPath);
                     if (!loader.TryGetAssetType(candidate, out Type? assetType) || assetType is null)
+                    {
                         continue;
+                    }
                     AssetObject? imported = loader.Load(candidate, assetType);
                     if (imported is null || imported.isMissing)
+                    {
                         throw new InvalidDataException($"Sample asset '{candidate}' failed pre-publication import validation.");
+                    }
                 }
                 cancellationToken.ThrowIfCancellationRequested();
                 return prepared;
@@ -183,7 +206,11 @@ public sealed partial class AssetPipeline
         };
         changes.AddRange(transaction.entries.Select(static path => new AssetChangedEvent(path, WatcherChangeTypes.Created)));
         AssetChange[] committed = CreateCommittedChanges(
-            transaction.candidate!.candidateLoader, changes, new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase), requiresFullRescan: false);
+            transaction.candidate!.candidateLoader,
+            changes,
+            new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase),
+            requiresFullRescan: false
+        );
         transaction.candidate!.Activate();
         beforePublish?.Invoke(transaction.target);
         transaction.candidate.Complete();
@@ -207,7 +234,9 @@ public sealed partial class AssetPipeline
             transaction.sourceMoved = false;
         }
         if (!transaction.TryCleanPrivateCopy())
+        {
             throw new RetirementPendingException("Sample import private storage is still being removed.");
+        }
         FinishSampleImport(transaction);
     }
 
@@ -230,6 +259,8 @@ public sealed partial class AssetPipeline
     {
         string destination = Path.Combine(assetRoot, target.localPath);
         if (Directory.Exists(destination) || System.IO.File.Exists(destination) || System.IO.File.Exists(destination + ".imeta"))
+        {
             throw new IOException($"Sample import target '{target}' already exists.");
+        }
     }
 }

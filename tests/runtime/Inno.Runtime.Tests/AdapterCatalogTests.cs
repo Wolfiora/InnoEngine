@@ -1,21 +1,21 @@
 using System;
 using System.Collections.Generic;
-using Inno.Adapter;
-using Inno.Adapter.Platform;
-using Inno.Adapter.Input;
-using Inno.Adapter.Storage;
-using Inno.Adapter.Audio;
-using Inno.Adapter.Text;
-using Inno.Adapter.Rendering;
-using Inno.Adapter.UI;
-using Inno.Adapter.Presentation;
-using Inno.Platform;
-using Inno.Storage;
-using Inno.Audio;
-using Inno.Text;
-using Inno.Rendering;
-using Inno.UI;
 using Xunit;
+using Inno.Adapter;
+using Inno.Adapter.Audio;
+using Inno.Adapter.Input;
+using Inno.Adapter.Platform;
+using Inno.Adapter.Presentation;
+using Inno.Adapter.Rendering;
+using Inno.Adapter.Storage;
+using Inno.Adapter.Text;
+using Inno.Adapter.UI;
+using Inno.Audio;
+using Inno.Platform;
+using Inno.Rendering;
+using Inno.Storage;
+using Inno.Text;
+using Inno.UI;
 
 namespace Inno.Runtime.Tests;
 
@@ -105,8 +105,7 @@ public sealed class AdapterCatalogTests
         Assert.Throws<InvalidOperationException>(() => catalog.CreateStorage(first.id, new StorageScope("application")));
         Assert.Equal(1, first.creationCount);
         Assert.Equal(0, second.creationCount);
-        Assert.Throws<NotSupportedException>(() =>
-            ((IList<StorageBackendId>)catalog.supportedBackends).Add(second.id));
+        Assert.Throws<NotSupportedException>(() => ((IList<StorageBackendId>)catalog.supportedBackends).Add(second.id));
     }
 
     [Fact]
@@ -150,7 +149,8 @@ public sealed class AdapterCatalogTests
             ui = new UiBackendCatalog([m_ui]);
         }
 
-        public AdapterSelection selection => new()
+        public AdapterSelection selection
+            => new()
         {
             platform = m_platform.id,
             input = m_input.id,
@@ -161,7 +161,14 @@ public sealed class AdapterCatalogTests
             ui = m_ui.id
         };
 
-        public int creationCount => m_platform.creationCount + m_input.creationCount + m_storage.creationCount + m_audio.creationCount + m_text.creationCount + m_rendering.creationCount + m_ui.creationCount;
+        public int creationCount
+            => m_platform.creationCount
+               + m_input.creationCount
+               + m_storage.creationCount
+               + m_audio.creationCount
+               + m_text.creationCount
+               + m_rendering.creationCount
+               + m_ui.creationCount;
 
         public IPlatformBackendFactory platform { get; }
         public IInputBackendFactory input { get; }
@@ -174,7 +181,8 @@ public sealed class AdapterCatalogTests
 
     private sealed class TestPlatformProvider : PlatformBackendProvider
     {
-        public TestPlatformProvider(PlatformBackendId id) : base(id) { }
+        public TestPlatformProvider(PlatformBackendId id)
+            : base(id) {}
 
         public int creationCount { get; private set; }
 
@@ -187,7 +195,8 @@ public sealed class AdapterCatalogTests
 
     private sealed class TestInputProvider : InputBackendProvider
     {
-        public TestInputProvider(InputBackendId id) : base(id) { }
+        public TestInputProvider(InputBackendId id)
+            : base(id) {}
 
         public int creationCount { get; private set; }
 
@@ -202,7 +211,8 @@ public sealed class AdapterCatalogTests
 
     private sealed class TestStorageProvider : StorageBackendProvider
     {
-        public TestStorageProvider(StorageBackendId id) : base(id) { }
+        public TestStorageProvider(StorageBackendId id)
+            : base(id) {}
 
         public int creationCount { get; private set; }
 
@@ -215,7 +225,8 @@ public sealed class AdapterCatalogTests
 
     private sealed class TestAudioProvider : AudioBackendProvider
     {
-        public TestAudioProvider(AudioBackendId id) : base(id) { }
+        public TestAudioProvider(AudioBackendId id)
+            : base(id) {}
 
         public int creationCount { get; private set; }
 
@@ -228,7 +239,8 @@ public sealed class AdapterCatalogTests
 
     private sealed class TestTextProvider : TextBackendProvider
     {
-        public TestTextProvider(TextBackendId id) : base(id) { }
+        public TestTextProvider(TextBackendId id)
+            : base(id) {}
 
         public int creationCount { get; private set; }
 
@@ -241,7 +253,8 @@ public sealed class AdapterCatalogTests
 
     private sealed class TestRenderingProvider : RenderingBackendProvider
     {
-        public TestRenderingProvider(RenderingBackendId id) : base(id) { }
+        public TestRenderingProvider(RenderingBackendId id)
+            : base(id) {}
 
         public int creationCount { get; private set; }
 
@@ -257,7 +270,8 @@ public sealed class AdapterCatalogTests
 
     private sealed class TestUiProvider : UiBackendProvider
     {
-        public TestUiProvider(UiBackendId id) : base(id) { }
+        public TestUiProvider(UiBackendId id)
+            : base(id) {}
 
         public int creationCount { get; private set; }
 
@@ -270,7 +284,8 @@ public sealed class AdapterCatalogTests
 
     private sealed class TestPresentationProvider : PresentationBackendProvider
     {
-        public TestPresentationProvider(PresentationBackendId id) : base(id) { }
+        public TestPresentationProvider(PresentationBackendId id)
+            : base(id) {}
 
         public int creationCount { get; private set; }
 
@@ -281,4 +296,3 @@ public sealed class AdapterCatalogTests
         }
     }
 }
-

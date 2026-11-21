@@ -22,7 +22,9 @@ internal sealed class RecordedRenderCommandBuffer : IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_disposed = true;
         byte[] bytes = m_bytes;
         object?[] references = m_references;
@@ -31,9 +33,13 @@ internal sealed class RecordedRenderCommandBuffer : IDisposable
         m_length = 0;
         m_referenceCount = 0;
         if (bytes.Length != 0)
+        {
             ArrayPool<byte>.Shared.Return(bytes);
+        }
         if (references.Length != 0)
+        {
             ArrayPool<object?>.Shared.Return(references, clearArray: true);
+        }
     }
 
     internal Reader GetReader()
@@ -43,7 +49,8 @@ internal sealed class RecordedRenderCommandBuffer : IDisposable
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void Write<T>(T value) where T : unmanaged
+    internal void Write<T>(T value)
+        where T : unmanaged
     {
         int size = Unsafe.SizeOf<T>();
         EnsureCapacity(size);
@@ -55,7 +62,8 @@ internal sealed class RecordedRenderCommandBuffer : IDisposable
     internal void WriteInstruction<T>(
         byte operation,
         T value
-    ) where T : unmanaged {
+    ) where T : unmanaged
+    {
         int size = Unsafe.SizeOf<T>();
         EnsureCapacity(checked(size + 1));
         m_bytes[m_length] = operation;
@@ -68,10 +76,13 @@ internal sealed class RecordedRenderCommandBuffer : IDisposable
         if (m_referenceCount == m_references.Length)
         {
             object?[] next = ArrayPool<object?>.Shared.Rent(
-                m_references.Length == 0 ? C_INITIAL_REFERENCE_CAPACITY : checked(m_references.Length * 2));
+                m_references.Length == 0 ? C_INITIAL_REFERENCE_CAPACITY : checked(m_references.Length * 2)
+            );
             m_references.AsSpan(0, m_referenceCount).CopyTo(next);
             if (m_references.Length != 0)
+            {
                 ArrayPool<object?>.Shared.Return(m_references, clearArray: true);
+            }
             m_references = next;
         }
         Write(m_referenceCount);
@@ -94,7 +105,9 @@ internal sealed class RecordedRenderCommandBuffer : IDisposable
         ObjectDisposedException.ThrowIf(m_disposed, this);
         int required = checked(m_length + additionalBytes);
         if (required > m_bytes.Length)
+        {
             Grow(required);
+        }
     }
 
     private void Grow(int required)
@@ -103,7 +116,9 @@ internal sealed class RecordedRenderCommandBuffer : IDisposable
         byte[] next = ArrayPool<byte>.Shared.Rent(Math.Max(required, capacity));
         m_bytes.AsSpan(0, m_length).CopyTo(next);
         if (m_bytes.Length != 0)
+        {
             ArrayPool<byte>.Shared.Return(m_bytes);
+        }
         m_bytes = next;
     }
 
@@ -124,7 +139,8 @@ internal sealed class RecordedRenderCommandBuffer : IDisposable
         internal readonly bool hasCommands => m_position < m_bytes.Length;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal T Read<T>() where T : unmanaged
+        internal T Read<T>()
+            where T : unmanaged
         {
             int size = Unsafe.SizeOf<T>();
             T value = MemoryMarshal.Read<T>(m_bytes.Slice(m_position, size));
@@ -132,7 +148,8 @@ internal sealed class RecordedRenderCommandBuffer : IDisposable
             return value;
         }
 
-        internal T? ReadReference<T>() where T : class => (T?)m_references[Read<int>()];
+        internal T? ReadReference<T>()
+            where T : class => (T?)m_references[Read<int>()];
 
         internal RenderBindingId ReadBinding()
         {

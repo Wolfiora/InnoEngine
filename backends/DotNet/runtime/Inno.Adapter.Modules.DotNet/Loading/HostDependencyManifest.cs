@@ -16,7 +16,9 @@ internal static class HostDependencyManifest
 
         var names = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (string dependencyFile in GetDependencyFiles(rootAssemblies))
+        {
             ReadRuntimeAssemblyNames(dependencyFile, names);
+        }
         return names;
     }
 
@@ -29,10 +31,14 @@ internal static class HostDependencyManifest
         {
             string location = rootAssembly.Location;
             if (string.IsNullOrWhiteSpace(location))
+            {
                 continue;
+            }
             string dependencyFile = Path.ChangeExtension(location, ".deps.json");
             if (File.Exists(dependencyFile))
+            {
                 paths.Add(Path.GetFullPath(dependencyFile));
+            }
         }
         return paths.ToArray();
     }
@@ -46,24 +52,30 @@ internal static class HostDependencyManifest
             using FileStream stream = File.OpenRead(dependencyFile);
             using JsonDocument document = JsonDocument.Parse(stream);
             if (!document.RootElement.TryGetProperty("targets", out JsonElement targets))
+            {
                 return;
+            }
 
             foreach (JsonProperty target in targets.EnumerateObject())
             {
                 foreach (JsonProperty library in target.Value.EnumerateObject())
                 {
                     if (!library.Value.TryGetProperty("runtime", out JsonElement runtime))
+                    {
                         continue;
+                    }
                     foreach (JsonProperty asset in runtime.EnumerateObject())
                     {
                         string fileName = Path.GetFileName(asset.Name);
-                        if (!fileName.StartsWith("Inno.", StringComparison.Ordinal) ||
-                            !fileName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
-                        {
+                        if (!fileName.StartsWith("Inno.", StringComparison.Ordinal)
+                            || !fileName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                        ) {
                             continue;
                         }
-                        names.TryAdd(Path.GetFileNameWithoutExtension(fileName),
-                            Path.Combine(Path.GetDirectoryName(dependencyFile)!, fileName));
+                        names.TryAdd(
+                            Path.GetFileNameWithoutExtension(fileName),
+                            Path.Combine(Path.GetDirectoryName(dependencyFile)!, fileName)
+                        );
                     }
                 }
             }

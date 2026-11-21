@@ -1,14 +1,12 @@
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
-
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
 using Inno.Core.Execution;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Reload;
 using Inno.Extensibility.Types;
-
-using Xunit;
 
 namespace Inno.Extensibility.Types.Tests;
 
@@ -19,7 +17,9 @@ public sealed class RegistryRetirementTests
     public void PendingBatchDoesNotRepeatCompletedResourcesOrReleaseLowerDependenciesEarly()
     {
         string cache = Path.Combine(Path.GetTempPath(), "InnoRegistryRetirement", Guid.NewGuid().ToString("N"));
-        using var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(RegistryRetirementTests).Assembly)});
+        using var modules = new ModuleHost(
+            new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(RegistryRetirementTests).Assembly)}
+        );
         using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         var calls = new List<string>();
         int pendingAttempts = 0;
@@ -28,7 +28,9 @@ public sealed class RegistryRetirementTests
         {
             calls.Add("second");
             if (++pendingAttempts < 3)
+            {
                 throw new RetirementPendingException("Pending registry resource.");
+            }
         });
         var third = new Resource(() =>
         {
@@ -52,7 +54,9 @@ public sealed class RegistryRetirementTests
     public void DeadlineFailureRetainsDependenciesAndPermanentlyRejectsFurtherRetirement(bool clear)
     {
         string cache = Path.Combine(Path.GetTempPath(), "InnoRegistryRetirement", Guid.NewGuid().ToString("N"));
-        var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(RegistryRetirementTests).Assembly)});
+        var modules = new ModuleHost(
+            new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(RegistryRetirementTests).Assembly)}
+        );
         var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         int released = 0;
         int attempts = 0;
@@ -81,8 +85,11 @@ public sealed class RegistryRetirementTests
         Assert.Throws<RetirementTimeoutException>(modules.Dispose);
     }
 
-    private sealed class Registry(TypeCatalog types, Func<object[]> factory, TimeSpan? timeout = null)
-        : TypeRegistry<object[]>(types, timeout)
+    private sealed class Registry(
+        TypeCatalog types,
+        Func<object[]> factory,
+        TimeSpan? timeout = null
+    ) : TypeRegistry<object[]>(types, timeout)
     {
         protected override object[] Build(TypeCacheSnapshot types) => factory();
 

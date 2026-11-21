@@ -23,7 +23,9 @@ public struct Identity
         get
         {
             if (m_registryRef == null || !m_registryRef.TryGetTarget(out IdentityRegistry? registry))
+            {
                 return null;
+            }
 
             return registry.TryGetRuntimeId(this, out int runtimeId) ? runtimeId : null;
         }
@@ -40,10 +42,12 @@ public struct Identity
         get
         {
             if (m_registryRef == null || !m_registryRef.TryGetTarget(out IdentityRegistry? registry))
+            {
                 return null;
+            }
             return registry.TryGetRuntimeId(this, out int runtimeId)
-                ? new RuntimeIdentity(registry.domainId, runtimeId)
-                : null;
+                   ? new RuntimeIdentity(registry.domainId, runtimeId)
+                   : null;
         }
     }
 
@@ -68,7 +72,9 @@ public struct Identity
         int runtimeId
     ) {
         if (persistentId == Guid.Empty)
+        {
             persistentId = Guid.NewGuid();
+        }
 
         m_runtimeId = runtimeId;
         m_registryRef = new WeakReference<IdentityRegistry>(registry);
@@ -76,10 +82,10 @@ public struct Identity
 
     internal void Unbind(IdentityRegistry registry)
     {
-        if (m_registryRef != null &&
-            m_registryRef.TryGetTarget(out IdentityRegistry? current) &&
-            ReferenceEquals(current, registry))
-        {
+        if (m_registryRef != null
+            && m_registryRef.TryGetTarget(out IdentityRegistry? current)
+            && ReferenceEquals(current, registry)
+        ) {
             m_runtimeId = 0;
             m_registryRef = null;
         }
@@ -96,8 +102,9 @@ public struct Identity
     /// <returns>
     /// The current object, or null if the registry retired, the slot changed generation, or the type differs.
     /// </returns>
-    public TObject? Resolve<TObject>() where TObject : IdentityObject
-        => m_registryRef is not null && m_registryRef.TryGetTarget(out IdentityRegistry? registry)
-            ? registry.Get<TObject>(m_runtimeId)
-            : null;
+    public TObject? Resolve<TObject>()
+        where TObject : IdentityObject
+            => m_registryRef is not null && m_registryRef.TryGetTarget(out IdentityRegistry? registry)
+               ? registry.Get<TObject>(m_runtimeId)
+               : null;
 }

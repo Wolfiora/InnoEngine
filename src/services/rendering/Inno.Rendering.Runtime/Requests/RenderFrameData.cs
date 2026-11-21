@@ -1,7 +1,7 @@
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 
@@ -41,13 +41,16 @@ public sealed class RenderFrameData
     public void Set<TValue>(
         Inno.Rendering.RenderDataChannelId channel,
         TValue value
-    )
-        where TValue : notnull
+    ) where TValue : notnull
     {
         if (!channel.isValid)
+        {
             throw new ArgumentException("A render data channel must be valid.", nameof(channel));
+        }
         if (m_isReadOnly)
+        {
             throw new InvalidOperationException("Submitted render frame data is immutable.");
+        }
         ArgumentNullException.ThrowIfNull(value);
         m_values[new FrameDataKey(channel, typeof(TValue))] = value;
     }
@@ -73,8 +76,8 @@ public sealed class RenderFrameData
     ) {
         if (channel.isValid
             && m_values.TryGetValue(new FrameDataKey(channel, typeof(TValue)), out object? stored)
-            && stored is TValue typed)
-        {
+            && stored is TValue typed
+        ) {
             value = typed;
             return true;
         }
@@ -92,7 +95,9 @@ public sealed class RenderFrameData
     public void Clear()
     {
         if (m_isReadOnly)
+        {
             throw new InvalidOperationException("Submitted render frame data is immutable.");
+        }
         m_values.Clear();
     }
 
@@ -100,7 +105,9 @@ public sealed class RenderFrameData
     {
         var snapshot = new RenderFrameData();
         foreach ((FrameDataKey key, object value) in m_values)
+        {
             snapshot.m_values.Add(key, value);
+        }
         snapshot.m_isReadOnly = true;
         return snapshot;
     }
@@ -110,4 +117,3 @@ public sealed class RenderFrameData
         Type type
     );
 }
-

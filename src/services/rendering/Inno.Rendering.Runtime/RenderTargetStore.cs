@@ -73,8 +73,8 @@ public sealed class RenderTargetStore : IDisposable
 
         if (!m_targets.TryGetValue(target, out TargetEntry? entry)
             || entry.revision != target.contentRevision
-            || !entry.descriptor.Equals(target.descriptor))
-        {
+            || !entry.descriptor.Equals(target.descriptor)
+        ) {
             if ((entry is null && m_targets.Count >= m_capacity) || m_frameAllocations >= m_capacity)
             {
                 m_rejected++;
@@ -83,7 +83,9 @@ public sealed class RenderTargetStore : IDisposable
             PersistentTextureHandle next = m_device.CreateTexture(target.descriptor, target.name);
             m_frameAllocations++;
             if (entry is not null)
+            {
                 Retire(entry.handle);
+            }
             entry = new TargetEntry(target.contentRevision, target.descriptor, next);
             m_targets[target] = entry;
         }
@@ -130,8 +132,12 @@ public sealed class RenderTargetStore : IDisposable
         ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
         ArgumentNullException.ThrowIfNull(graph);
         foreach (TargetEntry entry in m_targets.Values)
+        {
             if (!entry.hasWritten && WritesTarget(graph, entry.handle))
+            {
                 entry.hasWritten = true;
+            }
+        }
     }
 
     /// <summary>
@@ -145,7 +151,9 @@ public sealed class RenderTargetStore : IDisposable
         ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
         ArgumentNullException.ThrowIfNull(target);
         if (m_targets.ContainsKey(target))
+        {
             m_pendingReleases.Add(target);
+        }
     }
 
     /// <summary>
@@ -162,7 +170,9 @@ public sealed class RenderTargetStore : IDisposable
         {
             m_frameRetirement = new RenderRetirementQueue();
             foreach (PersistentTextureHandle texture in m_retireFollowingFrame)
+            {
                 m_frameRetirement.Add(() => m_device.DestroyTexture(texture));
+            }
             m_retireFollowingFrame.Clear();
         }
         try
@@ -186,7 +196,9 @@ public sealed class RenderTargetStore : IDisposable
         foreach (RenderTexture target in m_pendingReleases)
         {
             if (m_targets.Remove(target, out TargetEntry? entry))
+            {
                 Retire(entry.handle);
+            }
         }
         m_pendingReleases.Clear();
     }
@@ -203,18 +215,28 @@ public sealed class RenderTargetStore : IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         if (m_retirement is null)
         {
             m_retirement = new RenderRetirementQueue();
             if (m_frameRetirement is not null)
+            {
                 m_retirement.Add(m_frameRetirement.Dispose);
+            }
             foreach (TargetEntry entry in m_targets.Values)
+            {
                 m_retirement.Add(() => m_device.DestroyTexture(entry.handle));
+            }
             foreach (PersistentTextureHandle texture in m_retireNextFrame)
+            {
                 m_retirement.Add(() => m_device.DestroyTexture(texture));
+            }
             foreach (PersistentTextureHandle texture in m_retireFollowingFrame)
+            {
                 m_retirement.Add(() => m_device.DestroyTexture(texture));
+            }
         }
         try
         {
@@ -239,11 +261,19 @@ public sealed class RenderTargetStore : IDisposable
         foreach (CompiledRenderTexture texture in graph.textures)
         {
             if (!texture.imported || texture.persistentHandle != handle)
+            {
                 continue;
+            }
             foreach (CompiledRenderPass pass in graph.passes)
+            {
                 foreach (CompiledRenderAttachment attachment in pass.attachments)
+                {
                     if (attachment.texture == texture.handle)
+                    {
                         return true;
+                    }
+                }
+            }
         }
         return false;
     }
@@ -260,7 +290,9 @@ public sealed class RenderTargetStore : IDisposable
     private void Retire(PersistentTextureHandle texture)
     {
         if (texture.isValid)
+        {
             m_retireNextFrame.Add(texture);
+        }
     }
 
     private sealed record TargetEntry(

@@ -1,13 +1,13 @@
-using Inno.Testing.Validation;
 using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Testing.Source;
-using Inno.Tooling.Documentation;
 using Xunit;
+using Inno.Testing.Source;
+using Inno.Testing.Validation;
+using Inno.Tooling.Documentation;
 
 namespace Inno.Tooling.Validation.Integration.Tests;
 
@@ -32,10 +32,15 @@ public sealed class ValidationCompletionTests
         const string C_FIXTURE = "tests/input/fixtures/Inno.Input.CompilationFixture";
         const string C_PROJECT = "tests/input/Inno.Input.Tests/Inno.Input.Tests.csproj";
         const string C_TEST = "tests/input/Inno.Input.Tests/UnionCompilationProbe.cs";
-        repository.Write(C_FIXTURE + "/Inno.Input.CompilationFixture.csproj", ValidationRepository.Project(
-            "<ItemGroup><ProjectReference Include=\"../../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj\" /></ItemGroup>"));
+        repository.Write(
+            C_FIXTURE + "/Inno.Input.CompilationFixture.csproj",
+            ValidationRepository.Project(
+                "<ItemGroup><ProjectReference Include=\"../../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj\" /></ItemGroup>"
+            )
+        );
         repository.Write(C_FIXTURE + "/Probe.cs", """
             namespace Inno.Input.CompilationFixture;
+
             /// <summary>Exposes a real fixture compilation value.</summary>
             public static class Probe
             {
@@ -43,27 +48,43 @@ public sealed class ValidationCompletionTests
                 /// <returns>The current fixture value.</returns>
                 public static int Read() => 1;
             }
+
             """);
-        repository.Write(C_PROJECT, File.ReadAllText(repository.PathOf(C_PROJECT)).Replace("</Project>",
-            "<ItemGroup><ProjectReference Include=\"../fixtures/Inno.Input.CompilationFixture/Inno.Input.CompilationFixture.csproj\""
-            + " /></ItemGroup><PropertyGroup><BuildProjectReferences>true</BuildProjectReferences></PropertyGroup></Project>", StringComparison.Ordinal)
-            .Replace("<Project Sdk=", "<Project TreatAsLocalProperty=\"BuildProjectReferences\" Sdk=", StringComparison.Ordinal));
+        repository.Write(
+            C_PROJECT,
+            File.ReadAllText(repository.PathOf(C_PROJECT))
+                .Replace(
+                    "</Project>",
+                    "<ItemGroup><ProjectReference Include=\"../fixtures/Inno.Input.CompilationFixture/Inno.Input.CompilationFixture.csproj\""
+                    + " /></ItemGroup><PropertyGroup><BuildProjectReferences>true</BuildProjectReferences></PropertyGroup></Project>",
+                    StringComparison.Ordinal
+                )
+                .Replace("<Project Sdk=", "<Project TreatAsLocalProperty=\"BuildProjectReferences\" Sdk=", StringComparison.Ordinal)
+        );
         repository.Write(C_TEST, """
             using Xunit;
             using Inno.Input.CompilationFixture;
+
             namespace Inno.Input.Tests;
+
             public sealed class UnionCompilationProbe
             {
                 [Fact]
-                public void ReadsTheChangedDependency() { Assert.Equal(1, Probe.Read()); }
+                public void ReadsTheChangedDependency() => Assert.Equal(1, Probe.Read());
             }
+
             """);
         if (lateSelection)
         {
-            repository.Write(C_PROJECT, File.ReadAllText(repository.PathOf(C_PROJECT))
-                .Replace("<ItemGroup><ProjectReference Include=\"../fixtures/Inno.Input.CompilationFixture/Inno.Input.CompilationFixture.csproj\" /></ItemGroup>",
-                    string.Empty, StringComparison.Ordinal)
-                .Replace("</Project>", """
+            repository.Write(
+                C_PROJECT,
+                File.ReadAllText(repository.PathOf(C_PROJECT))
+                    .Replace(
+                        "<ItemGroup><ProjectReference Include=\"../fixtures/Inno.Input.CompilationFixture/Inno.Input.CompilationFixture.csproj\" /></ItemGroup>",
+                        string.Empty,
+                        StringComparison.Ordinal
+                    )
+                    .Replace("</Project>", """
                 <ItemGroup>
                   <InnoValidationInput Include="../fixtures/Inno.Input.CompilationFixture/*.cs;../fixtures/Inno.Input.CompilationFixture/*.csproj" />
                 </ItemGroup>
@@ -73,16 +94,26 @@ public sealed class ValidationCompletionTests
                   </ItemGroup>
                 </Target>
                 </Project>
-                """, StringComparison.Ordinal));
+                """, StringComparison.Ordinal)
+            );
         }
-        repository.Write("Directory.Build.targets", File.ReadAllText(repository.PathOf("Directory.Build.targets")).Replace("</Project>", """
+        repository.Write(
+            "Directory.Build.targets",
+            File.ReadAllText(repository.PathOf("Directory.Build.targets")).Replace("</Project>", """
             <Target Name="RecordDependencyBuild" AfterTargets="Build" Condition="'$(MSBuildProjectName)' == 'Inno.Core.IO'">
               <WriteLinesToFile File="$(ArtifactsPath)/dependency-builds.log" Lines="$(MSBuildProjectFullPath)" Overwrite="false" />
             </Target>
             </Project>
-            """, StringComparison.Ordinal));
-        await repository.SdkAsync("sln", "InnoEngine.sln", "add", C_FIXTURE + "/Inno.Input.CompilationFixture.csproj",
-            "--solution-folder", "tests/input/fixtures");
+            """, StringComparison.Ordinal)
+        );
+        await repository.SdkAsync(
+            "sln",
+            "InnoEngine.sln",
+            "add",
+            C_FIXTURE + "/Inno.Input.CompilationFixture.csproj",
+            "--solution-folder",
+            "tests/input/fixtures"
+        );
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare the compilation dependency and its real assertion");
         var documentation = new ValidationDocumentationFixture(repository);
@@ -103,24 +134,43 @@ public sealed class ValidationCompletionTests
         {
             if (value == 3 && variant)
             {
-                repository.Write(C_PROJECT, File.ReadAllText(repository.PathOf(C_PROJECT)).Replace(
-                    "Inno.Input.CompilationFixture.csproj\"", "Inno.Input.CompilationFixture.csproj\" AdditionalProperties=\"ArtifactsPath=$(ArtifactsPath)/variant\"",
-                    StringComparison.Ordinal));
+                repository.Write(
+                    C_PROJECT,
+                    File.ReadAllText(repository.PathOf(C_PROJECT)).Replace(
+                        "Inno.Input.CompilationFixture.csproj\"",
+                        "Inno.Input.CompilationFixture.csproj\" AdditionalProperties=\"ArtifactsPath=$(ArtifactsPath)/variant\"",
+                        StringComparison.Ordinal
+                    )
+                );
                 repository.Git("add", C_PROJECT);
                 repository.Git("commit", "-m", "Consume a second effective property instance");
                 // The first real run has established workspace ownership. Restore the extra NuGet output instance before measuring it.
-                using (await Inno.Core.IO.CoordinatedFileLease.AcquireAsync(Path.Combine(Path.GetDirectoryName(workspace)!, "owner.lock"),
-                    workspace + ".lock", Timeout.InfiniteTimeSpan, cancellationToken: cancellation.Token))
-                    await repository.SdkAsync("restore", C_FIXTURE + "/Inno.Input.CompilationFixture.csproj",
-                        "-p:ArtifactsPath=" + variantArtifacts, "-p:Configuration=Debug", "--disable-parallel", "-nr:false");
+                using (await Inno.Core.IO.CoordinatedFileLease.AcquireAsync(
+                    Path.Combine(Path.GetDirectoryName(workspace)!, "owner.lock"),
+                    workspace + ".lock",
+                    Timeout.InfiniteTimeSpan,
+                    cancellationToken: cancellation.Token
+                )) {
+                    await repository.SdkAsync(
+                        "restore",
+                        C_FIXTURE + "/Inno.Input.CompilationFixture.csproj",
+                        "-p:ArtifactsPath=" + variantArtifacts,
+                        "-p:Configuration=Debug",
+                        "--disable-parallel",
+                        "-nr:false"
+                    );
+                }
             }
             foreach (string relative in new[] { C_FIXTURE + "/Probe.cs", C_TEST })
             {
                 string path = repository.PathOf(relative);
                 DateTime timestamp = File.GetLastWriteTimeUtc(path);
-                repository.Write(relative, File.ReadAllText(path)
-                    .Replace("=> " + (value - 1), "=> " + value, StringComparison.Ordinal)
-                    .Replace("Assert.Equal(" + (value - 1), "Assert.Equal(" + value, StringComparison.Ordinal));
+                repository.Write(
+                    relative,
+                    File.ReadAllText(path)
+                        .Replace("=> " + (value - 1), "=> " + value, StringComparison.Ordinal)
+                        .Replace("Assert.Equal(" + (value - 1), "Assert.Equal(" + value, StringComparison.Ordinal)
+                );
                 File.SetLastWriteTimeUtc(path, timestamp);
             }
             using (JsonDocument plan = await documentation.PlanAsync(documentationSnapshot))
@@ -128,33 +178,86 @@ public sealed class ValidationCompletionTests
                 Assert.False(plan.RootElement.GetProperty("contexts").TryGetProperty("native", out _));
                 Assert.Equal(2, plan.RootElement.GetProperty("owners").GetArrayLength());
                 if (lateSelection)
-                    Assert.DoesNotContain(plan.RootElement.GetProperty("contexts").GetProperty("managed").GetProperty("sdkGraph").EnumerateArray()
-                        .Single(snapshot => snapshot.GetProperty("Path").GetString()!.EndsWith("Inno.Input.Tests.csproj", StringComparison.Ordinal))
-                        .GetProperty("Items").GetProperty("ProjectReference").EnumerateArray(), reference =>
-                            reference.GetProperty("FullPath").GetString()!.EndsWith("Inno.Input.CompilationFixture.csproj", StringComparison.Ordinal));
-                JsonElement fixture = plan.RootElement.GetProperty("contexts").GetProperty("managed").GetProperty("sdkGraph").EnumerateArray()
-                    .Single(snapshot => snapshot.GetProperty("Path").GetString()!.EndsWith("Inno.Input.CompilationFixture.csproj", StringComparison.Ordinal));
+                {
+                    Assert.DoesNotContain(
+                        plan.RootElement.GetProperty("contexts")
+                            .GetProperty("managed")
+                            .GetProperty("sdkGraph")
+                            .EnumerateArray()
+                            .Single(
+                                snapshot => snapshot
+                                    .GetProperty("Path")
+                                    .GetString()!
+                                    .EndsWith("Inno.Input.Tests.csproj", StringComparison.Ordinal)
+                            )
+                            .GetProperty("Items")
+                            .GetProperty("ProjectReference")
+                            .EnumerateArray(),
+                        reference =>
+                            reference
+                                .GetProperty("FullPath")
+                                .GetString()!
+                                .EndsWith("Inno.Input.CompilationFixture.csproj", StringComparison.Ordinal)
+                    );
+                }
+                JsonElement fixture = plan.RootElement
+                    .GetProperty("contexts")
+                    .GetProperty("managed")
+                    .GetProperty("sdkGraph")
+                    .EnumerateArray()
+                    .Single(
+                        snapshot => snapshot
+                            .GetProperty("Path")
+                            .GetString()!
+                            .EndsWith("Inno.Input.CompilationFixture.csproj", StringComparison.Ordinal)
+                    );
                 if (variant && value >= 3)
-                    Assert.Contains(fixture.GetProperty("Variants").EnumerateArray(), instance =>
+                {
+                    Assert.Contains(fixture.GetProperty("Variants").EnumerateArray(), instance => (
                         instance.GetProperty("Properties").GetProperty("TargetPath").GetString()
-                        != fixture.GetProperty("Properties").GetProperty("TargetPath").GetString());
+                        != fixture.GetProperty("Properties").GetProperty("TargetPath").GetString()
+                    ));
+                }
                 else
+                {
                     Assert.Empty(fixture.GetProperty("Variants").EnumerateArray());
-                variantArtifacts = Path.Combine(plan.RootElement.GetProperty("contexts").GetProperty("managed").GetProperty("properties")
-                    .GetProperty("ArtifactsPath").GetString()!, "variant");
+                }
+                variantArtifacts = Path.Combine(
+                    plan.RootElement.GetProperty("contexts")
+                        .GetProperty("managed")
+                        .GetProperty("properties")
+                        .GetProperty("ArtifactsPath")
+                        .GetString()!,
+                    "variant"
+                );
                 variantArtifacts = repository.BindWorkspace(variantArtifacts);
                 workspace = repository.BindWorkspace(plan.RootElement.GetProperty("artifacts").GetString()!);
                 string environment = plan.RootElement.GetProperty("environment").GetString()!;
                 if (value == 3)
+                {
                     restoredEnvironment = environment;
+                }
                 else if (value == 4)
+                {
                     Assert.Equal(restoredEnvironment, environment);
-                dependencyOutput = plan.RootElement.GetProperty("contexts").GetProperty("managed").GetProperty("sdkGraph").EnumerateArray()
+                }
+                dependencyOutput = plan.RootElement.GetProperty("contexts")
+                    .GetProperty("managed")
+                    .GetProperty("sdkGraph")
+                    .EnumerateArray()
                     .Single(snapshot => snapshot.GetProperty("Path").GetString()!.EndsWith("Inno.Core.IO.csproj", StringComparison.Ordinal))
-                    .GetProperty("Properties").GetProperty("TargetPath").GetString()!;
+                    .GetProperty("Properties")
+                    .GetProperty("TargetPath")
+                    .GetString()!;
                 dependencyOutput = repository.BindWorkspace(dependencyOutput);
-                dependencyBuildLog = Path.Combine(plan.RootElement.GetProperty("contexts").GetProperty("managed")
-                    .GetProperty("properties").GetProperty("ArtifactsPath").GetString()!, "dependency-builds.log");
+                dependencyBuildLog = Path.Combine(
+                    plan.RootElement.GetProperty("contexts")
+                        .GetProperty("managed")
+                        .GetProperty("properties")
+                        .GetProperty("ArtifactsPath")
+                        .GetString()!,
+                    "dependency-builds.log"
+                );
                 dependencyBuildLog = repository.BindWorkspace(dependencyBuildLog);
             }
             string output = "artifacts/union-" + value;
@@ -165,22 +268,38 @@ public sealed class ValidationCompletionTests
             catch (Exception failure)
             {
                 string runDirectory = repository.PathOf(output);
-                string diagnostics = string.Join("\n", Directory.Exists(runDirectory)
-                    ? Directory.EnumerateFiles(runDirectory, "*.log").Select(path => Path.GetFileName(path) + ":\n" + File.ReadAllText(path))
-                    : new[] { "The run did not start." });
+                string diagnostics = string.Join(
+                    "\n",
+                    Directory.Exists(runDirectory)
+                    ? Directory.EnumerateFiles(runDirectory, "*.log")
+                        .Select(path => Path.GetFileName(path) + ":\n" + File.ReadAllText(path))
+                    : new[] { "The run did not start." }
+                );
                 string results = Path.Combine(runDirectory, "results.json");
                 if (File.Exists(results))
+                {
                     diagnostics += "\nResults:\n" + File.ReadAllText(results);
-                throw new InvalidOperationException("Union compilation failed for value " + value + ":\n"
-                    + diagnostics, failure);
+                }
+                throw new InvalidOperationException(
+                    "Union compilation failed for value " + value + ":\n"
+                    + diagnostics,
+                    failure
+                );
             }
             if (variant && value >= 3)
             {
-                using JsonDocument resolved = JsonDocument.Parse(File.ReadAllText(repository.PathOf(output + "/managed-resolved-sdk-graph.json")));
-                JsonElement owner = resolved.RootElement.EnumerateArray().Single(snapshot => snapshot.GetProperty("Path").GetString()!
+                using JsonDocument resolved = JsonDocument.Parse(
+                    File.ReadAllText(repository.PathOf(output + "/managed-resolved-sdk-graph.json"))
+                );
+                JsonElement owner = resolved.RootElement.EnumerateArray().Single(snapshot => snapshot.GetProperty("Path")
+                    .GetString()!
                     .EndsWith("Inno.Input.CompilationFixture.csproj", StringComparison.Ordinal));
-                Assert.Contains(owner.GetProperty("Variants").EnumerateArray(), instance =>
-                    instance.GetProperty("Properties").GetProperty("TargetPath").GetString() != owner.GetProperty("Properties").GetProperty("TargetPath").GetString());
+                Assert.Contains(owner.GetProperty("Variants").EnumerateArray(), instance => (
+                    instance
+                        .GetProperty("Properties")
+                        .GetProperty("TargetPath")
+                        .GetString() != owner.GetProperty("Properties").GetProperty("TargetPath").GetString()
+                ));
             }
             if (value == 3)
             {
@@ -193,18 +312,29 @@ public sealed class ValidationCompletionTests
                 Assert.Equal(dependencyBytes, File.ReadAllBytes(dependencyOutput));
                 if (!variant)
                 {
-                    Assert.True(outputTimestamp == File.GetLastWriteTimeUtc(dependencyOutput),
-                        "An unchanged dependency was rebuilt. Clean log:\n" + File.ReadAllText(repository.PathOf(output + "/managed-clean.log")));
+                    Assert.True(
+                        outputTimestamp == File.GetLastWriteTimeUtc(dependencyOutput),
+                        "An unchanged dependency was rebuilt. Clean log:\n"
+                        + File.ReadAllText(repository.PathOf(output + "/managed-clean.log"))
+                    );
                     Assert.Equal(dependencyBuilds, File.ReadAllLines(dependencyBuildLog).Length);
                 }
                 Assert.Equal(0, await repository.EvidenceAsync(repository.PathOf(output + "/results.json")));
                 if (variant)
                 {
-                    using DocumentationSnapshot reader = await DocumentationStore.OpenAsync(documentation.cache, documentationSnapshot.snapshot);
+                    using DocumentationSnapshot reader = await DocumentationStore.OpenAsync(
+                        documentation.cache,
+                        documentationSnapshot.snapshot
+                    );
                     DocumentationCatalogReport catalog = await reader.ExportCatalogAsync();
                     string reference = catalog.references.Single(item => item.model == "source-clr").identity;
-                    File.WriteAllText(Path.Combine(documentation.cache, "references", reference, "reference.json"), "damaged immutable source facts");
-                    InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(() => repository.EvidenceAsync(repository.PathOf(output + "/results.json")));
+                    File.WriteAllText(
+                        Path.Combine(documentation.cache, "references", reference, "reference.json"),
+                        "damaged immutable source facts"
+                    );
+                    InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(
+                        () => repository.EvidenceAsync(repository.PathOf(output + "/results.json"))
+                    );
                     Assert.Contains("integrity mismatch", failure.Message);
                 }
             }
@@ -223,14 +353,18 @@ public sealed class ValidationCompletionTests
         const string C_RULES = "tests/ci/Test-AgentRules.ps1";
         string gate = repository.PathOf("artifacts/change-compilation-input");
         string source = repository.PathOf(C_PROBE);
-        repository.Write(C_RULES, File.ReadAllText(repository.PathOf(C_RULES)) + "\n"
+        repository.Write(
+            C_RULES,
+            File.ReadAllText(repository.PathOf(C_RULES)) + "\n"
             + "$gate = '" + gate.Replace("'", "''", StringComparison.Ordinal) + "'\n"
             + "if (Test-Path -LiteralPath $gate) {\n"
             + "  $source = '" + source.Replace("'", "''", StringComparison.Ordinal) + "'\n"
             + "  [IO.File]::WriteAllText($source, [IO.File]::ReadAllText($source).Replace('Assert.Equal(2, CompilationDependencyProbe.value)', 'Assert.Equal(3, CompilationDependencyProbe.value)'))\n"
-            + "  Remove-Item -LiteralPath $gate\n}\n");
+            + "  Remove-Item -LiteralPath $gate\n}\n"
+        );
         repository.Write(C_DEPENDENCY, """
             namespace Inno.Core.IO;
+
             /// <summary>
             /// Supplies an observable compiled dependency value for the validation fixture.
             /// </summary>
@@ -241,18 +375,22 @@ public sealed class ValidationCompletionTests
                 /// </summary>
                 public static int value => 2;
             }
+
             """);
         repository.Git("add", C_RULES, C_DEPENDENCY);
         repository.Git("commit", "-m", "Declare a coordinated compilation input mutation");
         repository.Write(C_PROBE, """
             using Xunit;
             using Inno.Core.IO;
+
             namespace Inno.Input.Tests;
+
             public sealed class CompilationInputProbe
             {
                 [Fact]
-                public void CompiledInputMatchesItsDeclaredSource() { Assert.Equal(2, CompilationDependencyProbe.value); }
+                public void CompiledInputMatchesItsDeclaredSource() => Assert.Equal(2, CompilationDependencyProbe.value);
             }
+
             """);
         Assert.Equal(0, await repository.RunCurrentAsync(cancellation.Token, "artifacts/warmup"));
         repository.Write(C_PROBE, File.ReadAllText(source) + "\n// Change this owner's compilation input.\n");
@@ -263,22 +401,39 @@ public sealed class ValidationCompletionTests
         using (JsonDocument failed = JsonDocument.Parse(File.ReadAllText(repository.PathOf("artifacts/run/results.json"))))
         {
             JsonElement[] results = failed.RootElement.GetProperty("results").EnumerateArray().ToArray();
-            Assert.Contains(failed.RootElement.GetProperty("failures").EnumerateArray(), fault => fault.GetProperty("stage").GetString() == "input-stability");
-            Assert.Contains(results, result => result.GetProperty("id").GetString() == "test:tests/input/Inno.Input.Tests/Inno.Input.Tests.csproj"
+            Assert.Contains(
+                failed.RootElement.GetProperty("failures").EnumerateArray(),
+                fault => fault.GetProperty("stage").GetString() == "input-stability"
+            );
+            Assert.Contains(results, result => (
+                result
+                    .GetProperty("id")
+                    .GetString() == "test:tests/input/Inno.Input.Tests/Inno.Input.Tests.csproj"
                 && result.GetProperty("status").GetString() == "Failed"
-                && result.GetProperty("detail").GetString()!.Contains("CompiledInputMatchesItsDeclaredSource", StringComparison.Ordinal));
+                && result.GetProperty("detail").GetString()!.Contains("CompiledInputMatchesItsDeclaredSource", StringComparison.Ordinal)
+            ));
         }
         File.WriteAllBytes(source, original);
         File.SetLastWriteTimeUtc(source, timestamp);
         Assert.Equal(0, await repository.RunCurrentAsync(cancellation.Token, "artifacts/repaired"));
-        Assert.Equal(0, await repository.EvidenceAsync(repository.PathOf("artifacts/repaired/results.json"), "artifacts/repaired/plan.json"));
+        Assert.Equal(
+            0,
+            await repository.EvidenceAsync(repository.PathOf("artifacts/repaired/results.json"), "artifacts/repaired/plan.json")
+        );
 
         repository.Write(C_PROBE, File.ReadAllText(source) + "\n// Recompile only this owner's changed source.\n");
         string dependencyOutput;
         using (JsonDocument plan = await repository.PlanAsync())
-            dependencyOutput = plan.RootElement.GetProperty("contexts").GetProperty("managed").GetProperty("sdkGraph").EnumerateArray()
+        {
+            dependencyOutput = plan.RootElement.GetProperty("contexts")
+                .GetProperty("managed")
+                .GetProperty("sdkGraph")
+                .EnumerateArray()
                 .Single(snapshot => snapshot.GetProperty("Path").GetString()!.EndsWith("Inno.Core.IO.csproj", StringComparison.Ordinal))
-                .GetProperty("Properties").GetProperty("TargetPath").GetString()!;
+                .GetProperty("Properties")
+                .GetProperty("TargetPath")
+                .GetString()!;
+        }
         dependencyOutput = repository.BindWorkspace(dependencyOutput);
         DateTime outputTimestamp = File.GetLastWriteTimeUtc(dependencyOutput);
         byte[] dependencyBytes = File.ReadAllBytes(dependencyOutput);
@@ -294,13 +449,16 @@ public sealed class ValidationCompletionTests
         repository.Git("add", "--renormalize", "--", C_DEPENDENCY);
         repository.Git("commit", "-m", "Change a previously compiled dependency without changing its timestamp");
         using (JsonDocument plan = await repository.PlanAsync())
+        {
             Assert.Single(plan.RootElement.GetProperty("owners").EnumerateArray());
+        }
         await Assert.ThrowsAsync<InvalidDataException>(() => repository.RunAsync(cancellation.Token, "artifacts/dependency-changed"));
         using JsonDocument changed = JsonDocument.Parse(File.ReadAllText(repository.PathOf("artifacts/dependency-changed/results.json")));
-        Assert.Contains(changed.RootElement.GetProperty("results").EnumerateArray(), result =>
+        Assert.Contains(changed.RootElement.GetProperty("results").EnumerateArray(), result => (
             result.GetProperty("id").GetString() == "test:tests/input/Inno.Input.Tests/Inno.Input.Tests.csproj"
             && result.GetProperty("status").GetString() == "Failed"
-            && result.GetProperty("detail").GetString()!.Contains("CompiledInputMatchesItsDeclaredSource", StringComparison.Ordinal));
+            && result.GetProperty("detail").GetString()!.Contains("CompiledInputMatchesItsDeclaredSource", StringComparison.Ordinal)
+        ));
     }
 
     [Fact]
@@ -310,14 +468,25 @@ public sealed class ValidationCompletionTests
         using var external = new ValidationRepository();
         string dependency = external.PathOf("Shared.props");
         const string C_PROJECT = "tests/input/Inno.Input.Tests/Inno.Input.Tests.csproj";
-        repository.Write(C_PROJECT, File.ReadAllText(repository.PathOf(C_PROJECT)).Replace("</Project>",
-            "<Import Project=\"" + System.Security.SecurityElement.Escape(dependency) + "\" /></Project>", StringComparison.Ordinal));
+        repository.Write(
+            C_PROJECT,
+            File.ReadAllText(repository.PathOf(C_PROJECT)).Replace(
+                "</Project>",
+                "<Import Project=\"" + System.Security.SecurityElement.Escape(dependency) + "\" /></Project>",
+                StringComparison.Ordinal
+            )
+        );
         string signal = repository.PathOf("artifacts/check-ready");
         string release = repository.PathOf("artifacts/check-release");
         const string C_RULES = "tests/ci/Test-AgentRules.ps1";
-        repository.Write(C_RULES, File.ReadAllText(repository.PathOf(C_RULES)) + "\n"
+        repository.Write(
+            C_RULES,
+            File.ReadAllText(repository.PathOf(C_RULES)) + "\n"
             + "[IO.File]::WriteAllText('" + signal.Replace("'", "''", StringComparison.Ordinal) + "', 'ready')\n"
-            + "while (-not (Test-Path -LiteralPath '" + release.Replace("'", "''", StringComparison.Ordinal) + "')) { Start-Sleep -Milliseconds 10 }\n");
+            + "while (-not (Test-Path -LiteralPath '"
+            + release.Replace("'", "''", StringComparison.Ordinal)
+            + "')) { Start-Sleep -Milliseconds 10 }\n"
+        );
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare a coordinated closing-read failure fixture");
         repository.Write("README.md", File.ReadAllText(repository.PathOf("README.md")) + "\nClosing evidence acceptance.\n");
@@ -330,7 +499,9 @@ public sealed class ValidationCompletionTests
             while (!File.Exists(signal))
             {
                 if (execution.IsCompleted)
+                {
                     Assert.Fail("Validation ended before the real instruction check reached its coordination point.");
+                }
                 await Task.Delay(20, cancellation.Token);
             }
             using (var reader = new FileStream(dependency, FileMode.Open, FileAccess.Read, FileShare.None))
@@ -343,7 +514,10 @@ public sealed class ValidationCompletionTests
             }
             string evidence = repository.PathOf("artifacts/run/results.json");
             using JsonDocument results = JsonDocument.Parse(File.ReadAllText(evidence));
-            Assert.Equal(plan.RootElement.GetProperty("checks").GetArrayLength(), results.RootElement.GetProperty("results").GetArrayLength());
+            Assert.Equal(
+                plan.RootElement.GetProperty("checks").GetArrayLength(),
+                results.RootElement.GetProperty("results").GetArrayLength()
+            );
             Assert.All(results.RootElement.GetProperty("results").EnumerateArray(), result =>
                 Assert.Contains(result.GetProperty("status").GetString(), new[] { "Passed", "Reused", "NotApplicable" }));
             Assert.False(results.RootElement.GetProperty("completed").GetBoolean());
@@ -357,7 +531,10 @@ public sealed class ValidationCompletionTests
         {
             cancellation.Cancel();
             File.WriteAllText(release, "drain");
-            try { await execution; }
+            try
+            {
+                await execution;
+            }
             catch (Exception) { /* The assertion above owns the original failure; drain before retiring the fixture. */ }
         }
     }

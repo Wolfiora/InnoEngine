@@ -1,10 +1,10 @@
-using Inno.References;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Inno.References;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 
@@ -66,30 +66,37 @@ public sealed class RenderOutputSession
     /// Gets the stable host output identity.
     /// </summary>
     public string id { get; }
+
     /// <summary>
     /// Gets selected content roots.
     /// </summary>
     public ContentReadScope content { get; }
+
     /// <summary>
     /// Gets the output pixel viewport.
     /// </summary>
     public RenderViewport viewport { get; }
+
     /// <summary>
     /// Gets the shared output frame index.
     /// </summary>
     public ulong frameIndex { get; }
+
     /// <summary>
     /// Gets elapsed frame time.
     /// </summary>
     public float deltaTime { get; }
+
     /// <summary>
     /// Gets the world content collector.
     /// </summary>
     public IViewContentCollector viewContent { get; }
+
     /// <summary>
     /// Gets viewport-local input.
     /// </summary>
     public RenderOutputInput input { get; }
+
     /// <summary>
     /// Gets the explicit model route, if configured.
     /// </summary>
@@ -107,8 +114,14 @@ public sealed class RenderOutputSession
     public RenderOutputSession ForLayer(RenderOutputLayer layer)
     {
         ArgumentNullException.ThrowIfNull(layer);
-        return new RenderOutputSession(id, content, viewport, frameIndex, deltaTime,
-            new SelectedViewContentCollector(viewContent, layer.sourceIds), input);
+        return new RenderOutputSession(
+            id,
+            content,
+            viewport,
+            frameIndex,
+            deltaTime,
+            new SelectedViewContentCollector(viewContent, layer.sourceIds),
+            input
+        );
     }
 }
-

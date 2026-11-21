@@ -1,12 +1,14 @@
 using System;
 
 namespace Inno.Editor.Interactions;
+
 /// <summary>
 /// Owns one continuous edit transaction without retaining edited objects, setters or extension instances.
 /// </summary>
 public sealed class EditorEditGesture : IDisposable
 {
     private EditorHistoryTransaction? m_transaction;
+
     /// <summary>
     /// Begins an edit whose updates use the existing domain mutation and History protocols.
     /// </summary>
@@ -35,6 +37,7 @@ public sealed class EditorEditGesture : IDisposable
     /// Gets the transient merge boundary shared only by updates within this gesture.
     /// </summary>
     public string mergeKey { get; }
+
     /// <summary>
     /// Gets whether this gesture still owns an active transaction, including a rejected completion.
     /// </summary>
@@ -85,12 +88,17 @@ public sealed class EditorEditGesture : IDisposable
     public void Dispose()
     {
         if (m_transaction is null)
+        {
             return;
+        }
         EditorHistoryResult result = Cancel();
         if (!result.succeeded)
+        {
             throw new InvalidOperationException($"The edit gesture could not roll back: {result.message}");
+        }
         GC.SuppressFinalize(this);
     }
 
-    private EditorHistoryTransaction RequireTransaction() => m_transaction ?? throw new InvalidOperationException("The edit gesture has already finished.");
+    private EditorHistoryTransaction RequireTransaction()
+        => m_transaction ?? throw new InvalidOperationException("The edit gesture has already finished.");
 }

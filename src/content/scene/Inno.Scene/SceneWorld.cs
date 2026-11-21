@@ -1,10 +1,10 @@
 using System;
-using Inno.Core.Execution;
 using System.Collections.Generic;
 using System.Threading;
+using Inno.Assets;
+using Inno.Core.Execution;
 using Inno.Core.Identity;
 using Inno.Core.Serialization;
-using Inno.Assets;
 using Inno.Extensibility.Types;
 using Inno.Scene.Components;
 
@@ -78,7 +78,9 @@ public sealed class SceneWorld : IDisposable
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
         if (m_prefabSerialization is not null)
+        {
             throw new InvalidOperationException("Prefab instantiation is already configured for this scene world.");
+        }
         m_prefabSerialization = serialization;
         m_prefabAssets = assets;
     }
@@ -92,11 +94,13 @@ public sealed class SceneWorld : IDisposable
         ArgumentNullException.ThrowIfNull(prefab);
         ArgumentNullException.ThrowIfNull(scene);
         if (!m_loadedScenes.Contains(scene))
+        {
             throw new InvalidOperationException("A prefab can only be instantiated into a loaded scene in the current world.");
+        }
         SerializationRegistry serialization = m_prefabSerialization
             ?? throw new InvalidOperationException("The current scene world has no prefab serialization context.");
         IAssetReferenceResolver assets = m_prefabAssets
-            ?? throw new InvalidOperationException("The current scene world has no prefab asset resolver.");
+                                         ?? throw new InvalidOperationException("The current scene world has no prefab asset resolver.");
         using IDisposable scope = EnterScope();
         return prefab.Instantiate(scene, serialization, assets, parent);
     }
@@ -130,7 +134,7 @@ public sealed class SceneWorld : IDisposable
     /// </returns>
     public TObject? Find<TObject>(Guid persistentId)
         where TObject : IdentityObject
-        => m_identities.Get<TObject>(persistentId);
+            => m_identities.Get<TObject>(persistentId);
 
     /// <summary>
     /// Binds this world and its identity allocator to the current asynchronous execution context.
@@ -166,8 +170,8 @@ public sealed class SceneWorld : IDisposable
         ArgumentNullException.ThrowIfNull(scene);
         int index = m_loadedScenes.IndexOf(scene);
         return index >= 0
-            ? index
-            : throw new InvalidOperationException("Only a loaded scene has a hierarchy index.");
+               ? index
+               : throw new InvalidOperationException("Only a loaded scene has a hierarchy index.");
     }
 
     /// <summary>
@@ -190,10 +194,14 @@ public sealed class SceneWorld : IDisposable
         ArgumentNullException.ThrowIfNull(scene);
         int currentIndex = m_loadedScenes.IndexOf(scene);
         if (currentIndex < 0)
+        {
             throw new InvalidOperationException("Only a loaded scene can be reordered.");
+        }
         int targetIndex = Math.Clamp(sceneIndex, 0, m_loadedScenes.Count - 1);
         if (currentIndex == targetIndex)
+        {
             return;
+        }
         m_loadedScenes.RemoveAt(currentIndex);
         m_loadedScenes.Insert(targetIndex, scene);
         InvalidateSnapshot();
@@ -210,7 +218,9 @@ public sealed class SceneWorld : IDisposable
         EnsureActive();
         ArgumentNullException.ThrowIfNull(scene);
         if (ReferenceEquals(m_activeScene, scene) && m_loadedScenes.Count == 1)
+        {
             return;
+        }
         UnloadAllScenes();
         m_loadedScenes.Add(scene);
         InvalidateSnapshot();
@@ -240,7 +250,9 @@ public sealed class SceneWorld : IDisposable
             scene.Load(this);
         }
         if (makeActive || m_activeScene is null)
+        {
             m_activeScene = scene;
+        }
     }
 
     /// <summary>
@@ -296,7 +308,9 @@ public sealed class SceneWorld : IDisposable
         EnsureActive();
         ArgumentNullException.ThrowIfNull(scene);
         if (!m_loadedScenes.Contains(scene))
+        {
             throw new InvalidOperationException("Only a loaded scene can become active.");
+        }
         m_activeScene = scene;
     }
 
@@ -320,12 +334,18 @@ public sealed class SceneWorld : IDisposable
         ArgumentNullException.ThrowIfNull(gameObject);
         ArgumentNullException.ThrowIfNull(destination);
         if (!gameObject.isRuntimeValid)
+        {
             throw new InvalidOperationException("Only a live GameObject can move between scenes.");
+        }
         GameScene source = gameObject.scene;
         if (!m_loadedScenes.Contains(source) || !m_loadedScenes.Contains(destination))
+        {
             throw new InvalidOperationException("Both source and destination scenes must be loaded by this world.");
+        }
         if (!ReferenceEquals(source, destination))
+        {
             source.TransferObjectTo(gameObject, destination);
+        }
     }
 
     /// <summary>
@@ -335,7 +355,9 @@ public sealed class SceneWorld : IDisposable
     {
         EnsureActive();
         if (m_activeScene is GameScene scene)
+        {
             UnloadScene(scene);
+        }
     }
 
     /// <summary>
@@ -352,7 +374,9 @@ public sealed class SceneWorld : IDisposable
         EnsureActive();
         ArgumentNullException.ThrowIfNull(scene);
         if (!m_loadedScenes.Remove(scene))
+        {
             return false;
+        }
         InvalidateSnapshot();
         try
         {
@@ -361,7 +385,9 @@ public sealed class SceneWorld : IDisposable
         finally
         {
             if (ReferenceEquals(m_activeScene, scene))
+            {
                 m_activeScene = m_loadedScenes.Count > 0 ? m_loadedScenes[^1] : null;
+            }
         }
         return true;
     }
@@ -388,7 +414,9 @@ public sealed class SceneWorld : IDisposable
         InvalidateSnapshot();
         m_activeScene = null;
         if (firstException is not null)
+        {
             throw new InvalidOperationException("One or more scenes failed while unloading.", firstException);
+        }
     }
 
     /// <summary>
@@ -402,7 +430,9 @@ public sealed class SceneWorld : IDisposable
         EnsureActive();
         GameScene[] scenes = GetLoadedSceneSnapshot();
         for (int index = 0; index < scenes.Length; index++)
+        {
             scenes[index].FixedUpdate(fixedDeltaTime);
+        }
     }
 
     /// <summary>
@@ -416,7 +446,9 @@ public sealed class SceneWorld : IDisposable
         EnsureActive();
         GameScene[] scenes = GetLoadedSceneSnapshot();
         for (int index = 0; index < scenes.Length; index++)
+        {
             scenes[index].Update(deltaTime);
+        }
     }
 
     /// <summary>
@@ -430,7 +462,9 @@ public sealed class SceneWorld : IDisposable
         EnsureActive();
         GameScene[] scenes = GetLoadedSceneSnapshot();
         for (int index = 0; index < scenes.Length; index++)
+        {
             scenes[index].LateUpdate(deltaTime);
+        }
     }
 
     /// <summary>
@@ -439,7 +473,9 @@ public sealed class SceneWorld : IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         using IDisposable scope = EnterScope();
         try
         {
@@ -471,7 +507,9 @@ public sealed class SceneWorld : IDisposable
         public void Dispose()
         {
             if (m_disposed)
+            {
                 return;
+            }
             worldScope.Dispose();
             m_disposed = true;
             identityScope.Dispose();

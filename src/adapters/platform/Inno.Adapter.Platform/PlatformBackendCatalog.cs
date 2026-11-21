@@ -30,7 +30,9 @@ public sealed class PlatformBackendCatalog : IPlatformBackendFactory
         foreach (PlatformBackendProvider provider in providers)
         {
             if (provider is null || !provider.id.isValid || !m_providers.TryAdd(provider.id, provider))
+            {
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
+            }
         }
         supportedBackends = new ReadOnlyCollection<PlatformBackendId>(new List<PlatformBackendId>(m_providers.Keys));
     }
@@ -42,11 +44,13 @@ public sealed class PlatformBackendCatalog : IPlatformBackendFactory
     /// <exception cref="InvalidOperationException">
     /// The selected provider returned no service.
     /// </exception>
-    public IPlatformApplication CreateApplication(PlatformBackendId backend) {
+    public IPlatformApplication CreateApplication(PlatformBackendId backend)
+    {
         if (!m_providers.TryGetValue(backend, out PlatformBackendProvider? provider))
+        {
             throw new NotSupportedException("Platform backend '" + backend + "' is not registered.");
+        }
         return provider.CreateApplication()
-            ?? throw new InvalidOperationException("Platform provider '" + backend + "' returned no service.");
+               ?? throw new InvalidOperationException("Platform provider '" + backend + "' returned no service.");
     }
 }
-

@@ -8,8 +8,10 @@ internal static class WindowsX64NativeProducts
 
     internal static NativeComponentBuildOptions Options(string component)
     {
-        return new(NativeLibraryKind.Shared,
+        return new(
+            NativeLibraryKind.Shared,
             cmakeArguments: component == "cimgui" ? ["-DINNO_CIMGUI_COMPILE_DEFINITIONS=IMGUI_API=__declspec(dllexport)"] : [],
-            inputPaths: [C_INPUT]);
+            inputPaths: [C_INPUT]
+        );
     }
 }

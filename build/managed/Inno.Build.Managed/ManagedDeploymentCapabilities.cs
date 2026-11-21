@@ -32,8 +32,10 @@ public sealed class ManagedDeploymentCapabilities
     ) {
         ArgumentNullException.ThrowIfNull(runtimeIdentifiers);
         if (runtimeIdentifiers.Count == 0 || runtimeIdentifiers.Any(string.IsNullOrWhiteSpace)
-            || runtimeIdentifiers.Distinct(StringComparer.Ordinal).Count() != runtimeIdentifiers.Count)
+            || runtimeIdentifiers.Distinct(StringComparer.Ordinal).Count() != runtimeIdentifiers.Count
+        ) {
             throw new ArgumentException("A managed provider requires unique runtime targets.", nameof(runtimeIdentifiers));
+        }
         this.runtimeIdentifiers = Array.AsReadOnly(runtimeIdentifiers.ToArray());
         this.dynamicCode = dynamicCode;
         this.aheadOfTime = aheadOfTime;

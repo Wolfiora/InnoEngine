@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-
+using Xunit;
 using Inno.Editor.Rendering;
 using Inno.Rendering;
-
-using Xunit;
 using Inno.Rendering.Runtime;
 
 namespace Inno.Editor.Scripting.Tests;
@@ -23,13 +21,15 @@ public sealed class EditorViewportCompositionTests
             1280,
             720,
             RenderTextureFormat.RGBA8Srgb,
-            new[] { overlay, baseB, baseA });
+            new[] { overlay, baseB, baseA }
+        );
 
         Assert.Collection(
             composition.layers,
             layer => Assert.Same(baseA, layer),
             layer => Assert.Same(baseB, layer),
-            layer => Assert.Same(overlay, layer));
+            layer => Assert.Same(overlay, layer)
+        );
     }
 
     [Fact]
@@ -42,7 +42,8 @@ public sealed class EditorViewportCompositionTests
             640,
             360,
             RenderTextureFormat.RGBA8Srgb,
-            source);
+            source
+        );
 
         source.Clear();
 
@@ -59,13 +60,15 @@ public sealed class EditorViewportCompositionTests
             64,
             64,
             RenderTextureFormat.RGBA8Srgb,
-            Array.Empty<EditorViewportLayer>()));
+            Array.Empty<EditorViewportLayer>()
+        ));
         Assert.Throws<ArgumentException>(() => new EditorViewportComposition(
             "tests.null",
             64,
             64,
             RenderTextureFormat.RGBA8Srgb,
-            new EditorViewportLayer[] { null! }));
+            new EditorViewportLayer[] { null! }
+        ));
 
         var first = new EditorViewportLayer("tests.duplicate", null, new RenderFrameData(), 0);
         var second = new EditorViewportLayer("tests.duplicate", null, new RenderFrameData(), 1000);
@@ -74,6 +77,7 @@ public sealed class EditorViewportCompositionTests
             64,
             64,
             RenderTextureFormat.RGBA8Srgb,
-            new[] { first, second }));
+            new[] { first, second }
+        ));
     }
 }

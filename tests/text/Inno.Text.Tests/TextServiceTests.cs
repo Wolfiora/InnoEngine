@@ -1,9 +1,9 @@
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 using System.Reflection;
-
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Text.FreeTypeHarfBuzz;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
@@ -14,7 +14,6 @@ using Inno.Core.Serialization;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 using Inno.Text.Assets;
-using Xunit;
 
 namespace Inno.Text.Tests;
 
@@ -39,7 +38,9 @@ public sealed class TextServiceTests : IDisposable
         Directory.CreateDirectory(m_assets);
         m_identityScope = m_identities.EnterScope();
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(TextServiceTests).Assembly)        });
+        {
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(TextServiceTests).Assembly)
+        });
         _ = Assembly.Load("Inno.Text.Assets");
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
@@ -62,8 +63,7 @@ public sealed class TextServiceTests : IDisposable
         File.WriteAllBytes(Path.Combine(m_assets, "Interface.ttf"), source);
         using AssetLoader loader = CreateLoader();
 
-        FontAsset font = Assert.IsType<FontAsset>(
-            loader.Load(AssetPath.Project("Interface.ttf"), typeof(FontAsset)));
+        FontAsset font = Assert.IsType<FontAsset>(loader.Load(AssetPath.Project("Interface.ttf"), typeof(FontAsset)));
 
         Assert.Equal(1, font.metadata!.Value.faceCount);
         Assert.Equal(source.Length, font.metadata.Value.encodedByteLength);
@@ -79,11 +79,7 @@ public sealed class TextServiceTests : IDisposable
         using var backend = new FreeTypeHarfBuzzTextBackend();
         TextFontHandle font = backend.LoadFont(File.ReadAllBytes(FontPath()), 0);
 
-        TextLayout layout = backend.Shape(
-            font,
-            "Hello, UI!",
-            new TextStyle(28f),
-            TextShapingOptions.automatic);
+        TextLayout layout = backend.Shape(font, "Hello, UI!", new TextStyle(28f), TextShapingOptions.automatic);
 
         Assert.NotEmpty(layout.glyphs);
         Assert.True(layout.width > 0f);
@@ -103,12 +99,13 @@ public sealed class TextServiceTests : IDisposable
         m_logs.Dispose();
         m_identityScope.Dispose();
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     private AssetLoader CreateLoader()
         => new(m_types, m_serialization, m_identities, m_diagnostics, m_logs, m_assets, m_library);
 
-    private static string FontPath()
-        => Path.Combine(AppContext.BaseDirectory, "TestData", "LatoLatin-Regular.ttf");
+    private static string FontPath() => Path.Combine(AppContext.BaseDirectory, "TestData", "LatoLatin-Regular.ttf");
 }

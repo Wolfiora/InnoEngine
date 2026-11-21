@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Core.Diagnostics;
 using Inno.Scene;
 
@@ -44,21 +43,29 @@ internal sealed class GameTagDiagnosticPublisher
             {
                 GameObject gameObject = objects[objectIndex];
                 if (catalog.IsDefined(gameObject.tag))
+                {
                     continue;
+                }
                 Guid targetId = gameObject.identity.persistentId;
                 currentTargets.Add(targetId);
                 if (m_activeTargets.Contains(targetId))
+                {
                     continue;
+                }
                 m_diagnostics.Set(
                     CreateSource(targetId, gameObject.name),
                     [Diagnostic.Error(
                         "GAMEOBJECT-TAG-UNDEFINED",
-                        $"GameObject '{gameObject.name}' uses undefined tag '{gameObject.tag}'.")]);
+                        $"GameObject '{gameObject.name}' uses undefined tag '{gameObject.tag}'."
+                    )]
+                );
             }
         }
 
         foreach (Guid targetId in m_activeTargets.Where(id => !currentTargets.Contains(id)).ToArray())
+        {
             m_diagnostics.Clear(CreateSource(targetId, targetId.ToString("D")));
+        }
         m_activeTargets.Clear();
         m_activeTargets.UnionWith(currentTargets);
     }
@@ -69,13 +76,14 @@ internal sealed class GameTagDiagnosticPublisher
     internal void Clear()
     {
         foreach (Guid targetId in m_activeTargets)
+        {
             m_diagnostics.Clear(CreateSource(targetId, targetId.ToString("D")));
+        }
         m_activeTargets.Clear();
     }
 
     private static DiagnosticSource CreateSource(
         Guid targetId,
         string displayName
-    )
-        => new($"editor.scene.tag:{targetId:N}", $"{C_DIAGNOSTIC_GROUP}: {displayName}");
+    ) => new($"editor.scene.tag:{targetId:N}", $"{C_DIAGNOSTIC_GROUP}: {displayName}");
 }

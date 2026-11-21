@@ -21,15 +21,18 @@ internal sealed class MiniAudioEncodedArtifactCache : IDisposable
         ObjectDisposedException.ThrowIf(m_disposed, this);
         ArgumentNullException.ThrowIfNull(source);
         if (source.length < 0 || source.contentHash is not { Length: 64 }
-            || source.contentHash.Any(static character => !Uri.IsHexDigit(character)))
-        {
+            || source.contentHash.Any(static character => !Uri.IsHexDigit(character))
+        ) {
             throw new ArgumentException("Encoded audio requires an exact length and SHA-256 identity.", nameof(source));
         }
         string hash = source.contentHash.ToUpperInvariant();
         if (!m_entries.TryGetValue(hash, out MiniAudioClipPreparation? entry))
         {
-            entry = new MiniAudioClipPreparation(source,
-                Path.Combine(m_root, hash + "-" + Guid.NewGuid().ToString("N") + ".audio"), m_slots);
+            entry = new MiniAudioClipPreparation(
+                source,
+                Path.Combine(m_root, hash + "-" + Guid.NewGuid().ToString("N") + ".audio"),
+                m_slots
+            );
             m_entries.Add(hash, entry);
         }
         else if (entry.length != source.length)
@@ -45,7 +48,9 @@ internal sealed class MiniAudioEncodedArtifactCache : IDisposable
         if (entry.references > 1)
         {
             if (!entry.completion.IsCompleted)
+            {
                 throw new RetirementPendingException("Shared encoded audio preparation still borrows its first clip source.");
+            }
             entry.references--;
             return;
         }
@@ -65,21 +70,31 @@ internal sealed class MiniAudioEncodedArtifactCache : IDisposable
     internal void CancelPreparation()
     {
         foreach (MiniAudioClipPreparation entry in m_entries.Values)
+        {
             entry.Cancel();
+        }
         foreach (MiniAudioClipPreparation entry in m_retiring)
+        {
             entry.Cancel();
+        }
     }
 
     /// <inheritdoc />
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         CancelPreparation();
         if (m_entries.Count != 0 || m_retiring.Count != 0)
+        {
             throw new RetirementPendingException("Encoded audio still has clip owners awaiting retirement.");
+        }
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: false);
+        }
         m_slots.Dispose();
         m_disposed = true;
     }
@@ -87,8 +102,8 @@ internal sealed class MiniAudioEncodedArtifactCache : IDisposable
     private void RemoveActiveEntry(MiniAudioClipPreparation entry)
     {
         if (m_entries.TryGetValue(entry.contentHash, out MiniAudioClipPreparation? current)
-            && ReferenceEquals(current, entry))
-        {
+            && ReferenceEquals(current, entry)
+        ) {
             m_entries.Remove(entry.contentHash);
         }
     }

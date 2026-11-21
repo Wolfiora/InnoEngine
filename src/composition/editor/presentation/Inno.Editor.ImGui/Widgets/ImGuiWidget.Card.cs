@@ -1,9 +1,11 @@
 using System;
 using System.Numerics;
 using Inno.Native.ImGui;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
+
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
@@ -54,12 +56,18 @@ public sealed unsafe partial class ImGuiWidget
         ArgumentNullException.ThrowIfNull(title);
         if (trailingControlWidth < 0f)
         {
-            throw new ArgumentOutOfRangeException(nameof(trailingControlWidth), trailingControlWidth, "Trailing control width cannot be negative.");
+            throw new ArgumentOutOfRangeException(
+                nameof(trailingControlWidth),
+                trailingControlWidth,
+                "Trailing control width cannot be negative."
+            );
         }
 
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.SpanAvailWidth | ImGuiTreeNodeFlags.AllowOverlap | ImGuiTreeNodeFlags.OpenOnArrow;
         if (defaultOpen)
+        {
             flags |= ImGuiTreeNodeFlags.DefaultOpen;
+        }
         NativeImGui.PushStyleColor((int)(ImGuiCol.Header), EditorPalette.cardHeader);
         NativeImGui.PushStyleColor((int)(ImGuiCol.HeaderHovered), EditorPalette.cardHeader);
         NativeImGui.PushStyleColor((int)(ImGuiCol.HeaderActive), EditorPalette.cardHeader);
@@ -112,10 +120,14 @@ public sealed unsafe partial class ImGuiWidget
             float contentX = itemHeaderMin.X + NativeImGui.GetTreeNodeToLabelSpacing();
             DrawDisclosureIndicator(new Vector2(itemHeaderMin.X, headerMin.Y), new Vector2(contentX, headerMax.Y), open, dimmed);
             float contentY = headerMin.Y + MathF.Max(0f, (headerMax.Y - headerMin.Y - NativeImGui.GetFrameHeight()) * 0.5f);
-            float trailingWidth = drawTrailingControl is null ? 0f : trailingControlWidth > 0f ? trailingControlWidth : NativeImGui.GetFrameHeight();
+            float trailingWidth = drawTrailingControl is null
+                                  ? 0f
+                                  : trailingControlWidth > 0f ? trailingControlWidth : NativeImGui.GetFrameHeight();
             float titleRight = headerMax.X - trailingWidth;
             if (drawTrailingControl is not null)
+            {
                 titleRight -= style.headerControlSpacing;
+            }
             NativeImGui.SetCursorScreenPos(new Vector2(contentX, contentY));
             bool dimmedColorPushed = false;
             bool groupStarted = false;
@@ -161,9 +173,13 @@ public sealed unsafe partial class ImGuiWidget
             finally
             {
                 if (groupStarted)
+                {
                     NativeImGui.EndGroup();
+                }
                 if (dimmedColorPushed)
+                {
                     NativeImGui.PopStyleColor();
+                }
                 NativeImGui.SetCursorScreenPos(contentCursor);
             }
 
@@ -172,7 +188,9 @@ public sealed unsafe partial class ImGuiWidget
         catch
         {
             if (open)
+            {
                 NativeImGui.TreePop();
+            }
             throw;
         }
     }
@@ -253,7 +271,12 @@ public sealed unsafe partial class ImGuiWidget
         NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), style.cardBodyPadding);
         ImGuiChildFlags childFlags = ImGuiChildFlags.FrameStyle | ImGuiChildFlags.AutoResizeY;
         ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoSavedSettings;
-        bool visible = NativeImGui.BeginChild($"##card_body_{id}", new Vector2(MathF.Max(1f, cardRight - cardLeft), 0f), (int)(childFlags), (int)(windowFlags));
+        bool visible = NativeImGui.BeginChild(
+            $"##card_body_{id}",
+            new Vector2(MathF.Max(1f, cardRight - cardLeft), 0f),
+            (int)(childFlags),
+            (int)(windowFlags)
+        );
         bool disabled = false;
         try
         {
@@ -264,12 +287,16 @@ public sealed unsafe partial class ImGuiWidget
             }
 
             if (visible)
+            {
                 drawContent();
+            }
         }
         finally
         {
             if (disabled)
+            {
                 NativeImGui.EndDisabled();
+            }
             NativeImGui.EndChild();
             float nextY = NativeImGui.GetCursorScreenPos().Y;
             NativeImGui.PopStyleVar(3);

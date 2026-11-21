@@ -1,7 +1,6 @@
 using System;
-
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 using Inno.Scripting.Api;
 
 namespace Inno.Assets.Pipeline;

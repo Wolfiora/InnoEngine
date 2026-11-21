@@ -10,7 +10,8 @@ namespace Inno.Core.Collections;
 /// <typeparam name="T">
 /// The stored reference type.
 /// </typeparam>
-public sealed class IndexedObjectPredicateCondition<T> : IIndexedObjectQueryCondition<T> where T : class
+public sealed class IndexedObjectPredicateCondition<T> : IIndexedObjectQueryCondition<T>
+    where T : class
 {
     private readonly Func<T, bool> m_predicate;
 

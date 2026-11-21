@@ -30,7 +30,10 @@ public sealed class BindingGenerationBatchTests : IDisposable
         string config = Path.Combine(directory, "bindgen.json");
         File.WriteAllText(Path.Combine(directory, "common.json"), "{\"schemaVersion\":2,\"api\":{\"name\":\"UnusedDefault\"}}");
         string text = File.ReadAllText(config);
-        File.WriteAllText(config, text.Replace("\"schemaVersion\":2", "\"schemaVersion\":2,\"extends\":[\"common.json\"]", StringComparison.Ordinal));
+        File.WriteAllText(
+            config,
+            text.Replace("\"schemaVersion\":2", "\"schemaVersion\":2,\"extends\":[\"common.json\"]", StringComparison.Ordinal)
+        );
         string unselected = Path.Combine(directory, "bindgen.unselected.json");
         File.WriteAllText(unselected, "{}");
         var request = new NativeBindingGenerationRequest([component], "fixture", NativeBindingOutputMode.TargetArtifacts);
@@ -38,12 +41,18 @@ public sealed class BindingGenerationBatchTests : IDisposable
         NativeBuildContext initial = new(m_root, "release");
         string identity = await generator.ComputeInputFingerprintAsync(initial, request, CancellationToken.None);
         File.WriteAllText(unselected, "{\"changed\":true}");
-        Assert.Equal(identity, await generator.ComputeInputFingerprintAsync(new NativeBuildContext(m_root, "release"), request, CancellationToken.None));
+        Assert.Equal(
+            identity,
+            await generator.ComputeInputFingerprintAsync(new NativeBuildContext(m_root, "release"), request, CancellationToken.None)
+        );
         string shared = Path.Combine(m_root, "Source", "shared.h");
         DateTime timestamp = File.GetLastWriteTimeUtc(shared);
         File.WriteAllText(shared, File.ReadAllText(shared).Replace("sample", "change", StringComparison.Ordinal));
         File.SetLastWriteTimeUtc(shared, timestamp);
-        Assert.NotEqual(identity, await generator.ComputeInputFingerprintAsync(new NativeBuildContext(m_root, "release"), request, CancellationToken.None));
+        Assert.NotEqual(
+            identity,
+            await generator.ComputeInputFingerprintAsync(new NativeBuildContext(m_root, "release"), request, CancellationToken.None)
+        );
         Assert.Equal(0, initial.statistics.bindingGenerations);
         Assert.Equal(0, initial.statistics.bindingBatches);
         Assert.False(Directory.Exists(Path.Combine(directory, "obj")));
@@ -92,20 +101,32 @@ public sealed class BindingGenerationBatchTests : IDisposable
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
         {
             using BuildArtifactWriteLease mutation = await BuildArtifactWriteLease.AcquireAsync(
-                descriptor.artifactDirectory, descriptor.artifactOwnerDirectory, waiting.Token);
+                descriptor.artifactDirectory,
+                descriptor.artifactOwnerDirectory,
+                waiting.Token
+            );
         });
         using NativeBindingGenerationResult concurrent = await generator.GenerateAsync(
-            new NativeBuildContext(m_root, "release"), request, CancellationToken.None);
+            new NativeBuildContext(m_root, "release"),
+            request,
+            CancellationToken.None
+        );
         Assert.Equal(descriptor.fingerprint, concurrent[component.nativeProject].fingerprint);
 
         first.Dispose();
         concurrent.Dispose();
         Assert.Throws<ObjectDisposedException>(() => first[component.nativeProject]);
         using (BuildArtifactWriteLease mutation = await BuildArtifactWriteLease.AcquireAsync(
-            descriptor.artifactDirectory, descriptor.artifactOwnerDirectory))
+            descriptor.artifactDirectory,
+            descriptor.artifactOwnerDirectory
+        )) {
             File.WriteAllText(descriptor.bindingsPath, "damaged");
+        }
         using NativeBindingGenerationResult repaired = await generator.GenerateAsync(
-            new NativeBuildContext(m_root, "release"), request, CancellationToken.None);
+            new NativeBuildContext(m_root, "release"),
+            request,
+            CancellationToken.None
+        );
         Assert.Equal(original, File.ReadAllText(repaired[component.nativeProject].bindingsPath));
     }
 
@@ -123,13 +144,19 @@ public sealed class BindingGenerationBatchTests : IDisposable
         string config = Path.Combine(m_root, "second", "bindgen.json");
         File.WriteAllText(config, File.ReadAllText(config).Replace("../Source/shared.h", "broken.h", StringComparison.Ordinal));
         await Assert.ThrowsAnyAsync<Exception>(async () => await generator.GenerateAsync(
-            new NativeBuildContext(m_root, "release"), request, CancellationToken.None));
+            new NativeBuildContext(m_root, "release"),
+            request,
+            CancellationToken.None
+        ));
         Assert.Equal(original, File.ReadAllText(completed[first.nativeProject].bindingsPath));
         Assert.Single(Directory.GetDirectories(Path.Combine(m_root, "artifacts", "bindings", "first", "fixture")));
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await generator.GenerateAsync(
-            new NativeBuildContext(m_root, "release"), request, cancellation.Token));
+            new NativeBuildContext(m_root, "release"),
+            request,
+            cancellation.Token
+        ));
     }
 
     [Fact]
@@ -164,7 +191,10 @@ public sealed class BindingGenerationBatchTests : IDisposable
         string source = File.ReadAllText(result[component.nativeProject].bindingsPath);
 
         var failure = await Assert.ThrowsAsync<InvalidDataException>(async () => await generator.GenerateAsync(
-            new NativeBuildContext(m_root, "release"), request, CancellationToken.None));
+            new NativeBuildContext(m_root, "release"),
+            request,
+            CancellationToken.None
+        ));
 
         Assert.Contains("owned.h", failure.Message);
         Assert.Equal(source, File.ReadAllText(result[component.nativeProject].bindingsPath));
@@ -197,9 +227,17 @@ public sealed class BindingGenerationBatchTests : IDisposable
     ) {
         string executable = Path.Combine(m_root, "sdk-tool.exe");
         File.WriteAllText(executable, "Selected SDK tool identity; not executed by this C parser fixture.");
-        var selection = new NativeToolchainSelection("fixture", new BuildHostDescriptor("Windows", "x64"),
+        var selection = new NativeToolchainSelection(
+            "fixture",
+            new BuildHostDescriptor("Windows", "x64"),
             new Dictionary<string, string> { ["fixture"] = executable },
-            new Dictionary<string, string> { [variable] = sdk, ["INCLUDE"] = Path.Combine(sdk, "include") }, [sdk], [], new NativeLinkPlan(".dll"), false, new NativeCompilerInputs(systemIncludeDirectories: [Path.Combine(sdk, "include")]));
+            new Dictionary<string, string> { [variable] = sdk, ["INCLUDE"] = Path.Combine(sdk, "include") },
+            [sdk],
+            [],
+            new NativeLinkPlan(".dll"),
+            false,
+            new NativeCompilerInputs(systemIncludeDirectories: [Path.Combine(sdk, "include")])
+        );
         return new NativeBuildContext(m_root, "release").WithToolchain(selection);
     }
 
@@ -217,7 +255,11 @@ public sealed class BindingGenerationBatchTests : IDisposable
              "api":{"namespace":"Fixture.Native","name":"Api","naming":{"functions":{"casing":"pascal"}}},
              "output":{"root":"Generated","layout":"singleFile"}}
             """);
-        return new NativeComponentDescriptor(name, name + "/" + name + ".csproj", name + "/" + name + ".csproj",
-            bindingDefinition: name + "/bindings.props");
+        return new NativeComponentDescriptor(
+            name,
+            name + "/" + name + ".csproj",
+            name + "/" + name + ".csproj",
+            bindingDefinition: name + "/bindings.props"
+        );
     }
 }

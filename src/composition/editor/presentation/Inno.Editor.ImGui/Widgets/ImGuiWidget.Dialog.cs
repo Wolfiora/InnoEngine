@@ -2,6 +2,7 @@ using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using Inno.Native.ImGui;
+
 using NativeGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
@@ -67,6 +68,7 @@ public readonly struct DialogLayout
     /// Gets the content extent, excluding the window title, border and padding.
     /// </summary>
     public Vector2 size { get; }
+
     internal float textWidth { get; }
     internal float bodyHeight { get; }
     internal float bodyContentHeight { get; }
@@ -122,12 +124,18 @@ public sealed unsafe partial class ImGuiWidget
     ) {
         ImGuiNativeContext* native = m_session.RequireContext();
         if (native->WithinFrameScope == 0 || native->Font == null || native->FontBaked == null)
+        {
             throw new InvalidOperationException("Dialog measurement requires an active native frame and font.");
+        }
         ArgumentNullException.ThrowIfNull(presentation.message);
         if (presentation.progress is float fraction && (!float.IsFinite(fraction) || fraction < 0f || fraction > 1f))
+        {
             throw new ArgumentOutOfRangeException(nameof(presentation), "A determinate progress fraction must be between zero and one.");
+        }
         if (!float.IsFinite(availableSize.X) || !float.IsFinite(availableSize.Y) || availableSize.X <= 0f || availableSize.Y <= 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(availableSize));
+        }
         float width = MathF.Max(1f, MathF.Floor(availableSize.X));
         ImGuiStyle* nativeStyle = &native->Style;
         float spacing = nativeStyle->ItemSpacing.Y;
@@ -137,19 +145,38 @@ public sealed unsafe partial class ImGuiWidget
         ImFont* font = native->Font;
         ImFontBaked* baked = native->FontBaked;
         // Only value data is retained. Shared or remapped native fonts are measured on every request.
-        bool memoize = font->OwnerAtlas->OwnerContext == native && font->RemapPairs.Data.Size == 0 &&
-            (long)presentation.message.Length + (presentation.details?.Length ?? 0) + (presentation.actionLabel?.Length ?? 0) <= C_MAX_CACHED_DIALOG_CHARS;
-        DialogMeasurementKey key = new(presentation.message, presentation.details, presentation.actionLabel,
-            availableSize, hasProgress, font->FontId, baked->BakedId, baked->Glyphs.Size,
-            baked->IndexAdvanceX.Size, font->Sources.Size, font->OwnerAtlas->FontNextUniqueId,
-            native->FontSize, baked->RasterizerDensity, baked->FallbackAdvanceX,
-            nativeStyle->ItemSpacing.Y, ImGui.FromNative(nativeStyle->FramePadding), nativeStyle->ScrollbarSize);
+        bool memoize = font->OwnerAtlas->OwnerContext == native && font->RemapPairs.Data.Size == 0
+                       && (long)presentation.message.Length + (presentation.details?.Length ?? 0) + (presentation.actionLabel?.Length ?? 0)
+                          <= C_MAX_CACHED_DIALOG_CHARS;
+        DialogMeasurementKey key = new(
+            presentation.message,
+            presentation.details,
+            presentation.actionLabel,
+            availableSize,
+            hasProgress,
+            font->FontId,
+            baked->BakedId,
+            baked->Glyphs.Size,
+            baked->IndexAdvanceX.Size,
+            font->Sources.Size,
+            font->OwnerAtlas->FontNextUniqueId,
+            native->FontSize,
+            baked->RasterizerDensity,
+            baked->FallbackAdvanceX,
+            nativeStyle->ItemSpacing.Y,
+            ImGui.FromNative(nativeStyle->FramePadding),
+            nativeStyle->ScrollbarSize
+        );
         if (memoize)
         {
             if (m_dialogLayout.size.X > 0f && m_dialogKey == key)
+            {
                 return m_dialogLayout;
+            }
             if (m_previousDialogLayout.size.X > 0f && m_previousDialogKey == key)
+            {
                 return m_previousDialogLayout;
+            }
         }
         float footer = (hasProgress ? frame : 0f) + (hasAction ? frame : 0f) + (hasProgress && hasAction ? spacing : 0f);
         float body = MeasureDialogBody(presentation, width, spacing);
@@ -162,7 +189,9 @@ public sealed unsafe partial class ImGuiWidget
         }
         float visibleBody = MathF.Min(body, availableBody);
         float height = visibleBody + footer + (visibleBody > 0f && footer > 0f ? spacing : 0f);
-        float actionWidth = hasAction ? ImGuiUtf8Buffer.MeasureText(presentation.actionLabel!, -1f).X + nativeStyle->FramePadding.X * 2f : 0f;
+        float actionWidth = hasAction
+                            ? ImGuiUtf8Buffer.MeasureText(presentation.actionLabel!, -1f).X + nativeStyle->FramePadding.X * 2f
+                            : 0f;
         DialogLayout result = new(new Vector2(width, MathF.Ceiling(height)), textWidth, visibleBody, body, spacing, frame, actionWidth);
         if (memoize)
         {
@@ -206,7 +235,9 @@ public sealed unsafe partial class ImGuiWidget
         m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(presentation.message);
         if (!float.IsFinite(layout.size.X) || !float.IsFinite(layout.size.Y) || layout.size.X <= 0f || layout.size.Y < 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(layout));
+        }
         Vector2 origin = NativeGui.GetCursorScreenPos();
         bool scrolling = layout.bodyContentHeight > layout.bodyHeight;
         if (layout.bodyHeight > 0f)
@@ -222,11 +253,15 @@ public sealed unsafe partial class ImGuiWidget
                     ReadOnlySpan<byte> bodyId = "##dialog-body\0"u8;
                     bool visible;
                     fixed (byte* id = bodyId)
+                    {
                         visible = NativeGui.Raw.BeginChild((sbyte*)id, &bodySize, 0, 0) != 0;
+                    }
                     try
                     {
                         if (visible)
+                        {
                             DrawDialogBody(presentation, layout.textWidth);
+                        }
                     }
                     finally
                     {
@@ -239,17 +274,24 @@ public sealed unsafe partial class ImGuiWidget
                 }
             }
             else
+            {
                 DrawDialogBody(presentation, layout.textWidth);
+            }
         }
         float y = layout.bodyHeight;
         if (y > 0f && (presentation.progress.HasValue || presentation.indeterminate || !string.IsNullOrEmpty(presentation.actionLabel)))
+        {
             y += layout.spacing;
+        }
         if (presentation.progress.HasValue || presentation.indeterminate)
         {
             NativeGui.SetCursorScreenPos(origin + new Vector2(0f, y));
             float fraction = presentation.progress ?? 0f;
-            CenteredProgressBar(presentation.indeterminate ? -(float)NativeGui.GetTime() : fraction,
-                new Vector2(layout.size.X, layout.frameHeight), presentation.indeterminate ? "Working…" : $"{fraction:P0}");
+            CenteredProgressBar(
+                presentation.indeterminate ? -(float)NativeGui.GetTime() : fraction,
+                new Vector2(layout.size.X, layout.frameHeight),
+                presentation.indeterminate ? "Working…" : $"{fraction:P0}"
+            );
             y += layout.frameHeight + layout.spacing;
         }
         bool activated = false;
@@ -257,18 +299,27 @@ public sealed unsafe partial class ImGuiWidget
         {
             bool disabled = !presentation.actionEnabled;
             if (disabled)
+            {
                 NativeGui.BeginDisabled(true);
+            }
             try
             {
                 activated = DrawCenteredButton(presentation.actionLabel, origin + new Vector2(0f, y), layout.size.X, layout.actionWidth);
-                if (presentation.cancelOnEscape && presentation.actionEnabled && NativeGui.IsWindowFocused((int)Inno.Native.ImGui.ImGuiFocusedFlags.RootAndChildWindows) &&
-                    NativeGui.IsKeyPressed(Inno.Native.ImGui.ImGuiKey.Escape, false))
+                if (presentation.cancelOnEscape
+                    && presentation.actionEnabled
+                    && NativeGui.IsWindowFocused((int)Inno.Native.ImGui.ImGuiFocusedFlags.RootAndChildWindows)
+                    &&
+                    NativeGui.IsKeyPressed(Inno.Native.ImGui.ImGuiKey.Escape, false)
+                ) {
                     activated = true;
+                }
             }
             finally
             {
                 if (disabled)
+                {
                     NativeGui.EndDisabled();
+                }
             }
         }
         return activated;
@@ -309,7 +360,9 @@ public sealed unsafe partial class ImGuiWidget
     ) {
         float height = presentation.message.Length == 0 ? 0f : ImGuiUtf8Buffer.MeasureText(presentation.message, width).Y;
         if (!string.IsNullOrEmpty(presentation.details))
+        {
             height += (height > 0f ? spacing : 0f) + ImGuiUtf8Buffer.MeasureText(presentation.details, width).Y;
+        }
         return MathF.Ceiling(height);
     }
 
@@ -321,7 +374,9 @@ public sealed unsafe partial class ImGuiWidget
         try
         {
             if (presentation.message.Length != 0)
+            {
                 ImGuiUtf8Buffer.DrawText(presentation.message);
+            }
             if (!string.IsNullOrEmpty(presentation.details))
             {
                 // Native text already contributes the same inter-item spacing used by measurement.

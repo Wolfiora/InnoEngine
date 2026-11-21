@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Inno.Extensibility.Types;
-using Inno.Extensibility.Reload;
-using Inno.Core.Serialization;
-using Inno.Scripting.Api;
 using Inno.Core.IO;
+using Inno.Core.Serialization;
+using Inno.Extensibility.Reload;
+using Inno.Extensibility.Types;
+using Inno.Scripting.Api;
 
 namespace Inno.Core.Settings;
 
@@ -19,6 +19,7 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
     private IReadOnlyList<ProjectSettingsContributor> m_contributors = [];
     private ProjectSettings? m_current;
     private long m_revision;
+
     /// <summary>
     /// Gets the unique, non-persistent lifetime identity used with the effective snapshot revision.
     /// </summary>
@@ -70,7 +71,9 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
         get
         {
             lock (m_sync)
+            {
                 return RequireCurrent().GetUnavailable(m_contributors);
+            }
         }
     }
 
@@ -108,7 +111,9 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
         get
         {
             lock (m_sync)
+            {
                 return m_current is not null;
+            }
         }
     }
 
@@ -125,7 +130,9 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
         get
         {
             lock (m_sync)
+            {
                 return m_revision;
+            }
         }
     }
 
@@ -163,7 +170,9 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
         where TSetting : class, ISerializable
     {
         lock (m_sync)
+        {
             return RequireCurrent().Get<TSetting>(id);
+        }
     }
 
     /// <summary>
@@ -184,8 +193,7 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
     public bool TryGet<TSetting>(
         ProjectSettingId id,
         out TSetting? setting
-    )
-        where TSetting : class, ISerializable
+    ) where TSetting : class, ISerializable
     {
         lock (m_sync)
         {
@@ -211,7 +219,9 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
     public bool HasProjectOverride(ProjectSettingId id)
     {
         lock (m_sync)
+        {
             return RequireCurrent().HasProjectOverride(id);
+        }
     }
 
     /// <summary>
@@ -254,7 +264,8 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
                 declaredDependencies,
                 declaredOverrides,
                 m_contributors,
-                out record);
+                out record
+            );
         }
     }
 
@@ -324,7 +335,9 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
     public byte[] CaptureDocument()
     {
         lock (m_sync)
+        {
             return RequireCurrent().CaptureDocument();
+        }
     }
 
     /// <summary>
@@ -430,7 +443,9 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
         {
             bool changed = RequireCurrent().ApplyProjectOverrides(values, resets, m_contributors);
             if (changed)
+            {
                 m_revision++;
+            }
             return changed;
         }
     }
@@ -478,6 +493,7 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
 
     private ProjectSettings RequireCurrent()
         => m_current ?? throw new InvalidOperationException("ProjectSettingsStore is not initialized.");
+
     private sealed class SettingsChange(ProjectSettingsStore owner) : IGenerationChange
     {
         private ProjectSettingRecord[]? m_previous;
@@ -492,7 +508,9 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
             lock (owner.m_sync)
             {
                 if (m_previous is not null)
+                {
                     throw new InvalidOperationException("Settings change was already prepared.");
+                }
                 m_previous = owner.RequireCurrent().CaptureEffective();
                 m_contributors = owner.m_contributors.ToArray();
                 m_revision = owner.m_revision;
@@ -505,7 +523,9 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
         public void Apply()
         {
             if (m_previous is null)
+            {
                 throw new InvalidOperationException("Settings change was not prepared.");
+            }
             owner.RebuildCurrent(allowUnresolvedContributions: true);
         }
 
@@ -521,7 +541,7 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
         /// <summary>
         /// Restores the state that existed before candidate activation began.
         /// </summary>
-        public void RollbackStructure() { }
+        public void RollbackStructure() {}
 
         /// <summary>
         /// Restores the state that existed before candidate activation began.
@@ -529,7 +549,9 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
         public void RestorePreviousState()
         {
             if (m_previous is null)
+            {
                 return;
+            }
             lock (owner.m_sync)
             {
                 owner.RequireCurrent().RestoreEffective(m_previous);

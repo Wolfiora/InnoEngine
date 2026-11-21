@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Events;
 
 namespace Inno.Animation;
@@ -142,7 +141,9 @@ public sealed class AnimationMarkerEvent : Event
         ReadOnlyMemory<byte> payload
     ) {
         if (!playback.isValid)
+        {
             throw new ArgumentException("A valid animation playback handle is required.", nameof(playback));
+        }
         ArgumentException.ThrowIfNullOrWhiteSpace(eventId);
         this.playback = playback;
         this.eventId = eventId;

@@ -13,6 +13,8 @@ indent_size = 2
 [*.cs]
 indent_style = space
 indent_size = 4
+# F-04: aim for 120 columns; 140 is the hard limit checked by 'InnoEngine.Build style'.
+max_line_length = 140
 # Method and lambda bodies keep the opening brace with the closing parameter list.
 csharp_new_line_before_open_brace = types, properties, accessors, anonymous_types, control_blocks, object_collection_array_initializers
 csharp_using_directive_placement = outside_namespace:warning

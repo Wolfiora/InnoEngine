@@ -15,7 +15,6 @@ internal enum AssemblyUnloadStatus
     /// At least one runtime reference still keeps the load context alive.
     /// </summary>
     Pending,
-
     /// <summary>
     /// The load context is no longer reachable, or the module was not collectible.
     /// </summary>
@@ -69,37 +68,47 @@ internal sealed class AssemblyUnloadMonitor : IAssemblyUnloadProbe
         get
         {
             if (m_children is not null)
+            {
                 return m_children.All(static child => child.isCompleted)
-                    ? AssemblyUnloadStatus.Completed
-                    : AssemblyUnloadStatus.Pending;
+                       ? AssemblyUnloadStatus.Completed
+                       : AssemblyUnloadStatus.Pending;
+            }
             if (m_loadContext is not null && m_loadContext.IsAlive)
+            {
                 return AssemblyUnloadStatus.Pending;
+            }
             return TryCleanupShadowDirectory()
-                ? AssemblyUnloadStatus.Completed
-                : AssemblyUnloadStatus.Pending;
+                   ? AssemblyUnloadStatus.Completed
+                   : AssemblyUnloadStatus.Pending;
         }
     }
 
     internal bool TryCleanupShadowDirectory()
     {
         if (m_children is not null)
+        {
             return m_children.All(static child => child.TryCleanupShadowDirectory());
+        }
         if (m_loadContext is not null && m_loadContext.IsAlive)
+        {
             return false;
+        }
         lock (m_sync)
         {
             if (m_isShadowDirectoryCleaned)
+            {
                 return true;
+            }
             try
             {
                 if (!string.IsNullOrWhiteSpace(m_shadowDirectory) && Directory.Exists(m_shadowDirectory))
                 {
                     Directory.Delete(m_shadowDirectory, recursive: true);
                     string? moduleDirectory = Path.GetDirectoryName(m_shadowDirectory);
-                    if (!string.IsNullOrWhiteSpace(moduleDirectory) &&
-                        Directory.Exists(moduleDirectory) &&
-                        !Directory.EnumerateFileSystemEntries(moduleDirectory).Any())
-                    {
+                    if (!string.IsNullOrWhiteSpace(moduleDirectory)
+                        && Directory.Exists(moduleDirectory)
+                        && !Directory.EnumerateFileSystemEntries(moduleDirectory).Any()
+                    ) {
                         Directory.Delete(moduleDirectory);
                     }
                 }

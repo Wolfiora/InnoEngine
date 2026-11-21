@@ -18,8 +18,7 @@ internal sealed record DocumentationApiFragment(
     string? outdatedFor,
     bool outdated,
     YamlMappingNode metadata
-)
-{
+) {
     private static readonly MarkdownPipeline S_PIPELINE = new MarkdownPipelineBuilder().UseYamlFrontMatter().Build();
 
     internal static DocumentationApiFragment? Read(
@@ -33,22 +32,44 @@ internal sealed record DocumentationApiFragment(
         if (symbol is null) return null;
         string source = Field("source") ?? "xml";
         if (string.IsNullOrWhiteSpace(source))
+        {
             throw new InvalidDataException("API source must be xml or a nonempty author name: " + path);
+        }
         if (map.Children.TryGetValue(new YamlScalarNode("description"), out YamlNode? description)
             && !IsNull(description)
             && (description is not YamlSequenceNode items || items.Children.Count == 0
-                || items.Children.Any(item => item is not YamlScalarNode scalar || (string.IsNullOrWhiteSpace(scalar.Value) || IsNull(scalar)))))
+                || items.Children.Any(
+                    item => item is not YamlScalarNode scalar || (string.IsNullOrWhiteSpace(scalar.Value) || IsNull(scalar))
+                ))
+        ) {
             throw new InvalidDataException("API description must be null or a nonempty list of text: " + path);
+        }
         string uid = Field("uid") ?? throw new InvalidDataException("API fragment has no stable identity: " + path);
         string body = text[(block.Span.End + 1)..];
         string? stale = Field("outdated");
         if (stale is not null && stale is not ("true" or "false"))
+        {
             throw new InvalidDataException("API outdated must be true or false: " + path);
-        return new(path, text, body, uid, symbol, source, Field("sourceFingerprint") ?? Field("reviewed"), Field("outdatedFor"), stale == "true", map);
+        }
+        return new(
+            path,
+            text,
+            body,
+            uid,
+            symbol,
+            source,
+            Field("sourceFingerprint") ?? Field("reviewed"),
+            Field("outdatedFor"),
+            stale == "true",
+            map
+        );
 
-        string? Field(string name) => map.Children.TryGetValue(new YamlScalarNode(name), out YamlNode? node)
-            ? node is YamlScalarNode scalar ? scalar.Value : throw new InvalidDataException("API frontmatter requires a scalar " + name + ": " + path)
-            : null;
+        string? Field(string name)
+            => map.Children.TryGetValue(new YamlScalarNode(name), out YamlNode? node)
+               ? node is YamlScalarNode scalar
+                 ? scalar.Value
+                 : throw new InvalidDataException("API frontmatter requires a scalar " + name + ": " + path)
+               : null;
     }
 
     // Compare the prose that was present at the source change with the text being displayed.
@@ -63,38 +84,50 @@ internal sealed record DocumentationApiFragment(
         return changed || legacyStale ? ProseFingerprint() : outdatedFor;
     }
 
-    internal bool IsOutdated(string? staleProse) => source != "xml"
-        && (outdated || (staleProse is not null && staleProse == ProseFingerprint()));
+    internal bool IsOutdated(string? staleProse)
+        => source != "xml"
+           && (outdated || (staleProse is not null && staleProse == ProseFingerprint()));
 
     internal bool ExplicitlyOutdated => outdated && !metadata.Children.ContainsKey(new YamlScalarNode("reviewed"));
 
-    private string ProseFingerprint() => DocumentationMarkdown.Hash(System.Text.Json.JsonSerializer.Serialize(new
-    {
-        body = body.ReplaceLineEndings("\n").Trim(),
-        description = Summaries("").Select(value => value.ReplaceLineEndings("\n").Trim())
-    }));
+    private string ProseFingerprint()
+        => DocumentationMarkdown.Hash(
+            System.Text.Json.JsonSerializer.Serialize(new
+            {
+                body = body.ReplaceLineEndings("\n").Trim(),
+                description = Summaries("").Select(value => value.ReplaceLineEndings("\n").Trim())
+            })
+        );
 
-    private static bool IsNull(YamlNode node)
+    internal static bool IsNull(YamlNode node)
         => node is YamlScalarNode { Style: YamlDotNet.Core.ScalarStyle.Plain, Value: null or "" or "~" or "null" or "Null" or "NULL" };
 
     internal string[] Summaries(string documentation)
     {
         if (metadata.Children.TryGetValue(new YamlScalarNode("description"), out YamlNode? value)
-            && value is YamlSequenceNode sequence)
+            && value is YamlSequenceNode sequence
+        ) {
             return sequence.Children.Cast<YamlScalarNode>().Select(item => item.Value!).ToArray();
+        }
         return DocumentationXml.Read(documentation).summaries.ToArray();
     }
 
     internal string TableDescription(string documentation)
-        => string.Join("<br><br>", Summaries(documentation).Select(summary => DocumentationApiPresentation.Cell(
-            Markdown.ToPlainText(summary).Trim())));
+        => string.Join(
+            "<br><br>",
+            Summaries(documentation).Select(summary => DocumentationApiPresentation.Cell(
+                Markdown.ToPlainText(summary).Trim()
+            ))
+        );
 
     internal static YamlMappingNode ReadMetadata(
         string path,
         string text
     ) {
         YamlFrontMatterBlock? block = Markdown.Parse(text, S_PIPELINE).OfType<YamlFrontMatterBlock>().SingleOrDefault();
-        return block is null ? throw new InvalidDataException("Documentation requires identity metadata: " + path) : ReadMetadata(path, block);
+        return block is null
+               ? throw new InvalidDataException("Documentation requires identity metadata: " + path)
+               : ReadMetadata(path, block);
     }
 
     private static YamlMappingNode ReadMetadata(
@@ -104,7 +137,9 @@ internal sealed record DocumentationApiFragment(
         var yaml = new YamlStream();
         yaml.Load(new StringReader(block.Lines.ToString()));
         if (yaml.Documents.Count != 1 || yaml.Documents[0].RootNode is not YamlMappingNode map)
+        {
             throw new InvalidDataException("Expected one frontmatter mapping: " + path);
+        }
         return map;
     }
 }

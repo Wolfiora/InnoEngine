@@ -18,8 +18,12 @@ public sealed class CoordinatedFileLeaseTests : IDisposable
         string leaf = Path.Combine(m_root, "generation.lock");
         using FileLease producer = await FileLease.AcquireAsync(leaf, TimeSpan.Zero);
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        Task<CoordinatedFileLease> waiting = CoordinatedFileLease.AcquireAsync(owner, leaf,
-            Timeout.InfiniteTimeSpan, cancellationToken: cancellation.Token).AsTask();
+        Task<CoordinatedFileLease> waiting = CoordinatedFileLease.AcquireAsync(
+            owner,
+            leaf,
+            Timeout.InfiniteTimeSpan,
+            cancellationToken: cancellation.Token
+        ).AsTask();
         Assert.False(waiting.IsCompleted);
         await Assert.ThrowsAsync<TimeoutException>(async () =>
         {
@@ -33,7 +37,9 @@ public sealed class CoordinatedFileLeaseTests : IDisposable
         });
         acquired.Dispose();
         using (FileLease retirement = await FileLease.AcquireAsync(owner, TimeSpan.Zero))
+        {
             File.Delete(leaf);
+        }
         Assert.True(File.Exists(owner));
         using CoordinatedFileLease next = await CoordinatedFileLease.AcquireAsync(owner, leaf, TimeSpan.Zero);
     }
@@ -60,8 +66,7 @@ public sealed class CoordinatedFileLeaseTests : IDisposable
         using CoordinatedFileLease second = await CoordinatedFileLease.AcquireAsync(owner, leaf, TimeSpan.Zero, shared: true);
         await Assert.ThrowsAsync<TimeoutException>(async () =>
             await CoordinatedFileLease.AcquireAsync(owner, leaf, TimeSpan.Zero));
-        await Assert.ThrowsAsync<TimeoutException>(async () =>
-            await FileLease.AcquireAsync(owner, TimeSpan.Zero));
+        await Assert.ThrowsAsync<TimeoutException>(async () => await FileLease.AcquireAsync(owner, TimeSpan.Zero));
     }
 
     [Fact]
@@ -78,6 +83,8 @@ public sealed class CoordinatedFileLeaseTests : IDisposable
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 }

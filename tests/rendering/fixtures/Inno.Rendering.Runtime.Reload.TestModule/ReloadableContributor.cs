@@ -36,10 +36,16 @@ public sealed class ReloadableContributor : IRenderFrameGraphContributor
         RenderGraphBuilder graph,
         ulong frameIndex
     ) {
-        graph.AddRasterPass("Collectible Callback", new RenderPhaseId("tests.collectible.contributor"),
-            0, Encode).HasSideEffect();
+        graph.AddRasterPass(
+            "Collectible Callback",
+            new RenderPhaseId("tests.collectible.contributor"),
+            0,
+            Encode
+        ).HasSideEffect();
         if (m_rejectGraph)
+        {
             throw new InvalidOperationException("Reject the collectible frame mutation.");
+        }
     }
 
     private void Encode(

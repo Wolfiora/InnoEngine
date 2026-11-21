@@ -1,6 +1,6 @@
-using Inno.Build.Managed;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Build.Managed;
 
 namespace Inno.Build;
 

@@ -5,10 +5,10 @@ using System.Linq;
 using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Build.Toolchains;
-using Inno.Testing.Source;
 using Microsoft.Build.Logging;
 using Xunit;
+using Inno.Build.Toolchains;
+using Inno.Testing.Source;
 
 namespace Inno.Build.Integration.Tests;
 
@@ -26,8 +26,14 @@ public sealed class CompilerToolBuildScopeTests
         {
             File.Copy(Path.Combine(repository, "global.json"), Path.Combine(root, "global.json"));
             foreach (string suffix in new[] { "props", "targets" })
-                File.WriteAllText(Path.Combine(root, "Directory.Build." + suffix),
-                    "<Project><Import Project=\"" + SecurityElement.Escape(Path.Combine(repository, "Directory.Build." + suffix)) + "\" /></Project>");
+            {
+                File.WriteAllText(
+                    Path.Combine(root, "Directory.Build." + suffix),
+                    "<Project><Import Project=\""
+                    + SecurityElement.Escape(Path.Combine(repository, "Directory.Build." + suffix))
+                    + "\" /></Project>"
+                );
+            }
             WriteProject(root, "Tool", """
                 <Project>
                   <PropertyGroup><IsRoslynComponent>true</IsRoslynComponent></PropertyGroup>
@@ -62,35 +68,62 @@ public sealed class CompilerToolBuildScopeTests
             for (int run = 0; run < 3; run++)
             {
                 if (run == 2)
+                {
                     File.AppendAllText(Path.Combine(root, "Tool", "Tool.cs"), "\npublic sealed class ChangedToolMarker { }\n");
+                }
                 string binlog = Path.Combine(root, run + ".binlog");
-                await ToolchainEnvironment.RunAsync(dotnet,
-                    ["build", "Root/Root.csproj", "--nologo", "-m:4", "-nodeReuse:false", "-c", configuration,
-                        "-p:ArtifactsPath=" + Path.Combine(root, "managed"), "-p:InnoNativeTarget=fixture-target", "-bl:" + binlog],
-                    root, timeout.Token, DotNetSdkEnvironment.Create(dotnet));
+                await ToolchainEnvironment.RunAsync(
+                    dotnet,
+                    [
+                        "build",
+                        "Root/Root.csproj",
+                        "--nologo",
+                        "-m:4",
+                        "-nodeReuse:false",
+                        "-c",
+                        configuration,
+                        "-p:ArtifactsPath=" + Path.Combine(root, "managed"),
+                        "-p:InnoNativeTarget=fixture-target",
+                        "-bl:" + binlog
+                    ],
+                    root,
+                    timeout.Token,
+                    DotNetSdkEnvironment.Create(dotnet)
+                );
                 int compilations = 0;
                 var identities = new HashSet<string>(StringComparer.Ordinal);
                 var events = new BinaryLogReplayEventSource();
                 events.ProjectStarted += (
                     _,
                     project
-                ) => {
+                ) =>
+                {
                     if (Path.GetFileName(project.ProjectFile) != "Tool.csproj" || !string.IsNullOrEmpty(project.TargetNames))
+                    {
                         return;
+                    }
                     Assert.NotNull(project.GlobalProperties);
                     Assert.DoesNotContain("InnoNativeTarget", project.GlobalProperties!.Keys);
                     Assert.DoesNotContain("BuildProjectReferences", project.GlobalProperties.Keys);
                     Assert.DoesNotContain("InnoTaskBootstrapOwner", project.GlobalProperties.Keys);
                     Assert.DoesNotContain("BuildingInsideVisualStudio", project.GlobalProperties.Keys);
-                    identities.Add(string.Join(";", project.GlobalProperties.OrderBy(static pair => pair.Key)
-                        .Select(static pair => pair.Key + "=" + pair.Value)));
+                    identities.Add(
+                        string.Join(
+                            ";",
+                            project.GlobalProperties.OrderBy(static pair => pair.Key)
+                                .Select(static pair => pair.Key + "=" + pair.Value)
+                        )
+                    );
                 };
                 events.TaskStarted += (
                     _,
                     task
-                ) => {
+                ) =>
+                {
                     if (task.TaskName == "Csc" && Path.GetFileName(task.ProjectFile) == "Tool.csproj")
+                    {
                         compilations++;
+                    }
                 };
                 events.Replay(binlog);
                 Assert.Single(identities);

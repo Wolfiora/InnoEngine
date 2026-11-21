@@ -20,8 +20,15 @@ public sealed class BuildCacheRetirementTests : IDisposable
     {
         OwnedCache owner = AddOwner("process-work");
         BuildCacheArtifactDescriptor process = owner.Add("exited-process", 2);
-        owner.artifacts[0] = new(process.directory, process.leasePath, process.targetId,
-            process.bytes, process.lastUseUtc, [], BuildCacheArtifactRole.ProcessWorkingDirectory);
+        owner.artifacts[0] = new(
+            process.directory,
+            process.leasePath,
+            process.targetId,
+            process.bytes,
+            process.lastUseUtc,
+            [],
+            BuildCacheArtifactRole.ProcessWorkingDirectory
+        );
         BuildCacheArtifactDescriptor reusable = owner.Add("reusable", 3);
         BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(m_root, [owner.descriptor], new(long.MaxValue, 0));
         Assert.Equal(process.directory, Assert.Single(plan.candidates).directory);
@@ -37,8 +44,13 @@ public sealed class BuildCacheRetirementTests : IDisposable
         BuildCacheArtifactDescriptor requiredByMac = owner.Add("windows-dependency", 3, targetId: "windows-x64");
         BuildCacheArtifactDescriptor mac = owner.Add("mac", 4, [requiredByMac.directory], "macos-arm64");
         BuildCacheArtifactDescriptor obsoleteWindows = owner.Add("windows-obsolete", 5, targetId: "windows-x64");
-        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(m_root, [owner.descriptor], new(0, 0),
-            retireAll: true, targetId: "windows-x64");
+        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(
+            m_root,
+            [owner.descriptor],
+            new(0, 0),
+            retireAll: true,
+            targetId: "windows-x64"
+        );
         Assert.Equal(obsoleteWindows.directory, Assert.Single(plan.candidates).directory);
         BuildCacheCleanupResult result = await plan.ExecuteAsync();
         Assert.Equal(obsoleteWindows.directory, Assert.Single(result.retired));
@@ -52,10 +64,22 @@ public sealed class BuildCacheRetirementTests : IDisposable
     {
         OwnedCache owner = AddOwner("retargeted");
         BuildCacheArtifactDescriptor original = owner.Add("candidate", 2, targetId: "windows-x64");
-        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(m_root, [owner.descriptor], new(0, 0),
-            retireAll: true, targetId: "windows-x64");
-        owner.artifacts[0] = new(original.directory, original.leasePath, "macos-arm64",
-            original.bytes, original.lastUseUtc, original.dependencies, BuildCacheArtifactRole.ImmutableArtifact);
+        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(
+            m_root,
+            [owner.descriptor],
+            new(0, 0),
+            retireAll: true,
+            targetId: "windows-x64"
+        );
+        owner.artifacts[0] = new(
+            original.directory,
+            original.leasePath,
+            "macos-arm64",
+            original.bytes,
+            original.lastUseUtc,
+            original.dependencies,
+            BuildCacheArtifactRole.ImmutableArtifact
+        );
         BuildCacheCleanupResult result = await plan.ExecuteAsync();
         Assert.Empty(result.retired);
         Assert.True(Directory.Exists(original.directory));
@@ -95,8 +119,12 @@ public sealed class BuildCacheRetirementTests : IDisposable
         BuildCacheArtifactDescriptor artifact = owner.Add("generation", 6);
         BuildArtifactManifest.Write(artifact.directory, "fixture", ["Outputs"]);
         BuildCacheCleanupPlan plan = CreatePlan();
-        using (BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(artifact.directory, Path.GetDirectoryName(artifact.directory)!, "fixture", ["Outputs"]))
-        {
+        using (BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(
+            artifact.directory,
+            Path.GetDirectoryName(artifact.directory)!,
+            "fixture",
+            ["Outputs"]
+        )) {
             BuildCacheCleanupResult blocked = await plan.ExecuteAsync();
             Assert.Empty(blocked.retired);
             Assert.Contains(artifact.directory, blocked.skipped);
@@ -114,7 +142,15 @@ public sealed class BuildCacheRetirementTests : IDisposable
         OwnedCache owner = AddOwner("workspaces");
         BuildCacheArtifactDescriptor artifact = owner.Add("workspace", 6);
         string producerLease = Path.Combine(owner.descriptor.directory, "producer.lock");
-        owner.artifacts[0] = new(artifact.directory, producerLease, artifact.targetId, artifact.bytes, artifact.lastUseUtc, [], BuildCacheArtifactRole.ImmutableArtifact);
+        owner.artifacts[0] = new(
+            artifact.directory,
+            producerLease,
+            artifact.targetId,
+            artifact.bytes,
+            artifact.lastUseUtc,
+            [],
+            BuildCacheArtifactRole.ImmutableArtifact
+        );
         BuildCacheCleanupPlan plan = CreatePlan();
         using (FileLease producer = await FileLease.AcquireAsync(producerLease, TimeSpan.Zero))
         {
@@ -134,11 +170,26 @@ public sealed class BuildCacheRetirementTests : IDisposable
         OwnedCache owner = AddOwner("native");
         BuildCacheArtifactDescriptor first = owner.Add("first", 2);
         BuildCacheArtifactDescriptor second = owner.Add("second", 2);
-        owner.artifacts[0] = new(first.directory, Path.Combine(first.directory, "inside.lock"),
-            first.targetId, first.bytes, first.lastUseUtc, [], BuildCacheArtifactRole.ImmutableArtifact);
+        owner.artifacts[0] = new(
+            first.directory,
+            Path.Combine(first.directory, "inside.lock"),
+            first.targetId,
+            first.bytes,
+            first.lastUseUtc,
+            [],
+            BuildCacheArtifactRole.ImmutableArtifact
+        );
         Assert.Throws<InvalidDataException>(() => CreatePlan());
         owner.artifacts[0] = first;
-        owner.artifacts[1] = new(second.directory, first.leasePath, second.targetId, second.bytes, second.lastUseUtc, [], BuildCacheArtifactRole.ImmutableArtifact);
+        owner.artifacts[1] = new(
+            second.directory,
+            first.leasePath,
+            second.targetId,
+            second.bytes,
+            second.lastUseUtc,
+            [],
+            BuildCacheArtifactRole.ImmutableArtifact
+        );
         Assert.Throws<InvalidDataException>(() => CreatePlan());
         Assert.True(Directory.Exists(first.directory));
         Assert.True(Directory.Exists(second.directory));
@@ -153,7 +204,12 @@ public sealed class BuildCacheRetirementTests : IDisposable
         BuildArtifactManifest.Write(parent.directory, "parent", ["Outputs"]);
         BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(m_root, [owner.descriptor], new(13, 0));
         Assert.Equal(dependency.directory, Assert.Single(plan.candidates).directory);
-        using BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(parent.directory, Path.GetDirectoryName(parent.directory)!, "parent", ["Outputs"]);
+        using BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(
+            parent.directory,
+            Path.GetDirectoryName(parent.directory)!,
+            "parent",
+            ["Outputs"]
+        );
 
         BuildCacheCleanupResult result = await plan.ExecuteAsync();
 
@@ -174,7 +230,9 @@ public sealed class BuildCacheRetirementTests : IDisposable
         Assert.Contains(artifact.directory, preview.skipped);
         Assert.True(Directory.Exists(artifact.directory));
         using (FileLease update = await FileLease.AcquireAsync(owner.descriptor.coordinationPath, TimeSpan.Zero))
+        {
             owner.roots.Add(artifact.directory);
+        }
 
         BuildCacheCleanupResult actual = await plan.ExecuteAsync();
 
@@ -207,7 +265,15 @@ public sealed class BuildCacheRetirementTests : IDisposable
         OwnedCache owner = AddOwner("native");
         BuildCacheArtifactDescriptor artifact = owner.Add("generation", 3);
         BuildCacheCleanupPlan plan = CreatePlan();
-        owner.artifacts[0] = new(artifact.directory, artifact.leasePath, artifact.targetId, 4, artifact.lastUseUtc, [], BuildCacheArtifactRole.ImmutableArtifact);
+        owner.artifacts[0] = new(
+            artifact.directory,
+            artifact.leasePath,
+            artifact.targetId,
+            4,
+            artifact.lastUseUtc,
+            [],
+            BuildCacheArtifactRole.ImmutableArtifact
+        );
 
         BuildCacheCleanupResult result = await plan.ExecuteAsync();
 
@@ -234,12 +300,17 @@ public sealed class BuildCacheRetirementTests : IDisposable
     {
         OwnedCache owner = AddOwner("native");
         BuildCacheArtifactDescriptor artifact = owner.Add("generation", 3);
-        Assert.Throws<TimeoutException>(() => BuildCacheCleanupPlan.Create(m_root, [owner.descriptor],
-            new(0, 0, TimeSpan.FromTicks(1)), retireAll: true));
+        Assert.Throws<TimeoutException>(() => BuildCacheCleanupPlan.Create(
+            m_root,
+            [owner.descriptor],
+            new(0, 0, TimeSpan.FromTicks(1)),
+            retireAll: true
+        ));
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            () => CreatePlan().ExecuteAsync(cancellationToken: cancellation.Token).AsTask());
+            () => CreatePlan().ExecuteAsync(cancellationToken: cancellation.Token).AsTask()
+        );
         Assert.True(Directory.Exists(artifact.directory));
     }
 
@@ -249,9 +320,25 @@ public sealed class BuildCacheRetirementTests : IDisposable
         OwnedCache owner = AddOwner("native");
         BuildCacheArtifactDescriptor first = owner.Add("first", 2);
         BuildCacheArtifactDescriptor second = owner.Add("second", 2, [first.directory]);
-        owner.artifacts[0] = new(first.directory, first.leasePath, first.targetId, first.bytes, first.lastUseUtc, [second.directory], BuildCacheArtifactRole.ImmutableArtifact);
+        owner.artifacts[0] = new(
+            first.directory,
+            first.leasePath,
+            first.targetId,
+            first.bytes,
+            first.lastUseUtc,
+            [second.directory],
+            BuildCacheArtifactRole.ImmutableArtifact
+        );
         Assert.Throws<ArgumentException>(() => CreatePlan());
-        owner.artifacts[0] = new(first.directory, first.leasePath, first.targetId, first.bytes, first.lastUseUtc, [Path.Combine(m_root, "unregistered")], BuildCacheArtifactRole.ImmutableArtifact);
+        owner.artifacts[0] = new(
+            first.directory,
+            first.leasePath,
+            first.targetId,
+            first.bytes,
+            first.lastUseUtc,
+            [Path.Combine(m_root, "unregistered")],
+            BuildCacheArtifactRole.ImmutableArtifact
+        );
         Assert.Throws<InvalidDataException>(() => CreatePlan());
         owner.artifacts[0] = new(m_root, first.leasePath, null, 2, DateTime.UtcNow, [], BuildCacheArtifactRole.ImmutableArtifact);
         Assert.Throws<IOException>(() => CreatePlan());
@@ -289,7 +376,9 @@ public sealed class BuildCacheRetirementTests : IDisposable
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     private OwnedCache AddOwner(string name)
@@ -299,8 +388,13 @@ public sealed class BuildCacheRetirementTests : IDisposable
         return owner;
     }
 
-    private BuildCacheCleanupPlan CreatePlan() => BuildCacheCleanupPlan.Create(m_root,
-        m_owners.Select(static owner => owner.descriptor).ToArray(), new(0, 0), retireAll: true);
+    private BuildCacheCleanupPlan CreatePlan()
+        => BuildCacheCleanupPlan.Create(
+            m_root,
+            m_owners.Select(static owner => owner.descriptor).ToArray(),
+            new(0, 0),
+            retireAll: true
+        );
 
     private sealed class OwnedCache
     {
@@ -309,7 +403,10 @@ public sealed class BuildCacheRetirementTests : IDisposable
             string id
         ) {
             Directory.CreateDirectory(directory);
-            descriptor = new(id, directory, Path.Combine(directory, "owner.lock"),
+            descriptor = new(
+                id,
+                directory,
+                Path.Combine(directory, "owner.lock"),
                 token =>
                 {
                     token.ThrowIfCancellationRequested();
@@ -319,7 +416,8 @@ public sealed class BuildCacheRetirementTests : IDisposable
                 {
                     token.ThrowIfCancellationRequested();
                     return roots.ToArray();
-                });
+                }
+            );
         }
 
         internal List<BuildCacheArtifactDescriptor> artifacts { get; } = [];
@@ -336,7 +434,15 @@ public sealed class BuildCacheRetirementTests : IDisposable
             Directory.CreateDirectory(Path.Combine(directory, "Outputs"));
             File.WriteAllBytes(Path.Combine(directory, "Outputs", "payload.bin"), new byte[bytes]);
             var used = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(artifacts.Count);
-            var artifact = new BuildCacheArtifactDescriptor(directory, directory + ".read.lock", targetId, bytes, used, dependencies ?? [], BuildCacheArtifactRole.ImmutableArtifact);
+            var artifact = new BuildCacheArtifactDescriptor(
+                directory,
+                directory + ".read.lock",
+                targetId,
+                bytes,
+                used,
+                dependencies ?? [],
+                BuildCacheArtifactRole.ImmutableArtifact
+            );
             artifacts.Add(artifact);
             return artifact;
         }

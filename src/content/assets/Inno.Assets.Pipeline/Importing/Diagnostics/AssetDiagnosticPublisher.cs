@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-
 using Inno.Assets;
 using Inno.Core.Diagnostics;
 
@@ -38,26 +37,30 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
         {
             AssetMeta entry = entries[i];
             if (entry.persistentId == Guid.Empty || entry.isDirectory)
-                continue;
-
-            if (entry.importStatus != (int)AssetImportStatus.Missing)
-                ResolveReference(entry.persistentId);
-
-            Diagnostic[] diagnostics = CreateImportDiagnostics(entry);
-            if (diagnostics.Length == 0)
-                continue;
-
-            currentIds.Add(entry.persistentId);
-            string state = CreateState(entry, diagnostics);
-            if (m_importStates.TryGetValue(entry.persistentId, out string? previous) &&
-                string.Equals(previous, state, StringComparison.Ordinal))
             {
                 continue;
             }
 
-            Set(
-                CreateSource(C_IMPORT_GROUP, entry.persistentId, entry.relativePath),
-                diagnostics);
+            if (entry.importStatus != (int)AssetImportStatus.Missing)
+            {
+                ResolveReference(entry.persistentId);
+            }
+
+            Diagnostic[] diagnostics = CreateImportDiagnostics(entry);
+            if (diagnostics.Length == 0)
+            {
+                continue;
+            }
+
+            currentIds.Add(entry.persistentId);
+            string state = CreateState(entry, diagnostics);
+            if (m_importStates.TryGetValue(entry.persistentId, out string? previous)
+                && string.Equals(previous, state, StringComparison.Ordinal)
+            ) {
+                continue;
+            }
+
+            Set(CreateSource(C_IMPORT_GROUP, entry.persistentId, entry.relativePath), diagnostics);
             m_importStates[entry.persistentId] = state;
         }
 
@@ -78,7 +81,9 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
     ) {
         ArgumentNullException.ThrowIfNull(messages);
         if (targetId == Guid.Empty)
+        {
             return;
+        }
         if (messages.Count == 0)
         {
             ResolveBuild(targetId);
@@ -96,9 +101,9 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
         }
 
         string state = string.Join('\n', diagnostics.Select(static diagnostic => diagnostic.message));
-        if (m_buildStates.TryGetValue(targetId, out string? previous) &&
-            string.Equals(previous, state, StringComparison.Ordinal))
-        {
+        if (m_buildStates.TryGetValue(targetId, out string? previous)
+            && string.Equals(previous, state, StringComparison.Ordinal)
+        ) {
             return;
         }
         Set(CreateSource(C_BUILD_GROUP, targetId, displayName), diagnostics);
@@ -112,16 +117,16 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
     ) {
         ArgumentNullException.ThrowIfNull(exception);
         if (targetId == Guid.Empty)
-            return;
-        string state = exception.ToString();
-        if (m_buildStates.TryGetValue(targetId, out string? previous) &&
-            string.Equals(previous, state, StringComparison.Ordinal))
         {
             return;
         }
-        Set(
-            CreateSource(C_BUILD_GROUP, targetId, displayName),
-            [Diagnostic.Error("ASSET-BUILD", exception.Message)]);
+        string state = exception.ToString();
+        if (m_buildStates.TryGetValue(targetId, out string? previous)
+            && string.Equals(previous, state, StringComparison.Ordinal)
+        ) {
+            return;
+        }
+        Set(CreateSource(C_BUILD_GROUP, targetId, displayName), [Diagnostic.Error("ASSET-BUILD", exception.Message)]);
         m_buildStates[targetId] = state;
     }
 
@@ -130,10 +135,10 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
         ArgumentNullException.ThrowIfNull(exception);
         string state = exception.ToString();
         if (string.Equals(m_catalogState, state, StringComparison.Ordinal))
+        {
             return false;
-        Set(
-            CreateSource(C_CATALOG_GROUP),
-            [Diagnostic.Error("ASSET-CATALOG", exception.Message)]);
+        }
+        Set(CreateSource(C_CATALOG_GROUP), [Diagnostic.Error("ASSET-CATALOG", exception.Message)]);
         m_catalogState = state;
         return true;
     }
@@ -144,29 +149,35 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
         Type expectedType
     ) {
         if (targetId == Guid.Empty)
+        {
             return;
+        }
         ArgumentNullException.ThrowIfNull(expectedType);
         string resolvedDisplayName = string.IsNullOrWhiteSpace(displayName)
-            ? targetId.ToString()
-            : displayName;
+                                     ? targetId.ToString()
+                                     : displayName;
         string state = $"{resolvedDisplayName}:{expectedType.FullName}";
-        if (m_referenceStates.TryGetValue(targetId, out string? previous) &&
-            string.Equals(previous, state, StringComparison.Ordinal))
-        {
+        if (m_referenceStates.TryGetValue(targetId, out string? previous)
+            && string.Equals(previous, state, StringComparison.Ordinal)
+        ) {
             return;
         }
         Set(
             CreateSource(C_REFERENCE_GROUP, targetId, resolvedDisplayName),
             [Diagnostic.Warning(
                 "ASSET-REFERENCE",
-                $"Asset '{resolvedDisplayName}' required as '{expectedType.FullName}' is missing.")]);
+                $"Asset '{resolvedDisplayName}' required as '{expectedType.FullName}' is missing."
+            )]
+        );
         m_referenceStates[targetId] = state;
     }
 
     internal void ResolveCatalog()
     {
         if (string.IsNullOrEmpty(m_catalogState))
+        {
             return;
+        }
         Clear(CreateSource(C_CATALOG_GROUP));
         m_catalogState = string.Empty;
     }
@@ -187,17 +198,23 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
     internal void SetActive(bool active)
     {
         if (m_active == active)
+        {
             return;
+        }
         m_active = active;
         if (active)
         {
             foreach (Report report in m_reports.Values)
+            {
                 Publish(report);
+            }
         }
         else
         {
             foreach (DiagnosticReporter reporter in m_reporters.Values)
+            {
                 reporter.Dispose();
+            }
             m_reporters.Clear();
         }
     }
@@ -207,30 +224,43 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
         IReadOnlyList<Diagnostic> diagnostics
     ) {
         if (m_reporters.Remove(source.id, out DiagnosticReporter? previous))
+        {
             previous.Dispose();
+        }
         var report = new Report(source, diagnostics.ToArray());
         m_reports[source.id] = report;
         if (m_active)
+        {
             Publish(report);
+        }
     }
 
     private void Clear(DiagnosticSource source)
     {
         m_reports.Remove(source.id);
         if (m_reporters.Remove(source.id, out DiagnosticReporter? reporter))
+        {
             reporter.Dispose();
+        }
     }
 
     private void Publish(Report report)
     {
         DiagnosticReporter reporter = m_diagnostics.CreateReporter(report.source);
         m_reporters.Add(report.source.id, reporter);
-        reporter.Replace(report.diagnostics.Select(static (
-            issue,
-            index
-        ) => new Diagnostic(
-            issue.code, issue.message, issue.severity, index.ToString(CultureInfo.InvariantCulture),
-            issue.objectId, issue.location)));
+        reporter.Replace(
+            report.diagnostics.Select(static (
+                issue,
+                index
+            ) => new Diagnostic(
+                issue.code,
+                issue.message,
+                issue.severity,
+                index.ToString(CultureInfo.InvariantCulture),
+                issue.objectId,
+                issue.location
+            ))
+        );
     }
 
     private sealed record Report(
@@ -241,14 +271,18 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
     private void ResolveBuild(Guid targetId)
     {
         if (!m_buildStates.Remove(targetId))
+        {
             return;
+        }
         Clear(CreateSource(C_BUILD_GROUP, targetId));
     }
 
     private void ResolveReference(Guid targetId)
     {
         if (!m_referenceStates.Remove(targetId))
+        {
             return;
+        }
         Clear(CreateSource(C_REFERENCE_GROUP, targetId));
     }
 
@@ -258,26 +292,26 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
         string? displayName = null
     ) {
         string id = targetId.HasValue
-            ? $"inno.assets.pipeline/{group}/{targetId.Value:N}"
-            : $"inno.assets.pipeline/{group}";
-        return new DiagnosticSource(
-            id,
-            string.IsNullOrWhiteSpace(displayName) ? group : displayName);
+                    ? $"inno.assets.pipeline/{group}/{targetId.Value:N}"
+                    : $"inno.assets.pipeline/{group}";
+        return new DiagnosticSource(id, string.IsNullOrWhiteSpace(displayName) ? group : displayName);
     }
 
     private static Diagnostic[] CreateImportDiagnostics(AssetMeta entry)
     {
         AssetImportStatus status = Enum.IsDefined(typeof(AssetImportStatus), entry.importStatus)
-            ? (AssetImportStatus)entry.importStatus
-            : AssetImportStatus.Failed;
+                                   ? (AssetImportStatus)entry.importStatus
+                                   : AssetImportStatus.Failed;
         DiagnosticLocation? location = string.IsNullOrWhiteSpace(entry.relativePath)
-            ? null
-            : new DiagnosticLocation(entry.relativePath);
+                                       ? null
+                                       : new DiagnosticLocation(entry.relativePath);
         string[] messages = entry.diagnostics
             .Where(static message => !string.IsNullOrWhiteSpace(message))
             .ToArray();
         if (messages.Length == 0 || status == AssetImportStatus.Missing)
+        {
             return [];
+        }
         return messages.Select(message => status switch
         {
             AssetImportStatus.Pending => Diagnostic.Info("ASSET-IMPORT-PENDING", message, location),
@@ -290,6 +324,5 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
     private static string CreateState(
         AssetMeta entry,
         IReadOnlyList<Diagnostic> diagnostics
-    )
-        => $"{entry.importStatus}:{entry.relativePath}:{string.Join('\n', diagnostics.Select(static value => value.message))}";
+    ) => $"{entry.importStatus}:{entry.relativePath}:{string.Join('\n', diagnostics.Select(static value => value.message))}";
 }

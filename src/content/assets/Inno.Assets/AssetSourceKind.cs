@@ -9,7 +9,6 @@ public enum AssetSourceKind
     /// A regular imported source file.
     /// </summary>
     File,
-
     /// <summary>
     /// A source directory with persistent identity but no runtime artifact.
     /// </summary>

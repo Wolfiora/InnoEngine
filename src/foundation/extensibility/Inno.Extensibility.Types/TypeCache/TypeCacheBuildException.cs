@@ -20,8 +20,7 @@ public sealed class TypeCacheBuildException : Exception
     public TypeCacheBuildException(
         string message,
         IReadOnlyList<Exception> loaderExceptions
-    )
-        : base(message, loaderExceptions.Count > 0 ? loaderExceptions[0] : null)
+    ) : base(message, loaderExceptions.Count > 0 ? loaderExceptions[0] : null)
     {
         this.loaderExceptions = loaderExceptions;
     }

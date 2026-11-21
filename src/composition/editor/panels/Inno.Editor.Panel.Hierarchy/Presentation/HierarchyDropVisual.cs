@@ -1,19 +1,22 @@
-using UiDrawing = Inno.Editor.ImGui.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Numerics;
 using Inno.Editor.Core;
-using Inno.Editor.Interactions;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+using Inno.Editor.Interactions;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using UiDrawing = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Hierarchy;
+
 internal sealed class HierarchyDropVisual
 {
     internal EditorDropPlacement GetScenePlacement(
         in TreeNodeResult result,
         float mouseY
     ) => mouseY >= (result.min.Y + result.max.Y) * 0.5f ? EditorDropPlacement.After : EditorDropPlacement.Before;
+
     internal EditorDropPlacement GetObjectPlacement(
         in TreeNodeResult result,
         float mouseY
@@ -21,7 +24,9 @@ internal sealed class HierarchyDropVisual
         float height = MathF.Max(1f, result.max.Y - result.min.Y);
         float relativeY = (mouseY - result.min.Y) / height;
         if (relativeY < 0.25f)
+        {
             return EditorDropPlacement.Before;
+        }
         return relativeY > 0.75f ? EditorDropPlacement.After : EditorDropPlacement.Into;
     }
 

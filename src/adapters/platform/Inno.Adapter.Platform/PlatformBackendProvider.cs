@@ -24,7 +24,9 @@ public abstract class PlatformBackendProvider
     protected PlatformBackendProvider(PlatformBackendId id)
     {
         if (!id.isValid)
+        {
             throw new ArgumentException("A provider requires an assigned backend ID.", nameof(id));
+        }
         this.id = id;
     }
 
@@ -41,4 +43,3 @@ public abstract class PlatformBackendProvider
     /// </returns>
     public abstract IPlatformApplication CreateApplication();
 }
-

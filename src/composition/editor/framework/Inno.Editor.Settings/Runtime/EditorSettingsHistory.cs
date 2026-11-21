@@ -1,7 +1,6 @@
 using System;
 using System.Buffers.Binary;
 using System.IO;
-
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Settings;
@@ -25,10 +24,14 @@ internal static class EditorSettingsHistory
     {
         byte[] payload = change.payload.ReadBytes();
         if (payload.Length < sizeof(int))
+        {
             throw new InvalidDataException("The Settings history payload is truncated.");
+        }
         int beforeLength = BinaryPrimitives.ReadInt32LittleEndian(payload);
         if (beforeLength < 0 || beforeLength > payload.Length - sizeof(int))
+        {
             throw new InvalidDataException("The Settings history payload has an invalid boundary.");
+        }
         ReadOnlyMemory<byte> before = payload.AsMemory(sizeof(int), beforeLength);
         ReadOnlyMemory<byte> after = payload.AsMemory(sizeof(int) + beforeLength);
         return (before, after);
@@ -96,8 +99,7 @@ internal sealed class EditorSettingsHistoryHandler(EditorSettings settings) : Ed
         try
         {
             (ReadOnlyMemory<byte> before, ReadOnlyMemory<byte> after) = EditorSettingsHistory.Read(change);
-            settings.RestoreFromHistory(
-                direction == EditorHistoryDirection.Undo ? before.Span : after.Span);
+            settings.RestoreFromHistory(direction == EditorHistoryDirection.Undo ? before.Span : after.Span);
             settings.NotifyChanged();
             return EditorHistoryResult.Success();
         }
@@ -111,7 +113,8 @@ internal sealed class EditorSettingsHistoryHandler(EditorSettings settings) : Ed
             catch (Exception rollbackException)
             {
                 return StateIntegrityFailure(
-                    $"Settings transition failed: {exception.Message} Rollback failed: {rollbackException.Message}");
+                    $"Settings transition failed: {exception.Message} Rollback failed: {rollbackException.Message}"
+                );
             }
             return EditorHistoryResult.Failure(exception.Message);
         }

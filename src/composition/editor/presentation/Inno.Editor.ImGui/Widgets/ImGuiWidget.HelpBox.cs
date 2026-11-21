@@ -1,15 +1,18 @@
 using System;
 using System.Numerics;
 using Inno.Native.ImGui;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
+
 /// <summary>
 /// Provides standard help box presentation in the Editor UI.
 /// </summary>
 public sealed unsafe partial class ImGuiWidget
 {
     private SectionLayoutState? m_sectionLayout;
+
     /// <summary>
     /// Draws a wrapped contextual message with a semantic icon and a subdued status surface.
     /// </summary>
@@ -43,9 +46,31 @@ public sealed unsafe partial class ImGuiWidget
         background.W = EditorPalette.opacityOpaque;
         Vector4 outline = color;
         outline.W = EditorPalette.opacityMuted;
-        ImGui.DrawNativeFilledRectangle(draw, origin, origin + new Vector2(width, height), NativeImGui.ColorConvertFloat4ToU32(background), 4f * style.zoom, 0);
-        ImGui.DrawNativeRectangle(draw, origin, origin + new Vector2(width, height), NativeImGui.ColorConvertFloat4ToU32(outline), 4f * style.zoom, 0, 1f);
-        ImGui.DrawNativeFilledRectangle(draw, origin, origin + new Vector2(2f * style.zoom, height), NativeImGui.ColorConvertFloat4ToU32(color), 0, 0);
+        ImGui.DrawNativeFilledRectangle(
+            draw,
+            origin,
+            origin + new Vector2(width, height),
+            NativeImGui.ColorConvertFloat4ToU32(background),
+            4f * style.zoom,
+            0
+        );
+        ImGui.DrawNativeRectangle(
+            draw,
+            origin,
+            origin + new Vector2(width, height),
+            NativeImGui.ColorConvertFloat4ToU32(outline),
+            4f * style.zoom,
+            0,
+            1f
+        );
+        ImGui.DrawNativeFilledRectangle(
+            draw,
+            origin,
+            origin + new Vector2(2f * style.zoom, height),
+            NativeImGui.ColorConvertFloat4ToU32(color),
+            0,
+            0
+        );
         ImGui.DrawNativeText(draw, origin + padding, NativeImGui.ColorConvertFloat4ToU32(color), icon);
         NativeImGui.SetCursorScreenPos(origin + padding + new Vector2(iconWidth + gap, 0f));
         NativeImGui.PushTextWrapPos(NativeImGui.GetCursorPosX() + textWidth);
@@ -158,7 +183,9 @@ public sealed unsafe partial class ImGuiWidget
         ArgumentNullException.ThrowIfNull(title);
         SectionLayoutState? layout = m_sectionLayout;
         if (layout is null)
+        {
             return true;
+        }
         return layout.sectionIndex == 0 ? SectionHeader(title, description) : layout.contentVisible;
     }
 
@@ -218,7 +245,12 @@ public sealed unsafe partial class ImGuiWidget
                 NativeImGui.SameLine(0f, style.headerControlSpacing);
             }
 
-            titlePressed = ClickableText($"inspector_section_title_{sectionIndex}", title, new Vector2(MathF.Max(1f, titleSize.X), frameHeight), description);
+            titlePressed = ClickableText(
+                $"inspector_section_title_{sectionIndex}",
+                title,
+                new Vector2(MathF.Max(1f, titleSize.X), frameHeight),
+                description
+            );
         }
         finally
         {
@@ -291,7 +323,9 @@ public sealed unsafe partial class ImGuiWidget
     private void CompleteSection(SectionLayoutState layout)
     {
         if (!layout.active)
+        {
             return;
+        }
         NativeImGui.Dummy(new Vector2(0f, style.sectionPadding.Y));
         NativeImGui.Unindent(style.sectionPadding.X);
         float bottom = MathF.Max(NativeImGui.GetCursorScreenPos().Y, layout.top + NativeImGui.GetFrameHeight());

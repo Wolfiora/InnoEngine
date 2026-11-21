@@ -1,10 +1,12 @@
-using Inno.Editor.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
+using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
+
 [PropertyDrawer(typeof(Enum), useForChildren: true, priority: 100)]
 internal sealed class EnumPropertyDrawer : IPropertyDrawer
 {
@@ -90,6 +92,7 @@ internal sealed class EnumPropertyDrawer : IPropertyDrawer
             TypeCode.UInt16 => Convert.ToUInt16(value),
             TypeCode.UInt32 => Convert.ToUInt32(value),
             TypeCode.UInt64 => Convert.ToUInt64(value),
-            _ => throw new InvalidOperationException($"Unsupported enum underlying type '{underlyingType.FullName}'.")};
+            _ => throw new InvalidOperationException($"Unsupported enum underlying type '{underlyingType.FullName}'.")
+        };
     }
 }

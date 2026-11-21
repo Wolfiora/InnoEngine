@@ -1,15 +1,17 @@
-using Inno.Editor.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Inno.Editor.Shaders;
 using System;
 using System.Linq;
 using Inno.Assets.Pipeline;
+using Inno.Editor.ImGui;
 using Inno.Editor.Inspection;
+using Inno.Editor.Shaders;
 using Inno.Rendering;
-using Ui = Inno.Editor.ImGui.ImGui;
 using Inno.Rendering.Assets;
 
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using Ui = Inno.Editor.ImGui.ImGui;
+
 namespace Inno.Editor.Shaders.ImGui;
+
 [InspectionDrawer(typeof(MaterialAsset))]
 internal sealed class MaterialInspectionDrawer(IInspectionIconProvider<AssetFileEntry> icons) : InspectionDrawer<MaterialAsset>
 {
@@ -34,11 +36,12 @@ internal sealed class MaterialInspectionDrawer(IInspectionIconProvider<AssetFile
         InspectionDrawContext context,
         MaterialAsset target
     ) => context.interactions.TryGetModule<MaterialDocuments>(out var documents)
-        && documents is not null
-        && documents.assets.TryGetFileSystemEntry(
-        target.assetPath,
-        out AssetFileEntry entry
-    ) ? icons.GetIcon(entry) : icon;
+         && documents is not null
+         && documents.assets.TryGetFileSystemEntry(
+             target.assetPath,
+             out AssetFileEntry entry
+         ) ? icons.GetIcon(entry) : icon;
+
     /// <summary>
     /// Binds a caller-visible label to the current inspection target.
     /// </summary>
@@ -55,6 +58,7 @@ internal sealed class MaterialInspectionDrawer(IInspectionIconProvider<AssetFile
         InspectionDrawContext context,
         MaterialAsset target
     ) => (target.name, null);
+
     /// <summary>
     /// Renders the header presentation for the current editor frame.
     /// </summary>
@@ -69,7 +73,9 @@ internal sealed class MaterialInspectionDrawer(IInspectionIconProvider<AssetFile
         MaterialAsset target
     ) {
         if (context.interactions.TryGetModule<MaterialDocuments>(out var documents) && documents is not null)
+        {
             MaterialInspector.DrawHeader(context, documents, documents.Open(target));
+        }
     }
 
     /// <summary>
@@ -86,7 +92,9 @@ internal sealed class MaterialInspectionDrawer(IInspectionIconProvider<AssetFile
         MaterialAsset target
     ) {
         if (context.interactions.TryGetModule<MaterialDocuments>(out var documents) && documents is not null)
+        {
             MaterialInspector.Draw(context, documents, documents.Open(target));
+        }
     }
 }
 
@@ -114,6 +122,7 @@ internal sealed class MaterialSourceDrawer(IInspectionIconProvider<AssetFileEntr
         InspectionDrawContext context,
         AssetFileEntry target
     ) => icons.GetIcon(target);
+
     /// <summary>
     /// Checks whether this drawer supports the selected Inspector target.
     /// </summary>
@@ -123,7 +132,9 @@ internal sealed class MaterialSourceDrawer(IInspectionIconProvider<AssetFileEntr
     /// <returns>
     /// <see langword="true"/> when the documented condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    protected override bool CanInspect(AssetFileEntry target) => !target.isDirectory && target.extension.Equals(".imaterial", StringComparison.OrdinalIgnoreCase);
+    protected override bool CanInspect(AssetFileEntry target)
+        => !target.isDirectory && target.extension.Equals(".imaterial", StringComparison.OrdinalIgnoreCase);
+
     /// <summary>
     /// Binds a caller-visible label to the current inspection target.
     /// </summary>
@@ -140,6 +151,7 @@ internal sealed class MaterialSourceDrawer(IInspectionIconProvider<AssetFileEntr
         InspectionDrawContext context,
         AssetFileEntry target
     ) => (target.nameWithoutExtension, null);
+
     /// <summary>
     /// Renders the header presentation for the current editor frame.
     /// </summary>
@@ -154,7 +166,9 @@ internal sealed class MaterialSourceDrawer(IInspectionIconProvider<AssetFileEntr
         AssetFileEntry target
     ) {
         if (context.interactions.TryGetModule<MaterialDocuments>(out var documents) && documents is not null)
+        {
             MaterialInspector.DrawHeader(context, documents, documents.OpenDraft(target.assetPath));
+        }
     }
 
     /// <summary>
@@ -171,7 +185,9 @@ internal sealed class MaterialSourceDrawer(IInspectionIconProvider<AssetFileEntr
         AssetFileEntry target
     ) {
         if (context.interactions.TryGetModule<MaterialDocuments>(out var documents) && documents is not null)
+        {
             MaterialInspector.Draw(context, documents, documents.OpenDraft(target.assetPath));
+        }
     }
 }
 
@@ -185,10 +201,14 @@ internal static class MaterialInspector
         EditorUI.current.widgets.Disabled(draft.readOnly, () =>
         {
             if (Ui.Button("Save"))
+            {
                 _ = context.interactions.documents.Save(draft.documentId);
+            }
             Ui.SameLine(0f, -1f);
             if (Ui.Button("Revert"))
+            {
                 _ = context.interactions.documents.Revert(draft.documentId);
+            }
         });
     }
 
@@ -205,11 +225,17 @@ internal static class MaterialInspector
             if (EditorUI.current.widgets.SectionHeader("Preview", "Shows an isolated preview of the current Material draft."))
             {
                 if (material.shader is null || material.shader.isMissing)
+                {
                     EditorUI.current.widgets.Hint("Choose an available Shader to preview this Material.");
+                }
                 else if (context.interactions.TryGetModule<ShaderPreviews>(out var shaderPreviews) && shaderPreviews is not null)
+                {
                     shaderPreviews.DrawMaterial(draft.id, material, MathF.Max(1f, MathF.Min(256f, Ui.GetContentRegionAvailable().X)));
+                }
                 else
+                {
                     EditorUI.current.widgets.Hint("Material preview is unavailable.");
+                }
             }
 
             bool materialOpen = EditorUI.current.widgets.SectionHeader(
@@ -218,11 +244,17 @@ internal static class MaterialInspector
             );
             if (materialOpen)
             {
-                EditorUI.current.widgets.Hint(draft.isDirty ? "Unsaved changes · Scene/Game unchanged" : "Saved · compilation and import are separate");
+                EditorUI.current.widgets.Hint(
+                    draft.isDirty ? "Unsaved changes · Scene/Game unchanged" : "Saved · compilation and import are separate"
+                );
                 if (draft.error.Length != 0)
+                {
                     EditorUI.current.widgets.Hint(draft.error);
+                }
                 if (draft.readOnly)
+                {
                     EditorUI.current.widgets.Hint("Installed material · copy to the project to edit");
+                }
                 Draw("shader", "Shader", typeof(ShaderAsset), () => material.shader, value => material.shader = (ShaderAsset? )value);
             }
 
@@ -230,7 +262,11 @@ internal static class MaterialInspector
             if (material.shader is null || material.shader.isMissing || definition is null)
             {
                 if (materialOpen)
-                    EditorUI.current.widgets.Hint("Choose an available Shader. Existing overrides are retained until its interface can be resolved.");
+                {
+                    EditorUI.current.widgets.Hint(
+                        "Choose an available Shader. Existing overrides are retained until its interface can be resolved."
+                    );
+                }
                 return;
             }
 
@@ -243,14 +279,19 @@ internal static class MaterialInspector
             if (materialOpen)
             {
                 Ui.SameLine(0f, -1f);
-                if (Ui.SmallButton("Locate Shader") && documents.assets.TryGetFileSystemEntry(material.shader.assetPath, out AssetFileEntry shaderEntry))
+                if (Ui.SmallButton("Locate Shader")
+                    && documents.assets.TryGetFileSystemEntry(material.shader.assetPath, out AssetFileEntry shaderEntry)
+                ) {
                     context.interactions.SetSelection(shaderEntry);
+                }
             }
 
             if (materialOpen && (definition.techniques.Length > 1 || material.techniqueId.isValid))
             {
-                if (EditorUI.current.widgets.BeginBoundedCombo("##technique", material.techniqueId.isValid ? material.techniqueId.value : "Automatic"))
-                {
+                if (EditorUI.current.widgets.BeginBoundedCombo(
+                    "##technique",
+                    material.techniqueId.isValid ? material.techniqueId.value : "Automatic"
+                )) {
                     try
                     {
                         if (Ui.Selectable("Automatic", !material.techniqueId.isValid) && !draft.readOnly)
@@ -260,11 +301,13 @@ internal static class MaterialInspector
                         }
 
                         foreach (ShaderTechniqueDefinition technique in definition.techniques)
+                        {
                             if (Ui.Selectable(technique.id.value, material.techniqueId == technique.id) && !draft.readOnly)
                             {
                                 material.techniqueId = technique.id;
                                 documents.Replace(draft.id, material);
                             }
+                        }
                     }
                     finally
                     {
@@ -282,11 +325,19 @@ internal static class MaterialInspector
             int visibleParameters = 0;
             foreach (ShaderPropertyDefinition property in definition.properties.Where(IsEditable))
             {
-                ShaderParameterPresentation presentation = documents.Presentation(material.shader, property.id, out string presentationError);
+                ShaderParameterPresentation presentation = documents.Presentation(
+                    material.shader,
+                    property.id,
+                    out string presentationError
+                );
                 if (presentationError.Length != 0)
+                {
                     EditorUI.current.widgets.Hint("Parameter presentation unavailable: " + presentationError);
+                }
                 if (!presentation.visible)
+                {
                     continue;
+                }
                 visibleParameters++;
                 if (presentation.group != currentGroup)
                 {
@@ -295,12 +346,18 @@ internal static class MaterialInspector
                 }
 
                 if (!groupOpen)
+                {
                     continue;
+                }
                 bool overridden = material.TryGet(property.id, out MaterialValue value);
                 if (overridden && !ShaderPropertyInspector.Compatible(property.type, value.kind))
+                {
                     continue;
+                }
                 if (!overridden)
+                {
                     value = property.defaultValue;
+                }
                 Ui.PushId(property.id.value);
                 try
                 {
@@ -345,7 +402,9 @@ internal static class MaterialInspector
             }
 
             if (parametersOpen && visibleParameters == 0 && definition.keywords.Length == 0)
+            {
                 EditorUI.current.widgets.Hint("No editable parameters.");
+            }
             if (parametersOpen && material.properties.Count != 0 && !draft.readOnly && Ui.Button("Reset all overrides"))
             {
                 material.ReplaceProperties([]);
@@ -356,14 +415,22 @@ internal static class MaterialInspector
             {
                 string selected = keyword.options.FirstOrDefault(option => material.keywords.Contains(option)) ?? "None";
                 if (!EditorUI.current.widgets.BeginBoundedCombo(keyword.id, selected))
+                {
                     continue;
+                }
                 try
                 {
                     if (Ui.Selectable("None", selected == "None"))
+                    {
                         SetOption(null);
+                    }
                     foreach (string option in keyword.options)
+                    {
                         if (Ui.Selectable(option, selected == option))
+                        {
                             SetOption(option);
+                        }
+                    }
                 }
                 finally
                 {
@@ -373,21 +440,34 @@ internal static class MaterialInspector
                 void SetOption(string? next)
                 {
                     if (draft.readOnly)
+                    {
                         return;
+                    }
                     foreach (string option in keyword.options)
+                    {
                         material.SetKeyword(option, option == next);
+                    }
                     documents.Replace(draft.id, material);
                 }
             }
 
-            MaterialPropertyEntry[] orphaned = material.properties.Where(entry => !definition.properties.Any(property => property.id == entry.id && IsEditable(property) && ShaderPropertyInspector.Compatible(property.type, entry.value.kind))).ToArray();
+            MaterialPropertyEntry[] orphaned = material.properties
+                .Where(
+                    entry => !definition.properties.Any(
+                        property => (
+                            property.id == entry.id
+                            && IsEditable(property)
+                            && ShaderPropertyInspector.Compatible(property.type, entry.value.kind)
+                        )
+                    )
+                )
+                .ToArray();
             if (orphaned.Length != 0)
             {
                 if (EditorUI.current.widgets.SectionHeader(
                     "Unresolved Overrides",
                     "These values were retained after an interface change. Remove them explicitly or restore a compatible Shader before publishing."
-                ))
-                {
+                )) {
                     foreach (MaterialPropertyEntry entry in orphaned)
                     {
                         Ui.Text(entry.id.value + " · " + entry.value.kind);
@@ -401,14 +481,15 @@ internal static class MaterialInspector
             }
 
             ShaderPropertyDefinition[] passBindings = definition.properties.Where(property => !IsEditable(property)).ToArray();
-            string[] unknownKeywords = material.keywords.Where(value => !definition.keywords.Any(keyword => keyword.options.Contains(value))).ToArray();
+            string[] unknownKeywords = material.keywords
+                .Where(value => !definition.keywords.Any(keyword => keyword.options.Contains(value)))
+                .ToArray();
             if (unknownKeywords.Length != 0)
             {
                 if (EditorUI.current.widgets.SectionHeader(
                     "Unresolved Keywords",
                     "These overrides no longer belong to the Shader interface. They remain until explicitly removed."
-                ))
-                {
+                )) {
                     foreach (string keyword in unknownKeywords)
                     {
                         Ui.Text(keyword);
@@ -423,10 +504,14 @@ internal static class MaterialInspector
 
             if (passBindings.Length != 0)
             {
-                if (EditorUI.current.widgets.SectionHeader("Pipeline Bindings", "These resources are supplied by the Render Pass, not by this Material."))
-                {
+                if (EditorUI.current.widgets.SectionHeader(
+                    "Pipeline Bindings",
+                    "These resources are supplied by the Render Pass, not by this Material."
+                )) {
                     foreach (ShaderPropertyDefinition property in passBindings)
+                    {
                         EditorUI.current.widgets.Hint(property.displayName + " · " + property.type + " · " + property.bindingOwner);
+                    }
                 }
             }
         }
@@ -441,11 +526,23 @@ internal static class MaterialInspector
             Type type,
             Func<object?> getter,
             Action<object?> setter
-        ) => context.properties.DrawValue(context.editorContext, draft, "material." + path, label, type, getter, setter, edits, draft.readOnly);
+        ) => context.properties.DrawValue(
+            context.editorContext,
+            draft,
+            "material." + path,
+            label,
+            type,
+            getter,
+            setter,
+            edits,
+            draft.readOnly
+        );
     }
 
-    private static bool IsEditable(ShaderPropertyDefinition property) => property.bindingOwner == ShaderPropertyBindingOwner.Material
-        && property.bindingKind is ShaderPropertyBindingKind.Uniform or ShaderPropertyBindingKind.SampledTexture;
+    private static bool IsEditable(ShaderPropertyDefinition property)
+        => property.bindingOwner == ShaderPropertyBindingOwner.Material
+           && property.bindingKind is ShaderPropertyBindingKind.Uniform or ShaderPropertyBindingKind.SampledTexture;
+
     private sealed class DraftEdits(
         MaterialDocuments documents,
         Inno.Editor.Assets.AssetDraftDocuments<MaterialAsset>.Draft draft,

@@ -8,8 +8,9 @@ namespace Inno.Editor.Inspection;
 
 internal static class InspectorMemberMetadata
 {
-    private const BindingFlags C_DECLARED_MEMBERS = BindingFlags.Instance | BindingFlags.Public |
-                                                    BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+    private const BindingFlags C_DECLARED_MEMBERS = BindingFlags.Instance | BindingFlags.Public
+                                                    | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+
     private static readonly ConditionalWeakTable<Type, TypeMembers> S_MEMBERS = new();
     private static readonly ConditionalWeakTable<MemberInfo, AttributesBox> S_ATTRIBUTES = new();
 
@@ -38,9 +39,10 @@ internal static class InspectorMemberMetadata
             ) => new OrderedAttribute(
                 attribute,
                 attribute is Inno.Editor.Annotations.InspectorPresentationAttribute presentation
-                    ? presentation.order
-                    : 0,
-                index))
+                ? presentation.order
+                : 0,
+                index
+            ))
             .OrderBy(static value => value.order)
             .ThenBy(static value => value.index)
             .Select(static value => value.attribute)
@@ -59,14 +61,18 @@ internal static class InspectorMemberMetadata
         {
             var hierarchy = new Stack<Type>();
             for (Type? type = runtimeType; type is not null && type != typeof(object); type = type.BaseType)
+            {
                 hierarchy.Push(type);
+            }
             var result = new Dictionary<string, MemberInfo>(StringComparer.Ordinal);
             while (hierarchy.Count > 0)
             {
                 foreach (MemberInfo member in hierarchy.Pop().GetMembers(C_DECLARED_MEMBERS))
                 {
                     if (member is FieldInfo or PropertyInfo)
+                    {
                         result[member.Name] = member;
+                    }
                 }
             }
             members = result;

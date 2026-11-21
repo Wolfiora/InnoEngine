@@ -20,14 +20,18 @@ internal sealed class SessionLogSink : ILogSink, IDisposable
     public void Receive(LogEntry entry)
     {
         if (entry.sessionId == m_sessionId)
+        {
             m_sink?.Receive(entry);
+        }
     }
 
     /// <inheritdoc />
     public void Dispose()
     {
         if (m_sink is IDisposable owner)
+        {
             owner.Dispose();
+        }
         m_sink = null;
     }
 }

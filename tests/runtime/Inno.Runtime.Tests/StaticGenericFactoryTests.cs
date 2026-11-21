@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Extensibility.Catalogs;
 using Inno.Runtime;
-using Xunit;
 
 namespace Inno.Runtime.Tests;
 
@@ -15,7 +15,10 @@ public sealed class StaticGenericFactoryTests
         {
             register.Register(Metadata(typeof(Box<>)), null);
             register.RegisterFactory(typeof(Box<int>), static () => new Box<int>());
-            register.RegisterFactory(typeof(Box<int>), static () => throw new InvalidOperationException("Duplicate factory must not execute."));
+            register.RegisterFactory(
+                typeof(Box<int>),
+                static () => throw new InvalidOperationException("Duplicate factory must not execute.")
+            );
         }]);
 
         Assert.Equal(typeof(Box<int>), source.ConstructGenericType(typeof(Box<>), [typeof(int)]));
@@ -57,9 +60,10 @@ public sealed class StaticGenericFactoryTests
 
     [Fact]
     public void ContributorCannotTransferRegistrationToAnotherThread()
-        => new StaticTypeCatalogSource([register => Task.Run(() =>
-            Assert.Throws<InvalidOperationException>(() => register.Register(Metadata(typeof(Box<>)), null)))
-            .GetAwaiter().GetResult()]);
+        => new StaticTypeCatalogSource([register => Task
+            .Run(() => Assert.Throws<InvalidOperationException>(() => register.Register(Metadata(typeof(Box<>)), null)))
+            .GetAwaiter()
+            .GetResult()]);
 
     [Fact]
     public void GenericArgumentValidationIsIndependentOfAvailableFactories()

@@ -1,7 +1,7 @@
-using Inno.Runtime.Contracts;
-using Inno.Core.Execution;
 using System;
 using System.Threading;
+using Inno.Core.Execution;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Runtime;
 
@@ -132,14 +132,7 @@ internal sealed class RuntimeClock
         unscaledTime += unscaledDeltaTime;
         deltaTime = isPaused ? 0f : unscaledDeltaTime * timeScale;
         time += deltaTime;
-        var frame = new RuntimeFrame(
-            frameCount,
-            time,
-            unscaledTime,
-            deltaTime,
-            unscaledDeltaTime,
-            timeScale,
-            isPaused);
+        var frame = new RuntimeFrame(frameCount, time, unscaledTime, deltaTime, unscaledDeltaTime, timeScale, isPaused);
         frameCount++;
         return frame;
     }
@@ -156,10 +149,11 @@ internal sealed class RuntimeClock
     internal void SetTimeScale(float value)
     {
         if (!float.IsFinite(value) || value < 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(value), "Time scale must be finite and non-negative.");
+        }
         timeScale = value;
     }
 
     internal void SetPaused(bool value) => isPaused = value;
-
 }

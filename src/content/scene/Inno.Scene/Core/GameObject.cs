@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Core.Serialization;
 using Inno.Scene.Components;
 using Inno.Scene.Layers;
@@ -67,7 +66,9 @@ public sealed class GameObject : EngineObject, ISerializable
             GameScene owner = EnsureAlive();
             string requestedName = value ?? string.Empty;
             if (string.Equals(m_name, requestedName, StringComparison.Ordinal))
+            {
                 return;
+            }
             AdvanceCaptureRevision();
             m_name = requestedName;
             owner.NotifyObjectMetadataChanged(this);
@@ -96,7 +97,9 @@ public sealed class GameObject : EngineObject, ISerializable
             GameScene owner = EnsureAlive();
             string requestedTag = NormalizeTag(value);
             if (string.Equals(m_tag, requestedTag, StringComparison.Ordinal))
+            {
                 return;
+            }
             AdvanceCaptureRevision();
             m_tag = requestedTag;
             owner.NotifyObjectMetadataChanged(this);
@@ -121,7 +124,9 @@ public sealed class GameObject : EngineObject, ISerializable
         {
             GameScene owner = EnsureAlive();
             if (m_layer == value)
+            {
                 return;
+            }
             AdvanceCaptureRevision();
             m_layer = value;
             owner.NotifyObjectMetadataChanged(this);
@@ -192,7 +197,8 @@ public sealed class GameObject : EngineObject, ISerializable
     /// <returns>
     /// The attached component.
     /// </returns>
-    public TComponent AddComponent<TComponent>() where TComponent : GameComponent => (TComponent)AddComponent(typeof(TComponent));
+    public TComponent AddComponent<TComponent>()
+        where TComponent : GameComponent => (TComponent)AddComponent(typeof(TComponent));
 
     /// <summary>
     /// Creates and attaches a component of the requested runtime type.
@@ -218,11 +224,16 @@ public sealed class GameObject : EngineObject, ISerializable
     /// <exception cref="InvalidOperationException">
     /// Thrown when no matching component exists.
     /// </exception>
-    public TComponent GetComponent<TComponent>() where TComponent : GameComponent
+    public TComponent GetComponent<TComponent>()
+        where TComponent : GameComponent
     {
         if (TryGetComponent(out TComponent? component) && component is not null)
+        {
             return component;
-        throw new InvalidOperationException($"GameObject '{m_name}' does not contain component '{typeof(TComponent).FullName}'. Add it explicitly before calling GetComponent.");
+        }
+        throw new InvalidOperationException(
+            $"GameObject '{m_name}' does not contain component '{typeof(TComponent).FullName}'. Add it explicitly before calling GetComponent."
+        );
     }
 
     /// <summary>
@@ -241,8 +252,12 @@ public sealed class GameObject : EngineObject, ISerializable
     {
         ArgumentNullException.ThrowIfNull(componentType);
         if (EnsureAlive().TryGetComponent(this, componentType, out GameComponent? component) && component is not null)
+        {
             return component;
-        throw new InvalidOperationException($"GameObject '{m_name}' does not contain component '{componentType.FullName}'. Add it explicitly before calling GetComponent.");
+        }
+        throw new InvalidOperationException(
+            $"GameObject '{m_name}' does not contain component '{componentType.FullName}'. Add it explicitly before calling GetComponent."
+        );
     }
 
     /// <summary>
@@ -257,7 +272,8 @@ public sealed class GameObject : EngineObject, ISerializable
     /// <returns>
     /// <see langword="true"/> when a matching component exists.
     /// </returns>
-    public bool TryGetComponent<TComponent>(out TComponent? component) where TComponent : GameComponent
+    public bool TryGetComponent<TComponent>(out TComponent? component)
+        where TComponent : GameComponent
     {
         if (!isRuntimeValid)
         {
@@ -277,7 +293,8 @@ public sealed class GameObject : EngineObject, ISerializable
     /// <returns>
     /// <see langword="true"/> when a matching component exists.
     /// </returns>
-    public bool HasComponent<TComponent>() where TComponent : GameComponent => TryGetComponent<TComponent>(out _);
+    public bool HasComponent<TComponent>()
+        where TComponent : GameComponent => TryGetComponent<TComponent>(out _);
 
     /// <summary>
     /// Gets all attached components assignable to the requested type in attachment order.
@@ -288,8 +305,9 @@ public sealed class GameObject : EngineObject, ISerializable
     /// <returns>
     /// A stable component snapshot.
     /// </returns>
-    public IReadOnlyList<TComponent> GetComponents<TComponent>() where TComponent : GameComponent
-        => EnsureAlive().GetComponents<TComponent>(this);
+    public IReadOnlyList<TComponent> GetComponents<TComponent>()
+        where TComponent : GameComponent
+            => EnsureAlive().GetComponents<TComponent>(this);
 
     /// <summary>
     /// Gets all attached components in attachment order.
@@ -377,7 +395,9 @@ public sealed class GameObject : EngineObject, ISerializable
     internal void BindTransform(Transform transform)
     {
         if (m_transform is not null)
+        {
             throw new InvalidOperationException("GameObject transform is already initialized.");
+        }
         m_transform = transform;
     }
 
@@ -385,7 +405,9 @@ public sealed class GameObject : EngineObject, ISerializable
     {
         string requestedName = value ?? string.Empty;
         if (string.Equals(m_name, requestedName, StringComparison.Ordinal))
+        {
             return;
+        }
         AdvanceCaptureRevision();
         m_name = requestedName;
         m_scene?.NotifyObjectMetadataChanged(this);
@@ -395,7 +417,9 @@ public sealed class GameObject : EngineObject, ISerializable
     {
         string requestedTag = NormalizeTag(value);
         if (string.Equals(m_tag, requestedTag, StringComparison.Ordinal))
+        {
             return;
+        }
         AdvanceCaptureRevision();
         m_tag = requestedTag;
         m_scene?.NotifyObjectMetadataChanged(this);
@@ -404,7 +428,9 @@ public sealed class GameObject : EngineObject, ISerializable
     internal void SetLayerDirect(GameLayer value)
     {
         if (m_layer == value)
+        {
             return;
+        }
         AdvanceCaptureRevision();
         m_layer = value;
         m_scene?.NotifyObjectMetadataChanged(this);
@@ -415,6 +441,7 @@ public sealed class GameObject : EngineObject, ISerializable
         AdvanceCaptureRevision();
         m_activeSelf = value;
     }
+
     internal void SetActiveInHierarchyDirect(bool value) => m_activeInHierarchy = value;
 
     /// <summary>
@@ -426,19 +453,25 @@ public sealed class GameObject : EngineObject, ISerializable
     internal void AttachRecord(SceneObjectRecord record)
     {
         if (m_attachment is not null)
+        {
             throw new InvalidOperationException("The object already owns a scene-store attachment.");
+        }
         m_attachment = record;
     }
 
     internal void ReleaseRecord(SceneObjectRecord record)
     {
         if (!ReferenceEquals(m_attachment, record))
+        {
             throw new InvalidOperationException("The object no longer owns the retiring scene-store attachment.");
+        }
         m_attachment = null;
     }
 
     internal void SetSceneDirect(GameScene scene) => m_scene = scene ?? throw new ArgumentNullException(nameof(scene));
+
     internal void SetPrefabInstanceDirect(PrefabInstanceInfo? value) => m_prefabInstance = value;
+
     internal void SetPrefabConnectionDirect(PrefabConnectionRecord? value) => m_prefabConnection = value;
 
     internal void DestroyDirect()
@@ -453,7 +486,9 @@ public sealed class GameObject : EngineObject, ISerializable
     private GameScene EnsureAlive()
     {
         if (isDestroyed || m_scene is null || !m_scene.Contains(this))
+        {
             throw new InvalidOperationException($"GameObject '{m_name}' is destroyed or detached from its scene.");
+        }
         return m_scene;
     }
 
@@ -474,11 +509,12 @@ public sealed class GameObject : EngineObject, ISerializable
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         return value.Trim();
     }
+
     private void AdvanceCaptureRevision()
     {
         if (m_serializationRevision is { } revision)
+        {
             m_serializationRevision = revision == ulong.MaxValue ? null : revision + 1;
+        }
     }
-
-
 }

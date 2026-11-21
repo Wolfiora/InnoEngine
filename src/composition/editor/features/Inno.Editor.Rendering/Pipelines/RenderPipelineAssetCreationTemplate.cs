@@ -11,5 +11,6 @@ namespace Inno.Editor.Rendering;
     "New Render Pipeline",
     groupOrder: 200,
     itemOrder: 200,
-    separatorBeforeGroup: true)]
+    separatorBeforeGroup: true
+)]
 internal sealed class RenderPipelineAssetCreationTemplate : AssetCreationTemplate<RenderPipelineAsset>;

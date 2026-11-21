@@ -8,6 +8,7 @@ using Inno.Editor.Interactions;
 using Inno.Scene;
 
 namespace Inno.Editor.Scene;
+
 sealed partial class SceneEdits
 {
     /// <summary>
@@ -28,14 +29,18 @@ sealed partial class SceneEdits
             ArgumentNullException.ThrowIfNull(target);
             m_workspace.EnsureEditable(target.scene);
             if (!target.isRuntimeValid)
+            {
                 throw new InvalidOperationException("A selected GameObject is no longer available.");
+            }
         }
 
         var selected = unique.Select(value => value.identity.persistentId).ToHashSet();
         GameObject[] roots = unique.Where(value => !HasSelectedAncestor(value, selected)).ToArray();
         using EditorHistoryTransaction transaction = m_interactions.history.BeginTransaction("Delete GameObjects");
         foreach (GameObject target in roots)
+        {
             _ = DeleteGameObject(target);
+        }
         transaction.Commit();
     }
 
@@ -82,18 +87,27 @@ sealed partial class SceneEdits
         ArgumentNullException.ThrowIfNull(mutation);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         if (targets.Count == 0)
+        {
             throw new ArgumentException("A property edit requires at least one target.", nameof(targets));
+        }
         foreach (EngineObject target in targets)
         {
             ArgumentNullException.ThrowIfNull(target);
             m_workspace.EnsureEditable(ResolveOwnerScene(target));
-            if (!ScenePropertySerialization.CapturePropertySnapshots(target, m_workspace.serialization, m_workspace.assets).Any(value => value.name == propertyName))
+            if (!ScenePropertySerialization.CapturePropertySnapshots(target, m_workspace.serialization, m_workspace.assets)
+                .Any(value => value.name == propertyName)
+            ) {
                 throw new ArgumentException($"Selected target has no serialized property '{propertyName}'.", nameof(targets));
+            }
         }
 
         if (componentName is not null)
+        {
             foreach (EngineObject target in targets)
+            {
                 ValidateComponent(GetSelectionProperty(target, propertyName).propertyType, componentName);
+            }
+        }
         using EditorHistoryTransaction transaction = m_interactions.history.BeginTransaction(historyName);
         bool changed = ChangeProperty(targets[0], propertyName, mutation, historyName, mergeKey);
         SerializationPropertySnapshot snapshot = ScenePropertySerialization.CapturePropertySnapshots(
@@ -108,12 +122,15 @@ sealed partial class SceneEdits
             changed |= ChangeProperty(target, propertyName, () =>
             {
                 if (componentName is null)
+                {
                     RequirePropertyRestore(target, value);
+                }
                 else
                 {
                     SerializedProperty property = GetSelectionProperty(target, propertyName);
                     object primary = GetSelectionProperty(targets[0], propertyName).GetValue()!;
-                    object current = property.GetValue() ?? Activator.CreateInstance(Nullable.GetUnderlyingType(property.propertyType) ?? property.propertyType)!;
+                    object current = property.GetValue()
+                        ?? Activator.CreateInstance(Nullable.GetUnderlyingType(property.propertyType) ?? property.propertyType)!;
                     property.SetValue(CopyComponent(primary, current, componentName));
                 }
             }, historyName, mergeKey);
@@ -153,7 +170,9 @@ sealed partial class SceneEdits
                 m_workspace.assets
             ).Single(value => value.name == propertyName);
             if (first is not null && !first.data.Span.SequenceEqual(current.data.Span))
+            {
                 return false;
+            }
             first = current;
         }
 
@@ -191,38 +210,54 @@ sealed partial class SceneEdits
         ArgumentNullException.ThrowIfNull(destination);
         m_workspace.EnsureEditable(destination);
         if (parent is not null && !ReferenceEquals(parent.scene, destination))
+        {
             throw new ArgumentException("The parent must belong to the destination scene.", nameof(parent));
+        }
         GameObject[] unique = targets.Distinct().ToArray();
         foreach (GameObject target in unique)
         {
             ArgumentNullException.ThrowIfNull(target);
             m_workspace.EnsureEditable(target.scene);
             if (!target.isRuntimeValid)
+            {
                 throw new InvalidOperationException("A selected GameObject is no longer available.");
+            }
         }
 
         var selected = unique.Select(value => value.identity.persistentId).ToHashSet();
         GameObject[] roots = unique.Where(value => !HasSelectedAncestor(value, selected)).ToArray();
         if (roots.Length == 0)
+        {
             return;
+        }
         for (var ancestor = parent?.transform; ancestor is not null; ancestor = ancestor.parent)
+        {
             if (selected.Contains(ancestor.gameObject.identity.persistentId))
+            {
                 throw new InvalidOperationException("A selection cannot be moved beneath itself.");
+            }
+        }
         _ = ChangeHierarchy(roots[0], hierarchy =>
         {
             foreach (GameObject target in roots)
             {
                 if (!ReferenceEquals(target.scene, destination))
+                {
                     hierarchy.MoveToScene(target, destination);
+                }
                 target.transform.SetParent(parent?.transform);
                 target.transform.SetSiblingIndex(int.MaxValue);
             }
 
-            int available = parent is null ? destination.GetObjects().Count(value => value.transform.parent is null) - roots.Length : parent.transform.children.Count - roots.Length;
+            int available = parent is null
+                            ? destination.GetObjects().Count(value => value.transform.parent is null) - roots.Length
+                            : parent.transform.children.Count - roots.Length;
             int start = Math.Clamp(insertionIndex, 0, available);
             // Place from the end so intermediate sibling shifts cannot reverse the selection.
             for (int index = roots.Length - 1; index >= 0; index--)
+            {
                 roots[index].transform.SetSiblingIndex(start);
+            }
         }, "Move GameObjects", roots);
     }
 
@@ -237,10 +272,14 @@ sealed partial class SceneEdits
     ) {
         type = Nullable.GetUnderlyingType(type) ?? type;
         if (type == typeof(Quaternion) && componentName is "euler.x" or "euler.y" or "euler.z")
+        {
             return;
+        }
         FieldInfo? field = type.GetField(componentName, BindingFlags.Instance | BindingFlags.Public);
         if (!type.IsValueType || field is null || field.IsInitOnly || !field.FieldType.IsPrimitive)
+        {
             throw new ArgumentException("A batch component must be a writable public scalar value field.", nameof(componentName));
+        }
     }
 
     private static object CopyComponent(
@@ -271,8 +310,12 @@ sealed partial class SceneEdits
         ISet<Guid> selected
     ) {
         for (var parent = target.transform.parent; parent is not null; parent = parent.parent)
+        {
             if (selected.Contains(parent.gameObject.identity.persistentId))
+            {
                 return true;
+            }
+        }
         return false;
     }
 }

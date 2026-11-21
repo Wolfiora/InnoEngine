@@ -200,8 +200,7 @@ public abstract class RenderCommandEncoder
     public void BindTexture(
         RenderBindingId binding,
         RenderTextureHandle texture
-    )
-        => BindTexture(binding, texture, RenderSamplerState.linearClamp);
+    ) => BindTexture(binding, texture, RenderSamplerState.linearClamp);
 
     /// <summary>
     /// Binds a sampled texture and its sampler to a shader binding.
@@ -233,8 +232,7 @@ public abstract class RenderCommandEncoder
     public void BindTexture(
         RenderBindingId binding,
         PersistentTextureHandle texture
-    )
-        => BindTexture(binding, texture, RenderSamplerState.linearClamp);
+    ) => BindTexture(binding, texture, RenderSamplerState.linearClamp);
 
     /// <summary>
     /// Binds a sampled texture and its sampler to a shader binding.
@@ -336,7 +334,8 @@ public abstract class RenderCommandEncoder
         {
             throw new ArgumentException(
                 "Storage upload slices must begin at the first backing element.",
-                nameof(buffer));
+                nameof(buffer)
+            );
         }
         BindBuffer(binding, buffer.buffer);
     }
@@ -744,18 +743,22 @@ public abstract class RenderCommandEncoder
         RenderBufferUsage requiredUsage
     ) {
         if (!buffer.isValid)
+        {
             throw new ArgumentException("A frame buffer slice must be valid.", nameof(buffer));
+        }
         if (!m_hasFrameIndex || buffer.frameIndex != m_frameIndex)
         {
             throw new ArgumentException(
                 "A frame buffer slice cannot be used outside the frame that uploaded it.",
-                nameof(buffer));
+                nameof(buffer)
+            );
         }
         if ((buffer.usage & requiredUsage) == 0)
         {
             throw new ArgumentException(
                 $"The frame buffer slice does not declare {requiredUsage} usage.",
-                nameof(buffer));
+                nameof(buffer)
+            );
         }
     }
 }

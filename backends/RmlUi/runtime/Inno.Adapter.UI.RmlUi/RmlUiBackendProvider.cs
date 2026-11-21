@@ -10,7 +10,8 @@ public sealed class RmlUiBackendProvider : UiBackendProvider
     /// <summary>
     /// Creates a composition-owned registration for the bundled implementation.
     /// </summary>
-    public RmlUiBackendProvider() : base(UiBackendId.rmlUi) { }
+    public RmlUiBackendProvider()
+        : base(UiBackendId.rmlUi) {}
 
     /// <inheritdoc />
     public override IUiBackend CreateBackend() => new RmlUiBackend();

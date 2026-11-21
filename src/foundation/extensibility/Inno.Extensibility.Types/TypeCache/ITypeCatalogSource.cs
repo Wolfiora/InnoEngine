@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-
 using Inno.Extensibility.Catalogs;
 
 namespace Inno.Extensibility.Types;

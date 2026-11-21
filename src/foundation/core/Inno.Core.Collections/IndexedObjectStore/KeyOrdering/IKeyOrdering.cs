@@ -2,7 +2,8 @@ using System.Collections.Generic;
 
 namespace Inno.Core.Collections;
 
-internal interface IKeyOrdering<TKey> where TKey : notnull
+internal interface IKeyOrdering<TKey>
+    where TKey : notnull
 {
     /// <summary>
     /// Adds one key to the indexed membership set.
@@ -11,6 +12,7 @@ internal interface IKeyOrdering<TKey> where TKey : notnull
     /// The backend-neutral physical key associated with this event.
     /// </param>
     void AddKey(TKey key);
+
     /// <summary>
     /// Removes one key from the indexed membership set.
     /// </summary>
@@ -18,10 +20,12 @@ internal interface IKeyOrdering<TKey> where TKey : notnull
     /// The backend-neutral physical key associated with this event.
     /// </param>
     void RemoveKey(TKey key);
+
     /// <summary>
     /// Removes all retained entries and returns the instance to an empty reusable state.
     /// </summary>
     void Clear();
+
     /// <summary>
     /// Enumerates a stable view of the currently indexed keys.
     /// </summary>

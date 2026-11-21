@@ -1,7 +1,6 @@
 using System;
 using System.Buffers.Binary;
 using System.IO;
-
 using Inno.Build;
 using Inno.Editor.Interactions;
 
@@ -26,10 +25,14 @@ internal static class BuildSettingsHistory
     {
         byte[] payload = change.payload.ReadBytes();
         if (payload.Length < sizeof(int))
+        {
             throw new InvalidDataException("The Build Settings history payload is truncated.");
+        }
         int beforeLength = BinaryPrimitives.ReadInt32LittleEndian(payload);
         if (beforeLength < 0 || beforeLength > payload.Length - sizeof(int))
+        {
             throw new InvalidDataException("The Build Settings history payload has an invalid boundary.");
+        }
         return (
             payload.AsMemory(sizeof(int), beforeLength),
             payload.AsMemory(sizeof(int) + beforeLength));
@@ -97,8 +100,7 @@ internal sealed class BuildSettingsHistoryHandler(BuildSettingsStore settings) :
         try
         {
             (ReadOnlyMemory<byte> before, ReadOnlyMemory<byte> after) = BuildSettingsHistory.Read(change);
-            settings.RestoreDocument(
-                direction == EditorHistoryDirection.Undo ? before.Span : after.Span);
+            settings.RestoreDocument(direction == EditorHistoryDirection.Undo ? before.Span : after.Span);
             return EditorHistoryResult.Success();
         }
         catch (Exception exception) when (
@@ -111,8 +113,9 @@ internal sealed class BuildSettingsHistoryHandler(BuildSettingsStore settings) :
             catch (Exception rollbackException)
             {
                 return StateIntegrityFailure(
-                    $"Build Settings transition failed: {exception.Message} " +
-                    $"Rollback failed: {rollbackException.Message}");
+                    $"Build Settings transition failed: {exception.Message} "
+                    + $"Rollback failed: {rollbackException.Message}"
+                );
             }
             return EditorHistoryResult.Failure(exception.Message);
         }

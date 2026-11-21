@@ -1,9 +1,9 @@
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Assets.Authoring;
 
@@ -37,4 +37,3 @@ public interface ITextureTargetCompiler
         CancellationToken cancellationToken = default
     );
 }
-

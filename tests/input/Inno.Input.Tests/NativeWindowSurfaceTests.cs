@@ -1,7 +1,7 @@
 using System;
+using Xunit;
 using Inno.Adapter.Platform;
 using Inno.Platform;
-using Xunit;
 
 namespace Inno.Input.Tests;
 
@@ -18,5 +18,4 @@ public sealed class NativeWindowSurfaceTests
         Assert.Throws<ArgumentException>(() => new PlatformNativeHandleId(" "));
         Assert.Throws<ArgumentException>(() => new PlatformNativeHandleId("tests. surface"));
     }
-
 }

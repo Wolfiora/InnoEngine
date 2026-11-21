@@ -1,4 +1,5 @@
 using System;
+
 namespace Inno.Scripting.Reload;
 
 /// <summary>

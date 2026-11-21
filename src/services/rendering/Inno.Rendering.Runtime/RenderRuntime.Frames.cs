@@ -1,16 +1,16 @@
-using Inno.References;
-using Inno.Runtime.Contracts;
-using Inno.Core.Diagnostics;
-using Inno.Core.Execution;
-using Inno.Core.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Inno.Extensibility.Types;
-using Inno.Rendering;
-using Inno.Input;
+using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
+using Inno.Core.Identity;
 using Inno.Core.Mathematics;
+using Inno.Extensibility.Types;
+using Inno.Input;
+using Inno.References;
+using Inno.Rendering;
 using Inno.Rendering.Assets;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Rendering.Runtime;
 
@@ -25,9 +25,11 @@ sealed partial class RenderRuntime
     protected override void OnBeginFrame(RuntimeFrame frame)
     {
         m_frameInput = InputExecutionContext.TryGet(out IInputService? input)
-            ? input!.snapshot : InputSnapshot.empty;
+                       ? input!.snapshot
+                       : InputSnapshot.empty;
         OwnFrameScope(EnterExecutionScope());
     }
+
     /// <summary>
     /// Opens resources required for this frame's output.
     /// </summary>
@@ -35,6 +37,7 @@ sealed partial class RenderRuntime
     /// The variable frame timing.
     /// </param>
     protected override void OnPrepareOutput(RuntimeFrame frame) => BeginRendering(frame.unscaledDeltaTime);
+
     /// <summary>
     /// Collects output commands without executing managed code on a native realtime callback.
     /// </summary>
@@ -42,6 +45,7 @@ sealed partial class RenderRuntime
     /// The variable frame timing.
     /// </param>
     protected override void OnProduceOutput(RuntimeFrame frame) => CollectRendering(frame.unscaledDeltaTime);
+
     /// <summary>
     /// Submits output and closes output-specific temporary resources.
     /// </summary>
@@ -65,7 +69,9 @@ sealed partial class RenderRuntime
         m_device.BeginFrame();
         m_frameOpen = true;
         lock (m_contributorLock)
+        {
             m_frameContributors = m_contributorSnapshot;
+        }
         try
         {
             m_resourceService.BeginFrame(m_frameIndex);
@@ -73,9 +79,12 @@ sealed partial class RenderRuntime
             targets.PrepareFrame();
             m_primaryPresentationSize = m_device.primaryPresentationSize;
             if (m_primaryPresentationSize is RenderPresentationSize size && !size.isValid)
+            {
                 throw new InvalidOperationException("The render device reported an invalid primary presentation extent.");
+            }
             m_primaryPresentationViewport = m_primaryPresentationSize is RenderPresentationSize available
-                ? ResolvePrimaryPresentationViewport(available) : null;
+                                            ? ResolvePrimaryPresentationViewport(available)
+                                            : null;
             lock (m_requestLock)
             {
                 m_currentRequests.Clear();
@@ -119,7 +128,9 @@ sealed partial class RenderRuntime
     private void CollectRendering(float deltaTime)
     {
         if (!m_frameOpen || m_requestProviders is null)
+        {
             return;
+        }
 
         using IDisposable executionScope = EnterExecutionScope();
         using ContentReadScope content = GetFrameContentScope();
@@ -134,10 +145,23 @@ sealed partial class RenderRuntime
             m_frameIndex,
             deltaTime,
             this,
-            outputInput);
+            outputInput
+        );
         if (m_primaryModelOutputEnabled && m_primaryPresentationViewport is RenderViewport viewport)
-            CollectModels(new RenderOutputSession("primary", content, viewport,
-                m_frameIndex, deltaTime, this, outputInput, m_primaryRoute));
+        {
+            CollectModels(
+                new RenderOutputSession(
+                    "primary",
+                    content,
+                    viewport,
+                    m_frameIndex,
+                    deltaTime,
+                    this,
+                    outputInput,
+                    m_primaryRoute
+                )
+            );
+        }
         foreach (RenderExtensionRegistry.RequestProviderEntry entry in m_requestProviders.providers)
         {
             try
@@ -150,11 +174,14 @@ sealed partial class RenderRuntime
             }
             catch (Exception exception)
             {
-                PublishFrameIssue(new Diagnostic(
-                    "RENDER_REQUEST_PROVIDER_FAILED",
-                    $"Render request provider '{entry.id}' was isolated after failure: {exception}",
-                    DiagnosticSeverity.Error,
-                    entry.id));
+                PublishFrameIssue(
+                    new Diagnostic(
+                        "RENDER_REQUEST_PROVIDER_FAILED",
+                        $"Render request provider '{entry.id}' was isolated after failure: {exception}",
+                        DiagnosticSeverity.Error,
+                        entry.id
+                    )
+                );
             }
         }
     }
@@ -162,11 +189,13 @@ sealed partial class RenderRuntime
     private ContentReadScope GetFrameContentScope()
     {
         if (m_contentScopeProvider is null)
+        {
             return ContentReadScope.empty;
+        }
         try
         {
             return m_contentScopeProvider()
-                ?? throw new InvalidOperationException("The host content-scope provider returned null.");
+                   ?? throw new InvalidOperationException("The host content-scope provider returned null.");
         }
         catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
         {
@@ -174,11 +203,14 @@ sealed partial class RenderRuntime
         }
         catch (Exception exception)
         {
-            PublishFrameIssue(new Diagnostic(
-                "RENDER_CONTENT_SCOPE_FAILED",
-                $"The host content scope failed and an empty scope was used for this frame: {exception}",
-                DiagnosticSeverity.Error,
-                "RenderRuntime"));
+            PublishFrameIssue(
+                new Diagnostic(
+                    "RENDER_CONTENT_SCOPE_FAILED",
+                    $"The host content scope failed and an empty scope was used for this frame: {exception}",
+                    DiagnosticSeverity.Error,
+                    "RenderRuntime"
+                )
+            );
             return ContentReadScope.empty;
         }
     }
@@ -193,7 +225,9 @@ sealed partial class RenderRuntime
     {
         _ = deltaTime;
         if (!m_frameOpen)
+        {
             return;
+        }
 
         int executedViewCount = 0;
         int culledPassCount = 0;
@@ -202,7 +236,9 @@ sealed partial class RenderRuntime
         try
         {
             lock (m_requestLock)
+            {
                 m_acceptingCurrentFrame = false;
+            }
 
             RenderGraphBuilder graph = CreateGraph();
             AddPrimaryPresentationBackground(graph);
@@ -211,9 +247,15 @@ sealed partial class RenderRuntime
             int requestIndex = 0;
             RenderPresentationComposer presentation = m_scratch.presentation;
             foreach (RenderRequest request in m_currentRequests)
+            {
                 m_scratch.scheduled.Add(new ScheduledWork(m_scratch.scheduled.Count, request.priority, request.name, request, null));
+            }
             foreach (CompositionRequest composition in m_currentCompositions)
-                m_scratch.scheduled.Add(new ScheduledWork(m_scratch.scheduled.Count, composition.priority, composition.name, null, composition));
+            {
+                m_scratch.scheduled.Add(
+                    new ScheduledWork(m_scratch.scheduled.Count, composition.priority, composition.name, null, composition)
+                );
+            }
             m_scratch.scheduled.Sort(static (
                 left,
                 right
@@ -221,7 +263,9 @@ sealed partial class RenderRuntime
             {
                 int priority = left.priority.CompareTo(right.priority);
                 if (priority != 0)
+                {
                     return priority;
+                }
                 int name = StringComparer.Ordinal.Compare(left.name, right.name);
                 return name != 0 ? name : left.order.CompareTo(right.order);
             });
@@ -235,7 +279,9 @@ sealed partial class RenderRuntime
                 RenderRequest request = work.request!;
                 bool preservePresentationTarget = presentation.MustPreserve(request);
                 if (TryBuildRequest(graph, request, requestIndex++, preservePresentationTarget))
+                {
                     presentation.Commit(request);
+                }
             }
 
             AddContributors(graph, m_scratch.contributors);
@@ -267,7 +313,9 @@ sealed partial class RenderRuntime
             m_scratch.Clear();
             m_frameContributors = RenderContributorSnapshot.empty;
             if (!retirementPending)
+            {
                 EndRenderingFrame(executedViewCount, culledPassCount, graphCompileCount);
+            }
         }
     }
 
@@ -303,8 +351,14 @@ sealed partial class RenderRuntime
             m_currentCompositions.Clear();
             m_frameIndex++;
             m_graphicsSettings.frameStatistics = new RenderFrameStatistics(
-                m_frameIndex, executedViewCount, counters.drawCount, counters.dispatchCount, culledPassCount,
-                allocations, graphCompileCount);
+                m_frameIndex,
+                executedViewCount,
+                counters.drawCount,
+                counters.dispatchCount,
+                culledPassCount,
+                allocations,
+                graphCompileCount
+            );
         }
     }
 
@@ -313,7 +367,9 @@ sealed partial class RenderRuntime
         foreach (RenderExtensionRegistry.ContentSourceEntry entry in m_extensions.extensions.sources.sources)
         {
             if (entry.source is not IViewContentFrameSource source)
+            {
                 continue;
+            }
             try
             {
                 source.CompleteFrame(m_frameIndex);
@@ -324,9 +380,14 @@ sealed partial class RenderRuntime
             }
             catch (Exception exception)
             {
-                PublishFrameIssue(new Diagnostic("RENDER_VIEW_CONTENT_FRAME_FAILED",
-                    $"View content source '{entry.id}' failed to complete its frame: {exception}",
-                    DiagnosticSeverity.Error, entry.id));
+                PublishFrameIssue(
+                    new Diagnostic(
+                        "RENDER_VIEW_CONTENT_FRAME_FAILED",
+                        $"View content source '{entry.id}' failed to complete its frame: {exception}",
+                        DiagnosticSeverity.Error,
+                        entry.id
+                    )
+                );
             }
         }
     }
@@ -335,7 +396,9 @@ sealed partial class RenderRuntime
     {
         m_graphGeneration++;
         if (m_graphGeneration == 0)
+        {
             m_graphGeneration++;
+        }
         return new RenderGraphBuilder(m_graphGeneration, m_device.capabilities);
     }
 
@@ -357,5 +420,4 @@ public void Submit(ViewContentItem item)
             m_items.Add(item);
         }
     }
-
 }

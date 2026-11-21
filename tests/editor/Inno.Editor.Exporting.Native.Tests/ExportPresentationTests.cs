@@ -1,53 +1,52 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Versioning;
 using System.IO.Compression;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using BGCS.Runtime;
+using Xunit;
 using Inno.Adapter.Content.FileSystem;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
-using Inno.Build.Managed;
-using Inno.Content;
-using Inno.Core.IO;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Build;
 using Inno.Build.MacOSArm64;
+using Inno.Build.Managed;
 using Inno.Build.WindowsX64;
-using Inno.Core.Identity;
+using Inno.Content;
 using Inno.Core.Execution;
+using Inno.Core.IO;
+using Inno.Core.Identity;
+using Inno.Core.Input;
+using Inno.Core.Logging;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
-using Inno.Extensibility.Types;
 using Inno.Editor.Core;
 using Inno.Editor.Exporting;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Types;
 using Inno.Native.ImGui;
 using Inno.Plugins.Authoring;
 using Inno.Runtime;
 using Inno.Scene;
 using Inno.Scripting.Compiler;
-using Xunit;
-using NativeImGui = Inno.Native.ImGui.ImGui;
-using ImGuiEditorRuntime = Inno.Editor.ImGui.ImGuiEditorRuntime;
-using Inno.Core.Input;
-using Inno.Core.Logging;
-using NativeGui = Inno.Native.ImGui.ImGui;
-using EditorUiSession = Inno.Editor.ImGui.EditorUiSession;
-using Inno.Build;
 using Inno.Testing.Build;
+
+using EditorUiSession = Inno.Editor.ImGui.EditorUiSession;
+using ImGuiEditorRuntime = Inno.Editor.ImGui.ImGuiEditorRuntime;
+using NativeGui = Inno.Native.ImGui.ImGui;
+using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.Exporting.Native.Tests;
 
 public sealed class ExportPresentationTests : BuildPipelineFixture
 {
-
     [Fact]
     [Trait("ExternalDependency", "NativeProduct")]
     public unsafe void EditorShutdownDrainsSupportPackCleanupBeforeReleasingExportServices()
@@ -58,14 +57,21 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
         BuildPipeline pipeline = CreatePipeline(provisioner);
         var defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", new BuildTargetId("macos-arm64"));
         var buildSettings = new BuildSettingsStore(
-            Path.Combine(m_projectRoot, "Settings.Build.inno"), m_engine.serialization, defaults);
+            Path.Combine(m_projectRoot, "Settings.Build.inno"),
+            m_engine.serialization,
+            defaults
+        );
         m_engine.modules.Register("Tests.Exporting", [
             typeof(EditorExportService).Assembly,
             Assembly.Load(new AssemblyName("Inno.Editor.Workbench"))
         ]);
         var context = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"));
         using var runtime = new EditorInteractionRuntime(
-            context, m_engine.types, m_engine.logs, [pipeline, buildSettings, m_settings]);
+            context,
+            m_engine.types,
+            m_engine.logs,
+            [pipeline, buildSettings, m_settings]
+        );
         runtime.Start();
         Assert.True(runtime.interactions.For("editor/main-menu").Execute("export/game"));
         EditorModalExtension modal = Assert.Single(runtime.modals.Where(static item => item.id == "export.game"));
@@ -91,7 +97,9 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
                     NativeImGui.Raw.AddMouseButtonEvent(io, 0, 1);
                 }
                 if (frame == 3)
+                {
                     NativeImGui.Raw.AddMouseButtonEvent(io, 0, 0);
+                }
                 NativeImGui.NewFrame();
                 NativeImGui.SetNextWindowPos(new Vector2(20f), (int)ImGuiCond.Always);
                 NativeImGui.SetNextWindowSize(new Vector2(1000f, 800f), (int)ImGuiCond.Always);
@@ -127,7 +135,9 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
                 catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
                 {
                     if (retirement.Elapsed >= TimeSpan.FromSeconds(5))
+                    {
                         throw;
+                    }
                     Thread.Sleep(1);
                 }
             }
@@ -140,19 +150,33 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
             NativeImGui.Raw.DestroyContext(imgui);
         }
     }
+
     [Fact]
     [Trait("ExternalDependency", "NativeProduct")]
     public unsafe void ExportFormBalancesItsTablesWhenARegisteredTargetLabelFails()
     {
         var target = new ExportLabelTarget();
-        var pipeline = new BuildPipeline(m_assets, m_plugins, m_settings, m_engine.serialization,
-            m_engine.generations, m_compiler, m_supportPackRoot,
-            [new GameBuildTargetBinding(target, target)], CreateManagedDeployments());
+        var pipeline = new BuildPipeline(
+            m_assets,
+            m_plugins,
+            m_settings,
+            m_engine.serialization,
+            m_engine.generations,
+            m_compiler,
+            m_supportPackRoot,
+            [new GameBuildTargetBinding(target, target)],
+            CreateManagedDeployments()
+        );
         var defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", target.id);
-        var settings = new BuildSettingsStore(System.IO.Path.Combine(m_projectRoot, "Settings.Build.inno"),
-            m_engine.serialization, defaults);
-        m_engine.modules.Register("Tests.Exporting", [typeof(EditorExportService).Assembly,
-            Assembly.Load(new AssemblyName("Inno.Editor.Workbench"))]);
+        var settings = new BuildSettingsStore(
+            System.IO.Path.Combine(m_projectRoot, "Settings.Build.inno"),
+            m_engine.serialization,
+            defaults
+        );
+        m_engine.modules.Register("Tests.Exporting", [
+            typeof(EditorExportService).Assembly,
+            Assembly.Load(new AssemblyName("Inno.Editor.Workbench"))
+        ]);
         var context = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Ctrl"));
         var logs = new ExportLogSink();
         ImGuiNativeContext* native = NativeGui.Raw.CreateContext(null);
@@ -162,8 +186,12 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
             m_engine.logs.RegisterSink(logs);
             using var session = new EditorUiSession();
             using IDisposable scope = session.Enter();
-            using var runtime = new EditorInteractionRuntime(context, m_engine.types, m_engine.logs,
-                [pipeline, settings, m_settings, session]);
+            using var runtime = new EditorInteractionRuntime(
+                context,
+                m_engine.types,
+                m_engine.logs,
+                [pipeline, settings, m_settings, session]
+            );
             runtime.Start();
             Assert.True(runtime.interactions.For("editor/main-menu").Execute("export/game"));
             EditorModalExtension modal = Assert.Single(runtime.modals, item => item.id == "export.game");
@@ -204,8 +232,10 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
     ) {
         var defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", new BuildTargetId("macos-arm64"));
         var settings = new BuildSettingsStore(Path.Combine(m_projectRoot, "Settings.Build.inno"), m_engine.serialization, defaults);
-        m_engine.modules.Register("Tests.ExportPresentation", [typeof(EditorExportService).Assembly,
-            Assembly.Load(new AssemblyName("Inno.Editor.Workbench"))]);
+        m_engine.modules.Register("Tests.ExportPresentation", [
+            typeof(EditorExportService).Assembly,
+            Assembly.Load(new AssemblyName("Inno.Editor.Workbench"))
+        ]);
         var native = NativeGui.Raw.CreateContext(null);
         try
         {
@@ -215,8 +245,12 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
             io->DeltaTime = 0.2f;
             io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
             io->Fonts->RendererHasTextures = 1;
-            using var runtime = new ImGuiEditorRuntime(new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Ctrl")),
-                m_engine.types, m_engine.logs, [m_pipeline, settings, m_settings]);
+            using var runtime = new ImGuiEditorRuntime(
+                new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Ctrl")),
+                m_engine.types,
+                m_engine.logs,
+                [m_pipeline, settings, m_settings]
+            );
             runtime.Start();
             Assert.True(runtime.interactions.For("editor/main-menu").Execute("export/plugin"));
             NativeGui.Raw.GetStyle()->FontScaleDpi = dpi;
@@ -238,7 +272,9 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
                 Assert.InRange(window->ScrollMax.Y, 0f, 0.01f);
             }
             else
+            {
                 Assert.True(window->ScrollMax.Y > 0f);
+            }
             Assert.True(runtime.interactions.TryGetModule<EditorExportService>(out var exports));
             Assert.False(exports!.progress.isBusy);
         }
@@ -263,7 +299,9 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
             bool leaked = NativeGui.Raw.GetCurrentTable() != null;
             // Retire only a table opened by this fixture's modal before reporting a failed regression.
             if (leaked)
+            {
                 NativeGui.EndTable();
+            }
             Assert.False(leaked, "A modal failure left its own native Table active.");
             return drawn;
         }
@@ -277,6 +315,7 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
     private sealed class ExportLogSink : ILogSink
     {
         internal List<string> messages { get; } = [];
+
         public void Receive(LogEntry entry) => messages.Add(entry.message);
     }
 
@@ -288,7 +327,9 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
         public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.coreClr;
         public string runtimeIdentifier => "fixture";
         public string displayName => reject ? throw new InvalidOperationException("Export target label failed.") : "Fixture target";
-        public void Validate(string directory) => throw new InvalidOperationException("This presentation fixture cannot validate products.");
+
+        public void Validate(string directory)
+            => throw new InvalidOperationException("This presentation fixture cannot validate products.");
 
         public ValueTask<string> PackageAsync(
             GameBuildPackageContext context,

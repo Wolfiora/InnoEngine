@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Frozen;
+using System.Collections.Generic;
 using System.Linq;
 using Inno.Core.Diagnostics;
 using Inno.Core.Events;
@@ -64,33 +64,41 @@ public sealed class RuntimeSubsystemContext
         this.isEditMode = isEditMode;
         this.capabilities = (capabilities ?? []).ToFrozenSet();
         if (this.capabilities.Any(static capability => !capability.isValid))
+        {
             throw new ArgumentException("Available capabilities must be valid.", nameof(capabilities));
+        }
     }
 
     /// <summary>
     /// Gets the owner-thread event dispatcher.
     /// </summary>
     public EventDispatcher events { get; }
+
     /// <summary>
     /// Gets the shared diagnostic state owner.
     /// </summary>
     public DiagnosticHub diagnostics { get; }
+
     /// <summary>
     /// Gets the isolated live-object identity domain.
     /// </summary>
     public IdentityAllocator identities { get; }
+
     /// <summary>
     /// Gets the current foundation type catalog.
     /// </summary>
     public TypeCatalog types { get; }
+
     /// <summary>
     /// Gets resources owned by this pipeline, not by a global container.
     /// </summary>
     public LifetimeScope resources { get; }
+
     /// <summary>
     /// Gets the owner scope used to validate factory lifetimes.
     /// </summary>
     public RuntimeSubsystemLifetime lifetime { get; }
+
     /// <summary>
     /// Gets whether scaled simulation should be disabled for authoring.
     /// </summary>

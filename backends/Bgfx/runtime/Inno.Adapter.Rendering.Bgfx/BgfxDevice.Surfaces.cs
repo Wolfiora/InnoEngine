@@ -1,8 +1,8 @@
-using System.Threading.Tasks;
-using Inno.Core.Execution;
-using Inno.Adapter.Platform;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Inno.Adapter.Platform;
+using Inno.Core.Execution;
 using Inno.Native.Bgfx;
 using Inno.Platform;
 using Inno.Rendering;
@@ -53,13 +53,17 @@ public sealed unsafe partial class BgfxDevice
         IBgfxSurfaceIntegration integration = m_surfaceIntegration
             ?? throw new NotSupportedException("Additional BGFX windows require an explicit surface integration.");
         if (!integration.supportsAdditionalSurfaces)
+        {
             throw new NotSupportedException("The selected host does not support additional window surfaces.");
+        }
         BgfxSurfaceDescriptor descriptor = BgfxSurfaceBinding.Validate(
-            integration.Resolve(nativeHandles, BgfxSurfaceRole.Additional));
+            integration.Resolve(nativeHandles, BgfxSurfaceRole.Additional)
+        );
         if (!capabilities.Supports(GraphicsCapability.SwapChain))
         {
             throw new NotSupportedException(
-                "The active graphics backend does not support additional presentation surfaces.");
+                "The active graphics backend does not support additional presentation surfaces."
+            );
         }
 
         bgfx.FrameBufferHandle frameBuffer = CreateNativeWindowSurface(descriptor, width, height);
@@ -89,8 +93,8 @@ public sealed unsafe partial class BgfxDevice
     {
         _ = ResolveSurface(surface);
         return backbufferIsSrgb
-            && capabilities.backend != GraphicsApi.Direct3D11
-            && capabilities.backend != GraphicsApi.Direct3D12;
+               && capabilities.backend != GraphicsApi.Direct3D11
+               && capabilities.backend != GraphicsApi.Direct3D12;
     }
 
     /// <summary>
@@ -134,7 +138,9 @@ public sealed unsafe partial class BgfxDevice
         resource.height = height;
         resource.retirement.pending.Add(previous);
         if (!m_surfaceRetirements.Contains(resource.retirement))
+        {
             m_surfaceRetirements.Add(resource.retirement);
+        }
     }
 
     /// <summary>
@@ -161,7 +167,9 @@ public sealed unsafe partial class BgfxDevice
         resource.retirement.pending.Add(resource.frameBuffer);
         resource.retirement.closing = true;
         if (!m_surfaceRetirements.Contains(resource.retirement))
+        {
             m_surfaceRetirements.Add(resource.retirement);
+        }
         return resource.retirement.completion.Task;
     }
 
@@ -183,16 +191,24 @@ public sealed unsafe partial class BgfxDevice
     {
         EnsureSurfaceSafetyPoint();
         if (m_frameOpen)
+        {
             throw new InvalidOperationException("Window retirement draining requires a closed render frame.");
+        }
         if (!HasClosingSurface())
+        {
             return;
+        }
         m_surfaceRetirementBarrier ??= new RetirementBarrier("BGFX window surfaces");
         m_surfaceRetirementBarrier.Wait(() =>
         {
             SubmitRetirementFrame();
             foreach (BgfxSurfaceRetirement retirement in m_surfaceRetirements)
+            {
                 if (retirement.closing)
+                {
                     throw new RetirementPendingException("BGFX has not acknowledged window destruction.", retirement.failure);
+                }
+            }
         });
         m_surfaceRetirementBarrier = null;
     }
@@ -200,8 +216,12 @@ public sealed unsafe partial class BgfxDevice
     private bool HasClosingSurface()
     {
         foreach (BgfxSurfaceRetirement retirement in m_surfaceRetirements)
+        {
             if (retirement.closing)
+            {
                 return true;
+            }
+        }
         return false;
     }
 
@@ -218,13 +238,19 @@ public sealed unsafe partial class BgfxDevice
         foreach (BgfxSurfaceRetirement retirement in m_surfaceRetirements)
         {
             if (retirement.failure is not null)
+            {
                 throw new RetirementPendingException("A window framebuffer could not retire.", retirement.failure);
+            }
             try
             {
                 foreach (bgfx.FrameBufferHandle frameBuffer in retirement.pending)
+                {
                     bgfx.destroy_frame_buffer(frameBuffer);
+                }
                 if (retirement.pending.Count > 0)
+                {
                     retirement.lastSubmission = submission;
+                }
                 retirement.pending.Clear();
             }
             catch (Exception failure)
@@ -258,9 +284,13 @@ public sealed unsafe partial class BgfxDevice
         {
             BgfxSurfaceRetirement retirement = m_surfaceRetirements[index];
             if (retirement.lastSubmission > acknowledged)
+            {
                 continue;
+            }
             if (retirement.closing)
+            {
                 retirement.completion.TrySetResult();
+            }
             m_surfaceRetirements.RemoveAt(index);
         }
         return frame;
@@ -270,13 +300,13 @@ public sealed unsafe partial class BgfxDevice
         BgfxSurfaceDescriptor descriptor,
         int width,
         int height
-    )
-        => BgfxNativeCalls.CreateFrameBufferFromNwh(
-            descriptor.windowHandle.ToPointer(),
-            checked((ushort)width),
-            checked((ushort)height),
-            bgfx.TextureFormat.BGRA8,
-            bgfx.TextureFormat.D24s8);
+    ) => BgfxNativeCalls.CreateFrameBufferFromNwh(
+        descriptor.windowHandle.ToPointer(),
+        checked((ushort)width),
+        checked((ushort)height),
+        bgfx.TextureFormat.BGRA8,
+        bgfx.TextureFormat.D24s8
+    );
 
     private BgfxWindowSurfaceResource ResolveSurface(RenderSurfaceHandle surface)
     {
@@ -296,7 +326,8 @@ public sealed unsafe partial class BgfxDevice
         if (m_activeGraph is not null || m_activeEncoder != null)
         {
             throw new InvalidOperationException(
-                "Window surface changes require an API-thread point outside graph execution.");
+                "Window surface changes require an API-thread point outside graph execution."
+            );
         }
     }
 
@@ -338,19 +369,24 @@ public sealed unsafe partial class BgfxDevice
         /// Gets the BGFX framebuffer owned by this presentation surface.
         /// </summary>
         public bgfx.FrameBufferHandle frameBuffer { get; set; }
+
         internal BgfxSurfaceRetirement retirement { get; } = new();
+
         /// <summary>
         /// Gets the scalar measurement or identity associated with the current state.
         /// </summary>
         public int width { get; set; }
+
         /// <summary>
         /// Gets the scalar measurement or identity associated with the current state.
         /// </summary>
         public int height { get; set; }
+
         /// <summary>
         /// Gets the platform-native window and display handles used to create the surface.
         /// </summary>
         public BgfxSurfaceDescriptor descriptor { get; }
+
         /// <summary>
         /// Gets the human-readable name used for presentation and diagnostics.
         /// </summary>

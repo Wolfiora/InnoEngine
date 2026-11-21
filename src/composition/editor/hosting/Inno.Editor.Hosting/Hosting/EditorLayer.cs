@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
+using Inno.Adapter.Presentation;
 using Inno.Core.Events;
 using Inno.Core.Execution;
 using Inno.Core.Layers;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
-using Inno.Adapter.Presentation;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.PlayMode;
+using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Hosting;
+
 /// <summary>
 /// Bridges the engine layer lifecycle to the attribute-discovered editor runtime.
 /// </summary>
@@ -29,6 +30,7 @@ internal sealed class EditorLayer : Layer
     private bool m_isShutdownPrepared;
     private float m_totalTime;
     private double m_nextPersistenceRetryTime;
+
     internal EditorLayer(
         IPresentationContext presentation,
         EditorContext context,
@@ -47,7 +49,11 @@ internal sealed class EditorLayer : Layer
 
     internal int panelCount => m_runtime.panelCount;
     internal bool isFocused { get; set; }
-    internal float totalTime { set => m_totalTime = value; }
+
+    internal float totalTime
+    {
+        set => m_totalTime = value;
+    }
 
     internal void DisposeUnattached()
     {
@@ -55,6 +61,7 @@ internal sealed class EditorLayer : Layer
     }
 
     internal void QuiescePlayMode() => m_playModeLoop.Quiesce();
+
     /// <summary>
     /// Starts the editor extension runtime and subscribes its host-level input handling.
     /// </summary>
@@ -80,6 +87,7 @@ internal sealed class EditorLayer : Layer
     /// The elapsed frame time in seconds.
     /// </param>
     public override void OnUpdate(float deltaTime) => m_playModeLoop.Tick(deltaTime);
+
     /// <summary>
     /// Updates editor presentation after the active Play Mode session has advanced.
     /// </summary>
@@ -101,7 +109,9 @@ internal sealed class EditorLayer : Layer
     internal bool PrepareShutdown()
     {
         if (m_isShutdownPrepared)
+        {
             return true;
+        }
         try
         {
             // Extension-state capture freezes its periodic writer before reading module state. Layout is
@@ -151,7 +161,9 @@ internal sealed class EditorLayer : Layer
     private bool CaptureLayout(bool force)
     {
         if (!m_presentation.TryCaptureLayout(out string layout, force))
+        {
             return false;
+        }
         m_context.SetImGuiLayout(layout);
         return true;
     }

@@ -1,6 +1,6 @@
-using Inno.Rendering;
 using System;
 using System.Linq;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
@@ -12,9 +12,9 @@ internal sealed class ShaderDefinitionSnapshot
     internal ShaderDefinitionSnapshot(ShaderDefinition definition)
     {
         ArgumentNullException.ThrowIfNull(definition);
-        if (definition.properties is null || definition.keywords is null ||
-            definition.passes is null || definition.techniques is null)
-        {
+        if (definition.properties is null || definition.keywords is null
+            || definition.passes is null || definition.techniques is null
+        ) {
             throw new ArgumentException("Shader declaration collections cannot be null.", nameof(definition));
         }
         m_definition = Copy(definition);
@@ -36,16 +36,15 @@ internal sealed class ShaderDefinitionSnapshot
 
     private static ShaderDefinition Copy(ShaderDefinition definition)
         => new()
+    {
+        name = definition.name,
+        properties = definition.properties.ToArray(),
+        keywords = definition.keywords.Select(static keyword => new ShaderKeywordDefinition
         {
-            name = definition.name,
-            properties = definition.properties.ToArray(),
-            keywords = definition.keywords.Select(static keyword => new ShaderKeywordDefinition
-            {
-                id = keyword.id,
-                options = keyword.options?.ToArray() ?? []
-            }).ToArray(),
-            passes = definition.passes.Select(Copy).ToArray(),
-            techniques = definition.techniques.Select(Copy).ToArray()
-        };
+            id = keyword.id,
+            options = keyword.options?.ToArray() ?? []
+        }).ToArray(),
+        passes = definition.passes.Select(Copy).ToArray(),
+        techniques = definition.techniques.Select(Copy).ToArray()
+    };
 }
-

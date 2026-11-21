@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Inno.Native.ImGui;
 using Inno.Native.Sdl3;
+
 using ImGuiNative = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Adapter.Presentation.ImGui;
@@ -40,7 +41,9 @@ public sealed unsafe partial class PlatformImGuiContext
         try
         {
             if (text != null && FindClipboardContext(context) is not null)
+            {
                 _ = SDL.Raw.SetClipboardText(text);
+            }
         }
         catch
         {
@@ -51,16 +54,22 @@ public sealed unsafe partial class PlatformImGuiContext
     private static PlatformImGuiContext? FindClipboardContext(ImGuiNativeContext* context)
     {
         if (context == null)
+        {
             return null;
+        }
         lock (S_CLIPBOARD_CONTEXT_SYNC)
+        {
             return S_CLIPBOARD_CONTEXTS.GetValueOrDefault((nuint)context);
+        }
     }
 
     private sbyte* GetClipboardText()
     {
         ReleaseClipboardText();
         if (SDL.Raw.HasClipboardText() == 0)
+        {
             return null;
+        }
         // SDL transfers this allocation to the caller; retain it until the next request or context shutdown.
         m_clipboardText = (nint)SDL.Raw.GetClipboardText();
         return (sbyte*)m_clipboardText;
@@ -69,7 +78,9 @@ public sealed unsafe partial class PlatformImGuiContext
     private void RegisterClipboardCallbacks()
     {
         lock (S_CLIPBOARD_CONTEXT_SYNC)
+        {
             S_CLIPBOARD_CONTEXTS.Add((nuint)m_context, this);
+        }
         ImGuiPlatformIO* platformIo = ImGuiNative.Raw.GetPlatformIO();
         platformIo->PlatformGetClipboardTextFn = &PlatformGetClipboardTextCallback;
         platformIo->PlatformSetClipboardTextFn = &PlatformSetClipboardTextCallback;
@@ -84,7 +95,9 @@ public sealed unsafe partial class PlatformImGuiContext
         {
             nuint contextKey = (nuint)m_context;
             if (S_CLIPBOARD_CONTEXTS.GetValueOrDefault(contextKey) == this)
+            {
                 S_CLIPBOARD_CONTEXTS.Remove(contextKey);
+            }
         }
         ReleaseClipboardText();
     }
@@ -92,7 +105,9 @@ public sealed unsafe partial class PlatformImGuiContext
     private void ReleaseClipboardText()
     {
         if (m_clipboardText == 0)
+        {
             return;
+        }
         SDL.Raw.Free((void*)m_clipboardText);
         m_clipboardText = 0;
     }

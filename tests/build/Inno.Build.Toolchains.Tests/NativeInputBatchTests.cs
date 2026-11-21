@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
-using Xunit;
 
 namespace Inno.Build.Toolchains.Tests;
 
@@ -23,7 +23,9 @@ public sealed class NativeInputBatchTests : IDisposable
         Directory.CreateDirectory(m_source);
         File.WriteAllText(Path.Combine(m_root, "InnoEngine.sln"), string.Empty);
         for (int index = 0; index < 64; index++)
+        {
             File.WriteAllText(Path.Combine(m_source, index.ToString("D2") + ".h"), new string((char)('A' + index % 26), 16 * 1024));
+        }
     }
 
     [Fact]
@@ -57,7 +59,9 @@ public sealed class NativeInputBatchTests : IDisposable
         var context = new NativeBuildContext(m_root, "debug");
         NativeBuildInput[] inputs = [new("source", m_source)];
         using (var locked = new FileStream(Path.Combine(m_source, "63.h"), FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        {
             await Assert.ThrowsAnyAsync<IOException>(() => Task.Run(() => NativeBuildFingerprint.Create(context, [], inputs)));
+        }
         foreach (string path in Directory.EnumerateFiles(m_source))
         {
             using var exclusive = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
@@ -91,7 +95,9 @@ public sealed class NativeInputBatchTests : IDisposable
     public void Dispose()
     {
         if (!Path.GetFullPath(m_root).StartsWith(m_parent + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+        {
             throw new InvalidOperationException("The native input fixture escaped its owner.");
+        }
         Directory.Delete(m_root, recursive: true);
     }
 }

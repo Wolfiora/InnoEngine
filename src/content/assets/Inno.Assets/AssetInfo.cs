@@ -54,7 +54,9 @@ public sealed class AssetInfo
     ) {
         this.persistentId = persistentId;
         if (!assetPath.isValid)
+        {
             throw new ArgumentException("An asset information snapshot requires a valid path.", nameof(assetPath));
+        }
         this.assetPath = assetPath;
         this.sourceKind = sourceKind;
         this.status = status;

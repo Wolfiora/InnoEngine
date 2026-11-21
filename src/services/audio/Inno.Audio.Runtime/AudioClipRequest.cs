@@ -20,7 +20,9 @@ internal sealed class AudioClipRequest : IDisposable
         try
         {
             if (clip.isMissing || metadata is null)
+            {
                 throw new InvalidOperationException("The audio clip or its imported metadata is missing.");
+            }
             m_artifact = artifacts.AcquireArtifact(persistentId, "audio-data");
         }
         catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
@@ -37,11 +39,16 @@ internal sealed class AudioClipRequest : IDisposable
     internal long contentVersion { get; }
     internal AssetPath assetPath { get; }
     internal AudioClipMetadata? metadata { get; }
-    internal AssetArtifactInfo artifact => m_artifact?.info
-        ?? throw new InvalidOperationException(m_failure ?? "The clip artifact was transferred or released.");
 
-    internal IAudioClipSource source => new ArtifactAudioClipSource(m_artifact
-        ?? throw new InvalidOperationException(m_failure ?? "The clip artifact was transferred or released."));
+    internal AssetArtifactInfo artifact
+        => m_artifact?.info
+           ?? throw new InvalidOperationException(m_failure ?? "The clip artifact was transferred or released.");
+
+    internal IAudioClipSource source
+        => new ArtifactAudioClipSource(
+            m_artifact
+            ?? throw new InvalidOperationException(m_failure ?? "The clip artifact was transferred or released.")
+        );
 
     internal ArtifactLease TakeArtifact()
     {

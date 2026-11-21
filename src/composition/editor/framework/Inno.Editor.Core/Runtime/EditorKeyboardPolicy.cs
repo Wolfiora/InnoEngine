@@ -25,7 +25,9 @@ public sealed class EditorKeyboardPolicy
         string superModifierLabel
     ) {
         if (primaryModifier is not (KeyModifier.Control or KeyModifier.Super or KeyModifier.Alt))
+        {
             throw new ArgumentException("A primary shortcut requires one Control, Super or Alt modifier.", nameof(primaryModifier));
+        }
         ArgumentException.ThrowIfNullOrWhiteSpace(superModifierLabel);
         this.primaryModifier = primaryModifier;
         this.superModifierLabel = superModifierLabel;

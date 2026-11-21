@@ -28,7 +28,9 @@ public sealed class UiBackendCapabilities
         ArgumentNullException.ThrowIfNull(documentLanguages);
         UiDocumentLanguageId[] languages = documentLanguages.Distinct().ToArray();
         if (languages.Length == 0 || languages.Any(static language => !language.isValid))
+        {
             throw new ArgumentException("A UI backend must declare at least one assigned document language.", nameof(documentLanguages));
+        }
         m_documentLanguages = new ReadOnlyCollection<UiDocumentLanguageId>(languages);
         this.supportsFontCollectionFaces = supportsFontCollectionFaces;
     }
@@ -79,7 +81,7 @@ public sealed class UiCapabilityUnavailableException : NotSupportedException
     /// </param>
     public UiCapabilityUnavailableException(UiBackendCapability capability)
         : base($"The selected UI backend does not support capability '{capability}'.")
-        => this.capability = capability;
+            => this.capability = capability;
 
     /// <summary>
     /// Gets the unavailable capability.

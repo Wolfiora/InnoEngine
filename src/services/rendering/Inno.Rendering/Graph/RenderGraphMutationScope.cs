@@ -53,7 +53,9 @@ public sealed class RenderGraphMutationScope : IDisposable
     {
         RenderGraphBuilder? graph = m_graph;
         if (graph is null)
+        {
             return;
+        }
         graph.EndMutation(this);
         m_graph = null;
     }

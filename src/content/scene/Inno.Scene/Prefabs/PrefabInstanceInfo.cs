@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Assets;
 
 namespace Inno.Scene;

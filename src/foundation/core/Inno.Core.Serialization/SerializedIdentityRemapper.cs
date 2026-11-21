@@ -38,13 +38,20 @@ public static class SerializedIdentityRemapper
     ) {
         ArgumentNullException.ThrowIfNull(identities);
         if (HasMagic(source, s_valueMagic))
+        {
             return BinarySerializationFormat.Encode(RewriteNode(BinarySerializationFormat.Decode(source), identities, paths));
+        }
         if (HasMagic(source, s_propertyMagic))
         {
             IReadOnlyList<SerializationPropertySnapshot> snapshots = PropertySnapshotBinaryFormat.Decode(source);
-            return PropertySnapshotBinaryFormat.Encode(snapshots.Select(snapshot =>
-                new SerializationPropertySnapshot(snapshot.name, snapshot.propertyType,
-                    Rewrite(snapshot.dataSpan, identities, paths))).ToArray());
+            return PropertySnapshotBinaryFormat.Encode(
+                snapshots.Select(snapshot =>
+                    new SerializationPropertySnapshot(
+                        snapshot.name,
+                        snapshot.propertyType,
+                        Rewrite(snapshot.dataSpan, identities, paths)
+                    )).ToArray()
+            );
         }
         return source.ToArray();
     }
@@ -59,7 +66,7 @@ public static class SerializedIdentityRemapper
             case ScalarSerializationNode { value: Guid id } when identities.TryGetValue(id, out Guid replacement):
                 return new ScalarSerializationNode(replacement);
             case ScalarSerializationNode { value: string path } when paths is not null
-                && paths.TryGetValue(path, out string? replacement):
+                                                                     && paths.TryGetValue(path, out string? replacement):
                 return new ScalarSerializationNode(replacement);
             case BinarySerializationNode binary:
                 return new BinarySerializationNode(Rewrite(binary.value, identities, paths));
@@ -67,23 +74,32 @@ public static class SerializedIdentityRemapper
             {
                 var rewritten = new ObjectSerializationNode();
                 foreach ((string name, SerializationNode child) in value.values)
+                {
                     rewritten.values.Add(name, RewriteNode(child, identities, paths));
+                }
                 return rewritten;
             }
             case ArraySerializationNode value:
             {
                 var rewritten = new ArraySerializationNode();
                 foreach (SerializationNode child in value.values)
+                {
                     rewritten.values.Add(RewriteNode(child, identities, paths));
+                }
                 return rewritten;
             }
             case MapSerializationNode value:
             {
                 var rewritten = new MapSerializationNode();
                 foreach (KeyValuePair<SerializationNode, SerializationNode> entry in value.values)
-                    rewritten.values.Add(new KeyValuePair<SerializationNode, SerializationNode>(
-                        RewriteNode(entry.Key, identities, paths),
-                        RewriteNode(entry.Value, identities, paths)));
+                {
+                    rewritten.values.Add(
+                        new KeyValuePair<SerializationNode, SerializationNode>(
+                            RewriteNode(entry.Key, identities, paths),
+                            RewriteNode(entry.Value, identities, paths)
+                        )
+                    );
+                }
                 return rewritten;
             }
             default:
@@ -94,7 +110,6 @@ public static class SerializedIdentityRemapper
     private static bool HasMagic(
         ReadOnlySpan<byte> source,
         ReadOnlySpan<byte> magic
-    )
-        => source.Length > magic.Length && source[0] == magic.Length
-            && source.Slice(1, magic.Length).SequenceEqual(magic);
+    ) => source.Length > magic.Length && source[0] == magic.Length
+         && source.Slice(1, magic.Length).SequenceEqual(magic);
 }

@@ -2,10 +2,10 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Managed;
 using Inno.Build.Managed.DotNet;
 using Inno.Build.Toolchains;
-using Xunit;
 
 namespace Inno.Build.Products.Tests;
 
@@ -28,7 +28,9 @@ public sealed class ManagedDeploymentTests
         Assert.Equal(4, catalog.GetSupportedDeployments("fixture-runtime").Count);
         Assert.Empty(catalog.GetSupportedDeployments("changed"));
         foreach (IManagedDeploymentCompiler compiler in compilers)
+        {
             Assert.Same(compiler, catalog.Resolve(compiler.id, "fixture-runtime"));
+        }
     }
 
     [Fact]
@@ -46,24 +48,41 @@ public sealed class ManagedDeploymentTests
     public void CapabilityInputsAndPublicationArtifactsAreImmutable()
     {
         string[] targets = ["custom-target"];
-        var capabilities = new ManagedDeploymentCapabilities(targets,
-            dynamicCode: false, aheadOfTime: true, nativeStaticLinking: true);
+        var capabilities = new ManagedDeploymentCapabilities(
+            targets,
+            dynamicCode: false,
+            aheadOfTime: true,
+            nativeStaticLinking: true
+        );
         targets[0] = "replaced";
         Assert.Equal("custom-target", Assert.Single(capabilities.runtimeIdentifiers));
         string[] files = ["game.wasm"];
-        var result = new ManagedDeploymentResult(new ManagedDeploymentId("custom-runtime"),
-            Path.GetTempPath(), "selected-sdk", files);
+        var result = new ManagedDeploymentResult(
+            new ManagedDeploymentId("custom-runtime"),
+            Path.GetTempPath(),
+            "selected-sdk",
+            files
+        );
         files[0] = "replaced.wasm";
         Assert.Equal("game.wasm", Assert.Single(result.files));
-        Assert.Throws<ArgumentException>(() => new ManagedDeploymentResult(result.deployment,
-            result.outputDirectory, result.sdkIdentity, ["../outside"]));
+        Assert.Throws<ArgumentException>(() => new ManagedDeploymentResult(
+            result.deployment,
+            result.outputDirectory,
+            result.sdkIdentity,
+            ["../outside"]
+        ));
     }
 
     private sealed class CustomCompiler : IManagedDeploymentCompiler
     {
         public ManagedDeploymentId id => new("custom-runtime");
+
         public ManagedDeploymentCapabilities capabilities { get; } = new(
-            ["custom-target"], dynamicCode: false, aheadOfTime: true, nativeStaticLinking: true);
+            ["custom-target"],
+            dynamicCode: false,
+            aheadOfTime: true,
+            nativeStaticLinking: true
+        );
 
         public ValueTask<ManagedDeploymentResult> CompileAsync(
             ManagedDeploymentRequest request,

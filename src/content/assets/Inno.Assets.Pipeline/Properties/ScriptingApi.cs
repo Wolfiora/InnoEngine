@@ -1,10 +1,7 @@
 using Inno.Assets.Pipeline;
 using Inno.Scripting.Api;
 
-[assembly: ScriptingApiNamespace(
-    "InnoEditor.Assets",
-    "Inno.Assets.Pipeline",
-    ScriptingApiScope.Editor)]
+[assembly: ScriptingApiNamespace("InnoEditor.Assets", "Inno.Assets.Pipeline", ScriptingApiScope.Editor)]
 
 [assembly: ScriptingApiExport(typeof(AssetImportContext), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(AssetImportExtensionUnavailableException), ScriptingApiScope.Editor)]

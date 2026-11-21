@@ -1,13 +1,13 @@
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Inno.Extensibility.Modules;
-using Inno.Core.Graphs;
-using Inno.Extensibility.Types;
-using Inno.Core.Serialization;
 using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Core.Graphs;
+using Inno.Core.Serialization;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Types;
 
 namespace Inno.Core.Graphs.Tests;
 
@@ -16,7 +16,9 @@ public sealed class GraphValidatorTests : IDisposable
     private readonly string m_testRoot = Path.Combine(
         Path.GetTempPath(),
         "InnoCoreGraphsTests",
-        Guid.NewGuid().ToString("N"));
+        Guid.NewGuid().ToString("N")
+    );
+
     private readonly ModuleHost m_modules;
     private readonly TypeCatalog m_types;
     private readonly SerializationRegistry m_serialization;
@@ -24,7 +26,9 @@ public sealed class GraphValidatorTests : IDisposable
     public GraphValidatorTests()
     {
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(GraphValidatorTests).Assembly)        });
+        {
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(GraphValidatorTests).Assembly)
+        });
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
     }
@@ -35,7 +39,9 @@ public sealed class GraphValidatorTests : IDisposable
         m_types.Dispose();
         m_modules.Dispose();
         if (Directory.Exists(m_testRoot))
+        {
             Directory.Delete(m_testRoot, recursive: true);
+        }
     }
 
     [Fact]
@@ -57,7 +63,8 @@ public sealed class GraphValidatorTests : IDisposable
         GraphValidationResult result = GraphValidator.Validate(
             document,
             new Resolver(m_serialization),
-            new Conversion());
+            new Conversion()
+        );
 
         Assert.True(result.isValid);
     }
@@ -115,8 +122,10 @@ public sealed class GraphValidatorTests : IDisposable
         Assert.Empty(document.edges);
     }
 
-    private GraphDocument CreateConnectedDocument(string outputType, string inputType)
-    {
+    private GraphDocument CreateConnectedDocument(
+        string outputType,
+        string inputType
+    ) {
         GraphDocument document = new();
         GraphNodeRecord source = CreateNode("source", outputType, outputType);
         GraphNodeRecord destination = CreateNode("destination", inputType, inputType);
@@ -126,24 +135,33 @@ public sealed class GraphValidatorTests : IDisposable
         return document;
     }
 
-    private GraphNodeRecord CreateNode(string id, string inputType, string outputType)
-    {
+    private GraphNodeRecord CreateNode(
+        string id,
+        string inputType,
+        string outputType
+    ) {
         GraphNodeRecord node = new(new GraphNodeId(id), $"node.{id}");
         node.SetValue("inputType", GraphSerializedValue.From(inputType, m_serialization));
         node.SetValue("outputType", GraphSerializedValue.From(outputType, m_serialization));
         return node;
     }
 
-    private static GraphEdgeRecord CreateEdge(string id, GraphNodeId source, GraphNodeId destination)
-        => new(
-            new GraphEdgeId(id),
-            new GraphEndpoint(source, new GraphPortId("out")),
-            new GraphEndpoint(destination, new GraphPortId("in")));
+    private static GraphEdgeRecord CreateEdge(
+        string id,
+        GraphNodeId source,
+        GraphNodeId destination
+    ) => new(
+        new GraphEdgeId(id),
+        new GraphEndpoint(source, new GraphPortId("out")),
+        new GraphEndpoint(destination, new GraphPortId("in"))
+    );
 
     private sealed class Resolver(SerializationRegistry serialization) : IGraphNodeDefinitionResolver
     {
-        public bool TryResolve(string definitionId, out GraphNodeDefinition? definition)
-        {
+        public bool TryResolve(
+            string definitionId,
+            out GraphNodeDefinition? definition
+        ) {
             if (!definitionId.StartsWith("node.", System.StringComparison.Ordinal))
             {
                 definition = null;
@@ -157,16 +175,17 @@ public sealed class GraphValidatorTests : IDisposable
 
     private sealed class Definition(
         string id,
-        SerializationRegistry serialization) : GraphNodeDefinition(id, id, "Tests")
+        SerializationRegistry serialization
+    ) : GraphNodeDefinition(id, id, "Tests")
     {
         public override IReadOnlyList<GraphPortDefinition> GetPorts(GraphNodeRecord node)
         {
             string inputType = node.TryGetValue("inputType", out GraphSerializedValue? input)
-                ? input!.Deserialize<string>(serialization)!
-                : "float";
+                               ? input!.Deserialize<string>(serialization)!
+                               : "float";
             string outputType = node.TryGetValue("outputType", out GraphSerializedValue? output)
-                ? output!.Deserialize<string>(serialization)!
-                : "float";
+                                ? output!.Deserialize<string>(serialization)!
+                                : "float";
 
             return
             [
@@ -178,7 +197,9 @@ public sealed class GraphValidatorTests : IDisposable
 
     private sealed class Conversion : IGraphTypeConversion
     {
-        public bool CanConvert(string sourceTypeId, string destinationTypeId)
-            => sourceTypeId == "float" && destinationTypeId == "vector3";
+        public bool CanConvert(
+            string sourceTypeId,
+            string destinationTypeId
+        ) => sourceTypeId == "float" && destinationTypeId == "vector3";
     }
 }

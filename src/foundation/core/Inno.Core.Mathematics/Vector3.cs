@@ -1,9 +1,9 @@
 using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.Arm;
 using System.Runtime.Intrinsics.X86;
+using System.Runtime.Serialization;
 
 namespace Inno.Core.Mathematics;
 
@@ -17,10 +17,12 @@ public struct Vector3 : IEquatable<Vector3>
     /// The horizontal or first component.
     /// </summary>
     [DataMember] public float x;
+
     /// <summary>
     /// The vertical or second component.
     /// </summary>
     [DataMember] public float y;
+
     /// <summary>
     /// The depth or third component.
     /// </summary>
@@ -47,40 +49,49 @@ public struct Vector3 : IEquatable<Vector3>
         this.y = y;
         this.z = z;
     }
+
     /// <summary>
     /// A value whose components are all zero.
     /// </summary>
 
     // Common static vectors
     public static readonly Vector3 ZERO = new(0, 0, 0);
+
     /// <summary>
     /// A value whose components are all one.
     /// </summary>
     public static readonly Vector3 ONE = new(1, 1, 1);
+
     /// <summary>
     /// The up value used as part of this type's public representation.
     /// </summary>
     public static readonly Vector3 UP = new(0, 1, 0);
+
     /// <summary>
     /// The down value used as part of this type's public representation.
     /// </summary>
     public static readonly Vector3 DOWN = new(0, -1, 0);
+
     /// <summary>
     /// The left value used as part of this type's public representation.
     /// </summary>
     public static readonly Vector3 LEFT = new(-1, 0, 0);
+
     /// <summary>
     /// The right value used as part of this type's public representation.
     /// </summary>
     public static readonly Vector3 RIGHT = new(1, 0, 0);
+
     /// <summary>
     /// The forward value used as part of this type's public representation.
     /// </summary>
     public static readonly Vector3 FORWARD = new(0, 0, 1);
+
     /// <summary>
     /// The back value used as part of this type's public representation.
     /// </summary>
     public static readonly Vector3 BACK = new(0, 0, -1);
+
     /// <summary>
     /// Calculates the Euclidean magnitude of this value.
     /// </summary>
@@ -133,6 +144,7 @@ public struct Vector3 : IEquatable<Vector3>
         float len = value.Length();
         return len > epsilon ? value / len : ZERO;
     }
+
     /// <summary>
     /// Calculates the scalar dot product of two values.
     /// </summary>
@@ -233,6 +245,7 @@ public struct Vector3 : IEquatable<Vector3>
 
         return onto * (Dot(vector, onto) / denom);
     }
+
     /// <summary>
     /// Calculates the vector perpendicular to both supplied vectors.
     /// </summary>
@@ -251,11 +264,8 @@ public struct Vector3 : IEquatable<Vector3>
     public static Vector3 Cross(
         Vector3 a,
         Vector3 b
-    ) => new(
-        a.y * b.z - a.z * b.y,
-        a.z * b.x - a.x * b.z,
-        a.x * b.y - a.y * b.x
-    );
+    ) => new(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
+
     /// <summary>
     /// Calculates the Euclidean distance between two points.
     /// </summary>
@@ -275,6 +285,7 @@ public struct Vector3 : IEquatable<Vector3>
         Vector3 a,
         Vector3 b
     ) => (a - b).Length();
+
     /// <summary>
     /// Interpolates linearly after clamping the interpolation factor to [0, 1].
     /// </summary>
@@ -297,8 +308,8 @@ public struct Vector3 : IEquatable<Vector3>
         Vector3 a,
         Vector3 b,
         float t
-    ) =>
-        a + (b - a) * Math.Clamp(t, 0f, 1f);
+    ) => a + (b - a) * Math.Clamp(t, 0f, 1f);
+
     /// <summary>
     /// Reflects an incident value across the supplied normal.
     /// </summary>
@@ -317,9 +328,8 @@ public struct Vector3 : IEquatable<Vector3>
     public static Vector3 Reflect(
         Vector3 dir,
         Vector3 normal
-    ) =>
-        dir - 2f * Dot(dir, normal) * normal;
-    
+    ) => dir - 2f * Dot(dir, normal) * normal;
+
     /// <summary>
     /// Transforms a position as a column vector with an implicit homogeneous coordinate of one.
     /// </summary>
@@ -391,7 +401,7 @@ public struct Vector3 : IEquatable<Vector3>
         float tz = matrix.m31 * normal.x + matrix.m32 * normal.y + matrix.m33 * normal.z;
         return new Vector3(tx, ty, tz);
     }
-    
+
     /// <summary>
     /// Transforms the supplied value by the requested transformation.
     /// </summary>
@@ -422,6 +432,7 @@ public struct Vector3 : IEquatable<Vector3>
 
         return new Vector3(rx, ry, rz);
     }
+
     /// <summary>
     /// Adds the supplied values component by component.
     /// </summary>
@@ -441,6 +452,7 @@ public struct Vector3 : IEquatable<Vector3>
         Vector3 a,
         Vector3 b
     ) => new(a.x + b.x, a.y + b.y, a.z + b.z);
+
     /// <summary>
     /// Subtracts or negates the supplied value component by component.
     /// </summary>
@@ -458,6 +470,7 @@ public struct Vector3 : IEquatable<Vector3>
         Vector3 a,
         Vector3 b
     ) => new(a.x - b.x, a.y - b.y, a.z - b.z);
+
     /// <summary>
     /// Subtracts or negates the supplied value component by component.
     /// </summary>
@@ -469,6 +482,7 @@ public struct Vector3 : IEquatable<Vector3>
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vector3 operator -(Vector3 v) => new(-v.x, -v.y, -v.z);
+
     /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
     /// </summary>
@@ -486,6 +500,7 @@ public struct Vector3 : IEquatable<Vector3>
         Vector3 v,
         float s
     ) => new(v.x * s, v.y * s, v.z * s);
+
     /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
     /// </summary>
@@ -503,6 +518,7 @@ public struct Vector3 : IEquatable<Vector3>
         float s,
         Vector3 v
     ) => v * s;
+
     /// <summary>
     /// Divides the supplied value by the scalar divisor component by component.
     /// </summary>
@@ -537,10 +553,9 @@ public struct Vector3 : IEquatable<Vector3>
     public static bool operator ==(
         Vector3 a,
         Vector3 b
-    ) =>
-        MathHelper.AlmostEquals(a.x, b.x) &&
-        MathHelper.AlmostEquals(a.y, b.y) &&
-        MathHelper.AlmostEquals(a.z, b.z);
+    ) => MathHelper.AlmostEquals(a.x, b.x)
+         && MathHelper.AlmostEquals(a.y, b.y)
+         && MathHelper.AlmostEquals(a.z, b.z);
 
     /// <summary>
     /// Determines whether the supplied values differ under the type's equality tolerance.
@@ -559,7 +574,7 @@ public struct Vector3 : IEquatable<Vector3>
         Vector3 a,
         Vector3 b
     ) => !(a == b);
-    
+
     /// <summary>
     /// Converts the supplied value to <see cref="System.Numerics.Vector3"/>.
     /// </summary>
@@ -570,6 +585,7 @@ public struct Vector3 : IEquatable<Vector3>
     /// The validated system.numerics.vector3 that represents the completed operation.
     /// </returns>
     public static implicit operator System.Numerics.Vector3(Vector3 v) => new(v.x, v.y, v.z);
+
     /// <summary>
     /// Converts the supplied value to <see cref="Vector3"/>.
     /// </summary>
@@ -591,6 +607,7 @@ public struct Vector3 : IEquatable<Vector3>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public override bool Equals(object? obj) => obj is Vector3 other && this == other;
+
     /// <summary>
     /// Determines whether this value and the supplied value represent the same logical state.
     /// </summary>
@@ -601,6 +618,7 @@ public struct Vector3 : IEquatable<Vector3>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool Equals(Vector3 other) => this == other;
+
     /// <summary>
     /// Computes a hash code consistent with the implemented equality contract.
     /// </summary>
@@ -608,6 +626,7 @@ public struct Vector3 : IEquatable<Vector3>
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
     public override int GetHashCode() => HashCode.Combine(x, y, z);
+
     /// <summary>
     /// Formats this value as a human-readable component list.
     /// </summary>

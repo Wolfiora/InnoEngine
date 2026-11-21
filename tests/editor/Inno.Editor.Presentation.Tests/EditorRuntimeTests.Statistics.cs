@@ -1,6 +1,6 @@
 using System.Linq;
-using Inno.Editor.Core;
 using Xunit;
+using Inno.Editor.Core;
 
 namespace Inno.Editor.Presentation.Tests;
 
@@ -34,7 +34,10 @@ public sealed partial class EditorRuntimeTests
         var combined = statistics.GetSnapshot();
         Assert.Equal(2, combined.Count(value => value.groupId == new EditorStatisticGroupId("sampling")));
         m_runtime.Update(new EditorFrame(0.016f, 2f, isFocused: true));
-        Assert.Equal("second", Assert.Single(statistics.GetSnapshot().Where(value => value.groupId == new EditorStatisticGroupId("sampling"))).id.value);
+        Assert.Equal(
+            "second",
+            Assert.Single(statistics.GetSnapshot().Where(value => value.groupId == new EditorStatisticGroupId("sampling"))).id.value
+        );
         Assert.Equal(2, combined.Count);
         m_runtime.Update(new EditorFrame(0.016f, 3f, isFocused: true));
         Assert.DoesNotContain(statistics.GetSnapshot(), value => value.groupId == new EditorStatisticGroupId("sampling"));

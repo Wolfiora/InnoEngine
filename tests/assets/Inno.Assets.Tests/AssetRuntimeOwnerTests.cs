@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Inno.Assets;
 using Xunit;
+using Inno.Assets;
 
 namespace Inno.Assets.Tests;
 
@@ -30,7 +30,9 @@ public sealed class AssetRuntimeOwnerTests
         var asset = new TestAsset();
         owner.Initialize(asset, AssetPath.Project("one.bin"), "one", new byte[] { 1 }, false, 1);
         asset.fail = true;
-        Assert.Throws<InvalidOperationException>(() => owner.Initialize(asset, AssetPath.Project("two.bin"), "two", new byte[] { 2 }, true, 2));
+        Assert.Throws<InvalidOperationException>(
+            () => owner.Initialize(asset, AssetPath.Project("two.bin"), "two", new byte[] { 2 }, true, 2)
+        );
         Assert.Equal(1, asset.contentVersion);
         Assert.False(asset.isMissing);
         Assert.Equal("one", owner.GetSourceHash(asset));
@@ -58,10 +60,14 @@ public sealed class AssetRuntimeOwnerTests
     {
         internal bool fail;
         internal int unloadCount;
-        protected override void OnRuntimePayloadChanged(ReadOnlyMemory<byte> previousPayload, ReadOnlyMemory<byte> currentPayload)
-        {
+
+        protected override void OnRuntimePayloadChanged(
+            ReadOnlyMemory<byte> previousPayload,
+            ReadOnlyMemory<byte> currentPayload
+        ) {
             if (fail) throw new InvalidOperationException("Rejected payload.");
         }
+
         protected override void OnUnloading() => unloadCount++;
     }
 }

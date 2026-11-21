@@ -55,13 +55,19 @@ public readonly record struct GraphCanvasPort
         ArgumentException.ThrowIfNullOrWhiteSpace(endpoint.portId.value);
         ArgumentNullException.ThrowIfNull(label);
         if (!float.IsFinite(position.X) || !float.IsFinite(position.Y))
+        {
             throw new ArgumentOutOfRangeException(nameof(position));
+        }
         if (direction is not GraphPortDirection.Input and not GraphPortDirection.Output)
+        {
             throw new ArgumentOutOfRangeException(nameof(direction));
+        }
         if (labelBounds is { } bounds && (!float.IsFinite(bounds.minimum.X) || !float.IsFinite(bounds.minimum.Y)
-            || !float.IsFinite(bounds.maximum.X) || !float.IsFinite(bounds.maximum.Y)
-            || bounds.maximum.X < bounds.minimum.X || bounds.maximum.Y < bounds.minimum.Y))
+                                          || !float.IsFinite(bounds.maximum.X) || !float.IsFinite(bounds.maximum.Y)
+                                          || bounds.maximum.X < bounds.minimum.X || bounds.maximum.Y < bounds.minimum.Y)
+        ) {
             throw new ArgumentOutOfRangeException(nameof(labelBounds));
+        }
         this.endpoint = endpoint;
         this.direction = direction;
         this.position = position;

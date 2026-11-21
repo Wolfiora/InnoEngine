@@ -1,15 +1,17 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Numerics;
+using Inno.Core.Logging;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Settings;
-using Inno.Core.Logging;
+
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Settings;
+
 [EditorModal("editor.settings", "Settings", order: 100)]
 internal sealed class SettingsModal(
     EditorSettings editorSettings,
@@ -25,26 +27,32 @@ internal sealed class SettingsModal(
     private float m_treePaneRatio = 0.25f;
     private readonly Logger m_log = logs.CreateLogger<SettingsModal>();
     private string m_applyError = string.Empty;
+
     /// <summary>
     /// Gets whether this implementation is visible.
     /// </summary>
     public override bool isVisible => window.isVisible;
+
     /// <summary>
     /// Gets whether this implementation can move.
     /// </summary>
     public override bool canMove => true;
+
     /// <summary>
     /// Gets whether this implementation can resize.
     /// </summary>
     public override bool canResize => true;
+
     /// <summary>
     /// Lets the navigation tree and current settings page own their scrolling.
     /// </summary>
     public override bool allowScrolling => false;
+
     /// <summary>
     /// Gets the preferred initial window size in logical editor units.
     /// </summary>
     public override Vector2 initialSize => new(1050f, 700f);
+
     /// <summary>
     /// Gets the smallest editor window size that keeps every setting control usable.
     /// </summary>
@@ -80,13 +88,18 @@ internal sealed class SettingsModal(
     {
         SettingsEditSession? session = window.session;
         if (session is null)
-            return;
-        if (session.editorCatalogRevision != editorSettings.catalogRevision || session.projectCatalogRevision != projectSettings.catalogRevision)
         {
+            return;
+        }
+        if (session.editorCatalogRevision != editorSettings.catalogRevision
+            || session.projectCatalogRevision != projectSettings.catalogRevision
+        ) {
             window.Refresh();
             session = window.session;
             if (session is null)
+            {
                 return;
+            }
         }
 
         IReadOnlyList<SettingsPage> pages = session.pages;
@@ -94,19 +107,27 @@ internal sealed class SettingsModal(
         SettingsPage? selected = SettingsTree.FindPage(pages, m_navigation.currentPath);
         selected ??= SettingsTree.FindFirstMatch(pages, m_query);
         if (selected is not null)
+        {
             m_navigation.Replace(selected.path);
+        }
         float footerHeight = Ui.GetFrameHeightWithSpacing() + Ui.GetLayout().itemSpacing.Y;
         if (m_applyError.Length != 0)
+        {
             footerHeight += Ui.GetFrameHeightWithSpacing();
+        }
         Vector2 available = Ui.GetContentRegionAvailable();
         DrawBody(session, pages, new Vector2(available.X, MathF.Max(1f, available.Y - footerHeight)));
         Ui.Separator();
         if (m_applyError.Length != 0)
         {
-            EditorUiSession.current.widgets.ColoredText(EditorPalette.error,
-                session.isHistoryFaulted ? "History integrity was lost. Restart the Editor."
-                    : session.canApply ? "Apply failed. Edits remain staged; retry or Cancel."
-                    : "Settings recovery is required. See Console for details.");
+            EditorUiSession.current.widgets.ColoredText(
+                EditorPalette.error,
+                session.isHistoryFaulted
+                ? "History integrity was lost. Restart the Editor."
+                : session.canApply
+                  ? "Apply failed. Edits remain staged; retry or Cancel."
+                  : "Settings recovery is required. See Console for details."
+            );
             EditorUiSession.current.widgets.DrawItemTooltip(m_applyError);
         }
         DrawButtons(session);
@@ -117,7 +138,10 @@ internal sealed class SettingsModal(
         IReadOnlyList<SettingsPage> pages,
         Vector2 size
     ) {
-        ImGuiTableFlags flags = ImGuiTableFlags.NoPadOuterX | ImGuiTableFlags.NoKeepColumnsVisible | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoSavedSettings;
+        ImGuiTableFlags flags = ImGuiTableFlags.NoPadOuterX
+                                | ImGuiTableFlags.NoKeepColumnsVisible
+                                | ImGuiTableFlags.SizingFixedFit
+                                | ImGuiTableFlags.NoSavedSettings;
         float splitterWidth = MathF.Max(5f * EditorUiSession.current.widgets.style.zoom, Ui.GetLayout().dockingSeparatorSize);
         float treeWidth = ResolveTreeWidth(size.X, splitterWidth);
         Ui.PushStyleVar(ImGuiStyleVar.CellPadding, Vector2.Zero);
@@ -128,7 +152,11 @@ internal sealed class SettingsModal(
             if (tableStarted)
             {
                 Ui.TableSetupColumn("##settings_tree", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), treeWidth);
-                Ui.TableSetupColumn("##settings_splitter", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), splitterWidth);
+                Ui.TableSetupColumn(
+                    "##settings_splitter",
+                    (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize),
+                    splitterWidth
+                );
                 Ui.TableSetupColumn("##settings_page", ImGuiTableColumnFlags.WidthStretch);
                 Ui.TableNextRow();
                 _ = Ui.TableSetColumnIndex(0);
@@ -142,7 +170,9 @@ internal sealed class SettingsModal(
         finally
         {
             if (tableStarted)
+            {
                 Ui.EndTable();
+            }
             Ui.PopStyleVar();
         }
     }
@@ -160,7 +190,9 @@ internal sealed class SettingsModal(
         try
         {
             if (!visible)
+            {
                 return;
+            }
             DrawNavigationButtons();
             Ui.SameLine(0f, EditorUiSession.current.widgets.style.toolbarSectionSpacing);
             bool wasSearching = !string.IsNullOrWhiteSpace(m_query);
@@ -172,9 +204,13 @@ internal sealed class SettingsModal(
                 if (first is not null)
                 {
                     if (wasSearching)
+                    {
                         m_navigation.Replace(first.path);
+                    }
                     else
+                    {
                         m_navigation.NavigateTo(first.path);
+                    }
                 }
                 else
                 {
@@ -207,11 +243,17 @@ internal sealed class SettingsModal(
         IReadOnlyList<SettingsPage> pages,
         float height
     ) {
-        bool visible = Ui.BeginChild("##settings_page_pane", new Vector2(0f, height), (ImGuiChildFlags.Borders | ImGuiChildFlags.AlwaysUseWindowPadding));
+        bool visible = Ui.BeginChild(
+            "##settings_page_pane",
+            new Vector2(0f, height),
+            (ImGuiChildFlags.Borders | ImGuiChildFlags.AlwaysUseWindowPadding)
+        );
         try
         {
             if (!visible)
+            {
                 return;
+            }
             SettingsPage? page = SettingsTree.FindPage(pages, m_navigation.currentPath);
             if (page is not null)
             {
@@ -243,7 +285,9 @@ internal sealed class SettingsModal(
         bool hovered = Ui.IsItemHovered();
         bool active = Ui.IsItemActive();
         if (hovered || active)
+        {
             Ui.SetMouseCursor(ImGuiMouseCursor.ResizeEw);
+        }
         if (active)
         {
             Vector2 delta = Ui.GetMouseDragDelta(ImGuiMouseButton.Left);
@@ -258,9 +302,16 @@ internal sealed class SettingsModal(
 
         Vector2 minimum = Ui.GetItemMinimum();
         Vector2 maximum = Ui.GetItemMaximum();
-        System.Numerics.Vector4 color = active ? EditorPalette.contentAccent : hovered ? EditorPalette.contentBorder : EditorPalette.contentBorderSoft;
+        System.Numerics.Vector4 color = active
+                                        ? EditorPalette.contentAccent
+                                        : hovered ? EditorPalette.contentBorder : EditorPalette.contentBorderSoft;
         float centerX = (minimum.X + maximum.X) * 0.5f;
-        Ui.DrawLine(new Vector2(centerX, minimum.Y), new Vector2(centerX, maximum.Y), Ui.ToPackedColor(color), EditorUiSession.current.widgets.style.borderSize);
+        Ui.DrawLine(
+            new Vector2(centerX, minimum.Y),
+            new Vector2(centerX, maximum.Y),
+            Ui.ToPackedColor(color),
+            EditorUiSession.current.widgets.style.borderSize
+        );
     }
 
     private float ResolveTreeWidth(
@@ -288,7 +339,9 @@ internal sealed class SettingsModal(
             float okWidth = Ui.MeasureText("OK").X + style.framePadding.X * 2f;
             Ui.SetCursorPosX(Ui.GetCursorPosX() + MathF.Max(0f, Ui.GetContentRegionAvailable().X - okWidth));
             if (Ui.Button("OK"))
+            {
                 TryClose();
+            }
             return;
         }
 
@@ -297,7 +350,9 @@ internal sealed class SettingsModal(
         float totalWidth = cancelWidth + style.itemSpacing.X + applyWidth;
         Ui.SetCursorPosX(Ui.GetCursorPosX() + MathF.Max(0f, Ui.GetContentRegionAvailable().X - totalWidth));
         if (Ui.Button("Cancel"))
+        {
             TryClose();
+        }
         Ui.SameLine(0f, -1f);
         Ui.BeginDisabled(!session.canApply);
         try
@@ -367,7 +422,9 @@ internal sealed class SettingsModal(
     private void EnsureNavigationSession(IReadOnlyList<SettingsPage> pages)
     {
         if (m_navigationRevision == window.sessionRevision)
+        {
             return;
+        }
         m_navigationRevision = window.sessionRevision;
         m_applyError = string.Empty;
         SettingsPage? first = SettingsTree.FindFirstMatch(pages, m_query);

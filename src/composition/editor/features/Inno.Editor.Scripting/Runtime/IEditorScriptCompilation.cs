@@ -1,6 +1,7 @@
 using Inno.Scripting.Compiler;
 
 namespace Inno.Editor.Scripting;
+
 /// <summary>
 /// Identifies whether the active project script generation can safely start game simulation.
 /// </summary>
@@ -46,6 +47,7 @@ public interface IEditorScriptCompilation
     /// The request observed by the presentation; stale requests have no effect.
     /// </param>
     void CancelCompilation(long operationId);
+
     /// <summary>
     /// Queues a fresh cache-aware compilation for a build or simulation workflow.
     /// </summary>
@@ -54,6 +56,7 @@ public interface IEditorScriptCompilation
     /// a faulted host returns a failed ticket and requires restart.
     /// </returns>
     IScriptCompilationTicket RequestCompilation();
+
     /// <summary>
     /// Gets the most recently requested compilation ticket, or <see langword="null"/> when no explicit request exists.
     /// </summary>
@@ -63,7 +66,6 @@ public interface IEditorScriptCompilation
     /// Gets the current script-generation readiness state.
     /// </summary>
     EditorScriptCompilationState state { get; }
-
 
     /// <summary>
     /// Gets the most recently completed compilation, or <see langword="null"/> before the first attempt completes.

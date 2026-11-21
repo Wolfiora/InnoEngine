@@ -49,7 +49,9 @@ public sealed class AssetCatalogCandidate : IDisposable
     {
         EnsureOpen();
         if (m_committed)
+        {
             throw new InvalidOperationException("The Asset catalog candidate has already been committed.");
+        }
         loader.PromoteCatalogTo(m_activeLibraryRoot);
         m_committed = true;
     }
@@ -60,7 +62,9 @@ public sealed class AssetCatalogCandidate : IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         DeleteCandidateRoot(m_candidateLibraryRoot);
         m_disposed = true;
         GC.SuppressFinalize(this);
@@ -74,10 +78,14 @@ public sealed class AssetCatalogCandidate : IDisposable
     private static void DeleteCandidateRoot(string candidateLibraryRoot)
     {
         if (!Directory.Exists(candidateLibraryRoot))
+        {
             return;
+        }
         Directory.Delete(candidateLibraryRoot, recursive: true);
         string? parent = Directory.GetParent(candidateLibraryRoot)?.FullName;
         if (parent is not null && Directory.Exists(parent) && !Directory.EnumerateFileSystemEntries(parent).Any())
+        {
             Directory.Delete(parent);
+        }
     }
 }

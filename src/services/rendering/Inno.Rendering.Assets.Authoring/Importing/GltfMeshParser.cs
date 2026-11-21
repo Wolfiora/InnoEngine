@@ -1,6 +1,3 @@
-using Inno.Core.Mathematics;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -8,6 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using Inno.Core.Mathematics;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Assets.Authoring;
 
@@ -40,12 +40,7 @@ internal static partial class MeshSourceParser
 
         using JsonDocument document = JsonDocument.Parse(jsonBytes);
         JsonElement root = GltfJson.RequireObject(document.RootElement, "$gltf");
-        byte[][] buffers = ReadBuffers(
-            sourcePath,
-            root,
-            binaryChunk,
-            dependencyReader,
-            dependencySink);
+        byte[][] buffers = ReadBuffers(sourcePath, root, binaryChunk, dependencyReader, dependencySink);
         BufferView[] bufferViews = ReadBufferViews(root, buffers);
         Accessor[] accessors = ReadAccessors(root, bufferViews);
         return ReadMeshes(sourcePath, root, accessors);
@@ -116,7 +111,8 @@ internal static partial class MeshSourceParser
             GltfJson.RequireObject(buffer, $"$gltf.buffers[{index}]");
             int byteLength = GltfJson.RequireInt32(
                 buffer.GetProperty("byteLength"),
-                $"$gltf.buffers[{index}].byteLength");
+                $"$gltf.buffers[{index}].byteLength"
+            );
             byte[] bytes;
             if (buffer.TryGetProperty("uri", out JsonElement uriElement))
             {
@@ -128,7 +124,8 @@ internal static partial class MeshSourceParser
                     {
                         throw new RenderingAssetFormatException(
                             $"$gltf.buffers[{index}].uri",
-                            "Only base64 data URIs are supported.");
+                            "Only base64 data URIs are supported."
+                        );
                     }
 
                     bytes = Convert.FromBase64String(uri[(separator + 1)..]);
@@ -137,7 +134,8 @@ internal static partial class MeshSourceParser
                 {
                     string dependency = NormalizeProjectPath(
                         CombineProjectPath(directory, Uri.UnescapeDataString(uri)),
-                        $"$gltf.buffers[{index}].uri");
+                        $"$gltf.buffers[{index}].uri"
+                    );
                     dependencySink(dependency);
                     bytes = dependencyReader(dependency);
                 }
@@ -150,14 +148,16 @@ internal static partial class MeshSourceParser
             {
                 throw new RenderingAssetFormatException(
                     $"$gltf.buffers[{index}]",
-                    "A URI or matching GLB binary chunk is required.");
+                    "A URI or matching GLB binary chunk is required."
+                );
             }
 
             if (byteLength < 0 || bytes.Length < byteLength)
             {
                 throw new RenderingAssetFormatException(
                     $"$gltf.buffers[{index}].byteLength",
-                    "Buffer content is shorter than its declared byte length.");
+                    "Buffer content is shorter than its declared byte length."
+                );
             }
 
             buffers.Add(bytes);
@@ -181,25 +181,25 @@ internal static partial class MeshSourceParser
         int index = 0;
         foreach (JsonElement view in viewArray.EnumerateArray())
         {
-            int bufferIndex = GltfJson.RequireInt32(
-                view.GetProperty("buffer"),
-                $"$gltf.bufferViews[{index}].buffer");
+            int bufferIndex = GltfJson.RequireInt32(view.GetProperty("buffer"), $"$gltf.bufferViews[{index}].buffer");
             int offset = view.TryGetProperty("byteOffset", out JsonElement offsetElement)
-                ? GltfJson.RequireInt32(offsetElement, $"$gltf.bufferViews[{index}].byteOffset")
-                : 0;
+                         ? GltfJson.RequireInt32(offsetElement, $"$gltf.bufferViews[{index}].byteOffset")
+                         : 0;
             int length = GltfJson.RequireInt32(
                 view.GetProperty("byteLength"),
-                $"$gltf.bufferViews[{index}].byteLength");
+                $"$gltf.bufferViews[{index}].byteLength"
+            );
             int stride = view.TryGetProperty("byteStride", out JsonElement strideElement)
-                ? GltfJson.RequireInt32(strideElement, $"$gltf.bufferViews[{index}].byteStride")
-                : 0;
+                         ? GltfJson.RequireInt32(strideElement, $"$gltf.bufferViews[{index}].byteStride")
+                         : 0;
             if (bufferIndex < 0 || bufferIndex >= buffers.Count
                 || offset < 0 || length < 0 || offset + length > buffers[bufferIndex].Length
-                || stride < 0)
-            {
+                || stride < 0
+            ) {
                 throw new RenderingAssetFormatException(
                     $"$gltf.bufferViews[{index}]",
-                    "Buffer view bounds are invalid.");
+                    "Buffer view bounds are invalid."
+                );
             }
 
             result.Add(new BufferView(buffers[bufferIndex], offset, length, stride));
@@ -227,31 +227,28 @@ internal static partial class MeshSourceParser
             {
                 throw new RenderingAssetFormatException(
                     $"$gltf.accessors[{index}].sparse",
-                    "Sparse accessors are not supported by the first mesh importer.");
+                    "Sparse accessors are not supported by the first mesh importer."
+                );
             }
 
             int viewIndex = GltfJson.RequireInt32(
                 accessor.GetProperty("bufferView"),
-                $"$gltf.accessors[{index}].bufferView");
+                $"$gltf.accessors[{index}].bufferView"
+            );
             int offset = accessor.TryGetProperty("byteOffset", out JsonElement offsetElement)
-                ? GltfJson.RequireInt32(offsetElement, $"$gltf.accessors[{index}].byteOffset")
-                : 0;
+                         ? GltfJson.RequireInt32(offsetElement, $"$gltf.accessors[{index}].byteOffset")
+                         : 0;
             int componentType = GltfJson.RequireInt32(
                 accessor.GetProperty("componentType"),
-                $"$gltf.accessors[{index}].componentType");
-            int count = GltfJson.RequireInt32(
-                accessor.GetProperty("count"),
-                $"$gltf.accessors[{index}].count");
-            string type = GltfJson.RequireString(
-                accessor.GetProperty("type"),
-                $"$gltf.accessors[{index}].type");
+                $"$gltf.accessors[{index}].componentType"
+            );
+            int count = GltfJson.RequireInt32(accessor.GetProperty("count"), $"$gltf.accessors[{index}].count");
+            string type = GltfJson.RequireString(accessor.GetProperty("type"), $"$gltf.accessors[{index}].type");
             bool normalized = accessor.TryGetProperty("normalized", out JsonElement normalizedElement)
-                && GltfJson.RequireBoolean(normalizedElement, $"$gltf.accessors[{index}].normalized");
+                              && GltfJson.RequireBoolean(normalizedElement, $"$gltf.accessors[{index}].normalized");
             if (viewIndex < 0 || viewIndex >= views.Count || offset < 0 || count <= 0)
             {
-                throw new RenderingAssetFormatException(
-                    $"$gltf.accessors[{index}]",
-                    "Accessor bounds are invalid.");
+                throw new RenderingAssetFormatException($"$gltf.accessors[{index}]", "Accessor bounds are invalid.");
             }
 
             result.Add(new Accessor(views[viewIndex], offset, componentType, count, type, normalized));
@@ -282,19 +279,21 @@ internal static partial class MeshSourceParser
             foreach (JsonElement primitive in primitives.EnumerateArray())
             {
                 int mode = primitive.TryGetProperty("mode", out JsonElement modeElement)
-                    ? GltfJson.RequireInt32(modeElement, "$gltf.meshes[].primitives[].mode")
-                    : 4;
+                           ? GltfJson.RequireInt32(modeElement, "$gltf.meshes[].primitives[].mode")
+                           : 4;
                 if (mode != 4)
                 {
                     throw new RenderingAssetFormatException(
                         "$gltf.meshes[].primitives[].mode",
-                        "Only triangle-list primitives are supported.");
+                        "Only triangle-list primitives are supported."
+                    );
                 }
 
                 JsonElement attributes = primitive.GetProperty("attributes");
                 int positionAccessor = GltfJson.RequireInt32(
                     attributes.GetProperty("POSITION"),
-                    "$gltf.meshes[].primitives[].attributes.POSITION");
+                    "$gltf.meshes[].primitives[].attributes.POSITION"
+                );
                 float[][] positions = ReadFloatAccessor(accessors, positionAccessor, 3, "POSITION");
                 float[][]? normals = TryReadAttribute(attributes, "NORMAL", accessors, 3);
                 float[][]? textureCoordinates = TryReadAttribute(attributes, "TEXCOORD_0", accessors, 2);
@@ -314,28 +313,30 @@ internal static partial class MeshSourceParser
                     {
                         position = new Vector3(position[0], position[1], -position[2]),
                         normal = normal is null
-                            ? default
-                            : new Vector3(normal[0], normal[1], -normal[2]),
+                                 ? default
+                                 : new Vector3(normal[0], normal[1], -normal[2]),
                         hasNormal = normal is not null,
                         textureCoordinate = uv is null ? default : new Vector2(uv[0], uv[1]),
                         tangent = tangent is null
-                            ? default
-                            : new Vector3(tangent[0], tangent[1], -tangent[2]),
+                                  ? default
+                                  : new Vector3(tangent[0], tangent[1], -tangent[2]),
                         tangentW = tangent is null ? 1f : -tangent[3],
                         hasTangent = tangent is not null
                     });
                 }
 
                 uint[] localIndices = primitive.TryGetProperty("indices", out JsonElement indexElement)
-                    ? ReadIndexAccessor(
-                        accessors,
-                        GltfJson.RequireInt32(indexElement, "$gltf.meshes[].primitives[].indices"))
-                    : Enumerable.Range(0, positions.Length).Select(static value => checked((uint)value)).ToArray();
+                                      ? ReadIndexAccessor(
+                                          accessors,
+                                          GltfJson.RequireInt32(indexElement, "$gltf.meshes[].primitives[].indices")
+                                      )
+                                      : Enumerable.Range(0, positions.Length).Select(static value => checked((uint)value)).ToArray();
                 if (localIndices.Length % 3 != 0)
                 {
                     throw new RenderingAssetFormatException(
                         "$gltf.meshes[].primitives[].indices",
-                        "Triangle index count must be divisible by three.");
+                        "Triangle index count must be divisible by three."
+                    );
                 }
 
                 int firstIndex = indices.Count;
@@ -363,7 +364,8 @@ internal static partial class MeshSourceParser
             value.position,
             Vector3.NormalizeSafe(value.normal),
             ToTangent(value.tangent, value.tangentW),
-            value.textureCoordinate)).ToArray();
+            value.textureCoordinate
+        )).ToArray();
         return new GeometryData(normalizedVertices, [.. indices], [.. sections]);
     }
 
@@ -372,14 +374,9 @@ internal static partial class MeshSourceParser
         string name,
         IReadOnlyList<Accessor> accessors,
         int components
-    )
-        => attributes.TryGetProperty(name, out JsonElement accessor)
-            ? ReadFloatAccessor(
-                accessors,
-                GltfJson.RequireInt32(accessor, $"$gltf.attributes.{name}"),
-                components,
-                name)
-            : null;
+    ) => attributes.TryGetProperty(name, out JsonElement accessor)
+         ? ReadFloatAccessor(accessors, GltfJson.RequireInt32(accessor, $"$gltf.attributes.{name}"), components, name)
+         : null;
 
     private static float[][] ReadFloatAccessor(
         IReadOnlyList<Accessor> accessors,
@@ -392,7 +389,8 @@ internal static partial class MeshSourceParser
         {
             throw new RenderingAssetFormatException(
                 $"$gltf.accessors[{index}]",
-                $"Attribute '{semantic}' must contain {expectedComponents} components.");
+                $"Attribute '{semantic}' must contain {expectedComponents} components."
+            );
         }
 
         int componentSize = ComponentSize(accessor.componentType);
@@ -410,7 +408,8 @@ internal static partial class MeshSourceParser
                     accessor.view.buffer,
                     offset + component * componentSize,
                     accessor.componentType,
-                    accessor.normalized);
+                    accessor.normalized
+                );
             }
         }
 
@@ -423,11 +422,12 @@ internal static partial class MeshSourceParser
     ) {
         Accessor accessor = GetAccessor(accessors, index, "indices");
         if (!string.Equals(accessor.type, "SCALAR", StringComparison.Ordinal)
-            || accessor.componentType is not (5121 or 5123 or 5125))
-        {
+            || accessor.componentType is not (5121 or 5123 or 5125)
+        ) {
             throw new RenderingAssetFormatException(
                 $"$gltf.accessors[{index}]",
-                "Indices require an unsigned SCALAR accessor.");
+                "Indices require an unsigned SCALAR accessor."
+            );
         }
 
         int elementSize = ComponentSize(accessor.componentType);
@@ -454,24 +454,22 @@ internal static partial class MeshSourceParser
         int offset,
         int componentType,
         bool normalized
-    )
-        => componentType switch
-        {
-            5120 => normalized ? Math.Max((sbyte)buffer[offset] / 127f, -1f) : (sbyte)buffer[offset],
-            5121 => normalized ? buffer[offset] / 255f : buffer[offset],
-            5122 => normalized
+    ) => componentType switch
+    {
+        5120 => normalized ? Math.Max((sbyte)buffer[offset] / 127f, -1f) : (sbyte)buffer[offset],
+        5121 => normalized ? buffer[offset] / 255f : buffer[offset],
+        5122 => normalized
                 ? Math.Max(BinaryPrimitives.ReadInt16LittleEndian(buffer.AsSpan(offset, 2)) / 32767f, -1f)
                 : BinaryPrimitives.ReadInt16LittleEndian(buffer.AsSpan(offset, 2)),
-            5123 => normalized
+        5123 => normalized
                 ? BinaryPrimitives.ReadUInt16LittleEndian(buffer.AsSpan(offset, 2)) / 65535f
                 : BinaryPrimitives.ReadUInt16LittleEndian(buffer.AsSpan(offset, 2)),
-            5125 => normalized
+        5125 => normalized
                 ? BinaryPrimitives.ReadUInt32LittleEndian(buffer.AsSpan(offset, 4)) / (float)uint.MaxValue
                 : BinaryPrimitives.ReadUInt32LittleEndian(buffer.AsSpan(offset, 4)),
-            5126 => BitConverter.Int32BitsToSingle(
-                BinaryPrimitives.ReadInt32LittleEndian(buffer.AsSpan(offset, 4))),
-            _ => throw new RenderingAssetFormatException("$gltf.accessor", $"Unsupported component type '{componentType}'.")
-        };
+        5126 => BitConverter.Int32BitsToSingle(BinaryPrimitives.ReadInt32LittleEndian(buffer.AsSpan(offset, 4))),
+        _ => throw new RenderingAssetFormatException("$gltf.accessor", $"Unsupported component type '{componentType}'.")
+    };
 
     private static void ValidateAccessorBounds(
         Accessor accessor,
@@ -484,7 +482,8 @@ internal static partial class MeshSourceParser
         {
             throw new RenderingAssetFormatException(
                 $"$gltf.accessors[{index}]",
-                "Accessor exceeds its buffer view or uses an invalid stride.");
+                "Accessor exceeds its buffer view or uses an invalid stride."
+            );
         }
     }
 
@@ -492,31 +491,28 @@ internal static partial class MeshSourceParser
         IReadOnlyList<Accessor> accessors,
         int index,
         string semantic
-    )
-        => index >= 0 && index < accessors.Count
-            ? accessors[index]
-            : throw new RenderingAssetFormatException(
-                $"$gltf.{semantic}",
-                $"Accessor index '{index}' is out of range.");
+    ) => index >= 0 && index < accessors.Count
+         ? accessors[index]
+         : throw new RenderingAssetFormatException($"$gltf.{semantic}", $"Accessor index '{index}' is out of range.");
 
     private static int ComponentCount(string type)
         => type switch
-        {
-            "SCALAR" => 1,
-            "VEC2" => 2,
-            "VEC3" => 3,
-            "VEC4" => 4,
-            _ => throw new RenderingAssetFormatException("$gltf.accessor.type", $"Unsupported accessor type '{type}'.")
-        };
+    {
+        "SCALAR" => 1,
+        "VEC2" => 2,
+        "VEC3" => 3,
+        "VEC4" => 4,
+        _ => throw new RenderingAssetFormatException("$gltf.accessor.type", $"Unsupported accessor type '{type}'.")
+    };
 
     private static int ComponentSize(int type)
         => type switch
-        {
-            5120 or 5121 => 1,
-            5122 or 5123 => 2,
-            5125 or 5126 => 4,
-            _ => throw new RenderingAssetFormatException("$gltf.accessor.componentType", $"Unsupported component type '{type}'.")
-        };
+    {
+        5120 or 5121 => 1,
+        5122 or 5123 => 2,
+        5125 or 5126 => 4,
+        _ => throw new RenderingAssetFormatException("$gltf.accessor.componentType", $"Unsupported component type '{type}'.")
+    };
 
     private static void ValidateAttributeCount(
         int expected,
@@ -527,7 +523,8 @@ internal static partial class MeshSourceParser
         {
             throw new RenderingAssetFormatException(
                 $"$gltf.attributes.{semantic}",
-                "Attribute count does not match POSITION.");
+                "Attribute count does not match POSITION."
+            );
         }
     }
 
@@ -547,8 +544,8 @@ internal static partial class MeshSourceParser
     ) {
         string normalized = value.Replace('\\', '/').TrimStart('/');
         if (string.IsNullOrWhiteSpace(normalized)
-            || normalized.Split('/', StringSplitOptions.RemoveEmptyEntries).Contains("..", StringComparer.Ordinal))
-        {
+            || normalized.Split('/', StringSplitOptions.RemoveEmptyEntries).Contains("..", StringComparer.Ordinal)
+        ) {
             throw new RenderingAssetFormatException(path, "A project-relative URI without '..' is required.");
         }
 
@@ -564,8 +561,7 @@ internal static partial class MeshSourceParser
     private static string CombineProjectPath(
         string directory,
         string relative
-    )
-        => string.IsNullOrEmpty(directory) ? relative : $"{directory}/{relative}";
+    ) => string.IsNullOrEmpty(directory) ? relative : $"{directory}/{relative}";
 
     private readonly record struct BufferView(
         byte[] buffer,
@@ -573,6 +569,7 @@ internal static partial class MeshSourceParser
         int length,
         int stride
     );
+
     private readonly record struct Accessor(
         BufferView view,
         int offset,
@@ -582,4 +579,3 @@ internal static partial class MeshSourceParser
         bool normalized
     );
 }
-

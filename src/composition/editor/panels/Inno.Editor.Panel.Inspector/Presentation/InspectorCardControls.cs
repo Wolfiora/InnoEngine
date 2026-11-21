@@ -1,4 +1,3 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Numerics;
 using Inno.Core.Identity;
@@ -9,14 +8,18 @@ using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
 using Inno.Scene;
 using Inno.Scene.Components;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
+
 internal sealed class InspectorCardControls
 {
     private const string C_COMPONENT_PAYLOAD = "INNO_INSPECTOR_COMPONENT";
     private const string C_SYSTEM_PAYLOAD = "INNO_INSPECTOR_SYSTEM";
     private readonly Logger m_log;
+
     internal InspectorCardControls(LogRouter logs)
     {
         ArgumentNullException.ThrowIfNull(logs);
@@ -24,6 +27,7 @@ internal sealed class InspectorCardControls
     }
 
     internal float GetWidth(bool canRemove) => EditorUI.current.widgets.GetCompactClickableTextSize().X * (canRemove ? 2f : 1f);
+
     internal void DrawComponent(
         SceneEdits edits,
         GameComponent component,
@@ -40,7 +44,9 @@ internal sealed class InspectorCardControls
         }
 
         if (!canRemove)
+        {
             return;
+        }
         Ui.SameLine(0f, 0f);
         if (EditorUI.current.widgets.ClickableText($"remove_Component_{componentId:N}", ImGuiIcon.Xmark, "Remove Component"))
         {
@@ -79,8 +85,15 @@ internal sealed class InspectorCardControls
         ArgumentNullException.ThrowIfNull(component);
         ArgumentNullException.ThrowIfNull(title);
         if (component.identity.runtimeIdentity is not RuntimeIdentity identity)
+        {
             return;
-        _ = EditorUI.current.widgets.DragDropSource(C_COMPONENT_PAYLOAD, identity, () => DrawDragPreview(title, dimmed), allowHoldToOpenOthers: false);
+        }
+        _ = EditorUI.current.widgets.DragDropSource(
+            C_COMPONENT_PAYLOAD,
+            identity,
+            () => DrawDragPreview(title, dimmed),
+            allowHoldToOpenOthers: false
+        );
     }
 
     internal void DrawSystemDragSource(
@@ -91,8 +104,15 @@ internal sealed class InspectorCardControls
         ArgumentNullException.ThrowIfNull(system);
         ArgumentNullException.ThrowIfNull(title);
         if (system.identity.runtimeIdentity is not RuntimeIdentity identity)
+        {
             return;
-        _ = EditorUI.current.widgets.DragDropSource(C_SYSTEM_PAYLOAD, identity, () => DrawDragPreview(title, dimmed), allowHoldToOpenOthers: false);
+        }
+        _ = EditorUI.current.widgets.DragDropSource(
+            C_SYSTEM_PAYLOAD,
+            identity,
+            () => DrawDragPreview(title, dimmed),
+            allowHoldToOpenOthers: false
+        );
     }
 
     internal void DrawComponentDropTarget(
@@ -106,25 +126,30 @@ internal sealed class InspectorCardControls
         ArgumentNullException.ThrowIfNull(interactions);
         ArgumentNullException.ThrowIfNull(edits);
         ArgumentNullException.ThrowIfNull(target);
-        DrawDropTarget(C_COMPONENT_PAYLOAD, $"component_{target.identity.persistentId:N}", interactions, cardMinimum, cardMaximum, source => source is GameComponent component
-            && ReferenceEquals(
-            component.gameObject,
-            target.gameObject
-        )
-            && !ReferenceEquals(
-            component,
-            target
-        ), (
-            source,
-            insertAfter
-        ) =>
+        DrawDropTarget(
+            C_COMPONENT_PAYLOAD,
+            $"component_{target.identity.persistentId:N}",
+            interactions,
+            cardMinimum,
+            cardMaximum,
+            source => (
+                source is GameComponent component
+                && ReferenceEquals(component.gameObject, target.gameObject)
+                && !ReferenceEquals(component, target)
+            ),
+            (
+                source,
+                insertAfter
+            ) =>
         {
             var component = (GameComponent)source;
             int sourceIndex = component.gameObject.GetComponentIndex(component);
             int insertionBoundary = targetIndex + (insertAfter ? 1 : 0);
             int destinationIndex = insertionBoundary > sourceIndex ? insertionBoundary - 1 : insertionBoundary;
             edits.SetComponentIndex(component, destinationIndex);
-        }, "Component reorder");
+        },
+            "Component reorder"
+        );
     }
 
     internal void DrawSystemDropTarget(
@@ -140,25 +165,30 @@ internal sealed class InspectorCardControls
         ArgumentNullException.ThrowIfNull(edits);
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(target);
-        DrawDropTarget(C_SYSTEM_PAYLOAD, $"system_{target.identity.persistentId:N}", interactions, cardMinimum, cardMaximum, source => source is GameSystem system
-            && !ReferenceEquals(
-            system,
-            target
-        )
-            && IsOwnedBy(
-            scene,
-            system
-        ), (
-            source,
-            insertAfter
-        ) =>
+        DrawDropTarget(
+            C_SYSTEM_PAYLOAD,
+            $"system_{target.identity.persistentId:N}",
+            interactions,
+            cardMinimum,
+            cardMaximum,
+            source => (
+                source is GameSystem system
+                && !ReferenceEquals(system, target)
+                && IsOwnedBy(scene, system)
+            ),
+            (
+                source,
+                insertAfter
+            ) =>
         {
             var system = (GameSystem)source;
             int sourceIndex = scene.GetSystemIndex(system);
             int insertionBoundary = targetIndex + (insertAfter ? 1 : 0);
             int destinationIndex = insertionBoundary > sourceIndex ? insertionBoundary - 1 : insertionBoundary;
             edits.SetSystemIndex(scene, system, destinationIndex);
-        }, "System reorder");
+        },
+            "System reorder"
+        );
     }
 
     private void DrawDropTarget(
@@ -187,7 +217,9 @@ internal sealed class InspectorCardControls
             drawDefaultHighlight: false
         );
         if (!isPreviewing && !delivered)
+        {
             return;
+        }
         if (!interactions.TryResolveIdentity(identity, out IdentityObject? source) || source is null || !accepts(source))
         {
             return;
@@ -196,9 +228,13 @@ internal sealed class InspectorCardControls
         bool insertAfter = Ui.GetMousePos().Y >= (cardMinimum.Y + cardMaximum.Y) * 0.5f;
         float markerY = insertAfter ? cardMaximum.Y : cardMinimum.Y;
         if (isPreviewing)
+        {
             EditorUI.current.widgets.InsertionLine(cardMinimum.X, cardMaximum.X, markerY);
+        }
         if (delivered)
+        {
             TryEdit(() => move(source, insertAfter), operation);
+        }
     }
 
     private static void DrawDragPreview(
@@ -213,11 +249,20 @@ internal sealed class InspectorCardControls
             padding.X * 2f + gripSize.X + EditorUI.current.widgets.style.headerControlSpacing + titleSize.X,
             MathF.Max(gripSize.Y, titleSize.Y) + padding.Y * 2f
         );
-        Ui.DrawFilledRectangle(origin, origin + size, Ui.ToPackedColor(EditorPalette.cardHeader), EditorUI.current.widgets.style.frameRounding);
+        Ui.DrawFilledRectangle(
+            origin,
+            origin + size,
+            Ui.ToPackedColor(EditorPalette.cardHeader),
+            EditorUI.current.widgets.style.frameRounding
+        );
         uint color = Ui.ToPackedColor(dimmed ? EditorPalette.cardDisabledText : EditorPalette.text);
         Vector2 textOrigin = origin + padding;
         Ui.DrawText(textOrigin, color, ImGuiIcon.GripVertical);
-        Ui.DrawText(new Vector2(textOrigin.X + gripSize.X + EditorUI.current.widgets.style.headerControlSpacing, textOrigin.Y), color, title);
+        Ui.DrawText(
+            new Vector2(textOrigin.X + gripSize.X + EditorUI.current.widgets.style.headerControlSpacing, textOrigin.Y),
+            color,
+            title
+        );
         Ui.Dummy(size);
     }
 

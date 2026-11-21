@@ -19,7 +19,9 @@ internal sealed class SceneGraphSourceIds : IReadOnlyDictionary<EngineObject, Gu
         m_objects = objects;
         // Systems have a separate lifecycle owner; the structural cache must not retain them.
         if (systems.Count == 0)
+        {
             return;
+        }
         m_systems = new Dictionary<EngineObject, Guid>(systems.Count, ReferenceEqualityComparer.Instance);
         for (int index = 0; index < systems.Count; index++)
         {
@@ -49,9 +51,13 @@ internal sealed class SceneGraphSourceIds : IReadOnlyDictionary<EngineObject, Gu
         out Guid value
     ) {
         if (m_objects.TryGetValue(key, out value))
+        {
             return true;
+        }
         if (m_systems is not null)
+        {
             return m_systems.TryGetValue(key, out value);
+        }
         value = default;
         return false;
     }
@@ -60,10 +66,16 @@ internal sealed class SceneGraphSourceIds : IReadOnlyDictionary<EngineObject, Gu
     public IEnumerator<KeyValuePair<EngineObject, Guid>> GetEnumerator()
     {
         foreach (KeyValuePair<EngineObject, Guid> entry in m_objects)
+        {
             yield return entry;
+        }
         if (m_systems is not null)
+        {
             foreach (KeyValuePair<EngineObject, Guid> entry in m_systems)
+            {
                 yield return entry;
+            }
+        }
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -71,12 +83,16 @@ internal sealed class SceneGraphSourceIds : IReadOnlyDictionary<EngineObject, Gu
     private IEnumerable<EngineObject> EnumerateKeys()
     {
         foreach (KeyValuePair<EngineObject, Guid> entry in this)
+        {
             yield return entry.Key;
+        }
     }
 
     private IEnumerable<Guid> EnumerateValues()
     {
         foreach (KeyValuePair<EngineObject, Guid> entry in this)
+        {
             yield return entry.Value;
+        }
     }
 }

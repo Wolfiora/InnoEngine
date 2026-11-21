@@ -1,9 +1,10 @@
 using System;
 using System.Threading;
-using Inno.Editor.ImGui;
 using Xunit;
+using Inno.Editor.ImGui;
 
 namespace Inno.Editor.ImGui.Tests;
+
 public sealed class EditorUiSessionTests
 {
     [Fact]

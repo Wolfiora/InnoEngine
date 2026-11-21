@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported popup flags choices at the Editor presentation boundary.
 /// </summary>
@@ -58,5 +59,5 @@ public enum ImGuiPopupFlags : int
     /// <summary>
     /// Selects the invalid mask presentation behavior.
     /// </summary>
-    InvalidMask = (int)Inno.Native.ImGui.ImGuiPopupFlags.InvalidMask,
+    InvalidMask = (int)Inno.Native.ImGui.ImGuiPopupFlags.InvalidMask
 }

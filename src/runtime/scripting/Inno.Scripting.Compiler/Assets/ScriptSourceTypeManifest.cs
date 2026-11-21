@@ -8,9 +8,7 @@ internal sealed class ScriptSourceTypeManifest : ISerializable
     /// <summary>
     /// Creates a validated script source type manifest instance.
     /// </summary>
-    public ScriptSourceTypeManifest()
-    {
-    }
+    public ScriptSourceTypeManifest() {}
 
     /// <summary>
     /// Creates a validated script source type manifest instance.
@@ -91,18 +89,22 @@ internal struct ScriptSourceTypeDeclaration
     /// Gets text used for stable identity, presentation, or diagnostics by this contract.
     /// </summary>
     public string typeName { get; set; }
+
     /// <summary>
     /// Gets text used for stable identity, presentation, or diagnostics by this contract.
     /// </summary>
     public string declarationKind { get; set; }
+
     /// <summary>
     /// Gets whether the caller-visible condition represented by this property is satisfied.
     /// </summary>
     public bool partial { get; set; }
+
     /// <summary>
     /// Gets the scalar measurement or identity associated with the current state.
     /// </summary>
     public int line { get; set; }
+
     /// <summary>
     /// Gets the scalar measurement or identity associated with the current state.
     /// </summary>

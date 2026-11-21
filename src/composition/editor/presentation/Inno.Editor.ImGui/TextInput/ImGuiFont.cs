@@ -1,9 +1,11 @@
 using System;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+
 using HostFont = Inno.Adapter.Presentation.ImGui.ImGuiFont;
 using HostStyle = Inno.Adapter.Presentation.ImGui.ImGuiFontStyle;
+using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Chooses composable font emphasis while leaving actual font ownership with the presentation host.
 /// </summary>
@@ -71,6 +73,7 @@ public unsafe ref struct ImGuiFontScope : IDisposable
     private Inno.Adapter.Presentation.ImGui.ImGuiFontScope m_scope;
     private readonly int m_frame;
     private readonly int m_depth;
+
     internal ImGuiFontScope(
         EditorUiSession session,
         Inno.Adapter.Presentation.ImGui.ImGuiFontScope scope,
@@ -92,10 +95,14 @@ public unsafe ref struct ImGuiFontScope : IDisposable
     public void Dispose()
     {
         if (m_session is null)
+        {
             return;
+        }
         m_session.EnsureDrawing();
         if (NativeImGui.GetFrameCount() != m_frame || NativeImGui.Raw.GetCurrentContext()->FontStack.Size != m_depth)
+        {
             throw new InvalidOperationException("Font scopes must retire in their original frame and reverse stack order.");
+        }
         m_scope.Dispose();
         m_session = null;
     }

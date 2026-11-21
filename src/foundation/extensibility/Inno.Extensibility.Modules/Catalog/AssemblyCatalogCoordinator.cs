@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Core.Execution;
 
 namespace Inno.Extensibility.Modules;
@@ -18,9 +17,9 @@ internal sealed class AssemblyCatalogCoordinator
         {
             RemoveCollectedParticipants();
             var registration = new CatalogParticipantRegistration(this, Guid.NewGuid());
-            m_participants.Add(new ParticipantReference(
-                registration.id,
-                new WeakReference<IAssemblyCatalogParticipant>(participant)));
+            m_participants.Add(
+                new ParticipantReference(registration.id, new WeakReference<IAssemblyCatalogParticipant>(participant))
+            );
             return registration;
         }
     }
@@ -39,7 +38,9 @@ internal sealed class AssemblyCatalogCoordinator
             foreach (ParticipantReference registration in m_participants)
             {
                 if (registration.participant.TryGetTarget(out IAssemblyCatalogParticipant? participant))
+                {
                     participants.Add(participant);
+                }
             }
         }
 
@@ -47,7 +48,9 @@ internal sealed class AssemblyCatalogCoordinator
         try
         {
             foreach (IAssemblyCatalogParticipant participant in participants)
+            {
                 transactions.Add(participant.Prepare(catalog));
+            }
             return new AssemblyCatalogRefreshSet(transactions);
         }
         catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
@@ -67,7 +70,10 @@ internal sealed class AssemblyCatalogCoordinator
                 }
                 catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
                 {
-                    m_retirementFailure = new AggregateException("Catalog preparation failed and rollback remains pending.", [.. failures, failure]);
+                    m_retirementFailure = new AggregateException(
+                        "Catalog preparation failed and rollback remains pending.",
+                        [.. failures, failure]
+                    );
                     m_retainedPreparation = (participants, transactions);
                     throw m_retirementFailure;
                 }
@@ -77,7 +83,9 @@ internal sealed class AssemblyCatalogCoordinator
                 }
             }
             if (failures.Count > 1)
+            {
                 throw new AggregateException("Assembly catalog preparation and rollback failed.", failures);
+            }
             throw;
         }
     }
@@ -85,7 +93,9 @@ internal sealed class AssemblyCatalogCoordinator
     internal void Unregister(Guid registrationId)
     {
         lock (m_sync)
+        {
             m_participants.RemoveAll(registration => registration.id == registrationId);
+        }
     }
 
     private void RemoveCollectedParticipants()
@@ -112,7 +122,9 @@ internal sealed class CatalogParticipantRegistration(
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_disposed = true;
         owner.Unregister(id);
     }
@@ -132,7 +144,9 @@ internal sealed class AssemblyCatalogRefreshSet(IReadOnlyList<IAssemblyCatalogTr
             foreach (IAssemblyCatalogTransaction transaction in transactions)
             {
                 if (transaction.context is not null)
+                {
                     result.Add(transaction.context);
+                }
             }
             return result;
         }
@@ -141,13 +155,19 @@ internal sealed class AssemblyCatalogRefreshSet(IReadOnlyList<IAssemblyCatalogTr
     internal void Activate()
     {
         if (m_failure is not null)
+        {
             throw m_failure;
+        }
         if (m_finished)
+        {
             throw new InvalidOperationException("Assembly catalog refresh set is already finished.");
+        }
         try
         {
             for (; m_activatedCount < transactions.Count; m_activatedCount++)
+            {
                 transactions[m_activatedCount].Activate();
+            }
         }
         catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
         {
@@ -162,9 +182,15 @@ internal sealed class AssemblyCatalogRefreshSet(IReadOnlyList<IAssemblyCatalogTr
             }
             catch (Exception rollbackFailure)
             {
-                var combined = new AggregateException("Assembly catalog activation and rollback failed.", activationFailure, rollbackFailure);
+                var combined = new AggregateException(
+                    "Assembly catalog activation and rollback failed.",
+                    activationFailure,
+                    rollbackFailure
+                );
                 if (RetirementPendingException.Find(combined) is not null)
+                {
                     m_failure = combined;
+                }
                 throw combined;
             }
             throw;
@@ -174,31 +200,47 @@ internal sealed class AssemblyCatalogRefreshSet(IReadOnlyList<IAssemblyCatalogTr
     internal void Complete()
     {
         if (m_failure is not null)
+        {
             throw m_failure;
+        }
         if (m_finished)
+        {
             return;
+        }
         List<Exception> failures = [];
         for (int i = 0; i < transactions.Count; i++)
+        {
             TryCleanup(transactions[i].Complete, failures);
+        }
         m_finished = true;
         transactions = Array.Empty<IAssemblyCatalogTransaction>();
         if (failures.Count > 0)
+        {
             throw new AggregateException("Assembly catalog completion failed after all participants were attempted.", failures);
+        }
     }
 
     internal void Rollback()
     {
         if (m_failure is not null)
+        {
             throw m_failure;
+        }
         if (m_finished)
+        {
             return;
+        }
         List<Exception> failures = [];
         for (int i = transactions.Count - 1; i >= 0; i--)
+        {
             TryCleanup(transactions[i].Rollback, failures);
+        }
         m_finished = true;
         transactions = Array.Empty<IAssemblyCatalogTransaction>();
         if (failures.Count > 0)
+        {
             throw new AggregateException("Assembly catalog rollback failed after all participants were attempted.", failures);
+        }
     }
 
     private void TryCleanup(
@@ -212,9 +254,13 @@ internal sealed class AssemblyCatalogRefreshSet(IReadOnlyList<IAssemblyCatalogTr
         catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
         {
             m_failure = failures.Count == 0 ? failure : new AggregateException(
-                "Catalog cleanup remains pending after earlier failures.", [.. failures, failure]);
+                "Catalog cleanup remains pending after earlier failures.",
+                [.. failures, failure]
+            );
             if (ReferenceEquals(m_failure, failure))
+            {
                 throw;
+            }
             throw m_failure;
         }
         catch (Exception exception)

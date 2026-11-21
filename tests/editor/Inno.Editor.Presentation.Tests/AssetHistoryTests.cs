@@ -1,25 +1,26 @@
-using Inno.Core.IO;
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Diagnostics;
-using Inno.Extensibility.Modules;
+using Inno.Core.IO;
 using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
-using Inno.Editor.Core;
-using Inno.Editor.Interactions;
 using Inno.Editor.Assets;
 using Inno.Editor.Assets.ImGui;
+using Inno.Editor.Core;
+using Inno.Editor.Interactions;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Types;
 using Inno.Plugins.Authoring;
-using Xunit;
 
 namespace Inno.Editor.Presentation.Tests;
+
 public sealed class AssetHistoryTests : IDisposable
 {
     private readonly Inno.Editor.ImGui.EditorUiSession m_ui = new();
@@ -35,6 +36,7 @@ public sealed class AssetHistoryTests : IDisposable
     private readonly PluginEnvironment m_plugins;
     private readonly ProjectSettingsStore m_settings;
     private readonly EditorInteractionRuntime m_runtime;
+
     public AssetHistoryTests()
     {
         string assetRoot = Path.Combine(m_projectRoot, "Assets");
@@ -42,7 +44,9 @@ public sealed class AssetHistoryTests : IDisposable
         m_identityScope = m_identities.EnterScope();
         _ = typeof(AssetEditingModule);
         _ = typeof(TextAsset);
-        m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(AssetHistoryTests).Assembly) });
+        m_modules = new ModuleHost(
+            new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(AssetHistoryTests).Assembly) }
+        );
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         string libraryRoot = Path.Combine(m_projectRoot, "Library");
@@ -62,7 +66,15 @@ public sealed class AssetHistoryTests : IDisposable
             new ProjectId("tests.editor"),
             AssetSerializationContext.Create(m_assets)
         );
-        m_plugins = new PluginEnvironment(m_assets, m_settings, m_serialization, pluginRoot, libraryRoot, pluginScan, m_modules.generations);
+        m_plugins = new PluginEnvironment(
+            m_assets,
+            m_settings,
+            m_serialization,
+            pluginRoot,
+            libraryRoot,
+            pluginScan,
+            m_modules.generations
+        );
         m_runtime = new EditorInteractionRuntime(
             new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
             m_types,
@@ -85,7 +97,9 @@ public sealed class AssetHistoryTests : IDisposable
         m_logs.Dispose();
         m_identityScope.Dispose();
         if (Directory.Exists(m_projectRoot))
+        {
             Directory.Delete(m_projectRoot, recursive: true);
+        }
     }
 
     [Fact]
@@ -157,7 +171,9 @@ public sealed class AssetHistoryTests : IDisposable
         m_assets.CreateDirectory(AssetPath.Project("To"));
         Assert.True(m_assets.Save(AssetPath.Project("From/Value.txt"), new TextAsset("value")));
         Assert.True(m_assets.TryGetFileSystemEntry(AssetPath.Project("From/Value.txt"), out AssetFileEntry file));
-        RuntimeIdentity fileToken = m_runtime.interactions.For("panel/asset.file-browser", file).BeginDrag(new EditorDragData(file, "Value.txt"));
+        RuntimeIdentity fileToken = m_runtime.interactions
+            .For("panel/asset.file-browser", file)
+            .BeginDrag(new EditorDragData(file, "Value.txt"));
         EditorInteraction destination = m_runtime.interactions.For("panel/asset.file-browser", "To");
         Assert.True(destination.QueryDrop(fileToken, EditorDropPlacement.Into).canDrop);
         Assert.True(destination.Drop(fileToken, EditorDropPlacement.Into).accepted);
@@ -168,7 +184,9 @@ public sealed class AssetHistoryTests : IDisposable
         Assert.True(m_runtime.interactions.history.Redo().succeeded);
         Assert.True(m_assets.TryGetFileSystemEntry(AssetPath.Project("To/Value.txt"), out _));
         Assert.True(m_assets.TryGetFileSystemEntry(AssetPath.Project("From/Folder"), out AssetFileEntry folder));
-        RuntimeIdentity folderToken = m_runtime.interactions.For("panel/asset.file-browser", folder).BeginDrag(new EditorDragData(folder, "Folder"));
+        RuntimeIdentity folderToken = m_runtime.interactions
+            .For("panel/asset.file-browser", folder)
+            .BeginDrag(new EditorDragData(folder, "Folder"));
         Assert.True(destination.QueryDrop(folderToken, EditorDropPlacement.Into).canDrop);
         Assert.True(destination.Drop(folderToken, EditorDropPlacement.Into).accepted);
         Assert.True(m_assets.TryGetFileSystemEntry(AssetPath.Project("To/Folder/Child"), out _));
@@ -184,9 +202,19 @@ public sealed class AssetHistoryTests : IDisposable
         m_assets.CreateDirectory(AssetPath.Project("Target"));
         m_assets.CreateDirectory(AssetPath.Project("Target/Source"));
         Assert.True(m_assets.TryGetFileSystemEntry(AssetPath.Project("Source"), out AssetFileEntry source));
-        RuntimeIdentity descendantToken = m_runtime.interactions.For("panel/asset.file-browser", source).BeginDrag(new EditorDragData(source, "Source"));
-        Assert.False(m_runtime.interactions.For("panel/asset.file-browser", "Source/Child").QueryDrop(descendantToken, EditorDropPlacement.Into).canDrop);
-        RuntimeIdentity collisionToken = m_runtime.interactions.For("panel/asset.file-browser", source).BeginDrag(new EditorDragData(source, "Source"));
-        Assert.False(m_runtime.interactions.For("panel/asset.file-browser", "Target").QueryDrop(collisionToken, EditorDropPlacement.Into).canDrop);
+        RuntimeIdentity descendantToken = m_runtime.interactions
+            .For("panel/asset.file-browser", source)
+            .BeginDrag(new EditorDragData(source, "Source"));
+        Assert.False(
+            m_runtime.interactions
+                .For("panel/asset.file-browser", "Source/Child")
+                .QueryDrop(descendantToken, EditorDropPlacement.Into).canDrop
+        );
+        RuntimeIdentity collisionToken = m_runtime.interactions
+            .For("panel/asset.file-browser", source)
+            .BeginDrag(new EditorDragData(source, "Source"));
+        Assert.False(
+            m_runtime.interactions.For("panel/asset.file-browser", "Target").QueryDrop(collisionToken, EditorDropPlacement.Into).canDrop
+        );
     }
 }

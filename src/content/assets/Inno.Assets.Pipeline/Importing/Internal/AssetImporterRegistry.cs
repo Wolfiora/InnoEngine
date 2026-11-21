@@ -1,16 +1,14 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Frozen;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-
 using Inno.Extensibility.Types;
 
 namespace Inno.Assets.Pipeline;
 
-internal sealed class AssetImporterRegistry
-    : TypeRegistry<AssetImporterRegistry.Snapshot>
+internal sealed class AssetImporterRegistry : TypeRegistry<AssetImporterRegistry.Snapshot>
 {
     private readonly object m_generationSync = new();
     private readonly TypeCatalog m_types;
@@ -35,7 +33,9 @@ internal sealed class AssetImporterRegistry
     {
         _ = current;
         lock (m_generationSync)
+        {
             return m_generations.GetValueOrDefault(importerId);
+        }
     }
 
     internal long snapshotVersion
@@ -67,7 +67,8 @@ internal sealed class AssetImporterRegistry
             if (type.IsAbstract || !typeof(AssetImporter).IsAssignableFrom(type))
             {
                 throw new InvalidOperationException(
-                    $"Asset importer metadata on '{type.FullName}' requires a concrete {nameof(AssetImporter)} subtype.");
+                    $"Asset importer metadata on '{type.FullName}' requires a concrete {nameof(AssetImporter)} subtype."
+                );
             }
             return (type, type.GetCustomAttribute<AssetImporterAttribute>(inherit: false)!.id);
         }).ToArray();
@@ -75,7 +76,9 @@ internal sealed class AssetImporterRegistry
             .GroupBy(static registration => registration.id, StringComparer.Ordinal)
             .FirstOrDefault(static group => group.Count() > 1)?.Key;
         if (duplicateId is not null)
+        {
             throw new InvalidOperationException($"Asset importer id '{duplicateId}' is registered by multiple importers.");
+        }
 
         var byExtension = new Dictionary<string, AssetImporter>(StringComparer.OrdinalIgnoreCase);
         var byId = new Dictionary<string, AssetImporter>(StringComparer.Ordinal);
@@ -93,8 +96,9 @@ internal sealed class AssetImporterRegistry
                 if (!byExtension.TryAdd(extension, importer))
                 {
                     throw new InvalidOperationException(
-                        $"Asset extension '{extension}' is registered by both " +
-                        $"'{byExtension[extension].GetType().FullName}' and '{type.FullName}'.");
+                        $"Asset extension '{extension}' is registered by both "
+                        + $"'{byExtension[extension].GetType().FullName}' and '{type.FullName}'."
+                    );
                 }
             }
         }
@@ -102,7 +106,8 @@ internal sealed class AssetImporterRegistry
         return new Snapshot(
             byExtension.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase),
             byId.ToFrozenDictionary(StringComparer.Ordinal),
-            typesById.ToFrozenDictionary(StringComparer.Ordinal));
+            typesById.ToFrozenDictionary(StringComparer.Ordinal)
+        );
     }
 
     /// <summary>
@@ -123,10 +128,10 @@ internal sealed class AssetImporterRegistry
             m_generationRollback = new Dictionary<string, long>(m_generations, StringComparer.Ordinal);
             foreach ((string importerId, Type importerType) in candidate.typesById)
             {
-                if (previous is null ||
-                    !previous.typesById.TryGetValue(importerId, out Type? previousType) ||
-                    previousType != importerType)
-                {
+                if (previous is null
+                    || !previous.typesById.TryGetValue(importerId, out Type? previousType)
+                    || previousType != importerType
+                ) {
                     m_generations[importerId] = m_generations.GetValueOrDefault(importerId) + 1;
                 }
             }
@@ -149,10 +154,14 @@ internal sealed class AssetImporterRegistry
         lock (m_generationSync)
         {
             if (m_generationRollback is null)
+            {
                 return;
+            }
             m_generations.Clear();
             foreach ((string importerId, long generation) in m_generationRollback)
+            {
                 m_generations.Add(importerId, generation);
+            }
             m_generationRollback = null;
         }
     }
@@ -171,7 +180,9 @@ internal sealed class AssetImporterRegistry
         Snapshot currentSnapshot
     ) {
         lock (m_generationSync)
+        {
             m_generationRollback = null;
+        }
     }
 
     /// <summary>
@@ -185,7 +196,9 @@ internal sealed class AssetImporterRegistry
     private static string NormalizeExtension(string extension)
     {
         if (string.IsNullOrWhiteSpace(extension))
+        {
             throw new InvalidOperationException("Asset importer extensions cannot be empty.");
+        }
         string normalized = extension.Trim().ToLowerInvariant();
         return normalized[0] == '.' ? normalized : "." + normalized;
     }

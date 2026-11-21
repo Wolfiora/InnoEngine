@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Identity;
 using Inno.Editor.Core;
 
@@ -79,8 +78,8 @@ public abstract class EditorDrop<TSource, TTarget> : EditorDrop
     {
         ArgumentNullException.ThrowIfNull(context);
         return context.source is TSource source && context.target is TTarget target
-            ? Query(new EditorDropContext<TSource, TTarget>(context, source, target))
-            : EditorDropStatus.rejected;
+               ? Query(new EditorDropContext<TSource, TTarget>(context, source, target))
+               : EditorDropStatus.rejected;
     }
 
     /// <summary>
@@ -96,7 +95,9 @@ public abstract class EditorDrop<TSource, TTarget> : EditorDrop
     {
         ArgumentNullException.ThrowIfNull(context);
         if (context.source is not TSource source || context.target is not TTarget target)
+        {
             return EditorDropResult.rejected;
+        }
         return Drop(new EditorDropContext<TSource, TTarget>(context, source, target));
     }
 

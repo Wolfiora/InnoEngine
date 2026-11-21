@@ -27,13 +27,38 @@ public static class WindowsX64BuildIntegration
     {
         ArgumentNullException.ThrowIfNull(context);
         var generator = new NativeBindingGenerator(WindowsX64BindingProfile.Create());
-        ProductNativeBuildPlan player = StandardNativeComponents.CreatePlayer(WindowsX64BgfxIntegration.nativeProfile, WindowsX64NativeProducts.Options, WindowsX64NativeLayout.Map);
+        ProductNativeBuildPlan player = StandardNativeComponents.CreatePlayer(
+            WindowsX64BgfxIntegration.nativeProfile,
+            WindowsX64NativeProducts.Options,
+            WindowsX64NativeLayout.Map
+        );
         var validator = new PlayerSupportPackClosureValidator(
             StandardSupportPackRequirements.CreateDynamic(player, WindowsX64BuildModule.target.id, ".dll"),
-            new WindowsX64SupportPackValidator(), StandardNativeDeployment.CreateValidator(WindowsX64BuildModule.target.id, ".dll"));
+            new WindowsX64SupportPackValidator(),
+            StandardNativeDeployment.CreateValidator(WindowsX64BuildModule.target.id, ".dll")
+        );
         var executor = new ComponentNativeProductExecutor();
-        return WindowsX64BuildModule.CreateContribution(context, new NativeProductContribution(player, executor),
-            new NativeProductContribution(StandardNativeComponents.CreateEditor(WindowsX64BgfxIntegration.nativeProfile, WindowsX64NativeProducts.Options, WindowsX64NativeLayout.Map), executor),
-            new NativeProductContribution(StandardNativeComponents.CreateShaderTools(WindowsX64BgfxIntegration.nativeProfile, WindowsX64NativeProducts.Options, WindowsX64NativeLayout.Map), executor), validator, generator);
+        return WindowsX64BuildModule.CreateContribution(
+            context,
+            new NativeProductContribution(player, executor),
+            new NativeProductContribution(
+                StandardNativeComponents.CreateEditor(
+                    WindowsX64BgfxIntegration.nativeProfile,
+                    WindowsX64NativeProducts.Options,
+                    WindowsX64NativeLayout.Map
+                ),
+                executor
+            ),
+            new NativeProductContribution(
+                StandardNativeComponents.CreateShaderTools(
+                    WindowsX64BgfxIntegration.nativeProfile,
+                    WindowsX64NativeProducts.Options,
+                    WindowsX64NativeLayout.Map
+                ),
+                executor
+            ),
+            validator,
+            generator
+        );
     }
 }

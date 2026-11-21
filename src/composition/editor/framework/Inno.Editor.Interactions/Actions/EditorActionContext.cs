@@ -2,6 +2,7 @@ using System;
 using Inno.Editor.Core;
 
 namespace Inno.Editor.Interactions;
+
 /// <summary>
 /// Provides contextual state to an editor action.
 /// </summary>
@@ -50,22 +51,27 @@ public class EditorActionContext
     /// Gets the shared passive editor context.
     /// </summary>
     public EditorContext editor { get; }
+
     /// <summary>
     /// Gets the active interaction entry point.
     /// </summary>
     public EditorInteractions interactions { get; }
+
     /// <summary>
     /// Gets the transactional history used to record reversible mutations performed by this action.
     /// </summary>
     public IEditorHistory history => interactions.history;
+
     /// <summary>
     /// Gets the stable interaction area.
     /// </summary>
     public string area { get; }
+
     /// <summary>
     /// Gets the contextual action target.
     /// </summary>
     public object? target { get; }
+
     /// <summary>
     /// Gets the optional action argument.
     /// </summary>
@@ -119,6 +125,7 @@ public sealed class EditorActionContext<TTarget, TArgument> : EditorActionContex
     /// Gets the strongly typed action target.
     /// </summary>
     public new TTarget target { get; }
+
     /// <summary>
     /// Gets the strongly typed action argument.
     /// </summary>

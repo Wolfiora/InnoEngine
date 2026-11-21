@@ -17,8 +17,11 @@ internal static class AudioSubsystem
         EngineSessionComposition composition,
         RuntimeSubsystemContext owner
     ) {
-        DiagnosticReporter diagnostics = owner.resources.Own(owner.diagnostics.CreateReporter(
-            new DiagnosticSource($"inno.audio.{composition.session.sessionId}", "Audio")));
+        DiagnosticReporter diagnostics = owner.resources.Own(
+            owner.diagnostics.CreateReporter(
+                new DiagnosticSource($"inno.audio.{composition.session.sessionId}", "Audio")
+            )
+        );
         IAudioDevice device;
         try
         {
@@ -26,17 +29,27 @@ internal static class AudioSubsystem
         }
         catch (Exception exception)
         {
-            diagnostics.Publish(new Diagnostic("AUDIO_DEVICE_INIT_FAILED",
-                $"Audio output could not start; this session is explicitly muted: {exception.Message}",
-                DiagnosticSeverity.Warning, composition.selection.audio.ToString()));
+            diagnostics.Publish(
+                new Diagnostic(
+                    "AUDIO_DEVICE_INIT_FAILED",
+                    $"Audio output could not start; this session is explicitly muted: {exception.Message}",
+                    DiagnosticSeverity.Warning,
+                    composition.selection.audio.ToString()
+                )
+            );
             device = new MutedAudioDevice();
         }
         AudioRuntime? runtime = null;
         try
         {
             AudioProjectSettings settings = composition.audioSettings()
-                ?? throw new InvalidOperationException("The audio settings source returned null.");
-            runtime = new AudioRuntime(owner.types, device, composition.artifacts, owner.events, diagnostics,
+                                            ?? throw new InvalidOperationException("The audio settings source returned null.");
+            runtime = new AudioRuntime(
+                owner.types,
+                device,
+                composition.artifacts,
+                owner.events,
+                diagnostics,
                 new AudioRuntimeOptions
                 {
                     maxVoices = settings.maxVoices,
@@ -44,11 +57,16 @@ internal static class AudioSubsystem
                     automaticStreamingThresholdBytes = settings.automaticStreamingThresholdBytes
                 },
                 contentScopeProvider: () => SceneContentSource.CreateScope(composition.session.scenes),
-                deviceRecoveryFactory: () => composition.adapters.audio.CreateDevice(composition.selection.audio));
+                deviceRecoveryFactory: () => composition.adapters.audio.CreateDevice(composition.selection.audio)
+            );
             if (settings.defaultMixer is not null && !runtime.ApplyMixer(settings.defaultMixer))
+            {
                 throw new InvalidOperationException("The configured default mixer could not be activated.");
+            }
             if (!runtime.SetBusVolume(AudioBusId.master, settings.masterVolume))
+            {
                 throw new InvalidOperationException("The configured master volume could not be applied.");
+            }
             return runtime;
         }
         catch (Exception failure)
@@ -56,9 +74,13 @@ internal static class AudioSubsystem
             try
             {
                 if (runtime is null)
+                {
                     device.Dispose();
+                }
                 else
+                {
                     runtime.Dispose();
+                }
             }
             catch (Exception cleanup)
             {

@@ -50,8 +50,12 @@ public sealed class ShaderGraphTemplateRegistry : IDisposable
         get
         {
             using IDisposable operation = m_types.AcquireOperation("Describe shader templates");
-            return Array.AsReadOnly(m_registry.snapshot.Values.Select(static value => value.info)
-                .OrderBy(static value => value.displayName, StringComparer.Ordinal).ThenBy(static value => value.id, StringComparer.Ordinal).ToArray());
+            return Array.AsReadOnly(
+                m_registry.snapshot.Values.Select(static value => value.info)
+                    .OrderBy(static value => value.displayName, StringComparer.Ordinal)
+                    .ThenBy(static value => value.id, StringComparer.Ordinal)
+                    .ToArray()
+            );
         }
     }
 
@@ -81,7 +85,9 @@ public sealed class ShaderGraphTemplateRegistry : IDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         using IDisposable operation = m_types.AcquireOperation("Create shader from template");
         if (!m_registry.snapshot.TryGetValue(id, out Entry? entry))
+        {
             throw new InvalidOperationException($"Shader template '{id}' is unavailable.");
+        }
         return entry.template.Create(serialization, context).Clone();
     }
 
@@ -98,6 +104,7 @@ public sealed class ShaderGraphTemplateRegistry : IDisposable
     private sealed class Registry(TypeCatalog types) : TypeRegistry<IReadOnlyDictionary<string, Entry>>(types)
     {
         internal IReadOnlyDictionary<string, Entry> snapshot => current;
+
         /// <summary>
         /// Builds a validated result from the current immutable input snapshot.
         /// </summary>
@@ -118,7 +125,8 @@ protected override IReadOnlyDictionary<string, Entry> Build(TypeCacheSnapshot ty
                     if (type.IsAbstract || !typeof(ShaderGraphTemplate).IsAssignableFrom(type))
                     {
                         throw new InvalidOperationException(
-                            $"Shader graph template '{type.FullName}' must be a concrete {nameof(ShaderGraphTemplate)}.");
+                            $"Shader graph template '{type.FullName}' must be a concrete {nameof(ShaderGraphTemplate)}."
+                        );
                     }
                     return (type, type.GetCustomAttribute<ShaderGraphTemplateAttribute>(inherit: false)!);
                 })
@@ -127,7 +135,9 @@ protected override IReadOnlyDictionary<string, Entry> Build(TypeCacheSnapshot ty
                 .GroupBy(static registration => registration.metadata.id, StringComparer.Ordinal)
                 .FirstOrDefault(static group => group.Count() > 1)?.Key;
             if (duplicateId is not null)
+            {
                 throw new InvalidOperationException($"Duplicate shader template '{duplicateId}'.");
+            }
 
             var templates = new Dictionary<string, Entry>(StringComparer.Ordinal);
             foreach ((Type type, ShaderGraphTemplateAttribute metadata) in registrations)
@@ -138,6 +148,7 @@ protected override IReadOnlyDictionary<string, Entry> Build(TypeCacheSnapshot ty
             }
             return templates;
         }
+
         /// <summary>
         /// Releases the generation lease retained by an immutable registry snapshot.
         /// </summary>
@@ -145,6 +156,6 @@ protected override IReadOnlyDictionary<string, Entry> Build(TypeCacheSnapshot ty
         /// The immutable state snapshot consumed by this operation.
         /// </param>
 protected override void DisposeSnapshot(IReadOnlyDictionary<string, Entry> snapshot)
-            => DisposeExtensions(snapshot.Values.Select(static value => value.template));
+    => DisposeExtensions(snapshot.Values.Select(static value => value.template));
     }
 }

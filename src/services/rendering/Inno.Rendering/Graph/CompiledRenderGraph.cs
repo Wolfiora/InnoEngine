@@ -36,7 +36,8 @@ public sealed class RenderViewTransform
         {
             throw new ArgumentException(
                 "A projection matrix requires exactly sixteen values.",
-                nameof(projectionMatrix));
+                nameof(projectionMatrix)
+            );
         }
 
         m_viewMatrix = viewMatrix.ToArray();
@@ -425,7 +426,9 @@ public sealed class CompiledRenderGraph
             backend.BeginGraph(this);
             graphStarted = true;
             if (m_parallelPasses.Length != 0)
+            {
                 recorded = RecordParallelPasses(frameIndex);
+            }
             foreach (CompiledRenderPass pass in m_passes)
             {
                 bool passStarted = false;
@@ -437,9 +440,13 @@ public sealed class CompiledRenderGraph
                     commands.SetFrameIndex(frameIndex);
                     passStarted = true;
                     if (recorded is not null && recorded.TryGetValue(pass, out RecordedRenderCommandEncoder? commandList))
+                    {
                         commandList.Replay(commands);
+                    }
                     else
+                    {
                         pass.Execute(new RenderPassContext(commands, frameIndex));
+                    }
                 }
                 catch (Exception exception)
                 {
@@ -455,13 +462,16 @@ public sealed class CompiledRenderGraph
                         }
                         catch (Exception exception)
                         {
-                            passFailure = passFailure is null ? exception
+                            passFailure = passFailure is null
+                                ? exception
                                 : new AggregateException("Render pass execution and cleanup both failed.", passFailure, exception);
                         }
                     }
                 }
                 if (passFailure is not null)
+                {
                     ExceptionDispatchInfo.Capture(passFailure).Throw();
+                }
             }
         }
         catch (Exception exception)
@@ -483,8 +493,12 @@ public sealed class CompiledRenderGraph
                 }
             }
             if (recorded is not null)
+            {
                 foreach (RecordedRenderCommandEncoder commands in recorded.Values)
+                {
                     commands.Dispose();
+                }
+            }
         }
 
         if (errors is null)
@@ -511,9 +525,7 @@ public sealed class CompiledRenderGraph
                 m_parallelPasses,
                 new ParallelOptions
                 {
-                    MaxDegreeOfParallelism = Math.Max(
-                        1,
-                        Math.Min(Environment.ProcessorCount, m_parallelPasses.Length))
+                    MaxDegreeOfParallelism = Math.Max(1, Math.Min(Environment.ProcessorCount, m_parallelPasses.Length))
                 },
                 pass =>
                 {
@@ -524,20 +536,25 @@ public sealed class CompiledRenderGraph
                         pass.Execute(new RenderPassContext(commands, frameIndex));
                         commands.Seal();
                         if (!recorded.TryAdd(pass, commands))
+                        {
                             throw new InvalidOperationException("A parallel render pass was recorded more than once.");
+                        }
                     }
                     catch
                     {
                         commands.Dispose();
                         throw;
                     }
-                });
+                }
+            );
             return recorded.ToDictionary(static pair => pair.Key, static pair => pair.Value);
         }
         catch
         {
             foreach (RecordedRenderCommandEncoder commands in recorded.Values)
+            {
                 commands.Dispose();
+            }
             throw;
         }
     }

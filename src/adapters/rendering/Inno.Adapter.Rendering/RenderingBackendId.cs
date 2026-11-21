@@ -20,8 +20,12 @@ public readonly record struct RenderingBackendId
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         foreach (char character in value)
+        {
             if (char.IsWhiteSpace(character))
+            {
                 throw new ArgumentException("A rendering backend identifier cannot contain whitespace.", nameof(value));
+            }
+        }
         this.value = value;
     }
 

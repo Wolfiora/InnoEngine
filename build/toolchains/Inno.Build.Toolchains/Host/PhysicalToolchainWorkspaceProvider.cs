@@ -20,7 +20,9 @@ public sealed class PhysicalToolchainWorkspaceProvider : IToolchainWorkspaceProv
     ) {
         cancellationToken.ThrowIfCancellationRequested();
         if (!Path.IsPathFullyQualified(physicalPath))
+        {
             throw new ArgumentException("Tool execution requires an absolute physical owner path.", nameof(physicalPath));
+        }
         string physical = Path.GetFullPath(physicalPath);
         Directory.CreateDirectory(physical);
         return ValueTask.FromResult(new ToolchainWorkingDirectory(physical));

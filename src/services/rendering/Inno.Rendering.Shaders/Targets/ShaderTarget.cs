@@ -19,8 +19,8 @@ public sealed class ShaderTargetAttribute : Attribute
     /// </param>
     public ShaderTargetAttribute(string id)
         => this.id = string.IsNullOrWhiteSpace(id)
-            ? throw new ArgumentException("Shader target identity cannot be empty.", nameof(id))
-            : id;
+                     ? throw new ArgumentException("Shader target identity cannot be empty.", nameof(id))
+                     : id;
 
     /// <summary>
     /// Gets the stable target identity persisted by Shader assets.
@@ -70,10 +70,12 @@ public sealed class ShaderTargetContext
     /// Gets a private document copy; expansion cannot modify the authored source.
     /// </summary>
     public GraphDocument document { get; }
+
     /// <summary>
     /// Gets the current owner converter registry, valid only during expansion.
     /// </summary>
     public SerializationRegistry serialization { get; }
+
     /// <summary>
     /// Gets the complete owner reference context used for generated resource defaults.
     /// </summary>

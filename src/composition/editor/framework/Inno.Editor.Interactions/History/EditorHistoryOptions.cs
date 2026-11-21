@@ -35,22 +35,28 @@ public sealed class EditorHistoryOptions
     internal void Validate()
     {
         if (maxEntries <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(maxEntries), maxEntries, "History entry capacity must be positive.");
+        }
         if (maxResidentBytes <= 0)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(maxResidentBytes),
                 maxResidentBytes,
-                "Resident history capacity must be positive.");
+                "Resident history capacity must be positive."
+            );
         }
         if (maxDiskBytes <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(maxDiskBytes), maxDiskBytes, "Disk history capacity must be positive.");
+        }
         if (inlinePayloadThreshold < 0)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(inlinePayloadThreshold),
                 inlinePayloadThreshold,
-                "The inline payload threshold cannot be negative.");
+                "The inline payload threshold cannot be negative."
+            );
         }
     }
 }

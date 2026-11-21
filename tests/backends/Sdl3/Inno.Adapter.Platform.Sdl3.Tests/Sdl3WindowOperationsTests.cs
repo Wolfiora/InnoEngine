@@ -1,9 +1,9 @@
 using System;
 using System.Runtime.InteropServices;
+using Xunit;
 using Inno.Integration.WindowsX64.Sdl3;
 using Inno.Native.Sdl3;
 using Inno.Platform;
-using Xunit;
 
 namespace Inno.Adapter.Platform.Sdl3.Tests;
 
@@ -16,8 +16,17 @@ public sealed unsafe class Sdl3WindowOperationsTests
         bool resizable,
         bool highPixelDensity
     ) {
-        if (NativeWindowTestHost.RunIfRequired(nameof(Sdl3WindowOperationsTests) + "." + nameof(CreationPreservesOptionsAndLeavesRegistrationToTheOwner) + "." + resizable + "." + highPixelDensity))
+        if (NativeWindowTestHost.RunIfRequired(
+            nameof(Sdl3WindowOperationsTests)
+            + "."
+            + nameof(CreationPreservesOptionsAndLeavesRegistrationToTheOwner)
+            + "."
+            + resizable
+            + "."
+            + highPixelDensity
+        )) {
             return;
+        }
 
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         var options = new PlatformWindowOptions
@@ -44,8 +53,7 @@ public sealed unsafe class Sdl3WindowOperationsTests
             Assert.True((flags & SDLWindowFlags.Hidden) != 0);
             Assert.Equal(resizable, (flags & SDLWindowFlags.Resizable) != 0);
             Assert.Equal(highPixelDensity, (flags & SDLWindowFlags.HighPixelDensity) != 0);
-            Assert.Equal((flags & SDLWindowFlags.InputFocus) != 0,
-                Sdl3WindowOperations.ReadFocus((nint)native));
+            Assert.Equal((flags & SDLWindowFlags.InputFocus) != 0, Sdl3WindowOperations.ReadFocus((nint)native));
         }
         finally
         {
@@ -58,7 +66,9 @@ public sealed unsafe class Sdl3WindowOperationsTests
     public void InvalidInputFailsBeforeCreatingAWindow()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => Sdl3WindowOperations.CreateWindow(
-            new PlatformWindowOptions { width = 0 }, requireOpenGl: false));
+            new PlatformWindowOptions { width = 0 },
+            requireOpenGl: false
+        ));
         Assert.Throws<ArgumentException>(() => Sdl3WindowOperations.ReadFocus(0));
     }
 }

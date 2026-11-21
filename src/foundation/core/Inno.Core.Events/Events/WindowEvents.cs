@@ -14,7 +14,6 @@ public abstract class WindowEvent(uint windowId) : Event
     public uint windowId { get; } = windowId;
 }
 
-
 /// <summary>
 /// Raised when the window size changes.
 /// </summary>
@@ -50,9 +49,7 @@ public class WindowResizeEvent(
 /// <param name="windowId">
 /// The window id used to initialize this instance.
 /// </param>
-public class WindowCloseEvent(uint windowId) : WindowEvent(windowId)
-{
-}
+public class WindowCloseEvent(uint windowId) : WindowEvent(windowId);
 
 /// <summary>
 /// Raised when a window gains or loses input focus.

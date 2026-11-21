@@ -35,8 +35,18 @@ public sealed partial class AssetDatabase
         get
         {
             lock (m_sync)
-                return new(m_pendingLoads.Count, m_peakPendingLoads, m_rejectedLoads, m_payloadReads.Count,
-                    m_payloadReadsStarted, m_payloadReadsShared, m_preparingBytes, m_peakPreparingBytes);
+            {
+                return new(
+                    m_pendingLoads.Count,
+                    m_peakPendingLoads,
+                    m_rejectedLoads,
+                    m_payloadReads.Count,
+                    m_payloadReadsStarted,
+                    m_payloadReadsShared,
+                    m_preparingBytes,
+                    m_peakPreparingBytes
+                );
+            }
         }
     }
 
@@ -48,7 +58,9 @@ public sealed partial class AssetDatabase
         get
         {
             lock (m_sync)
+            {
                 return m_preparingBytes;
+            }
         }
     }
 
@@ -110,7 +122,9 @@ public sealed partial class AssetDatabase
             throw new InvalidOperationException("Runtime asset preparation is at capacity; retry after the next completion safety point.");
         }
         if (!typeof(TAsset).IsAssignableFrom(ResolveType(record)))
+        {
             throw new InvalidOperationException($"Runtime asset '{record.path}' is not compatible with '{typeof(TAsset).FullName}'.");
+        }
 
         if (!m_preparations.TryGetValue(record.persistentId, out SharedPreparation? shared))
         {
@@ -136,7 +150,9 @@ public sealed partial class AssetDatabase
                         m_payloadReadsStarted++;
                     }
                     else
+                    {
                         m_payloadReadsShared++;
+                    }
                     payload.owners++;
                     payloads.Add(payload);
                 }
@@ -147,20 +163,31 @@ public sealed partial class AssetDatabase
             catch
             {
                 foreach (SharedPayload payload in payloads)
+                {
                     ReleasePayload(payload);
+                }
                 throw;
             }
         }
         shared.waiters++;
         var completion = new TaskCompletionSource<AssetLease<TAsset>>(TaskCreationOptions.RunContinuationsAsynchronously);
-        m_pendingLoads.Add(new PendingAcquisition(shared.preparation, cancellationToken, payloads =>
-        {
-            TAsset asset = LoadRecord<TAsset>(record, pin: false, payloads);
-            record.leaseCount++;
-            completion.SetResult(CreateResidencyLease(record, asset));
-        }, exception => completion.TrySetException(exception),
-            () => completion.TrySetCanceled(cancellationToken.IsCancellationRequested ? cancellationToken : new CancellationToken(true)),
-            () => ReleasePreparation(record.persistentId, shared)));
+        m_pendingLoads.Add(
+            new PendingAcquisition(
+                shared.preparation,
+                cancellationToken,
+                payloads =>
+                {
+                    TAsset asset = LoadRecord<TAsset>(record, pin: false, payloads);
+                    record.leaseCount++;
+                    completion.SetResult(CreateResidencyLease(record, asset));
+                },
+                exception => completion.TrySetException(exception),
+                () => completion.TrySetCanceled(
+                    cancellationToken.IsCancellationRequested ? cancellationToken : new CancellationToken(true)
+                ),
+                () => ReleasePreparation(record.persistentId, shared)
+            )
+        );
         m_peakPendingLoads = Math.Max(m_peakPendingLoads, m_pendingLoads.Count);
         return new ValueTask<AssetLease<TAsset>>(completion.Task);
     }
@@ -168,8 +195,7 @@ public sealed partial class AssetDatabase
     private AssetLease<TAsset> CreateResidencyLease<TAsset>(
         RuntimeAssetRecord record,
         TAsset asset
-    )
-        where TAsset : AssetObject
+    ) where TAsset : AssetObject
     {
         bool released = false;
         return CreateAssetLease(asset, () => ReleaseLease(record, ref released));
@@ -181,14 +207,26 @@ public sealed partial class AssetDatabase
         List<PayloadRead> reads
     ) {
         if (!visited.Add(record.persistentId))
+        {
             return;
+        }
         RuntimeArtifactOutput output = ReadArtifactManifest(record).outputs.Single(candidate => candidate.name == "runtime");
         if (output.length < 0 || output.length > int.MaxValue)
+        {
             throw new InvalidDataException("A runtime payload length is outside the supported allocation range.");
-        reads.Add(new PayloadRead(record.persistentId,
-            GetVerifiedOutputKey(record, output), output.length, output.contentHash));
+        }
+        reads.Add(
+            new PayloadRead(
+                record.persistentId,
+                GetVerifiedOutputKey(record, output),
+                output.length,
+                output.contentHash
+            )
+        );
         foreach (AssetDependency dependency in record.dependencies)
+        {
             CollectPayloadReads(m_recordsById[dependency.persistentId], visited, reads);
+        }
     }
 
     private static async Task<byte[]> ReadPayloadAsync(
@@ -217,18 +255,24 @@ public sealed partial class AssetDatabase
         byte[] bytes = new byte[checked((int)read.length)];
         await stream.ReadExactlyAsync(bytes, token).ConfigureAwait(false);
         token.ThrowIfCancellationRequested();
-        if (stream.ReadByte() != -1 || bytes.LongLength != read.length ||
-            !string.Equals(Convert.ToHexString(SHA256.HashData(bytes)), read.hash, StringComparison.OrdinalIgnoreCase))
+        if (stream.ReadByte() != -1 || bytes.LongLength != read.length
+            || !string.Equals(Convert.ToHexString(SHA256.HashData(bytes)), read.hash, StringComparison.OrdinalIgnoreCase)
+        ) {
             throw new InvalidDataException($"Runtime payload '{read.id:D}' failed integrity verification.");
+        }
         return bytes;
     }
 
     private static Task<Dictionary<Guid, byte[]>> StartPayloadPreparation(SharedPayload[] reads)
     {
         if (ExecutionContext.IsFlowSuppressed())
+        {
             return AssemblePayloadsAsync(reads);
+        }
         using (ExecutionContext.SuppressFlow())
+        {
             return AssemblePayloadsAsync(reads);
+        }
     }
 
     private static async Task<Dictionary<Guid, byte[]>> AssemblePayloadsAsync(SharedPayload[] reads)
@@ -241,9 +285,13 @@ public sealed partial class AssetDatabase
     private void CancelPendingLoads()
     {
         foreach (SharedPayload preparation in m_payloadReads.Values)
+        {
             preparation.cancellation.Cancel();
+        }
         foreach (PendingAcquisition request in m_pendingLoads)
+        {
             request.Cancel();
+        }
         m_pendingLoads.Clear();
     }
 
@@ -252,16 +300,22 @@ public sealed partial class AssetDatabase
         SharedPreparation preparation
     ) {
         if (--preparation.waiters != 0)
+        {
             return;
+        }
         m_preparations.Remove(id);
         foreach (SharedPayload payload in preparation.payloads)
+        {
             ReleasePayload(payload);
+        }
     }
 
     private void ReleasePayload(SharedPayload payload)
     {
         if (--payload.owners != 0)
+        {
             return;
+        }
         payload.cancellation.Cancel();
         try
         {
@@ -276,7 +330,9 @@ public sealed partial class AssetDatabase
     private void EnsureResidencyOwner()
     {
         if (Environment.CurrentManagedThreadId != m_ownerThread)
+        {
             throw new InvalidOperationException("Runtime asset acquisition and publication require the database owner thread.");
+        }
     }
 
     private sealed record PayloadRead(
@@ -306,11 +362,15 @@ public sealed partial class AssetDatabase
             try
             {
                 if (ExecutionContext.IsFlowSuppressed())
+                {
                     preparation = Task.Run(() => PrepareAsync(read, lease, cancellation.Token, slots));
+                }
                 else
                 {
                     using (ExecutionContext.SuppressFlow())
+                    {
                         preparation = Task.Run(() => PrepareAsync(read, lease, cancellation.Token, slots));
+                    }
                 }
             }
             catch
@@ -333,7 +393,9 @@ public sealed partial class AssetDatabase
             SemaphoreSlim slots
         ) {
             using (lease)
+            {
                 return await ReadPayloadAsync(read, lease, cancellation, slots).ConfigureAwait(false);
+            }
         }
     }
 

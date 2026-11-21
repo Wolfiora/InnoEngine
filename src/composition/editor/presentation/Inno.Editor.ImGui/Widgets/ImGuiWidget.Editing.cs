@@ -1,10 +1,12 @@
 using System;
 using Inno.Editor.Interactions;
-using Inno.Scripting.Api;
 using Inno.Native.ImGui;
+using Inno.Scripting.Api;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
+
 /// <summary>
 /// Owns session-local controls, native adaptation and reversible edit gestures.
 /// </summary>
@@ -13,6 +15,7 @@ public sealed unsafe partial class ImGuiWidget
     private EditorEditGesture? m_propertyGesture;
     private (string Owner, string Path) m_propertyEditKey;
     private bool m_propertyEditTouched;
+
     /// <summary>
     /// Gets the current continuous-edit merge boundary, or null for a discrete edit.
     /// </summary>
@@ -43,7 +46,9 @@ public sealed unsafe partial class ImGuiWidget
         m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         if (NativeImGui.IsAnyItemActive())
+        {
             BeginEdit(history, path, name);
+        }
     }
 
     /// <summary>
@@ -69,7 +74,9 @@ public sealed unsafe partial class ImGuiWidget
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         var key = (m_session.owner, path);
         if (m_propertyGesture is not null && m_propertyEditKey != key)
+        {
             CommitEdits();
+        }
         if (m_propertyGesture is null)
         {
             m_propertyGesture = new EditorEditGesture(history, name);
@@ -90,6 +97,7 @@ public sealed unsafe partial class ImGuiWidget
     /// </returns>
     [ScriptingApiIgnore]
     public bool IsEditing(string path) => m_propertyGesture is not null && m_propertyEditKey == (m_session.owner, path);
+
     /// <summary>
     /// Observes the current property after drawing, including release and cancellation without a new value sample.
     /// </summary>
@@ -101,12 +109,18 @@ public sealed unsafe partial class ImGuiWidget
     {
         m_session.EnsureDrawing();
         if (m_propertyGesture is null || m_propertyEditKey != (m_session.owner, path))
+        {
             return;
+        }
         m_propertyEditTouched = true;
         if (NativeImGui.IsKeyPressed((Inno.Native.ImGui.ImGuiKey)ImGuiKey.Escape, false))
+        {
             CancelEdits();
+        }
         else if (!NativeImGui.IsAnyItemActive())
+        {
             CommitEdits();
+        }
     }
 
     /// <summary>
@@ -119,7 +133,9 @@ public sealed unsafe partial class ImGuiWidget
     public void CommitEdits()
     {
         if (m_propertyGesture is null)
+        {
             return;
+        }
         m_propertyGesture.Commit();
         m_propertyGesture.Dispose();
         m_propertyGesture = null;
@@ -135,18 +151,25 @@ public sealed unsafe partial class ImGuiWidget
     public void CancelEdits()
     {
         if (m_propertyGesture is null)
+        {
             return;
+        }
         EditorHistoryResult result = m_propertyGesture.Cancel();
         if (!result.succeeded)
+        {
             throw new InvalidOperationException($"The property gesture could not roll back: {result.message}");
+        }
         m_propertyGesture.Dispose();
         m_propertyGesture = null;
     }
 
     internal void BeginEditingFrame() => m_propertyEditTouched = false;
+
     internal void CompleteEditingFrame()
     {
         if (m_propertyGesture is not null && !m_propertyEditTouched)
+        {
             CancelEdits();
+        }
     }
 }

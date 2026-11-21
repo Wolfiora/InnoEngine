@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-
 using Inno.Extensibility.Types;
 
 namespace Inno.UI.Assets;
@@ -92,22 +91,28 @@ public sealed class UiDocumentAnalysis
         IEnumerable<UiDocumentFontDeclaration>? fonts = null
     ) {
         this.text = text;
-        this.diagnostics = new ReadOnlyCollection<UiDocumentDiagnostic>(diagnostics?.ToArray()
-            ?? throw new ArgumentNullException(nameof(diagnostics)));
+        this.diagnostics = new ReadOnlyCollection<UiDocumentDiagnostic>(
+            diagnostics?.ToArray()
+            ?? throw new ArgumentNullException(nameof(diagnostics))
+        );
         this.fonts = new ReadOnlyCollection<UiDocumentFontDeclaration>(fonts?.ToArray() ?? []);
     }
+
     /// <summary>
     /// Gets canonical source text, or null after failure.
     /// </summary>
     public string? text { get; }
+
     /// <summary>
     /// Gets frozen diagnostics.
     /// </summary>
     public IReadOnlyList<UiDocumentDiagnostic> diagnostics { get; }
+
     /// <summary>
     /// Gets font assets declared by the canonical document.
     /// </summary>
     public IReadOnlyList<UiDocumentFontDeclaration> fonts { get; }
+
     /// <summary>
     /// Gets whether the frontend accepted the source.
     /// </summary>
@@ -123,6 +128,7 @@ public interface IUiDocumentFrontend
     /// Gets the open source-language identity.
     /// </summary>
     UiDocumentLanguageId languageId { get; }
+
     /// <summary>
     /// Analyzes one immutable source snapshot.
     /// </summary>
@@ -141,6 +147,7 @@ public interface IUiDocumentFrontend
 public sealed class UiDocumentFrontendCatalog
 {
     private readonly Dictionary<UiDocumentLanguageId, IUiDocumentFrontend> m_frontends = [];
+
     /// <summary>
     /// Captures a validated provider set.
     /// </summary>
@@ -151,15 +158,22 @@ public sealed class UiDocumentFrontendCatalog
     {
         ArgumentNullException.ThrowIfNull(frontends);
         foreach (IUiDocumentFrontend frontend in frontends)
+        {
             if (frontend is null || !frontend.languageId.isValid || !m_frontends.TryAdd(frontend.languageId, frontend))
+            {
                 throw new ArgumentException("UI document frontends require unique, assigned language IDs.", nameof(frontends));
+            }
+        }
         languageIds = new ReadOnlyCollection<UiDocumentLanguageId>([.. m_frontends.Keys]);
     }
+
     /// <summary>
     /// Gets registered language identities.
     /// </summary>
     public IReadOnlyList<UiDocumentLanguageId> languageIds { get; }
+
     internal IEnumerable<IUiDocumentFrontend> providers => m_frontends.Values;
+
     /// <summary>
     /// Analyzes source using an explicit language.
     /// </summary>
@@ -175,10 +189,9 @@ public sealed class UiDocumentFrontendCatalog
     public UiDocumentAnalysis Analyze(
         UiDocumentLanguageId language,
         UiDocumentSourceFile source
-    )
-        => m_frontends.TryGetValue(language, out IUiDocumentFrontend? frontend)
-            ? frontend.Analyze(source) ?? throw new InvalidOperationException($"UI language '{language}' returned no analysis.")
-            : throw new NotSupportedException($"UI document language '{language}' is unavailable.");
+    ) => m_frontends.TryGetValue(language, out IUiDocumentFrontend? frontend)
+         ? frontend.Analyze(source) ?? throw new InvalidOperationException($"UI language '{language}' returned no analysis.")
+         : throw new NotSupportedException($"UI document language '{language}' is unavailable.");
 }
 
 /// <summary>
@@ -187,13 +200,16 @@ public sealed class UiDocumentFrontendCatalog
 public sealed class UiDocumentFrontendRegistry : TypeRegistry<UiDocumentFrontendCatalog>
 {
     private readonly TypeCatalog m_types;
+
     /// <summary>
     /// Registers with the owner type catalog.
     /// </summary>
     /// <param name="types">
     /// Catalog that outlives this registry.
     /// </param>
-    public UiDocumentFrontendRegistry(TypeCatalog types) : base(types) => m_types = types;
+    public UiDocumentFrontendRegistry(TypeCatalog types)
+        : base(types) => m_types = types;
+
     /// <summary>
     /// Analyzes source while preventing provider retirement.
     /// </summary>
@@ -213,6 +229,7 @@ public sealed class UiDocumentFrontendRegistry : TypeRegistry<UiDocumentFrontend
         using IDisposable operation = m_types.AcquireOperation("Analyze UI document source");
         return current.Analyze(language, source);
     }
+
     /// <summary>
     /// Builds a validated result from the current immutable input snapshot.
     /// </summary>
@@ -226,11 +243,14 @@ public sealed class UiDocumentFrontendRegistry : TypeRegistry<UiDocumentFrontend
     {
         var providers = new List<IUiDocumentFrontend>();
         foreach (Type type in types.GetTypesImplementing<IUiDocumentFrontend>()
-                     .Select(reference => reference.Resolve(types))
-                     .OrderBy(static type => type.FullName, StringComparer.Ordinal))
+            .Select(reference => reference.Resolve(types))
+            .OrderBy(static type => type.FullName, StringComparer.Ordinal)
+        ) {
             providers.Add(CreateExtension<IUiDocumentFrontend>(type));
+        }
         return new UiDocumentFrontendCatalog(providers);
     }
+
     /// <summary>
     /// Releases the generation lease retained by an immutable registry snapshot.
     /// </summary>

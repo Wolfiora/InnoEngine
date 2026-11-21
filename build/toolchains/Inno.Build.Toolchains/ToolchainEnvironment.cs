@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-
 namespace Inno.Build.Toolchains;
 
 /// <summary>
@@ -58,7 +57,9 @@ public static class ToolchainEnvironment
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(environment);
         if (!Path.IsPathFullyQualified(fileName))
+        {
             throw new ArgumentException("An explicit SDK tool must have an absolute path.", nameof(fileName));
+        }
         context.inputState.RecordProcess();
         return RunAsync(fileName, arguments, workingDirectory, cancellationToken, CaptureEnvironmentOverrides(environment));
     }
@@ -98,7 +99,7 @@ public static class ToolchainEnvironment
         CancellationToken cancellationToken
     ) {
         NativeToolchainSelection tools = context.toolchain
-            ?? throw new InvalidOperationException("Host native tools must be resolved before execution.");
+                                         ?? throw new InvalidOperationException("Host native tools must be resolved before execution.");
         string executable = Path.IsPathFullyQualified(fileName) ? fileName : tools.ResolveExecutable(fileName);
         context.inputState.RecordProcess();
         return RunAsync(executable, arguments, workingDirectory, cancellationToken, CaptureEnvironmentOverrides(tools.environment));
@@ -139,7 +140,7 @@ public static class ToolchainEnvironment
         CancellationToken cancellationToken
     ) {
         NativeToolchainSelection tools = context.toolchain
-            ?? throw new InvalidOperationException("Host native tools must be resolved before execution.");
+                                         ?? throw new InvalidOperationException("Host native tools must be resolved before execution.");
         string executable = Path.IsPathFullyQualified(fileName) ? fileName : tools.ResolveExecutable(fileName);
         var start = new ProcessStartInfo(executable) { Arguments = arguments, WorkingDirectory = workingDirectory };
         context.inputState.RecordProcess();
@@ -165,19 +166,27 @@ public static class ToolchainEnvironment
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         if (File.Exists(name))
+        {
             return Path.GetFullPath(name);
+        }
         if (Path.IsPathRooted(name) || name.Contains(Path.DirectorySeparatorChar)
-            || name.Contains(Path.AltDirectorySeparatorChar))
+            || name.Contains(Path.AltDirectorySeparatorChar)
+        ) {
             throw new FileNotFoundException($"Cannot locate toolchain executable '{name}'.", name);
+        }
 
         string fileName = OperatingSystem.IsWindows() && !Path.HasExtension(name) ? name + ".exe" : name;
         foreach (string directory in (Environment.GetEnvironmentVariable("PATH") ?? string.Empty).Split(Path.PathSeparator))
         {
             if (string.IsNullOrWhiteSpace(directory))
+            {
                 continue;
+            }
             string candidate = Path.Combine(directory.Trim('"'), fileName);
             if (File.Exists(candidate))
+            {
                 return Path.GetFullPath(candidate);
+            }
         }
         throw new FileNotFoundException($"Cannot locate toolchain executable '{name}'.", name);
     }
@@ -271,7 +280,9 @@ public static class ToolchainEnvironment
         ArgumentNullException.ThrowIfNull(standardError);
         var start = new ProcessStartInfo(fileName) { WorkingDirectory = workingDirectory };
         foreach (string argument in arguments)
+        {
             start.ArgumentList.Add(argument);
+        }
         return RunProcessAsync(start, cancellationToken, environment, standardOutput, standardError);
     }
 
@@ -337,7 +348,9 @@ public static class ToolchainEnvironment
     public static void ValidateConfiguration(string configuration)
     {
         if (configuration is not (ToolchainLayout.C_DEBUG_CONFIGURATION or ToolchainLayout.C_RELEASE_CONFIGURATION))
+        {
             throw new ArgumentException("Native configuration must be 'debug' or 'release'.", nameof(configuration));
+        }
     }
 
     /// <summary>
@@ -539,7 +552,9 @@ public static class ToolchainEnvironment
     ) {
         var start = new ProcessStartInfo(fileName) { WorkingDirectory = workingDirectory };
         foreach (string argument in arguments)
+        {
             start.ArgumentList.Add(argument);
+        }
         await RunProcessAsync(start, cancellationToken, environment, standardOutput).ConfigureAwait(false);
     }
 
@@ -556,17 +571,25 @@ public static class ToolchainEnvironment
         start.RedirectStandardError = true;
         start.CreateNoWindow = true;
         if (environment is not null)
+        {
             foreach ((string name, string? value) in environment)
             {
                 if (value is null)
+                {
                     start.Environment.Remove(name);
+                }
                 else
+                {
                     start.Environment[name] = value;
+                }
             }
+        }
         cancellationToken.ThrowIfCancellationRequested();
         using var process = new Process { StartInfo = start };
         if (!process.Start())
+        {
             throw new InvalidOperationException($"Cannot start '{start.FileName}'.");
+        }
         Task output = ForwardAsync(process.StandardOutput, standardOutput);
         Task error = ForwardAsync(process.StandardError, standardError ?? Console.Error);
         Task exited = process.WaitForExitAsync(cancellationToken);
@@ -585,7 +608,9 @@ public static class ToolchainEnvironment
             try
             {
                 if (!process.HasExited)
+                {
                     process.Kill(entireProcessTree: true);
+                }
             }
             catch (InvalidOperationException) when (process.HasExited)
             {
@@ -603,7 +628,9 @@ public static class ToolchainEnvironment
             throw;
         }
         if (process.ExitCode != 0)
+        {
             throw new InvalidOperationException($"'{start.FileName}' failed with exit code {process.ExitCode}.");
+        }
     }
 
     private static async Task ForwardAsync(
@@ -611,6 +638,8 @@ public static class ToolchainEnvironment
         TextWriter destination
     ) {
         while (await source.ReadLineAsync().ConfigureAwait(false) is { } line)
+        {
             await destination.WriteLineAsync(line).ConfigureAwait(false);
+        }
     }
 }

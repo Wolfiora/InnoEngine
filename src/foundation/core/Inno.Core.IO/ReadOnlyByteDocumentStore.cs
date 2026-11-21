@@ -40,6 +40,6 @@ public sealed class ReadOnlyByteDocumentStore : IByteDocumentStore
     public byte[] Read() => (byte[])m_data.Clone();
 
     /// <inheritdoc />
-    public void Write(ReadOnlySpan<byte> data) => throw new NotSupportedException(
-        $"Document '{documentName}' is read-only.");
+    public void Write(ReadOnlySpan<byte> data)
+        => throw new NotSupportedException($"Document '{documentName}' is read-only.");
 }

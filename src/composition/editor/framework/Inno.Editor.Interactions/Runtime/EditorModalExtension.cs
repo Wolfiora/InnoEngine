@@ -1,6 +1,5 @@
 using System;
 using System.Numerics;
-
 using Inno.Editor.Core;
 
 namespace Inno.Editor.Interactions;
@@ -73,15 +72,21 @@ public sealed class EditorModalExtension
         ArgumentNullException.ThrowIfNull(context);
         contentSize = null;
         if (m_isQuarantined)
+        {
             return false;
+        }
         try
         {
             contentSize = m_modal.Prepare(context, availableContentSize);
-            if (contentSize is Vector2 size &&
-                (!float.IsFinite(size.X) || !float.IsFinite(size.Y) || size.X < 0f || size.Y < 0f))
+            if (contentSize is Vector2 size
+                && (!float.IsFinite(size.X) || !float.IsFinite(size.Y) || size.X < 0f || size.Y < 0f)
+            ) {
                 throw new InvalidOperationException("Modal preparation returned an invalid content extent.");
+            }
             if (presentation.initialSize.Y <= 0f && contentSize is null)
+            {
                 throw new InvalidOperationException("A content-sized modal must measure its current content before drawing.");
+            }
             return true;
         }
         catch (Exception exception)
@@ -118,12 +123,17 @@ public sealed class EditorModalExtension
                 m_modal.canResize,
                 m_modal.allowScrolling,
                 m_modal.initialSize,
-                m_modal.minimumSize);
+                m_modal.minimumSize
+            );
             Vector2 initial = presentation.initialSize;
             Vector2 minimum = presentation.minimumSize;
-            if (!float.IsFinite(initial.X) || !float.IsFinite(initial.Y) || initial.X < 0f || initial.Y < 0f ||
-                !float.IsFinite(minimum.X) || !float.IsFinite(minimum.Y) || minimum.X < 0f || minimum.Y < 0f)
-                throw new InvalidOperationException("Modal dimensions must be finite and nonnegative; zero leaves that dimension unspecified.");
+            if (!float.IsFinite(initial.X) || !float.IsFinite(initial.Y) || initial.X < 0f || initial.Y < 0f
+                || !float.IsFinite(minimum.X) || !float.IsFinite(minimum.Y) || minimum.X < 0f || minimum.Y < 0f
+            ) {
+                throw new InvalidOperationException(
+                    "Modal dimensions must be finite and nonnegative; zero leaves that dimension unspecified."
+                );
+            }
             return true;
         }
         catch (Exception exception)
@@ -151,7 +161,9 @@ public sealed class EditorModalExtension
     {
         ArgumentNullException.ThrowIfNull(context);
         if (m_isQuarantined)
+        {
             return false;
+        }
         try
         {
             m_modal.Draw(context);

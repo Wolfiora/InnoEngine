@@ -1,7 +1,7 @@
 using Inno.Editor.Core;
+using Inno.Editor.Graph;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
-using Inno.Editor.Graph;
 
 namespace Inno.Testing.Editor.Native;
 
@@ -16,15 +16,18 @@ public sealed class NativeProjectPanelProbe(
     IEditorSceneWorkspace workspace,
     GraphEditorModule graphs,
     SceneEdits edits
-) : EditorModule {
+) : EditorModule
+{
     /// <summary>
     /// Gets the borrowed scene workspace.
     /// </summary>
     public IEditorSceneWorkspace workspace { get; } = workspace;
+
     /// <summary>
     /// Gets the borrowed graph editor module.
     /// </summary>
     public GraphEditorModule graphs { get; } = graphs;
+
     /// <summary>
     /// Gets the borrowed scene editing service.
     /// </summary>

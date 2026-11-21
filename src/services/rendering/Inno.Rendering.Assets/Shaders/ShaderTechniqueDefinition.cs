@@ -1,12 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Scripting.Api;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
@@ -38,9 +38,13 @@ public struct ShaderTechniqueDefinition
         GraphicsCapability requiredFeatures = GraphicsCapability.None
     ) {
         if (!id.isValid)
+        {
             throw new ArgumentException("A technique ID must be valid.", nameof(id));
+        }
         if (!contract.isValid)
+        {
             throw new ArgumentException("A shader contract ID must be valid.", nameof(contract));
+        }
         ArgumentNullException.ThrowIfNull(passes);
         this.id = id;
         this.contract = contract;
@@ -68,4 +72,3 @@ public struct ShaderTechniqueDefinition
     /// </summary>
     public GraphicsCapability requiredFeatures { get; set; }
 }
-

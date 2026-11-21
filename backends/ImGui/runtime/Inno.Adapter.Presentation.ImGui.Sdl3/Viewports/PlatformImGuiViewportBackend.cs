@@ -1,16 +1,16 @@
-using System.Threading.Tasks;
-using Inno.Core.Execution;
-using Inno.Adapter.Platform;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
-
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using Inno.Adapter.Platform;
 using Inno.Adapter.Platform.Sdl3;
-using Inno.Platform;
-using Inno.Native.Sdl3;
+using Inno.Core.Execution;
 using Inno.Native.ImGui;
+using Inno.Native.Sdl3;
+using Inno.Platform;
+
 using ImGuiNative = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Adapter.Presentation.ImGui;
@@ -69,12 +69,16 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         ArgumentNullException.ThrowIfNull(renderer);
         ImGuiNativeContext* context = ImGuiNative.Raw.GetCurrentContext();
         if (context == null)
+        {
             throw new InvalidOperationException("An active ImGui context is required for viewport routing.");
+        }
         m_contextKey = (nuint)context;
         lock (S_CONTEXT_SYNC)
         {
             if (S_BACKENDS_BY_CONTEXT.ContainsKey(m_contextKey))
+            {
                 throw new InvalidOperationException("The current ImGui context already owns a viewport backend.");
+            }
         }
         m_application = application;
         m_renderer = renderer;
@@ -83,7 +87,9 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
 
         var platformIo = ImGuiNative.Raw.GetPlatformIO();
         if (ImGuiNative.Raw.GetIO()->BackendPlatformUserData != null)
+        {
             throw new InvalidOperationException("The current ImGui context already has platform backend state.");
+        }
         platformIo->PlatformCreateWindow = &PlatformCreateWindowCallback;
         platformIo->PlatformDestroyWindow = &PlatformDestroyWindowCallback;
         platformIo->PlatformShowWindow = &PlatformShowWindowCallback;
@@ -107,9 +113,14 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         {
             RefreshMonitors(mainSdlWindow);
             m_windowCallbacks = ImGuiPlatformIoNative.CreateWindowCallbacks(
-                context, &PlatformSetWindowPosCallback, &PlatformSetWindowSizeCallback);
+                context,
+                &PlatformSetWindowPosCallback,
+                &PlatformSetWindowSizeCallback
+            );
             lock (S_CONTEXT_SYNC)
+            {
                 S_BACKENDS_BY_CONTEXT.Add(m_contextKey, this);
+            }
         }
         catch
         {
@@ -148,23 +159,29 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         var eventType = (SDLEventType)sdlEvent.Type;
         if (eventType >= SDLEventType.DisplayFirst && eventType <= SDLEventType.DisplayLast
             || eventType == SDLEventType.WindowDisplayChanged
-            || eventType == SDLEventType.WindowDisplayScaleChanged)
-        {
+            || eventType == SDLEventType.WindowDisplayScaleChanged
+        ) {
             m_monitorsDirty = true;
         }
         if (!m_windowToViewport.TryGetValue(windowId, out uint viewportId)
-            || !m_viewportsById.TryGetValue(viewportId, out ViewportWindowData? data))
-        {
+            || !m_viewportsById.TryGetValue(viewportId, out ViewportWindowData? data)
+        ) {
             return;
         }
 
         ImGuiViewport* viewport = data.viewport;
         if (eventType == SDLEventType.WindowCloseRequested)
+        {
             viewport->PlatformRequestClose = 1;
+        }
         if (eventType == SDLEventType.WindowMoved)
+        {
             viewport->PlatformRequestMove = 1;
+        }
         if (eventType == SDLEventType.WindowResized || eventType == SDLEventType.WindowPixelSizeChanged)
+        {
             viewport->PlatformRequestResize = 1;
+        }
     }
 
     internal void SynchronizeMetrics()
@@ -180,10 +197,14 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         {
             main->FramebufferScale = new ImVec2C { X = scale.X, Y = scale.Y };
             if (main->DpiScale == 0f)
+            {
                 main->DpiScale = GetWindowDpiScale(m_mainWindow);
+            }
         }
         foreach (ViewportWindowData data in m_viewportsById.Values)
+        {
             SynchronizeWindow(data.windowId);
+        }
     }
 
     /// <summary>
@@ -220,7 +241,9 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         if (framebufferScale.X > 0 && framebufferScale.Y > 0)
         {
             if (viewport->DpiScale == 0f)
+            {
                 viewport->DpiScale = GetWindowDpiScale(data.window);
+            }
             viewport->FramebufferScale = new ImVec2C { X = framebufferScale.X, Y = framebufferScale.Y };
         }
         int pixelWidth = 0;
@@ -261,10 +284,14 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         m_viewportsById.Clear();
         m_windowToViewport.Clear();
         if (m_retiringViewports.Count != 0)
+        {
             m_renderer.DrainViewportRetirements();
+        }
         ProcessRetirements();
         if (m_retiringViewports.Count != 0)
+        {
             throw new RetirementPendingException("Detached ImGui windows are still borrowed by their renderer.");
+        }
 
         var platformIo = ImGuiNative.Raw.GetPlatformIO();
         ImGuiPlatformIoNative.DestroyWindowCallbacks(m_windowCallbacks);
@@ -282,8 +309,8 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         lock (S_CONTEXT_SYNC)
         {
             if (S_BACKENDS_BY_CONTEXT.TryGetValue(m_contextKey, out PlatformImGuiViewportBackend? registered)
-                && ReferenceEquals(registered, this))
-            {
+                && ReferenceEquals(registered, this)
+            ) {
                 S_BACKENDS_BY_CONTEXT.Remove(m_contextKey);
             }
         }
@@ -320,7 +347,9 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         var height = Math.Max(1, (int)viewport->Size.Y);
         SDLWindow* window;
         fixed (byte* title = "ImGui\0"u8)
+        {
             window = SDL.Raw.CreateWindow((sbyte*)title, width, height, (ulong)flags);
+        }
         if (window == null)
         {
             return;
@@ -351,7 +380,9 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         catch
         {
             if (renderer != null)
+            {
                 SDL.Raw.DestroyRenderer(renderer);
+            }
             SDL.Raw.DestroyWindow(window);
             throw;
         }
@@ -378,7 +409,8 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
                     data.windowId,
                     registeredWindow.nativeHandles,
                     pixelWidth,
-                    pixelHeight);
+                    pixelHeight
+                );
                 rendererBackend.CreateViewport(data.externalTarget);
             }
             data.gcHandle = GCHandle.Alloc(data, GCHandleType.Normal);
@@ -663,7 +695,9 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
 
             data.owner.SynchronizeWindow(data.windowId);
             if (!data.drawable)
+            {
                 return;
+            }
 
             if (data.externalRenderer is not null && data.externalTarget is not null)
             {
@@ -696,7 +730,9 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
 
             data.owner.SynchronizeWindow(data.windowId);
             if (!data.drawable)
+            {
                 return;
+            }
 
             if (data.externalRenderer is not null && data.externalTarget is not null)
             {
@@ -793,8 +829,8 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         }
 
         var needsRecreate = data.fontTexture == null
-            || data.fontTextureWidth != texData->Width
-            || data.fontTextureHeight != texData->Height;
+                            || data.fontTextureWidth != texData->Width
+                            || data.fontTextureHeight != texData->Height;
         if (needsRecreate)
         {
             if (data.fontTexture != null)
@@ -821,13 +857,13 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         var usedRect = texData->UsedRect;
         var updateRect = texData->UpdateRect;
         var needsUpload = needsRecreate
-            || data.fontPixelsPtr != pixelsPtr
-            || data.fontTexturePitch != pitch
-            || data.fontTextureUniqueId != uniqueId
-            || !TextureRectEquals(data.fontUsedRect, usedRect)
-            || !TextureRectEquals(data.fontUpdateRect, updateRect)
-            || texData->Status == ImTextureStatus.WantCreate
-            || texData->Status == ImTextureStatus.WantUpdates;
+                          || data.fontPixelsPtr != pixelsPtr
+                          || data.fontTexturePitch != pitch
+                          || data.fontTextureUniqueId != uniqueId
+                          || !TextureRectEquals(data.fontUsedRect, usedRect)
+                          || !TextureRectEquals(data.fontUpdateRect, updateRect)
+                          || texData->Status == ImTextureStatus.WantCreate
+                          || texData->Status == ImTextureStatus.WantUpdates;
         if (!needsUpload)
         {
             return;
@@ -898,8 +934,10 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
 
                 var clipRect = new SDLRect
                 {
-                    X = (int)clipRectX, Y = (int)clipRectY,
-                    W = (int)(clipRectZ - clipRectX), H = (int)(clipRectW - clipRectY)
+                    X = (int)clipRectX,
+                    Y = (int)clipRectY,
+                    W = (int)(clipRectZ - clipRectX),
+                    H = (int)(clipRectW - clipRectY)
                 };
                 _ = SDL.Raw.SetRenderClipRect(renderer, &clipRect);
 
@@ -913,7 +951,9 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
                     data.indexScratch[i] = srcIndices[idxOffset + i] + vtxOffset;
                 }
 
-                var texture = ImGuiNative.Raw.GetTexID(&drawCmd) == fontTexId ? fontTexture : TextureFromImGui(ImGuiNative.Raw.GetTexID(&drawCmd));
+                var texture = ImGuiNative.Raw.GetTexID(&drawCmd) == fontTexId
+                              ? fontTexture
+                              : TextureFromImGui(ImGuiNative.Raw.GetTexID(&drawCmd));
                 if (texture == null)
                 {
                     texture = fontTexture;
@@ -942,12 +982,12 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
     {
         ImGuiNativeContext* context = ImGuiNative.Raw.GetCurrentContext();
         if (context == null)
+        {
             throw new InvalidOperationException("No ImGui context is active for a viewport callback.");
+        }
         lock (S_CONTEXT_SYNC)
         {
-            if (S_BACKENDS_BY_CONTEXT.TryGetValue(
-                    (nuint)context,
-                    out PlatformImGuiViewportBackend? backend))
+            if (S_BACKENDS_BY_CONTEXT.TryGetValue((nuint)context, out PlatformImGuiViewportBackend? backend))
             {
                 return backend;
             }
@@ -962,11 +1002,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
             return;
         }
 
-        _ = SDL.Raw.SetRenderLogicalPresentation(
-            renderer,
-            0,
-            0,
-            SDLRendererLogicalPresentation.Disabled);
+        _ = SDL.Raw.SetRenderLogicalPresentation(renderer, 0, 0, SDLRendererLogicalPresentation.Disabled);
         _ = SDL.Raw.SetRenderViewport(renderer, null);
         _ = SDL.Raw.SetRenderClipRect(renderer, null);
     }
@@ -1043,8 +1079,12 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         // ImGui's DPI value is in logical coordinates; pixel density belongs to FramebufferScale.
         float scale = SDL.Raw.GetWindowDisplayScale(window) / SDL.Raw.GetWindowPixelDensity(window);
         if (!float.IsFinite(scale) || scale <= 0f)
-            throw new InvalidOperationException("SDL could not resolve the live window's display scale: "
-                + Marshal.PtrToStringUTF8((nint)SDL.Raw.GetError()));
+        {
+            throw new InvalidOperationException(
+                "SDL could not resolve the live window's display scale: "
+                + Marshal.PtrToStringUTF8((nint)SDL.Raw.GetError())
+            );
+        }
         return scale;
     }
 
@@ -1075,12 +1115,13 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         ImTextureRect b
     ) {
         return a.X == b.X
-            && a.Y == b.Y
-            && a.W == b.W
-            && a.H == b.H;
+               && a.Y == b.Y
+               && a.W == b.W
+               && a.H == b.H;
     }
 
-    private void RecordCallbackFailure(Exception failure) => m_callbackFailure = m_callbackFailure is null
-        ? failure : new AggregateException("Multiple native viewport callbacks failed in the same frame.", m_callbackFailure, failure);
-
+    private void RecordCallbackFailure(Exception failure)
+        => m_callbackFailure = m_callbackFailure is null
+        ? failure
+        : new AggregateException("Multiple native viewport callbacks failed in the same frame.", m_callbackFailure, failure);
 }

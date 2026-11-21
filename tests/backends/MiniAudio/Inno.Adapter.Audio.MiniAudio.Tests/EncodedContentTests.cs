@@ -3,9 +3,9 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Audio;
 using Inno.Core.Execution;
-using Xunit;
 
 namespace Inno.Adapter.Audio.MiniAudio.Tests;
 
@@ -76,8 +76,9 @@ public sealed class EncodedContentTests
         using var source = new GatedSource(CreateWave()) { contentHash = new string('A', 64) };
         source.Release();
         AudioClipHandle clip = backend.CreateClip(Describe(source, AudioClipLoadMode.Decode), source);
-        Assert.True(SpinWait.SpinUntil(() => backend.GetClipState(clip) != AudioClipState.Preparing,
-            TimeSpan.FromSeconds(5)));
+        Assert.True(
+            SpinWait.SpinUntil(() => backend.GetClipState(clip) != AudioClipState.Preparing, TimeSpan.FromSeconds(5))
+        );
         Assert.Equal(AudioClipState.Failed, backend.GetClipState(clip));
         Assert.Equal(1, source.closures);
         Assert.True(backend.DestroyClip(clip));
@@ -93,25 +94,28 @@ public sealed class EncodedContentTests
         IAudioDevice backend,
         AudioClipHandle clip
     ) {
-        Assert.True(SpinWait.SpinUntil(() => backend.GetClipState(clip) != AudioClipState.Preparing,
-            TimeSpan.FromSeconds(5)));
+        Assert.True(
+            SpinWait.SpinUntil(() => backend.GetClipState(clip) != AudioClipState.Preparing, TimeSpan.FromSeconds(5))
+        );
         Assert.Equal(AudioClipState.Ready, backend.GetClipState(clip));
     }
 
     private static void Retire(Func<bool> cleanup)
     {
-        Assert.True(SpinWait.SpinUntil(() =>
-        {
-            try
+        Assert.True(
+            SpinWait.SpinUntil(() =>
             {
-                _ = cleanup();
-                return true;
-            }
-            catch (RetirementPendingException)
-            {
-                return false;
-            }
-        }, TimeSpan.FromSeconds(5)));
+                try
+                {
+                    _ = cleanup();
+                    return true;
+                }
+                catch (RetirementPendingException)
+                {
+                    return false;
+                }
+            }, TimeSpan.FromSeconds(5))
+        );
     }
 
     private static byte[] CreateWave()
@@ -173,7 +177,8 @@ public sealed class EncodedContentTests
             private readonly GatedSource m_owner;
             private bool m_closed;
 
-            internal GatedStream(GatedSource owner) : base(owner.m_bytes, writable: false) => m_owner = owner;
+            internal GatedStream(GatedSource owner)
+                : base(owner.m_bytes, writable: false) => m_owner = owner;
 
             public override async ValueTask<int> ReadAsync(
                 Memory<byte> buffer,

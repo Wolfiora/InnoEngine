@@ -4,12 +4,14 @@ using Inno.Editor.Scene;
 using Inno.Scene;
 
 namespace Inno.Editor.Panel.Inspector;
+
 /// <summary>
 /// Adapts generic inspection property edits to compact Scene history records.
 /// </summary>
 internal sealed class SceneInspectionPropertyEditService : IInspectionPropertyEditService
 {
     private readonly SceneEdits m_edits;
+
     /// <summary>
     /// Creates the Scene property edit adapter.
     /// </summary>
@@ -31,7 +33,8 @@ internal sealed class SceneInspectionPropertyEditService : IInspectionPropertyEd
         string? componentName
     ) {
         ArgumentNullException.ThrowIfNull(owner);
-        EngineObject sceneObject = owner as EngineObject ?? throw new ArgumentException($"Scene property edits require an '{typeof(EngineObject).FullName}' owner.", nameof(owner));
+        EngineObject sceneObject = owner as EngineObject
+            ?? throw new ArgumentException($"Scene property edits require an '{typeof(EngineObject).FullName}' owner.", nameof(owner));
         return m_edits.ChangeProperty(sceneObject, propertyName, mutation, historyName, mergeKey);
     }
 }

@@ -28,10 +28,12 @@ public sealed class ShaderGraphPass
         this.name = name;
         this.stages = Array.AsReadOnly(stages.ToArray());
     }
+
     /// <summary>
     /// Gets the stable pass identity.
     /// </summary>
     public string name { get; }
+
     /// <summary>
     /// Gets immutable graph-lowered stages.
     /// </summary>
@@ -50,14 +52,17 @@ public sealed class ShaderGraphProgramResult
         this.passes = Array.AsReadOnly(passes.ToArray());
         this.diagnostics = Array.AsReadOnly(diagnostics.ToArray());
     }
+
     /// <summary>
     /// Gets the complete stage set; empty if any stage failed.
     /// </summary>
     public IReadOnlyList<ShaderGraphPass> passes { get; }
+
     /// <summary>
     /// Gets stable graph/node diagnostics without provider references.
     /// </summary>
     public IReadOnlyList<ShaderGraphDiagnostic> diagnostics { get; }
+
     /// <summary>
     /// Gets whether every declared pass was lowered without errors.
     /// </summary>

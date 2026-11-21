@@ -37,7 +37,9 @@ public sealed class GameCodeModule
         ArgumentNullException.ThrowIfNull(assemblies);
         ArgumentNullException.ThrowIfNull(dependencies);
         if (assemblies.Any(static assembly => assembly is null))
+        {
             throw new System.IO.InvalidDataException("A code module contains a null assembly identity.");
+        }
         var declaration = new GameRuntimeModule
         {
             name = name,

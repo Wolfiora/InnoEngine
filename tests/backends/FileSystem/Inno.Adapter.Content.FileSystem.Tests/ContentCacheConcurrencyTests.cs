@@ -11,8 +11,10 @@ public sealed class ContentCacheConcurrencyTests
     public async Task ConcurrentPreparationPublishesOneCompleteGeneration()
     {
         using ContentCacheFixture fixture = new();
-        FileContentStore[] readers = await Task.WhenAll(Enumerable.Range(0, 8).Select(_ =>
-            FileContentPreparation.PrepareAsync(fixture.source, fixture.options).AsTask()));
+        FileContentStore[] readers = await Task.WhenAll(
+            Enumerable.Range(0, 8).Select(_ =>
+                FileContentPreparation.PrepareAsync(fixture.source, fixture.options).AsTask())
+        );
         try
         {
             Assert.Single(Directory.GetDirectories(Path.Combine(fixture.cache, "generations")));
@@ -22,7 +24,9 @@ public sealed class ContentCacheConcurrencyTests
         finally
         {
             foreach (FileContentStore reader in readers)
+            {
                 reader.Dispose();
+            }
         }
     }
 }

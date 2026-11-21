@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Assets.Pipeline;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
@@ -20,11 +19,11 @@ internal sealed class LoadSceneAssetCommand(IEditorSceneWorkspace workspace) : E
     /// The validated editor action state that represents the completed operation.
     /// </returns>
 protected override EditorActionState Query(EditorActionContext<AssetFileEntry> context)
-        => string.Equals(context.target.extension, ".iscene", StringComparison.OrdinalIgnoreCase)
-            ? workspace.canPersist
-                ? EditorActionState.enabled
-                : EditorActionState.disabled
-            : EditorActionState.hidden;
+    => string.Equals(context.target.extension, ".iscene", StringComparison.OrdinalIgnoreCase)
+       ? workspace.canPersist
+         ? EditorActionState.enabled
+         : EditorActionState.disabled
+       : EditorActionState.hidden;
 
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.
@@ -33,7 +32,7 @@ protected override EditorActionState Query(EditorActionContext<AssetFileEntry> c
     /// The operation scope that provides state, services, and ownership boundaries.
     /// </param>
 protected override void Execute(EditorActionContext<AssetFileEntry> context)
-        => _ = context.interactions
-            .For(HierarchyInteractionIds.C_FILE_BROWSER_AREA, context.target)
-            .Execute(HierarchyInteractionIds.C_OPEN);
+    => _ = context.interactions
+        .For(HierarchyInteractionIds.C_FILE_BROWSER_AREA, context.target)
+        .Execute(HierarchyInteractionIds.C_OPEN);
 }

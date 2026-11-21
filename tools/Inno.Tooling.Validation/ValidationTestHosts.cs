@@ -12,21 +12,30 @@ internal static class ValidationTestHosts
     internal static string[] ExcludedSources(ValidationProject[] projects)
     {
         var referenced = projects.SelectMany(static project => project.references).ToHashSet(StringComparer.Ordinal);
-        var candidates = projects.Where(project => project.test && !referenced.Contains(project.path)
+        var candidates = projects.Where(project => (
+            project.test && !referenced.Contains(project.path)
             && project.environment.Length != 0 && project.environment is not ("any" or "native-host")
-            && !Applies(project.environment.Split(';'))).ToArray();
+            && !Applies(project.environment.Split(';'))
+        )).ToArray();
         if (candidates.Length == 0)
+        {
             return [];
+        }
         var excluded = new HashSet<string>(StringComparer.Ordinal);
         foreach (ValidationProject candidate in candidates)
         {
             string directory = candidate.path[..(candidate.path.LastIndexOf('/') + 1)];
-            foreach (string input in candidate.inputs.Where(path => path.StartsWith(directory, StringComparison.Ordinal)
-                && path.StartsWith("tests/", StringComparison.Ordinal) && path.EndsWith(".cs", StringComparison.Ordinal)))
-            {
-                if (!projects.Any(other => other != candidate && (Array.IndexOf(other.inputs, input) >= 0
-                    || input.StartsWith(other.path[..(other.path.LastIndexOf('/') + 1)], StringComparison.Ordinal))))
+            foreach (string input in candidate.inputs.Where(path => (
+                path.StartsWith(directory, StringComparison.Ordinal)
+                && path.StartsWith("tests/", StringComparison.Ordinal) && path.EndsWith(".cs", StringComparison.Ordinal)
+            ))
+            ) {
+                if (!projects.Any(other => (
+                    other != candidate && (Array.IndexOf(other.inputs, input) >= 0
+                                           || input.StartsWith(other.path[..(other.path.LastIndexOf('/') + 1)], StringComparison.Ordinal))
+                ))) {
                     excluded.Add(input);
+                }
             }
         }
         return excluded.Order(StringComparer.Ordinal).ToArray();
@@ -48,12 +57,16 @@ internal static class ValidationTestHosts
                 MethodDefinition method = metadata.GetMethodDefinition(methodHandle);
                 string[] hosts = Hosts(method.GetCustomAttributes());
                 if (hosts.Length == 0)
+                {
                     hosts = typeHosts;
+                }
                 if (hosts.Length != 0)
                 {
                     string key = name + "." + metadata.GetString(method.Name);
                     if (contracts.TryGetValue(key, out string[]? existing) && !existing.SequenceEqual(hosts))
+                    {
                         throw new InvalidDataException($"Overloaded test methods declare ambiguous OS contracts: {key}");
+                    }
                     contracts[key] = hosts;
                 }
             }
@@ -77,21 +90,31 @@ internal static class ValidationTestHosts
                 EntityHandle parent = attribute.Constructor.Kind switch
                 {
                     HandleKind.MemberReference => metadata.GetMemberReference((MemberReferenceHandle)attribute.Constructor).Parent,
-                    HandleKind.MethodDefinition => metadata.GetMethodDefinition((MethodDefinitionHandle)attribute.Constructor).GetDeclaringType(),
+                    HandleKind.MethodDefinition => metadata
+                        .GetMethodDefinition((MethodDefinitionHandle)attribute.Constructor)
+                        .GetDeclaringType(),
                     _ => default
                 };
                 if (parent.Kind == HandleKind.TypeReference)
                 {
                     TypeReference type = metadata.GetTypeReference((TypeReferenceHandle)parent);
                     if (metadata.GetString(type.Namespace) != "System.Runtime.Versioning"
-                        || metadata.GetString(type.Name) != "SupportedOSPlatformAttribute")
+                        || metadata.GetString(type.Name) != "SupportedOSPlatformAttribute"
+                    ) {
                         continue;
+                    }
                     BlobReader value = metadata.GetBlobReader(attribute.Value);
                     if (value.ReadUInt16() != 1)
+                    {
                         throw new InvalidDataException("Invalid compiled test host contract.");
+                    }
                     string host = value.ReadSerializedString() ?? string.Empty;
                     if (host is not ("windows" or "macos" or "linux"))
-                        throw new InvalidDataException($"Unsupported test host contract '{host}'; declare an explicit supported OS without a version.");
+                    {
+                        throw new InvalidDataException(
+                            $"Unsupported test host contract '{host}'; declare an explicit supported OS without a version."
+                        );
+                    }
                     hosts.Add(host);
                 }
             }
@@ -102,7 +125,9 @@ internal static class ValidationTestHosts
     internal static bool Applies(string[] hosts)
     {
         if (hosts.Any(static host => host is not ("windows" or "macos" or "linux")))
+        {
             throw new InvalidDataException("Unknown test host requirement.");
+        }
         return hosts.Any(static host => host switch
         {
             "windows" => OperatingSystem.IsWindows(),

@@ -32,7 +32,9 @@ public sealed class BgfxBuildInvocation
         ArgumentNullException.ThrowIfNull(arguments);
         string[] snapshot = arguments.ToArray();
         if (snapshot.Any(static value => value is null))
+        {
             throw new ArgumentException("Invocation arguments cannot be null.", nameof(arguments));
+        }
         this.tool = tool;
         this.arguments = Array.AsReadOnly(snapshot);
     }

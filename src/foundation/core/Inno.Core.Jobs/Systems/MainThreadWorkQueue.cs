@@ -24,11 +24,15 @@ internal sealed class MainThreadWorkQueue(
         get
         {
             lock (m_sync)
+            {
                 return new JobSchedulerStatistics
             {
                 mainThreadPending = m_actions.Count + (m_pending is null ? 0 : 1),
-                mainThreadPeak = m_peak, mainThreadRejected = m_rejected, mainThreadCanceled = m_canceled
+                mainThreadPeak = m_peak,
+                mainThreadRejected = m_rejected,
+                mainThreadCanceled = m_canceled
             };
+            }
         }
     }
 
@@ -64,17 +68,23 @@ internal sealed class MainThreadWorkQueue(
         }
         int count;
         lock (m_sync)
+        {
             count = Math.Min(drainBudget, m_actions.Count);
+        }
         for (int index = 0; index < count; index++)
         {
             Action action;
             lock (m_sync)
             {
                 if (!m_actions.TryDequeue(out action!))
+                {
                     break;
+                }
             }
             lock (m_sync)
+            {
                 m_pending = action;
+            }
             try
             {
                 CompletePending();
@@ -82,7 +92,9 @@ internal sealed class MainThreadWorkQueue(
             catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
             {
                 if (m_failures.Count > 0)
+                {
                     throw new AggregateException("Callbacks remain pending after completed failures.", [.. m_failures, pending]);
+                }
                 throw;
             }
             catch (Exception exception)
@@ -119,7 +131,9 @@ internal sealed class MainThreadWorkQueue(
     private void ReportFailures()
     {
         if (m_failures.Count == 0)
+        {
             return;
+        }
         var failure = new AggregateException("Main-thread callbacks completed with failures.", m_failures);
         m_failures.Clear();
         throw failure;
@@ -128,18 +142,26 @@ internal sealed class MainThreadWorkQueue(
     private void CompletePending()
     {
         if (m_executing)
+        {
             throw new RetirementPendingException("A main-thread callback cannot retire itself reentrantly.");
+        }
         Action? action;
         lock (m_sync)
+        {
             action = m_pending;
+        }
         if (action is null)
+        {
             return;
+        }
         m_barrier ??= new RetirementBarrier("Job main-thread callback");
         m_executing = true;
         try
         {
             if (!m_barrier.TryComplete(action))
+            {
                 throw new RetirementPendingException("An owner-thread job callback has unfinished retirement.");
+            }
         }
         catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
         {
@@ -160,7 +182,9 @@ internal sealed class MainThreadWorkQueue(
     private void ClearPending()
     {
         lock (m_sync)
+        {
             m_pending = null;
+        }
         m_barrier = null;
     }
 }

@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Text;
-
 using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Scene;
@@ -53,7 +52,9 @@ internal sealed record SceneElementHistoryData(
         using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: false);
         var elementKind = (SceneElementKind)reader.ReadByte();
         if (!Enum.IsDefined(elementKind))
+        {
             throw new InvalidDataException($"Unknown scene element history kind '{elementKind}'.");
+        }
         Guid sceneId = new(reader.ReadBytes(16));
         Guid ownerId = new(reader.ReadBytes(16));
         Guid elementId = new(reader.ReadBytes(16));
@@ -66,17 +67,22 @@ internal sealed record SceneElementHistoryData(
         byte[] afterState = ReadBytes(reader, "after state");
         int referenceCount = reader.ReadInt32();
         if (referenceCount < 0)
+        {
             throw new InvalidDataException("Scene element incoming reference count cannot be negative.");
+        }
         var references = new SceneIncomingReferenceState[referenceCount];
         for (int i = 0; i < references.Length; i++)
         {
             references[i] = new SceneIncomingReferenceState(
                 new Guid(reader.ReadBytes(16)),
                 reader.ReadString(),
-                ReadBytes(reader, "incoming reference"));
+                ReadBytes(reader, "incoming reference")
+            );
         }
         if (stream.Position != stream.Length)
+        {
             throw new InvalidDataException("Scene element history payload contains trailing data.");
+        }
         return new SceneElementHistoryData(
             elementKind,
             sceneId,
@@ -89,7 +95,8 @@ internal sealed record SceneElementHistoryData(
             existsAfter,
             beforeState,
             afterState,
-            references);
+            references
+        );
     }
 
     private static void WriteBytes(
@@ -106,10 +113,14 @@ internal sealed record SceneElementHistoryData(
     ) {
         int length = reader.ReadInt32();
         if (length < 0 || length > reader.BaseStream.Length - reader.BaseStream.Position)
+        {
             throw new InvalidDataException($"Scene element history {name} length is invalid.");
+        }
         byte[] bytes = reader.ReadBytes(length);
         if (bytes.Length != length)
+        {
             throw new EndOfStreamException($"Scene element history {name} is truncated.");
+        }
         return bytes;
     }
 }

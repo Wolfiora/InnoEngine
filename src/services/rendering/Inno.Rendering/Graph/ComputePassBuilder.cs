@@ -11,8 +11,7 @@ public sealed class ComputePassBuilder : RenderPassBuilder
     internal ComputePassBuilder(
         RenderGraphBuilder graph,
         RenderPassRecord pass
-    )
-        : base(graph, pass) { }
+    ) : base(graph, pass) {}
 
     /// <summary>
     /// Sets backend-ready column-major transform matrices exposed to this compute view.
@@ -46,11 +45,7 @@ public sealed class ComputePassBuilder : RenderPassBuilder
     /// </returns>
     public ComputePassBuilder ReadStorageTexture(RenderTextureHandle texture)
     {
-        graph.AddUse(
-            pass,
-            texture,
-            RenderResourceAccess.Read,
-            RenderResourceUseKind.StorageRead);
+        graph.AddUse(pass, texture, RenderResourceAccess.Read, RenderResourceUseKind.StorageRead);
         return this;
     }
 
@@ -65,11 +60,7 @@ public sealed class ComputePassBuilder : RenderPassBuilder
     /// </returns>
     public ComputePassBuilder WriteStorageTexture(RenderTextureHandle texture)
     {
-        graph.AddUse(
-            pass,
-            texture,
-            RenderResourceAccess.Write,
-            RenderResourceUseKind.StorageWrite);
+        graph.AddUse(pass, texture, RenderResourceAccess.Write, RenderResourceUseKind.StorageWrite);
         return this;
     }
 
@@ -84,11 +75,7 @@ public sealed class ComputePassBuilder : RenderPassBuilder
     /// </returns>
     public ComputePassBuilder ReadWriteStorageTexture(RenderTextureHandle texture)
     {
-        graph.AddUse(
-            pass,
-            texture,
-            RenderResourceAccess.ReadWrite,
-            RenderResourceUseKind.StorageReadWrite);
+        graph.AddUse(pass, texture, RenderResourceAccess.ReadWrite, RenderResourceUseKind.StorageReadWrite);
         return this;
     }
 
@@ -103,11 +90,7 @@ public sealed class ComputePassBuilder : RenderPassBuilder
     /// </returns>
     public ComputePassBuilder ReadStorageBuffer(RenderBufferHandle buffer)
     {
-        graph.AddUse(
-            pass,
-            buffer,
-            RenderResourceAccess.Read,
-            RenderResourceUseKind.StorageRead);
+        graph.AddUse(pass, buffer, RenderResourceAccess.Read, RenderResourceUseKind.StorageRead);
         return this;
     }
 
@@ -122,11 +105,7 @@ public sealed class ComputePassBuilder : RenderPassBuilder
     /// </returns>
     public ComputePassBuilder WriteStorageBuffer(RenderBufferHandle buffer)
     {
-        graph.AddUse(
-            pass,
-            buffer,
-            RenderResourceAccess.Write,
-            RenderResourceUseKind.StorageWrite);
+        graph.AddUse(pass, buffer, RenderResourceAccess.Write, RenderResourceUseKind.StorageWrite);
         return this;
     }
 
@@ -141,12 +120,7 @@ public sealed class ComputePassBuilder : RenderPassBuilder
     /// </returns>
     public ComputePassBuilder ReadWriteStorageBuffer(RenderBufferHandle buffer)
     {
-        graph.AddUse(
-            pass,
-            buffer,
-            RenderResourceAccess.ReadWrite,
-            RenderResourceUseKind.StorageReadWrite);
+        graph.AddUse(pass, buffer, RenderResourceAccess.ReadWrite, RenderResourceUseKind.StorageReadWrite);
         return this;
     }
 }
-

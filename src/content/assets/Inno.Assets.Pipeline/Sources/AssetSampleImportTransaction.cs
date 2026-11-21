@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Core.Execution;
 using Inno.Core.Serialization;
@@ -53,7 +52,9 @@ public sealed class AssetSampleImportTransaction : IDisposable
         foreach (IAssetSampleSourceRewriter rewriter in rewriters)
         {
             if (rewriter is IDisposable disposable)
+            {
                 m_preparationResources.Own(disposable);
+            }
         }
         m_preparation = m_lifetime.RunAsync<Preparation>(async cancellationToken =>
         {
@@ -62,16 +63,27 @@ public sealed class AssetSampleImportTransaction : IDisposable
                 return await Task.Run(() =>
                 {
                     List<string> entries = AssetSampleSnapshot.Capture(
-                        absoluteSource, stagedSource, target.localPath, policy, cancellationToken);
+                        absoluteSource,
+                        stagedSource,
+                        target.localPath,
+                        policy,
+                        cancellationToken
+                    );
                     AssetSampleSnapshot.RemapIdentities(
-                        stagedSource, source, target, serialization, context =>
+                        stagedSource,
+                        source,
+                        target,
+                        serialization,
+                        context =>
                         {
                             foreach (IAssetSampleSourceRewriter rewriter in rewriters)
                             {
                                 cancellationToken.ThrowIfCancellationRequested();
                                 rewriter.Transform(context);
                             }
-                        }, cancellationToken);
+                        },
+                        cancellationToken
+                    );
                     return new Preparation(entries, null);
                 }, cancellationToken).ConfigureAwait(false);
             }
@@ -115,14 +127,20 @@ public sealed class AssetSampleImportTransaction : IDisposable
         EnsureOpen();
         m_owner.EnsureSampleImportOwner(this);
         if (isIndexed)
+        {
             return true;
+        }
         Task<Preparation> preparation = m_preparation!;
         if (!preparation.IsCompleted)
+        {
             return false;
+        }
         Preparation outcome = preparation.GetAwaiter().GetResult();
         m_preparationResources.Dispose();
         if (outcome.failure is not null)
+        {
             ExceptionDispatchInfo.Capture(outcome.failure).Throw();
+        }
         entries = outcome.entries;
         if (m_indexing is null)
         {
@@ -131,7 +149,9 @@ public sealed class AssetSampleImportTransaction : IDisposable
                 try
                 {
                     AssetPipeline.PreparedSourceMounts prepared = await m_owner.PrepareSampleCatalogAsync(
-                        this, cancellationToken).ConfigureAwait(false);
+                        this,
+                        cancellationToken
+                    ).ConfigureAwait(false);
                     return new Indexing(prepared, null);
                 }
                 catch (Exception failure)
@@ -143,10 +163,14 @@ public sealed class AssetSampleImportTransaction : IDisposable
             return false;
         }
         if (!m_indexing.IsCompleted)
+        {
             return false;
+        }
         Indexing indexed = m_indexing.GetAwaiter().GetResult();
         if (indexed.failure is not null)
+        {
             ExceptionDispatchInfo.Capture(indexed.failure).Throw();
+        }
         m_owner.AdoptSampleCatalog(this, indexed.prepared!);
         isIndexed = true;
         return true;
@@ -170,7 +194,9 @@ public sealed class AssetSampleImportTransaction : IDisposable
         EnsureOpen();
         m_owner.EnsureSampleImportOwner(this);
         if (!isIndexed || m_validation is not null)
+        {
             throw new InvalidOperationException("Sample validation requires one indexed, unvalidated candidate.");
+        }
         m_validation = m_lifetime.RunAsync<Exception?>(async cancellationToken =>
         {
             try
@@ -205,10 +231,14 @@ public sealed class AssetSampleImportTransaction : IDisposable
         EnsureOpen();
         m_owner.EnsureSampleImportOwner(this);
         if (!isValidationComplete)
+        {
             throw new InvalidOperationException("Sample validation has not completed.");
+        }
         Exception? failure = m_validation!.GetAwaiter().GetResult();
         if (failure is not null)
+        {
             ExceptionDispatchInfo.Capture(failure).Throw();
+        }
         m_lifetime.cancellationToken.ThrowIfCancellationRequested();
         m_owner.CommitSampleImport(this, beforePublish);
     }
@@ -230,7 +260,9 @@ public sealed class AssetSampleImportTransaction : IDisposable
     public void Rollback()
     {
         if (m_finished)
+        {
             return;
+        }
         m_owner.EnsureSampleImportOwner(this);
         Cancel();
         try
@@ -238,20 +270,26 @@ public sealed class AssetSampleImportTransaction : IDisposable
             if (!m_retirement.TryComplete(() =>
                 {
                     if (!m_lifetime.isQuiescent)
+                    {
                         throw new RetirementPendingException("Sample import work must drain before rollback releases its generation.");
+                    }
                     if (candidate is null && m_indexing is { IsCompletedSuccessfully: true })
                     {
                         Indexing indexed = m_indexing.GetAwaiter().GetResult();
                         if (indexed.prepared is not null)
+                        {
                             m_owner.DiscardSampleCatalog(indexed.prepared);
+                        }
                         m_indexing = null;
                     }
                     m_owner.RollbackSampleImport(this);
-                }))
+                })
+            ) {
                 throw new RetirementPendingException("Sample import retirement is waiting for canceled work.");
+            }
         }
         catch (Exception pending) when (RetirementPendingException.Find(pending) is not RetirementTimeoutException
-            && RetirementPendingException.Find(pending) is not null)
+                                        && RetirementPendingException.Find(pending) is not null)
         {
             throw;
         }
@@ -309,23 +347,31 @@ public sealed class AssetSampleImportTransaction : IDisposable
             }
         });
         if (!m_cleanup.IsCompleted)
+        {
             return false;
+        }
         Exception? failure = m_cleanup.GetAwaiter().GetResult();
         if (failure is not null)
+        {
             ExceptionDispatchInfo.Capture(failure).Throw();
+        }
         return true;
     }
 
     private void EnsureOpen()
     {
         if (m_finished)
+        {
             throw new InvalidOperationException("The sample import transaction is finished.");
+        }
     }
 
     private void EnsureFailureDrained(Exception failure)
     {
         if (RetirementPendingException.Find(failure) is null)
+        {
             return;
+        }
         // A completed task reporting pending ownership must stay retained by the Core lifetime.
         m_owner.FaultSampleImport(failure);
         ExceptionDispatchInfo.Capture(failure).Throw();

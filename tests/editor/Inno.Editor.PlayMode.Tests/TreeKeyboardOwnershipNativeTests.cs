@@ -1,11 +1,12 @@
 using System;
 using System.Numerics;
+using Xunit;
 using Inno.Core.Input;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Native.ImGui;
 using Inno.Testing.Editor.Native;
-using Xunit;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using Ui = Inno.Editor.ImGui.ImGui;
 
@@ -22,7 +23,11 @@ public sealed unsafe class TreeKeyboardOwnershipNativeTests
         bool commandKeyBehavior,
         KeyModifier primaryModifier
     ) {
-        using var host = new NativePanelHost(typeof(TreeKeyboardOwnershipNativeTests).Assembly, false, new EditorKeyboardPolicy(primaryModifier, "Super"));
+        using var host = new NativePanelHost(
+            typeof(TreeKeyboardOwnershipNativeTests).Assembly,
+            false,
+            new EditorKeyboardPolicy(primaryModifier, "Super")
+        );
         ImGuiIO* io = NativeImGui.Raw.GetIO();
         io->ConfigMacOsxBehaviors = commandKeyBehavior ? (byte)1 : (byte)0;
         ImGuiKey primaryKey = primaryModifier == KeyModifier.Super ? ImGuiKey.ImGuiModSuper : ImGuiKey.ImGuiModCtrl;
@@ -54,9 +59,13 @@ public sealed unsafe class TreeKeyboardOwnershipNativeTests
                     {
                         NativeImGui.SameLine(0f, -1f);
                         if (overlayFocus)
+                        {
                             Ui.FocusNextItem();
+                        }
                         if (NativeImGui.SmallButton("Overlay"))
+                        {
                             overlayPresses++;
+                        }
                         overlayId = NativeImGui.Raw.GetCurrentContext()->LastItemData.ID;
                         ImGuiNativeContext* state = NativeImGui.Raw.GetCurrentContext();
                         overlayState = $"id={overlayId:X}, nav={state->NavId:X}, active={state->ActiveId:X}, activate={state->NavActivateId:X}, pressed={state->NavActivatePressedId:X}, keyOwner={NativeImGui.GetKeyOwner(ImGuiKey.Space):X}";
@@ -64,10 +73,14 @@ public sealed unsafe class TreeKeyboardOwnershipNativeTests
                 });
                 open = row.isOpen;
                 if (open)
+                {
                     NativeImGui.TreePop();
+                }
                 navigation = host.ui.widgets.NavigateList(host.runtime.interactions, 1, 0);
                 if (navigation.toggle)
+                {
                     toggles++;
+                }
             }
             finally
             {

@@ -47,5 +47,4 @@ public interface IAdapterCatalog
     /// Gets the retained-mode UI backend factory.
     /// </summary>
     IUiBackendFactory ui { get; }
-
 }

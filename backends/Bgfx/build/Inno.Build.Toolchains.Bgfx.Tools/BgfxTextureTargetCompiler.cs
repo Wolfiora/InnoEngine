@@ -46,58 +46,78 @@ public sealed class BgfxTextureTargetCompiler : ITextureTargetCompiler
     ) {
         ArgumentNullException.ThrowIfNull(source);
         if (!source.CanRead)
+        {
             throw new ArgumentException("Texture compilation requires readable encoded input.", nameof(source));
+        }
         cancellationToken.ThrowIfCancellationRequested();
         string temporaryDirectory = Path.Combine(
             Path.GetTempPath(),
             "InnoEngine",
             "Texturec",
-            Guid.NewGuid().ToString("N"));
+            Guid.NewGuid().ToString("N")
+        );
         Directory.CreateDirectory(temporaryDirectory);
         try
         {
             string sourcePath = Path.Combine(temporaryDirectory, "source.image");
-            await using (FileStream inputFile = new(sourcePath, FileMode.CreateNew, FileAccess.Write,
-                             FileShare.None, 128 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan))
-            {
+            await using (FileStream inputFile = new(
+                sourcePath,
+                FileMode.CreateNew,
+                FileAccess.Write,
+                FileShare.None,
+                128 * 1024,
+                FileOptions.Asynchronous | FileOptions.SequentialScan
+            )) {
                 await source.CopyToAsync(inputFile, cancellationToken).ConfigureAwait(false);
             }
             string outputPath = Path.Combine(temporaryDirectory, "texture.ktx");
             var arguments = new List<string>
             {
-                "-f", Path.GetFullPath(sourcePath),
-                "-o", outputPath,
-                "-t", "RGBA8",
+                "-f",
+                Path.GetFullPath(sourcePath),
+                "-o",
+                outputPath,
+                "-t",
+                "RGBA8",
                 "--mips",
                 "--validate"
             };
             if (colorSpace == TextureColorSpace.Linear)
+            {
                 arguments.Add("--linear");
+            }
 
             ToolRunResult result = await m_tools.RunAsync(
                 BgfxTool.Texturec,
                 arguments,
                 temporaryDirectory,
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken
+            ).ConfigureAwait(false);
             if (!result.succeeded || !File.Exists(outputPath))
             {
                 string diagnostics = string.Join(
                     Environment.NewLine,
-                    new[] { result.standardOutput, result.standardError });
+                    new[] { result.standardOutput, result.standardError }
+                );
                 throw new InvalidOperationException(
-                    $"texturec rejected the encoded input with exit code {result.exitCode}: {diagnostics}");
+                    $"texturec rejected the encoded input with exit code {result.exitCode}: {diagnostics}"
+                );
             }
 
             byte[] artifact = await File.ReadAllBytesAsync(outputPath, cancellationToken)
                 .ConfigureAwait(false);
             if (artifact.Length == 0)
+            {
                 throw new InvalidOperationException("texturec produced an empty artifact.");
+            }
             return artifact;
         }
         finally
         {
             if (Directory.Exists(temporaryDirectory))
+            {
                 Directory.Delete(temporaryDirectory, recursive: true);
+            }
         }
     }
 }

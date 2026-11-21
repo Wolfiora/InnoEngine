@@ -45,26 +45,35 @@ public sealed class GameRuntimeModule : ISerializable
     public void Validate()
     {
         if (string.IsNullOrWhiteSpace(name))
+        {
             throw new InvalidDataException("A runtime module requires a stable name.");
+        }
         if (domain is not (AssemblyDomain.InnoPlugin or AssemblyDomain.InnoScripting))
+        {
             throw new InvalidDataException($"Runtime module '{name}' has an invalid ownership domain.");
+        }
         if (assemblies is null || dependencies is null || assemblies.Length == 0)
+        {
             throw new InvalidDataException($"Runtime module '{name}' requires code and dependency collections.");
+        }
         foreach (GameRuntimeAssembly assembly in assemblies)
         {
             if (assembly is null)
+            {
                 throw new InvalidDataException($"Runtime module '{name}' contains a null code identity.");
+            }
             assembly.Validate();
         }
         if (assemblies.Select(static assembly => assembly.name).Distinct(StringComparer.OrdinalIgnoreCase).Count()
-            != assemblies.Length)
+            != assemblies.Length
+        ) {
             throw new InvalidDataException($"Runtime module '{name}' contains duplicate code identities.");
+        }
         if (dependencies.Any(string.IsNullOrWhiteSpace)
             || dependencies.Contains(name, StringComparer.Ordinal)
-            || dependencies.Distinct(StringComparer.Ordinal).Count() != dependencies.Length)
-        {
+            || dependencies.Distinct(StringComparer.Ordinal).Count() != dependencies.Length
+        ) {
             throw new InvalidDataException($"Runtime module '{name}' contains invalid dependencies.");
         }
     }
-
 }

@@ -5,10 +5,9 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-
 using Inno.Assets;
-using Inno.Core.Identity;
 using Inno.Core.Collections;
+using Inno.Core.Identity;
 
 namespace Inno.Assets.Pipeline;
 
@@ -42,7 +41,7 @@ public sealed class AssetFileSystem : IDisposable
     /// Gets the absolute source asset root.
     /// </summary>
     public string assetRoot { get; }
-    
+
     /// <summary>
     /// Gets whether source file watching is active.
     /// </summary>
@@ -68,18 +67,16 @@ public sealed class AssetFileSystem : IDisposable
         bool autoStart = true,
         int flushDelayMs = 80,
         AssetSourcePolicy? sourcePolicy = null
-    )
-        : this(
-            [new AssetSourceMount(AssetSourceId.project, assetRoot, isReadOnly: false)],
-            autoStart,
-            flushDelayMs,
-            sourcePolicy,
-            requireWritableProject: true,
-            identities: new IdentityAllocator(),
-            persistentIdentityResolver: null,
-            activateIdentities: true)
-    {
-    }
+    ) : this(
+        [new AssetSourceMount(AssetSourceId.project, assetRoot, isReadOnly: false)],
+        autoStart,
+        flushDelayMs,
+        sourcePolicy,
+        requireWritableProject: true,
+        identities: new IdentityAllocator(),
+        persistentIdentityResolver: null,
+        activateIdentities: true
+    ) {}
 
     /// <summary>
     /// Creates an indexed file system over isolated source mounts.
@@ -106,18 +103,16 @@ public sealed class AssetFileSystem : IDisposable
         int flushDelayMs = 80,
         AssetSourcePolicy? sourcePolicy = null,
         bool requireWritableProject = true
-    )
-        : this(
-            mounts,
-            autoStart,
-            flushDelayMs,
-            sourcePolicy,
-            requireWritableProject,
-            identities: new IdentityAllocator(),
-            persistentIdentityResolver: null,
-            activateIdentities: true)
-    {
-    }
+    ) : this(
+        mounts,
+        autoStart,
+        flushDelayMs,
+        sourcePolicy,
+        requireWritableProject,
+        identities: new IdentityAllocator(),
+        persistentIdentityResolver: null,
+        activateIdentities: true
+    ) {}
 
     internal AssetFileSystem(
         IReadOnlyList<AssetSourceMount> mounts,
@@ -132,21 +127,28 @@ public sealed class AssetFileSystem : IDisposable
         ArgumentNullException.ThrowIfNull(mounts);
         ArgumentNullException.ThrowIfNull(identities);
         if (mounts.Count == 0)
+        {
             throw new ArgumentException("At least one asset source mount is required.", nameof(mounts));
+        }
         Dictionary<AssetSourceId, AssetSourceMount> byId = mounts.ToDictionary(static mount => mount.id);
         if (byId.Count != mounts.Count)
-            throw new ArgumentException("Asset source mount IDs must be unique.", nameof(mounts));
-        if (!byId.TryGetValue(AssetSourceId.project, out AssetSourceMount? project)
-            || project.isReadOnly && requireWritableProject)
         {
+            throw new ArgumentException("Asset source mount IDs must be unique.", nameof(mounts));
+        }
+        if (!byId.TryGetValue(AssetSourceId.project, out AssetSourceMount? project)
+            || project.isReadOnly && requireWritableProject
+        ) {
             throw new ArgumentException(
                 requireWritableProject
-                    ? "A writable project asset source mount is required."
-                    : "A project asset source mount is required.",
-                nameof(mounts));
+                ? "A writable project asset source mount is required."
+                : "A project asset source mount is required.",
+                nameof(mounts)
+            );
         }
         if (project.isReadOnly && autoStart)
+        {
             throw new ArgumentException("A read-only project source cannot be watched for authoring changes.", nameof(autoStart));
+        }
 
         assetRoot = project.rootPath;
         m_identities = identities;
@@ -154,7 +156,9 @@ public sealed class AssetFileSystem : IDisposable
         m_persistentIdentityResolver = persistentIdentityResolver;
         m_identitiesActive = activateIdentities;
         foreach (AssetSourceMount mount in mounts)
+        {
             Directory.CreateDirectory(mount.rootPath);
+        }
         m_sourcePolicy = sourcePolicy ?? AssetSourcePolicy.defaultPolicy;
 
         m_pathKey = m_entries.DefineKey<string>("filesystem.path", IndexedObjectKeyFlags.Unique);
@@ -166,7 +170,9 @@ public sealed class AssetFileSystem : IDisposable
 
         m_watcher = new AssetWatcher(assetRoot, flushDelayMs);
         if (autoStart)
+        {
             m_watcher.Start();
+        }
     }
 
     /// <summary>
@@ -184,7 +190,9 @@ public sealed class AssetFileSystem : IDisposable
     public void Stop()
     {
         if (m_disposed)
+        {
             return;
+        }
 
         m_watcher.Stop();
     }
@@ -228,11 +236,15 @@ public sealed class AssetFileSystem : IDisposable
                         if (m_identitiesActive)
                         {
                             if (!m_identities.Register(entry, source.persistentId))
+                            {
                                 throw new InvalidOperationException($"Asset source entry '{source.path}' could not acquire its identity.");
+                            }
                             registered.Add(entry);
                         }
                         else
+                        {
                             m_identities.InitializePersistentIdentity(entry, source.persistentId);
+                        }
                     }
                     prepared.Add((source, entry));
                 }
@@ -240,7 +252,9 @@ public sealed class AssetFileSystem : IDisposable
             catch
             {
                 foreach (AssetFileEntry entry in registered)
+                {
                     _ = m_identities.Unregister(entry);
+                }
                 throw;
             }
             m_entries.RemoveAll();
@@ -250,8 +264,12 @@ public sealed class AssetFileSystem : IDisposable
                 existing.Remove(source.persistentId);
             }
             if (m_identitiesActive)
+            {
                 foreach (AssetFileEntry removed in existing.Values)
+                {
                     _ = m_identities.Unregister(removed);
+                }
+            }
         }
     }
 
@@ -321,8 +339,8 @@ public sealed class AssetFileSystem : IDisposable
         lock (m_sync)
         {
             IReadOnlyList<AssetFileEntry> all = includeDirectories
-                ? m_entries.All()
-                : m_entries.Find(m_isDirectoryKey, false);
+                                                ? m_entries.All()
+                                                : m_entries.Find(m_isDirectoryKey, false);
 
             return all
                 .OrderBy(static x => x.assetPath.ToString(), StringComparer.OrdinalIgnoreCase)
@@ -379,7 +397,9 @@ public sealed class AssetFileSystem : IDisposable
         WatcherPollResult result = m_watcher.Poll(force: false);
         requiresFullRescan = result.requiresFullRescan;
         if (result.changes.Count > 0 || requiresFullRescan)
+        {
             RefreshSafely();
+        }
         return result.changes;
     }
 
@@ -413,7 +433,9 @@ public sealed class AssetFileSystem : IDisposable
         WatcherPollResult result = m_watcher.WaitForIdle();
         requiresFullRescan = result.requiresFullRescan;
         if (result.changes.Count > 0 || requiresFullRescan)
+        {
             RefreshSafely();
+        }
         return result.changes;
     }
 
@@ -423,7 +445,9 @@ public sealed class AssetFileSystem : IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
 
         m_disposed = true;
         m_watcher.Dispose();
@@ -440,7 +464,9 @@ public sealed class AssetFileSystem : IDisposable
         lock (m_sync)
         {
             if (m_identitiesActive)
+            {
                 return;
+            }
             var registered = new List<AssetFileEntry>();
             try
             {
@@ -449,7 +475,8 @@ public sealed class AssetFileSystem : IDisposable
                     if (!m_identities.Register(entry, entry.identity.persistentId))
                     {
                         throw new InvalidOperationException(
-                            $"Asset source entry '{entry.assetPath}' was already registered.");
+                            $"Asset source entry '{entry.assetPath}' was already registered."
+                        );
                     }
                     registered.Add(entry);
                 }
@@ -458,7 +485,9 @@ public sealed class AssetFileSystem : IDisposable
             catch
             {
                 foreach (AssetFileEntry entry in registered)
+                {
                     _ = m_identities.Unregister(entry);
+                }
                 throw;
             }
         }
@@ -467,13 +496,17 @@ public sealed class AssetFileSystem : IDisposable
     internal void DeactivateIdentities()
     {
         lock (m_sync)
+        {
             DeactivateIdentitiesLocked();
+        }
     }
 
     private void RefreshSafely()
     {
         if (m_disposed)
+        {
             return;
+        }
 
         try
         {
@@ -508,13 +541,17 @@ public sealed class AssetFileSystem : IDisposable
                 {
                     string path = CombineLocalPath(directory, Path.GetFileName(child));
                     if (!m_sourcePolicy.IsIgnored(path, isDirectory: true))
+                    {
                         pending.Push(path);
+                    }
                 }
                 foreach (string child in Directory.EnumerateFiles(absoluteDirectory))
                 {
                     string path = CombineLocalPath(directory, Path.GetFileName(child));
                     if (!m_sourcePolicy.IsIgnored(path, isDirectory: false))
+                    {
                         Add(new AssetPath(mount.id, path), mount.isReadOnly, isDirectory: false);
+                    }
                 }
             }
         }
@@ -528,7 +565,9 @@ public sealed class AssetFileSystem : IDisposable
             Guid sourceId = m_persistentIdentityResolver?.Invoke(path) ?? CreateFallbackPersistentId(path.ToString());
             Guid entryId = CreateEntryPersistentId(sourceId);
             if (!identities.Add(entryId))
+            {
                 throw new InvalidDataException($"Asset source path '{path}' duplicates a persistent entry identity.");
+            }
             entries.Add(new(path, entryId, isReadOnly, isDirectory));
         }
     }
@@ -547,8 +586,8 @@ public sealed class AssetFileSystem : IDisposable
         existing.parentAssetPath = AssetPath.Parse(GetParentPath(path));
         existing.isDirectory = isDirectory;
         existing.extension = isDirectory
-            ? string.Empty
-            : Path.GetExtension(path).ToLowerInvariant();
+                             ? string.Empty
+                             : Path.GetExtension(path).ToLowerInvariant();
 
         m_entries.Add(existing)
             .Set(m_pathKey, existing.assetPath.ToString())
@@ -581,13 +620,17 @@ public sealed class AssetFileSystem : IDisposable
     private void UnregisterEntries()
     {
         foreach (AssetFileEntry entry in m_entries.All())
+        {
             _ = m_identities.Unregister(entry);
+        }
     }
 
     private void DeactivateIdentitiesLocked()
     {
         if (!m_identitiesActive)
+        {
             return;
+        }
         UnregisterEntries();
         m_identitiesActive = false;
     }
@@ -596,7 +639,9 @@ public sealed class AssetFileSystem : IDisposable
     {
         AssetPath path = AssetPath.Parse(relativePath ?? string.Empty);
         if (string.IsNullOrWhiteSpace(path.localPath))
+        {
             return string.Empty;
+        }
 
         int lastSeparator = path.localPath.LastIndexOf('/');
         string parent = lastSeparator < 0 ? string.Empty : path.localPath[..lastSeparator];
@@ -607,15 +652,18 @@ public sealed class AssetFileSystem : IDisposable
     private static string CombineLocalPath(
         string a,
         string b
-    )
-        => NormalizeLocalPath(Path.Combine(NormalizeLocalPath(a), NormalizeLocalPath(b)));
+    ) => NormalizeLocalPath(Path.Combine(NormalizeLocalPath(a), NormalizeLocalPath(b)));
 
     private string NormalizeAssetPath(AssetPath path)
     {
         if (!path.isValid)
+        {
             throw new ArgumentException("An isolated asset path is required.", nameof(path));
+        }
         if (!m_mounts.ContainsKey(path.source))
+        {
             throw new ArgumentException($"Asset source mount '{path.source}' is not indexed.", nameof(path));
+        }
         return path.ToString();
     }
 

@@ -7,6 +7,7 @@ using Inno.Editor.ImGui;
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Workbench;
+
 [EditorModule(GlobalInteractionIds.C_COMMAND_SEARCH_MODULE, order: 20)]
 internal sealed class CommandSearchModule(EditorInteractions interactions) : EditorModule
 {
@@ -39,7 +40,9 @@ internal sealed class CommandSearchModule(EditorInteractions interactions) : Edi
         var globalIds = new HashSet<string>(StringComparer.Ordinal);
         Collect(globalMenu.items);
         if (ui.menus.DrawSearchItems(global, globalMenu.items, search))
+        {
             return true;
+        }
         object? target = m_target is RuntimeIdentity id && interactions.TryResolveIdentity(id, out IdentityObject? live) ? live : null;
         EditorInteraction local = interactions.For(m_area, target);
         EditorMenuModel commands = local.BuildCommands();
@@ -50,7 +53,9 @@ internal sealed class CommandSearchModule(EditorInteractions interactions) : Edi
             foreach (EditorMenuItem item in items)
             {
                 if (item.actionId.Length != 0)
+                {
                     _ = globalIds.Add(item.actionId);
+                }
                 Collect(item.children);
             }
         }
@@ -58,16 +63,21 @@ internal sealed class CommandSearchModule(EditorInteractions interactions) : Edi
 
     /// <inheritdoc/>
     protected override void OnStop(EditorContext context) => Close();
+
     private static IEnumerable<EditorMenuItem> Leaves(IReadOnlyList<EditorMenuItem> items)
     {
         foreach (EditorMenuItem item in items)
         {
             if (item.children.Count == 0)
+            {
                 yield return item;
+            }
             else
             {
                 foreach (EditorMenuItem child in Leaves(item.children))
+                {
                     yield return child;
+                }
             }
         }
     }

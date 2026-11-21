@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-
 using Inno.Core.Execution;
 using Inno.Core.Identity;
 using Inno.Core.Serialization;
@@ -29,9 +28,10 @@ public abstract class AssetObject : IdentityObject, ISerializable
     /// <summary>
     /// Gets a display name derived from the source-local path.
     /// </summary>
-    public string name => string.IsNullOrWhiteSpace(assetPath.localPath)
-        ? GetType().Name
-        : Path.GetFileName(assetPath.localPath);
+    public string name
+        => string.IsNullOrWhiteSpace(assetPath.localPath)
+           ? GetType().Name
+           : Path.GetFileName(assetPath.localPath);
 
     /// <summary>
     /// Gets whether this instance represents an unavailable persistent asset.
@@ -73,7 +73,9 @@ public abstract class AssetObject : IdentityObject, ISerializable
     ) where TValue : class, ISerializable
     {
         if (m_runtimeResourcesReleased || m_propertyStateOwner is null || !m_propertyStateOwner.TryGetTarget(out var owner))
+        {
             throw new InvalidOperationException("The asset's property-state owner is unavailable.");
+        }
         owner.RestoreProperties(stableTypeId, propertyData, target);
     }
 
@@ -89,8 +91,7 @@ public abstract class AssetObject : IdentityObject, ISerializable
     protected virtual void OnRuntimePayloadChanged(
         ReadOnlyMemory<byte> previousPayload,
         ReadOnlyMemory<byte> currentPayload
-    ) {
-    }
+    ) {}
 
     /// <summary>
     /// Releases the runtime resources owned by this asset without clearing its payload before quiescence.
@@ -102,9 +103,7 @@ public abstract class AssetObject : IdentityObject, ISerializable
     /// <exception cref="RetirementPendingException">
     /// Owned work has not quiesced; runtime payload and ownership must remain intact until a later attempt.
     /// </exception>
-    protected virtual void OnUnloading()
-    {
-    }
+    protected virtual void OnUnloading() {}
 
     internal string sourceHash => m_sourceHash;
 
@@ -114,7 +113,9 @@ public abstract class AssetObject : IdentityObject, ISerializable
     ) {
         object? previous = System.Threading.Interlocked.CompareExchange(ref m_runtimeOwner, authority, null);
         if (previous is not null && !ReferenceEquals(previous, authority))
+        {
             throw new InvalidOperationException("The asset belongs to another runtime owner.");
+        }
         m_propertyStateOwner = properties;
     }
 
@@ -161,7 +162,9 @@ public abstract class AssetObject : IdentityObject, ISerializable
     internal void ReleaseRuntimeResources()
     {
         if (m_runtimeResourcesReleased)
+        {
             return;
+        }
         try
         {
             OnUnloading();

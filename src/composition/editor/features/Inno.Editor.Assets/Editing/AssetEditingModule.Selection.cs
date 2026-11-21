@@ -7,6 +7,7 @@ using Inno.Editor.Interactions;
 using Inno.Scripting.Api;
 
 namespace Inno.Editor.Assets;
+
 /// <summary>
 /// Applies validated selection operations through the authoritative asset and History owners.
 /// </summary>
@@ -32,21 +33,23 @@ public sealed partial class AssetEditingModule
         ArgumentNullException.ThrowIfNull(editor);
         ArgumentNullException.ThrowIfNull(targets);
         if (targets.Count == 0)
+        {
             return AssetOperationValidation.Invalid("The selection contains unavailable entries.");
+        }
         foreach (AssetFileEntry target in targets)
         {
             if (target.isReadOnly
                 || target.identity.runtimeIdentity is null
-                || !TryCreateContext(
-                editor,
-                target.assetPath.ToString(),
-                out AssetEditorContext? context
-            )
-                || context is null)
+                || !TryCreateContext(editor, target.assetPath.ToString(), out AssetEditorContext? context)
+                || context is null
+            ) {
                 return AssetOperationValidation.Invalid("Every selected source must be available and writable.");
+            }
             AssetOperationValidation validation = m_editors.Resolve(context.assetType).ValidateDelete(context);
             if (!validation.isValid)
+            {
                 return validation;
+            }
         }
 
         return AssetOperationValidation.valid;
@@ -71,13 +74,19 @@ public sealed partial class AssetEditingModule
     ) {
         AssetOperationValidation validation = ValidateDeleteSelection(editor, targets);
         if (!validation.isValid)
+        {
             throw new InvalidOperationException(validation.message);
+        }
         string[] roots = SelectedRoots(targets);
         using EditorHistoryTransaction transaction = m_interactions.history.BeginTransaction("Delete Assets");
         foreach (string path in roots)
         {
-            if (!TryCreateContext(editor, path, out AssetEditorContext? context) || context is null || !DeleteWithHistory(context, m_interactions.history))
+            if (!TryCreateContext(editor, path, out AssetEditorContext? context)
+                || context is null
+                || !DeleteWithHistory(context, m_interactions.history)
+            ) {
                 throw new InvalidOperationException($"Selected source '{path}' could not be deleted.");
+            }
         }
 
         transaction.Commit();
@@ -102,11 +111,17 @@ public sealed partial class AssetEditingModule
     ) {
         ArgumentNullException.ThrowIfNull(targets);
         if (targets.Count == 0 || targets.Any(value => value.isReadOnly || value.identity.runtimeIdentity is null))
+        {
             return false;
+        }
         var destinations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (string source in SelectedRoots(targets))
+        {
             if (!TryPrepareMove(source, targetDirectory, true, out _, out _, out string destination) || !destinations.Add(destination))
+            {
                 return false;
+            }
+        }
         return true;
     }
 
@@ -128,17 +143,23 @@ public sealed partial class AssetEditingModule
         string targetDirectory
     ) {
         if (!CanMoveSelection(targets, targetDirectory))
+        {
             throw new InvalidOperationException("The selected assets cannot move to this directory.");
+        }
         string[] roots = SelectedRoots(targets);
         using EditorHistoryTransaction transaction = m_interactions.history.BeginTransaction("Move Assets");
         foreach (string source in roots)
+        {
             _ = MoveToDirectoryWithHistory(source, targetDirectory, m_interactions.history);
+        }
         transaction.Commit();
     }
 
     private static string[] SelectedRoots(IReadOnlyList<AssetFileEntry> targets)
     {
         string[] paths = targets.Select(value => value.assetPath.ToString()).Distinct(StringComparer.Ordinal).ToArray();
-        return paths.Where(path => !paths.Any(parent => parent != path && path.StartsWith(parent + "/", StringComparison.Ordinal))).ToArray();
+        return paths
+            .Where(path => !paths.Any(parent => parent != path && path.StartsWith(parent + "/", StringComparison.Ordinal)))
+            .ToArray();
     }
 }

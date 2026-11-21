@@ -2,6 +2,7 @@ using System;
 using Inno.Core.Mathematics;
 
 namespace Inno.Editor.Interactions;
+
 /// <summary>
 /// Coordinates pointer capture, transforms, and one history transaction for a viewport gesture.
 /// </summary>
@@ -11,6 +12,7 @@ public sealed class EditorViewportToolContext
     private readonly IEditorViewportCoordinateConverter m_coordinates;
     private EditorEditGesture? m_transaction;
     private int? m_capturedPointerId;
+
     internal EditorViewportToolContext(
         IEditorHistory history,
         IEditorViewportCoordinateConverter coordinates
@@ -23,10 +25,12 @@ public sealed class EditorViewportToolContext
     /// Gets whether this tool owns a pointer.
     /// </summary>
     public bool hasPointerCapture => m_capturedPointerId.HasValue;
+
     /// <summary>
     /// Gets the captured pointer identity, or <see langword="null"/>.
     /// </summary>
     public int? capturedPointerId => m_capturedPointerId;
+
     /// <summary>
     /// Gets whether a history transaction is active for the current gesture.
     /// </summary>
@@ -41,7 +45,9 @@ public sealed class EditorViewportToolContext
     public void CapturePointer(int pointerId)
     {
         if (m_capturedPointerId.HasValue && m_capturedPointerId.Value != pointerId)
+        {
             throw new InvalidOperationException("A viewport tool cannot capture two pointers concurrently.");
+        }
         m_capturedPointerId = pointerId;
     }
 
@@ -51,7 +57,9 @@ public sealed class EditorViewportToolContext
     public void ReleasePointer()
     {
         if (m_transaction is not null)
+        {
             throw new InvalidOperationException("Complete the viewport history gesture before releasing its pointer.");
+        }
         m_capturedPointerId = null;
     }
 
@@ -65,9 +73,13 @@ public sealed class EditorViewportToolContext
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         if (!hasPointerCapture)
+        {
             throw new InvalidOperationException("A viewport history gesture requires pointer capture.");
+        }
         if (m_transaction is not null)
+        {
             throw new InvalidOperationException("The current viewport gesture already owns a history transaction.");
+        }
         m_transaction = new EditorEditGesture(m_history, name);
     }
 
@@ -81,14 +93,20 @@ public sealed class EditorViewportToolContext
     {
         EditorEditGesture? transaction = m_transaction;
         if (transaction is null)
+        {
             return;
+        }
         if (commit)
+        {
             transaction.Commit();
+        }
         else
         {
             EditorHistoryResult result = transaction.Cancel();
             if (!result.succeeded)
+            {
                 throw new InvalidOperationException($"The viewport gesture could not roll back: {result.message}");
+            }
         }
 
         m_transaction = null;
@@ -105,6 +123,7 @@ public sealed class EditorViewportToolContext
     /// World coordinates.
     /// </returns>
     public Vector2 ScreenToWorld(Vector2 screenPosition) => m_coordinates.ScreenToWorld(screenPosition);
+
     /// <summary>
     /// Converts world coordinates to viewport-local pixel coordinates.
     /// </summary>
@@ -115,7 +134,9 @@ public sealed class EditorViewportToolContext
     /// Viewport-local pixel coordinates.
     /// </returns>
     public Vector2 WorldToScreen(Vector2 worldPosition) => m_coordinates.WorldToScreen(worldPosition);
+
     internal bool Accepts(int pointerId) => !m_capturedPointerId.HasValue || m_capturedPointerId.Value == pointerId;
+
     internal void Cancel()
     {
         CompleteHistoryGesture(commit: false);

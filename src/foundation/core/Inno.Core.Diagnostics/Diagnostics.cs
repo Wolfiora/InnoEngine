@@ -54,9 +54,7 @@ public static class Diagnostics
         IEnumerable<Diagnostic> diagnostics
     ) {
         ArgumentNullException.ThrowIfNull(diagnostics);
-        DiagnosticHub.current.Set(
-            DiagnosticCallerResolver.Resolve(group),
-            diagnostics);
+        DiagnosticHub.current.Set(DiagnosticCallerResolver.Resolve(group), diagnostics);
     }
 
     /// <summary>
@@ -120,9 +118,7 @@ public static class Diagnostics
         string? displayName = null
     ) {
         ArgumentNullException.ThrowIfNull(diagnostics);
-        DiagnosticHub.current.Set(
-            DiagnosticCallerResolver.Resolve(group, targetId, displayName),
-            diagnostics);
+        DiagnosticHub.current.Set(DiagnosticCallerResolver.Resolve(group, targetId, displayName), diagnostics);
     }
 
     /// <summary>

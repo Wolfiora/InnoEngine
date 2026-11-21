@@ -11,7 +11,8 @@ public sealed class MiniAudioBackendProvider : AudioBackendProvider
     /// <summary>
     /// Creates an explicitly composed registration for the bundled implementation.
     /// </summary>
-    public MiniAudioBackendProvider() : base(AudioBackendId.miniAudio) { }
+    public MiniAudioBackendProvider()
+        : base(AudioBackendId.miniAudio) {}
 
     /// <inheritdoc />
     public override IAudioDevice CreateDevice(AudioBackendOptions options)
@@ -19,4 +20,3 @@ public sealed class MiniAudioBackendProvider : AudioBackendProvider
         return new MiniAudioDevice(new MiniAudioDeviceOptions { noDevice = options.noDevice });
     }
 }
-

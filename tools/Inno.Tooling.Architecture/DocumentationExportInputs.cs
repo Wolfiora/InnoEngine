@@ -29,17 +29,27 @@ internal static class DocumentationExportInputs
                     return;
                 }
                 string content = Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(file)));
-                inputs[relative.StartsWith("../", StringComparison.Ordinal) ? "external/" + Path.GetFileName(file) + "/" + content : relative] = content;
+                inputs[relative.StartsWith("../", StringComparison.Ordinal)
+                       ? "external/" + Path.GetFileName(file) + "/" + content
+                       : relative] = content;
             }
             AddFile(project);
             AddFile(Path.Combine(root, "global.json"));
-            foreach (JsonElement import in node.GetProperty("Imports").EnumerateArray()) AddFile(import.GetString()!);
+            foreach (JsonElement import in node.GetProperty("Imports").EnumerateArray())
+            {
+                AddFile(import.GetString()!);
+            }
             foreach (JsonProperty kind in node.GetProperty("Items").EnumerateObject())
+            {
             foreach (JsonElement item in kind.Value.EnumerateArray())
+            {
                 if (item.TryGetProperty("FullPath", out JsonElement full)) AddFile(full.GetString()!);
+            }
+            }
             // The evaluated item set detects additions, deletions and glob expansion. Normalize
             // checkout location only; actual SDK/package/target properties remain inputs.
-            string graph = node.GetRawText().Replace(root.Replace('\\', '/'), "<engine>", StringComparison.OrdinalIgnoreCase)
+            string graph = node.GetRawText()
+                .Replace(root.Replace('\\', '/'), "<engine>", StringComparison.OrdinalIgnoreCase)
                 .Replace(JsonEncodedText.Encode(root).ToString(), "<engine>", StringComparison.OrdinalIgnoreCase);
             inputs["evaluation"] = graph;
             local[project] = Convert.ToHexStringLower(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(inputs)));
@@ -51,13 +61,19 @@ internal static class DocumentationExportInputs
             {
                 string relative = Path.GetRelativePath(root, current).Replace('\\', '/');
                 if (closure.ContainsKey(relative)) return;
-                if (!nodes.TryGetValue(current, out JsonElement node)) throw new InvalidDataException("Missing evaluated API dependency: " + relative);
+                if (!nodes.TryGetValue(current, out JsonElement node))
+                {
+                    throw new InvalidDataException("Missing evaluated API dependency: " + relative);
+                }
                 closure[relative] = local[current];
                 foreach (JsonElement reference in node.GetProperty("Items").GetProperty("ProjectReference").EnumerateArray())
+                {
                     Visit(Path.GetFullPath(reference.GetProperty("FullPath").GetString()!));
+                }
             }
             Visit(project);
-            result[Path.GetRelativePath(root, project).Replace('\\', '/')] = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(closure))));
+            result[Path.GetRelativePath(root, project)
+                .Replace('\\', '/')] = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(closure))));
         }
         return result;
     }

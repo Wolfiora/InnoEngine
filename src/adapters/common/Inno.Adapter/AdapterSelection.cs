@@ -79,8 +79,11 @@ public readonly struct AdapterSelection
         TBackend backend,
         IReadOnlyList<TBackend> available,
         string domain
-    ) where TBackend : struct, IEquatable<TBackend> {
+    ) where TBackend : struct, IEquatable<TBackend>
+    {
         if (backend.Equals(default) || !available.Contains(backend))
+        {
             throw new NotSupportedException(domain + " backend '" + backend + "' is not registered.");
+        }
     }
 }

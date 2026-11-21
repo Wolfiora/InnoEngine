@@ -1,9 +1,9 @@
+---
+paths: ["src/runtime/plugins/**", "tests/plugins/**"]
+tags: [plugins]
+---
 # Plugins
 
-Load complete rule units. The [registry](../coverage.json) owns routing and provenance.
-
-<!-- rule-unit: plugins -->
-<a id="plugins"></a>
 ## 18. Plugin and structured-content boundaries
 - The Project root has sibling `Plugins` and `Assets` directories. `Assets` is the sole official writable authoring source. Export an entire Project directly to `.iplugin` with File > Export as Plugin; do not create a PluginDefinitionAsset or a second package-authoring asset. `Plugins/*.iplugin` is the sole installation source. Folder Plugins, `.zip` Plugins and other extensions are unsupported. Fully validate installed packages and mount them as read-only Asset Sources in the existing Asset Catalog, Importer, dependency graph and Artifact flow. Do not create a Plugin-specific asset database.
 - File Browser and all Asset mutation APIs must treat installed `.iplugin` content as logically read-only. External replacement of an `.iplugin` updates installed content and starts a candidate transaction; it grants no Editor write permission. `Library/Plugins` always remains a noneditable, fully rebuildable cache.
@@ -13,4 +13,3 @@ Load complete rule units. The [registry](../coverage.json) owns routing and prov
 - Plugin extensions must reuse existing AssemblyDomain.InnoPlugin, collectible ALC, TypeCache, TypeRegistry and candidate transactions. Persistent state must not retain Plugin Types, instances or delegates.
 - All structured assets, Graphs, Plugin manifests and Project Settings must use ISerializable, SerializableProperty, Serialization Converters and SerializationManager. Only inherently textual content, such as C#, Shader source/includes and ordinary documentation, may remain text. Do not create separate JSON persistence paths for Rendering, Plugins or Settings.
 - Plugins may contribute assets, Shaders, Pipelines, Importers, Components, Editor extensions, settings and gameplay code together. Manifests must not maintain per-domain type lists. Stable attributes and TypeRegistry continue to discover concrete extensions automatically.
-<!-- /rule-unit: plugins -->

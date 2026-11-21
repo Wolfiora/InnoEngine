@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Scripting.Compiler;
 using Inno.Scripting.Reload;
-using Xunit;
 
 namespace Inno.Editor.Scripting.Tests;
 
@@ -51,5 +51,6 @@ public sealed partial class ScriptingPipelineTests
     }
 
     // Reload and fixture retirement must remain on their creating owner thread.
-    private static ScriptCompilationResult CompleteCompilationOnOwner(Task<ScriptCompilationResult> compilation) => compilation.GetAwaiter().GetResult();
+    private static ScriptCompilationResult CompleteCompilationOnOwner(Task<ScriptCompilationResult> compilation)
+        => compilation.GetAwaiter().GetResult();
 }

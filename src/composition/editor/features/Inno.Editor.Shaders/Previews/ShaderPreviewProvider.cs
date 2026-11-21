@@ -20,7 +20,8 @@ public sealed class ShaderPreviewProviderAttribute(string contractId) : Attribut
     /// Gets the non-empty Shader contract consumed by this preview.
     /// </summary>
     public string contractId { get; } = string.IsNullOrWhiteSpace(contractId)
-        ? throw new ArgumentException("A preview contract is required.", nameof(contractId)) : contractId;
+                                        ? throw new ArgumentException("A preview contract is required.", nameof(contractId))
+                                        : contractId;
 }
 
 /// <summary>
@@ -79,37 +80,46 @@ public sealed class ShaderPreviewContext
         int pixelHeight
     ) {
         if (!resourceId.isValid)
+        {
             throw new ArgumentException("A resource identity is required.", nameof(resourceId));
+        }
         ArgumentNullException.ThrowIfNull(material); ArgumentNullException.ThrowIfNull(artifact);
         ArgumentNullException.ThrowIfNull(definition); ArgumentNullException.ThrowIfNull(diagnostics);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelWidth); ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelHeight);
         this.resourceId = resourceId; this.material = material; this.artifact = artifact; this.definition = definition;
         this.diagnostics = diagnostics; this.pixelWidth = pixelWidth; this.pixelHeight = pixelHeight;
     }
+
     /// <summary>
     /// Gets the publication scope released by the host when this preview closes.
     /// </summary>
     public RenderPersistentResourceId resourceId { get; }
+
     /// <summary>
     /// Gets the invocation-local Material values.
     /// </summary>
     public MaterialAsset material { get; }
+
     /// <summary>
     /// Gets the complete immutable GPU candidate.
     /// </summary>
     public RenderShaderArtifact artifact { get; }
+
     /// <summary>
     /// Gets the candidate's exact contract, not the latest uncompiled source interface.
     /// </summary>
     public ShaderDefinition definition { get; }
+
     /// <summary>
     /// Gets the host-owned, isolated diagnostic producer.
     /// </summary>
     public IDiagnosticReporter diagnostics { get; }
+
     /// <summary>
     /// Gets target width in physical pixels.
     /// </summary>
     public int pixelWidth { get; }
+
     /// <summary>
     /// Gets target height in physical pixels.
     /// </summary>

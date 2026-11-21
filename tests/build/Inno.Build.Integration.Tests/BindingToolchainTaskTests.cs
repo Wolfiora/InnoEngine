@@ -2,10 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using Inno.Build.Tasks;
-using Inno.Build.Toolchains;
 using Microsoft.Build.Framework;
 using Xunit;
+using Inno.Build.Tasks;
+using Inno.Build.Toolchains;
 
 namespace Inno.Build.Integration.Tests;
 
@@ -33,7 +33,9 @@ public sealed class BindingToolchainTaskTests : IDisposable
             DescriptorOutputPath = Path.Combine(m_root, "request.json")
         };
         if (canceled)
+        {
             task.Cancel();
+        }
 
         Assert.False(task.Execute());
         Assert.NotEmpty(engine.errors);
@@ -52,9 +54,12 @@ public sealed class BindingToolchainTaskTests : IDisposable
         public string ProjectFileOfTaskNode => "fixture.proj";
 
         public void LogErrorEvent(BuildErrorEventArgs e) => errors.Add(e.Message ?? string.Empty);
-        public void LogWarningEvent(BuildWarningEventArgs e) { }
-        public void LogMessageEvent(BuildMessageEventArgs e) { }
-        public void LogCustomEvent(CustomBuildEventArgs e) { }
+
+        public void LogWarningEvent(BuildWarningEventArgs e) {}
+
+        public void LogMessageEvent(BuildMessageEventArgs e) {}
+
+        public void LogCustomEvent(CustomBuildEventArgs e) {}
 
         public bool BuildProjectFile(
             string projectFileName,

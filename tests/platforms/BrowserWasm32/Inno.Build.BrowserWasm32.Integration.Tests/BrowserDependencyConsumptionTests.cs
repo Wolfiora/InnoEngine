@@ -4,10 +4,10 @@ using System.Linq;
 using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.SupportPacks;
 using Inno.Testing.Source;
-using Xunit;
 
 namespace Inno.Build.BrowserWasm32.Integration.Tests;
 
@@ -27,7 +27,14 @@ public sealed class BrowserDependencyConsumptionTests
         var target = new BuildTargetId("browser-wasm");
         string output = Path.Combine(root, "artifacts", "validation", "browser-support-pack");
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(20));
-        using PlayerSupportPackPublication pack = await distribution.supportPacks.PublishAsync(root, output, target, dotnet, cancellation.Token, manifest);
+        using PlayerSupportPackPublication pack = await distribution.supportPacks.PublishAsync(
+            root,
+            output,
+            target,
+            dotnet,
+            cancellation.Token,
+            manifest
+        );
         distribution.platforms.Single(platform => platform.descriptor.id == target).supportPackSource.Validate(pack.directory);
         Assert.True(File.Exists(Path.Combine(pack.directory, "References", "Inno.Player.Runtime.dll")));
         Assert.False(File.Exists(Path.Combine(pack.directory, "References", "Inno.Player.BrowserWasm32.dll")));

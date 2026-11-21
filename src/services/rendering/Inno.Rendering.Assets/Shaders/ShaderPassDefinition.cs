@@ -1,12 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Scripting.Api;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
@@ -83,4 +83,3 @@ public struct ShaderPassDefinition
     /// </returns>
     public ShaderPassDefinition Copy() => ShaderDefinitionSnapshot.Copy(this);
 }
-

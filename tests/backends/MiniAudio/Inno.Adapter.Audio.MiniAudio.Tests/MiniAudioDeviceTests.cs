@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using Inno.Audio;
-using Inno.Adapter.Audio.MiniAudio;
-using Inno.Core.Mathematics;
 using Xunit;
+using Inno.Adapter.Audio.MiniAudio;
+using Inno.Audio;
+using Inno.Core.Mathematics;
 
 namespace Inno.Adapter.Audio.MiniAudio.Tests;
 
@@ -19,11 +19,18 @@ public sealed class MiniAudioDeviceTests
         {
             using var device = new MiniAudioDevice(new MiniAudioDeviceOptions
             {
-                noDevice = true, limits = new AudioDeviceLimits(clips: 1, voices: 1, buses: 1)
+                noDevice = true,
+                limits = new AudioDeviceLimits(clips: 1, voices: 1, buses: 1)
             });
             IAudioDevice backend = device;
-            var descriptor = new AudioClipDescriptor(AudioCodecId.wav, AudioClipLoadMode.Decode,
-                1, 48000, 4800, new FileInfo(path).Length);
+            var descriptor = new AudioClipDescriptor(
+                AudioCodecId.wav,
+                AudioClipLoadMode.Decode,
+                1,
+                48000,
+                4800,
+                new FileInfo(path).Length
+            );
             var source = new EncodedAudioTestSource(File.ReadAllBytes(path));
             AudioClipHandle clip = backend.CreateClip(descriptor, source);
             WaitForClip(backend, clip);
@@ -41,7 +48,10 @@ public sealed class MiniAudioDeviceTests
                 Assert.Equal(voice, completion.voice);
             }
         }
-        finally { File.Delete(path); }
+        finally
+        {
+            File.Delete(path);
+        }
     }
 
     [Fact]
@@ -53,14 +63,27 @@ public sealed class MiniAudioDeviceTests
             using var device = new MiniAudioDevice(new MiniAudioDeviceOptions { noDevice = true });
             IAudioDevice backend = device;
             AudioBusHandle master = backend.CreateBus(AudioBusId.master);
-            AudioClipHandle clip = backend.CreateClip(new AudioClipDescriptor(AudioCodecId.wav,
-                AudioClipLoadMode.Decode, 1, 48000, 4800, new FileInfo(clipPath).Length),new EncodedAudioTestSource(File.ReadAllBytes(clipPath)));
+            AudioClipHandle clip = backend.CreateClip(
+                new AudioClipDescriptor(
+                    AudioCodecId.wav,
+                    AudioClipLoadMode.Decode,
+                    1,
+                    48000,
+                    4800,
+                    new FileInfo(clipPath).Length
+                ),
+                new EncodedAudioTestSource(File.ReadAllBytes(clipPath))
+            );
             WaitForClip(backend, clip);
             Assert.False(backend.Play(clip, master, default).isValid);
             foreach (double invalid in new[] { double.NaN, double.PositiveInfinity, double.NegativeInfinity, -1d })
+            {
                 Assert.False(backend.Play(clip, master, AudioPlayOptions.defaultValue, invalid).isValid);
+            }
             foreach (float invalid in new[] { float.NaN, float.PositiveInfinity, float.NegativeInfinity })
+            {
                 Assert.False(backend.SetBusVolume(master, invalid));
+            }
             Assert.Equal(0, backend.statistics.activeVoices);
             AudioDeviceVoiceHandle voice = backend.Play(clip, master, new AudioPlayOptions(loop: true));
             WaitForVoice(backend, voice);
@@ -74,7 +97,10 @@ public sealed class MiniAudioDeviceTests
             Assert.True(backend.DestroyClip(clip));
             Assert.True(backend.DestroyBus(master));
         }
-        finally { File.Delete(clipPath); }
+        finally
+        {
+            File.Delete(clipPath);
+        }
     }
 
     [Fact]
@@ -92,37 +118,40 @@ public sealed class MiniAudioDeviceTests
             });
             IAudioDevice backend = device;
             AudioBusHandle master = backend.CreateBus(AudioBusId.master);
-            AudioClipHandle clip = backend.CreateClip(new AudioClipDescriptor(
-                AudioCodecId.wav,
-                AudioClipLoadMode.Decode,
-                1,
-                48000,
-                2400,
-                new FileInfo(clipPath).Length),new EncodedAudioTestSource(File.ReadAllBytes(clipPath)));
+            AudioClipHandle clip = backend.CreateClip(
+                new AudioClipDescriptor(
+                    AudioCodecId.wav,
+                    AudioClipLoadMode.Decode,
+                    1,
+                    48000,
+                    2400,
+                    new FileInfo(clipPath).Length
+                ),
+                new EncodedAudioTestSource(File.ReadAllBytes(clipPath))
+            );
             WaitForClip(backend, clip);
-            AudioListenerHandle listener = backend.CreateListener(new AudioListenerState(
-                Vector3.ZERO,
-                Vector3.FORWARD,
-                Vector3.UP,
-                Vector3.ZERO));
+            AudioListenerHandle listener = backend.CreateListener(
+                new AudioListenerState(Vector3.ZERO, Vector3.FORWARD, Vector3.UP, Vector3.ZERO)
+            );
             AudioDeviceVoiceHandle voice = backend.Play(
                 clip,
                 master,
-                new AudioPlayOptions(spatial: new AudioSpatialOptions(
-                    new Vector3(2f, 0f, 0f),
-                    Vector3.FORWARD,
-                    Vector3.ZERO)),
-                null);
+                new AudioPlayOptions(
+                    spatial: new AudioSpatialOptions(new Vector3(2f, 0f, 0f), Vector3.FORWARD, Vector3.ZERO)
+                ),
+                null
+            );
 
             WaitForVoice(backend, voice);
             Assert.Equal(AudioDeviceState.Muted, backend.state);
             Assert.Equal(2, backend.capabilities.maxListeners);
             Assert.True(voice.isValid);
-            Assert.True(backend.SetListener(listener, new AudioListenerState(
-                new Vector3(1f, 0f, 0f),
-                Vector3.FORWARD,
-                Vector3.UP,
-                Vector3.ZERO)));
+            Assert.True(
+                backend.SetListener(
+                    listener,
+                    new AudioListenerState(new Vector3(1f, 0f, 0f), Vector3.FORWARD, Vector3.UP, Vector3.ZERO)
+                )
+            );
 
             backend.Update(0.1f);
 
@@ -153,21 +182,28 @@ public sealed class MiniAudioDeviceTests
             AudioBusHandle master = backend.CreateBus(AudioBusId.master);
             AudioBusHandle effects = backend.CreateBus(new AudioBusId("test.effects"), master);
             foreach (AudioProcessorId processorId in StandardProcessors())
+            {
                 Assert.True(backend.AddBusProcessor(effects, CreateProcessor(processorId)));
+            }
 
-            AudioClipHandle clip = backend.CreateClip(new AudioClipDescriptor(
-                AudioCodecId.wav,
-                AudioClipLoadMode.Stream,
-                1,
-                48000,
-                4800,
-                new FileInfo(clipPath).Length),new EncodedAudioTestSource(File.ReadAllBytes(clipPath)));
+            AudioClipHandle clip = backend.CreateClip(
+                new AudioClipDescriptor(
+                    AudioCodecId.wav,
+                    AudioClipLoadMode.Stream,
+                    1,
+                    48000,
+                    4800,
+                    new FileInfo(clipPath).Length
+                ),
+                new EncodedAudioTestSource(File.ReadAllBytes(clipPath))
+            );
             WaitForClip(backend, clip);
             AudioDeviceVoiceHandle voice = backend.Play(
                 clip,
                 effects,
                 new AudioPlayOptions(loop: true),
-                backend.dspTime + 0.05d);
+                backend.dspTime + 0.05d
+            );
 
             WaitForVoice(backend, voice);
             Assert.True(backend.TryGetVoiceState(voice, out AudioPlaybackState scheduled));
@@ -202,19 +238,19 @@ public sealed class MiniAudioDeviceTests
             IAudioDevice backend = device;
             AudioBusHandle oldMaster = backend.CreateBus(AudioBusId.master);
             AudioBusHandle oldMusic = backend.CreateBus(new AudioBusId("test.music"), oldMaster);
-            AudioClipHandle clip = backend.CreateClip(new AudioClipDescriptor(
-                AudioCodecId.wav,
-                AudioClipLoadMode.Decode,
-                1,
-                48000,
-                48000,
-                new FileInfo(clipPath).Length),new EncodedAudioTestSource(File.ReadAllBytes(clipPath)));
+            AudioClipHandle clip = backend.CreateClip(
+                new AudioClipDescriptor(
+                    AudioCodecId.wav,
+                    AudioClipLoadMode.Decode,
+                    1,
+                    48000,
+                    48000,
+                    new FileInfo(clipPath).Length
+                ),
+                new EncodedAudioTestSource(File.ReadAllBytes(clipPath))
+            );
             WaitForClip(backend, clip);
-            AudioDeviceVoiceHandle voice = backend.Play(
-                clip,
-                oldMusic,
-                new AudioPlayOptions(loop: true),
-                null);
+            AudioDeviceVoiceHandle voice = backend.Play(clip, oldMusic, new AudioPlayOptions(loop: true), null);
 
             AudioBusHandle newMaster = backend.CreateBus(AudioBusId.master);
             AudioBusHandle newMusic = backend.CreateBus(new AudioBusId("test.music"), newMaster);
@@ -247,8 +283,12 @@ public sealed class MiniAudioDeviceTests
         IAudioDevice device,
         AudioDeviceVoiceHandle voice
     ) {
-        Assert.True(SpinWait.SpinUntil(() => device.TryGetVoiceState(voice, out AudioPlaybackState state)
-            && state != AudioPlaybackState.Preparing, TimeSpan.FromSeconds(5)));
+        Assert.True(
+            SpinWait.SpinUntil(() => (
+                device.TryGetVoiceState(voice, out AudioPlaybackState state)
+                && state != AudioPlaybackState.Preparing
+            ), TimeSpan.FromSeconds(5))
+        );
     }
 
     private static IEnumerable<AudioProcessorId> StandardProcessors()
@@ -267,19 +307,23 @@ public sealed class MiniAudioDeviceTests
     {
         if (id == AudioProcessorId.delay)
         {
-            return new AudioProcessorConfiguration(id,
-            [
-                new AudioProcessorParameter(AudioParameterId.delayMilliseconds, 5f),
-                new AudioProcessorParameter(AudioParameterId.decay, 0.2f)
-            ]);
+            return new AudioProcessorConfiguration(
+                id,
+                [
+                    new AudioProcessorParameter(AudioParameterId.delayMilliseconds, 5f),
+                    new AudioProcessorParameter(AudioParameterId.decay, 0.2f)
+                ]
+            );
         }
-        return new AudioProcessorConfiguration(id,
-        [
-            new AudioProcessorParameter(AudioParameterId.frequency, 1000f),
-            new AudioProcessorParameter(AudioParameterId.quality, 0.707f),
-            new AudioProcessorParameter(AudioParameterId.gainDecibels, 2f),
-            new AudioProcessorParameter(AudioParameterId.shelfSlope, 1f)
-        ]);
+        return new AudioProcessorConfiguration(
+            id,
+            [
+                new AudioProcessorParameter(AudioParameterId.frequency, 1000f),
+                new AudioProcessorParameter(AudioParameterId.quality, 0.707f),
+                new AudioProcessorParameter(AudioParameterId.gainDecibels, 2f),
+                new AudioProcessorParameter(AudioParameterId.shelfSlope, 1f)
+            ]
+        );
     }
 
     private static string CreateWaveFile(int frameCount)

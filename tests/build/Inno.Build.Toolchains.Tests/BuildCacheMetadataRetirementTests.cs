@@ -20,8 +20,14 @@ public sealed class BuildCacheMetadataRetirementTests : IDisposable
         string coordination = Path.Combine(m_root, "artifacts", "cache-owners", "owner.lock");
         using FileLease writer = await FileLease.AcquireAsync(coordination, TimeSpan.FromSeconds(5));
         Stopwatch elapsed = Stopwatch.StartNew();
-        await Assert.ThrowsAsync<TimeoutException>(() => BuildMaintenanceApplication.CleanAsync(m_root,
-            new(timeBudget: TimeSpan.FromMilliseconds(100)), false, false, null, default));
+        await Assert.ThrowsAsync<TimeoutException>(() => BuildMaintenanceApplication.CleanAsync(
+            m_root,
+            new(timeBudget: TimeSpan.FromMilliseconds(100)),
+            false,
+            false,
+            null,
+            default
+        ));
         Assert.True(elapsed.Elapsed < TimeSpan.FromSeconds(5));
     }
 
@@ -34,7 +40,9 @@ public sealed class BuildCacheMetadataRetirementTests : IDisposable
         Directory.CreateDirectory(Path.Combine(output, "Outputs"));
         File.WriteAllText(Path.Combine(output, "Outputs", "file"), "payload");
         using (await publisher.AcquireUseAsync())
+        {
             publisher.Record(output, output + ".read.lock", [], null, null);
+        }
         File.WriteAllText(Path.Combine(cache, "unknown.lock"), "user-owned");
         BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(m_root, [publisher.Describe("fixture")], new(0, 0), retireAll: true);
         Assert.Empty((await plan.ExecuteAsync()).failures);
@@ -89,6 +97,8 @@ public sealed class BuildCacheMetadataRetirementTests : IDisposable
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 }

@@ -1,16 +1,16 @@
-using Inno.References;
-using Inno.Runtime.Contracts;
-using Inno.Core.Diagnostics;
-using Inno.Core.Execution;
-using Inno.Core.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Inno.Extensibility.Types;
-using Inno.Rendering;
-using Inno.Input;
+using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
+using Inno.Core.Identity;
 using Inno.Core.Mathematics;
+using Inno.Extensibility.Types;
+using Inno.Input;
+using Inno.References;
+using Inno.Rendering;
 using Inno.Rendering.Assets;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Rendering.Runtime;
 
@@ -22,7 +22,9 @@ sealed partial class RenderRuntime
     private void ReleaseRendering()
     {
         if (m_disposed)
+        {
             return;
+        }
         if (m_retirement is null)
         {
             m_retirement = new RenderRetirementQueue();
@@ -64,7 +66,9 @@ sealed partial class RenderRuntime
             m_retirement.Add(() =>
             {
                 if (m_frameOpen)
+                {
                     _ = m_device.EndFrame();
+                }
                 m_frameOpen = false;
             });
             m_retirement.Add(m_uploads.EndFrame);
@@ -91,7 +95,9 @@ sealed partial class RenderRuntime
         foreach (GenerationCacheEntry entry in m_generations.Values)
         {
             if (entry.lastGood is not null)
+            {
                 resources.Add(entry.lastGood.Dispose);
+            }
         }
         try
         {
@@ -116,7 +122,9 @@ sealed partial class RenderRuntime
             foreach ((RenderPipelineAsset asset, GenerationCacheEntry entry) in m_generations)
             {
                 if (entry.hasAssetOwner && !ReferenceEquals(entry.assetIdentity.Resolve<RenderPipelineAsset>(), asset))
+                {
                     m_retiredAssets.Add(asset);
+                }
             }
             foreach (RenderPipelineAsset asset in m_retiredAssets)
             {
@@ -129,5 +137,4 @@ sealed partial class RenderRuntime
             m_retiredAssets.Clear();
         }
     }
-
 }

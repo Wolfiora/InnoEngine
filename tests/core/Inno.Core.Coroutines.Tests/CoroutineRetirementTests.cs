@@ -1,10 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-
-using Inno.Core.Coroutines;
-
 using Xunit;
+using Inno.Core.Coroutines;
 
 namespace Inno.Core.Coroutines.Tests;
 
@@ -82,12 +80,22 @@ public sealed class CoroutineRetirementTests
         var owner = new object();
         int moves = 0;
         int disposed = 0;
-        CoroutineHandle handle = scheduler.StartCoroutine(owner,
-            new Probe(() => { moves++; return true; }, () => null, () => disposed++));
+        CoroutineHandle handle = scheduler.StartCoroutine(
+            owner,
+            new Probe(() =>
+            {
+                moves++;
+                return true;
+            }, () => null, () => disposed++)
+        );
         if (ownerStop)
+        {
             scheduler.StopAllCoroutines(owner);
+        }
         else
+        {
             scheduler.Dispose();
+        }
         Assert.False(handle.isValid);
         Assert.Equal(0, moves);
         Assert.Equal(1, disposed);
@@ -103,13 +111,18 @@ public sealed class CoroutineRetirementTests
         var failure = new InvalidOperationException(stage);
         int disposed = 0;
         int survivorTicks = 0;
-        CoroutineHandle failed = scheduler.StartCoroutine(new Probe(
-            () => stage == "move" ? throw failure : true,
-            () => stage == "current" ? throw failure : new WaitUntil(() => throw failure),
-            () => disposed++));
+        CoroutineHandle failed = scheduler.StartCoroutine(
+            new Probe(
+                () => stage == "move" ? throw failure : true,
+                () => stage == "current" ? throw failure : new WaitUntil(() => throw failure),
+                () => disposed++
+            )
+        );
         scheduler.StartCoroutine(Loop(() => survivorTicks++));
         if (stage == "wait")
+        {
             scheduler.Tick(0);
+        }
         AggregateException error = Assert.Throws<AggregateException>(() => scheduler.Tick(0));
         Assert.Contains(failure, error.InnerExceptions);
         Assert.False(failed.isValid);
@@ -133,7 +146,9 @@ public sealed class CoroutineRetirementTests
         scheduler.Tick(0);
         AggregateException error;
         if (dispose)
+        {
             error = Assert.Throws<AggregateException>(scheduler.Dispose);
+        }
         else
         {
             scheduler.StopAllCoroutines();
@@ -161,17 +176,25 @@ public sealed class CoroutineRetirementTests
         bool moving = false;
         int disposed = 0;
         int ticks = 0;
-        CoroutineHandle self = scheduler.StartCoroutine(owner, new Probe(
-            () =>
-            {
-                moving = true;
-                scheduler.StopAllCoroutines(owner);
-                Assert.Equal(0, disposed);
-                moving = false;
-                return true;
-            },
-            () => throw new Exception("A retired coroutine must not read Current."),
-            () => { Assert.False(moving); disposed++; }));
+        CoroutineHandle self = scheduler.StartCoroutine(
+            owner,
+            new Probe(
+                () =>
+                {
+                    moving = true;
+                    scheduler.StopAllCoroutines(owner);
+                    Assert.Equal(0, disposed);
+                    moving = false;
+                    return true;
+                },
+                () => throw new Exception("A retired coroutine must not read Current."),
+                () =>
+                {
+                    Assert.False(moving);
+                    disposed++;
+                }
+            )
+        );
         CoroutineHandle other = survivor ? scheduler.StartCoroutine(Loop(() => ticks++)) : default;
         scheduler.Tick(0);
         scheduler.Tick(0);
@@ -187,7 +210,7 @@ public sealed class CoroutineRetirementTests
         using var scheduler = new CoroutineScheduler();
         var owner = new object();
         int following = 0;
-        scheduler.StartCoroutine(owner, Loop(() => { }));
+        scheduler.StartCoroutine(owner, Loop(() => {}));
         scheduler.StartCoroutine(Loop(() => scheduler.StopAllCoroutines(owner)));
         scheduler.StartCoroutine(Loop(() => following++));
         scheduler.Tick(0);
@@ -201,10 +224,24 @@ public sealed class CoroutineRetirementTests
         using var scheduler = new CoroutineScheduler();
         bool moving = false;
         int disposed = 0;
-        scheduler.StartCoroutine(new Probe(
-            () => { moving = true; scheduler.Dispose(); Assert.Equal(0, disposed); moving = false; return true; },
-            () => null,
-            () => { Assert.False(moving); disposed++; }));
+        scheduler.StartCoroutine(
+            new Probe(
+                () =>
+                {
+                    moving = true;
+                    scheduler.Dispose();
+                    Assert.Equal(0, disposed);
+                    moving = false;
+                    return true;
+                },
+                () => null,
+                () =>
+                {
+                    Assert.False(moving);
+                    disposed++;
+                }
+            )
+        );
         scheduler.Tick(0);
         Assert.Equal(1, disposed);
         Assert.Throws<ObjectDisposedException>(() => scheduler.Tick(0));
@@ -216,12 +253,15 @@ public sealed class CoroutineRetirementTests
         using var scheduler = new CoroutineScheduler();
         var owner = new object();
         int disposed = 0;
-        scheduler.StartCoroutine(owner, new Probe(() => true, () => null, () =>
-        {
-            disposed++;
-            scheduler.StartCoroutine(owner, new Probe(() => true, () => null, () => disposed++));
-            scheduler.StopAllCoroutines(owner);
-        }));
+        scheduler.StartCoroutine(
+            owner,
+            new Probe(() => true, () => null, () =>
+            {
+                disposed++;
+                scheduler.StartCoroutine(owner, new Probe(() => true, () => null, () => disposed++));
+                scheduler.StopAllCoroutines(owner);
+            })
+        );
         scheduler.StopAllCoroutines(owner);
         Assert.Equal(2, disposed);
         scheduler.Tick(0);
@@ -233,7 +273,13 @@ public sealed class CoroutineRetirementTests
     {
         using var scheduler = new CoroutineScheduler();
         int disposed = 0;
-        scheduler.StartCoroutine(new Probe(() => { scheduler.Tick(0); return true; }, () => null, () => disposed++));
+        scheduler.StartCoroutine(
+            new Probe(() =>
+            {
+                scheduler.Tick(0);
+                return true;
+            }, () => null, () => disposed++)
+        );
         AggregateException error = Assert.Throws<AggregateException>(() => scheduler.Tick(0));
         Assert.IsType<InvalidOperationException>(Assert.Single(error.InnerExceptions));
         Assert.Equal(1, disposed);
@@ -261,16 +307,30 @@ public sealed class CoroutineRetirementTests
         var owner = new object();
         int disposed = 0;
         int moves = 0;
-        CoroutineHandle handle = scheduler.StartCoroutine(owner, new Probe(
-            () => { moves++; return true; },
-            () =>
-            {
-                if (wait)
-                    return new WaitUntil(() => { scheduler.StopAllCoroutines(owner); return true; });
-                scheduler.StopAllCoroutines(owner);
-                return null;
-            },
-            () => disposed++));
+        CoroutineHandle handle = scheduler.StartCoroutine(
+            owner,
+            new Probe(
+                () =>
+                {
+                    moves++;
+                    return true;
+                },
+                () =>
+                {
+                    if (wait)
+                    {
+                        return new WaitUntil(() =>
+                        {
+                            scheduler.StopAllCoroutines(owner);
+                            return true;
+                        });
+                    }
+                    scheduler.StopAllCoroutines(owner);
+                    return null;
+                },
+                () => disposed++
+            )
+        );
         scheduler.Tick(0);
         scheduler.Tick(0);
         Assert.False(handle.isValid);
@@ -331,17 +391,24 @@ public sealed class CoroutineRetirementTests
         int disposed = 0;
         int following = 0;
         CoroutineHandle self = default;
-        self = scheduler.StartCoroutine(new Probe(
-            () =>
-            {
-                if (stop == "handle")
-                    Assert.True(scheduler.StopCoroutine(self));
-                else
-                    scheduler.StopAllCoroutines();
-                return true;
-            },
-            () => null,
-            () => disposed++));
+        self = scheduler.StartCoroutine(
+            new Probe(
+                () =>
+                {
+                    if (stop == "handle")
+                    {
+                        Assert.True(scheduler.StopCoroutine(self));
+                    }
+                    else
+                    {
+                        scheduler.StopAllCoroutines();
+                    }
+                    return true;
+                },
+                () => null,
+                () => disposed++
+            )
+        );
         scheduler.StartCoroutine(Loop(() => following++));
         scheduler.Tick(0);
         Assert.Equal(1, following);
@@ -367,8 +434,11 @@ public sealed class CoroutineRetirementTests
     ) : IEnumerator, IDisposable
     {
         public object? Current => current();
+
         public bool MoveNext() => move();
+
         public void Reset() => throw new NotSupportedException();
+
         public void Dispose() => dispose();
     }
 }

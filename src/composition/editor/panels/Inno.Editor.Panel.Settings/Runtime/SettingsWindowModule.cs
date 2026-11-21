@@ -32,7 +32,9 @@ internal sealed class SettingsWindowModule(
     internal void Open()
     {
         if (!canOpen)
+        {
             throw new InvalidOperationException(C_PRESENTATION_FAILURE);
+        }
         if (!isVisible)
         {
             m_session = new SettingsEditSession(
@@ -40,7 +42,8 @@ internal sealed class SettingsWindowModule(
                 projectSettings,
                 buildPipeline,
                 buildSettings,
-                interactions.history);
+                interactions.history
+            );
             sessionRevision++;
         }
         isVisible = true;
@@ -62,7 +65,8 @@ internal sealed class SettingsWindowModule(
             projectSettings,
             buildPipeline,
             buildSettings,
-            interactions.history);
+            interactions.history
+        );
         sessionRevision++;
     }
 
@@ -90,6 +94,7 @@ internal sealed class SettingsWindowModule(
 
     bool IEditorReloadGuard.canRequestReload => !isVisible;
     bool IEditorReloadGuard.canActivateReload => !isVisible;
+
     string? IEditorReloadGuard.blockingReason
         => isVisible ? "Close Settings before reloading scripts to retire its current-generation editing state." : null;
 }

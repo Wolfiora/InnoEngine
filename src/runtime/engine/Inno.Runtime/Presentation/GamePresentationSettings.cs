@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
 using Inno.Extensibility.Types;
@@ -66,7 +65,9 @@ public sealed class GamePresentationSettings : ISerializable
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(referenceWidth);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(referenceHeight);
         if (!preserveAspectRatio)
+        {
             return new GamePresentationViewport(0, 0, availableWidth, availableHeight);
+        }
 
         double targetAspect = referenceWidth / (double)referenceHeight;
         int width = availableWidth;
@@ -81,7 +82,8 @@ public sealed class GamePresentationSettings : ISerializable
             (availableWidth - width) / 2,
             (availableHeight - height) / 2,
             width,
-            height);
+            height
+        );
     }
 }
 

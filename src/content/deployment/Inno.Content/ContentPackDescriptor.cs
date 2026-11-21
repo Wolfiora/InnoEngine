@@ -25,7 +25,9 @@ public sealed record ContentPackDescriptor
     ) {
         this.contentHash = ContentEntry.NormalizeHash(contentHash);
         if (!string.Equals(fileName, $"content-{this.contentHash}.pack", StringComparison.Ordinal))
+        {
             throw new ArgumentException("The pack file name must match its content identity.", nameof(fileName));
+        }
         this.fileName = fileName;
     }
 

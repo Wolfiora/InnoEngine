@@ -1,11 +1,11 @@
-using Inno.Core.Diagnostics;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.Diagnostics;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Assets.Authoring;
 
@@ -128,6 +128,7 @@ public sealed class ShaderStageArtifact
 public sealed class CompiledShaderPass
 {
     private readonly ShaderPassDefinition m_definition;
+
     /// <summary>
     /// Creates a compiled pass artifact.
     /// </summary>
@@ -184,6 +185,7 @@ public sealed class CompiledShaderPass
 public sealed class CompiledShaderArtifact
 {
     private readonly byte[] m_definitionData;
+
     /// <summary>
     /// Creates a compiled shader artifact.
     /// </summary>
@@ -223,7 +225,9 @@ public sealed class CompiledShaderArtifact
         this.shaderInterface = shaderInterface;
         this.passes = Array.AsReadOnly(passes.ToArray());
         if (definitionData.IsEmpty)
+        {
             throw new ArgumentException("Compiled programs require a captured runtime contract.", nameof(definitionData));
+        }
         m_definitionData = definitionData.ToArray();
     }
 
@@ -271,38 +275,41 @@ public sealed class CompiledShaderArtifact
                 pass.shaderInterface,
                 pass.stages.Select(static stage => new RenderShaderStageArtifact(
                     stage.stage,
-                    stage.bytes.Span)).ToArray())).ToArray(),
-            m_definitionData);
+                    stage.bytes.Span
+                )).ToArray()
+            )).ToArray(),
+            m_definitionData
+        );
 
     private static RenderRasterState ConvertRasterState(ShaderRenderState source)
         => new()
+    {
+        topology = source.topology,
+        cull = source.cull switch
         {
-            topology = source.topology,
-            cull = source.cull switch
-            {
-                ShaderCullMode.None => RenderCullMode.None,
-                ShaderCullMode.Front => RenderCullMode.Front,
-                ShaderCullMode.Back => RenderCullMode.Back,
-                _ => throw new ArgumentOutOfRangeException(nameof(source))
-            },
-            frontFace = source.frontFace,
-            depthCompare = source.depthCompare switch
-            {
-                ShaderCompareFunction.Never => RenderDepthCompare.Never,
-                ShaderCompareFunction.Less => RenderDepthCompare.Less,
-                ShaderCompareFunction.Equal => RenderDepthCompare.Equal,
-                ShaderCompareFunction.LessEqual => RenderDepthCompare.LessEqual,
-                ShaderCompareFunction.Greater => RenderDepthCompare.Greater,
-                ShaderCompareFunction.NotEqual => RenderDepthCompare.NotEqual,
-                ShaderCompareFunction.GreaterEqual => RenderDepthCompare.GreaterEqual,
-                ShaderCompareFunction.Always => RenderDepthCompare.Always,
-                _ => throw new ArgumentOutOfRangeException(nameof(source))
-            },
-            depthWrite = source.depthWrite,
-            blend = source.blend,
-            colorWriteMask = source.colorWriteMask,
-            multisampling = source.multisampling
-        };
+            ShaderCullMode.None => RenderCullMode.None,
+            ShaderCullMode.Front => RenderCullMode.Front,
+            ShaderCullMode.Back => RenderCullMode.Back,
+            _ => throw new ArgumentOutOfRangeException(nameof(source))
+        },
+        frontFace = source.frontFace,
+        depthCompare = source.depthCompare switch
+        {
+            ShaderCompareFunction.Never => RenderDepthCompare.Never,
+            ShaderCompareFunction.Less => RenderDepthCompare.Less,
+            ShaderCompareFunction.Equal => RenderDepthCompare.Equal,
+            ShaderCompareFunction.LessEqual => RenderDepthCompare.LessEqual,
+            ShaderCompareFunction.Greater => RenderDepthCompare.Greater,
+            ShaderCompareFunction.NotEqual => RenderDepthCompare.NotEqual,
+            ShaderCompareFunction.GreaterEqual => RenderDepthCompare.GreaterEqual,
+            ShaderCompareFunction.Always => RenderDepthCompare.Always,
+            _ => throw new ArgumentOutOfRangeException(nameof(source))
+        },
+        depthWrite = source.depthWrite,
+        blend = source.blend,
+        colorWriteMask = source.colorWriteMask,
+        multisampling = source.multisampling
+    };
 }
 
 /// <summary>
@@ -342,8 +349,9 @@ public sealed class ShaderCompilationResult
     /// <summary>
     /// Gets whether a complete candidate artifact was produced.
     /// </summary>
-    public bool succeeded => artifact is not null
-        && diagnostics.All(static value => value.severity != DiagnosticSeverity.Error);
+    public bool succeeded
+        => artifact is not null
+           && diagnostics.All(static value => value.severity != DiagnosticSeverity.Error);
 }
 
 /// <summary>
@@ -399,7 +407,6 @@ public interface IShaderCompilerToolchain
         bool optimize = true,
         bool debugInformation = false
     );
-
 }
 
 /// <summary>
@@ -440,8 +447,5 @@ public sealed partial class ShaderCompiler
         GraphicsCapabilities capabilities,
         bool optimize = true,
         bool debugInformation = false
-    )
-        => m_toolchain.CreateTarget(capabilities, optimize, debugInformation);
-
+    ) => m_toolchain.CreateTarget(capabilities, optimize, debugInformation);
 }
-

@@ -81,33 +81,47 @@ public static class StandardNativeComponents
     ) {
         List<ProductNativeBuildStep> steps = CreatePlayerSteps(RequireProfile(profile), options, layout);
         steps.Add(CreateShaderToolsStep(profile, options, layout));
-        steps.Add(new("cimgui", ImGuiToolchain.componentDescriptor, options("cimgui"), [],
-            static (
-                context,
-                dependencies,
-                token
-            ) => ImGuiToolchain.BuildAsync(context, token),
-            ImGuiToolchain.CreateRecipe,
-            (
-                relative,
-                target
-            ) => layout("cimgui", relative, target)));
-        steps.Add(new("cimguizmo", ImGuizmoToolchain.componentDescriptor, options("cimguizmo"), ["cimgui"],
-            static (
-                context,
-                dependencies,
-                token
-            ) => ImGuizmoToolchain.BuildAsync(context, dependencies["cimgui"], token),
-            ImGuizmoToolchain.CreateRecipe,
-            (
-                relative,
-                target
-            ) => layout("cimguizmo", relative, target),
-            bindDependencies: static (
-                context,
-                recipe,
-                dependencies
-            ) => ImGuizmoToolchain.BindImGui(context, recipe, dependencies["cimgui"])));
+        steps.Add(
+            new(
+                "cimgui",
+                ImGuiToolchain.componentDescriptor,
+                options("cimgui"),
+                [],
+                static (
+                    context,
+                    dependencies,
+                    token
+                ) => ImGuiToolchain.BuildAsync(context, token),
+                ImGuiToolchain.CreateRecipe,
+                (
+                    relative,
+                    target
+                ) => layout("cimgui", relative, target)
+            )
+        );
+        steps.Add(
+            new(
+                "cimguizmo",
+                ImGuizmoToolchain.componentDescriptor,
+                options("cimguizmo"),
+                ["cimgui"],
+                static (
+                    context,
+                    dependencies,
+                    token
+                ) => ImGuizmoToolchain.BuildAsync(context, dependencies["cimgui"], token),
+                ImGuizmoToolchain.CreateRecipe,
+                (
+                    relative,
+                    target
+                ) => layout("cimguizmo", relative, target),
+                bindDependencies: static (
+                    context,
+                    recipe,
+                    dependencies
+                ) => ImGuizmoToolchain.BindImGui(context, recipe, dependencies["cimgui"])
+            )
+        );
         return new("editor", steps, StandardNativeDeployment.CreateMetadata);
     }
 
@@ -131,7 +145,9 @@ public static class StandardNativeComponents
         ArgumentNullException.ThrowIfNull(layout);
         List<ProductNativeBuildStep> steps = CreatePlayerSteps(null, options, layout);
         if (steps.Any(static step => step.options.libraryKind != NativeLibraryKind.Static))
+        {
             throw new ArgumentException("Static aggregation requires explicit static component linkage.", nameof(options));
+        }
         return new("player", steps);
     }
 
@@ -145,26 +161,34 @@ public static class StandardNativeComponents
         BgfxNativeBuildProfile profile,
         Func<string, NativeComponentBuildOptions> options,
         Func<string, string, string, string?> layout
-    ) => new("bgfx-tools", BgfxToolsBuild.componentDescriptor, options("bgfx-tools"), [],
-            (
-                context,
-                dependencies,
-                token
-            ) => BgfxToolsBuild.BuildAsync(context, profile, token),
-            context => BgfxToolsBuild.CreateRecipe(context, profile),
-            (
-                relative,
-                target
-            ) => layout("bgfx-tools", relative, target),
-            configuration: "release");
+    ) => new(
+        "bgfx-tools",
+        BgfxToolsBuild.componentDescriptor,
+        options("bgfx-tools"),
+        [],
+        (
+            context,
+            dependencies,
+            token
+        ) => BgfxToolsBuild.BuildAsync(context, profile, token),
+        context => BgfxToolsBuild.CreateRecipe(context, profile),
+        (
+            relative,
+            target
+        ) => layout("bgfx-tools", relative, target),
+        configuration: "release"
+    );
 
     private static List<ProductNativeBuildStep> CreatePlayerSteps(
         BgfxNativeBuildProfile? profile,
         Func<string, NativeComponentBuildOptions> options,
         Func<string, string, string, string?> layout
-    ) =>
-    [
-        new("bgfx", BgfxNativeBuild.componentDescriptor, options("bgfx"), [],
+    ) => [
+        new(
+            "bgfx",
+            BgfxNativeBuild.componentDescriptor,
+            options("bgfx"),
+            [],
             profile is null ? null : (
                 context,
                 dependencies,
@@ -174,8 +198,13 @@ public static class StandardNativeComponents
             (
                 relative,
                 target
-            ) => layout("bgfx", relative, target)),
-        new("sdl3", Sdl3Toolchain.componentDescriptor, options("sdl3"), [],
+            ) => layout("bgfx", relative, target)
+        ),
+        new(
+            "sdl3",
+            Sdl3Toolchain.componentDescriptor,
+            options("sdl3"),
+            [],
             profile is null ? null : static (
                 context,
                 dependencies,
@@ -185,8 +214,13 @@ public static class StandardNativeComponents
             (
                 relative,
                 target
-            ) => layout("sdl3", relative, target)),
-        new("miniaudio", MiniAudioToolchain.componentDescriptor, options("miniaudio"), [],
+            ) => layout("sdl3", relative, target)
+        ),
+        new(
+            "miniaudio",
+            MiniAudioToolchain.componentDescriptor,
+            options("miniaudio"),
+            [],
             profile is null ? null : static (
                 context,
                 dependencies,
@@ -196,8 +230,13 @@ public static class StandardNativeComponents
             (
                 relative,
                 target
-            ) => layout("miniaudio", relative, target)),
-        new("text", TextToolchain.componentDescriptor, options("text"), [],
+            ) => layout("miniaudio", relative, target)
+        ),
+        new(
+            "text",
+            TextToolchain.componentDescriptor,
+            options("text"),
+            [],
             profile is null ? null : static (
                 context,
                 dependencies,
@@ -207,8 +246,13 @@ public static class StandardNativeComponents
             (
                 relative,
                 target
-            ) => layout("text", relative, target)),
-        new("ui", UiToolchain.componentDescriptor, options("ui"), [],
+            ) => layout("text", relative, target)
+        ),
+        new(
+            "ui",
+            UiToolchain.componentDescriptor,
+            options("ui"),
+            [],
             profile is null ? null : static (
                 context,
                 dependencies,
@@ -218,7 +262,7 @@ public static class StandardNativeComponents
             (
                 relative,
                 target
-            ) => layout("ui", relative, target))
+            ) => layout("ui", relative, target)
+        )
     ];
-
 }

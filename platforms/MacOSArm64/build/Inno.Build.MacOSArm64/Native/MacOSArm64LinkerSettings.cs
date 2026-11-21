@@ -18,5 +18,14 @@ public static class MacOSArm64LinkerSettings
     /// The immutable target linker plan.
     /// </returns>
     public static NativeLinkPlan Create(IEnumerable<string>? runtimeSearchPaths = null)
-        => new(".dylib", null, ".a", ["-DCMAKE_BUILD_WITH_INSTALL_NAME_DIR=ON", "-DCMAKE_INSTALL_NAME_DIR=@rpath", "-DCMAKE_BUILD_RPATH=" + string.Join(';', runtimeSearchPaths ?? [])]);
+        => new(
+            ".dylib",
+            null,
+            ".a",
+            [
+                "-DCMAKE_BUILD_WITH_INSTALL_NAME_DIR=ON",
+                "-DCMAKE_INSTALL_NAME_DIR=@rpath",
+                "-DCMAKE_BUILD_RPATH=" + string.Join(';', runtimeSearchPaths ?? [])
+            ]
+        );
 }

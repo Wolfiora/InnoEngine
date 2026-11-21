@@ -3,10 +3,8 @@ using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Inno.Core.Coroutines;
-
 using Xunit;
+using Inno.Core.Coroutines;
 
 namespace Inno.Core.Coroutines.Tests;
 
@@ -261,7 +259,10 @@ public sealed class CoroutineSchedulerTests
             handles[i] = scheduler.StartCoroutine(Routine());
         }
 
-        Parallel.For(0, count, i => { scheduler.StopCoroutine(handles[i]); });
+        Parallel.For(0, count, i =>
+        {
+            scheduler.StopCoroutine(handles[i]);
+        });
         scheduler.Tick(0.016f);
         scheduler.Tick(0.016f);
 
@@ -298,7 +299,7 @@ public sealed class CoroutineSchedulerTests
     public void HandleIsValid_BecomesFalseAfterStop()
     {
         using var scheduler = new CoroutineScheduler();
-        CoroutineHandle handle = scheduler.StartCoroutine(Loop(() => { }));
+        CoroutineHandle handle = scheduler.StartCoroutine(Loop(() => {}));
 
         Assert.True(handle.isValid);
         Assert.True(scheduler.StopCoroutine(handle));
@@ -328,7 +329,7 @@ public sealed class CoroutineSchedulerTests
         using var scheduler = new CoroutineScheduler();
         scheduler.Dispose();
 
-        Assert.Throws<ObjectDisposedException>(() => scheduler.StartCoroutine(Loop(() => { })));
+        Assert.Throws<ObjectDisposedException>(() => scheduler.StartCoroutine(Loop(() => {})));
     }
 
     private static IEnumerator Loop(Action onTick)
@@ -341,11 +342,10 @@ public sealed class CoroutineSchedulerTests
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static (WeakReference owner, WeakReference routine) StopOwnedCoroutine(
-        CoroutineScheduler scheduler)
+    private static (WeakReference owner, WeakReference routine) StopOwnedCoroutine(CoroutineScheduler scheduler)
     {
         var owner = new object();
-        IEnumerator routine = Loop(static () => { });
+        IEnumerator routine = Loop(static () => {});
         CoroutineHandle handle = scheduler.StartCoroutine(owner, routine);
         scheduler.Tick(0.016f);
 

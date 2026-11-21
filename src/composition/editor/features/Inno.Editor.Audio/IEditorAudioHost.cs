@@ -1,7 +1,7 @@
-using Inno.Runtime.Contracts;
 using System;
 using Inno.Audio;
 using Inno.Runtime;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Editor.Audio;
 

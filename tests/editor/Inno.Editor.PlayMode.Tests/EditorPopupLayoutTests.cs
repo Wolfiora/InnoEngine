@@ -1,15 +1,17 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using System.Runtime.CompilerServices;
-using NativeVector2 = Inno.Native.ImGui.ImVec2C;
-using BGCS.Runtime;
 using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using BGCS.Runtime;
+using Xunit;
 using Inno.Native.ImGui;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using NativeImGui = Inno.Native.ImGui.ImGui;
-using Xunit;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 
 namespace Inno.Editor.PlayMode.Tests;
+
 public sealed unsafe class EditorPopupLayoutTests
 {
     [Fact]
@@ -123,7 +125,9 @@ public sealed unsafe class EditorPopupLayoutTests
                 Vector2 popupPosition = NativeImGui.GetWindowPos();
                 Vector2 popupSize = NativeImGui.GetWindowSize();
                 for (int index = 0; index < 40; index++)
+                {
                     _ = NativeImGui.Selectable($"Item {index}");
+                }
                 if (frame == 2)
                 {
                     Assert.InRange(popupPosition.Y, triggerBottom - 1f, triggerBottom + 1f);
@@ -166,7 +170,9 @@ public sealed unsafe class EditorPopupLayoutTests
                 Vector2 popupPosition = NativeImGui.GetWindowPos();
                 Vector2 popupSize = NativeImGui.GetWindowSize();
                 for (int index = 0; index < 40; index++)
+                {
                     _ = NativeImGui.Selectable($"Item {index}");
+                }
                 if (frame == 2)
                 {
                     Assert.True(popupSize.Y > 55f);

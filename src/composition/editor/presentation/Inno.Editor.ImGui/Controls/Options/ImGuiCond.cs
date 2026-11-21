@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported cond choices at the Editor presentation boundary.
 /// </summary>
@@ -26,5 +27,5 @@ public enum ImGuiCond : int
     /// <summary>
     /// Set the variable if the object/window is appearing after being hidden/inactive (or the first time)
     /// </summary>
-    Appearing = (int)Inno.Native.ImGui.ImGuiCond.Appearing,
+    Appearing = (int)Inno.Native.ImGui.ImGuiCond.Appearing
 }

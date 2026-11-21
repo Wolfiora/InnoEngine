@@ -1,21 +1,21 @@
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-using Inno.Core.Diagnostics;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
 using Inno.Assets;
 using Inno.Audio.Runtime;
+using Inno.Core.Diagnostics;
 using Inno.Core.Events;
 using Inno.Core.Execution;
 using Inno.Core.Identity;
-using Inno.References;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
-using Xunit;
+using Inno.References;
 
 namespace Inno.Audio.Runtime.Tests;
 
@@ -131,8 +131,14 @@ public sealed class AudioRuntimeTests : IDisposable
         var events = new EventDispatcher(queueCapacity: 1);
         var device = new ReadyAudioDevice();
         using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.admission", "Admission"));
-        using var runtime = new AudioRuntime(m_types, device, m_artifacts, events, reporter,
-            new AudioRuntimeOptions { maxVoices = 1 });
+        using var runtime = new AudioRuntime(
+            m_types,
+            device,
+            m_artifacts,
+            events,
+            reporter,
+            new AudioRuntimeOptions { maxVoices = 1 }
+        );
         using EventHub hub = events.CreateHub();
         var completions = new List<AudioVoiceCompletedEvent>();
         hub.Listen<AudioVoiceCompletedEvent>(completions.Add);
@@ -196,12 +202,19 @@ public sealed class AudioRuntimeTests : IDisposable
         AudioClipAsset asset = CreateClip(48000);
         using ArtifactLease artifact = m_artifacts.AcquireArtifact(asset.identity.persistentId, "audio-data");
         AudioBusHandle master = backend.CreateBus(AudioBusId.master);
-        AudioClipHandle clip = backend.CreateClip(new AudioClipDescriptor(            AudioCodecId.wav, AudioClipLoadMode.Decode, 2, 48000, 48000, artifact.info.length),new LeaseAudioTestSource(artifact));
+        AudioClipHandle clip = backend.CreateClip(
+            new AudioClipDescriptor(            AudioCodecId.wav, AudioClipLoadMode.Decode, 2, 48000, 48000, artifact.info.length),
+            new LeaseAudioTestSource(artifact)
+        );
         Assert.False(backend.Play(clip, master, default).isValid);
         foreach (double invalid in new[] { double.NaN, double.PositiveInfinity, double.NegativeInfinity, -1d })
+        {
             Assert.False(backend.Play(clip, master, AudioPlayOptions.defaultValue, invalid).isValid);
+        }
         foreach (float invalid in new[] { float.NaN, float.PositiveInfinity, float.NegativeInfinity })
+        {
             Assert.False(backend.SetBusVolume(master, invalid));
+        }
         Assert.Equal(0, backend.statistics.activeVoices);
         AudioDeviceVoiceHandle voice = backend.Play(clip, master, AudioPlayOptions.defaultValue);
         Assert.False(backend.SetVoiceParameters(voice, default));
@@ -226,14 +239,24 @@ public sealed class AudioRuntimeTests : IDisposable
             context.Submit(listener);
             throw new InvalidOperationException("Expected partial provider failure.");
         };
-        content.second = context => { context.Submit(emitter); context.Submit(listener); };
+        content.second = context =>
+        {
+            context.Submit(emitter);
+            context.Submit(listener);
+        };
         var diagnostics = new DiagnosticHub();
         var sink = new RecordingSink();
         diagnostics.RegisterSink(sink);
         using var reporter = diagnostics.CreateReporter(new DiagnosticSource("test.content", "Content"));
         var device = new ReadyAudioDevice();
-        using var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter,
-            contentScopeProvider: () => new ContentReadScope([content.identity]));
+        using var runtime = new AudioRuntime(
+            m_types,
+            device,
+            m_artifacts,
+            m_events,
+            reporter,
+            contentScopeProvider: () => new ContentReadScope([content.identity])
+        );
 
         runtime.Update(0);
         Assert.Equal(new AudioContentStatistics(1024, 2, 1), runtime.contentStatistics);
@@ -256,11 +279,21 @@ public sealed class AudioRuntimeTests : IDisposable
         var first = new AudioEmitterSnapshot(Guid.NewGuid(), clip, new AudioPlayOptions(loop: true), true);
         var second = new AudioEmitterSnapshot(Guid.NewGuid(), clip, new AudioPlayOptions(loop: true), true);
         content.first = context => context.Submit(first);
-        content.second = context => { context.Submit(second); context.Submit(first); };
+        content.second = context =>
+        {
+            context.Submit(second);
+            context.Submit(first);
+        };
         content.third = context => context.Submit(second);
         using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.duplicate", "Duplicate"));
-        using var runtime = new AudioRuntime(m_types, new ReadyAudioDevice(), m_artifacts, m_events, reporter,
-            contentScopeProvider: () => new ContentReadScope([content.identity]));
+        using var runtime = new AudioRuntime(
+            m_types,
+            new ReadyAudioDevice(),
+            m_artifacts,
+            m_events,
+            reporter,
+            contentScopeProvider: () => new ContentReadScope([content.identity])
+        );
 
         runtime.Update(0);
         Assert.Equal(new AudioContentStatistics(1024, 2, 1), runtime.contentStatistics);
@@ -281,14 +314,24 @@ public sealed class AudioRuntimeTests : IDisposable
         content.second = context =>
         {
             context.Submit(overflow);
-            try { context.Submit(last); }
+            try
+            {
+                context.Submit(last);
+            }
             catch (InvalidOperationException) { }
         };
         content.third = context => context.Submit(last);
         using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.capacity", "Capacity"));
         var options = new AudioRuntimeOptions { maxContentSnapshots = 2 };
-        using var runtime = new AudioRuntime(m_types, new ReadyAudioDevice(), m_artifacts, m_events, reporter,
-            options, () => new ContentReadScope([content.identity]));
+        using var runtime = new AudioRuntime(
+            m_types,
+            new ReadyAudioDevice(),
+            m_artifacts,
+            m_events,
+            reporter,
+            options,
+            () => new ContentReadScope([content.identity])
+        );
         options.maxContentSnapshots = 100;
 
         for (int frame = 0; frame < 256; frame++)
@@ -312,10 +355,20 @@ public sealed class AudioRuntimeTests : IDisposable
         identities.Register(content);
         AudioContentProviderContext? captured = null;
         ContentReadScope? capturedScope = null;
-        content.first = context => { captured = context; capturedScope = context.content; };
+        content.first = context =>
+        {
+            captured = context;
+            capturedScope = context.content;
+        };
         using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.scope", "Scope"));
-        using var runtime = new AudioRuntime(m_types, new ReadyAudioDevice(), m_artifacts, m_events, reporter,
-            contentScopeProvider: () => new ContentReadScope([content.identity]));
+        using var runtime = new AudioRuntime(
+            m_types,
+            new ReadyAudioDevice(),
+            m_artifacts,
+            m_events,
+            reporter,
+            contentScopeProvider: () => new ContentReadScope([content.identity])
+        );
         runtime.Update(0);
         Assert.NotNull(captured);
         Assert.Throws<ObjectDisposedException>(() => captured!.Submit(default(AudioListenerSnapshot)));
@@ -338,8 +391,14 @@ public sealed class AudioRuntimeTests : IDisposable
         };
         content.second = _ => nextInvoked = true;
         using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.pending-content", "Pending"));
-        using var runtime = new AudioRuntime(m_types, new ReadyAudioDevice(), m_artifacts, m_events, reporter,
-            contentScopeProvider: () => new ContentReadScope([content.identity]));
+        using var runtime = new AudioRuntime(
+            m_types,
+            new ReadyAudioDevice(),
+            m_artifacts,
+            m_events,
+            reporter,
+            contentScopeProvider: () => new ContentReadScope([content.identity])
+        );
         Assert.Throws<RetirementPendingException>(() => runtime.Update(0));
         Assert.False(nextInvoked);
         Assert.Equal(0, runtime.contentStatistics.rejectedProviders);
@@ -369,7 +428,9 @@ public sealed class AudioRuntimeTests : IDisposable
         public override void Submit(AudioContentProviderContext context)
         {
             foreach (TestAudioContent content in context.content.GetValues<TestAudioContent>())
+            {
                 content.first?.Invoke(context);
+            }
         }
     }
 
@@ -379,7 +440,9 @@ public sealed class AudioRuntimeTests : IDisposable
         public override void Submit(AudioContentProviderContext context)
         {
             foreach (TestAudioContent content in context.content.GetValues<TestAudioContent>())
+            {
                 content.second?.Invoke(context);
+            }
         }
     }
 
@@ -389,7 +452,9 @@ public sealed class AudioRuntimeTests : IDisposable
         public override void Submit(AudioContentProviderContext context)
         {
             foreach (TestAudioContent content in context.content.GetValues<TestAudioContent>())
+            {
                 content.third?.Invoke(context);
+            }
         }
     }
 
@@ -408,7 +473,9 @@ public sealed class AudioRuntimeTests : IDisposable
             runtime.Update(0);
         }
         else
+        {
             await runtime.PreloadAsync(clip);
+        }
         device.pendingClipRetirements = 1;
 
         Assert.Throws<RetirementPendingException>(runtime.Dispose);
@@ -468,7 +535,10 @@ public sealed class AudioRuntimeTests : IDisposable
             Assert.Equal(2, RetirementProviderFirst.disposals);
             Assert.NotEqual("Faulted", m_modules.generations.state.ToString());
         }
-        finally { RetirementProviderFirst.pendingRetirements = 0; }
+        finally
+        {
+            RetirementProviderFirst.pendingRetirements = 0;
+        }
     }
 
     [Fact]
@@ -577,7 +647,10 @@ public sealed class AudioRuntimeTests : IDisposable
             Assert.Equal(1, RetirementProviderSecond.disposals);
             Assert.Equal("Faulted", m_modules.generations.state.ToString());
         }
-        finally { RetirementProviderFirst.fail = false; }
+        finally
+        {
+            RetirementProviderFirst.fail = false;
+        }
     }
 
     [AudioContentProviderExtension("tests.retirement.first", -100)]
@@ -586,14 +659,20 @@ public sealed class AudioRuntimeTests : IDisposable
         internal static bool fail;
         internal static int disposals;
         internal static int pendingRetirements;
-        public override void Submit(AudioContentProviderContext context) { }
+
+        public override void Submit(AudioContentProviderContext context) {}
+
         protected override void Dispose(bool disposing)
         {
             disposals++;
             if (pendingRetirements-- > 0)
+            {
                 throw new RetirementPendingException("Expected provider drain.");
+            }
             if (fail)
+            {
                 throw new InvalidOperationException("Expected provider retirement failure.");
+            }
         }
     }
 
@@ -602,12 +681,17 @@ public sealed class AudioRuntimeTests : IDisposable
     {
         internal static bool failConstruction;
         internal static int disposals;
+
         public RetirementProviderSecond()
         {
             if (failConstruction)
+            {
                 throw new InvalidOperationException("Expected provider candidate failure.");
+            }
         }
-        public override void Submit(AudioContentProviderContext context) { }
+
+        public override void Submit(AudioContentProviderContext context) {}
+
         protected override void Dispose(bool disposing) => disposals++;
     }
 
@@ -630,7 +714,9 @@ public sealed class AudioRuntimeTests : IDisposable
     private sealed class RecordingSink : IDiagnosticSink
     {
         internal IReadOnlyList<Diagnostic> issues { get; private set; } = [];
+
         public void Replace(DiagnosticReport report) => issues = report.diagnostics;
+
         public void Clear(DiagnosticSource source) => issues = [];
     }
 
@@ -645,7 +731,9 @@ public sealed class AudioRuntimeTests : IDisposable
         m_root = Path.Combine(Path.GetTempPath(), "InnoAudioRuntimeTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(m_root);
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(AudioRuntimeTests).Assembly)        });
+        {
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(AudioRuntimeTests).Assembly)
+        });
         _ = typeof(TestMixerExtension);
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_types.Rebuild();
@@ -656,7 +744,9 @@ public sealed class AudioRuntimeTests : IDisposable
         m_types.Dispose();
         m_modules.Dispose();
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     [Fact]
@@ -689,10 +779,7 @@ public sealed class AudioRuntimeTests : IDisposable
     {
         AudioClipAsset clip = CreateClip(frameCount: 4800);
         using var runtime = CreateRuntime();
-        AudioVoiceHandle voice = runtime.PlayScheduled(
-            clip,
-            1d,
-            new AudioPlayOptions(loop: true));
+        AudioVoiceHandle voice = runtime.PlayScheduled(clip, 1d, new AudioPlayOptions(loop: true));
 
         runtime.Update(0.1f);
         Assert.True(runtime.TryGetVoiceState(voice, out AudioPlaybackState scheduled));
@@ -753,7 +840,8 @@ public sealed class AudioRuntimeTests : IDisposable
         AudioClipAsset clip = CreateClip(frameCount: 4800);
         using var runtime = CreateRuntime(
             decodedCacheBudgetBytes: 1024,
-            automaticStreamingThresholdBytes: long.MaxValue);
+            automaticStreamingThresholdBytes: long.MaxValue
+        );
 
         await runtime.PreloadAsync(clip);
 
@@ -815,8 +903,13 @@ public sealed class AudioRuntimeTests : IDisposable
     public async Task PreloadCompletesOnlyAfterPreparationAndCancellationReleasesReservation()
     {
         var device = new ReadyAudioDevice { clipState = AudioClipState.Preparing };
-        using var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events,
-            new Inno.Core.Diagnostics.DiagnosticHub().CreateReporter(new Inno.Core.Diagnostics.DiagnosticSource("test.preload", "Preload")));
+        using var runtime = new AudioRuntime(
+            m_types,
+            device,
+            m_artifacts,
+            m_events,
+            new Inno.Core.Diagnostics.DiagnosticHub().CreateReporter(new Inno.Core.Diagnostics.DiagnosticSource("test.preload", "Preload"))
+        );
         AudioClipAsset clip = CreateClip(4800);
         ValueTask ready = runtime.PreloadAsync(clip);
         Assert.False(ready.IsCompleted);
@@ -852,13 +945,19 @@ public sealed class AudioRuntimeTests : IDisposable
         Assert.Single(m_artifacts.retainedKeys);
         Assert.Equal(0, device.disposals);
         if (shutdown)
+        {
             runtime.Dispose();
+        }
         else
+        {
             runtime.Update(0);
+        }
         Assert.Equal(1, device.clipRetirements);
         Assert.Empty(m_artifacts.retainedKeys);
         if (!shutdown)
+        {
             Assert.Equal(0, runtime.statistics.loadedClips);
+        }
     }
 
     [Fact]
@@ -946,18 +1045,26 @@ public sealed class AudioRuntimeTests : IDisposable
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(true, true)]
-    public async Task FailedPreloadAdmissionRetiresOnlyItsOwnReservation(bool cached, bool queryThrows)
-    {
+    public async Task FailedPreloadAdmissionRetiresOnlyItsOwnReservation(
+        bool cached,
+        bool queryThrows
+    ) {
         var device = new ReadyAudioDevice();
         using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.query", "Query"));
         using var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter);
         AudioClipAsset clip = CreateClip(4800);
         if (cached)
+        {
             await runtime.PreloadAsync(clip);
+        }
         if (queryThrows)
+        {
             device.clipQueryFailure = new InvalidOperationException("Expected clip query failure.");
+        }
         else
+        {
             device.clipState = AudioClipState.Failed;
+        }
         m_artifacts.pendingReleaseId = clip.identity.persistentId;
         m_artifacts.pendingReleases = 1;
         InvalidOperationException failure = Assert.Throws<InvalidOperationException>(() => runtime.PreloadAsync(clip));
@@ -1004,36 +1111,35 @@ public sealed class AudioRuntimeTests : IDisposable
     private AudioRuntime CreateRuntime(
         int maxVoices = 128,
         long decodedCacheBudgetBytes = 128L * 1024 * 1024,
-        long automaticStreamingThresholdBytes = 1024)
-        => new(
-            m_types,
-            new MutedAudioDevice(),
-            m_artifacts,
-            m_events,
-            new Inno.Core.Diagnostics.DiagnosticHub().CreateReporter(new Inno.Core.Diagnostics.DiagnosticSource("tests.audio", "Audio")),
-            options: new AudioRuntimeOptions
-            {
-                maxVoices = maxVoices,
-                decodedCacheBudgetBytes = decodedCacheBudgetBytes,
-                automaticStreamingThresholdBytes = automaticStreamingThresholdBytes
-            });
+        long automaticStreamingThresholdBytes = 1024
+    ) => new(
+        m_types,
+        new MutedAudioDevice(),
+        m_artifacts,
+        m_events,
+        new Inno.Core.Diagnostics.DiagnosticHub().CreateReporter(new Inno.Core.Diagnostics.DiagnosticSource("tests.audio", "Audio")),
+        options: new AudioRuntimeOptions
+        {
+            maxVoices = maxVoices,
+            decodedCacheBudgetBytes = decodedCacheBudgetBytes,
+            automaticStreamingThresholdBytes = automaticStreamingThresholdBytes
+        }
+    );
 
     private AudioClipAsset CreateClip(long frameCount)
     {
         var clip = new AudioClipAsset();
-        byte[] payload = AudioClipMetadataCodec.Encode(new AudioClipMetadata(
-            AudioCodecId.wav,
-            2,
-            48000,
-            frameCount,
-            256));
+        byte[] payload = AudioClipMetadataCodec.Encode(
+            new AudioClipMetadata(AudioCodecId.wav, 2, 48000, frameCount, 256)
+        );
         new AssetRuntimeOwner().Initialize(
             clip,
             AssetPath.Project($"Audio/{clip.identity.persistentId:N}.wav"),
             "TEST",
             payload,
             isMissing: false,
-            version: 1);
+            version: 1
+        );
         m_artifacts.Add(clip.identity.persistentId, Path.Combine(m_root, $"{clip.identity.persistentId:N}.wav"));
         return clip;
     }
@@ -1041,12 +1147,15 @@ public sealed class AudioRuntimeTests : IDisposable
     [AudioMixerExtension("tests.audio.mixer")]
     private sealed class TestMixerExtension : AudioMixerExtension
     {
-        public override void Build(AudioMixerBuilder builder, SerializedAudioExtensionState state)
-        {
+        public override void Build(
+            AudioMixerBuilder builder,
+            SerializedAudioExtensionState state
+        ) {
             builder.AddBus(new AudioBusId("tests.audio.bus.music"), AudioBusId.master);
             builder.AddProcessor(
                 new AudioBusId("tests.audio.bus.music"),
-                new AudioProcessorConfiguration(AudioProcessorId.lowPass));
+                new AudioProcessorConfiguration(AudioProcessorId.lowPass)
+            );
         }
     }
 
@@ -1061,24 +1170,35 @@ public sealed class AudioRuntimeTests : IDisposable
         internal int pendingReleases;
         internal int releaseAttempts;
         internal IReadOnlyList<AssetArtifactKey> retainedKeys => m_retention.GetRetainedKeys();
-        public ArtifactLease AcquireArtifact(Guid persistentId, string outputName)
-        {
+
+        public ArtifactLease AcquireArtifact(
+            Guid persistentId,
+            string outputName
+        ) {
             acquisitions++;
             if (acquisitionFailure is not null)
+            {
                 throw acquisitionFailure;
-            ArtifactLease retained = m_retention.Retain(m_artifacts[persistentId],
-                () => File.OpenRead(m_paths[persistentId]));
+            }
+            ArtifactLease retained = m_retention.Retain(
+                m_artifacts[persistentId],
+                () => File.OpenRead(m_paths[persistentId])
+            );
             return CreateArtifactLease(retained.info, retained.OpenRead, () =>
             {
                 releaseAttempts++;
                 if (persistentId == pendingReleaseId && pendingReleases-- > 0)
+                {
                     throw new RetirementPendingException("Expected admitted artifact drain.");
+                }
                 retained.Dispose();
             });
         }
 
-        internal void Add(Guid id, string path)
-        {
+        internal void Add(
+            Guid id,
+            string path
+        ) {
             byte[] bytes = new byte[256];
             File.WriteAllBytes(path, bytes);
             m_paths[id] = path;
@@ -1086,11 +1206,15 @@ public sealed class AudioRuntimeTests : IDisposable
                 new AssetArtifactKey(new string('A', 64)),
                 "audio-data",
                 Convert.ToHexString(SHA256.HashData(bytes)),
-                256);
+                256
+            );
         }
 
-        public bool TryGetArtifact(Guid persistentId, string outputName, out AssetArtifactInfo? artifact)
-        {
+        public bool TryGetArtifact(
+            Guid persistentId,
+            string outputName,
+            out AssetArtifactInfo? artifact
+        ) {
             if (outputName == "audio-data" && m_artifacts.TryGetValue(persistentId, out AssetArtifactInfo? found))
             {
                 artifact = found;
@@ -1135,11 +1259,15 @@ public sealed class AudioRuntimeTests : IDisposable
             AudioClipDescriptor descriptor,
             IAudioClipSource source
         ) => m_inner.CreateClip(descriptor, source);
+
         internal AudioClipState clipState = AudioClipState.Ready;
+
         public AudioClipState GetClipState(AudioClipHandle clip)
         {
             if (clipQueryFailure is not null)
+            {
                 throw clipQueryFailure;
+            }
             return clipState;
         }
 
@@ -1147,9 +1275,13 @@ public sealed class AudioRuntimeTests : IDisposable
         {
             clipRetirements++;
             if (pendingClipRetirements-- > 0)
+            {
                 throw new RetirementPendingException("Expected clip drain.");
+            }
             if (failClipRetirement)
+            {
                 throw new InvalidOperationException("Expected clip retirement failure.");
+            }
             return m_inner.DestroyClip(clip);
         }
 
@@ -1157,8 +1289,8 @@ public sealed class AudioRuntimeTests : IDisposable
             AudioClipHandle clip,
             AudioBusHandle bus,
             AudioPlayOptions options,
-            double? scheduledDspTime = null)
-            => m_inner.Play(clip, bus, options, scheduledDspTime);
+            double? scheduledDspTime = null
+        ) => m_inner.Play(clip, bus, options, scheduledDspTime);
 
         public bool Stop(AudioDeviceVoiceHandle voice)
         {
@@ -1170,16 +1302,25 @@ public sealed class AudioRuntimeTests : IDisposable
 
         public bool Resume(AudioDeviceVoiceHandle voice) => m_inner.Resume(voice);
 
-        public bool Seek(AudioDeviceVoiceHandle voice, TimeSpan position) => m_inner.Seek(voice, position);
+        public bool Seek(
+            AudioDeviceVoiceHandle voice,
+            TimeSpan position
+        ) => m_inner.Seek(voice, position);
 
-        public bool SetVoiceParameters(AudioDeviceVoiceHandle voice, AudioVoiceParameters parameters)
-            => m_inner.SetVoiceParameters(voice, parameters);
+        public bool SetVoiceParameters(
+            AudioDeviceVoiceHandle voice,
+            AudioVoiceParameters parameters
+        ) => m_inner.SetVoiceParameters(voice, parameters);
 
-        public bool TryGetVoiceState(AudioDeviceVoiceHandle voice, out AudioPlaybackState playbackState)
-            => m_inner.TryGetVoiceState(voice, out playbackState);
+        public bool TryGetVoiceState(
+            AudioDeviceVoiceHandle voice,
+            out AudioPlaybackState playbackState
+        ) => m_inner.TryGetVoiceState(voice, out playbackState);
 
-        public AudioBusHandle CreateBus(AudioBusId id, AudioBusHandle parent = default)
-        {
+        public AudioBusHandle CreateBus(
+            AudioBusId id,
+            AudioBusHandle parent = default
+        ) {
             AudioBusHandle handle = m_inner.CreateBus(id, parent);
             if (handle.isValid)
             {
@@ -1193,36 +1334,55 @@ public sealed class AudioRuntimeTests : IDisposable
         {
             busRetirements++;
             if (pendingBusRetirements-- > 0)
+            {
                 throw new RetirementPendingException("Expected bus drain.");
+            }
             bool destroyed = m_inner.DestroyBus(bus);
             if (destroyed)
+            {
                 m_pausedHandles.Remove(bus);
+            }
             return destroyed;
         }
 
-        public bool SetBusVolume(AudioBusHandle bus, float volume)
-        {
+        public bool SetBusVolume(
+            AudioBusHandle bus,
+            float volume
+        ) {
             if (!m_inner.SetBusVolume(bus, volume))
+            {
                 return false;
+            }
             m_busVolumes[m_busIds[bus]] = volume;
             return true;
         }
 
-        public bool SetBusMuted(AudioBusHandle bus, bool muted) => m_inner.SetBusMuted(bus, muted);
+        public bool SetBusMuted(
+            AudioBusHandle bus,
+            bool muted
+        ) => m_inner.SetBusMuted(bus, muted);
 
-        public bool SetBusPaused(AudioBusHandle bus, bool paused)
-        {
+        public bool SetBusPaused(
+            AudioBusHandle bus,
+            bool paused
+        ) {
             if (++busPauseCalls == failBusPauseAt)
+            {
                 return false;
+            }
             if (!m_inner.SetBusPaused(bus, paused))
+            {
                 return false;
+            }
             m_busPaused[m_busIds[bus]] = paused;
             m_pausedHandles[bus] = paused;
             return true;
         }
 
-        public bool AddBusProcessor(AudioBusHandle bus, AudioProcessorConfiguration processor)
-            => m_inner.AddBusProcessor(bus, processor);
+        public bool AddBusProcessor(
+            AudioBusHandle bus,
+            AudioProcessorConfiguration processor
+        ) => m_inner.AddBusProcessor(bus, processor);
 
         public AudioListenerHandle CreateListener(AudioListenerState state)
         {
@@ -1230,8 +1390,10 @@ public sealed class AudioRuntimeTests : IDisposable
             return m_inner.CreateListener(state);
         }
 
-        public bool SetListener(AudioListenerHandle listener, AudioListenerState state)
-            => m_inner.SetListener(listener, state);
+        public bool SetListener(
+            AudioListenerHandle listener,
+            AudioListenerState state
+        ) => m_inner.SetListener(listener, state);
 
         public bool DestroyListener(AudioListenerHandle listener) => m_inner.DestroyListener(listener);
 
@@ -1245,14 +1407,18 @@ public sealed class AudioRuntimeTests : IDisposable
             disposals++;
             m_inner.Dispose();
             if (failDisposal)
+            {
                 throw new InvalidOperationException("Expected device retirement failure.");
+            }
         }
 
         internal float GetBusVolume(AudioBusId id) => m_busVolumes[id];
 
         internal bool GetBusPaused(AudioBusId id) => m_busPaused[id];
+
         internal IReadOnlyList<bool> GetMasterPauses()
             => m_pausedHandles.Where(pair => m_busIds[pair.Key] == AudioBusId.master)
-                .Select(pair => pair.Value).ToArray();
+                .Select(pair => pair.Value)
+                .ToArray();
     }
 }

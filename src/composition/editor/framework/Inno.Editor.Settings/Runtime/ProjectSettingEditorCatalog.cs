@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
+using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Settings;
 
@@ -16,8 +15,7 @@ internal sealed class ProjectSettingEditorCatalog : TypeRegistry<ProjectSettingE
     internal ProjectSettingEditorCatalog(
         TypeCatalog types,
         SerializationRegistry serialization
-    )
-        : base(types)
+    ) : base(types)
     {
         ArgumentNullException.ThrowIfNull(serialization);
         m_serialization = serialization;
@@ -49,7 +47,9 @@ internal sealed class ProjectSettingEditorCatalog : TypeRegistry<ProjectSettingE
             .GroupBy(static definition => definition.path, StringComparer.Ordinal)
             .FirstOrDefault(static group => group.Count() > 1)?.Key;
         if (duplicatePath is not null)
+        {
             throw new InvalidOperationException($"Project setting path '{duplicatePath}' is registered more than once.");
+        }
 
         IGrouping<ProjectSettingId, ProjectSettingEditor>? incompatiblePresentations = definitions
             .GroupBy(static definition => definition.settingId)
@@ -61,7 +61,8 @@ internal sealed class ProjectSettingEditorCatalog : TypeRegistry<ProjectSettingE
         if (incompatiblePresentations is not null)
         {
             throw new InvalidOperationException(
-                $"Project setting ID '{incompatiblePresentations.Key}' has Editor presentations for more than one value type.");
+                $"Project setting ID '{incompatiblePresentations.Key}' has Editor presentations for more than one value type."
+            );
         }
 
         return new Snapshot(types.version, definitions);
@@ -85,8 +86,9 @@ internal sealed class ProjectSettingEditorCatalog : TypeRegistry<ProjectSettingE
         ProjectSettingDefinitionAttribute setting = definition.valueType
             .GetCustomAttribute<ProjectSettingDefinitionAttribute>(inherit: false)
             ?? throw new InvalidOperationException(
-                $"Project setting editor '{type.FullName}' targets '{definition.valueType.FullName}', " +
-                $"which is missing {nameof(ProjectSettingDefinitionAttribute)}.");
+                $"Project setting editor '{type.FullName}' targets '{definition.valueType.FullName}', "
+                + $"which is missing {nameof(ProjectSettingDefinitionAttribute)}."
+            );
         definition.BindSettingId(new ProjectSettingId(setting.id));
         definition.BindSerialization(m_serialization);
         definition.BindPlacement(attribute.path, attribute.order);

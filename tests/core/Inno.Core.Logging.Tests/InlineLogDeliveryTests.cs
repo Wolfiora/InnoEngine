@@ -3,9 +3,9 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Core.Logging;
 using Inno.Extensibility.Modules;
-using Xunit;
 
 namespace Inno.Core.Logging.Tests;
 
@@ -16,11 +16,15 @@ public sealed class InlineLogDeliveryTests
     {
         using var router = new LogRouter(deliveryMode: LogDeliveryMode.Inline);
         var received = new ConcurrentQueue<string>();
-        router.RegisterSink(new CallbackSink(entry =>
-        {
-            if (entry.message == "first")
-                router.Dispatch(CreateEntry("nested"));
-        }));
+        router.RegisterSink(
+            new CallbackSink(entry =>
+            {
+                if (entry.message == "first")
+                {
+                    router.Dispatch(CreateEntry("nested"));
+                }
+            })
+        );
         router.RegisterSink(new CallbackSink(entry => received.Enqueue(entry.message)));
 
         router.Dispatch(CreateEntry("first"));
@@ -36,13 +40,17 @@ public sealed class InlineLogDeliveryTests
         int received = 0;
         int depth = 0;
         int maximumDepth = 0;
-        router.RegisterSink(new CallbackSink(_ =>
-        {
-            maximumDepth = Math.Max(maximumDepth, ++depth);
-            if (++received < 10_000)
-                router.Dispatch(CreateEntry("next"));
-            depth--;
-        }));
+        router.RegisterSink(
+            new CallbackSink(_ =>
+            {
+                maximumDepth = Math.Max(maximumDepth, ++depth);
+                if (++received < 10_000)
+                {
+                    router.Dispatch(CreateEntry("next"));
+                }
+                depth--;
+            })
+        );
 
         router.Dispatch(CreateEntry("first"));
 
@@ -57,11 +65,13 @@ public sealed class InlineLogDeliveryTests
         using var entered = new ManualResetEventSlim();
         using var release = new ManualResetEventSlim();
         using var flushing = new ManualResetEventSlim();
-        router.RegisterSink(new CallbackSink(_ =>
-        {
-            entered.Set();
-            Assert.True(release.Wait(TimeSpan.FromSeconds(10)));
-        }));
+        router.RegisterSink(
+            new CallbackSink(_ =>
+            {
+                entered.Set();
+                Assert.True(release.Wait(TimeSpan.FromSeconds(10)));
+            })
+        );
         Task producer = Task.Run(() => router.Dispatch(CreateEntry("blocked")));
         Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
         Task flush = Task.Run(() =>
@@ -89,20 +99,28 @@ public sealed class InlineLogDeliveryTests
         int active = 0;
         int overlap = 0;
         int received = 0;
-        router.RegisterSink(new CallbackSink(_ =>
-        {
-            if (Interlocked.Increment(ref active) != 1)
-                Interlocked.Increment(ref overlap);
-            Thread.SpinWait(2_000);
-            Interlocked.Increment(ref received);
-            Interlocked.Decrement(ref active);
-        }));
+        router.RegisterSink(
+            new CallbackSink(_ =>
+            {
+                if (Interlocked.Increment(ref active) != 1)
+                {
+                    Interlocked.Increment(ref overlap);
+                }
+                Thread.SpinWait(2_000);
+                Interlocked.Increment(ref received);
+                Interlocked.Decrement(ref active);
+            })
+        );
 
-        await Task.WhenAll(Enumerable.Range(0, 8).Select(_ => Task.Run(() =>
-        {
-            for (int entry = 0; entry < 64; entry++)
-                router.Dispatch(CreateEntry("parallel"));
-        })));
+        await Task.WhenAll(
+            Enumerable.Range(0, 8).Select(_ => Task.Run(() =>
+            {
+                for (int entry = 0; entry < 64; entry++)
+                {
+                    router.Dispatch(CreateEntry("parallel"));
+                }
+            }))
+        );
         router.Flush();
 
         Assert.Equal(512, received);
@@ -122,12 +140,14 @@ public sealed class InlineLogDeliveryTests
             _,
             exception
         ) => deliveryFailure = exception;
-        router.RegisterSink(new DisposableCallbackSink(_ =>
-        {
-            entered.Set();
-            Assert.True(release.Wait(TimeSpan.FromSeconds(10)));
-            Assert.False(released);
-        }, () => released = true));
+        router.RegisterSink(
+            new DisposableCallbackSink(_ =>
+            {
+                entered.Set();
+                Assert.True(release.Wait(TimeSpan.FromSeconds(10)));
+                Assert.False(released);
+            }, () => released = true)
+        );
         Task producer = Task.Run(() => router.Dispatch(CreateEntry("blocked")));
         Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
         Task disposal = Task.Run(() =>
@@ -157,11 +177,13 @@ public sealed class InlineLogDeliveryTests
     public void DeliveryCallbacksCannotFlushOrDisposeTheirOwnRouter(LogDeliveryMode mode)
     {
         using var router = new LogRouter(deliveryMode: mode);
-        router.RegisterSink(new CallbackSink(_ =>
-        {
-            Assert.Throws<InvalidOperationException>(router.Flush);
-            Assert.Throws<InvalidOperationException>(router.Dispose);
-        }));
+        router.RegisterSink(
+            new CallbackSink(_ =>
+            {
+                Assert.Throws<InvalidOperationException>(router.Flush);
+                Assert.Throws<InvalidOperationException>(router.Dispose);
+            })
+        );
         Exception? failure = null;
         router.sinkFailed += (
             _,
@@ -174,9 +196,18 @@ public sealed class InlineLogDeliveryTests
         Assert.Null(failure);
     }
 
-    private static LogEntry CreateEntry(string message) => new(
-        LogLevel.Info, AssemblyDomain.InnoInternal, AssemblyScope.Runtime,
-        "inline-test", message, string.Empty, 0, string.Empty, LogSessionId.none);
+    private static LogEntry CreateEntry(string message)
+        => new(
+            LogLevel.Info,
+            AssemblyDomain.InnoInternal,
+            AssemblyScope.Runtime,
+            "inline-test",
+            message,
+            string.Empty,
+            0,
+            string.Empty,
+            LogSessionId.none
+        );
 
     private sealed class CallbackSink(Action<LogEntry> callback) : ILogSink
     {

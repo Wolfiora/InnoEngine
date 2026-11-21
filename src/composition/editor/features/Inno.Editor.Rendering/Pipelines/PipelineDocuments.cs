@@ -11,6 +11,7 @@ using Inno.Rendering;
 using Inno.Rendering.Assets;
 
 namespace Inno.Editor.Rendering;
+
 /// <summary>
 /// Edits Pipeline sources and typed extension settings without changing canonical rendering assets before Save.
 /// </summary>
@@ -19,6 +20,7 @@ public sealed class PipelineDocuments : EditorModule
 {
     internal const string C_HISTORY = "inno.pipeline/draft";
     private readonly TypeCatalog m_types;
+
     /// <summary>
     /// Gets the authoritative asset pipeline used by source inspectors.
     /// </summary>
@@ -59,6 +61,7 @@ public sealed class PipelineDocuments : EditorModule
     /// The persistent source identity used by draft operations.
     /// </returns>
     public Guid Open(AssetPath path) => drafts.Open(path);
+
     /// <summary>
     /// Reads a detached current-generation Pipeline value; its referenced canonical assets must not be mutated.
     /// </summary>
@@ -69,6 +72,7 @@ public sealed class PipelineDocuments : EditorModule
     /// The unsaved native Pipeline value.
     /// </returns>
     public RenderPipelineAsset Read(Guid assetId) => drafts.Read(assetId);
+
     /// <summary>
     /// Changes a draft through shared History without publishing it to Scene/Game.
     /// </summary>
@@ -86,6 +90,7 @@ public sealed class PipelineDocuments : EditorModule
         RenderPipelineAsset candidate,
         string? mergeKey = null
     ) => drafts.Replace(assetId, candidate, mergeKey);
+
     /// <summary>
     /// Captures typed Pipeline settings with this source owner's complete reference and dependency context.
     /// </summary>
@@ -105,8 +110,7 @@ public sealed class PipelineDocuments : EditorModule
         Guid assetId,
         TSettings settings,
         string? mergeKey = null
-    )
-        where TSettings : class, ISerializable
+    ) where TSettings : class, ISerializable
     {
         RenderPipelineAsset pipeline = Read(assetId);
         pipeline.pipelineState = new SerializedRenderExtensionState(assets.CaptureProperties(settings));
@@ -126,16 +130,22 @@ public sealed class PipelineDocuments : EditorModule
     public ISerializable? RestoreSettings(SerializedRenderExtensionState state)
     {
         if (state.stableTypeId == Guid.Empty)
+        {
             return null;
+        }
         Type type = m_types.Resolve(new TypeRef(state.stableTypeId));
         if (Activator.CreateInstance(type) is not ISerializable settings)
+        {
             throw new InvalidOperationException("Pipeline settings must be a constructible native serializable type.");
+        }
         assets.RestoreProperties(state.stableTypeId, state.propertyData, settings);
         return settings;
     }
 
-    internal static bool Recoverable(Exception error) => error is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException or FormatException
-        && Inno.Core.Execution.RetirementPendingException.Find(error) is null;
+    internal static bool Recoverable(Exception error)
+        => error is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException or FormatException
+           && Inno.Core.Execution.RetirementPendingException.Find(error) is null;
+
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.
     /// </summary>
@@ -143,6 +153,7 @@ public sealed class PipelineDocuments : EditorModule
     /// The context that supplies state and services for this operation.
     /// </param>
     protected override void OnStart(EditorContext context) => drafts.Start();
+
     /// <summary>
     /// Advances this feature using the current runtime state.
     /// </summary>
@@ -150,6 +161,7 @@ public sealed class PipelineDocuments : EditorModule
     /// The context that supplies state and services for this operation.
     /// </param>
     protected override void OnUpdate(EditorContext context) => drafts.Update();
+
     /// <summary>
     /// Stops this feature before its owning runtime releases the active generation.
     /// </summary>

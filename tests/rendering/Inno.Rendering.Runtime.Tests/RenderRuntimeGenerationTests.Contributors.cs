@@ -1,4 +1,3 @@
-using Inno.Testing.Source;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,10 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using Xunit;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Extensibility.Reload;
 using Inno.Rendering;
-using Xunit;
+using Inno.Testing.Source;
 
 namespace Inno.Rendering.Runtime.Tests;
 
@@ -120,27 +120,41 @@ public sealed partial class RenderRuntimeGenerationTests
             runtime.RegisterContributor(contributor);
         }
         for (int frame = 0; frame < 16; frame++)
+        {
             CompleteContributorFrame(runtime, proxy);
+        }
         const int frames = 64;
         long before = GC.GetAllocatedBytesForCurrentThread();
         long start = Stopwatch.GetTimestamp();
         for (int frame = 0; frame < frames; frame++)
+        {
             CompleteContributorFrame(runtime, proxy);
+        }
         double elapsedMs = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
         long allocatedBytes = GC.GetAllocatedBytesForCurrentThread() - before;
         Assert.All(contributors, contributor => Assert.Equal(frames + 16, contributor.builds));
         Assert.Equal(frames + 16, proxy.endFrameCount);
         Assert.Equal(contributorCount != 0 && !fail ? frames + 16 : 0, proxy.executeCount);
-        string directory = Path.Combine(TestRepository.GetRoot(typeof(RenderRuntimeGenerationTests).Assembly), "artifacts/acceptance/architecture-cleanup/results");
+        string directory = Path.Combine(
+            TestRepository.GetRoot(typeof(RenderRuntimeGenerationTests).Assembly),
+            "artifacts/acceptance/architecture-cleanup/results"
+        );
         Directory.CreateDirectory(directory);
-        File.WriteAllText(Path.Combine(directory, $"frames-{contributorCount}-{fail}.json"), JsonSerializer.Serialize(new
-        {
-            contributorCount, fail, frames, elapsedMs, allocatedBytes,
-            bytesPerFrame = allocatedBytes / (double)frames,
-            millisecondsPerFrame = elapsedMs / frames,
-            graphCompileCount = ReadGraphCompileCount(runtime),
-            runtime = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription
-        }, new JsonSerializerOptions { WriteIndented = true }));
+        File.WriteAllText(
+            Path.Combine(directory, $"frames-{contributorCount}-{fail}.json"),
+            JsonSerializer.Serialize(new
+            {
+                contributorCount,
+                fail,
+                frames,
+                elapsedMs,
+                allocatedBytes,
+                bytesPerFrame = allocatedBytes / (double)frames,
+                millisecondsPerFrame = elapsedMs / frames,
+                graphCompileCount = ReadGraphCompileCount(runtime),
+                runtime = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription
+            }, new JsonSerializerOptions { WriteIndented = true })
+        );
     }
 
     [Theory]
@@ -153,33 +167,50 @@ public sealed partial class RenderRuntimeGenerationTests
         using var runtime = new RenderRuntime(m_types, TestDeviceProxy.Create(out TestDeviceProxy proxy), new TestDiagnosticSink());
         runtime.SetPrimaryModelOutputEnabled(false);
         CountingContributor[] contributors = Enumerable.Range(0, contributorCount)
-            .Select(static _ => new CountingContributor()).ToArray();
+            .Select(static _ => new CountingContributor())
+            .ToArray();
         foreach (CountingContributor contributor in contributors)
+        {
             runtime.RegisterContributor(contributor);
+        }
         for (int cycle = 0; cycle < 16; cycle++)
+        {
             CompleteContributorRetirementCycle(runtime, proxy, contributors);
+        }
 
         const int cycles = 64;
         long before = GC.GetAllocatedBytesForCurrentThread();
         long start = Stopwatch.GetTimestamp();
         for (int cycle = 0; cycle < cycles; cycle++)
+        {
             CompleteContributorRetirementCycle(runtime, proxy, contributors);
+        }
         double elapsedMs = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
         long allocatedBytes = GC.GetAllocatedBytesForCurrentThread() - before;
         Assert.All(contributors, contributor => Assert.Equal(cycles + 16, contributor.builds));
         Assert.Equal(2 * (cycles + 16), proxy.endFrameCount);
         Assert.Equal(contributorCount == 0 ? 0 : cycles + 16, proxy.executeCount);
 
-        string directory = Path.Combine(TestRepository.GetRoot(typeof(RenderRuntimeGenerationTests).Assembly), "artifacts/acceptance/architecture-cleanup/results");
+        string directory = Path.Combine(
+            TestRepository.GetRoot(typeof(RenderRuntimeGenerationTests).Assembly),
+            "artifacts/acceptance/architecture-cleanup/results"
+        );
         Directory.CreateDirectory(directory);
-        File.WriteAllText(Path.Combine(directory, $"retirement-{contributorCount}.json"), JsonSerializer.Serialize(new
-        {
-            contributorCount, cycles, frames = 2 * cycles, elapsedMs, allocatedBytes,
-            bytesPerCycle = allocatedBytes / (double)cycles,
-            millisecondsPerCycle = elapsedMs / cycles,
-            graphCompileCount = ReadGraphCompileCount(runtime),
-            runtime = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription
-        }, new JsonSerializerOptions { WriteIndented = true }));
+        File.WriteAllText(
+            Path.Combine(directory, $"retirement-{contributorCount}.json"),
+            JsonSerializer.Serialize(new
+            {
+                contributorCount,
+                cycles,
+                frames = 2 * cycles,
+                elapsedMs,
+                allocatedBytes,
+                bytesPerCycle = allocatedBytes / (double)cycles,
+                millisecondsPerCycle = elapsedMs / cycles,
+                graphCompileCount = ReadGraphCompileCount(runtime),
+                runtime = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription
+            }, new JsonSerializerOptions { WriteIndented = true })
+        );
     }
 
     private static void CompleteContributorRetirementCycle(
@@ -189,10 +220,14 @@ public sealed partial class RenderRuntimeGenerationTests
     ) {
         CompleteContributorFrame(runtime, proxy);
         foreach (CountingContributor contributor in contributors)
+        {
             Assert.True(runtime.UnregisterContributor(contributor));
+        }
         CompleteContributorFrame(runtime, proxy);
         foreach (CountingContributor contributor in contributors)
+        {
             runtime.RegisterContributor(contributor);
+        }
     }
 
     private static void CompleteContributorFrame(
@@ -221,9 +256,11 @@ public sealed partial class RenderRuntimeGenerationTests
         Type type = m_types.current.GetTypesImplementing<IRenderFrameGraphContributor>()
             .Select(reference => reference.Resolve(m_types))
             .Single(type => type.Name == "ReloadableContributor");
-        var contributor = (IRenderFrameGraphContributor)Activator.CreateInstance(type,
+        var contributor = (IRenderFrameGraphContributor)Activator.CreateInstance(
+            type,
             new Action<IRenderFrameGraphContributor>(value => Assert.True(runtime.UnregisterContributor(value))),
-            rejectGraph)!;
+            rejectGraph
+        )!;
         var weak = new WeakReference(contributor);
         runtime.RegisterContributor(contributor);
         CompleteContributorFrame(runtime, proxy);
@@ -243,13 +280,19 @@ public sealed partial class RenderRuntimeGenerationTests
             ulong frameIndex
         ) {
             builds++;
-            graph.AddRasterPass(fail ? "Discarded" : "Accepted", new("tests.contributor"), 0,
+            graph.AddRasterPass(
+                fail ? "Discarded" : "Accepted",
+                new("tests.contributor"),
+                0,
                 static (
                     payload,
                     context
-                ) => { }).HasSideEffect();
+                ) => {}
+            ).HasSideEffect();
             if (fail)
+            {
                 throw new InvalidOperationException("Discard this contributor's complete mutation.");
+            }
         }
     }
 }

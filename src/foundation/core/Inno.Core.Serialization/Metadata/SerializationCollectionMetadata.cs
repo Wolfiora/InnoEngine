@@ -37,9 +37,12 @@ public sealed class SerializationCollectionMetadata
         Func<object, IReadOnlyList<KeyValuePair<object?, object?>>>? enumerateMap
     ) {
         ArgumentNullException.ThrowIfNull(elementType);
-        if (keyType is null ? buildSequence is null || buildMap is not null || enumerateMap is not null
-            : buildSequence is not null || buildMap is null || enumerateMap is null)
+        if (keyType is null
+            ? buildSequence is null || buildMap is not null || enumerateMap is not null
+            : buildSequence is not null || buildMap is null || enumerateMap is null
+        ) {
             throw new ArgumentException("Collection metadata requires one complete sequence or map shape.");
+        }
         this.elementType = elementType;
         this.keyType = keyType;
         this.buildSequence = buildSequence;

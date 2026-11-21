@@ -1,8 +1,8 @@
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Assets.Authoring;
 
@@ -111,7 +111,8 @@ public sealed class ShaderLastGoodStore
                     candidate.artifact,
                     candidateSucceeded: true,
                     usingLastGood: false,
-                    candidate.diagnostics);
+                    candidate.diagnostics
+                );
             }
 
             m_artifacts.TryGetValue(key, out CompiledShaderArtifact? lastGood);
@@ -119,7 +120,8 @@ public sealed class ShaderLastGoodStore
                 lastGood,
                 candidateSucceeded: false,
                 usingLastGood: lastGood is not null,
-                candidate.diagnostics);
+                candidate.diagnostics
+            );
         }
     }
 
@@ -160,4 +162,3 @@ public sealed class ShaderLastGoodStore
         string variantKey
     );
 }
-

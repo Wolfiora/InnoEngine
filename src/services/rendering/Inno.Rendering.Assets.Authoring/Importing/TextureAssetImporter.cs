@@ -1,6 +1,3 @@
-using Inno.Assets.Pipeline;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -8,6 +5,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Assets.Pipeline;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Assets.Authoring;
 
@@ -53,7 +53,8 @@ internal sealed partial class TextureAssetImporter : AssetImporter<TextureAsset>
             width,
             height,
             context.extension == ".hdr" ? TextureColorSpace.Linear : TextureColorSpace.Srgb,
-            context.extension.TrimStart('.').ToLowerInvariant());
+            context.extension.TrimStart('.').ToLowerInvariant()
+        );
         output.SetAsset(asset);
         await output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken).ConfigureAwait(false);
         await output.WriteArtifactAsync("source", context.sourceBytes, cancellationToken).ConfigureAwait(false);
@@ -139,8 +140,8 @@ internal sealed partial class TextureAssetImporter : AssetImporter<TextureAsset>
         Match match = HdrResolutionPattern().Match(text);
         if (!match.Success
             || !int.TryParse(match.Groups[1].Value, out int height)
-            || !int.TryParse(match.Groups[2].Value, out int width))
-        {
+            || !int.TryParse(match.Groups[2].Value, out int width)
+        ) {
             throw new RenderingAssetFormatException("texture.hdr", "Radiance HDR resolution line is missing.");
         }
 
@@ -153,12 +154,10 @@ internal sealed partial class TextureAssetImporter : AssetImporter<TextureAsset>
         int width,
         int height,
         string path
-    )
-        => width > 0 && height > 0
-            ? (width, height)
-            : throw new RenderingAssetFormatException(path, "Texture dimensions must be positive.");
+    ) => width > 0 && height > 0
+         ? (width, height)
+         : throw new RenderingAssetFormatException(path, "Texture dimensions must be positive.");
 
     [GeneratedRegex(@"(?m)^[+-]Y\s+(\d+)\s+[+-]X\s+(\d+)\s*$")]
     private static partial Regex HdrResolutionPattern();
 }
-

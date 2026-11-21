@@ -217,18 +217,24 @@ public sealed class EditorViewportComposition
         ArgumentNullException.ThrowIfNull(layers);
         EditorViewportLayer[] materializedLayers = layers.ToArray();
         if (materializedLayers.Length == 0)
-            throw new ArgumentException("A viewport composition requires at least one model layer.", nameof(layers));
-        if (materializedLayers.Any(static layer => layer is null))
-            throw new ArgumentException("A viewport composition cannot contain null model layers.", nameof(layers));
-        if (materializedLayers.Select(static layer => layer.contributorId).Distinct(StringComparer.Ordinal).Count()
-            != materializedLayers.Length)
         {
+            throw new ArgumentException("A viewport composition requires at least one model layer.", nameof(layers));
+        }
+        if (materializedLayers.Any(static layer => layer is null))
+        {
+            throw new ArgumentException("A viewport composition cannot contain null model layers.", nameof(layers));
+        }
+        if (materializedLayers.Select(static layer => layer.contributorId).Distinct(StringComparer.Ordinal).Count()
+            != materializedLayers.Length
+        ) {
             throw new ArgumentException("Viewport contributor identities must be unique.", nameof(layers));
         }
-        m_layers = Array.AsReadOnly(materializedLayers
-            .OrderBy(static layer => layer.order)
-            .ThenBy(static layer => layer.contributorId, StringComparer.Ordinal)
-            .ToArray());
+        m_layers = Array.AsReadOnly(
+            materializedLayers
+                .OrderBy(static layer => layer.order)
+                .ThenBy(static layer => layer.contributorId, StringComparer.Ordinal)
+                .ToArray()
+        );
         this.viewportId = viewportId;
         this.pixelWidth = pixelWidth;
         this.pixelHeight = pixelHeight;

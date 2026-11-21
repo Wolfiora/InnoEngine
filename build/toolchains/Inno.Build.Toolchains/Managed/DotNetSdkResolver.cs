@@ -41,7 +41,9 @@ public static class DotNetSdkResolver
         ArgumentException.ThrowIfNullOrWhiteSpace(projectPath);
         string project = Path.GetFullPath(projectPath);
         if (!File.Exists(project))
+        {
             throw new FileNotFoundException("The managed entry project is absent.", project);
+        }
         return ResolveDirectoryAsync(hostPath, Path.GetDirectoryName(project)!, cancellationToken);
     }
 
@@ -81,30 +83,44 @@ public static class DotNetSdkResolver
         ArgumentException.ThrowIfNullOrWhiteSpace(ownerDirectory);
         string directory = Path.GetFullPath(ownerDirectory);
         if (!Directory.Exists(directory))
+        {
             throw new DirectoryNotFoundException($"The managed SDK source owner is absent: '{directory}'.");
+        }
         hostPath = ToolchainEnvironment.ResolveExecutable(hostPath);
-        string information = await ToolchainEnvironment.CaptureOutputAsync(hostPath, ["--info"],
-            directory, cancellationToken,
+        string information = await ToolchainEnvironment.CaptureOutputAsync(
+            hostPath,
+            ["--info"],
+            directory,
+            cancellationToken,
             DotNetSdkEnvironment.Create(hostPath, new Dictionary<string, string>
             {
                 ["DOTNET_CLI_UI_LANGUAGE"] = "en-US"
-            })).ConfigureAwait(false);
+            })
+        ).ConfigureAwait(false);
         string identity = string.Empty;
         string sdkDirectory = string.Empty;
         foreach (string outputLine in information.Split('\n'))
         {
             string line = outputLine.Trim();
             if (identity.Length == 0 && line.StartsWith("Version:", StringComparison.Ordinal))
+            {
                 identity = line["Version:".Length..].Trim();
+            }
             if (line.StartsWith("Base Path:", StringComparison.Ordinal))
+            {
                 sdkDirectory = line["Base Path:".Length..].Trim();
+            }
         }
         string numericVersion = identity.Split('-', 2)[0];
         if (!Version.TryParse(numericVersion, out _) || !Path.IsPathFullyQualified(sdkDirectory))
+        {
             throw new InvalidOperationException("The managed host did not resolve a valid project SDK identity and base path.");
+        }
         string cli = Path.Combine(sdkDirectory, "dotnet.dll");
         if (!File.Exists(cli))
+        {
             throw new FileNotFoundException("The selected SDK managed CLI entry assembly is unavailable.", cli);
+        }
         return new DotNetSdkDescriptor(hostPath, identity, cli);
     }
 }

@@ -38,6 +38,7 @@ public interface IShaderNodeCompiler
     /// Gets the exact graph node definition identity implemented by this compiler.
     /// </summary>
     string definitionId { get; }
+
     /// <summary>
     /// Describes ports for the current neutral properties and resolved source/target inputs.
     /// </summary>
@@ -48,6 +49,7 @@ public interface IShaderNodeCompiler
     /// Complete typed ports; duplicate identities are invalid.
     /// </returns>
     IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext context);
+
     /// <summary>
     /// Lowers the node into the supplied typed builder without generating source strings.
     /// </summary>
@@ -89,18 +91,22 @@ public sealed class ShaderNodeDescriptionContext
     /// Gets the node's stable identity, never its editor runtime handle.
     /// </summary>
     public GraphNodeId nodeId => m_node.id;
+
     /// <summary>
     /// Gets the node definition's stable identity.
     /// </summary>
     public string definitionId => m_node.definitionId;
+
     /// <summary>
     /// Gets a frozen module resolved by the asset owner; null means unassigned or unavailable.
     /// </summary>
     public ShaderSourceModuleAnalysis? sourceModule { get; }
+
     /// <summary>
     /// Gets the exact implementation key chosen by the target.
     /// </summary>
     public string implementationId { get; }
+
     /// <summary>
     /// Gets the target-assigned stage input for this node, when applicable.
     /// </summary>
@@ -127,8 +133,8 @@ public sealed class ShaderNodeDescriptionContext
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         return m_node.TryGetValue(id, out GraphSerializedValue? value)
-            ? m_serialization.Decode(value!.data.Span, reader => reader.Read<T>("value"), m_context)
-            : defaultValue;
+               ? m_serialization.Decode(value!.data.Span, reader => reader.Read<T>("value"), m_context)
+               : defaultValue;
     }
 }
 
@@ -151,14 +157,17 @@ public sealed class ShaderNodeLoweringContext
     /// Gets the invocation-scoped node description.
     /// </summary>
     public ShaderNodeDescriptionContext description { get; }
+
     /// <summary>
     /// Gets the builder shared by nodes in this typed region.
     /// </summary>
     public ShaderIrBuilder builder { get; }
+
     /// <summary>
     /// Gets connected values keyed by semantic input port identity, never connection order.
     /// </summary>
     public IReadOnlyDictionary<string, ShaderIrValue> inputs { get; }
+
     /// <summary>
     /// Requires one connected input without implicit defaults or positional rebinding.
     /// </summary>
@@ -169,5 +178,7 @@ public sealed class ShaderNodeLoweringContext
     /// The connected typed value.
     /// </returns>
     public ShaderIrValue Input(string id)
-        => inputs.TryGetValue(id, out ShaderIrValue? value) ? value : throw new InvalidOperationException($"Input '{id}' is not connected.");
+        => inputs.TryGetValue(id, out ShaderIrValue? value)
+           ? value
+           : throw new InvalidOperationException($"Input '{id}' is not connected.");
 }

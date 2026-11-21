@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Frozen;
+using System.Collections.Generic;
 using System.Linq;
 using Inno.Assets;
 using Inno.Core.Execution;
@@ -30,7 +30,9 @@ internal sealed class PluginCatalog
         get
         {
             lock (m_sync)
+            {
                 return s_current.ordered;
+            }
         }
     }
 
@@ -42,7 +44,9 @@ internal sealed class PluginCatalog
         get
         {
             lock (m_sync)
+            {
                 return s_revision;
+            }
         }
     }
 
@@ -54,7 +58,9 @@ internal sealed class PluginCatalog
         get
         {
             lock (m_sync)
+            {
                 return s_discovery;
+            }
         }
     }
 
@@ -75,7 +81,9 @@ internal sealed class PluginCatalog
         out PluginCandidate? plugin
     ) {
         lock (m_sync)
+        {
             return s_current.bySource.TryGetValue(source, out plugin);
+        }
     }
 
     /// <summary>
@@ -90,7 +98,8 @@ internal sealed class PluginCatalog
         PluginCandidate[] ordered = PluginSourceService.GetActivatableCandidates(result).ToArray();
         var bySource = ordered.ToFrozenDictionary(
             static candidate => candidate.sourceMount.id,
-            static candidate => candidate);
+            static candidate => candidate
+        );
         Action? changed;
         lock (m_sync)
         {
@@ -137,7 +146,9 @@ internal sealed class PluginCatalog
     private static void InvokeObservers(Action? handlers)
     {
         if (handlers is null)
+        {
             return;
+        }
         List<Exception>? failures = null;
         foreach (Delegate handler in handlers.GetInvocationList())
         {
@@ -148,7 +159,12 @@ internal sealed class PluginCatalog
             catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
             {
                 if (failures is not null)
-                    throw new AggregateException("Plugin catalog observers reported unfinished retirement.", [.. failures, pendingRetirement]);
+                {
+                    throw new AggregateException(
+                        "Plugin catalog observers reported unfinished retirement.",
+                        [.. failures, pendingRetirement]
+                    );
+                }
                 throw;
             }
             catch (Exception exception)
@@ -159,9 +175,7 @@ internal sealed class PluginCatalog
         }
         if (failures is not null)
         {
-            throw new AggregateException(
-                "One or more Plugin catalog observers failed after publication.",
-                failures);
+            throw new AggregateException("One or more Plugin catalog observers failed after publication.", failures);
         }
     }
 
@@ -171,6 +185,7 @@ internal sealed class PluginCatalog
     ) {
         internal static Snapshot empty { get; } = new(
             [],
-            new Dictionary<AssetSourceId, PluginCandidate>().ToFrozenDictionary());
+            new Dictionary<AssetSourceId, PluginCandidate>().ToFrozenDictionary()
+        );
     }
 }

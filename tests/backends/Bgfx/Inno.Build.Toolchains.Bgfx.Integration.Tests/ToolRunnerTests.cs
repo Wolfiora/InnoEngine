@@ -1,15 +1,14 @@
 using System;
 using System.IO;
-using Inno.Native.LibraryLoading;
-
 using Xunit;
-
 using Inno.Build.Toolchains.Bgfx.Tools;
+using Inno.Native.LibraryLoading;
 
 namespace Inno.Build.Toolchains.Bgfx.Integration.Tests;
 
 public sealed class ToolRunnerTests
-{    [Fact]
+{
+    [Fact]
     public void Run_UsesExplicitlyDeployedTools()
     {
         foreach (var tool in Enum.GetValues<BgfxTool>())

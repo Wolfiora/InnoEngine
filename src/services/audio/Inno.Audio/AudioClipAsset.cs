@@ -37,7 +37,9 @@ public readonly record struct AudioClipMetadata
         long encodedByteLength
     ) {
         if (!codec.isValid)
+        {
             throw new ArgumentException("A valid codec identifier is required.", nameof(codec));
+        }
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(channels);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sampleRate);
         ArgumentOutOfRangeException.ThrowIfNegative(frameCount);
@@ -101,7 +103,9 @@ public static class AudioClipMetadataCodec
     {
         byte[] codec = Encoding.UTF8.GetBytes(metadata.codec.value);
         if (codec.Length > byte.MaxValue)
+        {
             throw new ArgumentException("The codec identifier is too long.", nameof(metadata));
+        }
         byte[] output = new byte[C_FIXED_SIZE + codec.Length];
         BinaryPrimitives.WriteUInt32LittleEndian(output.AsSpan(0, 4), C_MAGIC);
         output[4] = (byte)codec.Length;
@@ -128,10 +132,14 @@ public static class AudioClipMetadataCodec
     public static AudioClipMetadata Decode(ReadOnlySpan<byte> payload)
     {
         if (payload.Length < C_FIXED_SIZE || BinaryPrimitives.ReadUInt32LittleEndian(payload) != C_MAGIC)
+        {
             throw new InvalidOperationException("The audio runtime header is invalid.");
+        }
         int codecLength = payload[4];
         if (payload.Length != C_FIXED_SIZE + codecLength || codecLength == 0)
+        {
             throw new InvalidOperationException("The audio runtime header length is invalid.");
+        }
         try
         {
             return new AudioClipMetadata(
@@ -139,7 +147,8 @@ public static class AudioClipMetadataCodec
                 BinaryPrimitives.ReadInt32LittleEndian(payload[8..12]),
                 BinaryPrimitives.ReadInt32LittleEndian(payload[12..16]),
                 BinaryPrimitives.ReadInt64LittleEndian(payload[16..24]),
-                BinaryPrimitives.ReadInt64LittleEndian(payload[24..32]));
+                BinaryPrimitives.ReadInt64LittleEndian(payload[24..32])
+            );
         }
         catch (ArgumentException exception)
         {
@@ -180,7 +189,7 @@ public sealed class AudioClipAsset : AssetObject
         ReadOnlyMemory<byte> currentPayload
     ) {
         m_metadata = currentPayload.IsEmpty
-            ? null
-            : AudioClipMetadataCodec.Decode(currentPayload.Span);
+                     ? null
+                     : AudioClipMetadataCodec.Decode(currentPayload.Span);
     }
 }

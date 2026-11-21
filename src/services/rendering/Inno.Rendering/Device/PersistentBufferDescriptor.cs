@@ -33,8 +33,8 @@ public sealed class PersistentBufferDescriptor
         }
 
         if ((buffer.usage & (RenderBufferUsage.Vertex | RenderBufferUsage.Index))
-            == (RenderBufferUsage.Vertex | RenderBufferUsage.Index))
-        {
+            == (RenderBufferUsage.Vertex | RenderBufferUsage.Index)
+        ) {
             throw new ArgumentException("A buffer cannot be both vertex and index input.", nameof(buffer));
         }
 
@@ -50,8 +50,8 @@ public sealed class PersistentBufferDescriptor
 
         int expectedIndexStride = indexFormat == RenderIndexFormat.UInt16 ? 2 : 4;
         if ((buffer.usage & RenderBufferUsage.Index) != 0
-            && buffer.elementStride != expectedIndexStride)
-        {
+            && buffer.elementStride != expectedIndexStride
+        ) {
             throw new ArgumentException("Index format must match buffer element stride.", nameof(indexFormat));
         }
 
@@ -75,4 +75,3 @@ public sealed class PersistentBufferDescriptor
     /// </summary>
     public RenderIndexFormat indexFormat { get; }
 }
-

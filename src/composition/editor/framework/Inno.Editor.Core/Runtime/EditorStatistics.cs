@@ -124,9 +124,13 @@ public sealed class EditorStatistic
         int order = 0
     ) {
         if (!id.isValid)
+        {
             throw new ArgumentException("A statistic ID is required.", nameof(id));
+        }
         if (!groupId.isValid)
+        {
             throw new ArgumentException("A statistic group ID is required.", nameof(groupId));
+        }
         ArgumentException.ThrowIfNullOrWhiteSpace(groupName);
         ArgumentException.ThrowIfNullOrWhiteSpace(label);
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
@@ -206,7 +210,9 @@ public sealed class EditorStatistics
         {
             EditorStatistic? previous = m_current.GetValueOrDefault(statistic.id) ?? m_completed.GetValueOrDefault(statistic.id);
             if (previous is null || !SameValue(previous, statistic))
+            {
                 m_snapshotDirty = true;
+            }
             m_current[statistic.id] = statistic;
         }
     }
@@ -224,7 +230,9 @@ public sealed class EditorStatistics
     {
         ArgumentNullException.ThrowIfNull(statistics);
         foreach (EditorStatistic statistic in statistics)
+        {
             Publish(statistic);
+        }
     }
 
     /// <summary>
@@ -240,10 +248,14 @@ public sealed class EditorStatistics
         lock (m_sync)
         {
             if (!m_snapshotDirty && m_snapshot is not null)
+            {
                 return m_snapshot;
+            }
             var merged = new Dictionary<EditorStatisticId, EditorStatistic>(m_completed);
             foreach ((EditorStatisticId id, EditorStatistic statistic) in m_current)
+            {
                 merged[id] = statistic;
+            }
             EditorStatistic[] values = merged.Values
                 .OrderBy(static value => value.groupOrder)
                 .ThenBy(static value => value.groupName, StringComparer.OrdinalIgnoreCase)
@@ -264,7 +276,9 @@ public sealed class EditorStatistics
             foreach (EditorStatisticId id in m_completed.Keys)
             {
                 if (m_current.ContainsKey(id))
+                {
                     continue;
+                }
                 m_snapshotDirty = true;
                 break;
             }
@@ -277,10 +291,10 @@ public sealed class EditorStatistics
         EditorStatistic first,
         EditorStatistic second
     ) => ReferenceEquals(first, second)
-        || first.groupId == second.groupId
-        && first.groupOrder == second.groupOrder
-        && first.order == second.order
-        && string.Equals(first.groupName, second.groupName, StringComparison.Ordinal)
-        && string.Equals(first.label, second.label, StringComparison.Ordinal)
-        && string.Equals(first.value, second.value, StringComparison.Ordinal);
+         || first.groupId == second.groupId
+            && first.groupOrder == second.groupOrder
+            && first.order == second.order
+            && string.Equals(first.groupName, second.groupName, StringComparison.Ordinal)
+            && string.Equals(first.label, second.label, StringComparison.Ordinal)
+            && string.Equals(first.value, second.value, StringComparison.Ordinal);
 }

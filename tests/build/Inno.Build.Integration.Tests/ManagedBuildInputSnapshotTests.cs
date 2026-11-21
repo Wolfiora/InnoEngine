@@ -4,9 +4,9 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
-using Xunit;
 
 namespace Inno.Build.Integration.Tests;
 
@@ -18,17 +18,26 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
     {
         Directory.CreateDirectory(m_root);
         File.WriteAllText(Path.Combine(m_root, "InnoEngine.sln"), "fixture");
-        Write("Shared/Shared.csproj", "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>");
+        Write(
+            "Shared/Shared.csproj",
+            "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>"
+        );
         Write("Shared/Shared.cs", "public sealed class Shared { }");
-        Write("App/App.csproj", "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework>"
+        Write(
+            "App/App.csproj",
+            "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework>"
             + "<ImplicitUsings>disable</ImplicitUsings></PropertyGroup><Import Project=\"Options.props\" />"
             + "<ItemGroup><ProjectReference Include=\"../Shared/Shared.csproj\" /><EmbeddedResource Include=\"data.txt\" />"
-            + "<AdditionalFiles Include=\"input.txt\" /></ItemGroup></Project>");
+            + "<AdditionalFiles Include=\"input.txt\" /></ItemGroup></Project>"
+        );
         Write("App/Options.props", "<Project><PropertyGroup><DefineConstants>FIXTURE</DefineConstants></PropertyGroup></Project>");
         Write("App/App.cs", "public sealed class App { }");
         Write("App/data.txt", "first");
         Write("App/input.txt", "first");
-        Write("Tool/Tool.csproj", "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>");
+        Write(
+            "Tool/Tool.csproj",
+            "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>"
+        );
         Write("Tool/Tool.cs", "public sealed class Tool { }");
     }
 
@@ -38,19 +47,39 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
     public async Task FrameworkSelectionUsesTheSdkAndRestoredTargetSemantics(string framework)
     {
         string project = Path.Combine(m_root, "App", "App.csproj");
-        File.WriteAllText(project, File.ReadAllText(project).Replace("<TargetFramework>net10.0</TargetFramework>",
-            "<TargetFramework>" + framework + "</TargetFramework>", StringComparison.Ordinal));
+        File.WriteAllText(
+            project,
+            File.ReadAllText(project).Replace(
+                "<TargetFramework>net10.0</TargetFramework>",
+                "<TargetFramework>" + framework + "</TargetFramework>",
+                StringComparison.Ordinal
+            )
+        );
         string shared = Path.Combine(m_root, "Shared", "Shared.csproj");
-        File.WriteAllText(shared, File.ReadAllText(shared).Replace("<TargetFramework>net10.0</TargetFramework>",
-            "<TargetFramework>" + framework + "</TargetFramework>", StringComparison.Ordinal));
+        File.WriteAllText(
+            shared,
+            File.ReadAllText(shared).Replace(
+                "<TargetFramework>net10.0</TargetFramework>",
+                "<TargetFramework>" + framework + "</TargetFramework>",
+                StringComparison.Ordinal
+            )
+        );
         string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnet, project);
-        await ToolchainEnvironment.RunAsync(sdk.hostPath, [sdk.cliPath, "restore", project, "--nologo", "-v:quiet"],
-            m_root, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath));
+        await ToolchainEnvironment.RunAsync(
+            sdk.hostPath,
+            [sdk.cliPath, "restore", project, "--nologo", "-v:quiet"],
+            m_root,
+            CancellationToken.None,
+            DotNetSdkEnvironment.Create(sdk.hostPath)
+        );
 
         ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
-            new NativeBuildContext(m_root, "release"), sdk, project,
-            new Dictionary<string, string> { ["Configuration"] = "Release" });
+            new NativeBuildContext(m_root, "release"),
+            sdk,
+            project,
+            new Dictionary<string, string> { ["Configuration"] = "Release" }
+        );
 
         Assert.NotEmpty(snapshot.fingerprint);
         await snapshot.VerifyAsync();
@@ -75,12 +104,20 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
         string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(3));
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnet, project, cancellation.Token);
-        await ToolchainEnvironment.RunAsync(sdk.hostPath,
+        await ToolchainEnvironment.RunAsync(
+            sdk.hostPath,
             [sdk.cliPath, "restore", project, "--disable-build-servers", "-v:quiet"],
-            m_root, cancellation.Token, DotNetSdkEnvironment.Create(sdk.hostPath));
+            m_root,
+            cancellation.Token,
+            DotNetSdkEnvironment.Create(sdk.hostPath)
+        );
         ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
-            new NativeBuildContext(m_root, "release"), sdk, project,
-            new Dictionary<string, string> { ["Configuration"] = "Release" }, cancellation.Token);
+            new NativeBuildContext(m_root, "release"),
+            sdk,
+            project,
+            new Dictionary<string, string> { ["Configuration"] = "Release" },
+            cancellation.Token
+        );
         using ManagedBuildExecution execution = await snapshot.CreateExecutionAsync(cancellation.Token);
         string source = Path.Combine(m_root, "App", "Options.props");
         string frozen = Path.Combine(execution.engineRoot, "App", "Options.props");
@@ -94,31 +131,48 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
     public async Task RuntimeInputEvaluationDoesNotShareOrdinaryRestoreOutputs()
     {
         string project = Path.Combine(m_root, "App", "App.csproj");
-        File.WriteAllText(project, File.ReadAllText(project).Replace("</Project>",
-            "<ItemGroup><InnoBuildInputProject Include=\"../Tool/Tool.csproj\" GlobalPropertiesToRemove=\"RuntimeIdentifier\" /></ItemGroup></Project>", StringComparison.Ordinal));
-        Write("Tool/Tool.csproj", "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework>"
+        File.WriteAllText(
+            project,
+            File.ReadAllText(project).Replace(
+                "</Project>",
+                "<ItemGroup><InnoBuildInputProject Include=\"../Tool/Tool.csproj\" GlobalPropertiesToRemove=\"RuntimeIdentifier\" /></ItemGroup></Project>",
+                StringComparison.Ordinal
+            )
+        );
+        Write(
+            "Tool/Tool.csproj",
+            "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework>"
             + "<ImplicitUsings>disable</ImplicitUsings></PropertyGroup><ItemGroup>"
-            + "<ProjectReference Include=\"../Shared/Shared.csproj\" /></ItemGroup></Project>");
+            + "<ProjectReference Include=\"../Shared/Shared.csproj\" /></ItemGroup></Project>"
+        );
         string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnet, project);
         await RestoreOrdinary();
         string assets = Path.Combine(m_root, "App", "obj", "project.assets.json");
         byte[] ordinary = File.ReadAllBytes(assets);
         ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
-            new NativeBuildContext(m_root, "release"), sdk, project,
+            new NativeBuildContext(m_root, "release"),
+            sdk,
+            project,
             new Dictionary<string, string>
             {
                 ["Configuration"] = "Release",
                 ["RuntimeIdentifier"] = RuntimeInformation.RuntimeIdentifier
-            });
+            }
+        );
         Assert.Equal(ordinary, File.ReadAllBytes(assets));
         await Task.WhenAll(RestoreOrdinary(), snapshot.VerifyAsync().AsTask());
         Assert.Equal(ordinary, File.ReadAllBytes(assets));
         Assert.False(Directory.Exists(Path.Combine(m_root, "App", "bin")));
 
-        Task RestoreOrdinary() => ToolchainEnvironment.RunAsync(sdk.hostPath,
-            [sdk.cliPath, "restore", project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "--nologo", "-v:quiet"],
-            m_root, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath));
+        Task RestoreOrdinary()
+            => ToolchainEnvironment.RunAsync(
+                sdk.hostPath,
+                [sdk.cliPath, "restore", project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "--nologo", "-v:quiet"],
+                m_root,
+                CancellationToken.None,
+                DotNetSdkEnvironment.Create(sdk.hostPath)
+            );
     }
 
     [Fact]
@@ -128,30 +182,56 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
         try
         {
             if (OperatingSystem.IsWindows())
-                await ToolchainEnvironment.RunAsync("powershell.exe",
-                    ["-NoProfile", "-NonInteractive", "-Command",
-                        "New-Item -ItemType Junction -Path '" + alias + "' -Target '" + m_root + "' | Out-Null"],
-                    m_root, CancellationToken.None);
+            {
+                await ToolchainEnvironment.RunAsync(
+                    "powershell.exe",
+                    [
+                        "-NoProfile",
+                        "-NonInteractive",
+                        "-Command",
+                        "New-Item -ItemType Junction -Path '" + alias + "' -Target '" + m_root + "' | Out-Null"
+                    ],
+                    m_root,
+                    CancellationToken.None
+                );
+            }
             else
+            {
                 Directory.CreateSymbolicLink(alias, m_root);
+            }
             string project = Path.Combine(alias, "App", "App.csproj");
             string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
             DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnet, project);
-            await ToolchainEnvironment.RunAsync(sdk.hostPath, [sdk.cliPath, "restore", project, "--nologo", "-v:quiet"],
-                alias, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath));
+            await ToolchainEnvironment.RunAsync(
+                sdk.hostPath,
+                [sdk.cliPath, "restore", project, "--nologo", "-v:quiet"],
+                alias,
+                CancellationToken.None,
+                DotNetSdkEnvironment.Create(sdk.hostPath)
+            );
             var context = new NativeBuildContext(alias, "release");
-            ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(context, sdk, project,
-                new Dictionary<string, string> { ["Configuration"] = "Release" });
+            ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
+                context,
+                sdk,
+                project,
+                new Dictionary<string, string> { ["Configuration"] = "Release" }
+            );
             using ManagedBuildExecution execution = await snapshot.CreateExecutionAsync();
             Assert.Contains("class App", File.ReadAllText(Path.Combine(execution.engineRoot, "App", "App.cs")), StringComparison.Ordinal);
-            Assert.Contains("class Shared", File.ReadAllText(Path.Combine(execution.engineRoot, "Shared", "Shared.cs")), StringComparison.Ordinal);
+            Assert.Contains(
+                "class Shared",
+                File.ReadAllText(Path.Combine(execution.engineRoot, "Shared", "Shared.cs")),
+                StringComparison.Ordinal
+            );
             await snapshot.VerifyAsync();
             await execution.VerifyAsync();
         }
         finally
         {
             if (Directory.Exists(alias))
+            {
                 Directory.Delete(alias, recursive: false);
+            }
         }
     }
 
@@ -160,25 +240,58 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
     {
         Write("Vendor/bin/tool.dat", "owned vendor tool");
         string fixture = Path.Combine(m_root, "App", "App.csproj");
-        File.WriteAllText(fixture, File.ReadAllText(fixture).Replace("</Project>",
-            "<ItemGroup><AdditionalFiles Include=\"../Vendor/bin/tool.dat\" /></ItemGroup></Project>", StringComparison.Ordinal));
+        File.WriteAllText(
+            fixture,
+            File.ReadAllText(fixture).Replace(
+                "</Project>",
+                "<ItemGroup><AdditionalFiles Include=\"../Vendor/bin/tool.dat\" /></ItemGroup></Project>",
+                StringComparison.Ordinal
+            )
+        );
         string project = Path.Combine(m_root, "App", "App.csproj");
         string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnet, project);
-        await ToolchainEnvironment.RunAsync(sdk.hostPath, [sdk.cliPath, "restore", project, "--nologo", "-v:quiet"],
-            m_root, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath));
+        await ToolchainEnvironment.RunAsync(
+            sdk.hostPath,
+            [sdk.cliPath, "restore", project, "--nologo", "-v:quiet"],
+            m_root,
+            CancellationToken.None,
+            DotNetSdkEnvironment.Create(sdk.hostPath)
+        );
         var context = new NativeBuildContext(m_root, "release");
-        ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(context, sdk, project,
-            new System.Collections.Generic.Dictionary<string, string> { ["Configuration"] = "Release" });
+        ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
+            context,
+            sdk,
+            project,
+            new System.Collections.Generic.Dictionary<string, string> { ["Configuration"] = "Release" }
+        );
         using ManagedBuildExecution execution = await snapshot.CreateExecutionAsync();
         Assert.Equal("owned vendor tool", File.ReadAllText(Path.Combine(execution.engineRoot, "Vendor", "bin", "tool.dat")));
         string original = Path.Combine(m_root, "App", "App.cs");
         File.WriteAllText(original, "public sealed class Changed { }");
-        Assert.Contains("class App", File.ReadAllText(Path.Combine(Path.GetDirectoryName(execution.project)!, "App.cs")), StringComparison.Ordinal);
-        await ToolchainEnvironment.RunAsync(sdk.hostPath,
-            [sdk.cliPath, "build", execution.project, "--configuration", "Release", "--disable-build-servers",
-                "-m:1", "-nodeReuse:false", "--nologo", "-v:quiet"], execution.engineRoot, CancellationToken.None,
-            DotNetSdkEnvironment.Create(sdk.hostPath));
+        Assert.Contains(
+            "class App",
+            File.ReadAllText(Path.Combine(Path.GetDirectoryName(execution.project)!, "App.cs")),
+            StringComparison.Ordinal
+        );
+        await ToolchainEnvironment.RunAsync(
+            sdk.hostPath,
+            [
+                sdk.cliPath,
+                "build",
+                execution.project,
+                "--configuration",
+                "Release",
+                "--disable-build-servers",
+                "-m:1",
+                "-nodeReuse:false",
+                "--nologo",
+                "-v:quiet"
+            ],
+            execution.engineRoot,
+            CancellationToken.None,
+            DotNetSdkEnvironment.Create(sdk.hostPath)
+        );
         File.WriteAllText(original, "public sealed class App { }");
         await snapshot.VerifyAsync();
         await execution.VerifyAsync();
@@ -186,8 +299,12 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
         using FileStream stream = File.OpenRead(output);
         using var image = new System.Reflection.PortableExecutable.PEReader(stream);
         System.Reflection.Metadata.MetadataReader metadata = System.Reflection.Metadata.PEReaderExtensions.GetMetadataReader(image);
-        string[] names = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Select(metadata.TypeDefinitions,
-            handle => metadata.GetString(metadata.GetTypeDefinition(handle).Name)));
+        string[] names = System.Linq.Enumerable.ToArray(
+            System.Linq.Enumerable.Select(
+                metadata.TypeDefinitions,
+                handle => metadata.GetString(metadata.GetTypeDefinition(handle).Name)
+            )
+        );
         Assert.Contains("App", names);
         Assert.DoesNotContain("Changed", names);
     }
@@ -198,12 +315,28 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
         string project = Path.Combine(m_root, "App", "App.csproj");
         string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnet, project);
-        await ToolchainEnvironment.RunAsync(sdk.hostPath, [sdk.cliPath, "restore", project, "--nologo", "-v:quiet"],
-            m_root, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath));
-        await ToolchainEnvironment.RunAsync(sdk.hostPath, [sdk.cliPath, "restore", Path.Combine(m_root, "Tool", "Tool.csproj"), "--nologo", "-v:quiet"],
-            m_root, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath));
-        File.WriteAllText(project, File.ReadAllText(project).Replace("</Project>",
-            "<ItemGroup><InnoBuildInputProject Include=\"../Tool/Tool.csproj\" /></ItemGroup></Project>", StringComparison.Ordinal));
+        await ToolchainEnvironment.RunAsync(
+            sdk.hostPath,
+            [sdk.cliPath, "restore", project, "--nologo", "-v:quiet"],
+            m_root,
+            CancellationToken.None,
+            DotNetSdkEnvironment.Create(sdk.hostPath)
+        );
+        await ToolchainEnvironment.RunAsync(
+            sdk.hostPath,
+            [sdk.cliPath, "restore", Path.Combine(m_root, "Tool", "Tool.csproj"), "--nologo", "-v:quiet"],
+            m_root,
+            CancellationToken.None,
+            DotNetSdkEnvironment.Create(sdk.hostPath)
+        );
+        File.WriteAllText(
+            project,
+            File.ReadAllText(project).Replace(
+                "</Project>",
+                "<ItemGroup><InnoBuildInputProject Include=\"../Tool/Tool.csproj\" /></ItemGroup></Project>",
+                StringComparison.Ordinal
+            )
+        );
         var properties = new Dictionary<string, string> { ["Configuration"] = "Release" };
         ManagedBuildInputSnapshot original = await Capture(sdk, project, properties);
         await original.VerifyAsync();
@@ -214,10 +347,16 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
             string file = Path.Combine(m_root, path);
             string previous = File.ReadAllText(file);
             DateTime timestamp = File.GetLastWriteTimeUtc(file);
-            File.WriteAllText(file, previous.Replace("first", "other", StringComparison.Ordinal)
-                .Replace("Shared", "Change", StringComparison.Ordinal).Replace("FIXTURE", "CHANGED", StringComparison.Ordinal));
+            File.WriteAllText(
+                file,
+                previous.Replace("first", "other", StringComparison.Ordinal)
+                    .Replace("Shared", "Change", StringComparison.Ordinal)
+                    .Replace("FIXTURE", "CHANGED", StringComparison.Ordinal)
+            );
             if (path == "Tool/Tool.cs")
+            {
                 File.WriteAllText(file, previous.Replace("Tool", "Next", StringComparison.Ordinal));
+            }
             File.SetLastWriteTimeUtc(file, timestamp);
             await Assert.ThrowsAsync<InvalidOperationException>(() => original.VerifyAsync().AsTask());
             File.WriteAllText(file, previous);
@@ -226,8 +365,10 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
         Write("App/Added.cs", "public sealed class Added { }");
         await Assert.ThrowsAsync<InvalidOperationException>(() => original.VerifyAsync().AsTask());
         Assert.False(Directory.Exists(Path.Combine(m_root, "App", "bin")));
-        Assert.All(Directory.EnumerateDirectories(Path.Combine(m_root, "artifacts", "build-tools", "managed-inputs")),
-            static directory => Assert.Contains(Path.GetFileName(directory), new[] { "evaluators", "requests" }));
+        Assert.All(
+            Directory.EnumerateDirectories(Path.Combine(m_root, "artifacts", "build-tools", "managed-inputs")),
+            static directory => Assert.Contains(Path.GetFileName(directory), new[] { "evaluators", "requests" })
+        );
         string requests = Path.Combine(m_root, "artifacts", "build-tools", "managed-inputs", "requests");
         Assert.Empty(ProcessOwnedDirectory.ReadClaims(requests));
         Assert.Empty(Directory.EnumerateDirectories(requests));
@@ -251,7 +392,10 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
     public async Task SdkPreparedSymbolsParticipateInTheFrozenInputIdentity()
     {
         string project = Path.Combine(m_root, "App", "App.csproj");
-        File.WriteAllText(project, File.ReadAllText(project).Replace("</Project>", "<Import Project=\"Symbols.targets\" /></Project>", StringComparison.Ordinal));
+        File.WriteAllText(
+            project,
+            File.ReadAllText(project).Replace("</Project>", "<Import Project=\"Symbols.targets\" /></Project>", StringComparison.Ordinal)
+        );
         Write("App/Symbols.targets", """
             <Project>
               <Target Name="AppendObservedSymbol" AfterTargets="GenerateTargetFrameworkDefineConstants">
@@ -269,11 +413,19 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
             Environment.SetEnvironmentVariable("INNO_TEST_COMPILER_SYMBOL", "FIRST_SYMBOL");
             string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
             DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnet, project);
-            await ToolchainEnvironment.RunAsync(sdk.hostPath, [sdk.cliPath, "restore", project, "--nologo", "-v:quiet"],
-                m_root, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath));
+            await ToolchainEnvironment.RunAsync(
+                sdk.hostPath,
+                [sdk.cliPath, "restore", project, "--nologo", "-v:quiet"],
+                m_root,
+                CancellationToken.None,
+                DotNetSdkEnvironment.Create(sdk.hostPath)
+            );
             ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
-                new NativeBuildContext(m_root, "release"), sdk, project,
-                new Dictionary<string, string> { ["Configuration"] = "Release" });
+                new NativeBuildContext(m_root, "release"),
+                sdk,
+                project,
+                new Dictionary<string, string> { ["Configuration"] = "Release" }
+            );
             await snapshot.VerifyAsync();
             Environment.SetEnvironmentVariable("INNO_TEST_COMPILER_SYMBOL", "SECOND_SYMBOL");
             InvalidOperationException failure = await Assert.ThrowsAsync<InvalidOperationException>(() => snapshot.VerifyAsync().AsTask());

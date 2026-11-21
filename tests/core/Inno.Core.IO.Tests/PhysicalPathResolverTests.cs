@@ -21,7 +21,9 @@ public sealed class PhysicalPathResolverTests : IDisposable
         Assert.Equal(resolved, resolver.Resolve(file));
         Assert.Equal(resolved, new PhysicalPathResolver().Resolve(resolved));
         for (string? entry = resolved; entry is not null; entry = Path.GetDirectoryName(entry))
+        {
             Assert.False(File.GetAttributes(entry).HasFlag(FileAttributes.ReparsePoint), entry);
+        }
         string owner = Path.Combine(Path.GetDirectoryName(resolved)!, "Owned");
         Assert.Throws<IOException>(() => PathBoundary.RequireContained(owner, resolved));
         Assert.False(Directory.Exists(owner));
@@ -34,6 +36,8 @@ public sealed class PhysicalPathResolverTests : IDisposable
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 }

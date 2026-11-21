@@ -1,6 +1,6 @@
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
@@ -52,4 +52,3 @@ public readonly record struct RenderTextureArtifactSlot
     /// </summary>
     public TextureColorSpace colorSpace { get; }
 }
-

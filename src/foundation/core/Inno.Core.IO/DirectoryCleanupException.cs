@@ -13,8 +13,12 @@ public sealed class DirectoryCleanupException : IOException
         string installedDirectory,
         string backupDirectory,
         Exception cleanupFailure
-    ) : base($"Directory '{installedDirectory}' was installed, but backup cleanup failed. "
-        + $"The remaining backup is at '{backupDirectory}'.", cleanupFailure) {
+    ) : base(
+        $"Directory '{installedDirectory}' was installed, but backup cleanup failed. "
+        + $"The remaining backup is at '{backupDirectory}'.",
+        cleanupFailure
+    )
+    {
         this.installedDirectory = installedDirectory;
         this.backupDirectory = backupDirectory;
     }

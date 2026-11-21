@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported table flags choices at the Editor presentation boundary.
 /// </summary>
@@ -154,5 +155,5 @@ public enum ImGuiTableFlags : int
     /// <summary>
     /// Selects the sizing mask presentation behavior.
     /// </summary>
-    SizingMask = (int)Inno.Native.ImGui.ImGuiTableFlags.SizingMask,
+    SizingMask = (int)Inno.Native.ImGui.ImGuiTableFlags.SizingMask
 }

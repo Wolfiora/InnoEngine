@@ -1,6 +1,6 @@
 using System;
-using Inno.Rendering;
 using Xunit;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Tests;
 
@@ -17,11 +17,27 @@ public sealed class GraphicsApiTests
         Assert.Throws<ArgumentException>(() => new GraphicsApi(".."));
         Assert.False(GraphicsApi.TryParse("../other", out _));
         Assert.Throws<ArgumentException>(() => new GraphicsCapabilities(
-            default, GraphicsCapability.None, new GraphicsLimits(16, 1, 256, 0),
-            [], [], [], [], originBottomLeft: false, homogeneousDepth: false));
+            default,
+            GraphicsCapability.None,
+            new GraphicsLimits(16, 1, 256, 0),
+            [],
+            [],
+            [],
+            [],
+            originBottomLeft: false,
+            homogeneousDepth: false
+        ));
         var capabilities = new GraphicsCapabilities(
-            api, GraphicsCapability.None, new GraphicsLimits(16, 1, 256, 0),
-            [], [], [], [], originBottomLeft: false, homogeneousDepth: false);
+            api,
+            GraphicsCapability.None,
+            new GraphicsLimits(16, 1, 256, 0),
+            [],
+            [],
+            [],
+            [],
+            originBottomLeft: false,
+            homogeneousDepth: false
+        );
         Assert.Equal(api, capabilities.backend);
     }
 }

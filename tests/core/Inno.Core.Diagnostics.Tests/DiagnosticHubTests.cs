@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Inno.Core.Diagnostics;
-
 using Xunit;
+using Inno.Core.Diagnostics;
 
 namespace Inno.Core.Diagnostics.Tests;
 
@@ -50,10 +48,8 @@ public sealed class DiagnosticHubTests : IDisposable
 
         Diagnostics.Set(
             C_COMPILATION_DIAGNOSTICS,
-            Diagnostic.Error(
-                "CS1001",
-                "Expected identifier.",
-                new DiagnosticLocation("Assets/Test.cs", 4, 2)));
+            Diagnostic.Error("CS1001", "Expected identifier.", new DiagnosticLocation("Assets/Test.cs", 4, 2))
+        );
         DiagnosticReport firstReport = Assert.Single(sink.reports);
         Diagnostic first = Assert.Single(firstReport.diagnostics);
         Assert.Equal("CS1001", first.code);
@@ -61,7 +57,8 @@ public sealed class DiagnosticHubTests : IDisposable
 
         Diagnostics.Set(
             C_COMPILATION_DIAGNOSTICS,
-            Diagnostic.Warning("CS0168", "Variable is declared but never used."));
+            Diagnostic.Warning("CS0168", "Variable is declared but never used.")
+        );
 
         DiagnosticReport replacementReport = Assert.Single(sink.reports);
         Diagnostic replacement = Assert.Single(replacementReport.diagnostics);
@@ -95,12 +92,14 @@ public sealed class DiagnosticHubTests : IDisposable
             m_assetId,
             C_IMPORT_DIAGNOSTICS,
             Diagnostic.Error("A", "First asset"),
-            displayName: "Assets/First.asset");
+            displayName: "Assets/First.asset"
+        );
         Diagnostics.Set(
             otherAssetId,
             C_IMPORT_DIAGNOSTICS,
             Diagnostic.Warning("B", "Second asset"),
-            displayName: "Assets/Second.asset");
+            displayName: "Assets/Second.asset"
+        );
 
         Diagnostics.Clear(m_assetId, C_IMPORT_DIAGNOSTICS);
 
@@ -229,20 +228,16 @@ public sealed class DiagnosticHubTests : IDisposable
 
         internal IReadOnlyList<DiagnosticReport> reports => m_reports.Values.ToArray();
 
-        public void Replace(DiagnosticReport report)
-            => m_reports[report.source.id] = report;
+        public void Replace(DiagnosticReport report) => m_reports[report.source.id] = report;
 
-        public void Clear(DiagnosticSource source)
-            => m_reports.Remove(source.id);
+        public void Clear(DiagnosticSource source) => m_reports.Remove(source.id);
     }
 
     private sealed class FailingSink : IDiagnosticSink
     {
-        public void Replace(DiagnosticReport report)
-            => throw new InvalidOperationException("Expected test failure.");
+        public void Replace(DiagnosticReport report) => throw new InvalidOperationException("Expected test failure.");
 
-        public void Clear(DiagnosticSource source)
-            => throw new InvalidOperationException("Expected test failure.");
+        public void Clear(DiagnosticSource source) => throw new InvalidOperationException("Expected test failure.");
     }
 
     private sealed class CountingSink : IDiagnosticSink
@@ -251,17 +246,14 @@ public sealed class DiagnosticHubTests : IDisposable
 
         public void Replace(DiagnosticReport report) => replaceCount++;
 
-        public void Clear(DiagnosticSource source) { }
+        public void Clear(DiagnosticSource source) {}
     }
 
     private static class OtherProducer
     {
         internal static void SetCompilation()
-            => Diagnostics.Set(
-                C_COMPILATION_DIAGNOSTICS,
-                Diagnostic.Error("B", "Other caller"));
+            => Diagnostics.Set(C_COMPILATION_DIAGNOSTICS, Diagnostic.Error("B", "Other caller"));
 
-        internal static void ClearCompilation()
-            => Diagnostics.Clear(C_COMPILATION_DIAGNOSTICS);
+        internal static void ClearCompilation() => Diagnostics.Clear(C_COMPILATION_DIAGNOSTICS);
     }
 }

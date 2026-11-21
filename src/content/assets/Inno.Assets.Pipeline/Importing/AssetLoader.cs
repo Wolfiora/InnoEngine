@@ -7,18 +7,17 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Collections;
 using Inno.Core.Diagnostics;
-using Inno.Core.Identity;
-using Inno.References;
 using Inno.Core.Execution;
 using Inno.Core.IO;
+using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
-using Inno.Core.Collections;
+using Inno.Extensibility.Types;
+using Inno.References;
 
 using IOFile = System.IO.File;
 
@@ -40,8 +39,10 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     private readonly ArtifactRetention m_artifactRetention = new();
     private readonly SemaphoreSlim m_operationGate = new(1, 1);
     private readonly object m_asyncSync = new();
+
     private readonly Dictionary<string, Task<AssetObject?>> m_inFlightPathLoads =
         new(StringComparer.OrdinalIgnoreCase);
+
     private readonly Dictionary<Guid, Task<AssetObject?>> m_inFlightIdLoads = [];
     private readonly AssetImporterRegistry m_importers;
     private readonly AssetBuildProcessorRegistry m_buildProcessors;
@@ -54,8 +55,10 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     private readonly ConditionalWeakTable<AssetObject, AssetDependencySet> m_dependencyRetention = new();
     private readonly HashSet<string> m_activeImports = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, Guid> m_pendingImportIds = new(StringComparer.OrdinalIgnoreCase);
+
     private readonly Dictionary<string, (long generation, AssetSourceFileStamp source, AssetSourceFileStamp metadata,
         string kind, string id)> m_unavailableImports = new(StringComparer.OrdinalIgnoreCase);
+
     private readonly AssetArtifactStore m_artifacts;
     private readonly AssetCatalogStore m_catalog;
     private readonly AssetDiagnosticPublisher m_diagnostics;
@@ -107,7 +110,9 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
         ObjectDisposedException.ThrowIf(m_disposed || m_disposeRequested, this);
         ArgumentNullException.ThrowIfNull(target);
         if (m_types.GetTypeRef(target.GetType()).stableId != stableTypeId)
+        {
             throw new InvalidOperationException("The asset property payload has an incompatible stable type identity.");
+        }
         m_serialization.Decode(propertyData, reader =>
         {
             reader.RestoreProperties(target);
@@ -151,18 +156,16 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
         string assetRoot,
         string libraryRoot,
         AssetSourcePolicy? sourcePolicy = null
-    )
-        : this(
-            types,
-            serialization,
-            identities,
-            diagnostics,
-            logs,
-            [new AssetSourceMount(AssetSourceId.project, assetRoot, isReadOnly: false)],
-            libraryRoot,
-            sourcePolicy)
-    {
-    }
+    ) : this(
+        types,
+        serialization,
+        identities,
+        diagnostics,
+        logs,
+        [new AssetSourceMount(AssetSourceId.project, assetRoot, isReadOnly: false)],
+        libraryRoot,
+        sourcePolicy
+    ) {}
 
     /// <summary>
     /// Creates an asset loader over one project source and zero or more isolated sources.
@@ -204,20 +207,18 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
         string libraryRoot,
         AssetSourcePolicy? sourcePolicy = null,
         bool runtimeArtifactsOnly = false
-    )
-        : this(
-            types,
-            serialization,
-            identities,
-            diagnostics,
-            logs,
-            mounts,
-            libraryRoot,
-            libraryRoot,
-            sourcePolicy,
-            runtimeArtifactsOnly)
-    {
-    }
+    ) : this(
+        types,
+        serialization,
+        identities,
+        diagnostics,
+        logs,
+        mounts,
+        libraryRoot,
+        libraryRoot,
+        sourcePolicy,
+        runtimeArtifactsOnly
+    ) {}
 
     internal AssetLoader(
         TypeCatalog types,
@@ -239,22 +240,31 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
         ArgumentNullException.ThrowIfNull(logs);
         ArgumentNullException.ThrowIfNull(mounts);
         if (mounts.Count == 0)
+        {
             throw new ArgumentException("At least one asset source mount is required.", nameof(mounts));
+        }
         if (string.IsNullOrWhiteSpace(libraryRoot))
+        {
             throw new ArgumentException("Library root is required.", nameof(libraryRoot));
+        }
         if (string.IsNullOrWhiteSpace(catalogLibraryRoot))
+        {
             throw new ArgumentException("Catalog Library root is required.", nameof(catalogLibraryRoot));
+        }
         Dictionary<AssetSourceId, AssetSourceMount> byId = mounts.ToDictionary(static mount => mount.id);
         if (byId.Count != mounts.Count)
-            throw new ArgumentException("Asset source mount IDs must be unique.", nameof(mounts));
-        if (!byId.TryGetValue(AssetSourceId.project, out AssetSourceMount? project)
-            || project.isReadOnly && !runtimeArtifactsOnly)
         {
+            throw new ArgumentException("Asset source mount IDs must be unique.", nameof(mounts));
+        }
+        if (!byId.TryGetValue(AssetSourceId.project, out AssetSourceMount? project)
+            || project.isReadOnly && !runtimeArtifactsOnly
+        ) {
             throw new ArgumentException(
                 runtimeArtifactsOnly
-                    ? "A project asset source mount is required."
-                    : "A writable project asset source mount is required.",
-                nameof(mounts));
+                ? "A project asset source mount is required."
+                : "A writable project asset source mount is required.",
+                nameof(mounts)
+            );
         }
 
         m_types = types;
@@ -275,8 +285,7 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
         {
             if (mount.isReadOnly && !Directory.Exists(mount.rootPath))
             {
-                throw new DirectoryNotFoundException(
-                    $"Read-only asset source root '{mount.rootPath}' does not exist.");
+                throw new DirectoryNotFoundException($"Read-only asset source root '{mount.rootPath}' does not exist.");
             }
 
             Directory.CreateDirectory(mount.rootPath);
@@ -307,16 +316,19 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     /// </summary>
     public event Action<AssetObject>? AssetReloaded;
 
-    internal void DeferUnavailableExtensions() => Execute(() =>
-    {
-        m_deferUnavailableExtensions = true;
-    });
+    internal void DeferUnavailableExtensions()
+        => Execute(() =>
+        {
+            m_deferUnavailableExtensions = true;
+        });
 
     internal void CompleteExtensionDiscovery()
         => Execute(() =>
         {
             if (!m_deferUnavailableExtensions)
+            {
                 return;
+            }
             m_deferUnavailableExtensions = false;
             m_unavailableImports.Clear();
             RescanLocked();
@@ -327,13 +339,15 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
         // Assembly discovery may publish built-in catalogs before the initial script compilation.
         // Only the composition host can close that initial discovery boundary.
         if (!m_preserveInitialExtensionDiscovery)
+        {
             CompleteExtensionDiscovery();
+        }
     }
 
     /// <summary>
     /// Waits for pending import and build work.
     /// </summary>
-    public void WaitForIdle() => Execute(static () => { });
+    public void WaitForIdle() => Execute(static () => {});
 
     /// <summary>
     /// Refreshes extension registries and reimports affected sources when their snapshot changed.
@@ -347,9 +361,11 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
         {
             long version = m_importers.snapshotVersion;
             long buildVersion = m_buildProcessors.snapshotVersion;
-            if (version == m_importerRegistryVersion &&
-                buildVersion == m_buildProcessorRegistryVersion)
+            if (version == m_importerRegistryVersion
+                && buildVersion == m_buildProcessorRegistryVersion
+            ) {
                 return false;
+            }
             RescanLocked();
             return true;
         });
@@ -359,7 +375,9 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     {
         Action<AssetObject>? handlers = AssetReloaded;
         if (handlers is null)
+        {
             return;
+        }
         foreach (Delegate handler in handlers.GetInvocationList())
         {
             try
@@ -379,7 +397,7 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     ) {
         AssetDependencyData data = meta.runtimeDependencies.FirstOrDefault(value => value.persistentId == persistentId);
         return data.persistentId == Guid.Empty
-            ? default
-            : new AssetDependency(data.persistentId, new TypeRef(data.stableTypeId), data.lastKnownPath);
+               ? default
+               : new AssetDependency(data.persistentId, new TypeRef(data.stableTypeId), data.lastKnownPath);
     }
 }

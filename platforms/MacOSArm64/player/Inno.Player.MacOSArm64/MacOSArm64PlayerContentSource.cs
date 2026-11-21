@@ -17,7 +17,9 @@ internal sealed class MacOSArm64PlayerContentSource : IPlayerContentSource
         string applicationDirectory,
         string cacheRoot
     ) => m_files = new FileContentDeployment(
-        MacOSArm64ApplicationLocations.GetPlayerContentDirectory(applicationDirectory), cacheRoot);
+        MacOSArm64ApplicationLocations.GetPlayerContentDirectory(applicationDirectory),
+        cacheRoot
+    );
 
     /// <summary>
     /// Reads independently owned deployment metadata from the platform's explicit content source.

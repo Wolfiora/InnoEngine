@@ -4,18 +4,17 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Extensibility.Modules;
-using Inno.Core.Identity;
 using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
+using Inno.Core.Identity;
 using Inno.Core.Logging;
+using Inno.Core.Serialization;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
 using Inno.Extensibility.Types;
 using Inno.Scripting.Api;
-using Inno.Core.Serialization;
-using Inno.Core.Execution;
-using Inno.Extensibility.Reload;
 
 namespace Inno.Assets.Pipeline;
 
@@ -119,12 +118,14 @@ sealed partial class AssetPipeline
         {
             ArgumentNullException.ThrowIfNull(catalog);
             if (!owner.isInitialized || owner.m_catalogParticipantRegistration is null)
+            {
                 return new AssetCatalogTransaction(null, false, AssetImportHealthSnapshot.empty);
+            }
             owner.EnsureOwnerThread();
             AssetImportHealthSnapshot existingFailures = owner.m_loader!.CaptureWritableImportHealth();
             bool ownsCandidate = owner.m_sourceMountCandidate is null;
             AssetSourceMountTransaction candidate = owner.m_sourceMountCandidate
-                ?? owner.PrepareSourceMounts(owner.sourceMounts);
+                                                    ?? owner.PrepareSourceMounts(owner.sourceMounts);
             return new AssetCatalogTransaction(candidate, ownsCandidate, existingFailures);
         }
     }
@@ -157,13 +158,18 @@ sealed partial class AssetPipeline
                     candidate.candidateLoader.FindIntroducedImportFailures(existingFailures);
                 if (failures.Count != 0)
                 {
-                    string details = string.Join("; ", failures.Select(static failure =>
-                        $"{failure.assetPath}: {failure.diagnostics}"));
+                    string details = string.Join(
+                        "; ",
+                        failures.Select(static failure => $"{failure.assetPath}: {failure.diagnostics}")
+                    );
                     throw new InvalidDataException(
-                        "The candidate assembly catalog introduced or changed writable Asset import failures: " + details);
+                        "The candidate assembly catalog introduced or changed writable Asset import failures: " + details
+                    );
                 }
                 if (ownsCandidate)
+                {
                     candidate.Activate();
+                }
             }
             m_activated = true;
         }
@@ -175,9 +181,13 @@ sealed partial class AssetPipeline
         {
             EnsureNotFinished();
             if (!m_activated)
+            {
                 throw new InvalidOperationException("Asset catalog transaction has not been activated.");
+            }
             if (ownsCandidate)
+            {
                 candidate!.Complete();
+            }
             m_finished = true;
         }
 
@@ -187,17 +197,22 @@ sealed partial class AssetPipeline
         public void Rollback()
         {
             if (m_finished)
+            {
                 return;
+            }
             if (ownsCandidate)
+            {
                 candidate!.Rollback();
+            }
             m_finished = true;
         }
 
         private void EnsureNotFinished()
         {
             if (m_finished)
+            {
                 throw new InvalidOperationException("Asset catalog transaction is already finished.");
+            }
         }
     }
-
 }

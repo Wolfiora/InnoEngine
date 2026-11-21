@@ -8,6 +8,7 @@ using Inno.Editor.Core;
 using Inno.Editor.Exporting;
 
 namespace Inno.Editor.Workbench;
+
 [EditorModule("export.windows", order: 310)]
 internal sealed class ExportWindowModule(
     EditorContext m_editor,
@@ -43,10 +44,13 @@ internal sealed class ExportWindowModule(
     internal bool includePluginDependencies { get; set; }
 
     internal string GetGameTargetDisplayName(BuildTargetId target) => m_exports.GetGameTargetDisplayName(target);
+
     internal void OpenPlugin()
     {
         if (isPluginBusy || isGameBusy)
+        {
             return;
+        }
         CloseGame();
         BuildSettings defaults = LoadBuildSettings();
         pluginDisplayName = defaults.pluginDisplayName;
@@ -58,7 +62,9 @@ internal sealed class ExportWindowModule(
     internal void OpenGame()
     {
         if (isPluginBusy || isGameBusy)
+        {
             return;
+        }
         ClosePlugin();
         m_gameProgressVisible = false;
         BuildSettings defaults = LoadBuildSettings();
@@ -76,30 +82,60 @@ internal sealed class ExportWindowModule(
     internal void BeginPluginExport()
     {
         m_formError = string.Empty;
-        m_exports.StartPlugin(new PluginBuildRequest { pluginId = pluginId, displayName = pluginDisplayName, outputPath = ResolveOutputPath(pluginOutputPath), includeDependencies = includePluginDependencies });
+        m_exports.StartPlugin(
+            new PluginBuildRequest
+            {
+                pluginId = pluginId,
+                displayName = pluginDisplayName,
+                outputPath = ResolveOutputPath(pluginOutputPath),
+                includeDependencies = includePluginDependencies
+            }
+        );
     }
 
     internal void BeginGameExport()
     {
         m_formError = string.Empty;
-        m_exports.StartGame(new GameBuildRequest { profile = new BuildProfile { applicationId = gameApplicationId, productName = gameProductName, persistentDataPath = gamePersistentDataPath, startupScene = gameStartupScene, target = gameTarget, managedDeployment = gameManagedDeployment, windowWidth = gameWindowWidth, windowHeight = gameWindowHeight }, outputDirectory = ResolveOutputPath(gameOutputDirectory) });
+        m_exports.StartGame(
+            new GameBuildRequest
+            {
+                profile = new BuildProfile
+                {
+                    applicationId = gameApplicationId,
+                    productName = gameProductName,
+                    persistentDataPath = gamePersistentDataPath,
+                    startupScene = gameStartupScene,
+                    target = gameTarget,
+                    managedDeployment = gameManagedDeployment,
+                    windowWidth = gameWindowWidth,
+                    windowHeight = gameWindowHeight
+                },
+                outputDirectory = ResolveOutputPath(gameOutputDirectory)
+            }
+        );
         isGameVisible = false;
         m_gameProgressVisible = true;
     }
 
     internal void CancelPluginExport(long operationId) => m_exports.Cancel(operationId);
+
     internal void CancelGameExport(long operationId) => m_exports.Cancel(operationId);
+
     internal void ClosePlugin()
     {
         if (isPluginBusy)
+        {
             m_exports.Cancel(m_exports.progress.operationId);
+        }
         isPluginVisible = false;
     }
 
     internal void CloseGame()
     {
         if (isGameBusy)
+        {
             m_exports.Cancel(m_exports.progress.operationId);
+        }
         isGameVisible = false;
     }
 
@@ -109,7 +145,10 @@ internal sealed class ExportWindowModule(
         {
             return m_buildSettings.Load();
         }
-        catch (Exception exception) when (exception is IOException or InvalidDataException or InvalidOperationException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException
+                                          or InvalidDataException
+                                          or InvalidOperationException
+                                          or UnauthorizedAccessException)
         {
             m_formError = exception.Message;
             return m_buildSettings.defaultSettings;
@@ -119,7 +158,9 @@ internal sealed class ExportWindowModule(
     private string ResolveOutputPath(string path)
     {
         if (string.IsNullOrWhiteSpace(path))
+        {
             return path;
+        }
         return Path.IsPathFullyQualified(path) ? Path.GetFullPath(path) : Path.GetFullPath(path, m_editor.projectDirectory);
     }
 }

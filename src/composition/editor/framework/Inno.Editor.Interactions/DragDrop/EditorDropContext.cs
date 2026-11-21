@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Identity;
 using Inno.Editor.Core;
 

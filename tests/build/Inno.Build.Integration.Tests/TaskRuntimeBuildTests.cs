@@ -1,19 +1,20 @@
-using System.Security.Cryptography;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Text.Json;
+using Microsoft.Build.Framework;
+using Xunit;
 using Inno.Build.TaskHosting;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
-using Microsoft.Build.Framework;
+
 using TaskItem = Microsoft.Build.Utilities.TaskItem;
-using Xunit;
 
 namespace Inno.Build.Integration.Tests;
 
@@ -48,8 +49,10 @@ public sealed class TaskRuntimeBuildTests : IDisposable
             </PropertyGroup></Project>
             """);
         File.WriteAllText(assets, """{"targets":{},"libraries":{},"packageFolders":{}}""");
-        var engine = new RecordingEngine(() => true, () => File.WriteAllText(assets,
-            """{"targets":{"net10.0":{}},"libraries":{},"packageFolders":{}}"""));
+        var engine = new RecordingEngine(() => true, () => File.WriteAllText(
+            assets,
+            """{"targets":{"net10.0":{}},"libraries":{},"packageFolders":{}}"""
+        ));
         BuildTaskRuntimeTask task = CreateTask(engine);
         task.Targets = ["PublishInnoBuildTaskHost"];
         Assert.True(task.Execute(), string.Join("\n", engine.errors.Select(static error => error.Message)));
@@ -73,7 +76,9 @@ public sealed class TaskRuntimeBuildTests : IDisposable
         var engine = new RecordingEngine(static () => true, () =>
         {
             if (restored)
+            {
                 return;
+            }
             Directory.CreateDirectory(workspace);
             File.WriteAllText(assets, """{"targets":{"net10.0":{}},"libraries":{},"packageFolders":{}}""");
             restored = true;
@@ -103,7 +108,8 @@ public sealed class TaskRuntimeBuildTests : IDisposable
     {
         using ManualResetEventSlim entered = new();
         using ManualResetEventSlim release = new();
-        RecordingEngine firstEngine = new(() => {
+        RecordingEngine firstEngine = new(() =>
+        {
             entered.Set();
             Assert.True(release.Wait(TimeSpan.FromSeconds(10)));
             return true;
@@ -111,11 +117,19 @@ public sealed class TaskRuntimeBuildTests : IDisposable
         RecordingEngine secondEngine = new(() => true);
         BuildTaskRuntimeTask first = CreateTask(firstEngine);
         BuildTaskRuntimeTask second = CreateTask(secondEngine);
-        Task<bool> firstRun = Task.Factory.StartNew(first.Execute,
-            CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+        Task<bool> firstRun = Task.Factory.StartNew(
+            first.Execute,
+            CancellationToken.None,
+            TaskCreationOptions.LongRunning,
+            TaskScheduler.Default
+        );
         Assert.True(entered.Wait(TimeSpan.FromSeconds(10)));
-        Task<bool> secondRun = Task.Factory.StartNew(second.Execute,
-            CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+        Task<bool> secondRun = Task.Factory.StartNew(
+            second.Execute,
+            CancellationToken.None,
+            TaskCreationOptions.LongRunning,
+            TaskScheduler.Default
+        );
         try
         {
             Assert.True(SpinWait.SpinUntil(() => secondEngine.yielded, TimeSpan.FromSeconds(10)));
@@ -129,8 +143,10 @@ public sealed class TaskRuntimeBuildTests : IDisposable
         Assert.True(await secondRun, string.Join("\n", secondEngine.errors.Select(static error => error.Message)));
         Assert.True(firstEngine.reacquired && secondEngine.reacquired);
         Assert.Single(first.TargetOutputs);
-        Assert.Equal(Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(m_root, "Inno.Build.Tasks.dll")))),
-            first.TargetOutputs[0].GetMetadata("FileHash"));
+        Assert.Equal(
+            Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(m_root, "Inno.Build.Tasks.dll")))),
+            first.TargetOutputs[0].GetMetadata("FileHash")
+        );
         Assert.Equal("Debug", firstEngine.properties!["Configuration"]);
         Assert.Equal(Path.Combine(m_root, "bootstrap"), firstEngine.properties["ArtifactsPath"]);
         Assert.Contains("RuntimeIdentifier", firstEngine.removed!);
@@ -142,14 +158,21 @@ public sealed class TaskRuntimeBuildTests : IDisposable
         RecordingEngine engine = new(() => true);
         BuildTaskRuntimeTask canceled = CreateTask(engine);
         using (FileLease lease = await FileLease.AcquireAsync(
-            Path.Combine(m_root, "bootstrap") + ".lock", TimeSpan.FromSeconds(10)))
-        {
-            Task<bool> execution = Task.Factory.StartNew(canceled.Execute,
-                CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            Path.Combine(m_root, "bootstrap") + ".lock",
+            TimeSpan.FromSeconds(10)
+        )) {
+            Task<bool> execution = Task.Factory.StartNew(
+                canceled.Execute,
+                CancellationToken.None,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default
+            );
             try
             {
-                Assert.True(SpinWait.SpinUntil(() => engine.yielded || execution.IsCompleted, TimeSpan.FromSeconds(10)),
-                    string.Join("\n", engine.errors.Select(static error => error.Message)));
+                Assert.True(
+                    SpinWait.SpinUntil(() => engine.yielded || execution.IsCompleted, TimeSpan.FromSeconds(10)),
+                    string.Join("\n", engine.errors.Select(static error => error.Message))
+                );
                 Assert.True(engine.yielded, string.Join("\n", engine.errors.Select(static error => error.Message)));
                 canceled.Cancel();
                 Assert.False(await execution);
@@ -225,8 +248,13 @@ public sealed class TaskRuntimeBuildTests : IDisposable
         int expectedBuilds
     ) {
         if (affectsCompilation)
-            File.WriteAllText(m_project, "<Project><PropertyGroup><DefineConstants>$(InnoTaskBootstrapOwner)</DefineConstants>"
-                + "</PropertyGroup><ItemGroup><Compile Include=\"source.cs\" /></ItemGroup></Project>");
+        {
+            File.WriteAllText(
+                m_project,
+                "<Project><PropertyGroup><DefineConstants>$(InnoTaskBootstrapOwner)</DefineConstants>"
+                + "</PropertyGroup><ItemGroup><Compile Include=\"source.cs\" /></ItemGroup></Project>"
+            );
+        }
         var engine = new RecordingEngine(static () => true);
         foreach (string owner in new[] { new string('a', 32), new string('b', 32) })
         {
@@ -252,8 +280,10 @@ public sealed class TaskRuntimeBuildTests : IDisposable
     {
         string input = Path.Combine(m_root, "compiler-input.txt");
         File.WriteAllText(input, "value=one");
-        File.WriteAllText(m_project,
-            $"<Project><ItemGroup><Compile Include=\"source.cs\" /><{itemType} Include=\"compiler-input.txt\" /></ItemGroup></Project>");
+        File.WriteAllText(
+            m_project,
+            $"<Project><ItemGroup><Compile Include=\"source.cs\" /><{itemType} Include=\"compiler-input.txt\" /></ItemGroup></Project>"
+        );
         var engine = new RecordingEngine(static () => true);
         Assert.True(CreateTask(engine).Execute(), string.Join("\n", engine.errors));
         Assert.True(CreateTask(engine).Execute(), string.Join("\n", engine.errors));
@@ -282,27 +312,39 @@ public sealed class TaskRuntimeBuildTests : IDisposable
         File.WriteAllText(unrelated, "unselected-one");
         var package = new Dictionary<string, object> { ["type"] = "package" };
         if (assetGroup != "analyzers")
-            package[assetGroup] = new Dictionary<string, object> { [relative] = new { } };
-        string assets = Path.Combine(m_root, "project.assets.json");
-        File.WriteAllText(assets, JsonSerializer.Serialize(new
         {
-            targets = new Dictionary<string, object>
+            package[assetGroup] = new Dictionary<string, object> { [relative] = new { } };
+        }
+        string assets = Path.Combine(m_root, "project.assets.json");
+        File.WriteAllText(
+            assets,
+            JsonSerializer.Serialize(new
             {
-                ["net10.0"] = new Dictionary<string, object>
+                targets = new Dictionary<string, object>
                 {
-                    ["Fixture/1.0.0"] = package
-                }
-            },
-            libraries = new Dictionary<string, object>
-            {
-                ["Fixture/1.0.0"] = new { type = "package", path = "fixture/1.0.0", files = new[] { relative, "lib/net8.0/Fixture.dll" } }
-            },
-            packageFolders = new Dictionary<string, object> { [packageRoot] = new { } }
-        }));
-        File.WriteAllText(m_project,
+                    ["net10.0"] = new Dictionary<string, object>
+                    {
+                        ["Fixture/1.0.0"] = package
+                    }
+                },
+                libraries = new Dictionary<string, object>
+                {
+                    ["Fixture/1.0.0"] = new
+                    {
+                        type = "package",
+                        path = "fixture/1.0.0",
+                        files = new[] { relative, "lib/net8.0/Fixture.dll" }
+                    }
+                },
+                packageFolders = new Dictionary<string, object> { [packageRoot] = new { } }
+            })
+        );
+        File.WriteAllText(
+            m_project,
             "<Project><PropertyGroup><TargetFramework>net10.0</TargetFramework>"
             + "<ProjectAssetsFile>" + assets + "</ProjectAssetsFile></PropertyGroup>"
-            + "<ItemGroup><Compile Include=\"source.cs\" /></ItemGroup></Project>");
+            + "<ItemGroup><Compile Include=\"source.cs\" /></ItemGroup></Project>"
+        );
         var engine = new RecordingEngine(static () => true);
         Assert.True(CreateTask(engine).Execute(), string.Join("\n", engine.errors));
         File.WriteAllText(unrelated, "unselected-two");
@@ -336,10 +378,13 @@ public sealed class TaskRuntimeBuildTests : IDisposable
     {
         string dependency = Path.Combine(m_root, "Dependency.csproj");
         File.WriteAllText(dependency, "<Project />");
-        File.WriteAllText(m_project, "<Project><ItemGroup><Compile Include=\"source.cs\" />"
+        File.WriteAllText(
+            m_project,
+            "<Project><ItemGroup><Compile Include=\"source.cs\" />"
             + "<InnoBuildInputRestoreProject Include=\"Dependency.csproj\">"
             + "<AdditionalProperties>OwnedRestore=true</AdditionalProperties></InnoBuildInputRestoreProject>"
-            + "</ItemGroup></Project>");
+            + "</ItemGroup></Project>"
+        );
         var engine = new RecordingEngine(static () => true);
         Assert.True(CreateTask(engine).Execute(), string.Join("\n", engine.errors));
         Assert.Equal(new[] { m_project + ":Restore", dependency + ":Restore", m_project + ":PublishInnoBuildTaskHost" }, engine.requests);
@@ -354,13 +399,13 @@ public sealed class TaskRuntimeBuildTests : IDisposable
         engine.outputPath = Path.Combine(m_root, "Inno.Build.Tasks.dll");
         return new()
         {
-        BuildEngine = engine,
-        ProjectFile = m_project,
-        ArtifactsDirectory = Path.Combine(m_root, "bootstrap"),
-        LoadDirectory = Path.Combine(m_root, "loads", Guid.NewGuid().ToString("N"), "Debug"),
-        Targets = ["Restore", "PublishInnoBuildTaskHost"],
-        Properties = ["Configuration=Debug", "BuildProjectReferences=true"],
-        RemoveProperties = ["RuntimeIdentifier", "PublishAot"]
+            BuildEngine = engine,
+            ProjectFile = m_project,
+            ArtifactsDirectory = Path.Combine(m_root, "bootstrap"),
+            LoadDirectory = Path.Combine(m_root, "loads", Guid.NewGuid().ToString("N"), "Debug"),
+            Targets = ["Restore", "PublishInnoBuildTaskHost"],
+            Properties = ["Configuration=Debug", "BuildProjectReferences=true"],
+            RemoveProperties = ["RuntimeIdentifier", "PublishAot"]
         };
     }
 
@@ -380,6 +425,7 @@ public sealed class TaskRuntimeBuildTests : IDisposable
             m_build = build;
             m_restore = restore;
         }
+
         internal int builds => m_builds;
         internal bool yielded => m_yielded;
         internal bool reacquired { get; private set; }
@@ -392,12 +438,19 @@ public sealed class TaskRuntimeBuildTests : IDisposable
         public int ColumnNumberOfTaskNode => 0;
         public string ProjectFileOfTaskNode => string.Empty;
         public bool IsRunningMultipleNodes => true;
+
         public void Yield() => m_yielded = true;
+
         public void Reacquire() => reacquired = true;
+
         public void LogErrorEvent(BuildErrorEventArgs error) => errors.Add(error);
-        public void LogWarningEvent(BuildWarningEventArgs warning) { }
-        public void LogMessageEvent(BuildMessageEventArgs message) { }
-        public void LogCustomEvent(CustomBuildEventArgs custom) { }
+
+        public void LogWarningEvent(BuildWarningEventArgs warning) {}
+
+        public void LogMessageEvent(BuildMessageEventArgs message) {}
+
+        public void LogCustomEvent(CustomBuildEventArgs custom) {}
+
         public BuildEngineResult BuildProjectFilesInParallel(
             string[] projects,
             string[] targets,
@@ -409,9 +462,13 @@ public sealed class TaskRuntimeBuildTests : IDisposable
             Assert.True(reacquired);
             requests.Add(projects[0] + ":" + string.Join(";", targets));
             if (returnTargetOutputs)
+            {
                 Interlocked.Increment(ref m_builds);
+            }
             else if (targets.Contains("Restore", StringComparer.Ordinal))
+            {
                 m_restore?.Invoke();
+            }
             properties = globalProperties[0];
             removed = removeGlobalProperties[0];
             TaskItem output = new(outputPath);
@@ -424,12 +481,14 @@ public sealed class TaskRuntimeBuildTests : IDisposable
             object key,
             RegisteredTaskObjectLifetime lifetime
         ) => m_registry.TryGetValue(key, out object? value) ? value : null!;
+
         public void RegisterTaskObject(
             object key,
             object value,
             RegisteredTaskObjectLifetime lifetime,
             bool allowEarlyCollection
         ) => m_registry[key] = value;
+
         public object UnregisterTaskObject(
             object key,
             RegisteredTaskObjectLifetime lifetime

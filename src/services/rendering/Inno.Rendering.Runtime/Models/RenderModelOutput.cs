@@ -1,10 +1,10 @@
-using Inno.References;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Inno.References;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 
@@ -46,17 +46,19 @@ public sealed class RenderModelOutput
     /// Gets the diagnostic name.
     /// </summary>
     public string name { get; }
+
     /// <summary>
     /// Gets the model's pipeline.
     /// </summary>
     public RenderPipelineAsset pipeline { get; }
+
     /// <summary>
     /// Gets model frame data.
     /// </summary>
     public RenderFrameData data { get; }
+
     /// <summary>
     /// Gets required target format.
     /// </summary>
     public RenderTextureFormat targetFormat { get; }
 }
-

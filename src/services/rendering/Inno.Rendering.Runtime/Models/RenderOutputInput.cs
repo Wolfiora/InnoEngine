@@ -1,8 +1,8 @@
+using System;
+using System.Collections.Generic;
 using Inno.Core.Input;
 using Inno.Core.Mathematics;
 using Inno.Rendering;
-using System;
-using System.Collections.Generic;
 
 namespace Inno.Rendering.Runtime;
 
@@ -72,47 +72,64 @@ public sealed class RenderOutputInput
     /// <summary>
     /// Gets a snapshot with no active input.
     /// </summary>
-    public static RenderOutputInput empty { get; } = new(default, false, default,
-        KeyModifier.None, [], [], [], [], []);
+    public static RenderOutputInput empty { get; } = new(default, false, default, KeyModifier.None, [], [], [], [], []);
 
     /// <summary>
     /// Gets a snapshot that clears gameplay interaction while retaining the rendered output.
     /// </summary>
-    public static RenderOutputInput suspended { get; } = new(default, false, default,
-        KeyModifier.None, [], [], [], [], [], interactionEnabled: false);
+    public static RenderOutputInput suspended { get; } = new(
+        default,
+        false,
+        default,
+        KeyModifier.None,
+        [],
+        [],
+        [],
+        [],
+        [],
+        interactionEnabled: false
+    );
 
     /// <summary>
     /// Gets viewport-local pointer coordinates.
     /// </summary>
     public Vector2 pointerPosition { get; }
+
     /// <summary>
     /// Gets whether the pointer is inside this output.
     /// </summary>
     public bool pointerInside { get; }
+
     /// <summary>
     /// Gets wheel movement.
     /// </summary>
     public Vector2 scrollDelta { get; }
+
     /// <summary>
     /// Gets active keyboard modifiers.
     /// </summary>
     public KeyModifier modifiers { get; }
+
     /// <summary>
     /// Gets keys pressed this frame.
     /// </summary>
     public IReadOnlyCollection<KeyCode> keysPressed { get; }
+
     /// <summary>
     /// Gets keys released this frame.
     /// </summary>
     public IReadOnlyCollection<KeyCode> keysReleased { get; }
+
     /// <summary>
     /// Gets buttons pressed this frame.
     /// </summary>
     public IReadOnlyCollection<MouseButton> buttonsPressed { get; }
+
     /// <summary>
     /// Gets buttons released this frame.
     /// </summary>
     public IReadOnlyCollection<MouseButton> buttonsReleased { get; }
+
     /// <summary>
     /// Gets ordered text commits.
     /// </summary>
@@ -123,4 +140,3 @@ public sealed class RenderOutputInput
     /// </summary>
     public bool interactionEnabled { get; }
 }
-

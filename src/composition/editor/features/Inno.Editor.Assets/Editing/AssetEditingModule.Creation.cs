@@ -7,6 +7,7 @@ using Inno.Core.IO;
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Assets;
+
 /// <summary>
 /// Handles asset creation actions in the Editor file browser.
 /// </summary>
@@ -26,9 +27,12 @@ public sealed partial class AssetEditingModule
     /// </exception>
     public AssetFileEntry CreateDirectory(AssetPath parent)
     {
-        AssetSourceMount mount = m_pipeline.sourceMounts.SingleOrDefault(source => source.id == parent.source) ?? throw new InvalidOperationException("The asset source mount is unavailable.");
+        AssetSourceMount mount = m_pipeline.sourceMounts.SingleOrDefault(source => source.id == parent.source)
+                                 ?? throw new InvalidOperationException("The asset source mount is unavailable.");
         if (mount.isReadOnly)
+        {
             throw new InvalidOperationException("Installed asset sources are read-only.");
+        }
         string prefix = parent.localPath.Length == 0 ? string.Empty : parent.localPath + "/";
         int suffix = 0;
         AssetPath candidate;
@@ -51,7 +55,9 @@ public sealed partial class AssetEditingModule
             RollbackAndRethrow(failure, () => m_pipeline.Delete(candidate));
         }
 
-        return m_pipeline.TryGetFileSystemEntry(candidate, out AssetFileEntry entry) ? entry : throw new InvalidOperationException("The created directory was not indexed.");
+        return m_pipeline.TryGetFileSystemEntry(candidate, out AssetFileEntry entry)
+               ? entry
+               : throw new InvalidOperationException("The created directory was not indexed.");
     }
 
     /// <summary>
@@ -76,14 +82,21 @@ public sealed partial class AssetEditingModule
         AssetPath path,
         ReadOnlySpan<byte> bytes
     ) {
-        AssetSourceMount mount = m_pipeline.sourceMounts.SingleOrDefault(source => source.id == path.source) ?? throw new InvalidOperationException("The asset source mount is unavailable.");
+        AssetSourceMount mount = m_pipeline.sourceMounts.SingleOrDefault(source => source.id == path.source)
+                                 ?? throw new InvalidOperationException("The asset source mount is unavailable.");
         if (mount.isReadOnly)
+        {
             throw new InvalidOperationException("Installed asset sources are read-only.");
+        }
         string destination = mount.Resolve(path.localPath);
         if (!Directory.Exists(Path.GetDirectoryName(destination)))
+        {
             throw new IOException("The asset's parent directory does not exist.");
+        }
         if (File.Exists(destination + ".imeta"))
+        {
             throw new IOException("The new asset path already has an identity sidecar.");
+        }
         AtomicFile.WriteAllBytes(destination, bytes, overwrite: false);
         try
         {
@@ -107,6 +120,8 @@ public sealed partial class AssetEditingModule
             throw;
         }
 
-        return m_pipeline.TryGetFileSystemEntry(path, out AssetFileEntry entry) ? entry : throw new InvalidOperationException("The created asset was not indexed.");
+        return m_pipeline.TryGetFileSystemEntry(path, out AssetFileEntry entry)
+               ? entry
+               : throw new InvalidOperationException("The created asset was not indexed.");
     }
 }

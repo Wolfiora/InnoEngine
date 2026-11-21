@@ -50,27 +50,48 @@ public sealed class BuildDistribution
         ArgumentNullException.ThrowIfNull(games);
         ArgumentNullException.ThrowIfNull(managedCompilers);
         if (games.Count == 0 || games.Any(static contribution => contribution is null))
+        {
             throw new ArgumentException("A distribution requires complete platform contributions.", nameof(games));
+        }
         m_games = games.ToArray();
         m_platforms = m_games.Select(static game => game.platform).ToArray();
         m_platformSnapshot = Array.AsReadOnly(m_platforms);
         foreach (BuildPlatformContribution platform in m_platforms)
+        {
             if (platform.bindingGenerator is not null)
+            {
                 m_bindingGenerators.Add(platform.descriptor.id.value, platform.bindingGenerator);
+            }
+        }
         m_targetIds = m_platforms.Select(static contribution => contribution.descriptor.id).ToHashSet();
         if (m_targetIds.Count != m_platforms.Length)
+        {
             throw new ArgumentException("Platform target identities must be unique.", nameof(games));
-        var native = m_platforms.ToDictionary(static platform => platform.descriptor.id.value,
-            static platform => platform.toolchainProvider, StringComparer.Ordinal);
-        var products = m_platforms.ToDictionary(static platform => platform.descriptor.id.value,
-            static platform => platform.nativeProducts, StringComparer.Ordinal);
+        }
+        var native = m_platforms.ToDictionary(
+            static platform => platform.descriptor.id.value,
+            static platform => platform.toolchainProvider,
+            StringComparer.Ordinal
+        );
+        var products = m_platforms.ToDictionary(
+            static platform => platform.descriptor.id.value,
+            static platform => platform.nativeProducts,
+            StringComparer.Ordinal
+        );
         foreach (NativeToolchainContribution contribution in nativeOnlyContributions ?? [])
         {
             if (contribution is null || !native.TryAdd(contribution.descriptor.id.value, contribution.provider))
-                throw new ArgumentException("Native SDK contributions must be complete and have unique target identities.", nameof(nativeOnlyContributions));
+            {
+                throw new ArgumentException(
+                    "Native SDK contributions must be complete and have unique target identities.",
+                    nameof(nativeOnlyContributions)
+                );
+            }
             products.Add(contribution.descriptor.id.value, contribution.nativeProducts);
             if (contribution.bindingGenerator is not null)
+            {
                 m_bindingGenerators.Add(contribution.descriptor.id.value, contribution.bindingGenerator);
+            }
         }
         m_nativeProducts = new System.Collections.ObjectModel.ReadOnlyDictionary<string,
             IReadOnlyDictionary<string, NativeProductContribution>>(products);
@@ -113,8 +134,9 @@ public sealed class BuildDistribution
     /// The target contributes no binding generator.
     /// </exception>
     public INativeBindingGenerator ResolveBindingGenerator(string targetId)
-        => m_bindingGenerators.TryGetValue(targetId, out INativeBindingGenerator? generator) ? generator
-            : throw new NotSupportedException($"No binding generator is registered for '{targetId}'.");
+        => m_bindingGenerators.TryGetValue(targetId, out INativeBindingGenerator? generator)
+           ? generator
+           : throw new NotSupportedException($"No binding generator is registered for '{targetId}'.");
 
     /// <summary>
     /// Resolves the SDK integration bound to an explicitly registered publication target.
@@ -132,7 +154,9 @@ public sealed class BuildDistribution
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
         if (m_nativeToolchains.TryGetValue(targetId, out INativeToolchainProvider? provider))
+        {
             return provider;
+        }
         throw new NotSupportedException($"No native toolchain is registered for target '{targetId}'.");
     }
 
@@ -185,8 +209,10 @@ public sealed class BuildDistribution
         ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
         ArgumentException.ThrowIfNullOrWhiteSpace(productId);
         if (m_nativeProducts.TryGetValue(targetId, out IReadOnlyDictionary<string, NativeProductContribution>? products)
-            && products.TryGetValue(productId, out NativeProductContribution? plan))
+            && products.TryGetValue(productId, out NativeProductContribution? plan)
+        ) {
             return plan;
+        }
         throw new NotSupportedException($"No ordinary native build is registered for product '{productId}' on target '{targetId}'.");
     }
 
@@ -223,13 +249,15 @@ public sealed class BuildDistribution
         {
             BuildPlatformContribution platform = m_platforms[index];
             IGameBuildTarget target = platform.factory()
-                ?? throw new InvalidOperationException("A build target factory returned no target.");
+                                      ?? throw new InvalidOperationException("A build target factory returned no target.");
             if (target.id != platform.descriptor.id || target.runtimeIdentifier != platform.descriptor.runtimeIdentifier
-                || !identities.Add(target.id))
+                || !identities.Add(target.id)
+            ) {
                 throw new InvalidOperationException($"Build target '{target.id}' does not match its bound platform description.");
+            }
             managedDeployments.Resolve(target.defaultManagedDeployment, target.runtimeIdentifier);
             IGameContentCompiler compiler = m_games[index].compilerFactory(assets, serialization, types)
-                ?? throw new InvalidOperationException("A content compiler factory returned no compiler.");
+                                            ?? throw new InvalidOperationException("A content compiler factory returned no compiler.");
             targets[index] = new GameBuildTargetBinding(target, compiler);
         }
         return Array.AsReadOnly(targets);
@@ -253,7 +281,9 @@ public sealed class BuildDistribution
     ) {
         ArgumentNullException.ThrowIfNull(target);
         if (!m_targetIds.Contains(target.id))
+        {
             throw new InvalidOperationException($"Build target '{target.id}' is not registered in this distribution.");
+        }
         managedDeployments.Resolve(deployment, target.runtimeIdentifier);
     }
 }
