@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
@@ -36,7 +37,10 @@ internal static class PublicApiDocumentationValidator
             string location = $"{relativePath}:{span.StartLinePosition.Line + 1}";
             if (documentation is null)
             {
-                failures.Add($"{location}: public or protected declaration is missing explicit XML documentation.");
+                if (!IsAdditionalPart(member, relativePath))
+                {
+                    failures.Add($"{location}: public or protected declaration is missing explicit XML documentation.");
+                }
                 continue;
             }
             if (documentation.ContainsDiagnostics)
@@ -182,6 +186,22 @@ internal static class PublicApiDocumentationValidator
             return true;
         }
         return false;
+    }
+
+    // The file `Type.cs` documents a partial type. An additional file `Type.Part.cs` does not repeat the comment.
+    private static bool IsAdditionalPart(
+        MemberDeclarationSyntax member,
+        string relativePath
+    ) {
+        if (member is not TypeDeclarationSyntax { Parent: BaseNamespaceDeclarationSyntax or CompilationUnitSyntax } type
+            || !type.Modifiers.Any(SyntaxKind.PartialKeyword)
+        ) {
+            return false;
+        }
+        string file = Path.GetFileName(relativePath);
+        string name = type.Identifier.ValueText;
+        return file.Length > name.Length + ".cs".Length
+               && file.StartsWith(name + ".", StringComparison.Ordinal);
     }
 
     private static bool RequiresDocumentation(MemberDeclarationSyntax member)

@@ -41,6 +41,32 @@ public sealed class ArchitectureSymbolTests
     }
 
     [Fact]
+    public void AdditionalFileOfAPartialTypeDoesNotRepeatTheTypeDocumentation()
+    {
+        using var fixture = new SymbolFixture();
+        const string C_PROJECT = "src/foundation/core/Inno.Core.Probe";
+        const string C_PART = """
+            namespace Inno.Core.Probe;
+
+            public sealed partial class Probe
+            {
+                private int Read() => 1;
+            }
+
+            """;
+        Directory.CreateDirectory(fixture.PathFor(C_PROJECT));
+        File.WriteAllText(Path.Combine(fixture.PathFor(C_PROJECT), "Probe.Reading.cs"), C_PART);
+        fixture.WriteSource(C_PROJECT, C_PART);
+        string output = fixture.Run("--source-only");
+        Assert.Contains(
+            C_PROJECT + "/Probe.cs:3: public or protected declaration is missing explicit XML documentation.",
+            output,
+            StringComparison.Ordinal
+        );
+        Assert.DoesNotContain(C_PROJECT + "/Probe.Reading.cs:3: public or protected declaration", output, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void InheritedDocumentationUsesTheOwningProjectInsteadOfACopiedDependency()
     {
         using var fixture = new SymbolFixture();
