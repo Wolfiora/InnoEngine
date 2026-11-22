@@ -1,9 +1,9 @@
+---
+paths: ["src/services/rendering/**", "src/adapters/rendering/**", "tests/rendering/**"]
+tags: [rendering, content-frame]
+---
 # Rendering
 
-Load complete rule units. The [registry](../coverage.json) owns routing and provenance.
-
-<!-- rule-unit: rendering -->
-<a id="rendering"></a>
 ## 17. Rendering boundaries
 - Rendering's public design must satisfy cross-platform support, API usability, flexible extension and low coupling together. Implementation convenience does not justify sacrificing any of them.
 - Only `Inno.Adapter.Rendering.Bgfx`, BGFX build toolchains and the corresponding native tests may reference `Inno.Native.Bgfx`. BGFX handles, View IDs, native pointers and BGFX enums must not appear in other projects' public/protected APIs.
@@ -14,10 +14,7 @@ Load complete rule units. The [registry](../coverage.json) owns routing and prov
 - Project script extensions may use only backend-neutral Rendering APIs. Isolate extension failures. Activate successful candidates atomically only at frame-safe points, retaining last-good Pipelines, Shaders and GPU resources.
 - Rendering Core provides graphics mechanisms only. It must not embed 2D, 2.5D, 3D, PBR, Forward, Deferred, Light, Shadow, Camera, MeshRenderer or any concrete rendering worldview. All concrete rendering models must be composable from scratch through Project scripts or Plugins.
 - Shaders, Techniques, Materials and Pipelines compose through open Stable ID contracts. The core must not maintain closed lists of Pass Tags, Render Paths, resource semantics or quality settings.
-<!-- /rule-unit: rendering -->
 
-<!-- rule-unit: content-frame -->
-<a id="content-frame"></a>
 ## 27. Content, rendering layers and frame ownership
 
 - `Inno.Content` depends only on necessary Foundation contracts and unifies logical ContentKeys, Pack indexes, read budgets and read-only leases. Shared Player, Runtime Session and AssetDatabase code does not read deployment files or create physical directories. Concrete content sources own files, HTTP, caches and owned streams. Asset consumption reuses `ArtifactLease.OpenRead()`; each opened stream holds an independent pin.
@@ -28,4 +25,3 @@ Load complete rule units. The [registry](../coverage.json) owns routing and prov
 - Rebuild Contributor snapshots only when registration changes, and freeze them at frame start. Clear extension references from private scratch on normal frames, failures and retirement. Graph Validate performs analysis only; final Compile performs complete resource allocation exactly once. Mutation rollback restores both graph and validation state. Do not modify an accepted pass.
 - Native recipes declare their actual input closure and tool identities. Share the initial input scan within an operation, retaining necessary revalidation after waiting for a lease and before publication. An unrelated assembly MVID cannot replace a component recipe identity. Unify Task bootstrapping and isolate target properties. Content-identical native deployment must not copy files, replace loaded DLLs or update mtimes.
 - Shared compilation of a Task's complete execution closure uses Core IO leases to coordinate cross-process writes and releases MSBuild nodes while waiting. The minimal bootstrap publisher uses operation-private intermediate state. Existing immutable-publication and reader protocols then manage loading and retirement.
-<!-- /rule-unit: content-frame -->

@@ -1,9 +1,9 @@
+---
+paths: ["src/content/assets/**", "src/content/scene/**", "src/content/references/**", "src/foundation/core/Inno.Core.Identity/**", "src/foundation/extensibility/Inno.Extensibility.Reload/**", "tests/assets/**", "tests/scene/**", "src/runtime/plugins/**", "tests/plugins/**", "src/foundation/scripting/**", "src/runtime/scripting/**", "tests/scripting/**", "**/*ScriptingApi*"]
+tags: [identity-reload, serialization, reload, identity-standard]
+---
 # Identity and reload
 
-Load complete rule units. The [registry](../coverage.json) owns routing and provenance.
-
-<!-- rule-unit: identity-reload -->
-<a id="identity-reload"></a>
 ## 20. Identity, Missing, references and reload
 - Resolve live objects through `Inno.Core.Identity` when crossing UI, callback, queue, frame, Scene, Asset, Scripting or Plugin-generation boundaries. Use `Identity.runtimeId` for transient resolution within the current domain. Persistence, History and cross-generation restoration store only `Identity.persistentId`. Runtime IDs must never enter Scenes, Prefabs, Asset metadata, Settings, Plugin manifests or History.
 - Stable Type IDs, semantic IDs such as Plugin/Feature/Importer IDs, Artifact keys and generation handles retain separate meanings and must not be confused with object Identity. Domain secondary indexes may map paths/semantic keys to persistent IDs or immutable records, but cannot become another authority for live objects across generations.
@@ -15,10 +15,7 @@ Load complete rule units. The [registry](../coverage.json) owns routing and prov
 - Scripting, Plugin, Asset type, Serializer and extension generations participate in the shared candidate transaction. Successful retirement of old collectible ALCs requires Full GC → `GC.WaitForPendingFinalizers()` → Full GC and weak monitors confirming every context is unreachable. Before that barrier completes, reload must not report Success or permit another reload, Play, Build or Export.
 - An unload-verification timeout causes an explicit exception and Faulted state. Never clear still-Pending monitors and continue. Failures identify module/domain/scope/generation. A Faulted process cannot continue generation transactions and requires a full Host restart. Tests cover old-generation strong references from statics, events, tasks, threads, AsyncLocal, GCHandle, native callbacks and Editor transient state.
 - The full specification, target APIs, current gaps and test matrix are in the selected InnoEngine.Docs snapshot's `content/en/architecture/identity-and-recovery.md` and linked source validation records. Reconcile those authorities when changing Identity, Scripting, Plugins, Assets, Scene, Editor Interactions/History or any collectible extension.
-<!-- /rule-unit: identity-reload -->
 
-<!-- rule-unit: identity-standard-12 -->
-<a id="identity-standard-12"></a>
 ## 12. Required architecture checks
 
 Once they can be implemented reliably with low false-positive rates, the Architecture Tool must check at least:
@@ -37,10 +34,7 @@ Once they can be implemented reliably with low false-positive rates, the Archite
 12. Secondary indexes map domain keys only to identities/immutable records, never becoming live-object authorities across generations.
 
 Use Roslyn/metadata analysis for rules requiring C# type and field understanding. Keyword scans that misclassify contentVersion, list indexes or backend handles do not replace semantic checks.
-<!-- /rule-unit: identity-standard-12 -->
 
-<!-- rule-unit: identity-standard-13 -->
-<a id="identity-standard-13"></a>
 ## 13. Test matrix
 
 ### 13.1 Identity
@@ -101,13 +95,9 @@ Also verify:
 - Success is published only after every monitor is Completed.
 - Shadow generation storage is cleaned after success.
 - Shutdown aggregates and reports still-Pending/Faulted generations instead of silently exiting.
-<!-- /rule-unit: identity-standard-13 -->
 
-<!-- rule-unit: identity-standard-14 -->
-<a id="identity-standard-14"></a>
 ## 14. Acceptance and change requirements
 
 Changes to identity, resolvers, Missing or reload must run the preceding matrix and update domain callers and shutdown order together. A count of passing tests does not replace evidence of cross-domain production transactions, failure compensation and old-ALC unreachability.
 
 Maintain current execution status in [current acceptance](../../records/acceptance/current.md) and [open items](../../records/open-items.md). This page does not maintain a second progress ledger or historical test count.
-<!-- /rule-unit: identity-standard-14 -->

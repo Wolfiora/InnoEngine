@@ -7,6 +7,7 @@ namespace Inno.Tooling.Validation;
 internal static class ValidationCiContracts
 {
     internal const string C_RULE_LOADER = "tests/ci/Test-AgentRules.ps1";
+    internal const string C_RULE_EXAMPLES = "tests/ci/Test-AgentRules.examples.json";
     private const string C_DIRECTORY = "tests/ci/";
 
     internal const string C_GATE = "tests/ci/Invoke-ValidationGate.ps1";

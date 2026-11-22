@@ -68,8 +68,14 @@ internal static class DocumentationApiPresentation
                 || kind is not YamlScalarNode { Value: "project" }) continue;
             if (!metadata.Children.TryGetValue(new YamlScalarNode("owners"), out YamlNode? owners)
                 || owners is not YamlSequenceNode sequence) continue;
-            string summary = metadata.Children.TryGetValue(new YamlScalarNode("description"), out YamlNode? description)
-                && description is YamlScalarNode { Value: string value } ? value
+            metadata.Children.TryGetValue(new YamlScalarNode("description"), out YamlNode? description);
+            if (description is not null && DocumentationApiFragment.IsNull(description)) description = null;
+            // A synchronized guide has no authored summary. Its generated body must not feed API navigation,
+            // so creating or removing the guide leaves every other planned page unchanged.
+            bool synchronized = metadata.Children.ContainsKey(new YamlScalarNode("symbol"))
+                && (!metadata.Children.TryGetValue(new YamlScalarNode("source"), out YamlNode? source) || source is YamlScalarNode { Value: "xml" });
+            if (description is null && synchronized) continue;
+            string summary = description is YamlScalarNode { Value: string value } ? value
                 : description is YamlSequenceNode items ? string.Join(" ", items.Children.Cast<YamlScalarNode>().Select(item => item.Value))
                 : Summary(text);
             foreach (YamlScalarNode owner in sequence.Children)

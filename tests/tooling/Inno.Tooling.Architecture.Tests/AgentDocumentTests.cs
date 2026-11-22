@@ -35,6 +35,20 @@ public sealed class AgentDocumentTests : IDisposable
         Assert.Contains("missing path", ArchitectureCommandFixture.Run(m_root, "--agent-documents-only").output);
     }
 
+    [Fact]
+    public void SkillsAreListedInTheRootInstructions()
+    {
+        string skill = Path.Combine(m_root, ".agents/skills/example");
+        Directory.CreateDirectory(skill);
+        File.WriteAllText(Path.Combine(skill, "SKILL.md"), "---\nname: example\ndescription: Example workflow.\n---\n\nSteps.\n");
+        File.WriteAllText(Path.Combine(m_root, "AGENTS.md"), "# Entry\n");
+        var rejected = ArchitectureCommandFixture.Run(m_root, "--agent-documents-only");
+        Assert.Equal(1, rejected.exitCode);
+        Assert.Contains("Skill is not listed in AGENTS.md: example", rejected.output);
+        File.AppendAllText(Path.Combine(m_root, "AGENTS.md"), "\n- [example](.agents/skills/example/SKILL.md): example workflow.\n");
+        Assert.Equal(0, ArchitectureCommandFixture.Run(m_root, "--agent-documents-only").exitCode);
+    }
+
     [Theory]
     [InlineData("--wiki")]
     [InlineData("--wiki-only")]

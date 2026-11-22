@@ -35,21 +35,18 @@ public sealed class ValidationExecutionTests
     }
 
     [Fact]
-    public async Task ToolSourceInputsFollowEvaluatedReferencesAndPolicyIncludesItsReview()
+    public async Task ToolSourceInputsFollowEvaluatedReferencesAndPolicyIncludesRuleFiles()
     {
         using var repository = new ValidationRepository();
         const string C_TOOL = "tools/Inno.Tooling.Validation/Inno.Tooling.Validation.csproj";
         const string C_DEPENDENCY = "src/Example/ToolDependency.cs";
         const string C_UNRELATED = "tools/Inno.Unrelated/Unrelated.cs";
-        const string C_REVIEW = ".agents/records/decisions/translation.md";
+        const string C_RULE = ".agents/rulebook/domains/example.md";
         repository.Write(C_TOOL, ValidationRepository.Project("<ItemGroup><ProjectReference Include=\"../../src/Example/Example.csproj\" /></ItemGroup>"));
         repository.Write(C_DEPENDENCY, "namespace Example; internal class ToolDependency { }");
         repository.Write("tools/Inno.Unrelated/Inno.Unrelated.csproj", ValidationRepository.Project());
         repository.Write(C_UNRELATED, "namespace Unrelated; internal class Unrelated { }");
-        repository.Write(C_REVIEW, "# Reviewed translation\n");
-        repository.Write(".agents/rulebook/coverage.json", """
-            { "units": [{ "translation": { "review": ".agents/records/decisions/translation.md" } }] }
-            """);
+        repository.Write(C_RULE, "---\ntags: [example]\n---\n# Example\n");
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare actual tooling dependencies");
         using JsonDocument plan = await repository.PlanAsync();
@@ -58,9 +55,9 @@ public sealed class ValidationExecutionTests
         Assert.Contains(C_TOOL, inputs);
         Assert.Contains(C_DEPENDENCY, inputs);
         Assert.DoesNotContain(C_UNRELATED, inputs);
-        Assert.DoesNotContain(C_REVIEW, inputs);
+        Assert.DoesNotContain(C_RULE, inputs);
         JsonElement policy = plan.RootElement.GetProperty("checks").EnumerateArray().Single(check => check.GetProperty("id").GetString() == "instructions");
-        Assert.Contains(C_REVIEW, policy.GetProperty("inputs").EnumerateArray().Select(static value => value.GetString()));
+        Assert.Contains(C_RULE, policy.GetProperty("inputs").EnumerateArray().Select(static value => value.GetString()));
     }
 
     [Fact]

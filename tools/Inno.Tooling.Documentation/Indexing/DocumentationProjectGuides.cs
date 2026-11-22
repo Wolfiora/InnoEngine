@@ -24,6 +24,10 @@ internal static class DocumentationProjectGuides
 {
     internal const string C_REGISTRY = "reference/projects/content.json";
 
+    private const string C_GUIDES = "content/en/architecture/projects/";
+    private const string C_BACKEND_GUIDES = "content/en/backends/projects/";
+    private const string C_TEST_GUIDES = "content/en/contributing/testing/projects/";
+
     internal static DocumentationProjectGuide[] Entries(string root)
     {
         string path = DocumentationApiFacts.Resolve(root, C_REGISTRY);
@@ -37,7 +41,7 @@ internal static class DocumentationProjectGuides
             throw new InvalidDataException("Invalid project guide registry.");
         foreach (var entry in registry.entries)
         {
-            if (!entry.path.StartsWith("content/en/architecture/projects/", StringComparison.Ordinal)
+            if (!IsGuidePath(entry.path)
                 || !entry.path.EndsWith(".md", StringComparison.Ordinal)
                 || entry.path.Split('/').Any(segment => segment is ".." or "." or ""))
                 throw new InvalidDataException("Project guide is outside its registered content directory.");
@@ -55,15 +59,33 @@ internal static class DocumentationProjectGuides
         var warnings = new List<DocumentationApiWarning>();
         var projects = JsonSerializer.Deserialize<DocumentationProject[]>(File.ReadAllText(DocumentationApiFacts.Resolve(root, binding.projectManifest)))!
             .ToDictionary(project => project.name, StringComparer.Ordinal);
-        var entries = Entries(root);
-        foreach (var entry in entries)
+        var registered = Entries(root);
+        string registryPath = DocumentationApiFacts.Resolve(root, C_REGISTRY);
+        // A checkout without the registry does not manage project guides.
+        var created = File.Exists(registryPath) ? NewGuides(root, projects.Values, registered) : [];
+        var entries = new List<DocumentationProjectGuide>();
+        foreach (var entry in registered.Concat(created))
         {
-            string text = File.ReadAllText(DocumentationApiFacts.Resolve(root, entry.path));
-            var fragment = Read(entry, text);
+            bool isNew = !registered.Contains(entry);
+            string absolute = DocumentationApiFacts.Resolve(root, entry.path);
+            if (isNew && File.Exists(absolute))
+            {
+                throw new InvalidDataException("Synchronization cannot overwrite an unregistered project guide: " + entry.path);
+            }
+            string? text = isNew ? null : File.ReadAllText(absolute);
+            var fragment = Read(entry, text ?? "---\nuid: " + entry.uid + "\nsymbol: project:" + entry.project + "\nsource: xml\n---\n");
             projects.TryGetValue(entry.project, out var project);
             var contexts = facts.Values.SelectMany(context => context).Where(fact => fact.project == entry.project).ToArray();
             string contract = Identity(project, contexts);
             bool manual = fragment.source != "xml";
+            if (project is null && !manual)
+            {
+                // The same removal rule as API pages: synchronized prose leaves with its source,
+                // authored prose stays for editorial resolution.
+                edits.Add(new(entry.path, DocumentationMarkdown.Hash(text!), null));
+                continue;
+            }
+            entries.Add(entry);
             string? staleProse = StaleProse(fragment, project, contexts, contract);
             bool stale = fragment.IsOutdated(staleProse);
             if (project is null)
@@ -74,9 +96,49 @@ internal static class DocumentationProjectGuides
                 warnings.Add(new(entry.project, entry.path, "ManualExplanationRequired", "This project guide uses generated source information."));
             string updated = Metadata(entry, fragment, contract, staleProse)
                 + (manual || project is null ? fragment.body : "\n\n" + Body(entry, contexts));
-            if (updated != text) edits.Add(new(entry.path, DocumentationMarkdown.Hash(text), updated));
+            if (updated != text) edits.Add(new(entry.path, text is null ? null : DocumentationMarkdown.Hash(text), updated));
+        }
+        if (created.Length != 0 || entries.Count != registered.Length)
+        {
+            var registry = new DocumentationProjectGuideRegistry(
+                "inno-project-guides/1",
+                entries.OrderBy(entry => entry.path, StringComparer.Ordinal).ToArray()
+            );
+            var options = new JsonSerializerOptions { WriteIndented = true, NewLine = "\n" };
+            edits.Add(new(
+                C_REGISTRY,
+                DocumentationMarkdown.Hash(File.ReadAllText(registryPath)),
+                JsonSerializer.Serialize(registry, options) + "\n"
+            ));
         }
         return new(edits, warnings, 0);
+    }
+
+    private static bool IsGuidePath(string path)
+        => path.StartsWith(C_GUIDES, StringComparison.Ordinal)
+        || path.StartsWith(C_BACKEND_GUIDES, StringComparison.Ordinal)
+        || path.StartsWith(C_TEST_GUIDES, StringComparison.Ordinal);
+
+    // Plans a synchronized guide for each reader-facing project that no project page owns yet.
+    // Authored project pages own their projects without a registry entry; synchronization never claims them.
+    private static DocumentationProjectGuide[] NewGuides(
+        string root,
+        IEnumerable<DocumentationProject> projects,
+        DocumentationProjectGuide[] registered
+    ) {
+        var owned = new HashSet<string>(registered.Select(entry => entry.project), StringComparer.Ordinal);
+        owned.UnionWith(DocumentationApiPresentation.ProjectDescriptions(root).Keys);
+        var guides = new List<DocumentationProjectGuide>();
+        foreach (var project in projects.OrderBy(project => project.name, StringComparer.Ordinal))
+        {
+            if (project.path.StartsWith("platforms/", StringComparison.Ordinal) || owned.Contains(project.name)) continue;
+            string slug = project.name.ToLowerInvariant().Replace('.', '-');
+            string directory = project.path.StartsWith("tests/", StringComparison.Ordinal)
+                ? C_TEST_GUIDES
+                : project.path.StartsWith("backends/", StringComparison.Ordinal) ? C_BACKEND_GUIDES : C_GUIDES;
+            guides.Add(new(directory + slug + ".md", "project." + slug, project.name));
+        }
+        return guides.ToArray();
     }
 
     internal static void Compose(
