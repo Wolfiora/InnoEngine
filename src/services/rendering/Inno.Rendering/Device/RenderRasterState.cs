@@ -1,81 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Inno.Rendering;
-
-/// <summary>
-/// Selects triangle culling for a backend-neutral raster pipeline.
-/// </summary>
-public enum RenderCullMode
-{
-    /// <summary>
-    /// Disables face culling.
-    /// </summary>
-    None,
-    /// <summary>
-    /// Culls front-facing triangles.
-    /// </summary>
-    Front,
-    /// <summary>
-    /// Culls back-facing triangles.
-    /// </summary>
-    Back
-}
-
-/// <summary>
-/// Selects the winding order interpreted as the front face.
-/// </summary>
-public enum RenderFrontFace
-{
-    /// <summary>
-    /// Clockwise vertices form a front-facing triangle.
-    /// </summary>
-    Clockwise,
-    /// <summary>
-    /// Counter-clockwise vertices form a front-facing triangle.
-    /// </summary>
-    CounterClockwise
-}
-
-/// <summary>
-/// Selects depth comparison for a backend-neutral raster pipeline.
-/// </summary>
-public enum RenderDepthCompare
-{
-    /// <summary>
-    /// Always rejects.
-    /// </summary>
-    Never,
-    /// <summary>
-    /// Accepts smaller depth.
-    /// </summary>
-    Less,
-    /// <summary>
-    /// Accepts equal depth.
-    /// </summary>
-    Equal,
-    /// <summary>
-    /// Accepts smaller or equal depth.
-    /// </summary>
-    LessEqual,
-    /// <summary>
-    /// Accepts greater depth.
-    /// </summary>
-    Greater,
-    /// <summary>
-    /// Accepts unequal depth.
-    /// </summary>
-    NotEqual,
-    /// <summary>
-    /// Accepts greater or equal depth.
-    /// </summary>
-    GreaterEqual,
-    /// <summary>
-    /// Always accepts.
-    /// </summary>
-    Always
-}
 
 /// <summary>
 /// Stores backend-neutral fixed-function raster state.
@@ -178,4 +101,77 @@ public sealed class RenderRasterState
     /// Gets primitive assembly for subsequent draw commands.
     /// </summary>
     public RenderPrimitiveTopology topology { get; init; } = RenderPrimitiveTopology.TriangleList;
+}
+
+/// <summary>
+/// Selects triangle culling for a backend-neutral raster pipeline.
+/// </summary>
+public enum RenderCullMode
+{
+    /// <summary>
+    /// Disables face culling.
+    /// </summary>
+    None,
+    /// <summary>
+    /// Culls front-facing triangles.
+    /// </summary>
+    Front,
+    /// <summary>
+    /// Culls back-facing triangles.
+    /// </summary>
+    Back
+}
+
+/// <summary>
+/// Selects the winding order interpreted as the front face.
+/// </summary>
+public enum RenderFrontFace
+{
+    /// <summary>
+    /// Clockwise vertices form a front-facing triangle.
+    /// </summary>
+    Clockwise,
+    /// <summary>
+    /// Counter-clockwise vertices form a front-facing triangle.
+    /// </summary>
+    CounterClockwise
+}
+
+/// <summary>
+/// Selects depth comparison for a backend-neutral raster pipeline.
+/// </summary>
+public enum RenderDepthCompare
+{
+    /// <summary>
+    /// Always rejects.
+    /// </summary>
+    Never,
+    /// <summary>
+    /// Accepts smaller depth.
+    /// </summary>
+    Less,
+    /// <summary>
+    /// Accepts equal depth.
+    /// </summary>
+    Equal,
+    /// <summary>
+    /// Accepts smaller or equal depth.
+    /// </summary>
+    LessEqual,
+    /// <summary>
+    /// Accepts greater depth.
+    /// </summary>
+    Greater,
+    /// <summary>
+    /// Accepts unequal depth.
+    /// </summary>
+    NotEqual,
+    /// <summary>
+    /// Accepts greater or equal depth.
+    /// </summary>
+    GreaterEqual,
+    /// <summary>
+    /// Always accepts.
+    /// </summary>
+    Always
 }

@@ -1,205 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Inno.Rendering;
 
 namespace Inno.Rendering.Shaders;
-
-/// <summary>
-/// Identifies the GPU interface through which a stage receives a value.
-/// </summary>
-public enum ShaderIrInputKind
-{
-    /// <summary>
-    /// A vertex stream attribute, including instance-rate streams.
-    /// </summary>
-    VertexAttribute,
-    /// <summary>
-    /// An interpolated value written by the preceding raster stage.
-    /// </summary>
-    Varying,
-    /// <summary>
-    /// A material, frame or draw uniform identified by a stable binding identity.
-    /// </summary>
-    Uniform,
-    /// <summary>
-    /// A sampled texture binding whose slot is assigned by target resource layout.
-    /// </summary>
-    SampledTexture,
-    /// <summary>
-    /// A typed storage buffer or image whose access, shape and layout are explicit.
-    /// </summary>
-    Storage,
-    /// <summary>
-    /// A standard GPU stage input identified by a target semantic, not native source text.
-    /// </summary>
-    Builtin
-}
-
-/// <summary>
-/// Identifies where a typed stage output is written.
-/// </summary>
-public enum ShaderIrOutputKind
-{
-    /// <summary>
-    /// The vertex position in homogeneous clip space.
-    /// </summary>
-    ClipPosition,
-    /// <summary>
-    /// A value interpolated for the next raster stage.
-    /// </summary>
-    Varying,
-    /// <summary>
-    /// A fragment color attachment at its explicit location.
-    /// </summary>
-    Color,
-    /// <summary>
-    /// The fragment depth value.
-    /// </summary>
-    Depth
-}
-
-/// <summary>
-/// Describes a stage input without embedding native declarations or expressions.
-/// </summary>
-public sealed class ShaderIrStageInput
-{
-    /// <summary>
-    /// Creates an immutable stage input binding.
-    /// </summary>
-    /// <param name="id">
-    /// Stable binding identity, also used by the block's named Input instruction.
-    /// </param>
-    /// <param name="type">
-    /// Complete non-void type.
-    /// </param>
-    /// <param name="kind">
-    /// Source of the GPU value.
-    /// </param>
-    /// <param name="semantic">
-    /// Target semantic, such as position, texcoord, color, instance-data or fragment-coordinate.
-    /// </param>
-    /// <param name="location">
-    /// Attribute/semantic index or assigned texture slot, never a native handle.
-    /// </param>
-    public ShaderIrStageInput(
-        string id,
-        ShaderSourceType type,
-        ShaderIrInputKind kind,
-        string semantic = "",
-        int location = 0
-    ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        ArgumentNullException.ThrowIfNull(type);
-        ArgumentOutOfRangeException.ThrowIfNegative(location);
-        if (type.id == "void" || !Enum.IsDefined(kind))
-        {
-            throw new ArgumentException("A stage input requires a value type and defined interface kind.");
-        }
-        if (kind == ShaderIrInputKind.SampledTexture
-            && (type.fields.Count != 0 || type.elementType is not null || type.storage is not null)
-        ) {
-            throw new ArgumentException("A sampled texture binding requires an opaque atomic resource type.", nameof(type));
-        }
-        if (kind is ShaderIrInputKind.VertexAttribute or ShaderIrInputKind.Varying or ShaderIrInputKind.Builtin)
-        {
-            ArgumentException.ThrowIfNullOrWhiteSpace(semantic);
-        }
-        this.id = id;
-        this.type = type;
-        this.kind = kind;
-        this.semantic = semantic;
-        this.location = location;
-    }
-
-    /// <summary>
-    /// Gets the logical binding identity.
-    /// </summary>
-    public string id { get; }
-
-    /// <summary>
-    /// Gets the complete typed value received by the stage.
-    /// </summary>
-    public ShaderSourceType type { get; }
-
-    /// <summary>
-    /// Gets the GPU input category.
-    /// </summary>
-    public ShaderIrInputKind kind { get; }
-
-    /// <summary>
-    /// Gets the target semantic; an adapter must reject unsupported semantics.
-    /// </summary>
-    public string semantic { get; }
-
-    /// <summary>
-    /// Gets the target-assigned interface location or sampled-texture slot.
-    /// </summary>
-    public int location { get; }
-}
-
-/// <summary>
-/// Describes a named block output's GPU destination.
-/// </summary>
-public sealed class ShaderIrStageOutput
-{
-    /// <summary>
-    /// Creates an immutable stage output binding.
-    /// </summary>
-    /// <param name="id">
-    /// The exact name in the block's output map.
-    /// </param>
-    /// <param name="kind">
-    /// GPU output category.
-    /// </param>
-    /// <param name="semantic">
-    /// Varying semantic matched by the next stage; otherwise empty.
-    /// </param>
-    /// <param name="location">
-    /// Varying index or color attachment index.
-    /// </param>
-    public ShaderIrStageOutput(
-        string id,
-        ShaderIrOutputKind kind,
-        string semantic = "",
-        int location = 0
-    ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        ArgumentOutOfRangeException.ThrowIfNegative(location);
-        if (!Enum.IsDefined(kind))
-        {
-            throw new ArgumentException("A stage output requires a defined destination kind.", nameof(kind));
-        }
-        if (kind == ShaderIrOutputKind.Varying)
-        {
-            ArgumentException.ThrowIfNullOrWhiteSpace(semantic);
-        }
-        this.id = id;
-        this.kind = kind;
-        this.semantic = semantic;
-        this.location = location;
-    }
-
-    /// <summary>
-    /// Gets the exact block output identity.
-    /// </summary>
-    public string id { get; }
-
-    /// <summary>
-    /// Gets the GPU output category.
-    /// </summary>
-    public ShaderIrOutputKind kind { get; }
-
-    /// <summary>
-    /// Gets the varying semantic, not native assignment syntax.
-    /// </summary>
-    public string semantic { get; }
-
-    /// <summary>
-    /// Gets the target-assigned varying or attachment index.
-    /// </summary>
-    public int location { get; }
-}
 
 /// <summary>
 /// Freezes a typed GPU stage and its explicit interface. It contains no main function, varying declarations or source expressions.
@@ -403,4 +206,58 @@ public sealed class ShaderIrStage
             or ShaderIrOperation.Discard
             || instruction.regions.Any(RequiresFragment)
         ));
+}
+
+/// <summary>
+/// Identifies the GPU interface through which a stage receives a value.
+/// </summary>
+public enum ShaderIrInputKind
+{
+    /// <summary>
+    /// A vertex stream attribute, including instance-rate streams.
+    /// </summary>
+    VertexAttribute,
+    /// <summary>
+    /// An interpolated value written by the preceding raster stage.
+    /// </summary>
+    Varying,
+    /// <summary>
+    /// A material, frame or draw uniform identified by a stable binding identity.
+    /// </summary>
+    Uniform,
+    /// <summary>
+    /// A sampled texture binding whose slot is assigned by target resource layout.
+    /// </summary>
+    SampledTexture,
+    /// <summary>
+    /// A typed storage buffer or image whose access, shape and layout are explicit.
+    /// </summary>
+    Storage,
+    /// <summary>
+    /// A standard GPU stage input identified by a target semantic, not native source text.
+    /// </summary>
+    Builtin
+}
+
+/// <summary>
+/// Identifies where a typed stage output is written.
+/// </summary>
+public enum ShaderIrOutputKind
+{
+    /// <summary>
+    /// The vertex position in homogeneous clip space.
+    /// </summary>
+    ClipPosition,
+    /// <summary>
+    /// A value interpolated for the next raster stage.
+    /// </summary>
+    Varying,
+    /// <summary>
+    /// A fragment color attachment at its explicit location.
+    /// </summary>
+    Color,
+    /// <summary>
+    /// The fragment depth value.
+    /// </summary>
+    Depth
 }

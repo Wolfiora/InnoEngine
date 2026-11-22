@@ -2,19 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Inno.Assets;
-using Inno.Build;
 using Inno.Build.Managed;
 using Inno.Core.Settings;
 
 namespace Inno.Build.Cli;
-
-internal enum BuildCommandKind
-{
-    Game,
-    Plugin,
-    ImportSample,
-    Scripts
-}
 
 internal sealed class BuildCommand
 {
@@ -167,4 +158,12 @@ internal sealed class BuildCommand
         + "  InnoEngine.Build plugin --tools-target <native-target> --project <dir> --output <package.iplugin> --display-name <name> [--dependencies <id,id>] [--include-dependencies]\n"
         + "  InnoEngine.Build import-sample --project <dir> --source <plugin-id::~Sample> [--dotnet <SDK>]\n"
         + "  InnoEngine.Build scripts --project <dir> --output <dir> [--dotnet <SDK>] [--ide]";
+}
+
+internal enum BuildCommandKind
+{
+    Game,
+    Plugin,
+    ImportSample,
+    Scripts
 }

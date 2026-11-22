@@ -62,17 +62,3 @@ internal sealed class ScriptApiMap
         return new ScriptApiMap(namespaces);
     }
 }
-
-internal sealed class ScriptApiNamespaceMap
-{
-    internal ScriptApiNamespaceMap(
-        string apiNamespace,
-        ImmutableArray<string> implementationNamespaces
-    ) {
-        this.apiNamespace = apiNamespace;
-        this.implementationNamespaces = implementationNamespaces;
-    }
-
-    internal string apiNamespace { get; }
-    internal ImmutableArray<string> implementationNamespaces { get; }
-}

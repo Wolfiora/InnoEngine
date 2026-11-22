@@ -1,0 +1,26 @@
+using System;
+
+namespace Inno.Extensibility.Modules;
+
+internal sealed class CatalogParticipantRegistration(
+    AssemblyCatalogCoordinator owner,
+    Guid id
+) : IDisposable
+{
+    private bool m_disposed;
+
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose()
+    {
+        if (m_disposed)
+        {
+            return;
+        }
+        m_disposed = true;
+        owner.Unregister(id);
+    }
+
+    internal Guid id { get; } = id;
+}

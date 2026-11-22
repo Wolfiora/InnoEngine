@@ -2,7 +2,6 @@ using System;
 using System.Runtime.CompilerServices;
 using Xunit;
 using Inno.Core.Serialization;
-using Inno.Core.Serialization.Converters;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Scripting.Compiler;
@@ -116,20 +115,4 @@ public sealed partial class ScriptingPipelineTests
         Assert.Equal("tests.lifecycle.action", item.actionID);
         Assert.True(item.status.isEnabled);
     }
-}
-
-internal sealed class CapturedScriptPayload(ISerializable payload) : ISerializable
-{
-    internal ISerializable payload { get; } = payload;
-}
-
-internal sealed class CapturedScriptPayloadConverter : SerializationConverter<CapturedScriptPayload>
-{
-    public override void Write(
-        SerializationWriter writer,
-        CapturedScriptPayload value
-    ) => writer.WritePropertiesData("state", value.payload);
-
-    public override CapturedScriptPayload Read(SerializationReader reader)
-        => throw new NotSupportedException("This fixture only captures an existing generation.");
 }

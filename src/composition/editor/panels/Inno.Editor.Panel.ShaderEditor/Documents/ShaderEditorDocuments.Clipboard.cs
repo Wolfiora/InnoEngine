@@ -8,11 +8,6 @@ using Inno.Rendering.Shaders;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 
-internal sealed record ShaderClipboardData(
-    byte[] graph,
-    Guid owner
-);
-
 internal sealed partial class ShaderEditorDocuments
 {
     internal ShaderClipboardData Copy(Draft draft)
@@ -61,3 +56,8 @@ internal sealed partial class ShaderEditorDocuments
         Changed(draft);
     }
 }
+
+internal sealed record ShaderClipboardData(
+    byte[] graph,
+    Guid owner
+);

@@ -1,74 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Inno.Assets;
-using Inno.Core.Mathematics;
-using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
-using Inno.Rendering;
-using Inno.Scripting.Api;
 
 namespace Inno.Rendering.Assets;
-
-/// <summary>
-/// Selects the triangle face rejected by a raster pass.
-/// </summary>
-[StableTypeID("a0efdb24-2746-512d-aef5-46180c539581")]
-public enum ShaderCullMode
-{
-    /// <summary>
-    /// Does not reject either face orientation.
-    /// </summary>
-    None,
-    /// <summary>
-    /// Rejects front-facing triangles.
-    /// </summary>
-    Front,
-    /// <summary>
-    /// Rejects back-facing triangles.
-    /// </summary>
-    Back
-}
-
-/// <summary>
-/// Selects the comparison used by depth testing.
-/// </summary>
-[StableTypeID("cababee4-46b3-5bd8-800f-46d58149959b")]
-public enum ShaderCompareFunction
-{
-    /// <summary>
-    /// Always rejects the fragment.
-    /// </summary>
-    Never,
-    /// <summary>
-    /// Accepts a fragment with a smaller depth.
-    /// </summary>
-    Less,
-    /// <summary>
-    /// Accepts a fragment with an equal depth.
-    /// </summary>
-    Equal,
-    /// <summary>
-    /// Accepts a fragment with a smaller or equal depth.
-    /// </summary>
-    LessEqual,
-    /// <summary>
-    /// Accepts a fragment with a greater depth.
-    /// </summary>
-    Greater,
-    /// <summary>
-    /// Accepts a fragment with a different depth.
-    /// </summary>
-    NotEqual,
-    /// <summary>
-    /// Accepts a fragment with a greater or equal depth.
-    /// </summary>
-    GreaterEqual,
-    /// <summary>
-    /// Always accepts the fragment.
-    /// </summary>
-    Always
-}
 
 /// <summary>
 /// Declares backend-neutral fixed-function state for one shader pass.
@@ -131,4 +63,64 @@ public struct ShaderRenderState
     /// Gets or sets whether compatible targets use multisample rasterization.
     /// </summary>
     public bool multisampling { get; set; }
+}
+
+/// <summary>
+/// Selects the triangle face rejected by a raster pass.
+/// </summary>
+[StableTypeID("a0efdb24-2746-512d-aef5-46180c539581")]
+public enum ShaderCullMode
+{
+    /// <summary>
+    /// Does not reject either face orientation.
+    /// </summary>
+    None,
+    /// <summary>
+    /// Rejects front-facing triangles.
+    /// </summary>
+    Front,
+    /// <summary>
+    /// Rejects back-facing triangles.
+    /// </summary>
+    Back
+}
+
+/// <summary>
+/// Selects the comparison used by depth testing.
+/// </summary>
+[StableTypeID("cababee4-46b3-5bd8-800f-46d58149959b")]
+public enum ShaderCompareFunction
+{
+    /// <summary>
+    /// Always rejects the fragment.
+    /// </summary>
+    Never,
+    /// <summary>
+    /// Accepts a fragment with a smaller depth.
+    /// </summary>
+    Less,
+    /// <summary>
+    /// Accepts a fragment with an equal depth.
+    /// </summary>
+    Equal,
+    /// <summary>
+    /// Accepts a fragment with a smaller or equal depth.
+    /// </summary>
+    LessEqual,
+    /// <summary>
+    /// Accepts a fragment with a greater depth.
+    /// </summary>
+    Greater,
+    /// <summary>
+    /// Accepts a fragment with a different depth.
+    /// </summary>
+    NotEqual,
+    /// <summary>
+    /// Accepts a fragment with a greater or equal depth.
+    /// </summary>
+    GreaterEqual,
+    /// <summary>
+    /// Always accepts the fragment.
+    /// </summary>
+    Always
 }

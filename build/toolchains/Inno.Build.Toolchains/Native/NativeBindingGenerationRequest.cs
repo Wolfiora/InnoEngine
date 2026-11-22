@@ -6,21 +6,6 @@ using System.Linq;
 namespace Inno.Build.Toolchains;
 
 /// <summary>
-/// Selects the publication owner of generated sources.
-/// </summary>
-public enum NativeBindingOutputMode
-{
-    /// <summary>
-    /// Replaces the component's authored host source and bridge outputs together.
-    /// </summary>
-    HostSource,
-    /// <summary>
-    /// Publishes immutable target outputs under the component's generation fingerprint.
-    /// </summary>
-    TargetArtifacts
-}
-
-/// <summary>
 /// Freezes the complete binding request before ownership waits or candidate creation.
 /// </summary>
 public sealed class NativeBindingGenerationRequest
@@ -122,4 +107,19 @@ public sealed class NativeBindingGenerationRequest
     /// Gets explicit component binding and linkage choices.
     /// </summary>
     public IReadOnlyDictionary<string, NativeComponentBuildOptions> componentOptions { get; }
+}
+
+/// <summary>
+/// Selects the publication owner of generated sources.
+/// </summary>
+public enum NativeBindingOutputMode
+{
+    /// <summary>
+    /// Replaces the component's authored host source and bridge outputs together.
+    /// </summary>
+    HostSource,
+    /// <summary>
+    /// Publishes immutable target outputs under the component's generation fingerprint.
+    /// </summary>
+    TargetArtifacts
 }

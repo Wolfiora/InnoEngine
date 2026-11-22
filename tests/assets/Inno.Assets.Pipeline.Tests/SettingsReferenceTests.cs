@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Xunit;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
-using Inno.Assets;
-using Inno.Assets.Pipeline;
 using Inno.Content;
 using Inno.Content.Testing;
 using Inno.Core.Diagnostics;
@@ -245,56 +242,5 @@ public sealed class SettingsReferenceTests
         internal AssetPipeline assets { get; }
         internal SerializationContext context { get; }
         internal ProjectSettingsStore settings { get; }
-    }
-}
-
-internal abstract class ClipSettingsBase : ISerializable
-{
-    [SerializableProperty]
-    public TextAsset? clip { get; set; }
-
-    [SerializableProperty]
-    public string[] labels { get; set; } = [];
-}
-
-[StableTypeID("2c7288db-eb9e-43a5-9894-bf9d10b22a2d")]
-[ProjectSettingDefinition("tests.settings.clip")]
-internal sealed class ClipSettings : ClipSettingsBase
-{
-    internal static readonly Guid TYPE_ID = new("2c7288db-eb9e-43a5-9894-bf9d10b22a2d");
-    internal static ProjectSettingID id => new("tests.settings.clip");
-}
-
-[StableTypeID("cbeec86a-29da-4894-915f-b6239086ee05")]
-[ProjectSettingDefinition("tests.settings.composed-clip")]
-internal sealed class ComposedClipSettings : ClipSettingsBase
-{
-    internal static ProjectSettingID id => new("tests.settings.composed-clip");
-}
-
-internal sealed class ClipContribution : ISerializable
-{
-    [SerializableProperty]
-    public TextAsset? clip { get; set; }
-}
-
-[ProjectSettingComposer("tests.settings.composed-clip")]
-internal sealed class ClipSettingsComposer : ProjectSettingComposer<ComposedClipSettings, ClipContribution>
-{
-    protected override ClipContribution CaptureContribution(
-        ComposedClipSettings baseline,
-        ComposedClipSettings value
-    ) => new() { clip = value.clip };
-
-    protected override bool IsEmpty(ClipContribution contribution) => contribution.clip is null;
-
-    protected override void Compose(
-        ComposedClipSettings target,
-        IReadOnlyList<ProjectSettingContribution<ClipContribution>> contributions
-    ) {
-        foreach (ProjectSettingContribution<ClipContribution> contribution in contributions)
-        {
-            target.clip = contribution.value.clip;
-        }
     }
 }

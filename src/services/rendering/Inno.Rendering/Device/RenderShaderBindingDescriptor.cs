@@ -1,69 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering;
-
-/// <summary>
-/// Identifies a shader interface binding domain.
-/// </summary>
-public enum RenderShaderBindingKind
-{
-    /// <summary>
-    /// Vector or matrix uniform data.
-    /// </summary>
-    Uniform,
-    /// <summary>
-    /// Sampled texture and sampler state.
-    /// </summary>
-    Texture,
-    /// <summary>
-    /// Shader-readable or writable storage texture.
-    /// </summary>
-    StorageTexture,
-    /// <summary>
-    /// Compute-readable or writable buffer.
-    /// </summary>
-    StorageBuffer
-}
-
-/// <summary>
-/// Identifies the native-independent shape of one uniform binding.
-/// </summary>
-public enum RenderUniformType
-{
-    /// <summary>
-    /// Four-component 32-bit floating-point vector.
-    /// </summary>
-    Vector4,
-    /// <summary>
-    /// Three-by-three 32-bit floating-point matrix.
-    /// </summary>
-    Matrix3x3,
-    /// <summary>
-    /// Four-by-four 32-bit floating-point matrix.
-    /// </summary>
-    Matrix4x4
-}
-
-/// <summary>
-/// Selects unordered storage-resource access for one shader binding.
-/// </summary>
-public enum RenderStorageAccess
-{
-    /// <summary>
-    /// Shader read-only access.
-    /// </summary>
-    Read,
-    /// <summary>
-    /// Shader write-only access.
-    /// </summary>
-    Write,
-    /// <summary>
-    /// Shader read and write access.
-    /// </summary>
-    ReadWrite
-}
 
 /// <summary>
 /// Declares one manifest-derived shader binding used for reflection validation.
@@ -166,4 +103,65 @@ public sealed class RenderShaderBindingDescriptor
     /// Gets the exact adapter-generated symbol used only for reflection and native resource creation.
     /// </summary>
     public string nativeName { get; }
+}
+
+/// <summary>
+/// Identifies a shader interface binding domain.
+/// </summary>
+public enum RenderShaderBindingKind
+{
+    /// <summary>
+    /// Vector or matrix uniform data.
+    /// </summary>
+    Uniform,
+    /// <summary>
+    /// Sampled texture and sampler state.
+    /// </summary>
+    Texture,
+    /// <summary>
+    /// Shader-readable or writable storage texture.
+    /// </summary>
+    StorageTexture,
+    /// <summary>
+    /// Compute-readable or writable buffer.
+    /// </summary>
+    StorageBuffer
+}
+
+/// <summary>
+/// Identifies the native-independent shape of one uniform binding.
+/// </summary>
+public enum RenderUniformType
+{
+    /// <summary>
+    /// Four-component 32-bit floating-point vector.
+    /// </summary>
+    Vector4,
+    /// <summary>
+    /// Three-by-three 32-bit floating-point matrix.
+    /// </summary>
+    Matrix3x3,
+    /// <summary>
+    /// Four-by-four 32-bit floating-point matrix.
+    /// </summary>
+    Matrix4x4
+}
+
+/// <summary>
+/// Selects unordered storage-resource access for one shader binding.
+/// </summary>
+public enum RenderStorageAccess
+{
+    /// <summary>
+    /// Shader read-only access.
+    /// </summary>
+    Read,
+    /// <summary>
+    /// Shader write-only access.
+    /// </summary>
+    Write,
+    /// <summary>
+    /// Shader read and write access.
+    /// </summary>
+    ReadWrite
 }

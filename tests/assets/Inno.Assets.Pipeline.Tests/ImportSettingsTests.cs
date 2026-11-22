@@ -1,13 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
-using Inno.Assets;
 using Inno.Core.Diagnostics;
 using Inno.Core.Identity;
 using Inno.Core.Logging;
@@ -215,43 +210,5 @@ public sealed class ImportSettingsTests
                 ],
                 Path.Combine(m_root, "ReadOnlyLibrary")
             );
-    }
-}
-
-[StableTypeID("f58eaeea-4bd5-4f3a-a7c0-c5a5414a6bb4")]
-internal sealed class ConfiguredSettings : ISerializable
-{
-    [SerializableProperty]
-    internal int multiplier { get; set; } = 1;
-
-    [SerializableProperty]
-    internal TextAsset? lookup { get; set; }
-}
-
-[StableTypeID("bdb3db71-e9cb-4d46-839b-3cbe302c5555")]
-internal sealed class ConfiguredAsset : AssetObject
-{
-    [SerializableProperty]
-    internal string value { get; set; } = string.Empty;
-}
-
-[AssetImporter("tests.configured")]
-internal sealed class ConfiguredImporter : AssetImporter<ConfiguredAsset>
-{
-    public override IReadOnlyList<string> supportedExtensions { get; } = [".configured"];
-
-    public override ISerializable CreateImportSettings() => new ConfiguredSettings();
-
-    protected override ValueTask ImportAsync(
-        AssetImportContext context,
-        AssetImportWriter<ConfiguredAsset> output,
-        CancellationToken cancellationToken
-    ) {
-        ConfiguredSettings settings = (ConfiguredSettings)context.importSettings!;
-        if (settings.multiplier < 0) throw new InvalidOperationException("A negative multiplier is invalid.");
-        string value = $"{settings.multiplier}:{context.ReadUtf8Text()}";
-        if (settings.lookup is not null) value += ":" + settings.lookup.content;
-        output.SetAsset(new ConfiguredAsset { value = value });
-        return output.WriteArtifactAsync("runtime", Encoding.UTF8.GetBytes(value), cancellationToken);
     }
 }

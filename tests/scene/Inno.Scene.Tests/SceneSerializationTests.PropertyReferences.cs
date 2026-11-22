@@ -3,8 +3,6 @@ using System.Linq;
 using Xunit;
 using Inno.Assets;
 using Inno.Core.Identity;
-using Inno.Core.Serialization;
-using Inno.Extensibility.Types;
 
 namespace Inno.Scene.Tests;
 
@@ -156,30 +154,4 @@ public sealed partial class SceneSerializationTests
         // A leaked property scope would treat this independent prefab root as an out-of-bound reference.
         Assert.NotEmpty(m_serialization.Serialize(nestedScene.CreateObject("Independent prefab"), m_serializationContext));
     }
-}
-
-[StableTypeID("486290eb-6cc4-4a96-918a-c8022f51ad85")]
-internal sealed class PropertyReferenceProbe : GameComponent
-{
-    [SerializableProperty(order = -1)]
-    public int trigger
-    {
-        get
-        {
-            beforeRead?.Invoke();
-            return 0;
-        }
-        set {}
-    }
-
-    [SerializableProperty]
-    public GameObject? targetObject { get; set; }
-
-    [SerializableProperty]
-    public GameComponent? targetComponent { get; set; }
-
-    [SerializableProperty]
-    public GameSystem? targetSystem { get; set; }
-
-    internal Action? beforeRead { get; set; }
 }

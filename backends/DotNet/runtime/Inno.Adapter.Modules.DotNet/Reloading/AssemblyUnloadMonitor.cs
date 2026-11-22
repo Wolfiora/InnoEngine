@@ -7,21 +7,6 @@ using Inno.Extensibility.Reload;
 namespace Inno.Adapter.Modules.DotNet;
 
 /// <summary>
-/// Describes whether a collectible load context is still reachable.
-/// </summary>
-internal enum AssemblyUnloadStatus
-{
-    /// <summary>
-    /// At least one runtime reference still keeps the load context alive.
-    /// </summary>
-    Pending,
-    /// <summary>
-    /// The load context is no longer reachable, or the module was not collectible.
-    /// </summary>
-    Completed
-}
-
-/// <summary>
 /// Observes cooperative unload completion without retaining the old load context.
 /// </summary>
 internal sealed class AssemblyUnloadMonitor : IAssemblyUnloadProbe
@@ -125,4 +110,19 @@ internal sealed class AssemblyUnloadMonitor : IAssemblyUnloadProbe
             }
         }
     }
+}
+
+/// <summary>
+/// Describes whether a collectible load context is still reachable.
+/// </summary>
+internal enum AssemblyUnloadStatus
+{
+    /// <summary>
+    /// At least one runtime reference still keeps the load context alive.
+    /// </summary>
+    Pending,
+    /// <summary>
+    /// The load context is no longer reachable, or the module was not collectible.
+    /// </summary>
+    Completed
 }

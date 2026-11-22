@@ -4,25 +4,6 @@ using System.Collections.Generic;
 namespace Inno.Editor.Interactions;
 
 /// <summary>
-/// Selects how a dirty document responds to a close request.
-/// </summary>
-public enum EditorDocumentCloseMode
-{
-    /// <summary>
-    /// Keeps the document open.
-    /// </summary>
-    Cancel,
-    /// <summary>
-    /// Closes the document after saving.
-    /// </summary>
-    Save,
-    /// <summary>
-    /// Closes the document and discards unsaved state.
-    /// </summary>
-    Discard
-}
-
-/// <summary>
 /// Owns single-instance editor documents independently from reloadable providers and presentation.
 /// </summary>
 public interface IEditorDocumentService
@@ -148,4 +129,23 @@ public interface IEditorDocumentService
         Guid documentID,
         EditorDocumentCloseMode mode
     );
+}
+
+/// <summary>
+/// Selects how a dirty document responds to a close request.
+/// </summary>
+public enum EditorDocumentCloseMode
+{
+    /// <summary>
+    /// Keeps the document open.
+    /// </summary>
+    Cancel,
+    /// <summary>
+    /// Closes the document after saving.
+    /// </summary>
+    Save,
+    /// <summary>
+    /// Closes the document and discards unsaved state.
+    /// </summary>
+    Discard
 }

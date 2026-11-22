@@ -7,27 +7,6 @@ using Inno.Core.IO;
 
 namespace Inno.Tooling.Documentation.Indexing;
 
-internal sealed record DocumentationApiFact(
-    string key,
-    string project,
-    string family,
-    string? scope,
-    string id,
-    string? containingType,
-    string kind,
-    string signature,
-    string signatureHash,
-    string documentation,
-    string source,
-    int line,
-    string revision,
-    string configuration,
-    string? target,
-    string surface,
-    string? baseType,
-    IReadOnlyList<string> interfaces
-);
-
 internal static class DocumentationApiFacts
 {
     internal static IReadOnlyDictionary<string, DocumentationApiFact[]> Read(
@@ -223,3 +202,24 @@ internal static class DocumentationApiFacts
         string name
     ) => value.TryGetProperty(name, out JsonElement result) && result.ValueKind != JsonValueKind.Null ? result.GetString() : null;
 }
+
+internal sealed record DocumentationApiFact(
+    string key,
+    string project,
+    string family,
+    string? scope,
+    string id,
+    string? containingType,
+    string kind,
+    string signature,
+    string signatureHash,
+    string documentation,
+    string source,
+    int line,
+    string revision,
+    string configuration,
+    string? target,
+    string surface,
+    string? baseType,
+    IReadOnlyList<string> interfaces
+);

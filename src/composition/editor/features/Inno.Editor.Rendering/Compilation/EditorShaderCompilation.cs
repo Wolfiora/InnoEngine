@@ -8,65 +8,6 @@ using Inno.Rendering.Assets;
 namespace Inno.Editor.Rendering;
 
 /// <summary>
-/// Identifies native compilation state independently of document persistence.
-/// </summary>
-public enum EditorShaderCompilationState
-{
-    /// <summary>
-    /// The latest semantic candidate is being compiled.
-    /// </summary>
-    Compiling,
-    /// <summary>
-    /// The latest semantic candidate compiled successfully.
-    /// </summary>
-    Succeeded,
-    /// <summary>
-    /// The latest semantic candidate failed.
-    /// </summary>
-    Failed
-}
-
-/// <summary>
-/// Contains detached compiler state without retaining assets, tasks or extension instances.
-/// </summary>
-/// <param name="state">
-/// Latest requested semantic candidate state.
-/// </param>
-/// <param name="usingLastGood">
-/// Whether rendering still uses a previous successful candidate.
-/// </param>
-/// <param name="diagnostics">
-/// Immutable latest completed compiler diagnostics.
-/// </param>
-public sealed record EditorShaderCompilationSnapshot(
-    EditorShaderCompilationState state,
-    bool usingLastGood,
-    IReadOnlyList<ShaderDiagnostic> diagnostics
-);
-
-/// <summary>
-/// Contains a preview-only immutable candidate, never registered as a canonical asset artifact.
-/// </summary>
-/// <param name="state">
-/// Latest draft compilation state.
-/// </param>
-/// <param name="usingLastGood">
-/// Whether the preview artifact belongs to an earlier successful draft.
-/// </param>
-/// <param name="diagnostics">
-/// Latest detached preview diagnostics, separate from project diagnostics.
-/// </param>
-/// <param name="artifact">
-/// Preview-only complete shader candidate, or null before the first success.
-/// </param>
-public sealed record EditorShaderDraftCompilationSnapshot(
-    EditorShaderCompilationState state,
-    bool usingLastGood,
-    IReadOnlyList<ShaderDiagnostic> diagnostics,
-    RenderShaderArtifact? artifact
-);
-
-/// <summary>
 /// Schedules Editor shader compilation for the active device without exposing native handles to authoring panels.
 /// </summary>
 public sealed class EditorShaderCompilation
@@ -224,3 +165,62 @@ public sealed class EditorShaderCompilation
         m_provider.ReleaseDraft(documentID);
     }
 }
+
+/// <summary>
+/// Identifies native compilation state independently of document persistence.
+/// </summary>
+public enum EditorShaderCompilationState
+{
+    /// <summary>
+    /// The latest semantic candidate is being compiled.
+    /// </summary>
+    Compiling,
+    /// <summary>
+    /// The latest semantic candidate compiled successfully.
+    /// </summary>
+    Succeeded,
+    /// <summary>
+    /// The latest semantic candidate failed.
+    /// </summary>
+    Failed
+}
+
+/// <summary>
+/// Contains detached compiler state without retaining assets, tasks or extension instances.
+/// </summary>
+/// <param name="state">
+/// Latest requested semantic candidate state.
+/// </param>
+/// <param name="usingLastGood">
+/// Whether rendering still uses a previous successful candidate.
+/// </param>
+/// <param name="diagnostics">
+/// Immutable latest completed compiler diagnostics.
+/// </param>
+public sealed record EditorShaderCompilationSnapshot(
+    EditorShaderCompilationState state,
+    bool usingLastGood,
+    IReadOnlyList<ShaderDiagnostic> diagnostics
+);
+
+/// <summary>
+/// Contains a preview-only immutable candidate, never registered as a canonical asset artifact.
+/// </summary>
+/// <param name="state">
+/// Latest draft compilation state.
+/// </param>
+/// <param name="usingLastGood">
+/// Whether the preview artifact belongs to an earlier successful draft.
+/// </param>
+/// <param name="diagnostics">
+/// Latest detached preview diagnostics, separate from project diagnostics.
+/// </param>
+/// <param name="artifact">
+/// Preview-only complete shader candidate, or null before the first success.
+/// </param>
+public sealed record EditorShaderDraftCompilationSnapshot(
+    EditorShaderCompilationState state,
+    bool usingLastGood,
+    IReadOnlyList<ShaderDiagnostic> diagnostics,
+    RenderShaderArtifact? artifact
+);

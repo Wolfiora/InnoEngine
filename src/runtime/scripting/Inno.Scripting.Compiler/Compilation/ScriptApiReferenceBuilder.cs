@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -12,15 +11,6 @@ using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Inno.Scripting.Compiler;
-
-internal sealed record ScriptApiReferenceSet(
-    IReadOnlyList<string> runtimeReferencePaths,
-    IReadOnlyList<string> ideReferencePaths,
-    string contractFingerprint,
-    string artifactFingerprint,
-    ScriptCompilationEnvironment environment,
-    string cacheDirectory
-);
 
 internal static class ScriptApiReferenceBuilder
 {
@@ -441,3 +431,12 @@ internal static class ScriptApiReferenceBuilder
         return Convert.ToHexStringLower(hash);
     }
 }
+
+internal sealed record ScriptApiReferenceSet(
+    IReadOnlyList<string> runtimeReferencePaths,
+    IReadOnlyList<string> ideReferencePaths,
+    string contractFingerprint,
+    string artifactFingerprint,
+    ScriptCompilationEnvironment environment,
+    string cacheDirectory
+);

@@ -4,34 +4,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using Inno.Core.Collections;
-using Inno.Extensibility.Types;
 using Inno.Scene.Layers;
 
 namespace Inno.Scene;
-
-/// <summary>
-/// Describes the structural result of removing a component.
-/// </summary>
-internal enum SceneStoreRemovalKind
-{
-    /// <summary>
-    /// The none key.
-    /// </summary>
-    None,
-    /// <summary>
-    /// The canceled pending addition key.
-    /// </summary>
-    CanceledPendingAddition,
-    /// <summary>
-    /// The removed committed key.
-    /// </summary>
-    RemovedCommitted
-}
-
-internal readonly record struct SceneStoreRemovedComponent(
-    GameComponent component,
-    bool wasCommitted
-);
 
 internal sealed class SceneStore
 {
@@ -1000,3 +975,27 @@ internal sealed class SceneStore
         }
     }
 }
+
+/// <summary>
+/// Describes the structural result of removing a component.
+/// </summary>
+internal enum SceneStoreRemovalKind
+{
+    /// <summary>
+    /// The none key.
+    /// </summary>
+    None,
+    /// <summary>
+    /// The canceled pending addition key.
+    /// </summary>
+    CanceledPendingAddition,
+    /// <summary>
+    /// The removed committed key.
+    /// </summary>
+    RemovedCommitted
+}
+
+internal readonly record struct SceneStoreRemovedComponent(
+    GameComponent component,
+    bool wasCommitted
+);

@@ -8,11 +8,6 @@ using System.Text;
 
 namespace Inno.Scripting.Compiler;
 
-internal sealed record ScriptDeploymentReferenceSet(
-    IReadOnlyList<string> paths,
-    string fingerprint
-);
-
 internal static class ScriptDeploymentReferenceResolver
 {
     internal static ScriptDeploymentReferenceSet Resolve(string runtimeDirectory)
@@ -83,3 +78,8 @@ internal static class ScriptDeploymentReferenceResolver
         hash.AppendData(bytes);
     }
 }
+
+internal sealed record ScriptDeploymentReferenceSet(
+    IReadOnlyList<string> paths,
+    string fingerprint
+);

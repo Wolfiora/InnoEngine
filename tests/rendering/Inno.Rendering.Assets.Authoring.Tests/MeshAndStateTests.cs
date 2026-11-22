@@ -1,18 +1,11 @@
 using System;
-using System.Buffers.Binary;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using Xunit;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
-using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Assets.Authoring.Tests;
 
@@ -244,6 +237,3 @@ public sealed class MeshAndStateTests : IDisposable
             homogeneousDepth: false
         );
 }
-
-[CollectionDefinition("Rendering assets serialization", DisableParallelization = true)]
-public sealed class RenderingAssetsSerializationCollection;

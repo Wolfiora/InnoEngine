@@ -2,12 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
-using Inno.Core.Diagnostics;
 
 namespace Inno.Core.Diagnostics.Tests;
-
-[CollectionDefinition("Diagnose", DisableParallelization = true)]
-public sealed class DiagnoseCollection;
 
 [Collection("Diagnose")]
 public sealed class DiagnosticHubTests : IDisposable

@@ -1,23 +1,7 @@
-using System;
 using System.Collections.Generic;
 using Inno.Rendering.Shaders;
 
 namespace Inno.Build.Toolchains.Bgfx.Tools;
-
-internal readonly record struct BgfxSourceToken(
-    string text,
-    ShaderSourcePosition position
-) {
-    internal bool isIdentifier => text.Length != 0 && (char.IsLetter(text[0]) || text[0] == '_');
-}
-
-internal sealed class BgfxSourceSyntaxException(
-    string message,
-    ShaderSourcePosition position
-) : Exception(message)
-{
-    internal ShaderSourcePosition position { get; } = position;
-}
 
 internal static class BgfxSourceLexer
 {
@@ -176,4 +160,11 @@ internal static class BgfxSourceLexer
     ) => (first, second) is ('&', '&') or ('|', '|') or ('=', '=') or ('!', '=') or ('<', '=') or ('>', '=')
          or ('<', '<') or ('>', '>') or ('#', '#') or ('+', '+') or ('-', '-') or ('+', '=') or ('-', '=')
          or ('*', '=') or ('/', '=') or ('&', '=') or ('|', '=') or ('^', '=') or ('%', '=');
+}
+
+internal readonly record struct BgfxSourceToken(
+    string text,
+    ShaderSourcePosition position
+) {
+    internal bool isIdentifier => text.Length != 0 && (char.IsLetter(text[0]) || text[0] == '_');
 }

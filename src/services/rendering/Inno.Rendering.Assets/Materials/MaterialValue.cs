@@ -1,41 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using Inno.Assets;
 using Inno.Core.Mathematics;
-using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
-using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
-
-/// <summary>
-/// Identifies the neutral value stored by a material property.
-/// </summary>
-[StableTypeID("a9af9e77-9a97-5f66-82a0-d720ac5604dc")]
-public enum MaterialValueKind
-{
-    /// <summary>
-    /// Scalar floating-point value.
-    /// </summary>
-    Float,
-    /// <summary>
-    /// Four-component vector value.
-    /// </summary>
-    Vector,
-    /// <summary>
-    /// Linear color value.
-    /// </summary>
-    Color,
-    /// <summary>
-    /// Four-by-four matrix value.
-    /// </summary>
-    Matrix,
-    /// <summary>
-    /// Texture asset reference.
-    /// </summary>
-    Texture
-}
 
 /// <summary>
 /// Stores one native-serializable material value without a GPU binding.
@@ -153,4 +120,32 @@ public struct MaterialValue
             sampler ?? RenderSamplerState.linearClamp
         );
     }
+}
+
+/// <summary>
+/// Identifies the neutral value stored by a material property.
+/// </summary>
+[StableTypeID("a9af9e77-9a97-5f66-82a0-d720ac5604dc")]
+public enum MaterialValueKind
+{
+    /// <summary>
+    /// Scalar floating-point value.
+    /// </summary>
+    Float,
+    /// <summary>
+    /// Four-component vector value.
+    /// </summary>
+    Vector,
+    /// <summary>
+    /// Linear color value.
+    /// </summary>
+    Color,
+    /// <summary>
+    /// Four-by-four matrix value.
+    /// </summary>
+    Matrix,
+    /// <summary>
+    /// Texture asset reference.
+    /// </summary>
+    Texture
 }

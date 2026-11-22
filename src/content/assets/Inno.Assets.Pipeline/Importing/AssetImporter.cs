@@ -2,34 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Assets;
 using Inno.Core.Serialization;
 
 namespace Inno.Assets.Pipeline;
-
-/// <summary>
-/// Declares the immutable protocol identity of an automatically discovered asset importer.
-/// </summary>
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-public sealed class AssetImporterAttribute : Attribute
-{
-    /// <summary>
-    /// Creates importer discovery metadata.
-    /// </summary>
-    /// <param name="id">
-    /// Globally stable importer protocol identifier.
-    /// </param>
-    public AssetImporterAttribute(string id)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        this.id = id.Trim();
-    }
-
-    /// <summary>
-    /// Gets the globally stable importer protocol identifier.
-    /// </summary>
-    public string id { get; }
-}
 
 /// <summary>
 /// Defines metadata shared by automatically discovered asset importers.
@@ -171,23 +146,4 @@ public abstract class AssetImporter<TAsset> : AssetImporter
         }
         return ValueTask.FromResult<ReadOnlyMemory<byte>?>(null);
     }
-}
-
-internal readonly struct AssetImportProduct(
-    AssetObject asset,
-    IReadOnlyDictionary<string, ReadOnlyMemory<byte>> outputs,
-    IReadOnlyList<string> diagnostics,
-    IReadOnlySet<string> authoringOutputs,
-    AssetDeploymentScope? deploymentScope
-) {
-    internal AssetObject asset { get; } = asset ?? throw new ArgumentNullException(nameof(asset));
-    internal IReadOnlyDictionary<string, ReadOnlyMemory<byte>> outputs { get; } = outputs;
-    internal IReadOnlyList<string> diagnostics { get; } = diagnostics;
-    internal IReadOnlySet<string> authoringOutputs { get; } = authoringOutputs;
-    internal AssetDeploymentScope? deploymentScope { get; } = deploymentScope;
-
-    internal ReadOnlyMemory<byte> runtimePayload
-        => outputs.TryGetValue("runtime", out ReadOnlyMemory<byte> bytes)
-           ? bytes
-           : ReadOnlyMemory<byte>.Empty;
 }

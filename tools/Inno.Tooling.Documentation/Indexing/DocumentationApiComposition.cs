@@ -12,23 +12,6 @@ using YamlDotNet.RepresentationModel;
 
 namespace Inno.Tooling.Documentation.Indexing;
 
-internal sealed record DocumentationApiOrigin(
-    string page,
-    string id,
-    string path,
-    string source,
-    string editorialStatus,
-    string? scope,
-    string revision,
-    string[] surfaces
-);
-
-internal sealed record DocumentationComposedContent(
-    IReadOnlyDictionary<string, string> pages,
-    IReadOnlyDictionary<string, string> inputs,
-    IReadOnlyList<DocumentationApiOrigin> origins
-);
-
 internal static class DocumentationApiComposition
 {
     internal static DocumentationComposedContent Prepare(
@@ -425,3 +408,20 @@ internal static class DocumentationApiComposition
         return body;
     }
 }
+
+internal sealed record DocumentationApiOrigin(
+    string page,
+    string id,
+    string path,
+    string source,
+    string editorialStatus,
+    string? scope,
+    string revision,
+    string[] surfaces
+);
+
+internal sealed record DocumentationComposedContent(
+    IReadOnlyDictionary<string, string> pages,
+    IReadOnlyDictionary<string, string> inputs,
+    IReadOnlyList<DocumentationApiOrigin> origins
+);

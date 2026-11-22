@@ -4,294 +4,6 @@ using System.Collections.Generic;
 namespace Inno.Rendering;
 
 /// <summary>
-/// Identifies the graphics API family selected by the host without exposing a backend-native enum.
-/// Pipelines use this value only for capability-aware choices and target artifact selection;
-/// it does not require separate pipeline or shader source implementations.
-/// </summary>
-public readonly record struct GraphicsApi : IComparable<GraphicsApi>
-{
-    /// <summary>
-    /// Creates an open, stable backend identity without registering a backend implementation.
-    /// </summary>
-    /// <param name="value">
-    /// A portable case-sensitive identifier used in target artifact paths.
-    /// </param>
-    /// <exception cref="ArgumentException">
-    /// The identifier is empty or contains nonportable characters.
-    /// </exception>
-    public GraphicsApi(string value)
-    {
-        if (!IsPortableIdentifier(value))
-        {
-            throw new ArgumentException(
-                "Graphics API IDs must begin with a letter or digit and use only portable letters, numbers, dots, underscores or hyphens.",
-                nameof(value)
-            );
-        }
-        this.value = value;
-    }
-
-    /// <summary>
-    /// Headless validation backend.
-    /// </summary>
-    public static GraphicsApi noop { get; } = new("Noop");
-
-    /// <summary>
-    /// Direct3D 11 renderer.
-    /// </summary>
-    public static GraphicsApi direct3D11 { get; } = new("Direct3D11");
-
-    /// <summary>
-    /// Direct3D 12 renderer.
-    /// </summary>
-    public static GraphicsApi direct3D12 { get; } = new("Direct3D12");
-
-    /// <summary>
-    /// Apple Metal renderer.
-    /// </summary>
-    public static GraphicsApi metal { get; } = new("Metal");
-
-    /// <summary>
-    /// Khronos Vulkan renderer.
-    /// </summary>
-    public static GraphicsApi vulkan { get; } = new("Vulkan");
-
-    /// <summary>
-    /// Desktop OpenGL renderer.
-    /// </summary>
-    public static GraphicsApi openGL { get; } = new("OpenGL");
-
-    /// <summary>
-    /// OpenGL ES renderer.
-    /// </summary>
-    public static GraphicsApi openGLES { get; } = new("OpenGLES");
-
-    /// <summary>
-    /// WebGPU renderer.
-    /// </summary>
-    public static GraphicsApi webGPU { get; } = new("WebGPU");
-
-    /// <summary>
-    /// Gets the stable backend identity used by target artifacts and provider selection.
-    /// </summary>
-    public string value { get; }
-
-    /// <summary>
-    /// Gets whether this value contains an initialized backend identity.
-    /// </summary>
-    public bool isValid => !string.IsNullOrEmpty(value);
-
-    /// <summary>
-    /// Compares two backend identities using stable ordinal ordering.
-    /// </summary>
-    /// <param name="other">
-    /// The other backend identity.
-    /// </param>
-    /// <returns>
-    /// A negative, zero, or positive value according to ordinal identifier order.
-    /// </returns>
-    public int CompareTo(GraphicsApi other) => string.Compare(value, other.value, StringComparison.Ordinal);
-
-    /// <summary>
-    /// Formats the exact stable backend identity.
-    /// </summary>
-    /// <returns>
-    /// The identity, or an empty string for an uninitialized value.
-    /// </returns>
-    public override string ToString() => value ?? string.Empty;
-
-    /// <summary>
-    /// Parses an open backend identity without consulting a closed engine-side backend list.
-    /// </summary>
-    /// <param name="value">
-    /// The exact stable backend identity.
-    /// </param>
-    /// <param name="api">
-    /// The parsed value, or default when parsing fails.
-    /// </param>
-    /// <returns>
-    /// True when the identifier is portable and nonempty.
-    /// </returns>
-    public static bool TryParse(
-        string? value,
-        out GraphicsApi api
-    ) {
-        api = default;
-        if (!IsPortableIdentifier(value))
-        {
-            return false;
-        }
-        api = new GraphicsApi(value!);
-        return true;
-    }
-
-    private static bool IsPortableIdentifier(string? candidate)
-    {
-        if (string.IsNullOrEmpty(candidate) || !char.IsAsciiLetterOrDigit(candidate[0]))
-        {
-            return false;
-        }
-        foreach (char character in candidate)
-        {
-            if (!(char.IsAsciiLetterOrDigit(character) || character is '-' or '_' or '.'))
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-}
-
-/// <summary>
-/// Declares backend-neutral optional graphics functionality.
-/// </summary>
-[Flags]
-public enum GraphicsCapability
-{
-    /// <summary>
-    /// No optional feature.
-    /// </summary>
-    None = 0,
-    /// <summary>
-    /// Compute shader dispatch.
-    /// </summary>
-    Compute = 1 << 0,
-    /// <summary>
-    /// Shader-readable and writable storage buffers.
-    /// </summary>
-    StorageBuffer = 1 << 1,
-    /// <summary>
-    /// Indirect draw and dispatch commands.
-    /// </summary>
-    Indirect = 1 << 2,
-    /// <summary>
-    /// Independent blend state per color attachment.
-    /// </summary>
-    IndependentBlend = 1 << 3,
-    /// <summary>
-    /// Multiple command encoders may record concurrently.
-    /// </summary>
-    ConcurrentEncoders = 1 << 4,
-    /// <summary>
-    /// Texture copy operations are supported directly.
-    /// </summary>
-    TextureBlit = 1 << 5,
-    /// <summary>
-    /// General GPU buffer copy operations are supported directly.
-    /// </summary>
-    BufferCopy = 1 << 6,
-    /// <summary>
-    /// Alpha-to-coverage rasterization is supported.
-    /// </summary>
-    AlphaToCoverage = 1 << 7,
-    /// <summary>
-    /// Unsigned 32-bit index buffers are supported.
-    /// </summary>
-    Index32 = 1 << 8,
-    /// <summary>
-    /// Instanced draw input is supported.
-    /// </summary>
-    Instancing = 1 << 9,
-    /// <summary>
-    /// Additional native presentation surfaces are supported.
-    /// </summary>
-    SwapChain = 1 << 10,
-    /// <summary>
-    /// Two-dimensional texture arrays are supported.
-    /// </summary>
-    Texture2DArray = 1 << 11,
-    /// <summary>
-    /// Three-dimensional textures are supported.
-    /// </summary>
-    Texture3D = 1 << 12,
-    /// <summary>
-    /// Cubemap texture arrays are supported.
-    /// </summary>
-    TextureCubeArray = 1 << 13,
-    /// <summary>
-    /// Half-precision vertex attributes are supported.
-    /// </summary>
-    VertexAttributeHalf = 1 << 14,
-    /// <summary>
-    /// Packed 10:10:10:2 vertex attributes are supported.
-    /// </summary>
-    VertexAttributeUInt10 = 1 << 15,
-    /// <summary>
-    /// Procedural draws using shader vertex identifiers are supported.
-    /// </summary>
-    ProceduralDraw = 1 << 16,
-    /// <summary>
-    /// Fragment shaders may write depth explicitly.
-    /// </summary>
-    FragmentDepth = 1 << 17,
-    /// <summary>
-    /// Shader-readable and writable storage textures are supported.
-    /// </summary>
-    StorageTexture = 1 << 18,
-    /// <summary>
-    /// Asynchronous texture transfer from GPU memory to CPU-visible bytes.
-    /// </summary>
-    TextureReadback = 1 << 19
-}
-
-/// <summary>
-/// Captures device limits used to validate and compile render graphs.
-/// </summary>
-public sealed class GraphicsLimits
-{
-    /// <summary>
-    /// Creates a graphics limits snapshot.
-    /// </summary>
-    /// <param name="maxViews">
-    /// Maximum logical backend views in one frame.
-    /// </param>
-    /// <param name="maxColorAttachments">
-    /// Maximum color attachments in one raster pass.
-    /// </param>
-    /// <param name="maxTextureSize">
-    /// Maximum two-dimensional texture extent.
-    /// </param>
-    /// <param name="maxComputeBindings">
-    /// Maximum storage bindings in one compute pass.
-    /// </param>
-    public GraphicsLimits(
-        int maxViews,
-        int maxColorAttachments,
-        int maxTextureSize,
-        int maxComputeBindings
-    ) {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxViews);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxColorAttachments);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxTextureSize);
-        ArgumentOutOfRangeException.ThrowIfNegative(maxComputeBindings);
-        this.maxViews = maxViews;
-        this.maxColorAttachments = maxColorAttachments;
-        this.maxTextureSize = maxTextureSize;
-        this.maxComputeBindings = maxComputeBindings;
-    }
-
-    /// <summary>
-    /// Gets the maximum logical backend views in one frame.
-    /// </summary>
-    public int maxViews { get; }
-
-    /// <summary>
-    /// Gets the maximum color attachments in one raster pass.
-    /// </summary>
-    public int maxColorAttachments { get; }
-
-    /// <summary>
-    /// Gets the maximum two-dimensional texture extent.
-    /// </summary>
-    public int maxTextureSize { get; }
-
-    /// <summary>
-    /// Gets the maximum storage bindings in one compute pass.
-    /// </summary>
-    public int maxComputeBindings { get; }
-}
-
-/// <summary>
 /// Provides an immutable capability snapshot for one device generation.
 /// </summary>
 public sealed class GraphicsCapabilities
@@ -495,4 +207,96 @@ public sealed class GraphicsCapabilities
                                          && m_storageWriteFormats.Contains(format),
         _ => false
     };
+}
+
+/// <summary>
+/// Declares backend-neutral optional graphics functionality.
+/// </summary>
+[Flags]
+public enum GraphicsCapability
+{
+    /// <summary>
+    /// No optional feature.
+    /// </summary>
+    None = 0,
+    /// <summary>
+    /// Compute shader dispatch.
+    /// </summary>
+    Compute = 1 << 0,
+    /// <summary>
+    /// Shader-readable and writable storage buffers.
+    /// </summary>
+    StorageBuffer = 1 << 1,
+    /// <summary>
+    /// Indirect draw and dispatch commands.
+    /// </summary>
+    Indirect = 1 << 2,
+    /// <summary>
+    /// Independent blend state per color attachment.
+    /// </summary>
+    IndependentBlend = 1 << 3,
+    /// <summary>
+    /// Multiple command encoders may record concurrently.
+    /// </summary>
+    ConcurrentEncoders = 1 << 4,
+    /// <summary>
+    /// Texture copy operations are supported directly.
+    /// </summary>
+    TextureBlit = 1 << 5,
+    /// <summary>
+    /// General GPU buffer copy operations are supported directly.
+    /// </summary>
+    BufferCopy = 1 << 6,
+    /// <summary>
+    /// Alpha-to-coverage rasterization is supported.
+    /// </summary>
+    AlphaToCoverage = 1 << 7,
+    /// <summary>
+    /// Unsigned 32-bit index buffers are supported.
+    /// </summary>
+    Index32 = 1 << 8,
+    /// <summary>
+    /// Instanced draw input is supported.
+    /// </summary>
+    Instancing = 1 << 9,
+    /// <summary>
+    /// Additional native presentation surfaces are supported.
+    /// </summary>
+    SwapChain = 1 << 10,
+    /// <summary>
+    /// Two-dimensional texture arrays are supported.
+    /// </summary>
+    Texture2DArray = 1 << 11,
+    /// <summary>
+    /// Three-dimensional textures are supported.
+    /// </summary>
+    Texture3D = 1 << 12,
+    /// <summary>
+    /// Cubemap texture arrays are supported.
+    /// </summary>
+    TextureCubeArray = 1 << 13,
+    /// <summary>
+    /// Half-precision vertex attributes are supported.
+    /// </summary>
+    VertexAttributeHalf = 1 << 14,
+    /// <summary>
+    /// Packed 10:10:10:2 vertex attributes are supported.
+    /// </summary>
+    VertexAttributeUInt10 = 1 << 15,
+    /// <summary>
+    /// Procedural draws using shader vertex identifiers are supported.
+    /// </summary>
+    ProceduralDraw = 1 << 16,
+    /// <summary>
+    /// Fragment shaders may write depth explicitly.
+    /// </summary>
+    FragmentDepth = 1 << 17,
+    /// <summary>
+    /// Shader-readable and writable storage textures are supported.
+    /// </summary>
+    StorageTexture = 1 << 18,
+    /// <summary>
+    /// Asynchronous texture transfer from GPU memory to CPU-visible bytes.
+    /// </summary>
+    TextureReadback = 1 << 19
 }

@@ -7,13 +7,6 @@ using System.Xml.Linq;
 
 namespace Inno.Tooling.Documentation.Indexing;
 
-internal sealed record DocumentationXmlContent(
-    string[] summaries,
-    string body
-) {
-    internal string summary => string.Join("\n\n", summaries);
-}
-
 internal static class DocumentationXml
 {
     internal static DocumentationXmlContent Read(string xml)
@@ -183,4 +176,11 @@ internal static class DocumentationXml
             ))
         ) + "\n\n";
     }
+}
+
+internal sealed record DocumentationXmlContent(
+    string[] summaries,
+    string body
+) {
+    internal string summary => string.Join("\n\n", summaries);
 }

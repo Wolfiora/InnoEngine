@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -7,7 +6,6 @@ using System.Runtime.CompilerServices;
 using Xunit;
 using Xunit.Sdk;
 using Inno.Core.IO;
-using Inno.Core.Serialization;
 using Inno.Core.Settings;
 using Inno.Editor.Interactions;
 using Inno.Editor.Settings;
@@ -325,67 +323,5 @@ public sealed unsafe class SettingsApplyNativeTests
             Draw();
             Draw();
         }
-    }
-}
-
-[EditorSettingPath("Editor/Atomic Editor/Value")]
-public sealed class AtomicEditorSetting : EditorSetting
-{
-    public static readonly List<WeakReference<EditorSettingObject>> SNAPSHOTS = [];
-    public static bool stage;
-    public static bool throwOnDraw;
-    public static bool observe;
-
-    public override EditorSettingObject defaultValue
-    {
-        get
-        {
-            var value = new EditorSettingObject();
-            value.SetAsInt32("value", 0);
-            return value;
-        }
-    }
-
-    protected override void OnDraw(EditorSettingObject setting)
-    {
-        if (throwOnDraw)
-        {
-            throw new InvalidOperationException("Controlled Settings drawer failure.");
-        }
-        if (observe
-            && (SNAPSHOTS.Count == 0 || !SNAPSHOTS[^1].TryGetTarget(out EditorSettingObject? last) || !ReferenceEquals(last, setting))
-        ) {
-            SNAPSHOTS.Add(new WeakReference<EditorSettingObject>(setting));
-        }
-        if (!stage)
-        {
-            return;
-        }
-        setting.SetAsInt32("value", 42);
-        stage = false;
-    }
-}
-
-[GenerateSerializationConverter]
-[ProjectSettingDefinition("tests.ui.atomic-settings")]
-public sealed class AtomicProjectSetting : ISerializable
-{
-    [SerializableProperty]
-    public int value { get; set; }
-}
-
-[ProjectSettingPath("Project/Atomic Project/Value")]
-public sealed class AtomicProjectEditor : ProjectSettingEditor<AtomicProjectSetting>
-{
-    public static bool stage;
-
-    protected override void OnDraw(AtomicProjectSetting setting)
-    {
-        if (!stage)
-        {
-            return;
-        }
-        setting.value = 84;
-        stage = false;
     }
 }

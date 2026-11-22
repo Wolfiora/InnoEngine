@@ -3,29 +3,6 @@ using Inno.Scripting.Compiler;
 namespace Inno.Editor.Scripting;
 
 /// <summary>
-/// Identifies whether the active project script generation can safely start game simulation.
-/// </summary>
-public enum EditorScriptCompilationState
-{
-    /// <summary>
-    /// The script service has not produced its initial active generation.
-    /// </summary>
-    Initializing,
-    /// <summary>
-    /// A requested script generation is compiling, activating, or completing unload verification.
-    /// </summary>
-    Compiling,
-    /// <summary>
-    /// The most recent compilation succeeded, its generation is active, and retired generations passed GC verification.
-    /// </summary>
-    Ready,
-    /// <summary>
-    /// Compilation, activation, or generation retirement failed, so game simulation must not start.
-    /// </summary>
-    Failed
-}
-
-/// <summary>
 /// Exposes the minimal script-generation readiness contract required by editor workflows.
 /// </summary>
 public interface IEditorScriptCompilation
@@ -71,4 +48,27 @@ public interface IEditorScriptCompilation
     /// a faulted host returns a failed ticket and requires restart.
     /// </returns>
     IScriptCompilationTicket RequestCompilation();
+}
+
+/// <summary>
+/// Identifies whether the active project script generation can safely start game simulation.
+/// </summary>
+public enum EditorScriptCompilationState
+{
+    /// <summary>
+    /// The script service has not produced its initial active generation.
+    /// </summary>
+    Initializing,
+    /// <summary>
+    /// A requested script generation is compiling, activating, or completing unload verification.
+    /// </summary>
+    Compiling,
+    /// <summary>
+    /// The most recent compilation succeeded, its generation is active, and retired generations passed GC verification.
+    /// </summary>
+    Ready,
+    /// <summary>
+    /// Compilation, activation, or generation retirement failed, so game simulation must not start.
+    /// </summary>
+    Failed
 }

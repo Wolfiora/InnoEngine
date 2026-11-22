@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Xunit;
-using Inno.Core.Serialization.Converters;
 
 namespace Inno.Core.Serialization.Tests;
 
@@ -234,82 +232,4 @@ public sealed partial class SerializationBehaviorTests
         var value = new DefaultSample { name = "Weak owner" };
         return (m_serialization.CaptureSnapshot(value), new WeakReference(value));
     }
-}
-
-internal sealed class MutatingBinaryCapture : ISerializable
-{
-    internal byte[] bytes = [1];
-}
-
-internal sealed class MutatingBinaryCaptureConverter : SerializationConverter<MutatingBinaryCapture>
-{
-    public override void Write(
-        SerializationWriter writer,
-        MutatingBinaryCapture value
-    ) {
-        writer.Write("bytes", value.bytes);
-        value.bytes[0] = 2;
-    }
-
-    public override MutatingBinaryCapture Read(SerializationReader reader) => new() { bytes = reader.Read<byte[]>("bytes") };
-}
-
-internal sealed class MutatingPropertyCapture : ISerializable
-{
-    private readonly byte[] m_bytes = [1];
-
-    [SerializableProperty(PropertyVisibility.Serialize)]
-    public byte[] bytes => m_bytes;
-
-    [SerializableProperty(PropertyVisibility.Serialize)]
-    public int mutate => m_bytes[0] = 2;
-
-    internal void Reset() => m_bytes[0] = 1;
-}
-
-internal sealed class SnapshotEnvelope : ISerializable
-{
-    internal bool omitState;
-    internal bool fail;
-    internal bool duplicate;
-    internal int writeCalls;
-    internal long observedTypeGeneration;
-
-    internal Dictionary<string, int> fields { get; } = [];
-    internal List<int> items { get; } = [];
-    internal DefaultSample state { get; } = new();
-}
-
-internal sealed class SnapshotEnvelopeConverter : SerializationConverter<SnapshotEnvelope>
-{
-    public override void Write(
-        SerializationWriter writer,
-        SnapshotEnvelope value
-    ) {
-        value.writeCalls++;
-        value.observedTypeGeneration = writer.typeSnapshot.version;
-        foreach (KeyValuePair<string, int> pair in value.fields)
-        {
-            writer.Write(pair.Key, pair.Value);
-        }
-        if (value.duplicate)
-        {
-            writer.Write("duplicate", 1);
-            writer.Write("duplicate", 2);
-        }
-        if (!value.omitState)
-        {
-            writer.WritePropertiesData("state", value.state);
-            writer.WriteObjectArray("items", value.items, static (
-                child,
-                number
-            ) => child.Write("value", number));
-        }
-        if (value.fail)
-        {
-            throw new InvalidOperationException("Capture rejected by its source converter.");
-        }
-    }
-
-    public override SnapshotEnvelope Read(SerializationReader reader) => throw new NotSupportedException();
 }

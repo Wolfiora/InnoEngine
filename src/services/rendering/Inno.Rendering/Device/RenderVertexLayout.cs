@@ -5,6 +5,121 @@ using System.Linq;
 namespace Inno.Rendering;
 
 /// <summary>
+/// Defines one interleaved vertex stream independently from a graphics backend.
+/// </summary>
+public sealed class RenderVertexLayout : IEquatable<RenderVertexLayout>
+{
+    private readonly IReadOnlyList<RenderVertexAttribute> m_attributes;
+
+    /// <summary>
+    /// Creates an interleaved vertex layout.
+    /// </summary>
+    /// <param name="attributes">
+    /// Unique attributes in ascending byte order. Attributes with offset -1 are packed after the preceding attribute.
+    /// </param>
+    /// <param name="stride">
+    /// Explicit positive stream stride, or zero to use the end of the final attribute. A larger stride preserves
+    /// trailing application-defined padding.
+    /// </param>
+    public RenderVertexLayout(
+        IReadOnlyList<RenderVertexAttribute> attributes,
+        int stride = 0
+    ) {
+        ArgumentNullException.ThrowIfNull(attributes);
+        ArgumentOutOfRangeException.ThrowIfNegative(stride);
+        if (attributes.Count == 0)
+        {
+            throw new ArgumentException("A vertex layout requires at least one attribute.", nameof(attributes));
+        }
+
+        if (attributes.Select(static value => value.semantic).Distinct().Count() != attributes.Count)
+        {
+            throw new ArgumentException("A vertex layout cannot repeat a semantic.", nameof(attributes));
+        }
+
+        var resolved = new RenderVertexAttribute[attributes.Count];
+        int occupiedEnd = 0;
+        for (int index = 0; index < attributes.Count; index++)
+        {
+            RenderVertexAttribute attribute = attributes[index];
+            int offset = attribute.byteOffset < 0 ? occupiedEnd : attribute.byteOffset;
+            if (offset < occupiedEnd)
+            {
+                throw new ArgumentException(
+                    $"Vertex attribute '{attribute.semantic}' overlaps a preceding attribute.",
+                    nameof(attributes)
+                );
+            }
+
+            resolved[index] = new RenderVertexAttribute(attribute.semantic, attribute.format, offset);
+            occupiedEnd = checked(offset + attribute.byteSize);
+        }
+
+        if (stride != 0 && stride < occupiedEnd)
+        {
+            throw new ArgumentException("Vertex stride cannot end before the final attribute.", nameof(stride));
+        }
+
+        m_attributes = Array.AsReadOnly(resolved);
+        this.stride = stride == 0 ? occupiedEnd : stride;
+    }
+
+    /// <summary>
+    /// Gets attributes in byte-stream order.
+    /// </summary>
+    public IReadOnlyList<RenderVertexAttribute> attributes => m_attributes;
+
+    /// <summary>
+    /// Gets the interleaved vertex stride in bytes.
+    /// </summary>
+    public int stride { get; }
+
+    /// <summary>
+    /// Determines whether this instance and the supplied value represent the same logical state.
+    /// </summary>
+    /// <param name="other">
+    /// The value to compare with this instance.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
+    /// </returns>
+    public bool Equals(RenderVertexLayout? other)
+        => other is not null
+           && stride == other.stride
+           && m_attributes.SequenceEqual(other.m_attributes);
+
+    /// <summary>
+    /// Determines whether this instance and the supplied value represent the same logical state.
+    /// </summary>
+    /// <param name="obj">
+    /// The object to compare with this instance.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
+    /// </returns>
+    public override bool Equals(object? obj) => Equals(obj as RenderVertexLayout);
+
+    /// <summary>
+    /// Computes a hash code from the fields that participate in logical equality.
+    /// </summary>
+    /// <returns>
+    /// A hash code consistent with the implemented equality contract.
+    /// </returns>
+    public override int GetHashCode()
+    {
+        var hash = new HashCode();
+        foreach (RenderVertexAttribute attribute in m_attributes)
+        {
+            hash.Add(attribute);
+        }
+
+        hash.Add(stride);
+
+        return hash.ToHashCode();
+    }
+}
+
+/// <summary>
 /// Identifies one backend-neutral vertex attribute semantic.
 /// </summary>
 public enum RenderVertexSemantic
@@ -148,189 +263,6 @@ public enum RenderVertexFormat
     /// Four signed 16-bit components interpreted as integers.
     /// </summary>
     Int16Integer4
-}
-
-/// <summary>
-/// Describes one vertex attribute in stream order.
-/// </summary>
-public readonly record struct RenderVertexAttribute
-{
-    /// <summary>
-    /// Creates a vertex attribute declaration.
-    /// </summary>
-    /// <param name="semantic">
-    /// Shader input semantic.
-    /// </param>
-    /// <param name="format">
-    /// Packed component representation.
-    /// </param>
-    /// <param name="byteOffset">
-    /// Explicit byte offset in the stream, or -1 to place the attribute directly after the preceding attribute.
-    /// </param>
-    public RenderVertexAttribute(
-        RenderVertexSemantic semantic,
-        RenderVertexFormat format,
-        int byteOffset = -1
-    ) {
-        ArgumentOutOfRangeException.ThrowIfLessThan(byteOffset, -1);
-        this.semantic = semantic;
-        this.format = format;
-        this.byteOffset = byteOffset;
-    }
-
-    /// <summary>
-    /// Gets the shader input semantic.
-    /// </summary>
-    public RenderVertexSemantic semantic { get; }
-
-    /// <summary>
-    /// Gets the packed component representation.
-    /// </summary>
-    public RenderVertexFormat format { get; }
-
-    /// <summary>
-    /// Gets the explicit byte offset in the resolved stream layout, or -1 before a layout resolves automatic placement.
-    /// </summary>
-    public int byteOffset { get; }
-
-    /// <summary>
-    /// Gets the packed byte size.
-    /// </summary>
-    public int byteSize
-        => format switch
-    {
-        RenderVertexFormat.Float1 => 4,
-        RenderVertexFormat.Float2 => 8,
-        RenderVertexFormat.Float3 => 12,
-        RenderVertexFormat.Float4 => 16,
-        RenderVertexFormat.Half2 => 4,
-        RenderVertexFormat.Half4 => 8,
-        RenderVertexFormat.UInt8Normalized2 => 2,
-        RenderVertexFormat.UInt8Normalized4 => 4,
-        RenderVertexFormat.UInt8Integer2 => 2,
-        RenderVertexFormat.UInt8Integer4 => 4,
-        RenderVertexFormat.UInt10Normalized4 => 4,
-        RenderVertexFormat.Int16Normalized2 => 4,
-        RenderVertexFormat.Int16Normalized4 => 8,
-        RenderVertexFormat.Int16Integer2 => 4,
-        RenderVertexFormat.Int16Integer4 => 8,
-        _ => throw new ArgumentOutOfRangeException(nameof(format))
-    };
-}
-
-/// <summary>
-/// Defines one interleaved vertex stream independently from a graphics backend.
-/// </summary>
-public sealed class RenderVertexLayout : IEquatable<RenderVertexLayout>
-{
-    private readonly IReadOnlyList<RenderVertexAttribute> m_attributes;
-
-    /// <summary>
-    /// Creates an interleaved vertex layout.
-    /// </summary>
-    /// <param name="attributes">
-    /// Unique attributes in ascending byte order. Attributes with offset -1 are packed after the preceding attribute.
-    /// </param>
-    /// <param name="stride">
-    /// Explicit positive stream stride, or zero to use the end of the final attribute. A larger stride preserves
-    /// trailing application-defined padding.
-    /// </param>
-    public RenderVertexLayout(
-        IReadOnlyList<RenderVertexAttribute> attributes,
-        int stride = 0
-    ) {
-        ArgumentNullException.ThrowIfNull(attributes);
-        ArgumentOutOfRangeException.ThrowIfNegative(stride);
-        if (attributes.Count == 0)
-        {
-            throw new ArgumentException("A vertex layout requires at least one attribute.", nameof(attributes));
-        }
-
-        if (attributes.Select(static value => value.semantic).Distinct().Count() != attributes.Count)
-        {
-            throw new ArgumentException("A vertex layout cannot repeat a semantic.", nameof(attributes));
-        }
-
-        var resolved = new RenderVertexAttribute[attributes.Count];
-        int occupiedEnd = 0;
-        for (int index = 0; index < attributes.Count; index++)
-        {
-            RenderVertexAttribute attribute = attributes[index];
-            int offset = attribute.byteOffset < 0 ? occupiedEnd : attribute.byteOffset;
-            if (offset < occupiedEnd)
-            {
-                throw new ArgumentException(
-                    $"Vertex attribute '{attribute.semantic}' overlaps a preceding attribute.",
-                    nameof(attributes)
-                );
-            }
-
-            resolved[index] = new RenderVertexAttribute(attribute.semantic, attribute.format, offset);
-            occupiedEnd = checked(offset + attribute.byteSize);
-        }
-
-        if (stride != 0 && stride < occupiedEnd)
-        {
-            throw new ArgumentException("Vertex stride cannot end before the final attribute.", nameof(stride));
-        }
-
-        m_attributes = Array.AsReadOnly(resolved);
-        this.stride = stride == 0 ? occupiedEnd : stride;
-    }
-
-    /// <summary>
-    /// Gets attributes in byte-stream order.
-    /// </summary>
-    public IReadOnlyList<RenderVertexAttribute> attributes => m_attributes;
-
-    /// <summary>
-    /// Gets the interleaved vertex stride in bytes.
-    /// </summary>
-    public int stride { get; }
-
-    /// <summary>
-    /// Determines whether this instance and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="other">
-    /// The value to compare with this instance.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
-    /// </returns>
-    public bool Equals(RenderVertexLayout? other)
-        => other is not null
-           && stride == other.stride
-           && m_attributes.SequenceEqual(other.m_attributes);
-
-    /// <summary>
-    /// Determines whether this instance and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="obj">
-    /// The object to compare with this instance.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
-    /// </returns>
-    public override bool Equals(object? obj) => Equals(obj as RenderVertexLayout);
-
-    /// <summary>
-    /// Computes a hash code from the fields that participate in logical equality.
-    /// </summary>
-    /// <returns>
-    /// A hash code consistent with the implemented equality contract.
-    /// </returns>
-    public override int GetHashCode()
-    {
-        var hash = new HashCode();
-        foreach (RenderVertexAttribute attribute in m_attributes)
-        {
-            hash.Add(attribute);
-        }
-
-        hash.Add(stride);
-
-        return hash.ToHashCode();
-    }
 }
 
 /// <summary>

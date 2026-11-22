@@ -1,210 +1,6 @@
 using System;
-using Inno.Core.Input;
-using Inno.Core.Mathematics;
 
 namespace Inno.Editor.Interactions;
-
-/// <summary>
-/// Selects the lifecycle phase of one viewport pointer sample.
-/// </summary>
-public enum EditorViewportPointerPhase
-{
-    /// <summary>
-    /// The pointer button began a gesture.
-    /// </summary>
-    Down,
-    /// <summary>
-    /// The pointer moved or changed hover position.
-    /// </summary>
-    Move,
-    /// <summary>
-    /// The pointer button ended a gesture.
-    /// </summary>
-    Up,
-    /// <summary>
-    /// The platform cancelled the gesture.
-    /// </summary>
-    Cancel
-}
-
-/// <summary>
-/// Selects a presentation-independent cursor requested by a viewport tool.
-/// </summary>
-public enum EditorViewportCursor
-{
-    /// <summary>
-    /// Uses the normal arrow cursor.
-    /// </summary>
-    Arrow,
-    /// <summary>
-    /// Uses a precise crosshair.
-    /// </summary>
-    Crosshair,
-    /// <summary>
-    /// Uses a hand suitable for panning.
-    /// </summary>
-    Hand,
-    /// <summary>
-    /// Uses four-direction movement arrows.
-    /// </summary>
-    Move,
-    /// <summary>
-    /// Uses horizontal resizing arrows.
-    /// </summary>
-    ResizeHorizontal,
-    /// <summary>
-    /// Uses vertical resizing arrows.
-    /// </summary>
-    ResizeVertical,
-    /// <summary>
-    /// Hides the pointer while the tool owns it.
-    /// </summary>
-    Hidden
-}
-
-/// <summary>
-/// Contains one presentation-independent shortcut sample for a focused viewport tool.
-/// </summary>
-public readonly record struct EditorViewportShortcut
-{
-    /// <summary>
-    /// Creates one viewport shortcut sample.
-    /// </summary>
-    /// <param name="key">
-    /// Pressed key.
-    /// </param>
-    /// <param name="modifiers">
-    /// Active keyboard modifiers.
-    /// </param>
-    /// <param name="repeat">
-    /// Whether the platform generated an auto-repeat press.
-    /// </param>
-    public EditorViewportShortcut(
-        KeyCode key,
-        KeyModifier modifiers = KeyModifier.None,
-        bool repeat = false
-    ) {
-        this.key = key;
-        this.modifiers = modifiers;
-        this.repeat = repeat;
-    }
-
-    /// <summary>
-    /// Gets the pressed key.
-    /// </summary>
-    public KeyCode key { get; }
-
-    /// <summary>
-    /// Gets active keyboard modifiers.
-    /// </summary>
-    public KeyModifier modifiers { get; }
-
-    /// <summary>
-    /// Gets whether the shortcut is an auto-repeat press.
-    /// </summary>
-    public bool repeat { get; }
-}
-
-/// <summary>
-/// Contains one immutable viewport pointer sample in screen and world coordinates.
-/// </summary>
-public readonly record struct EditorViewportPointerEvent
-{
-    /// <summary>
-    /// Creates one viewport pointer sample.
-    /// </summary>
-    /// <param name="pointerID">
-    /// Platform pointer identity.
-    /// </param>
-    /// <param name="phase">
-    /// Gesture lifecycle phase.
-    /// </param>
-    /// <param name="screenPosition">
-    /// Viewport-local pixel position.
-    /// </param>
-    /// <param name="worldPosition">
-    /// Corresponding world position.
-    /// </param>
-    /// <param name="button">
-    /// Platform button number.
-    /// </param>
-    /// <param name="modifiers">
-    /// Active keyboard modifiers.
-    /// </param>
-    public EditorViewportPointerEvent(
-        int pointerID,
-        EditorViewportPointerPhase phase,
-        Vector2 screenPosition,
-        Vector2 worldPosition,
-        int button,
-        KeyModifier modifiers
-    ) {
-        this.pointerID = pointerID;
-        this.phase = phase;
-        this.screenPosition = screenPosition;
-        this.worldPosition = worldPosition;
-        this.button = button;
-        this.modifiers = modifiers;
-    }
-
-    /// <summary>
-    /// Gets the platform pointer identity.
-    /// </summary>
-    public int pointerID { get; }
-
-    /// <summary>
-    /// Gets the gesture lifecycle phase.
-    /// </summary>
-    public EditorViewportPointerPhase phase { get; }
-
-    /// <summary>
-    /// Gets the viewport-local pixel position.
-    /// </summary>
-    public Vector2 screenPosition { get; }
-
-    /// <summary>
-    /// Gets the corresponding world position.
-    /// </summary>
-    public Vector2 worldPosition { get; }
-
-    /// <summary>
-    /// Gets the platform button number.
-    /// </summary>
-    public int button { get; }
-
-    /// <summary>
-    /// Gets active keyboard modifiers.
-    /// </summary>
-    public KeyModifier modifiers { get; }
-}
-
-/// <summary>
-/// Converts coordinates for one viewport camera without exposing its presentation backend.
-/// </summary>
-public interface IEditorViewportCoordinateConverter
-{
-    /// <summary>
-    /// Converts viewport-local pixel coordinates to world coordinates.
-    /// </summary>
-    /// <param name="screenPosition">
-    /// Viewport-local pixel coordinates.
-    /// </param>
-    /// <returns>
-    /// World coordinates.
-    /// </returns>
-    Vector2 ScreenToWorld(Vector2 screenPosition);
-
-    /// <summary>
-    /// Converts world coordinates to viewport-local pixel coordinates.
-    /// </summary>
-    /// <param name="worldPosition">
-    /// World coordinates.
-    /// </param>
-    /// <returns>
-    /// Viewport-local pixel coordinates.
-    /// </returns>
-    Vector2 WorldToScreen(Vector2 worldPosition);
-}
 
 /// <summary>
 /// Defines one presentation-independent, reloadable viewport editing tool.
@@ -308,4 +104,62 @@ public abstract class EditorViewportTool
     /// Gesture and coordinate context.
     /// </param>
     public virtual void DrawOverlay(EditorViewportToolContext context) => ArgumentNullException.ThrowIfNull(context);
+}
+
+/// <summary>
+/// Selects the lifecycle phase of one viewport pointer sample.
+/// </summary>
+public enum EditorViewportPointerPhase
+{
+    /// <summary>
+    /// The pointer button began a gesture.
+    /// </summary>
+    Down,
+    /// <summary>
+    /// The pointer moved or changed hover position.
+    /// </summary>
+    Move,
+    /// <summary>
+    /// The pointer button ended a gesture.
+    /// </summary>
+    Up,
+    /// <summary>
+    /// The platform cancelled the gesture.
+    /// </summary>
+    Cancel
+}
+
+/// <summary>
+/// Selects a presentation-independent cursor requested by a viewport tool.
+/// </summary>
+public enum EditorViewportCursor
+{
+    /// <summary>
+    /// Uses the normal arrow cursor.
+    /// </summary>
+    Arrow,
+    /// <summary>
+    /// Uses a precise crosshair.
+    /// </summary>
+    Crosshair,
+    /// <summary>
+    /// Uses a hand suitable for panning.
+    /// </summary>
+    Hand,
+    /// <summary>
+    /// Uses four-direction movement arrows.
+    /// </summary>
+    Move,
+    /// <summary>
+    /// Uses horizontal resizing arrows.
+    /// </summary>
+    ResizeHorizontal,
+    /// <summary>
+    /// Uses vertical resizing arrows.
+    /// </summary>
+    ResizeVertical,
+    /// <summary>
+    /// Hides the pointer while the tool owns it.
+    /// </summary>
+    Hidden
 }

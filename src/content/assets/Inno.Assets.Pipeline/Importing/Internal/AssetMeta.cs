@@ -1,5 +1,4 @@
 using System;
-using Inno.Assets;
 using Inno.Core.Serialization;
 
 namespace Inno.Assets.Pipeline;
@@ -65,40 +64,4 @@ internal sealed class AssetMeta : ISerializable
 
     [SerializableProperty]
     internal bool isTombstone { get; set; }
-}
-
-internal struct AssetDependencyData
-{
-    [SerializableProperty]
-    internal Guid persistentId { get; set; }
-
-    [SerializableProperty]
-    internal Guid stableTypeId { get; set; }
-
-    [SerializableProperty]
-    internal string lastKnownPath { get; set; }
-}
-
-internal struct AssetImportDependencyData
-{
-    [SerializableProperty]
-    internal int kind { get; set; }
-
-    [SerializableProperty]
-    internal string key { get; set; }
-
-    [SerializableProperty]
-    internal string fingerprint { get; set; }
-
-    [SerializableProperty]
-    internal bool sourceStampValid { get; set; }
-
-    [SerializableProperty]
-    internal long sourceLength { get; set; }
-
-    [SerializableProperty]
-    internal long sourceLastWriteUtcTicks { get; set; }
-
-    [SerializableProperty]
-    internal long sourceCreationTimeUtcTicks { get; set; }
 }

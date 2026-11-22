@@ -206,11 +206,3 @@ internal sealed class AssetWatcher : IDisposable
         return path == "." ? string.Empty : path;
     }
 }
-
-internal readonly struct WatcherPollResult(
-    IReadOnlyList<AssetChangedEvent> changes,
-    bool requiresFullRescan
-) {
-    internal IReadOnlyList<AssetChangedEvent> changes { get; } = changes ?? [];
-    internal bool requiresFullRescan { get; } = requiresFullRescan;
-}

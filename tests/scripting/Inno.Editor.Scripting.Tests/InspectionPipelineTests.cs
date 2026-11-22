@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using BGCS.Runtime;
@@ -11,9 +9,7 @@ using Inno.Adapter.Serialization.DotNet;
 using Inno.Core.Input;
 using Inno.Core.Logging;
 using Inno.Core.Serialization;
-using Inno.Editor.Annotations;
 using Inno.Editor.Core;
-using Inno.Editor.ImGui;
 using Inno.Editor.Inspection;
 using Inno.Editor.Interactions;
 using Inno.Extensibility.Modules;
@@ -21,7 +17,6 @@ using Inno.Extensibility.Types;
 using Inno.Native.ImGui;
 
 using EditorUI = Inno.Editor.ImGui.EditorUISession;
-using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 
@@ -304,106 +299,4 @@ public sealed class InspectionPipelineTests : IDisposable
     }
 }
 
-internal sealed class InlineOwner : ISerializable
-{
-    [SerializableProperty]
-    public InlineParent value { get; set; } = new();
-}
-
-internal sealed class InlineParent
-{
-    internal InlineFailure child { get; } = new();
-}
-
-internal sealed class InlineFailure;
-
-internal sealed class TextStateOwner : ISerializable
-{
-    [SerializableProperty]
-    public TextStateValue value { get; set; } = new("Unset");
-}
-
 internal sealed record TextStateValue(string id);
-
-internal sealed class AttributeOwner : ISerializable
-{
-    [SerializableProperty]
-    [Header("Presentation", "Decorators are composed before the property row.")]
-    [Text("Persistent decorator text remains visible.")]
-    [Tooltip("Reusable hover guidance.")]
-    [InspectorName("Friendly Value")]
-    [Range(2, 8)]
-    [ShowIf(nameof(showValue))]
-    [ProbeInspector]
-    public AttributeValue value { get; set; } = new();
-
-    internal bool showValue { get; set; }
-}
-
-internal sealed class AttributeValue;
-
-[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-internal sealed class ProbeInspectorAttribute : InspectorPresentationAttribute;
-
-[InspectorAttributeDrawer(typeof(ProbeInspectorAttribute), priority: 10_000)]
-internal sealed class ProbeInspectorAttributeDrawer : IInspectorAttributeDrawer
-{
-    public void Update(InspectorAttributeDrawContext context)
-        => observations.Add($"update:{context.label}:{context.isReadOnly}:{context.minimum}:{context.maximum}");
-
-    public void DrawBefore(InspectorAttributeDrawContext context)
-    {
-        _ = context;
-        observations.Add("before");
-    }
-
-    public void DrawAfter(InspectorAttributeDrawContext context)
-    {
-        _ = context;
-        observations.Add("after");
-    }
-
-    internal static List<string> observations { get; } = [];
-}
-
-[PropertyDrawer(typeof(AttributeValue), priority: 10_000)]
-internal sealed class AttributeValueDrawer : IPropertyDrawer
-{
-    public void Draw(PropertyDrawContext context)
-        => observations.Add($"{context.label}:{context.isReadOnly}:{context.minimum}:{context.maximum}");
-
-    internal static List<string> observations { get; } = [];
-}
-
-[PropertyDrawer(typeof(TextStateValue), priority: 10_000)]
-internal sealed class TextStateDrawer : IPropertyDrawer
-{
-    public void Draw(PropertyDrawContext context)
-    {
-        TextStateValue value = (TextStateValue)context.GetValue()!;
-        bool hasState = context.TryGetTextState("editing", out string? state);
-        observations.Add($"{value.id}:{(hasState ? state : "<new>")}");
-        context.SetTextState("editing", value.id);
-    }
-
-    internal static List<string> observations { get; } = [];
-}
-
-[PropertyDrawer(typeof(InlineParent), priority: 10_000)]
-internal sealed class InlineParentDrawer : IPropertyDrawer
-{
-    internal static bool drewAfterFailure;
-
-    public void Draw(PropertyDrawContext context)
-    {
-        InlineParent parent = (InlineParent)context.GetValue()!;
-        context.DrawInlineChild("child", typeof(InlineFailure), () => parent.child, static _ => {}, readOnly: true);
-        drewAfterFailure = true;
-    }
-}
-
-[PropertyDrawer(typeof(InlineFailure), priority: 10_000)]
-internal sealed class InlineFailureDrawer : IPropertyDrawer
-{
-    public void Draw(PropertyDrawContext context) => throw new InvalidOperationException("Inline drawer failure.");
-}

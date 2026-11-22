@@ -2,8 +2,6 @@ using System;
 using Xunit;
 using Inno.Core.Identity;
 using Inno.Core.Mathematics;
-using Inno.Core.Serialization;
-using Inno.Extensibility.Types;
 using Inno.Scene;
 using Inno.Scene.Components;
 
@@ -128,24 +126,5 @@ public sealed partial class SceneHistoryTests
         Assert.Same(destination.transform, second.transform.parent);
         Assert.Throws<InvalidOperationException>(() => m_edits.MoveGameObjects([destination], scene, child));
         Assert.Same(destination.transform, first.transform.parent);
-    }
-}
-
-[StableTypeID("9ea6d04d-4ed3-48f3-ac3a-b09372a575ab")]
-internal sealed class BatchValidationComponent : GameComponent
-{
-    [SerializableProperty]
-    public int value { get; set; }
-
-    [SerializableProperty]
-    public bool rejectAnswer { get; set; }
-
-    [OnSerializableRestored]
-    private void Validate()
-    {
-        if (rejectAnswer && value == 42)
-        {
-            throw new InvalidOperationException("The current owner rejected this batch value.");
-        }
     }
 }

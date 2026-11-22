@@ -2,47 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using YamlDotNet.Core;
 using YamlDotNet.RepresentationModel;
-using Inno.Core.IO;
 
 namespace Inno.Tooling.Documentation.Indexing;
-
-internal sealed record DocumentationApiContentEntry(
-    string symbol,
-    string path,
-    string type,
-    string title,
-    string contract
-);
-
-internal sealed record DocumentationApiContentRegistry(
-    string schema,
-    IReadOnlyList<DocumentationApiContentEntry> entries,
-    IReadOnlyList<string>? navigation = null
-);
-
-internal sealed record DocumentationApiEdit(
-    string path,
-    string? before,
-    string? text
-);
-
-internal sealed record DocumentationApiWarning(
-    string symbol,
-    string path,
-    string code,
-    string message
-);
-
-internal sealed record DocumentationApiPlan(
-    IReadOnlyList<DocumentationApiEdit> edits,
-    IReadOnlyList<DocumentationApiWarning> warnings,
-    int symbols
-);
 
 internal static class DocumentationApiContent
 {
@@ -443,3 +408,36 @@ internal static class DocumentationApiContent
 
     private static string Normalize(string text) => Regex.Replace(text, "\\s+", " ").Trim();
 }
+
+internal sealed record DocumentationApiContentEntry(
+    string symbol,
+    string path,
+    string type,
+    string title,
+    string contract
+);
+
+internal sealed record DocumentationApiContentRegistry(
+    string schema,
+    IReadOnlyList<DocumentationApiContentEntry> entries,
+    IReadOnlyList<string>? navigation = null
+);
+
+internal sealed record DocumentationApiEdit(
+    string path,
+    string? before,
+    string? text
+);
+
+internal sealed record DocumentationApiWarning(
+    string symbol,
+    string path,
+    string code,
+    string message
+);
+
+internal sealed record DocumentationApiPlan(
+    IReadOnlyList<DocumentationApiEdit> edits,
+    IReadOnlyList<DocumentationApiWarning> warnings,
+    int symbols
+);

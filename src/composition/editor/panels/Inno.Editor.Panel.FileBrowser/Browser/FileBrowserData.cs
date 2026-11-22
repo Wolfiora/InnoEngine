@@ -5,32 +5,9 @@ using System.Linq;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Identity;
-using Inno.Editor.Assets;
 using Inno.Editor.Assets.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
-
-internal enum FileBrowserEntryTypeFilter
-{
-    All,
-    FoldersOnly,
-    FilesOnly
-}
-
-internal enum FileBrowserEntryScopeFilter
-{
-    CurrentOnly,
-    Recursive
-}
-
-internal readonly record struct FileBrowserDisplayEntry(
-    RuntimeIdentity identity,
-    AssetPath path,
-    string displayName,
-    string extension,
-    bool isDirectory,
-    bool isPluginRoot = false
-);
 
 internal sealed class FileBrowserData(AssetBrowserModule assets)
 {
@@ -235,3 +212,25 @@ internal sealed class FileBrowserData(AssetBrowserModule assets)
         string search
     );
 }
+
+internal enum FileBrowserEntryTypeFilter
+{
+    All,
+    FoldersOnly,
+    FilesOnly
+}
+
+internal enum FileBrowserEntryScopeFilter
+{
+    CurrentOnly,
+    Recursive
+}
+
+internal readonly record struct FileBrowserDisplayEntry(
+    RuntimeIdentity identity,
+    AssetPath path,
+    string displayName,
+    string extension,
+    bool isDirectory,
+    bool isPluginRoot = false
+);

@@ -4,23 +4,6 @@ using System.Text.Json;
 
 namespace Inno.Tooling.Validation;
 
-internal sealed record ValidationPlanningResult(
-    ValidationPlan? plan,
-    ValidationPreparation? preparation
-);
-
-internal sealed record ValidationPreparation(
-    string status,
-    string kind,
-    string root,
-    string commit,
-    string baseline,
-    string inputIdentity,
-    string reason,
-    string[] owners,
-    Dictionary<string, string> sources
-);
-
 internal sealed record ValidationPlan(
     string root,
     string baseline,
@@ -64,6 +47,23 @@ internal sealed record ValidationPlan(
         || Array.Exists(check.inputs, static input => input.StartsWith("@backends/", StringComparison.Ordinal)))
         ));
 }
+
+internal sealed record ValidationPlanningResult(
+    ValidationPlan? plan,
+    ValidationPreparation? preparation
+);
+
+internal sealed record ValidationPreparation(
+    string status,
+    string kind,
+    string root,
+    string commit,
+    string baseline,
+    string inputIdentity,
+    string reason,
+    string[] owners,
+    Dictionary<string, string> sources
+);
 
 internal sealed record BackendPackageReceipt(
     string target,

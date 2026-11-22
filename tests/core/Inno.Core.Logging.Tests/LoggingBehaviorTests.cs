@@ -6,13 +6,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using Inno.Core.Logging;
 using Inno.Extensibility.Modules;
 
 namespace Inno.Core.Logging.Tests;
-
-[CollectionDefinition("Logging", DisableParallelization = true)]
-public sealed class LoggingCollection;
 
 [Collection("Logging")]
 public sealed class LoggingBehaviorTests : IDisposable

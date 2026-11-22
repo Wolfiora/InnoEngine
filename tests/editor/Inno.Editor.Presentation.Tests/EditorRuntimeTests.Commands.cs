@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Xunit;
 using Inno.Core.Events;
 using Inno.Core.Input;
@@ -65,54 +64,5 @@ public sealed partial class EditorRuntimeTests
         Assert.Equal(2, MultiShortcutAction.executeCount);
         m_runtime.HandleKeyPressed(new KeyPressedEvent(0, KeyCode.F4, repeat: true));
         Assert.Equal(2, MultiShortcutAction.executeCount);
-    }
-}
-
-public sealed class MenuStateTarget
-{
-    public bool visible = true;
-    public bool enabled = true;
-    public bool isChecked;
-    public string label = "Current";
-}
-
-[EditorAction("tests.menu-state", "tests/static-menu")]
-[EditorMenu("tests/static-menu", "Tools/State")]
-public sealed class MenuStateAction : EditorAction
-{
-    protected override EditorActionState Query(EditorActionContext context)
-        => context.target is MenuStateTarget target
-           ? new EditorActionState(target.visible, target.enabled, target.isChecked, target.label, "Current owner is read-only.")
-           : EditorActionState.hidden;
-
-    protected override void Execute(EditorActionContext context) {}
-}
-
-[EditorAction("tests.menu-fallback", "tests/shared-menu")]
-[EditorMenu("tests/shared-menu", "Shared", order: 100)]
-public sealed class MenuFallbackAction : EditorAction
-{
-    protected override void Execute(EditorActionContext context) {}
-}
-
-[EditorAction("tests.menu-conditional", "tests/shared-menu")]
-[EditorMenu("tests/shared-menu", "Shared", order: 200)]
-public sealed class MenuConditionalAction : EditorAction
-{
-    protected override EditorActionState Query(EditorActionContext context)
-        => context.target is MenuStateTarget { visible: true } ? EditorActionState.enabled : EditorActionState.hidden;
-
-    protected override void Execute(EditorActionContext context) {}
-}
-
-[EditorMenuSource("tests/failed-menu")]
-public sealed class RejectedMenuSource : EditorMenuSource
-{
-    public override void Build(
-        EditorMenuContext context,
-        EditorMenuBuilder builder
-    ) {
-        builder.Add("Partial", "tests.menu");
-        throw new InvalidOperationException("Candidate menu source failed.");
     }
 }

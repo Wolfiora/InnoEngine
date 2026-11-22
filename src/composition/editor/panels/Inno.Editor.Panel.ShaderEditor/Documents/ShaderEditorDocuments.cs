@@ -13,7 +13,6 @@ using Inno.Core.Graphs;
 using Inno.Core.IO;
 using Inno.Core.Serialization;
 using Inno.Editor.Assets;
-using Inno.Editor.Assets.ImGui;
 using Inno.Editor.Core;
 using Inno.Editor.Graph;
 using Inno.Editor.Graph.ImGui;
@@ -22,7 +21,6 @@ using Inno.Editor.Rendering;
 using Inno.Editor.Shaders;
 using Inno.Editor.Shaders.ImGui;
 using Inno.Extensibility.Types;
-using Inno.Rendering;
 using Inno.Rendering.Assets;
 using Inno.Rendering.Assets.Authoring;
 using Inno.Rendering.Shaders;
@@ -979,27 +977,4 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         [SerializableProperty]
         public byte[] graph { get; set; } = [];
     }
-}
-
-internal struct ShaderPortSnapshot
-{
-    /// <summary>
-    /// Gets the stable identity used to reference this value across subsystem boundaries.
-    /// </summary>
-    public string id { get; set; }
-
-    /// <summary>
-    /// Gets the graph port's shader value type.
-    /// </summary>
-    public ShaderGraphType type { get; set; }
-
-    /// <summary>
-    /// Gets the graph port's input or output direction.
-    /// </summary>
-    public GraphPortDirection direction { get; set; }
-
-    /// <summary>
-    /// Gets whether required is active for the current instance.
-    /// </summary>
-    public bool required { get; set; }
 }

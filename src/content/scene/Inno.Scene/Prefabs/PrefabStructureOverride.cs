@@ -2,6 +2,12 @@ using System;
 
 namespace Inno.Scene;
 
+internal sealed record PrefabStructureOverride(
+    Guid sourceObjectID,
+    PrefabObjectOverrideKind kind,
+    bool isOrphaned = false
+);
+
 [Flags]
 internal enum PrefabObjectOverrideKind
 {
@@ -12,9 +18,3 @@ internal enum PrefabObjectOverrideKind
     SiblingIndex = 1 << 3,
     Tag = 1 << 4
 }
-
-internal sealed record PrefabStructureOverride(
-    Guid sourceObjectID,
-    PrefabObjectOverrideKind kind,
-    bool isOrphaned = false
-);

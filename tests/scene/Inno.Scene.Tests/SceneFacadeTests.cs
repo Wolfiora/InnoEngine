@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
-using Inno.Runtime;
-using Inno.Scene;
 using Inno.Scene.Components;
 
 namespace Inno.Scene.Tests;
@@ -425,7 +423,3 @@ public sealed class SceneFacadeTests : IDisposable
         }
     }
 }
-
-internal sealed class OrderComponentA : GameComponent;
-
-internal sealed class OrderComponentB : GameComponent;

@@ -19,8 +19,6 @@ using Inno.Core.Serialization;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 using Inno.Integration.MacOSArm64.Bgfx;
-using Inno.Rendering.Assets;
-using Inno.Rendering.Assets.Authoring;
 using Inno.Rendering.Runtime;
 using Inno.Rendering.Shaders;
 
@@ -504,31 +502,4 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
 
     [StableTypeID("830a7851-bc19-44d4-a6e6-a6c38f6bb972")]
     private sealed class OtherPipelineSettings : ISerializable;
-}
-
-internal sealed class RenderingAssetSourceMeta : ISerializable
-{
-    [SerializableProperty]
-    public Guid persistentId { get; set; }
-
-    [SerializableProperty]
-    public int sourceKind { get; set; }
-
-    [SerializableProperty]
-    public string importerId { get; set; } = string.Empty;
-
-    [SerializableProperty]
-    public byte[] importerSettingsBytes { get; set; } = [];
-}
-
-internal sealed class RenderingImportSettingsEnvelope : ISerializable
-{
-    [SerializableProperty]
-    public Guid stableTypeId { get; set; }
-
-    [SerializableProperty]
-    public byte[] properties { get; set; } = [];
-
-    [SerializableProperty]
-    public Guid[] dependencies { get; set; } = [];
 }

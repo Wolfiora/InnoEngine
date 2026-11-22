@@ -9,44 +9,6 @@ using Inno.Scripting.Api;
 
 namespace Inno.Scripting.Compiler;
 
-internal sealed record ScriptApiAssembly(
-    Assembly assembly,
-    IReadOnlyList<ScriptApiTypeExport> exports
-);
-
-internal sealed record ScriptApiTypeExport(
-    Type type,
-    string name
-);
-
-internal sealed record ScriptApiNamespaceMapping(
-    string apiNamespace,
-    string implementationNamespace
-);
-
-internal sealed record ScriptApiTypeMapping(
-    string apiNamespace,
-    string apiName,
-    string implementationNamespace,
-    string implementationName,
-    int arity
-);
-
-internal sealed record ScriptApiAttachableType(
-    string implementationName,
-    string kind
-);
-
-internal sealed record ScriptApiProfile(
-    string name,
-    IReadOnlyList<ScriptApiAssembly> exports,
-    IReadOnlyList<Assembly> implementationAssemblies,
-    IReadOnlyList<string> apiNamespaces,
-    IReadOnlyList<ScriptApiNamespaceMapping> namespaceMappings,
-    IReadOnlyList<ScriptApiTypeMapping> typeMappings,
-    IReadOnlyList<ScriptApiAttachableType> attachableTypes
-);
-
 internal static class ScriptApiCatalog
 {
     internal static ScriptApiProfile Build(bool includeEditor)
@@ -341,3 +303,41 @@ internal static class ScriptApiCatalog
         string name
     );
 }
+
+internal sealed record ScriptApiAssembly(
+    Assembly assembly,
+    IReadOnlyList<ScriptApiTypeExport> exports
+);
+
+internal sealed record ScriptApiTypeExport(
+    Type type,
+    string name
+);
+
+internal sealed record ScriptApiNamespaceMapping(
+    string apiNamespace,
+    string implementationNamespace
+);
+
+internal sealed record ScriptApiTypeMapping(
+    string apiNamespace,
+    string apiName,
+    string implementationNamespace,
+    string implementationName,
+    int arity
+);
+
+internal sealed record ScriptApiAttachableType(
+    string implementationName,
+    string kind
+);
+
+internal sealed record ScriptApiProfile(
+    string name,
+    IReadOnlyList<ScriptApiAssembly> exports,
+    IReadOnlyList<Assembly> implementationAssemblies,
+    IReadOnlyList<string> apiNamespaces,
+    IReadOnlyList<ScriptApiNamespaceMapping> namespaceMappings,
+    IReadOnlyList<ScriptApiTypeMapping> typeMappings,
+    IReadOnlyList<ScriptApiAttachableType> attachableTypes
+);

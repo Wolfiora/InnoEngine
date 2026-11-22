@@ -1,0 +1,148 @@
+using System;
+using System.IO;
+using Inno.Assets;
+using Inno.Assets.Pipeline;
+using Inno.Core.Graphs;
+using Inno.Editor.ImGui;
+using Inno.Editor.Inspection;
+using Inno.Editor.Shaders;
+
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+
+namespace Inno.Editor.Panel.ShaderEditor;
+
+[InspectionDrawer(typeof(ShaderInspectionSelection))]
+internal sealed class ShaderSelectionDrawer(IInspectionIconProvider<AssetFileEntry> icons) : InspectionDrawer<ShaderInspectionSelection>
+{
+    /// <summary>
+    /// Gets the icon glyph used to represent this item in the editor.
+    /// </summary>
+    public override string icon => "S";
+
+    /// <summary>
+    /// Retrieves the current icon from authoritative state.
+    /// </summary>
+    /// <param name="context">
+    /// The operation scope that provides state, services, and ownership boundaries.
+    /// </param>
+    /// <param name="target">
+    /// The existing target that receives the validated result.
+    /// </param>
+    /// <returns>
+    /// The validated text representation owned by the caller.
+    /// </returns>
+    protected override string GetIcon(
+        InspectionDrawContext context,
+        ShaderInspectionSelection target
+    ) => context.interactions.TryGetModule<ShaderEditorDocuments>(out ShaderEditorDocuments? documents)
+         && documents is not null
+         && documents.assets.TryGetInfo(target.assetID, out AssetInfo? info)
+         && info is not null
+         && documents.assets.TryGetFileSystemEntry(
+             info.assetPath,
+             out AssetFileEntry entry
+         ) ? icons.GetIcon(entry) : icon;
+
+    /// <summary>
+    /// Binds a caller-visible label to the current inspection target.
+    /// </summary>
+    /// <param name="context">
+    /// The operation scope that provides state, services, and ownership boundaries.
+    /// </param>
+    /// <param name="target">
+    /// The existing target that receives the validated result.
+    /// </param>
+    /// <returns>
+    /// The validated (string name, actionstring? setter) that represents the completed operation.
+    /// </returns>
+    protected override (string name, Action<string>? setter) BindName(
+        InspectionDrawContext context,
+        ShaderInspectionSelection target
+    ) {
+        if (context.interactions.TryGetModule<ShaderEditorDocuments>(out ShaderEditorDocuments? documents)
+            && documents is not null
+            && documents.assets.TryGetInfo(target.assetID, out AssetInfo? info)
+            && info is not null
+        ) {
+            return (Path.GetFileName(info.assetPath.localPath), null);
+        }
+        return ("Shader", null);
+    }
+
+    /// <summary>
+    /// Renders the header presentation for the current editor frame.
+    /// </summary>
+    /// <param name="context">
+    /// The operation scope that provides state, services, and ownership boundaries.
+    /// </param>
+    /// <param name="target">
+    /// The existing target that receives the validated result.
+    /// </param>
+    protected override void DrawHeader(
+        InspectionDrawContext context,
+        ShaderInspectionSelection target
+    ) {
+        if (!context.interactions.TryGetModule<ShaderEditorDocuments>(out ShaderEditorDocuments? documents)
+            || documents is null
+            || !documents.assets.TryGetInfo(target.assetID, out AssetInfo? info)
+            || info is null
+            || !documents.assets.TryGetFileSystemEntry(info.assetPath, out AssetFileEntry entry)
+        ) {
+            EditorUI.current.widgets.ColoredText(EditorPalette.contextText, "Node selection unavailable");
+            return;
+        }
+
+        if (!documents.TryOpen(entry, out ShaderEditorDocuments.Draft draft))
+        {
+            EditorUI.current.widgets.ColoredText(EditorPalette.contextText, "Waiting for Shader asset import…");
+            return;
+        }
+
+        if (target.nodes.Count == 1 && documents.Controller(draft).document.FindNode(target.nodes[0]) is GraphNodeRecord node)
+        {
+            EditorUI.current.widgets.ColoredText(
+                EditorPalette.contextText,
+                "Node: " + new ShaderEditorCanvas(documents, draft).Title(node)
+            );
+        }
+        else
+        {
+            EditorUI.current.widgets.ColoredText(EditorPalette.contextText, $"Nodes: {target.nodes.Count} selected");
+        }
+    }
+
+    /// <summary>
+    /// Renders the value presentation for the current editor frame.
+    /// </summary>
+    /// <param name="context">
+    /// The operation scope that provides state, services, and ownership boundaries.
+    /// </param>
+    /// <param name="target">
+    /// The existing target that receives the validated result.
+    /// </param>
+    protected override void Draw(
+        InspectionDrawContext context,
+        ShaderInspectionSelection target
+    ) {
+        if (!context.interactions.TryGetModule<ShaderEditorDocuments>(out ShaderEditorDocuments? documents) || documents is null)
+        {
+            return;
+        }
+        if (!documents.assets.TryGetInfo(target.assetID, out AssetInfo? info)
+            || info is null
+            || !documents.assets.TryGetFileSystemEntry(info.assetPath, out AssetFileEntry entry)
+        ) {
+            EditorUI.current.widgets.WrappedText("Shader source unavailable. Selection identities are retained.");
+            return;
+        }
+
+        if (documents.TryOpen(entry, out ShaderEditorDocuments.Draft draft))
+        {
+            new ShaderEditorCanvas(documents, draft).DrawInspector(context, target.nodes);
+        }
+        else
+        {
+            EditorUI.current.widgets.ColoredText(EditorPalette.textDisabled, "Waiting for Shader asset import…");
+        }
+    }
+}

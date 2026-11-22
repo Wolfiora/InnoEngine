@@ -1,28 +1,10 @@
 using System;
-using System.Linq;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Editor.Assets;
 using Inno.Editor.Core;
-using Inno.Editor.Inspection;
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Assets.ImGui;
-
-/// <summary>
-/// Identifies the authoring or installed-content root displayed by the Asset Browser.
-/// </summary>
-public enum AssetBrowserRoot
-{
-    /// <summary>
-    /// The writable project <c>Assets</c> authoring root.
-    /// </summary>
-    Assets,
-    /// <summary>
-    /// The read-only <c>Plugins</c> installation root.
-    /// </summary>
-    Plugins
-}
 
 /// <summary>
 /// Stores asset browser navigation independently from global object selection.
@@ -253,4 +235,19 @@ public sealed class AssetBrowserState
         }
         return AssetPath.Parse(relativePath.Replace('\\', '/').Trim()).ToString();
     }
+}
+
+/// <summary>
+/// Identifies the authoring or installed-content root displayed by the Asset Browser.
+/// </summary>
+public enum AssetBrowserRoot
+{
+    /// <summary>
+    /// The writable project <c>Assets</c> authoring root.
+    /// </summary>
+    Assets,
+    /// <summary>
+    /// The read-only <c>Plugins</c> installation root.
+    /// </summary>
+    Plugins
 }

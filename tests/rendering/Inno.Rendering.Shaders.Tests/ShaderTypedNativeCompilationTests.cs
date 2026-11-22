@@ -9,22 +9,9 @@ using Xunit;
 using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Core.Diagnostics;
 using Inno.Integration.MacOSArm64.Bgfx;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Rendering.Shaders.Tests;
-
-public sealed class MetalShaderFactAttribute : FactAttribute
-{
-    public MetalShaderFactAttribute()
-    {
-        if (!OperatingSystem.IsMacOS())
-        {
-            this.Skip = "Requires the macOS BGFX Metal compiler; Windows validation is explicitly deferred.";
-        }
-    }
-}
 
 [SupportedOSPlatform("macos")]
 public sealed class ShaderTypedNativeCompilationTests

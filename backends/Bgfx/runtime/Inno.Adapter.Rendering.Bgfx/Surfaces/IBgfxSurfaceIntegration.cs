@@ -3,21 +3,6 @@ using Inno.Adapter.Platform;
 namespace Inno.Adapter.Rendering.Bgfx;
 
 /// <summary>
-/// Identifies how a borrowed window is used by a BGFX device, independently of its system ABI.
-/// </summary>
-public enum BgfxSurfaceRole
-{
-    /// <summary>
-    /// The primary window supplied before device initialization.
-    /// </summary>
-    Primary,
-    /// <summary>
-    /// An additional window whose framebuffer is owned by an active device generation.
-    /// </summary>
-    Additional
-}
-
-/// <summary>
 /// Resolves an explicitly selected host's borrowed surface handles for the shared BGFX backend.
 /// </summary>
 /// <remarks>
@@ -53,4 +38,19 @@ public interface IBgfxSurfaceIntegration
         PlatformNativeHandles handles,
         BgfxSurfaceRole role
     );
+}
+
+/// <summary>
+/// Identifies how a borrowed window is used by a BGFX device, independently of its system ABI.
+/// </summary>
+public enum BgfxSurfaceRole
+{
+    /// <summary>
+    /// The primary window supplied before device initialization.
+    /// </summary>
+    Primary,
+    /// <summary>
+    /// An additional window whose framebuffer is owned by an active device generation.
+    /// </summary>
+    Additional
 }

@@ -5,18 +5,11 @@ using System.Linq;
 using Inno.Assets;
 using Inno.Core.Execution;
 using Inno.Core.Graphs;
-using Inno.Rendering;
 using Inno.Rendering.Assets;
 using Inno.Rendering.Assets.Authoring;
 using Inno.Rendering.Shaders;
 
 namespace Inno.Editor.Panel.ShaderEditor;
-
-internal sealed record ShaderNodeCreation(
-    string definitionID,
-    Guid sourceID = default,
-    string function = ""
-);
 
 internal sealed partial class ShaderEditorDocuments
 {
@@ -252,3 +245,9 @@ internal sealed partial class ShaderEditorDocuments
         return true;
     }
 }
+
+internal sealed record ShaderNodeCreation(
+    string definitionID,
+    Guid sourceID = default,
+    string function = ""
+);

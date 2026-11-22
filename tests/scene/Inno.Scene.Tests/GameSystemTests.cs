@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 using Inno.Core.Serialization;
-using Inno.Extensibility.Types;
-using Inno.Scene;
 
 namespace Inno.Scene.Tests;
 
@@ -173,25 +170,4 @@ public sealed class GameSystemTests : IDisposable
 
         protected override void OnUpdate() => execution.Add(label);
     }
-}
-
-[StableTypeID("b469170b-a1f2-4176-b3ad-252d1cb53b90")]
-internal sealed class StateSystem : GameSystem
-{
-    [SerializableProperty]
-    public int value { get; set; }
-
-    [SerializableProperty]
-    public SystemReferenceComponent? component { get; set; }
-
-    public int resetCount { get; private set; }
-
-    protected override void Reset() => resetCount++;
-}
-
-[StableTypeID("75344398-ed18-46ae-808b-e0cb45d93850")]
-internal sealed class SystemReferenceComponent : GameComponent
-{
-    [SerializableProperty]
-    public StateSystem? system { get; set; }
 }

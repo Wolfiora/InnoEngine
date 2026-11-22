@@ -5,8 +5,6 @@ using Xunit;
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
-using Inno.Core.Serialization.Converters;
-using Inno.Extensibility.Types;
 using Inno.Scene;
 using Inno.Testing.Editor.Native;
 
@@ -183,42 +181,4 @@ public sealed class SceneDirtyCaptureTests
             AssetSerializationContext.Create(host.assets, new AssetDependencyCollection(includeLastKnownPaths: false))
         )
     );
-}
-
-[StableTypeID("942e794b-1c53-45a6-80e6-a641d76fdd09")]
-[AllowMultipleComponent]
-internal sealed class DirtyCaptureComponent : GameComponent
-{
-    [SerializableProperty]
-    public int number;
-
-    [SerializableProperty]
-    public GameObject? target;
-
-    [SerializableProperty]
-    public DirtyCaptureValue state { get; set; } = new();
-}
-
-internal sealed class DirtyCaptureValue
-{
-    internal int value;
-    internal bool reject;
-    internal int reads;
-}
-
-internal sealed class DirtyCaptureValueConverter : SerializationConverter<DirtyCaptureValue>
-{
-    public override void Write(
-        SerializationWriter writer,
-        DirtyCaptureValue value
-    ) {
-        value.reads++;
-        writer.Write("value", value.value);
-        if (value.reject)
-        {
-            throw new InvalidOperationException("The test-owned converter rejected capture.");
-        }
-    }
-
-    public override DirtyCaptureValue Read(SerializationReader reader) => new() { value = reader.Read<int>("value") };
 }

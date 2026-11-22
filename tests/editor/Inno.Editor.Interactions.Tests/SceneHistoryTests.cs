@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using Xunit;
 using Inno.Adapter.Modules.DotNet;
@@ -11,7 +10,6 @@ using Inno.Core.Identity;
 using Inno.Core.Input;
 using Inno.Core.Logging;
 using Inno.Core.Mathematics;
-using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Scene;
 using Inno.Extensibility.Modules;
@@ -813,127 +811,8 @@ public sealed partial class SceneHistoryTests : IDisposable
     }
 }
 
-[EditorModule("tests.scene-history-probe", order: 220)]
-public sealed class SceneHistoryProbe : EditorModule
-{
-    public SceneHistoryProbe(
-        SceneEdits sceneEdits,
-        IEditorSceneWorkspace workspace
-    ) {
-        edits = sceneEdits;
-        documents = workspace;
-    }
-
-    public static SceneEdits? edits { get; private set; }
-    public static IEditorSceneWorkspace? documents { get; private set; }
-
-    public static void Reset()
-    {
-        edits = null;
-        documents = null;
-    }
-}
-
-[StableTypeID("267e77d8-1112-4cf9-a9f1-01d9a1e59bbc")]
-[AllowMultipleComponent]
-internal sealed class HistoryComponent : GameBehavior
-{
-    [SerializableProperty]
-    public int value { get; set; }
-
-    protected override void Reset() => value = 7;
-}
-
 internal enum CoupledHistoryMode
 {
     Base,
     Overlay
-}
-
-[StableTypeID("f25d91a5-df87-4ed6-a383-12a9071af66e")]
-internal sealed class CoupledHistoryComponent : GameBehavior
-{
-    private bool m_primary = true;
-    private CoupledHistoryMode m_mode;
-
-    [SerializableProperty]
-    public bool primary
-    {
-        get => m_primary;
-        set => m_primary = value && mode == CoupledHistoryMode.Base;
-    }
-
-    [SerializableProperty]
-    public CoupledHistoryMode mode
-    {
-        get => m_mode;
-        set
-        {
-            m_mode = value;
-            if (value == CoupledHistoryMode.Overlay)
-            {
-                m_primary = false;
-            }
-        }
-    }
-}
-
-[StableTypeID("b269c970-8afe-46a0-a4a0-f44f737d059a")]
-internal sealed class HistoryReferenceComponent : GameComponent
-{
-    [SerializableProperty]
-    public GameObject? targetObject { get; set; }
-
-    [SerializableProperty]
-    public GameComponent? targetComponent { get; set; }
-}
-
-[StableTypeID("edbd3940-a94c-499e-8f03-b0e232a39b21")]
-[AllowMultipleComponent]
-internal sealed class HistoryAssetReferenceComponent : GameComponent
-{
-    [SerializableProperty]
-    public TextAsset? asset { get; set; }
-}
-
-[StableTypeID("f00d5950-1136-4393-b246-644b69948f90")]
-[AllowMultipleSystem]
-internal sealed class HistorySystem : GameSystem
-{
-    [SerializableProperty]
-    public int value { get; set; }
-
-    protected override void Reset() => value = 11;
-}
-
-[StableTypeID("71cc27da-2c47-47f2-a037-c9bc29615358")]
-[AllowMultipleComponent]
-internal sealed class RestoreCleanupFailureComponent : GameBehavior
-{
-    [SerializableProperty]
-    public int value { get; set; } = 5;
-
-    [OnSerializableRestored]
-    private void OnRestored() => throw new InvalidOperationException("Injected restore callback failure.");
-}
-
-[StableTypeID("8503e97b-1845-4ab2-a116-1ece04934a4b")]
-[AllowMultipleComponent]
-internal sealed class SubtreeRestoreFailureComponent : GameBehavior
-{
-    internal static bool throwOnDestroy;
-
-    [SerializableProperty]
-    public int value { get; set; } = 5;
-
-    protected override void OnDestroy()
-    {
-        if (throwOnDestroy)
-        {
-            throw new InvalidOperationException("Injected subtree destruction callback failure.");
-        }
-    }
-
-    [OnSerializableRestored]
-    private void OnRestored() => throw new InvalidOperationException("Injected subtree restore callback failure.");
 }

@@ -11,17 +11,6 @@ using YamlDotNet.RepresentationModel;
 
 namespace Inno.Tooling.Documentation.Indexing;
 
-internal sealed record DocumentationProjectGuide(
-    string path,
-    string uid,
-    string project
-);
-
-internal sealed record DocumentationProjectGuideRegistry(
-    string schema,
-    DocumentationProjectGuide[] entries
-);
-
 internal static class DocumentationProjectGuides
 {
     internal const string C_REGISTRY = "reference/projects/content.json";
@@ -390,3 +379,14 @@ internal static class DocumentationProjectGuides
         return text.EndsWith("\n...", StringComparison.Ordinal) ? text[..^4] : text;
     }
 }
+
+internal sealed record DocumentationProjectGuide(
+    string path,
+    string uid,
+    string project
+);
+
+internal sealed record DocumentationProjectGuideRegistry(
+    string schema,
+    DocumentationProjectGuide[] entries
+);

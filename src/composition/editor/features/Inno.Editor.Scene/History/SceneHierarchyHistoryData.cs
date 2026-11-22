@@ -3,13 +3,6 @@ using System.IO;
 
 namespace Inno.Editor.Scene;
 
-internal readonly record struct SceneObjectPlacement(
-    Guid sceneID,
-    Guid objectID,
-    Guid? parentID,
-    int siblingIndex
-);
-
 internal sealed record SceneHierarchyHistoryData(
     SceneObjectPlacement[] before,
     SceneObjectPlacement[] after,
@@ -77,3 +70,10 @@ internal sealed record SceneHierarchyHistoryData(
         return placements;
     }
 }
+
+internal readonly record struct SceneObjectPlacement(
+    Guid sceneID,
+    Guid objectID,
+    Guid? parentID,
+    int siblingIndex
+);

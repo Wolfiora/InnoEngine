@@ -3,52 +3,6 @@ using System;
 namespace Inno.Rendering;
 
 /// <summary>
-/// Identifies a portable encoded texture container accepted by a render device.
-/// </summary>
-public enum RenderTextureContainer
-{
-    /// <summary>
-    /// Khronos Texture container containing validated GPU texture payloads.
-    /// </summary>
-    Ktx
-}
-
-/// <summary>
-/// Contains backend-recorded GPU command submissions for the current frame.
-/// </summary>
-public readonly record struct RenderDeviceFrameCounters
-{
-    /// <summary>
-    /// Creates immutable device frame counters.
-    /// </summary>
-    /// <param name="drawCount">
-    /// Direct and indirect draw commands submitted so far.
-    /// </param>
-    /// <param name="dispatchCount">
-    /// Direct and indirect compute dispatches submitted so far.
-    /// </param>
-    public RenderDeviceFrameCounters(
-        int drawCount,
-        int dispatchCount
-    ) {
-        ArgumentOutOfRangeException.ThrowIfNegative(drawCount);
-        ArgumentOutOfRangeException.ThrowIfNegative(dispatchCount);
-        this.drawCount = drawCount;
-        this.dispatchCount = dispatchCount;
-    }
-
-    /// <summary>
-    /// Gets direct and indirect draw commands submitted during the current frame.
-    /// </summary>
-    public int drawCount { get; }
-
-    /// <summary>
-    /// Gets direct and indirect compute dispatches submitted during the current frame.
-    /// </summary>
-    public int dispatchCount { get; }
-}
-
-/// <summary>
 /// Owns one graphics backend generation and its frame submission boundary.
 /// </summary>
 public interface IRenderDevice : IDisposable
@@ -364,4 +318,15 @@ public interface IRenderDevice : IDisposable
     /// Pipeline owned by this device generation.
     /// </param>
     void DestroyComputePipeline(ComputePipelineHandle pipeline);
+}
+
+/// <summary>
+/// Identifies a portable encoded texture container accepted by a render device.
+/// </summary>
+public enum RenderTextureContainer
+{
+    /// <summary>
+    /// Khronos Texture container containing validated GPU texture payloads.
+    /// </summary>
+    Ktx
 }

@@ -20,8 +20,6 @@ using Inno.Core.Serialization;
 using Inno.Core.Settings;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
-using Inno.Plugins;
-using Inno.Plugins.Authoring;
 
 namespace Inno.Plugins.Authoring.Tests;
 
@@ -981,32 +979,4 @@ public sealed class PluginSourceServiceTests : IDisposable
         using Stream output = entry.Open();
         output.Write(bytes);
     }
-}
-
-[CollectionDefinition("Plugin source serialization", DisableParallelization = true)]
-public sealed class PluginSourceSerializationCollection;
-
-[StableTypeID("706c1248-478b-43f1-a44d-98a1a8f7b919")]
-[ProjectSettingDefinition("tests.plugins.default")]
-internal sealed class PluginDefaultTestSetting : ISerializable
-{
-    [SerializableProperty]
-    public int value { get; set; } = 1;
-
-    internal static ProjectSettingID id => new("tests.plugins.default");
-}
-
-internal sealed class TestAssetSourceMeta : ISerializable
-{
-    [SerializableProperty]
-    public Guid persistentId { get; set; }
-
-    [SerializableProperty]
-    public int sourceKind { get; set; }
-
-    [SerializableProperty]
-    public string importerId { get; set; } = string.Empty;
-
-    [SerializableProperty]
-    public byte[] importerSettingsBytes { get; set; } = [];
 }

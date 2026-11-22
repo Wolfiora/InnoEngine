@@ -5,10 +5,7 @@ using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Execution;
 using Inno.Editor.Core;
-using Inno.Editor.ImGui.ImGuiWidget;
-using Inno.Editor.Interactions;
 using Inno.Editor.Shaders;
-using Inno.Rendering;
 using Inno.Rendering.Assets;
 
 using EditorUI = Inno.Editor.ImGui.EditorUISession;
@@ -72,36 +69,6 @@ internal sealed class ShaderEditorPanel(ShaderEditorDocuments documents) : Edito
                                         && RetirementPendingException.Find(failure) is null)
         {
             EditorUI.current.widgets.WrappedText(failure.Message);
-        }
-    }
-}
-
-[EditorAction("editor/open", priority: 1000)]
-internal sealed class OpenShaderEditorAction : EditorAction<ShaderAsset, string>
-{
-    /// <summary>
-    /// Evaluates the operation's current availability and presentation state.
-    /// </summary>
-    /// <param name="context">
-    /// The context that supplies state and services for this operation.
-    /// </param>
-    /// <returns>
-    /// The validated editor action state that represents the completed operation.
-    /// </returns>
-    protected override EditorActionState Query(EditorActionContext<ShaderAsset, string> context) => EditorActionState.enabled;
-
-    /// <summary>
-    /// Applies the editor action to the supplied interaction context.
-    /// </summary>
-    /// <param name="context">
-    /// The context that supplies state and services for this operation.
-    /// </param>
-    protected override void Execute(EditorActionContext<ShaderAsset, string> context)
-    {
-        context.interactions.SetSelection(context.target);
-        if (!context.interactions.OpenPanel("rendering.shader-editor"))
-        {
-            throw new InvalidOperationException("Shader Editor is unavailable.");
         }
     }
 }

@@ -1,50 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering;
-
-/// <summary>
-/// Selects texture filtering independently from a graphics backend.
-/// </summary>
-public enum RenderSamplerFilter
-{
-    /// <summary>
-    /// Uses nearest-neighbor filtering.
-    /// </summary>
-    Point,
-    /// <summary>
-    /// Uses linear filtering.
-    /// </summary>
-    Linear,
-    /// <summary>
-    /// Uses anisotropic filtering when supported.
-    /// </summary>
-    Anisotropic
-}
-
-/// <summary>
-/// Selects texture addressing independently for each coordinate axis.
-/// </summary>
-public enum RenderSamplerAddressMode
-{
-    /// <summary>
-    /// Repeats texture coordinates.
-    /// </summary>
-    Repeat,
-    /// <summary>
-    /// Mirrors repeated texture coordinates.
-    /// </summary>
-    Mirror,
-    /// <summary>
-    /// Clamps coordinates to the texture edge.
-    /// </summary>
-    Clamp,
-    /// <summary>
-    /// Samples the backend border color outside the texture.
-    /// </summary>
-    Border
-}
 
 /// <summary>
 /// Describes one native-serializable backend-neutral sampler binding.
@@ -176,4 +132,46 @@ public struct RenderSamplerState : IEquatable<RenderSamplerState>
         RenderSamplerState left,
         RenderSamplerState right
     ) => !left.Equals(right);
+}
+
+/// <summary>
+/// Selects texture filtering independently from a graphics backend.
+/// </summary>
+public enum RenderSamplerFilter
+{
+    /// <summary>
+    /// Uses nearest-neighbor filtering.
+    /// </summary>
+    Point,
+    /// <summary>
+    /// Uses linear filtering.
+    /// </summary>
+    Linear,
+    /// <summary>
+    /// Uses anisotropic filtering when supported.
+    /// </summary>
+    Anisotropic
+}
+
+/// <summary>
+/// Selects texture addressing independently for each coordinate axis.
+/// </summary>
+public enum RenderSamplerAddressMode
+{
+    /// <summary>
+    /// Repeats texture coordinates.
+    /// </summary>
+    Repeat,
+    /// <summary>
+    /// Mirrors repeated texture coordinates.
+    /// </summary>
+    Mirror,
+    /// <summary>
+    /// Clamps coordinates to the texture edge.
+    /// </summary>
+    Clamp,
+    /// <summary>
+    /// Samples the backend border color outside the texture.
+    /// </summary>
+    Border
 }

@@ -6,21 +6,6 @@ using System.Text.RegularExpressions;
 namespace Inno.Build.Toolchains;
 
 /// <summary>
-/// Specifies the linkage required by a product's native component operation.
-/// </summary>
-public enum NativeLibraryKind
-{
-    /// <summary>
-    /// Produces archives for the selected final linker.
-    /// </summary>
-    Static,
-    /// <summary>
-    /// Produces libraries loaded by the deployed product.
-    /// </summary>
-    Shared
-}
-
-/// <summary>
 /// Freezes product-owned linkage, ordered component definitions and their configuration inputs.
 /// </summary>
 public sealed class NativeComponentBuildOptions
@@ -146,4 +131,19 @@ public sealed class NativeComponentBuildOptions
         }
         return portable;
     }
+}
+
+/// <summary>
+/// Specifies the linkage required by a product's native component operation.
+/// </summary>
+public enum NativeLibraryKind
+{
+    /// <summary>
+    /// Produces archives for the selected final linker.
+    /// </summary>
+    Static,
+    /// <summary>
+    /// Produces libraries loaded by the deployed product.
+    /// </summary>
+    Shared
 }

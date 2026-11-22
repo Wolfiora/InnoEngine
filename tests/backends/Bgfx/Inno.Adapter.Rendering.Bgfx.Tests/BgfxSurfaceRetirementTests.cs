@@ -155,6 +155,3 @@ public sealed class BgfxSurfaceRetirementTests
         ) => default;
     }
 }
-
-[CollectionDefinition("Windowed BGFX", DisableParallelization = true)]
-public sealed class WindowedBgfxCollection;

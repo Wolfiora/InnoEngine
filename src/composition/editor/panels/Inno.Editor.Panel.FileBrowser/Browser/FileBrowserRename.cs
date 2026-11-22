@@ -1,20 +1,11 @@
 using System;
 using Inno.Assets.Pipeline;
 using Inno.Core.Identity;
-using Inno.Editor.Assets;
 using Inno.Editor.Assets.ImGui;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui.ImGuiWidget;
-using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Panel.FileBrowser;
-
-internal enum FileBrowserPresentation
-{
-    Tree,
-    List,
-    Grid
-}
 
 internal sealed class FileBrowserRename(AssetBrowserModule assets)
 {
@@ -73,4 +64,11 @@ internal sealed class FileBrowserRename(AssetBrowserModule assets)
                identity,
                out IdentityObject? target
            ) ? target as AssetFileEntry : null;
+}
+
+internal enum FileBrowserPresentation
+{
+    Tree,
+    List,
+    Grid
 }

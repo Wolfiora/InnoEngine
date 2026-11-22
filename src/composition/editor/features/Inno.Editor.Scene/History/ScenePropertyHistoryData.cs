@@ -6,12 +6,6 @@ using System.Text;
 
 namespace Inno.Editor.Scene;
 
-internal sealed record ScenePropertyValueDelta(
-    string propertyName,
-    byte[] before,
-    byte[] after
-);
-
 internal sealed record ScenePropertyHistoryData(
     Guid targetID,
     string propertyName,
@@ -110,3 +104,9 @@ internal sealed record ScenePropertyHistoryData(
         return bytes;
     }
 }
+
+internal sealed record ScenePropertyValueDelta(
+    string propertyName,
+    byte[] before,
+    byte[] after
+);

@@ -1,30 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Inno.Core.Diagnostics;
 using Inno.Extensibility.Types;
-using Inno.Rendering;
 using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
-
-[StableTypeID("b5677cc4-c195-5f52-a52f-5efecec8314e")]
-internal enum RenderMaterialBindingKind
-{
-    Uniform,
-    Texture
-}
-
-[StableTypeID("702a1ec9-219b-5d44-b322-1a433e7e41b5")]
-internal sealed record RenderMaterialBinding(
-    RenderMaterialBindingKind kind,
-    RenderBindingID id,
-    byte[]? uniformData,
-    PersistentTextureHandle texture,
-    RenderSamplerState sampler
-);
 
 /// <summary>
 /// Represents one frame-resolved material pass and its material-owned bindings.
@@ -181,3 +161,19 @@ public sealed class RenderMaterialPass
         _ => throw new ArgumentOutOfRangeException(nameof(kind))
     };
 }
+
+[StableTypeID("b5677cc4-c195-5f52-a52f-5efecec8314e")]
+internal enum RenderMaterialBindingKind
+{
+    Uniform,
+    Texture
+}
+
+[StableTypeID("702a1ec9-219b-5d44-b322-1a433e7e41b5")]
+internal sealed record RenderMaterialBinding(
+    RenderMaterialBindingKind kind,
+    RenderBindingID id,
+    byte[]? uniformData,
+    PersistentTextureHandle texture,
+    RenderSamplerState sampler
+);

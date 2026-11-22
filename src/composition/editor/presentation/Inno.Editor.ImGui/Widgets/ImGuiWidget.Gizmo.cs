@@ -1,5 +1,4 @@
 using System;
-using System.Numerics;
 using Inno.Native.ImGuizmo;
 
 using EngineMatrix = Inno.Core.Mathematics.Matrix;
@@ -9,136 +8,6 @@ using NativeOperation = Inno.Native.ImGuizmo.ImGuizmoOperation;
 using NativeSpace = Inno.Native.ImGuizmo.ImGuizmoMode;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
-
-/// <summary>
-/// Chooses the transform handles rendered by the viewport presenter.
-/// </summary>
-[Flags]
-public enum TransformGizmoOperation
-{
-    /// <summary>
-    /// Renders translation handles.
-    /// </summary>
-    Translate = 1,
-    /// <summary>
-    /// Renders rotation handles.
-    /// </summary>
-    Rotate = 2,
-    /// <summary>
-    /// Renders the X scale handle.
-    /// </summary>
-    ScaleX = 4,
-    /// <summary>
-    /// Renders the Y scale handle.
-    /// </summary>
-    ScaleY = 8,
-    /// <summary>
-    /// Renders the Z scale handle.
-    /// </summary>
-    ScaleZ = 16,
-    /// <summary>
-    /// Renders all local scale handles.
-    /// </summary>
-    Scale = ScaleX | ScaleY | ScaleZ
-}
-
-/// <summary>
-/// Chooses how the manipulation axes are oriented.
-/// </summary>
-public enum TransformGizmoSpace
-{
-    /// <summary>
-    /// Uses the object's local orientation.
-    /// </summary>
-    Local,
-    /// <summary>
-    /// Uses the world's orientation.
-    /// </summary>
-    World
-}
-
-/// <summary>
-/// Supplies frame-local matrices and interaction policy without native handles.
-/// </summary>
-public readonly record struct TransformGizmoOptions
-{
-    /// <summary>
-    /// Gets the viewport's screen-space minimum.
-    /// </summary>
-    public Vector2 minimum { get; init; }
-
-    /// <summary>
-    /// Gets the viewport's screen-space maximum.
-    /// </summary>
-    public Vector2 maximum { get; init; }
-
-    /// <summary>
-    /// Gets the column-vector view matrix.
-    /// </summary>
-    public EngineMatrix view { get; init; }
-
-    /// <summary>
-    /// Gets the projection matrix supplied by the viewport owner.
-    /// </summary>
-    public EngineMatrix projection { get; init; }
-
-    /// <summary>
-    /// Gets whether this viewport uses an orthographic projection.
-    /// </summary>
-    public bool orthographic { get; init; }
-
-    /// <summary>
-    /// Gets whether manipulation can consume pointer input.
-    /// </summary>
-    public bool enabled { get; init; }
-
-    /// <summary>
-    /// Gets the requested handles.
-    /// </summary>
-    public TransformGizmoOperation operation { get; init; }
-
-    /// <summary>
-    /// Gets the handle coordinate space.
-    /// </summary>
-    public TransformGizmoSpace space { get; init; }
-
-    /// <summary>
-    /// Gets whether the X translation axis is excluded by the viewport plane.
-    /// </summary>
-    public bool maskX { get; init; }
-
-    /// <summary>
-    /// Gets whether the Y translation axis is excluded by the viewport plane.
-    /// </summary>
-    public bool maskY { get; init; }
-
-    /// <summary>
-    /// Gets whether the Z translation axis is excluded by the viewport plane.
-    /// </summary>
-    public bool maskZ { get; init; }
-}
-
-/// <summary>
-/// Returns copied manipulation output; the domain owner decides how to apply and record it.
-/// </summary>
-/// <param name="matrix">
-/// The resulting world matrix.
-/// </param>
-/// <param name="changed">
-/// Whether the native presenter reported an edited value.
-/// </param>
-/// <param name="isUsing">
-/// Whether the handle currently captures the pointer.
-/// </param>
-/// <param name="isOver">
-/// Whether the pointer is over a handle.
-/// </param>
-public readonly record struct TransformGizmoResult(
-    EngineMatrix matrix,
-    bool changed,
-    bool isUsing,
-    bool isOver
-);
 
 /// <summary>
 /// Owns session-local controls, native adaptation and reversible edit gestures.
@@ -287,3 +156,72 @@ public sealed unsafe partial class ImGuiWidget
             source[15]
         );
 }
+
+/// <summary>
+/// Chooses the transform handles rendered by the viewport presenter.
+/// </summary>
+[Flags]
+public enum TransformGizmoOperation
+{
+    /// <summary>
+    /// Renders translation handles.
+    /// </summary>
+    Translate = 1,
+    /// <summary>
+    /// Renders rotation handles.
+    /// </summary>
+    Rotate = 2,
+    /// <summary>
+    /// Renders the X scale handle.
+    /// </summary>
+    ScaleX = 4,
+    /// <summary>
+    /// Renders the Y scale handle.
+    /// </summary>
+    ScaleY = 8,
+    /// <summary>
+    /// Renders the Z scale handle.
+    /// </summary>
+    ScaleZ = 16,
+    /// <summary>
+    /// Renders all local scale handles.
+    /// </summary>
+    Scale = ScaleX | ScaleY | ScaleZ
+}
+
+/// <summary>
+/// Chooses how the manipulation axes are oriented.
+/// </summary>
+public enum TransformGizmoSpace
+{
+    /// <summary>
+    /// Uses the object's local orientation.
+    /// </summary>
+    Local,
+    /// <summary>
+    /// Uses the world's orientation.
+    /// </summary>
+    World
+}
+
+/// <summary>
+/// Returns copied manipulation output; the domain owner decides how to apply and record it.
+/// </summary>
+/// <param name="matrix">
+/// The resulting world matrix.
+/// </param>
+/// <param name="changed">
+/// Whether the native presenter reported an edited value.
+/// </param>
+/// <param name="isUsing">
+/// Whether the handle currently captures the pointer.
+/// </param>
+/// <param name="isOver">
+/// Whether the pointer is over a handle.
+/// </param>
+public readonly record struct TransformGizmoResult(
+    EngineMatrix matrix,
+    bool changed,
+    bool isUsing,
+    bool isOver
+);

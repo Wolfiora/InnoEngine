@@ -6,7 +6,6 @@ using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Core.Serialization.Converters;
 using Inno.Extensibility.Types;
-using Inno.Scene;
 using Inno.Scene.Components;
 using Inno.Scene.Layers;
 
@@ -299,37 +298,4 @@ public sealed partial class SceneSerializationTests : IDisposable
         Assert.True(SceneManager.UnloadScene(scene));
         return (sceneReference, objectReference, componentReference);
     }
-}
-
-[StableTypeID("09d35197-7161-4fdf-8d60-95ecf3555c0c")]
-internal sealed class ReferenceComponent : GameComponent
-{
-    [SerializableProperty]
-    public int value { get; set; }
-
-    [SerializableProperty]
-    public GameObject? targetObject { get; set; }
-
-    [SerializableProperty]
-    public ReferenceComponent? targetComponent { get; set; }
-
-    public int resetCount { get; private set; }
-
-    protected override void Reset() => resetCount++;
-}
-
-[StableTypeID("f7bc9bf3-288a-45b3-9caa-26289d66c181")]
-internal sealed class OrderSerializationSystemA : GameSystem;
-
-[StableTypeID("6924359d-798d-4384-bdb2-1b0e34ab3fbb")]
-internal sealed class OrderSerializationSystemB : GameSystem;
-
-[StableTypeID("821c7b92-9aeb-40cb-924e-169004199ef0")]
-internal sealed class LayerValueComponent : GameComponent
-{
-    [SerializableProperty]
-    public GameLayer layer { get; set; }
-
-    [SerializableProperty]
-    public GameLayerMask mask { get; set; }
 }

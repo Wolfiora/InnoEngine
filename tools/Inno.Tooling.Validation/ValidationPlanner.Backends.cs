@@ -12,23 +12,6 @@ using Inno.Core.IO;
 
 namespace Inno.Tooling.Validation;
 
-internal sealed record BackendInputPlan(
-    string commit,
-    string target,
-    string configuration,
-    Dictionary<string, string> projects,
-    string[] required,
-    string[] tests,
-    string[] missingNativeProducts,
-    string? developmentProperties,
-    Dictionary<string, BackendConsumerInputs>? consumers = null
-);
-
-internal sealed record BackendConsumerInputs(
-    string identity,
-    string[] backendOwners
-);
-
 internal static partial class ValidationPlanner
 {
     internal static async Task<ValidationPlan> BindBackendsAsync(
@@ -554,3 +537,20 @@ internal static partial class ValidationPlanner
         string configuration
     );
 }
+
+internal sealed record BackendInputPlan(
+    string commit,
+    string target,
+    string configuration,
+    Dictionary<string, string> projects,
+    string[] required,
+    string[] tests,
+    string[] missingNativeProducts,
+    string? developmentProperties,
+    Dictionary<string, BackendConsumerInputs>? consumers = null
+);
+
+internal sealed record BackendConsumerInputs(
+    string identity,
+    string[] backendOwners
+);

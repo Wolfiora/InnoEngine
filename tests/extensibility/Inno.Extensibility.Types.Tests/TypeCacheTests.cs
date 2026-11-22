@@ -7,7 +7,6 @@ using Xunit;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Reload;
-using Inno.Extensibility.Types;
 
 namespace Inno.Extensibility.Types.Tests;
 
@@ -315,35 +314,3 @@ public sealed class TypeCacheTests : IDisposable
         internal sealed record Snapshot(int id);
     }
 }
-
-// Open: TestDerived and TestAbstractDerived derive from it for the subtype queries.
-public class TestBase;
-
-public sealed class TestDerived : TestBase;
-
-public abstract class TestAbstractDerived : TestBase;
-
-public interface ITestContract;
-
-public sealed class TestContractImpl : ITestContract;
-
-public abstract class TestAbstractContractImpl : ITestContract;
-
-[AttributeUsage(AttributeTargets.Class)]
-public sealed class TestMarkerAttribute : Attribute;
-
-[TestMarker]
-public sealed class AttributedType;
-
-[TestMarker]
-public abstract class AbstractAttributedType;
-
-[StableTypeID("11111111-1111-1111-1111-111111111111")]
-public sealed class StableAnnotatedTypeA;
-
-[StableTypeID("22222222-2222-2222-2222-222222222222")]
-public struct StableAnnotatedTypeB;
-
-public sealed class DeterministicStableType;
-
-public sealed class GeneratedMappedType;

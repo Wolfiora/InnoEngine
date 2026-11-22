@@ -9,20 +9,6 @@ using Inno.Extensibility.Types;
 namespace Inno.Rendering.Shaders;
 
 /// <summary>
-/// Describes a creation menu item without retaining a plugin instance.
-/// </summary>
-/// <param name="id">
-/// Stable template identity.
-/// </param>
-/// <param name="displayName">
-/// User-facing label.
-/// </param>
-public sealed record ShaderGraphTemplateInfo(
-    string id,
-    string displayName
-);
-
-/// <summary>
 /// Owns generation-safe template discovery and invocation for editor asset creation.
 /// </summary>
 public sealed class ShaderGraphTemplateRegistry : IDisposable
@@ -160,3 +146,17 @@ protected override void DisposeSnapshot(IReadOnlyDictionary<string, Entry> snaps
     => DisposeExtensions(snapshot.Values.Select(static value => value.template));
     }
 }
+
+/// <summary>
+/// Describes a creation menu item without retaining a plugin instance.
+/// </summary>
+/// <param name="id">
+/// Stable template identity.
+/// </param>
+/// <param name="displayName">
+/// User-facing label.
+/// </param>
+public sealed record ShaderGraphTemplateInfo(
+    string id,
+    string displayName
+);

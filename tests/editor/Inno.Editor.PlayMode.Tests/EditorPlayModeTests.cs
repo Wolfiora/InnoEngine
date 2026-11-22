@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Xunit;
@@ -13,7 +12,6 @@ using Inno.Core.Identity;
 using Inno.Core.Input;
 using Inno.Core.Logging;
 using Inno.Core.Mathematics;
-using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
@@ -740,14 +738,4 @@ public sealed class EditorPlayModeTests : IDisposable
             }
         }
     }
-}
-
-[StableTypeID("9afec1fd-c1ef-45fa-9bcc-0b3e2877d613")]
-internal sealed class PlayModeAssetReferenceBehavior : GameBehavior
-{
-    /// <summary>
-    /// Gets or sets the asset reference copied into the isolated Play Mode scene.
-    /// </summary>
-    [SerializableProperty]
-    public TextAsset? asset { get; set; }
 }

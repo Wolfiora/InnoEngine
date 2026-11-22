@@ -1,22 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using Inno.Rendering;
-using Inno.Rendering.Assets;
 using Inno.Rendering.Assets.Authoring;
 using Inno.Rendering.Shaders;
 
 namespace Inno.Build.Toolchains.Bgfx.Tools;
-
-internal sealed record BgfxGeneratedStage(
-    string source,
-    string varying,
-    IReadOnlyList<ShaderStageBinding> bindings,
-    IReadOnlyList<ShaderSourcePosition> sourcePositions
-);
 
 // SC spelling, hardware semantics and module symbol isolation belong only to this adapter.
 internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
@@ -386,3 +376,10 @@ internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
         }
     }
 }
+
+internal sealed record BgfxGeneratedStage(
+    string source,
+    string varying,
+    IReadOnlyList<ShaderStageBinding> bindings,
+    IReadOnlyList<ShaderSourcePosition> sourcePositions
+);

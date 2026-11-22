@@ -10,22 +10,6 @@ using Inno.Core.IO;
 
 namespace Inno.Tooling.Documentation.Indexing;
 
-internal sealed record DocumentationApiPackageFile(
-    string path,
-    string sha256,
-    string text
-);
-
-internal sealed record DocumentationApiPackageData(
-    string schema,
-    string repository,
-    string revision,
-    string sourceTree,
-    string toolingRevision,
-    string contentIdentity,
-    IReadOnlyList<DocumentationApiPackageFile> files
-);
-
 internal static class DocumentationApiPackage
 {
     private const string C_BINDING = "reference/engine.lock.json";
@@ -267,3 +251,19 @@ internal static class DocumentationApiPackage
             )
         );
 }
+
+internal sealed record DocumentationApiPackageFile(
+    string path,
+    string sha256,
+    string text
+);
+
+internal sealed record DocumentationApiPackageData(
+    string schema,
+    string repository,
+    string revision,
+    string sourceTree,
+    string toolingRevision,
+    string contentIdentity,
+    IReadOnlyList<DocumentationApiPackageFile> files
+);

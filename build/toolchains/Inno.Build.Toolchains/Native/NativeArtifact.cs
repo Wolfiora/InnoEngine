@@ -8,29 +8,6 @@ using Inno.Core.IO;
 namespace Inno.Build.Toolchains;
 
 /// <summary>
-/// Describes the link or deployment role explicitly assigned by a native producer.
-/// </summary>
-public enum NativeArtifactRole
-{
-    /// <summary>
-    /// A library loaded by the runtime.
-    /// </summary>
-    SharedLibrary,
-    /// <summary>
-    /// A separate linker input referring to a shared library.
-    /// </summary>
-    ImportLibrary,
-    /// <summary>
-    /// An archive linked into the final executable.
-    /// </summary>
-    StaticArchive,
-    /// <summary>
-    /// A tool, header or other supporting payload.
-    /// </summary>
-    SupportFile
-}
-
-/// <summary>
 /// Identifies one exact output and its producer-declared role.
 /// </summary>
 public sealed record NativeArtifact
@@ -136,4 +113,27 @@ public sealed record NativeArtifact
         string path,
         NativeArtifactRole role
     );
+}
+
+/// <summary>
+/// Describes the link or deployment role explicitly assigned by a native producer.
+/// </summary>
+public enum NativeArtifactRole
+{
+    /// <summary>
+    /// A library loaded by the runtime.
+    /// </summary>
+    SharedLibrary,
+    /// <summary>
+    /// A separate linker input referring to a shared library.
+    /// </summary>
+    ImportLibrary,
+    /// <summary>
+    /// An archive linked into the final executable.
+    /// </summary>
+    StaticArchive,
+    /// <summary>
+    /// A tool, header or other supporting payload.
+    /// </summary>
+    SupportFile
 }
