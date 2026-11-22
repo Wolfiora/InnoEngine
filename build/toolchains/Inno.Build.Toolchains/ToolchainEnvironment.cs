@@ -621,7 +621,7 @@ public static class ToolchainEnvironment
             {
                 await Task.WhenAll(exited, output, error).ConfigureAwait(false);
             }
-            catch
+            catch (Exception)
             {
                 // Observe all pumps while preserving the failure that initiated process cleanup.
             }

@@ -43,7 +43,7 @@ internal sealed class EditorHostResourceStack(Action<Exception> reportCleanupFai
                 {
                     reportCleanupFailure(exception);
                 }
-                catch
+                catch (Exception)
                 {
                     // Cleanup diagnostics must never replace the original startup failure.
                 }

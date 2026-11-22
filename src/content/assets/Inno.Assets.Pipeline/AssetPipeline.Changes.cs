@@ -194,7 +194,7 @@ public sealed partial class AssetPipeline
             {
                 ((Action)handler)();
             }
-            catch
+            catch (Exception)
             {
                 // Observer failures cannot roll back committed manager state.
             }
@@ -215,7 +215,7 @@ public sealed partial class AssetPipeline
             {
                 ((Action<T>)handler)(value);
             }
-            catch
+            catch (Exception)
             {
                 // Observer failures cannot roll back committed manager state.
             }

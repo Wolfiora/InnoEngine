@@ -156,8 +156,9 @@ internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
             );
             return true;
         }
-        catch
+        catch (Exception)
         {
+            // A payload that cannot be decoded is not merged. The two changes stay separate.
             return false;
         }
     }

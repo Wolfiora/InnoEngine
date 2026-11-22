@@ -421,7 +421,7 @@ public sealed partial class AssetPipeline
                 MovePhysicalSource(targetPath, sourcePath, isDirectory);
             }
         }
-        catch
+        catch (Exception)
         {
             // The following catalog rescan reports any remaining physical conflict.
         }
@@ -438,7 +438,7 @@ public sealed partial class AssetPipeline
                 File.Move(targetPath, sourcePath);
             }
         }
-        catch
+        catch (Exception)
         {
             // The following catalog rescan reports any remaining metadata conflict.
         }

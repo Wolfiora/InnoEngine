@@ -322,7 +322,7 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         {
             await Task.WhenAll(pending).ConfigureAwait(false);
         }
-        catch
+        catch (Exception)
         {
             // Dispose observes every fault after all work has completed.
         }

@@ -164,7 +164,10 @@ internal sealed class TaskHostPublicationProcess : IAsyncDisposable
             {
                 await running;
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                // The original failure is rethrown below. The failure of the canceled run is not needed.
+            }
             budget.Dispose();
             throw;
         }

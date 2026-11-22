@@ -278,8 +278,9 @@ internal static class SceneReferenceIndex
                 {
                     fieldValue = fields[i].GetValue(value);
                 }
-                catch
+                catch (Exception)
                 {
+                    // A field that cannot be read is skipped.
                     continue;
                 }
                 if (ContainsReference(fieldValue, targetIDs, visited))

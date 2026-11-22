@@ -2,8 +2,8 @@ using System.Numerics;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
 
-internal struct TreeWidgetHighlightRect
+internal readonly struct TreeWidgetHighlightRect
 {
-    internal Vector2 min;
-    internal Vector2 max;
+    internal Vector2 min { get; init; }
+    internal Vector2 max { get; init; }
 }

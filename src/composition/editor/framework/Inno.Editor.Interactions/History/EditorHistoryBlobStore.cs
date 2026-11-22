@@ -40,7 +40,7 @@ internal sealed class EditorHistoryBlobStore : IDisposable
                     Directory.Delete(m_sessionDirectory, recursive: true);
                 }
             }
-            catch
+            catch (Exception)
             {
                 // A stale session directory is safe to remove with the project's Library cache.
             }
@@ -94,7 +94,7 @@ internal sealed class EditorHistoryBlobStore : IDisposable
                 File.Delete(path);
             }
         }
-        catch
+        catch (Exception)
         {
             // Session cleanup retries deletion when the history is disposed.
         }

@@ -113,8 +113,9 @@ internal sealed class GraphHistoryHandler(GraphEditorModule module) : EditorHist
             );
             return true;
         }
-        catch
+        catch (Exception)
         {
+            // A payload that cannot be decoded is not merged. The two changes stay separate.
             return false;
         }
     }

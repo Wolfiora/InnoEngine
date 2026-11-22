@@ -260,8 +260,9 @@ internal sealed partial class EditorSceneWorkspace
         {
             SynchronizeSource(scene, document);
         }
-        catch
+        catch (Exception)
         {
+            // The source could not be synchronized. The document stays dirty.
             document.isDirty = true;
         }
         relativePath = document.sourcePath;

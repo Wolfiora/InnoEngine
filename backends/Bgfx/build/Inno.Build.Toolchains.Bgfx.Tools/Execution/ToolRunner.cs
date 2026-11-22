@@ -188,7 +188,7 @@ public sealed class ToolRunner
             {
                 await Task.WhenAll(standardOutput, standardError).ConfigureAwait(false);
             }
-            catch
+            catch (Exception)
             {
                 // Observe both readers before preserving the original operation failure.
             }

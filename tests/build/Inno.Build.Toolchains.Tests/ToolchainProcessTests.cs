@@ -215,7 +215,7 @@ public sealed class ToolchainProcessTests : IDisposable
                 {
                     await running.WaitAsync(TimeSpan.FromSeconds(10));
                 }
-                catch
+                catch (Exception)
                 {
                     // Observe the failure after requesting cleanup, including a timed-out assertion.
                 }

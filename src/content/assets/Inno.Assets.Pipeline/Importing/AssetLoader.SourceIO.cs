@@ -250,8 +250,9 @@ public sealed partial class AssetLoader
             sourceMeta = m_serialization.Deserialize<AssetSourceMeta>(bytes);
             return sourceMeta.persistentId != Guid.Empty;
         }
-        catch
+        catch (Exception)
         {
+            // Metadata that cannot be deserialized is reported as unreadable.
             return false;
         }
     }

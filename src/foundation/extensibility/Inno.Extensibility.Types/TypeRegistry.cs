@@ -578,8 +578,9 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
         {
             OnCleanupFailed(phase, exception);
         }
-        catch
+        catch (Exception)
         {
+            // The cleanup failure is already reported to the type catalog. A failing observer must not hide it.
         }
     }
 

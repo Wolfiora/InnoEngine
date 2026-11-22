@@ -76,8 +76,9 @@ public sealed unsafe partial class PlatformImGuiContext
             PlatformImGuiContext? owner = FindClipboardContext(context);
             return owner is null ? null : owner.GetClipboardText();
         }
-        catch
+        catch (Exception)
         {
+            // An exception must not unwind into native code. Null reports that no text is available.
             return null;
         }
     }
@@ -94,7 +95,7 @@ public sealed unsafe partial class PlatformImGuiContext
                 _ = SDL.Raw.SetClipboardText(text);
             }
         }
-        catch
+        catch (Exception)
         {
             // Exceptions must not cross Dear ImGui's unmanaged callback boundary.
         }

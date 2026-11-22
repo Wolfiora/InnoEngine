@@ -381,7 +381,7 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
             {
                 ((Action<AssetObject>)handler)(asset);
             }
-            catch
+            catch (Exception)
             {
                 // Observer failures cannot roll back an already committed asset transaction.
             }

@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -127,14 +128,19 @@ public sealed class ValidationRepository : IDisposable
             start.ArgumentList.Add(argument);
         }
         using Process process = Process.Start(start)!;
-        Task<string> output = process.StandardOutput.ReadToEndAsync();
-        Task<string> error = process.StandardError.ReadToEndAsync();
+        var error = new StringBuilder();
+        process.ErrorDataReceived += (
+            _,
+            data
+        ) => error.AppendLine(data.Data);
+        process.BeginErrorReadLine();
+        string output = process.StandardOutput.ReadToEnd();
         process.WaitForExit();
         if (process.ExitCode != 0)
         {
-            throw new InvalidOperationException(output.Result + error.Result);
+            throw new InvalidOperationException(output + error);
         }
-        return output.Result.Trim();
+        return output.Trim();
     }
 
     public async Task<JsonDocument> PlanAsync(

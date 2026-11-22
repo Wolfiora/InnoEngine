@@ -366,7 +366,7 @@ internal sealed class GameBuildPipeline
         {
             await task.ConfigureAwait(false);
         }
-        catch
+        catch (Exception)
         {
             // The primary build path reports the stage failure; cleanup only observes task completion.
         }

@@ -155,8 +155,9 @@ internal static class AssetSourceArchive
                     assets.Rescan();
                     assets.WaitForIdle();
                 }
-                catch
+                catch (Exception)
                 {
+                    // The original failure is rethrown below. A failed rescan must not replace it.
                 }
             }
 

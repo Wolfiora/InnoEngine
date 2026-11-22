@@ -58,8 +58,9 @@ internal sealed class AssetCatalogStore
             }
             return DeserializeEntries(snapshot.entries);
         }
-        catch
+        catch (Exception)
         {
+            // An unreadable catalog is treated as empty.
             return [];
         }
     }
