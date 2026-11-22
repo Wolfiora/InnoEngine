@@ -110,7 +110,7 @@ public sealed class ValidationPlanningTests
         repository.Write(
             "tests/Producer/Suite.csproj",
             ValidationRepository.Project(
-                "<PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>performance</InnoValidationLayer>"
+                "<PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>integration</InnoValidationLayer>"
                 + "<InnoValidationRequiresNativeProducer>true</InnoValidationRequiresNativeProducer></PropertyGroup>"
             )
         );
@@ -133,55 +133,36 @@ public sealed class ValidationPlanningTests
     }
 
     [Fact]
-    public async Task ConsumeOnlyPerformanceNeverSelectsThirdPartyProducerBenchmarks()
+    public async Task ProducerRegressionsStayExcludedWithoutExplicitSourceProduction()
     {
         using var repository = new ValidationRepository();
+        const string C_OWNER = "tests/Producer/Suite.csproj";
         repository.Write(
-            "tests/Producer/Suite.csproj",
+            C_OWNER,
             ValidationRepository.Project(
-                "<PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>performance</InnoValidationLayer>"
+                "<PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>integration</InnoValidationLayer>"
                 + "<InnoValidationRequiresNativeProducer>true</InnoValidationRequiresNativeProducer></PropertyGroup>"
             )
         );
-        repository.Write(
-            "tests/Warm/Suite.csproj",
-            ValidationRepository.Project(
-                "<PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>performance</InnoValidationLayer></PropertyGroup>"
-            )
-        );
-        using JsonDocument plan = await repository.PlanAsync(
-            profile: "performance",
-            nativeDependencies: "artifacts/backend-store/selection.json"
-        );
-        Assert.False(plan.RootElement.GetProperty("full").GetBoolean());
-        JsonElement required = Assert.Single(
-            plan.RootElement.GetProperty("checks")
+        foreach (string? nativeDependencies in new[] { "artifacts/backend-store/selection.json", null })
+        {
+            using JsonDocument plan = await repository.PlanAsync(nativeDependencies: nativeDependencies);
+            JsonElement check = plan.RootElement.GetProperty("checks")
                 .EnumerateArray()
-                .Where(
-                    item => item.GetProperty("kind").GetString() == "test" && item.GetProperty("exclusion").ValueKind == JsonValueKind.Null
-                )
-        );
-        Assert.Equal("tests/Warm/Suite.csproj", required.GetProperty("owner").GetString());
-        JsonElement check = plan.RootElement.GetProperty("checks")
-            .EnumerateArray()
-            .Single(
-                item => (
-                    item.GetProperty("kind").GetString() == "test"
-                    && item.GetProperty("owner").GetString() == "tests/Producer/Suite.csproj"
-                )
+                .Single(item => item.GetProperty("id").GetString() == "test:" + C_OWNER);
+            Assert.Contains("producer regression", check.GetProperty("exclusion").GetString());
+            Assert.DoesNotContain(
+                plan.RootElement.GetProperty("checks").EnumerateArray(),
+                item => item.GetProperty("kind").GetString() == "cold-inputs"
             );
-        Assert.Contains("producer benchmark", check.GetProperty("exclusion").GetString());
-        Assert.DoesNotContain(
-            plan.RootElement.GetProperty("checks").EnumerateArray(),
-            item => item.GetProperty("kind").GetString() == "cold-inputs"
-        );
+        }
     }
 
     [Fact]
     public async Task FastProfileDefersRealIntegrationAndNativeProductsWithoutDownloadingDependencies()
     {
         using var repository = new ValidationRepository();
-        foreach (string layer in new[] { "contract", "integration", "native", "performance" })
+        foreach (string layer in new[] { "contract", "integration", "native" })
         {
             repository.Write(
                 "tests/" + layer + "/Suite.csproj",
@@ -213,7 +194,7 @@ public sealed class ValidationPlanningTests
             check => check.GetProperty("layer").GetString() == "contract" && check.GetProperty("exclusion").ValueKind == JsonValueKind.Null
         );
         Assert.All(
-            tests.Where(check => check.GetProperty("layer").GetString() is "native" or "integration" or "performance"),
+            tests.Where(check => check.GetProperty("layer").GetString() is "native" or "integration"),
             check => Assert.Equal(JsonValueKind.String, check.GetProperty("exclusion").ValueKind)
         );
         Assert.False(Directory.Exists(repository.PathOf("artifacts/dependencies")));
@@ -309,15 +290,15 @@ public sealed class ValidationPlanningTests
     {
         using var repository = new ValidationRepository();
         const string C_EXECUTOR = "tests/Invoke-IsolatedTests.ps1";
-        const string C_PERFORMANCE = "tests/Performance.Tests/Performance.Tests.csproj";
+        const string C_UNRELATED = "tests/Unrelated.Tests/Unrelated.Tests.csproj";
         repository.Write(
-            C_PERFORMANCE,
+            C_UNRELATED,
             ValidationRepository.Project(
-                "<PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>performance</InnoValidationLayer></PropertyGroup>"
+                "<PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>contract</InnoValidationLayer></PropertyGroup>"
             )
         );
         repository.Write(C_EXECUTOR, "Write-Host 'before'");
-        repository.Git("add", C_EXECUTOR, C_PERFORMANCE);
+        repository.Git("add", C_EXECUTOR, C_UNRELATED);
         repository.Git("commit", "-m", "Declare the shared test executor");
         using JsonDocument initial = await repository.PlanAsync();
         string original = initial.RootElement.GetProperty("inputs").GetProperty(C_EXECUTOR).GetString()!;
@@ -325,20 +306,13 @@ public sealed class ValidationPlanningTests
         using JsonDocument changed = await repository.PlanAsync();
         Assert.False(changed.RootElement.GetProperty("full").GetBoolean());
         Assert.Contains("tests/Example.Tests/Example.Tests.csproj", Owners(changed));
-        Assert.Contains(C_PERFORMANCE, Owners(changed));
+        Assert.Contains(C_UNRELATED, Owners(changed));
         Assert.DoesNotContain("src/Other/Other.csproj", Owners(changed));
         Assert.NotEqual(original, changed.RootElement.GetProperty("inputs").GetProperty(C_EXECUTOR).GetString());
         JsonElement[] checks = changed.RootElement.GetProperty("checks").EnumerateArray().ToArray();
         Assert.All(checks.Where(check => check.GetProperty("kind").GetString() == "test"), test =>
         {
-            if (test.GetProperty("owner").GetString() == C_PERFORMANCE)
-            {
-                Assert.Contains("Performance sampling belongs", test.GetProperty("exclusion").GetString());
-            }
-            else
-            {
-                Assert.Equal(JsonValueKind.Null, test.GetProperty("exclusion").ValueKind);
-            }
+            Assert.Equal(JsonValueKind.Null, test.GetProperty("exclusion").ValueKind);
             Assert.Contains(C_EXECUTOR, test.GetProperty("inputs").EnumerateArray().Select(static value => value.GetString()));
         });
         Assert.All(checks.Where(check => check.GetProperty("kind").GetString() == "build"), build =>
@@ -347,67 +321,6 @@ public sealed class ValidationPlanningTests
             C_EXECUTOR,
             changed.RootElement.GetProperty("inputSets").GetProperty("tooling").EnumerateArray().Select(static value => value.GetString())
         );
-    }
-
-    [Fact]
-    public async Task PerformanceSamplingRequiresItsExplicitProfileEvenWhenItsFixtureChanges()
-    {
-        using var repository = new ValidationRepository();
-        const string C_OWNER = "tests/Cost.Tests/Cost.Tests.csproj";
-        const string C_FIXTURE = "tests/fixtures/CostFixture/CostFixture.csproj";
-        repository.Write(C_FIXTURE, ValidationRepository.Project());
-        repository.Write(
-            C_OWNER,
-            ValidationRepository.Project("""
-            <PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>performance</InnoValidationLayer></PropertyGroup>
-            <ItemGroup><ProjectReference Include="../../src/Example/Example.csproj" /><ProjectReference Include="../fixtures/CostFixture/CostFixture.csproj" /></ItemGroup>
-            """)
-        );
-        repository.Git("add", ".");
-        repository.Git("commit", "-m", "Declare cost sampling owner");
-        repository.Write("src/Example/Changed.cs", "namespace Example; public class Changed { }");
-        using (JsonDocument plan = await repository.PlanAsync())
-        {
-            JsonElement check = plan.RootElement
-                .GetProperty("checks")
-                .EnumerateArray()
-                .Single(item => item.GetProperty("id").GetString() == "test:" + C_OWNER);
-            Assert.Contains("Performance sampling belongs", check.GetProperty("exclusion").GetString());
-        }
-        repository.Write("tests/fixtures/CostFixture/Changed.cs", "namespace CostFixture; public class Changed { }");
-        using (JsonDocument plan = await repository.PlanAsync())
-        {
-            JsonElement check = plan.RootElement
-                .GetProperty("checks")
-                .EnumerateArray()
-                .Single(item => item.GetProperty("id").GetString() == "test:" + C_OWNER);
-            Assert.Contains("Performance sampling belongs", check.GetProperty("exclusion").GetString());
-        }
-        repository.Git("add", "tests/fixtures/CostFixture/Changed.cs");
-        repository.Git("commit", "-m", "Retain the now-verified fixture input");
-        repository.Write("build/Changed.props", "<Project />");
-        using (JsonDocument plan = await repository.PlanAsync())
-        {
-            JsonElement check = plan.RootElement
-                .GetProperty("checks")
-                .EnumerateArray()
-                .Single(item => item.GetProperty("id").GetString() == "test:" + C_OWNER);
-            Assert.Contains("Performance sampling belongs", check.GetProperty("exclusion").GetString());
-            Assert.False(check.GetProperty("reusable").GetBoolean());
-        }
-        using (JsonDocument plan = await repository.PlanAsync(profile: "performance"))
-        {
-            JsonElement check = plan.RootElement
-                .GetProperty("checks")
-                .EnumerateArray()
-                .Single(item => item.GetProperty("id").GetString() == "test:" + C_OWNER);
-            Assert.Equal(JsonValueKind.Null, check.GetProperty("exclusion").ValueKind);
-            Assert.False(check.GetProperty("reusable").GetBoolean());
-            Assert.DoesNotContain(
-                plan.RootElement.GetProperty("checks").EnumerateArray(),
-                item => item.GetProperty("kind").GetString() == "cold-inputs"
-            );
-        }
     }
 
     [Fact]

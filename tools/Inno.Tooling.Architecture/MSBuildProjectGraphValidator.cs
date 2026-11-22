@@ -158,7 +158,7 @@ internal static class MSBuildProjectGraphValidator
         {
             failures.Add($"{project.path}: effective test projects must belong to the root tests directory.");
         }
-        if (project.isTest && project.layer is not ("domain" or "contract" or "integration" or "native" or "product" or "performance"))
+        if (project.isTest && project.layer is not ("domain" or "contract" or "integration" or "native" or "product"))
         {
             failures.Add($"{project.path}: test execution layer must declare its actual execution requirements.");
         }

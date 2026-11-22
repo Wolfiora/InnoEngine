@@ -72,7 +72,7 @@ jobs:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           if ($env:REQUESTED_PROFILE) {
-            if ($env:REQUESTED_PROFILE -cnotin @('full', 'performance')) { throw 'Unsupported scheduled profile.' }
+            if ($env:REQUESTED_PROFILE -cne 'full') { throw 'Unsupported scheduled profile.' }
             $selected = [pscustomobject]@{ run = $true; profile = $env:REQUESTED_PROFILE }
           } else {
             $selected = ./tests/ci/Get-ValidationCadence.ps1 -EventPath $env:GITHUB_EVENT_PATH -Event $env:GITHUB_EVENT_NAME `
@@ -204,7 +204,6 @@ jobs:
         shell: pwsh
         env:
           MULTI_HOST: ${{ fromJSON(needs.route.outputs.hosts).include[1] != null }}
-          PROFILE: ${{ needs.route.outputs.profile }}
           CONTINUATIONS: ${{ needs.acceptance-reuse.outputs.continuations }}
           RUNNER_LABEL: ${{ matrix.runner }}
           REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
@@ -213,10 +212,6 @@ jobs:
           if ($env:CONTINUATIONS) {
             $sources = $env:CONTINUATIONS | ConvertFrom-Json -AsHashtable
             if ($sources.Contains($env:RUNNER_LABEL)) { $decision | Add-Member -NotePropertyName continuationRun -NotePropertyValue $sources[$env:RUNNER_LABEL] }
-          }
-          if ($env:PROFILE -ceq 'performance') {
-            $missing = @($decision.packages | Where-Object operation -CEQ 'produce' | ForEach-Object target)
-            if ($missing.Count) { throw "Performance sampling needs certified backend packages for $($missing -join ', '). Run full acceptance on the default branch first." }
           }
           $direct = !$env:REBUILD_TARGETS -and $decision.packages.Count -eq 1 -and $decision.packages[0].operation -ceq 'consume'
           if ($direct) {

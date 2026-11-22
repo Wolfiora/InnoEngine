@@ -1,5 +1,8 @@
 using System;
 using System.IO;
+using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using BGCS.Runtime;
 using Xunit;
 using Inno.Assets;
@@ -12,10 +15,11 @@ using Inno.Scene;
 using Inno.Testing.Editor.Native;
 
 using NativeGui = Inno.Native.ImGui.ImGui;
+using NativeVector = Inno.Native.ImGui.ImVec2C;
 
-namespace Inno.Editor.Performance.Tests;
+namespace Inno.Editor.PlayMode.Tests;
 
-public sealed partial class LargePanelPerformanceTests
+public sealed class LargePanelWorkflowTests
 {
     [Theory]
     [InlineData("hierarchy")]
@@ -26,24 +30,16 @@ public sealed partial class LargePanelPerformanceTests
     public unsafe void TenThousandEntriesKeepRangeRenameAndDragAcrossClippedRows(string view)
     {
         using var host = new NativeProjectPanelHost(
-            typeof(LargePanelPerformanceTests).Assembly,
+            typeof(LargePanelWorkflowTests).Assembly,
             supportsVertexOffsets: true
         );
         bool hierarchy = view == "hierarchy";
         GameScene? scene = hierarchy ? LoadInteractionHierarchy(host) : null;
         if (!hierarchy)
         {
-            string? input = InputDirectory("assets");
-            if (input is not null && Directory.Exists(input))
+            for (int index = 0; index < 10_000; index++)
             {
-                CopyDirectory(input, Path.Combine(host.projectRoot, "Assets"));
-            }
-            else
-            {
-                for (int index = 0; index < 10_000; index++)
-                {
-                    Directory.CreateDirectory(Path.Combine(host.projectRoot, "Assets", "Folder " + index.ToString("D5")));
-                }
+                Directory.CreateDirectory(Path.Combine(host.projectRoot, "Assets", "Folder " + index.ToString("D5")));
             }
             host.assets.Rescan();
         }
@@ -217,5 +213,55 @@ public sealed partial class LargePanelPerformanceTests
             }
         }
         throw new InvalidOperationException("Ordinary pointer input did not select the actual Browser grid.");
+    }
+
+    private static GameScene LoadInteractionHierarchy(NativeProjectPanelHost host)
+    {
+        GameScene scene = host.CreateScene();
+        for (int index = 0; index < 10_000; index++)
+        {
+            _ = scene.CreateObject("Object " + index.ToString("D5"));
+        }
+        _ = host.workspace.Save(scene, string.Empty);
+        return scene;
+    }
+
+    private static unsafe void FocusAssetSearch(
+        NativeProjectPanelHost host,
+        EditorPanelExtension panel
+    ) {
+        ImGuiWindow* pane = FindInteractionWindow("##ContentPane");
+        Vector2 start = Unsafe.BitCast<NativeVector, Vector2>(pane->DC.CursorStartPos);
+        ImGuiIO* io = NativeGui.Raw.GetIO();
+        // Locate the existing text input using ordinary clicks; no private Panel field is read or changed.
+        for (float offset = 24f; offset <= 64f; offset += 4f)
+        {
+            NativeGui.Raw.AddMousePosEvent(io, pane->Pos.X + pane->Size.X - 70f, start.Y + offset);
+            NativeGui.Raw.AddMouseButtonEvent(io, 0, 1);
+            host.native.DrawPanel(panel);
+            NativeGui.Raw.AddMouseButtonEvent(io, 0, 0);
+            host.native.DrawPanel(panel);
+            ImGuiNativeContext* context = NativeGui.Raw.GetCurrentContext();
+            if (context->InputTextState.ID != 0 && context->ActiveId == context->InputTextState.ID)
+            {
+                return;
+            }
+        }
+        throw new InvalidOperationException("Ordinary pointer input did not focus the existing asset search field.");
+    }
+
+    private static unsafe ImGuiWindow* FindInteractionWindow(string fragment)
+    {
+        ImGuiNativeContext* context = NativeGui.Raw.GetCurrentContext();
+        for (int index = 0; index < context->Windows.Size; index++)
+        {
+            ImGuiWindow* window = context->Windows.Data[index];
+            string? name = Marshal.PtrToStringUTF8((nint)window->Name);
+            if (window->Active != 0 && name?.Contains(fragment, StringComparison.Ordinal) == true)
+            {
+                return window;
+            }
+        }
+        throw new InvalidOperationException("The drawn native input owner is absent: " + fragment);
     }
 }

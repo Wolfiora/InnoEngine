@@ -32,7 +32,7 @@ function Get-OtherReaders {
         if ([int]$runs.total_count -gt 100) { throw 'Too many active runs to certify backend release retirement.' }
         foreach ($run in $runs.workflow_runs) {
             if ([string]$run.id -cne [string]$env:GITHUB_RUN_ID -and
-                $run.path -cmatch '^\.github/workflows/(engine-ci|engine-regression|engine-performance|draft-release|backend-prebuilts)\.yml') {
+                $run.path -cmatch '^\.github/workflows/(engine-ci|engine-regression|draft-release|backend-prebuilts)\.yml') {
                 $run.id
             }
         }

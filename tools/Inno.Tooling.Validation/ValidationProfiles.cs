@@ -11,7 +11,6 @@ internal static class ValidationProfiles
         "pull-request" => ValidationProfile.PullRequest,
         "master" => ValidationProfile.Master,
         "full" => ValidationProfile.Full,
-        "performance" => ValidationProfile.Performance,
         "native-producer" => ValidationProfile.NativeProducer,
         _ => throw new ArgumentException("Unknown validation profile: " + value)
     };

@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using BGCS.Runtime;
 using Xunit;
-using Xunit.Abstractions;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Assets;
@@ -49,8 +48,6 @@ namespace Inno.Editor.Scripting.Tests;
 
 public sealed partial class ShaderEditorWorkflowTests : IDisposable
 {
-    private readonly ITestOutputHelper m_performanceOutput;
-
     private readonly EditorUI m_ui = new();
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoShaderEditorWorkflow", Guid.NewGuid().ToString("N"));
     private readonly IdentityAllocator m_identities = new();
@@ -73,9 +70,8 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
     private Vector2 m_canvasMaximum;
     private Vector2 m_probeOffset;
 
-    public unsafe ShaderEditorWorkflowTests(ITestOutputHelper output)
+    public unsafe ShaderEditorWorkflowTests()
     {
-        m_performanceOutput = output;
         Directory.CreateDirectory(Path.Combine(m_root, "Assets"));
         m_logs.RegisterSink(m_messages);
         m_identityScope = m_identities.EnterScope();

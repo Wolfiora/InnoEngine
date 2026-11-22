@@ -6,6 +6,5 @@ internal enum ValidationProfile
     PullRequest,
     Master,
     Full,
-    Performance,
     NativeProducer
 }

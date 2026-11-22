@@ -21,7 +21,7 @@ internal static class ValidationAcceptance
         }
     }
 
-    // This reuses a completed functional certification, never mutable runner outputs or performance samples.
+    // This reuses a completed functional certification, never mutable runner outputs.
     // The event adapter must authenticate the original run and retained immutable artifacts before calling it.
     internal static bool Matches(
         ValidationPlan current,
@@ -41,7 +41,7 @@ internal static class ValidationAcceptance
         foreach (ValidationCheck check in current.checks)
         {
             ValidationCheck? previous = accepted.checks.SingleOrDefault(candidate => candidate.id == check.id);
-            if (previous is null || check.layer == "performance" && check.exclusion is null
+            if (previous is null
                 || ValidationInputs.CheckIdentity(current, check, current.inputs)
                    != ValidationInputs.CheckIdentity(accepted, previous, accepted.inputs)
             ) {

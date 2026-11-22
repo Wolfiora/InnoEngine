@@ -180,7 +180,7 @@ public static class ValidationCommand
         bool extended = options.TryGetValue("--extended", out string? depth) && bool.Parse(depth);
         bool full = arguments[0] == "full" || options.TryGetValue("--full", out string? complete) && bool.Parse(complete);
         ValidationProfile profile = ValidationProfiles.Parse(options.GetValueOrDefault("--profile", full ? "full" : "pull-request"));
-        if (profile is (ValidationProfile.Fast or ValidationProfile.Performance) && (full || extended))
+        if (profile == ValidationProfile.Fast && (full || extended))
         {
             throw new ArgumentException("The selected profile cannot certify full or extended acceptance.");
         }

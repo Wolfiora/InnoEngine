@@ -3,7 +3,7 @@ param(
     [Parameter(Mandatory)][string]$ExpectedCommit,
     [Parameter(Mandatory)][ValidateSet('Plan', 'Run', 'Join')][string]$Stage,
     [string]$Dotnet = 'dotnet',
-    [ValidateSet('fast', 'pull-request', 'master', 'full', 'performance')][string]$Profile = 'pull-request',
+    [ValidateSet('fast', 'pull-request', 'master', 'full')][string]$Profile = 'pull-request',
     [string]$Shard,
     [string]$Platform,
     [string]$PlanDirectory = 'artifacts/validation/ci',

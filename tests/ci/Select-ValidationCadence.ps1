@@ -18,14 +18,10 @@ if ($Event -ceq 'workflow_dispatch') {
     $profile = if ($full) { 'full' } else { 'pull-request' }
     $reason = 'Explicit manual validation request.'
 } elseif ($Event -ceq 'schedule') {
-    if ($Schedule -ceq '17 20 * * 6') {
-        $profile = 'performance'
-        $reason = 'Weekly warm sampling and lifecycle acceptance; third-party dependencies remain consume-only.'
-    } elseif ($Schedule -ceq '17 19 * * *') {
-        $full = $true
-        $profile = 'full'
-        $reason = 'Capture current complete inputs and environment before the validation engine evaluates trusted acceptance reuse.'
-    } else { throw 'Unknown scheduled cadence; required validation cannot be silently skipped.' }
+    if ($Schedule -cne '17 19 * * *') { throw 'Unknown scheduled cadence; required validation cannot be silently skipped.' }
+    $full = $true
+    $profile = 'full'
+    $reason = 'Capture current complete inputs and environment before the validation engine evaluates trusted acceptance reuse.'
 } elseif ($Event -ceq 'push') {
     if ($IsDefaultBranch) {
         $profile = 'master'

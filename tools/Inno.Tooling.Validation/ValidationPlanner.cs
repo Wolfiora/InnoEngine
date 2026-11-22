@@ -270,21 +270,6 @@ internal static partial class ValidationPlanner
                 "Explicit native producer acceptance selects declared producer regressions; functional consumers remain separately required."
             );
         }
-        if (profile == ValidationProfile.Performance)
-        {
-            full = false;
-            affected.Clear();
-            affected.UnionWith(
-                projects.Where(static project => project.test && project.layer == "performance")
-                    .Select(static project => project.path)
-            );
-            const string C_EDITOR = "entry/InnoEngine.Editor/InnoEngine.Editor.csproj";
-            if (byPath.ContainsKey(C_EDITOR))
-            {
-                affected.Add(C_EDITOR);
-            }
-            diagnostics.Add("Weekly sampling selects performance suites and the Editor lifecycle and warm-build owner.");
-        }
         var executionExclusions = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (ValidationProject project in projects)
         {
@@ -296,20 +281,12 @@ internal static partial class ValidationPlanner
                     $"This owner requires OS environment '{project.environment}'; it is not validated on this host."
                 );
             }
-            else if (project.layer == "performance"
-                     && !extended
-                     && profile is not (ValidationProfile.Performance or ValidationProfile.NativeProducer)
+            else if (project.requiresNativeProducer
+                     && (nativeDependencies is not null || !extended && profile != ValidationProfile.NativeProducer)
             ) {
                 executionExclusions.Add(
                     project.path,
-                    "Performance sampling belongs to the explicit performance profile; functional regressions remain independently required."
-                );
-            }
-            else if (project.requiresNativeProducer && (nativeDependencies is not null || profile == ValidationProfile.Performance))
-            {
-                executionExclusions.Add(
-                    project.path,
-                    "This producer benchmark may invoke third-party compilation; consume-only validation runs separate warm consumer and lifecycle checks."
+                    "This producer regression may invoke third-party compilation; it runs only under explicit native-producer or extended acceptance."
                 );
             }
         }
@@ -416,7 +393,7 @@ internal static partial class ValidationPlanner
                     );
                 }
             }
-            diagnostics.Add("Fast profile: native products, real SDK integration and performance are deferred to the pull-request gate.");
+            diagnostics.Add("Fast profile: native products and real SDK integration are deferred to the pull-request gate.");
         }
         // All owners of an executable example share its evaluated output context, including Host
         // examples that reuse an owner selected by a script example. Unrelated pages stay managed.
@@ -713,7 +690,7 @@ internal static partial class ValidationPlanner
             Dictionary<string, ValidationProject> selectedGraph = context == "native" ? nativeProjects : byPath;
             var closure = new HashSet<string>(StringComparer.Ordinal);
             Visit(selectedGraph[project.path]);
-            if (project.test && project.layer is not ("domain" or "contract" or "integration" or "native" or "product" or "performance"))
+            if (project.test && project.layer is not ("domain" or "contract" or "integration" or "native" or "product"))
             {
                 throw new InvalidDataException($"Test execution layer is absent or unknown: {project.path} ({project.layer})");
             }
@@ -793,8 +770,7 @@ internal static partial class ValidationPlanner
                         environment,
                         ["build:" + project.path],
                         [..selectedInputs, ValidationRunner.C_TEST_EXECUTOR],
-                        project.reusable
-                        && project.layer is not ("performance" or "product"),
+                        project.reusable && project.layer != "product",
                         selected ? exclusion : "Outside the affected evaluated dependency closure.",
                         context,
                         project.layer,
@@ -893,7 +869,7 @@ internal static partial class ValidationPlanner
                 )
             );
         }
-        if (editorBuild is not null && (extended || profile == ValidationProfile.Performance))
+        if (editorBuild is not null && extended)
         {
             checks.Add(
                 new ValidationCheck(
@@ -909,14 +885,9 @@ internal static partial class ValidationPlanner
                     false,
                     null,
                     "native",
-                    "performance"
+                    "product"
                 )
             );
-        }
-        if (profile == ValidationProfile.Performance
-            && !checks.Any(static check => check.layer == "performance" && check.exclusion is null)
-        ) {
-            throw new InvalidDataException("Performance validation requires an applicable sampling check.");
         }
         if (extended)
         {
@@ -933,7 +904,7 @@ internal static partial class ValidationPlanner
                     false,
                     null,
                     "native",
-                    "performance"
+                    "product"
                 )
             );
         }

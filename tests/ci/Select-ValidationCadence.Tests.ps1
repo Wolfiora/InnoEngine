@@ -5,8 +5,6 @@ $daily = @{ Event = 'schedule'; Commit = $commit; Schedule = '17 19 * * *' }
 $fresh = & $script @daily
 if (-not $fresh.run -or -not $fresh.full -or $fresh.extended -or $fresh.profile -cne 'full') { throw 'Nightly requires complete functional validation.' }
 if (-not (& $script @daily).run) { throw 'Repeated event routing cannot certify SDK and dependency inputs before planning.' }
-$weekly = & $script -Event schedule -Commit $commit -Schedule '17 20 * * 6'
-if (-not $weekly.run -or $weekly.full -or $weekly.extended -or $weekly.profile -cne 'performance') { throw 'Weekly sampling must execute without cold dependency production.' }
 foreach ($event in @('pull_request', 'merge_group')) {
     $selected = & $script -Event $event -Commit $commit -HasOpenPullRequest $true
     if (-not $selected.run -or $selected.full -or $selected.profile -cne 'pull-request') { throw 'Candidate and merge-queue checks must remain present.' }

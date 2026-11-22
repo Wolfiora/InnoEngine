@@ -578,7 +578,7 @@ internal static class ValidationRunner
                                             ..(plan.nativeDependencies is null
                                                ? Array.Empty<string>()
                                                : ["-NativeDependencies", Path.Combine(plan.root, plan.nativeDependencies)]),
-                                            ..((plan.extended || plan.profile == ValidationProfile.Performance) && scenario == "Lifecycle"
+                                            ..(plan.extended && scenario == "Lifecycle"
                                                ? new[] { "-Cycles", "1000", "-Frames", "180000", "-TimeoutSeconds", "5400" }
                                                : [])
                                         ],
@@ -1104,10 +1104,6 @@ internal static class ValidationRunner
 
         bool MatchesRetained(ValidationCheck candidate)
         {
-            if (candidate.layer == "performance")
-            {
-                return false;
-            }
             ValidationResult? retained = (continuation || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI")))
                 && previous is { completed: true, version: ValidationShards.C_EVIDENCE_VERSION, failures: not null }
                 && previous.environment == plan.environment
