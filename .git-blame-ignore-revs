@@ -6,3 +6,5 @@
 95b7effa3934cdbf46d86b6f41389c1492b39b3f
 # Rename non-public symbols to the rulebook naming
 8de047da96764ca00db11c73f622bbcddbd8c8de
+# C# public symbol renames to the rulebook naming
+c46af2ba7e19ca3a69f2ab46bdb4aa8d17d70bec
