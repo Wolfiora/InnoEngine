@@ -596,11 +596,11 @@ public sealed unsafe class RmlUiBackend : IUIBackend
                     InnoUIRmlUiAdapterVertex value = nativeVertices[vertexIndex];
                     vertices[vertexIndex] = new(value.X, value.Y, value.U, value.V, value.Color);
                 }
-                builder.AddMeshUpdate(new(mesh.Id), mesh.Revision, vertices, indices);
+                builder.AddMeshUpdate(new UIMeshHandle(mesh.Id), mesh.Revision, vertices, indices);
             }
             foreach (ulong mesh in CopyReleasedMeshes(handle, info.ReleasedMeshCount))
             {
-                builder.AddReleasedMesh(new(mesh));
+                builder.AddReleasedMesh(new UIMeshHandle(mesh));
             }
 
             var nativeCommands = new InnoUIRmlUiAdapterDrawCommand[checked((int)info.CommandCount)];
@@ -608,11 +608,11 @@ public sealed unsafe class RmlUiBackend : IUIBackend
             foreach (InnoUIRmlUiAdapterDrawCommand value in nativeCommands)
             {
                 builder.AddCommand(
-                    new(
-                        new(value.MeshId),
-                        new(value.TextureId),
+                    new UIDrawCommand(
+                        new UIMeshHandle(value.MeshId),
+                        new UITextureHandle(value.TextureId),
                         value.ScissorEnabled != 0,
-                        new(value.ScissorX, value.ScissorY, value.ScissorWidth, value.ScissorHeight)
+                        new UIClipRectangle(value.ScissorX, value.ScissorY, value.ScissorWidth, value.ScissorHeight)
                     )
                 );
             }
@@ -629,11 +629,11 @@ public sealed unsafe class RmlUiBackend : IUIBackend
                         "copy UI texture"
                     );
                 }
-                builder.AddTextureUpdate(new(texture.Id), texture.Revision, texture.Width, texture.Height, pixels);
+                builder.AddTextureUpdate(new UITextureHandle(texture.Id), texture.Revision, texture.Width, texture.Height, pixels);
             }
             foreach (ulong texture in CopyReleasedTextures(handle, info.ReleasedTextureCount))
             {
-                builder.AddReleasedTexture(new(texture));
+                builder.AddReleasedTexture(new UITextureHandle(texture));
             }
 
             UIRenderFrame frame = builder.Build();

@@ -258,7 +258,7 @@ public sealed partial class SceneEdits
             static snapshot => snapshot.name,
             StringComparer.Ordinal
         );
-        var deltas = new List<ScenePropertyValueDelta>();
+        List<ScenePropertyValueDelta> deltas = [];
         for (int index = 0; index < before.Count; index++)
         {
             SerializationPropertySnapshot previous = before[index];

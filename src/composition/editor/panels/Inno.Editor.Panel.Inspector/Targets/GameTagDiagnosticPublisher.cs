@@ -21,8 +21,10 @@ internal sealed class GameTagDiagnosticPublisher
         SceneWorld world,
         DiagnosticHub diagnostics
     ) {
-        m_world = world ?? throw new ArgumentNullException(nameof(world));
-        m_diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
+        ArgumentNullException.ThrowIfNull(world);
+        ArgumentNullException.ThrowIfNull(diagnostics);
+        m_world = world;
+        m_diagnostics = diagnostics;
     }
 
     /// <summary>

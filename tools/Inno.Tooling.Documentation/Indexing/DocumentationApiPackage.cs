@@ -34,7 +34,7 @@ internal static class DocumentationApiPackage
     internal static async Task<int> ExecuteAsync(
         string operation,
         string[] arguments,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         var options = new Dictionary<string, string>(StringComparer.Ordinal);
         for (int index = 0; index < arguments.Length; index += 2)
@@ -50,8 +50,8 @@ internal static class DocumentationApiPackage
         string packagePath = Path.GetFullPath(options["--package"]);
         return await DocumentationApiSynchronization.WithOwnershipAsync(
             root,
-            () => Task.FromResult(ExecuteOwned(operation, root, packagePath, cancellation)),
-            cancellation
+            () => Task.FromResult(ExecuteOwned(operation, root, packagePath, cancellationToken)),
+            cancellationToken
         ).ConfigureAwait(false);
     }
 
@@ -59,9 +59,9 @@ internal static class DocumentationApiPackage
         string operation,
         string root,
         string packagePath,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
-        cancellation.ThrowIfCancellationRequested();
+        cancellationToken.ThrowIfCancellationRequested();
         if (operation == "api-package")
         {
             DocumentationBinding binding = ReadBinding(File.ReadAllText(DocumentationApiFacts.Resolve(root, C_BINDING)));
@@ -83,7 +83,7 @@ internal static class DocumentationApiPackage
                 files
             );
             Validate(package);
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             AtomicFile.WriteAllBytes(packagePath, JsonSerializer.SerializeToUtf8Bytes(package, DocumentationStore.json));
             Console.WriteLine(JsonSerializer.Serialize(new { status = "Packaged", package.contentIdentity, files = files.Length }));
             return 0;
@@ -143,7 +143,7 @@ internal static class DocumentationApiPackage
             string absolute = DocumentationApiFacts.Resolve(root, path);
             return File.Exists(absolute) ? File.ReadAllBytes(absolute) : null;
         }, StringComparer.Ordinal);
-        cancellation.ThrowIfCancellationRequested();
+        cancellationToken.ThrowIfCancellationRequested();
         try
         {
             foreach (KeyValuePair<string, string?> update in updates)
@@ -160,7 +160,7 @@ internal static class DocumentationApiPackage
             }
             _ = DocumentationApiFacts.Read(root, candidate);
             // The synchronization transaction restores content on failure. This outer transaction restores facts.
-            _ = DocumentationApiSynchronization.ExecuteOwned("api-sync", root, cancellation);
+            _ = DocumentationApiSynchronization.ExecuteOwned("api-sync", root, cancellationToken);
         }
         catch
         {

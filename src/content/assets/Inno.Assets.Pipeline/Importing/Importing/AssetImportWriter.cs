@@ -17,8 +17,7 @@ public sealed class AssetImportWriter<TAsset>
 {
     private readonly AssetImportContext m_context;
 
-    private readonly Dictionary<string, ReadOnlyMemory<byte>> m_outputs =
-        new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ReadOnlyMemory<byte>> m_outputs = new(StringComparer.Ordinal);
 
     private readonly List<string> m_diagnostics = [];
     private readonly HashSet<string> m_authoringOutputs = new(StringComparer.Ordinal);
@@ -26,7 +25,8 @@ public sealed class AssetImportWriter<TAsset>
 
     internal AssetImportWriter(AssetImportContext context)
     {
-        m_context = context ?? throw new ArgumentNullException(nameof(context));
+        ArgumentNullException.ThrowIfNull(context);
+        m_context = context;
     }
 
     /// <summary>

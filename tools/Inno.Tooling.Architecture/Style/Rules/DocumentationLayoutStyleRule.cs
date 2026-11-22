@@ -37,7 +37,7 @@ internal sealed partial class DocumentationLayoutStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         foreach (SyntaxTrivia trivia in source.root.DescendantTrivia())
         {
             if (!trivia.IsKind(SyntaxKind.SingleLineDocumentationCommentTrivia)) continue;
@@ -46,7 +46,7 @@ internal sealed partial class DocumentationLayoutStyleRule : StyleRule
             string? normal = Normalize(source, trivia, comment, original);
             if (normal is not null && !string.Equals(normal, original, StringComparison.Ordinal))
             {
-                edits.Add(new(trivia.FullSpan.Start, trivia.FullSpan.End, normal));
+                edits.Add(new StyleEdit(trivia.FullSpan.Start, trivia.FullSpan.End, normal));
             }
         }
 
@@ -60,7 +60,7 @@ internal sealed partial class DocumentationLayoutStyleRule : StyleRule
         string original
     ) {
         if (comment.ContainsDiagnostics) return null;
-        var elements = new List<(int rank, int order, List<string> lines)>();
+        List<(int rank, int order, List<string> lines)> elements = [];
         IReadOnlyList<string> signature = SignatureNames(trivia.Token.Parent);
         foreach (XmlNodeSyntax node in comment.Content)
         {
@@ -77,7 +77,7 @@ internal sealed partial class DocumentationLayoutStyleRule : StyleRule
                     if (element.StartTag.ToString().Contains('\n') || element.EndTag.IsMissing) return null;
                     string inner = source.content[element.StartTag.Span.End..element.EndTag.SpanStart];
                     bool isPreserved = PRESERVED.Any(marker => inner.Contains(marker, StringComparison.Ordinal));
-                    var lines = new List<string> { element.StartTag.ToString() };
+                    List<string> lines = [element.StartTag.ToString()];
                     List<string> content = StripExterior(inner)
                         .Select(line => isPreserved ? (line.StartsWith(' ') ? line[1..] : line).TrimEnd() : References(line.Trim()))
                         .ToList();

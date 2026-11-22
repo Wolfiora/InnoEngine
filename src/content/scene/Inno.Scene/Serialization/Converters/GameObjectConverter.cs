@@ -40,7 +40,7 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
             throw new InvalidOperationException("A destroyed or detached GameObject cannot be captured as a prefab root.");
         }
 
-        var subtree = new List<GameObject>();
+        List<GameObject> subtree = [];
         CollectSubtree(value, subtree);
         SceneStructureSnapshot snapshot = value.scene.CaptureStructure();
         var included = new HashSet<GameObject>(subtree, ReferenceEqualityComparer.Instance);
@@ -257,8 +257,7 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
         {
             throw new InvalidDataException($"Prefab source root identity at '{reader.path}' cannot be empty.");
         }
-        IReadOnlyList<SerializationReader> objectReaders =
-            reader.ReadObjectArray(SceneGraphSerialization.C_OBJECTS_KEY);
+        IReadOnlyList<SerializationReader> objectReaders = reader.ReadObjectArray(SceneGraphSerialization.C_OBJECTS_KEY);
         SceneGraphSerialization.ValidateObjects(objectReaders);
         if (!objectReaders.Any(objectReader => (
             objectReader.Read<Guid>(SceneGraphSerialization.C_OBJECT_ID_KEY) == rootID

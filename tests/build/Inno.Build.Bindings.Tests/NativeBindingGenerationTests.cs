@@ -65,7 +65,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
         var plan = new ProductNativeBuildPlan("fixture", [new ProductNativeBuildStep(
             "fixture",
             component,
-            new(NativeLibraryKind.Shared),
+            new NativeComponentBuildOptions(NativeLibraryKind.Shared),
             [],
             (
                 current,
@@ -504,7 +504,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
         Assert.Equal(original, File.ReadAllText(first.bindingsPath));
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => GenerateAsync(cancellation: cancellation.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => GenerateAsync(cancellationToken: cancellation.Token));
         Assert.Equal(original, File.ReadAllText(first.bindingsPath));
         Assert.Single(Directory.GetDirectories(Path.Combine(m_root, "artifacts", "bindings", "fixture", "fixture-target")));
     }
@@ -559,7 +559,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
         NativeBindingOutputMode mode = NativeBindingOutputMode.TargetArtifacts,
         bool checkOnly = false,
         string? expected = null,
-        CancellationToken cancellation = default
+        CancellationToken cancellationToken = default
     ) {
         var owner = new NativeComponentDescriptor(
             "fixture",
@@ -574,7 +574,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
         using NativeBindingGenerationResult result = await BindingTestProfiles.Generator("fixture-target").GenerateAsync(
             new NativeBuildContext(m_root, "release"),
             request,
-            cancellation
+            cancellationToken
         );
         return result[owner.nativeProject];
     }

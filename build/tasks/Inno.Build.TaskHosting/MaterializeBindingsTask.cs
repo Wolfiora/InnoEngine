@@ -121,14 +121,14 @@ public sealed class MaterializeBindingsTask : BuildTask, ICancelableTask
 
     private IDisposable Acquire(
         string source,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         IBuildEngine3? engine = BuildEngine as IBuildEngine3;
         IDisposable? ownership = null;
         engine?.Yield();
         try
         {
-            ownership = AcquirePublication(source, cancellation);
+            ownership = AcquirePublication(source, cancellationToken);
             return ownership;
         }
         finally
@@ -147,7 +147,7 @@ public sealed class MaterializeBindingsTask : BuildTask, ICancelableTask
 
     private IDisposable AcquirePublication(
         string source,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         if (ArtifactDirectory.Length != 0)
         {
@@ -161,7 +161,7 @@ public sealed class MaterializeBindingsTask : BuildTask, ICancelableTask
                 throw new ArgumentException("The selected source is outside its declared binding artifact.");
             }
             return BuildArtifactReadLease
-                .AcquireAsync(directory, ArtifactOwnerDirectory, Fingerprint, ["Native", "Generated"], cancellation)
+                .AcquireAsync(directory, ArtifactOwnerDirectory, Fingerprint, ["Native", "Generated"], cancellationToken)
                 .AsTask()
                 .GetAwaiter()
                 .GetResult();
@@ -174,7 +174,7 @@ public sealed class MaterializeBindingsTask : BuildTask, ICancelableTask
         return FileLease.AcquireAsync(
             Path.Combine(owner, "obj", "bindings", "generation.lock"),
             Timeout.InfiniteTimeSpan,
-            cancellation
+            cancellationToken
         ).AsTask().GetAwaiter().GetResult();
     }
 

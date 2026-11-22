@@ -12,7 +12,7 @@ namespace Inno.Tooling.Validation;
 
 internal sealed class ValidationDependencyInputs(
     ValidationPlan plan,
-    CancellationToken cancellation
+    CancellationToken cancellationToken
 ) {
     private readonly Dictionary<string, string> m_hashes = new(StringComparer.Ordinal);
     private readonly Dictionary<string, KeyValuePair<string, string>[]> m_packages = new(StringComparer.Ordinal);
@@ -88,7 +88,7 @@ internal sealed class ValidationDependencyInputs(
             .Select(static instance => instance.GetProperty("ProjectAssetsFile").GetString()!)
             .Distinct(StringComparer.Ordinal)
         ) {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             if (string.IsNullOrWhiteSpace(assets) || !File.Exists(assets))
             {
                 throw new InvalidDataException("Documentation source provenance requires actual restored dependency inputs.");
@@ -123,7 +123,7 @@ internal sealed class ValidationDependencyInputs(
 
     internal static string[] RestoredPackageDirectories(
         IEnumerable<ValidationContext> contexts,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         var packages = new HashSet<string>(
             OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
@@ -134,7 +134,7 @@ internal sealed class ValidationDependencyInputs(
             .Where(static path => !string.IsNullOrWhiteSpace(path))
             .Distinct(StringComparer.Ordinal)
         ) {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             if (File.Exists(assets))
             {
                 packages.UnionWith(ReadPackages(assets, allowMissing: true).Select(static package => package.Value));
@@ -150,7 +150,7 @@ internal sealed class ValidationDependencyInputs(
         {
             return identity;
         }
-        cancellation.ThrowIfCancellationRequested();
+        cancellationToken.ThrowIfCancellationRequested();
         identity = File.Exists(path)
                    ? Convert.ToHexStringLower(
                        SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(LogicalAssets(JsonNode.Parse(File.ReadAllBytes(path)))))
@@ -201,14 +201,14 @@ internal sealed class ValidationDependencyInputs(
         {
             return cached;
         }
-        cancellation.ThrowIfCancellationRequested();
+        cancellationToken.ThrowIfCancellationRequested();
         string identity;
         if (Directory.Exists(path))
         {
             var files = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (string file in PathBoundary.EnumerateFiles(path).Order(StringComparer.Ordinal))
             {
-                cancellation.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 using FileStream stream = File.OpenRead(file);
                 files[Path.GetRelativePath(path, file).Replace('\\', '/')] = Convert.ToHexStringLower(SHA256.HashData(stream));
             }

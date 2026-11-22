@@ -18,7 +18,8 @@ public abstract class EditorRuntime : IDisposable
     /// </exception>
     protected EditorRuntime(EditorContext context)
     {
-        this.context = context ?? throw new ArgumentNullException(nameof(context));
+        ArgumentNullException.ThrowIfNull(context);
+        this.context = context;
     }
 
     /// <summary>

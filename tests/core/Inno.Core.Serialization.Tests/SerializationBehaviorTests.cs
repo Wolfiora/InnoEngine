@@ -212,8 +212,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
             compatible = "preserved",
             removed = 9
         };
-        IReadOnlyList<SerializationPropertySnapshot> snapshots =
-            m_serialization.CaptureProperties(previous);
+        IReadOnlyList<SerializationPropertySnapshot> snapshots = m_serialization.CaptureProperties(previous);
         var current = new CurrentSchemaSample();
 
         SerializationPropertyRestoreResult result = m_serialization.RestoreProperties(
@@ -238,8 +237,9 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     [Fact]
     public void StrictPropertyRestoreThrowsForAnIncompatibleMember()
     {
-        IReadOnlyList<SerializationPropertySnapshot> snapshots =
-            m_serialization.CaptureProperties(new PreviousSchemaSample { changed = 42 });
+        IReadOnlyList<SerializationPropertySnapshot> snapshots = m_serialization.CaptureProperties(
+            new PreviousSchemaSample { changed = 42 }
+        );
         var current = new CurrentSchemaSample();
 
         Assert.Throws<InvalidOperationException>(() => m_serialization.RestoreProperties(
@@ -664,7 +664,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     public void CompletionCallbacksRunOnlyAfterSuccessfulDecode()
     {
         byte[] bytes = m_serialization.Encode(static writer => writer.Write("value", 1));
-        var calls = new List<string>();
+        List<string> calls = [];
         int value = m_serialization.Decode(bytes, reader =>
         {
             reader.OnCompleted(() => calls.Add("completed"));

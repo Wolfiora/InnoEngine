@@ -114,7 +114,7 @@ public sealed class ShaderNodeCompilerRegistry : TypeRegistry<ShaderNodeCompiler
     /// </returns>
     protected override ShaderNodeCompilerCatalog Build(TypeCacheSnapshot types)
     {
-        var providers = new List<IShaderNodeCompiler>();
+        List<IShaderNodeCompiler> providers = [];
         foreach (Type type in types.GetTypesImplementing<IShaderNodeCompiler>()
             .Select(reference => reference.Resolve(types))
             .OrderBy(static type => type.FullName, StringComparer.Ordinal)

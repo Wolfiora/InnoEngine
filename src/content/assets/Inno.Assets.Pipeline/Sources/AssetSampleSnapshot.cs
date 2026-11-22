@@ -117,7 +117,7 @@ internal static class AssetSampleSnapshot
             .Where(path => ShouldCopyFile(path, sourcePolicy))
             .Order(StringComparer.Ordinal)
             .ToArray();
-        var copied = new List<string>();
+        List<string> copied = [];
         for (int index = 0; index < directories.Length; index++)
         {
             string name = Path.GetFileName(directories[index]);

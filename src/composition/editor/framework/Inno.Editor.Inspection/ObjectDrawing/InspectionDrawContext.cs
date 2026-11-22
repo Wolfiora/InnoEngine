@@ -24,13 +24,18 @@ public sealed class InspectionDrawContext
         InspectionDrawerRegistry drawers,
         IReadOnlyList<SerializedProperty> serializedProperties
     ) {
-        this.editorContext = editorContext ?? throw new ArgumentNullException(nameof(editorContext));
-        this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-        this.target = target ?? throw new ArgumentNullException(nameof(target));
-        this.properties = properties ?? throw new ArgumentNullException(nameof(properties));
-        m_drawers = drawers ?? throw new ArgumentNullException(nameof(drawers));
-        m_serializedProperties = serializedProperties
-                                 ?? throw new ArgumentNullException(nameof(serializedProperties));
+        ArgumentNullException.ThrowIfNull(editorContext);
+        ArgumentNullException.ThrowIfNull(interactions);
+        ArgumentNullException.ThrowIfNull(target);
+        ArgumentNullException.ThrowIfNull(properties);
+        ArgumentNullException.ThrowIfNull(drawers);
+        ArgumentNullException.ThrowIfNull(serializedProperties);
+        this.editorContext = editorContext;
+        this.interactions = interactions;
+        this.target = target;
+        this.properties = properties;
+        m_drawers = drawers;
+        m_serializedProperties = serializedProperties;
     }
 
     /// <summary>
@@ -142,12 +147,7 @@ public sealed class InspectionDrawContext
     /// </remarks>
     public void DrawProperties()
     {
-        string ownerPath = string.Concat(
-            "inspection.",
-            target.GetType().FullName ?? target.GetType().Name,
-            ".",
-            RuntimeHelpers.GetHashCode(target).ToString("x8")
-        );
+        string ownerPath = $"inspection.{target.GetType().FullName ?? target.GetType().Name}.{RuntimeHelpers.GetHashCode(target):x8}";
         for (int index = 0; index < m_serializedProperties.Count; index++)
         {
             properties.Draw(editorContext, target, ownerPath, m_serializedProperties[index]);

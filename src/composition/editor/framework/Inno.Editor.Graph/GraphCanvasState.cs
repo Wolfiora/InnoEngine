@@ -110,7 +110,7 @@ public sealed class GraphCanvasState
         }
 
         float next = Math.Clamp(zoom * factor, 0.1f, 4f);
-        Vector2 origin = EditorPlanarNavigation.ZoomOrigin(new(pan.x, pan.y), new(pivotX, pivotY), zoom, next);
+        Vector2 origin = EditorPlanarNavigation.ZoomOrigin(new Vector2(pan.x, pan.y), new Vector2(pivotX, pivotY), zoom, next);
         pan = new GraphPosition(origin.X, origin.Y);
         zoom = next;
     }

@@ -136,7 +136,7 @@ internal static class FileBrowserUtility
         }
         AssetPath sourcePath = AssetPath.Parse(NormalizePath(relativePath));
         string sourceRoot = new AssetPath(sourcePath.source, string.Empty).ToString();
-        var parts = new List<BreadcrumbPart>();
+        List<BreadcrumbPart> parts = [];
         if (root == AssetBrowserRoot.Plugins)
         {
             parts.Add(new BreadcrumbPart("Plugins", AssetBrowserRoot.Plugins, string.Empty));

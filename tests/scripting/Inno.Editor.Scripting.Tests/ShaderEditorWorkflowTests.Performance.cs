@@ -45,7 +45,7 @@ public sealed partial class ShaderEditorWorkflowTests
             {
                 bool constant = index % 2 == 0;
                 var node = new GraphNodeRecord(
-                    new("performance.node." + index.ToString("D4")),
+                    new GraphNodeID("performance.node." + index.ToString("D4")),
                     constant ? "inno.shader.constant" : "inno.shader.construct"
                 )
                 {
@@ -59,10 +59,10 @@ public sealed partial class ShaderEditorWorkflowTests
                 if (!constant)
                 {
                     graph.AddEdge(
-                        new(
-                            new("performance.edge." + index.ToString("D4")),
-                            new(new("performance.node." + (index - 1).ToString("D4")), new("value")),
-                            new(node.id, new("component.0"))
+                        new GraphEdgeRecord(
+                            new GraphEdgeID("performance.edge." + index.ToString("D4")),
+                            new GraphEndpoint(new GraphNodeID("performance.node." + (index - 1).ToString("D4")), new GraphPortID("value")),
+                            new GraphEndpoint(node.id, new GraphPortID("component.0"))
                         )
                     );
                 }
@@ -88,7 +88,7 @@ public sealed partial class ShaderEditorWorkflowTests
         int repetitions = requested is null ? 5 : int.Parse(requested, CultureInfo.InvariantCulture);
         Assert.InRange(repetitions, 1, 5);
         using Process process = Process.GetCurrentProcess();
-        var samples = new List<object>();
+        List<object> samples = [];
         for (int repetition = 0; repetition < repetitions; repetition++)
         {
             var milliseconds = new double[10];

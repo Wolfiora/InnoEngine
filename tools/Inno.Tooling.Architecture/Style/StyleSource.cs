@@ -82,7 +82,7 @@ internal sealed class StyleSource
     // tokens that span several lines (verbatim and raw strings) and text excluded by the preprocessor.
     internal IReadOnlyList<TextSpan> ProtectedSpans()
     {
-        var spans = new List<TextSpan>();
+        List<TextSpan> spans = [];
         foreach (SyntaxToken token in root.DescendantTokens(descendIntoTrivia: true))
         {
             if (token.Span.Length > 0 && LineNumber(token.SpanStart) != LineNumber(token.Span.End))

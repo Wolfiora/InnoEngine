@@ -19,13 +19,13 @@ internal static class DocumentationReferenceStore
         IReadOnlyList<DocumentationProject> projects,
         byte[] projectBytes,
         BuildCachePublisher publisher,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         var inputs = new Dictionary<string, byte[]>(StringComparer.Ordinal);
-        var references = new List<DocumentationReferenceInfo>();
+        List<DocumentationReferenceInfo> references = [];
         Dictionary<string, DocumentationProject> owners = projects.ToDictionary(static project => project.name, StringComparer.Ordinal);
         await AddAsync(
-            new(
+            new DocumentationReferenceInfo(
                 binding.projectManifest,
                 binding.projectManifestIdentity,
                 "project-inventory",
@@ -42,7 +42,7 @@ internal static class DocumentationReferenceStore
         ).ConfigureAwait(false);
         foreach (DocumentationApiCapture capture in binding.apiManifests ?? [])
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             DocumentationStore.RequireHash(capture.sha256, "API reference");
             DocumentationStore.RequireHash(capture.sourceRevision, "API source revision", allowGitTree: true);
             DocumentationStore.RequireHash(capture.sourceTree, "API source tree", allowGitTree: true);
@@ -77,7 +77,7 @@ internal static class DocumentationReferenceStore
                 throw new InvalidDataException("API reference contains no project facts: " + capture.path);
             }
             await AddAsync(
-                new(
+                new DocumentationReferenceInfo(
                     capture.path,
                     capture.sha256,
                     capture.model,
@@ -107,13 +107,17 @@ internal static class DocumentationReferenceStore
                 output,
                 Path.Combine(output, "leases", "reference-" + reference.identity + ".lock")
             );
-            using FileLease writing = await FileLease.AcquireAsync(lease, Timeout.InfiniteTimeSpan, cancellation).ConfigureAwait(false);
+            using FileLease writing = await FileLease.AcquireAsync(
+                lease,
+                Timeout.InfiniteTimeSpan,
+                cancellationToken
+            ).ConfigureAwait(false);
             if (!File.Exists(file) || DocumentationMarkdown.Hash(File.ReadAllBytes(file)) != reference.identity)
             {
-                cancellation.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 AtomicFile.WriteAllBytes(file, bytes);
             }
-            publisher.EnsureImmutableRegistration(directory, lease, [], null, cancellation);
+            publisher.EnsureImmutableRegistration(directory, lease, [], null, cancellationToken);
             references.Add(reference);
         }
     }

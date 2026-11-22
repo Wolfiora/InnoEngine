@@ -55,10 +55,7 @@ public sealed class RenderTextureReadbackResult
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentOutOfRangeException.ThrowIfNegative(mipLevel);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(rowPitch);
-        if (mipLevel >= descriptor.mipCount)
-        {
-            throw new ArgumentOutOfRangeException(nameof(mipLevel));
-        }
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(mipLevel, descriptor.mipCount);
         if (data.IsEmpty)
         {
             throw new ArgumentException("Texture readback data cannot be empty.", nameof(data));

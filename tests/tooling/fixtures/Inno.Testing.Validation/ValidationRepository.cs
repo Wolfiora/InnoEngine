@@ -191,7 +191,7 @@ public sealed class ValidationRepository : IDisposable
     ]);
 
     public Task<int> RunCurrentAsync(
-        CancellationToken cancellation,
+        CancellationToken cancellationToken,
         string output
     ) => ValidationCommand.ExecuteAsync([
         "run",
@@ -203,10 +203,10 @@ public sealed class ValidationRepository : IDisposable
         "HEAD",
         "--output",
         PathOf(output)
-    ], cancellation);
+    ], cancellationToken);
 
     public Task<int> RunAsync(
-        CancellationToken cancellation = default,
+        CancellationToken cancellationToken = default,
         string output = "artifacts/run",
         string? evidence = null
     ) => ValidationCommand.ExecuteAsync([
@@ -220,7 +220,7 @@ public sealed class ValidationRepository : IDisposable
         "--output",
         PathOf(output),
         ..evidence is null ? Array.Empty<string>() : ["--evidence", PathOf(evidence)]
-    ], cancellation);
+    ], cancellationToken);
 
     public Task BuildAsync(params string[] arguments)
         => SdkAsync(["build", "--disable-build-servers", "-m:1", "-nr:false", ..arguments]);

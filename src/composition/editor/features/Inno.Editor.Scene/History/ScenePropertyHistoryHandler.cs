@@ -16,7 +16,8 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
 
     internal ScenePropertyHistoryHandler(EditorSceneWorkspace workspace)
     {
-        m_workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+        ArgumentNullException.ThrowIfNull(workspace);
+        m_workspace = workspace;
     }
 
     /// <summary>

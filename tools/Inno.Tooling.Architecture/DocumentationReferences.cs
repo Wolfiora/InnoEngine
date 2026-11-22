@@ -365,13 +365,13 @@ public static class DocumentationReferences
             ? await File.ReadAllTextAsync(graphPath, cancellationToken).ConfigureAwait(false)
             : null
         );
-        var results = new List<object>();
+        List<object> results = [];
         bool passed = true;
         foreach (ApiProject project in actual)
         {
             cancellationToken.ThrowIfCancellationRequested();
             JsonElement previous = expected[project.project];
-            var differences = new List<string>();
+            List<string> differences = [];
             if (previous.GetProperty("name").GetString() != project.name)
             {
                 differences.Add("Project identity differs from the actual source owner.");
@@ -487,7 +487,7 @@ public static class DocumentationReferences
         }
         string root = Path.GetFullPath(engineRoot);
         var names = new HashSet<string>(StringComparer.Ordinal);
-        var projects = new List<object>();
+        List<object> projects = [];
         foreach (string project in RepositorySourceInventory.Projects(root)
             .OrderBy(project => Path.GetRelativePath(root, project).Replace('\\', '/'), StringComparer.Ordinal)
         ) {
@@ -566,7 +566,7 @@ public static class DocumentationReferences
             }
             selected.Add(absolute);
         }
-        var failures = new List<string>();
+        List<string> failures = [];
         var references = new DocumentationProjectReferences(
             root,
             configuration,
@@ -577,7 +577,7 @@ public static class DocumentationReferences
             sdkSnapshot: sdkSnapshot
         );
         var models = new DocumentationSourceModels(root, configuration, references, cancellationToken, failures);
-        var inventory = new List<ApiProject>();
+        List<ApiProject> inventory = [];
         using var cache = new DocumentationExportCache(root, cancellationToken);
         foreach (string project in selected.Order(StringComparer.Ordinal))
         {

@@ -46,7 +46,11 @@ internal sealed class AttributeStyleRule : StyleRule
                 string target = list.Target is null ? string.Empty : list.Target.ToString().TrimEnd() + " ";
                 string separator = isInline ? " " : "\n" + indent;
                 string text = string.Join(separator, list.Attributes.Select(attribute => "[" + target + attribute + "]"));
-                yield return (list.SpanStart, "Write one attribute per pair of brackets.", new(list.SpanStart, list.Span.End, text));
+                yield return (list.SpanStart, "Write one attribute per pair of brackets.", new StyleEdit(
+                    list.SpanStart,
+                    list.Span.End,
+                    text
+                ));
             }
 
             foreach (AttributeSyntax attribute in list.Attributes)
@@ -64,13 +68,13 @@ internal sealed class AttributeStyleRule : StyleRule
                     yield return (
                         attribute.SpanStart,
                         "Omit the 'Attribute' suffix.",
-                        new(name.Identifier.Span.End - C_SUFFIX.Length, name.Identifier.Span.End, string.Empty)
+                        new StyleEdit(name.Identifier.Span.End - C_SUFFIX.Length, name.Identifier.Span.End, string.Empty)
                     );
                 }
 
                 if (attribute.ArgumentList is { Arguments.Count: 0 } arguments)
                 {
-                    yield return (attribute.SpanStart, "Omit the empty parentheses.", new(
+                    yield return (attribute.SpanStart, "Omit the empty parentheses.", new StyleEdit(
                         arguments.SpanStart,
                         arguments.Span.End,
                         string.Empty
@@ -86,7 +90,7 @@ internal sealed class AttributeStyleRule : StyleRule
                 yield return (
                     list.SpanStart,
                     "Write the attribute on its own line above the declaration.",
-                    new(close.Span.End, next.SpanStart, "\n" + indent)
+                    new StyleEdit(close.Span.End, next.SpanStart, "\n" + indent)
                 );
             }
         }

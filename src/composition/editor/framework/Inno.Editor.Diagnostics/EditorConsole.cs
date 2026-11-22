@@ -47,9 +47,12 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
         DiagnosticHub diagnosticHub,
         IEditorPlayMode playMode
     ) {
-        m_logRouter = logRouter ?? throw new ArgumentNullException(nameof(logRouter));
-        m_diagnosticHub = diagnosticHub ?? throw new ArgumentNullException(nameof(diagnosticHub));
-        m_playMode = playMode ?? throw new ArgumentNullException(nameof(playMode));
+        ArgumentNullException.ThrowIfNull(logRouter);
+        ArgumentNullException.ThrowIfNull(diagnosticHub);
+        ArgumentNullException.ThrowIfNull(playMode);
+        m_logRouter = logRouter;
+        m_diagnosticHub = diagnosticHub;
+        m_playMode = playMode;
     }
 
     /// <summary>

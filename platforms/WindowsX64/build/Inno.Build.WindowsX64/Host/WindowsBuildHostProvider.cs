@@ -13,7 +13,7 @@ public sealed class WindowsBuildHostProvider : IBuildHostProvider
     public BuildHostDescriptor? TryCapture()
         => !OperatingSystem.IsWindows()
            ? null
-           : new(
+           : new BuildHostDescriptor(
                "Windows",
                RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant(),
                new BuildHostServices(

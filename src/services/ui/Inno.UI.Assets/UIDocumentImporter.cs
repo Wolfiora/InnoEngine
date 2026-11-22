@@ -102,7 +102,7 @@ public static class UIDocumentImportPipeline
         using var frontends = new UIDocumentFrontendRegistry(context.types);
         UIDocumentAnalysis analysis = frontends.Analyze(
             language,
-            new(context.assetPath.ToString(), text, context.ReadSourceUtf8Text)
+            new UIDocumentSourceFile(context.assetPath.ToString(), text, context.ReadSourceUtf8Text)
         );
         if (!analysis.succeeded)
         {

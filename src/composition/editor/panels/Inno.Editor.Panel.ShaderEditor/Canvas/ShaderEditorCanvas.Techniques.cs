@@ -128,7 +128,7 @@ internal sealed partial class ShaderEditorCanvas
                     technique.passes =
                     [
                         ..technique.passes,
-                        new()
+                        new ShaderTechniquePass()
                         {
                             role = new("role-" + technique.passes.Length),
                             passName = definition.passes.FirstOrDefault().name ?? string.Empty
@@ -161,7 +161,7 @@ internal sealed partial class ShaderEditorCanvas
             definition.techniques =
             [
                 ..definition.techniques,
-                new()
+                new ShaderTechniqueDefinition()
                 {
                     id = new("technique-" + Guid.NewGuid().ToString("N")),
                     contract = default,

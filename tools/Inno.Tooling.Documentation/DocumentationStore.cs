@@ -169,7 +169,12 @@ public static class DocumentationStore
                 long registrationStarted = Stopwatch.GetTimestamp();
                 publisher.EnsureImmutableRegistration(directory, lease, [], null, cancellation);
                 Interlocked.Add(ref registrationTicks, Stopwatch.GetTimestamp() - registrationStarted);
-                prepared[index] = (page, new(page.metadata.uid, key, DocumentationMarkdown.Hash(bytes!), page.metadata));
+                prepared[index] = (page, new DocumentationPageReference(
+                    page.metadata.uid,
+                    key,
+                    DocumentationMarkdown.Hash(bytes!),
+                    page.metadata
+                ));
             }
         ).ConfigureAwait(false);
         var pages = new List<DocumentationPage>(prepared.Length);
@@ -448,7 +453,7 @@ public static class DocumentationStore
         {
             throw new InvalidDataException("Documentation tooling lacks its authored query protocol inputs.");
         }
-        var inputs = new List<string>();
+        List<string> inputs = [];
         foreach (string source in sources)
         {
             using Stream stream = assembly.GetManifestResourceStream(source)

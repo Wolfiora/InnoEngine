@@ -27,7 +27,7 @@ internal sealed class SingleLineBlockStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         int fixedEnd = -1;
         foreach ((SyntaxToken open, List<StyleEdit> blockEdits) in Violations(source))
         {
@@ -69,11 +69,11 @@ internal sealed class SingleLineBlockStyleRule : StyleRule
             int indentation = source.Indentation(open.SpanStart);
             string outer = "\n" + new string(' ', indentation);
             string inner = "\n" + new string(' ', indentation + StyleLayout.C_INDENT);
-            var edits = new List<StyleEdit>();
+            List<StyleEdit> edits = [];
             if (!source.IsFirstOnLine(open) && !StyleLayout.ClosesMultiLineHeader(source, previous))
             {
                 if (!StyleLayout.IsBlank(source.content, previous.Span.End, open.SpanStart)) continue;
-                edits.Add(new(previous.Span.End, open.SpanStart, outer));
+                edits.Add(new StyleEdit(previous.Span.End, open.SpanStart, outer));
             }
 
             int position = open.Span.End;
@@ -81,12 +81,12 @@ internal sealed class SingleLineBlockStyleRule : StyleRule
             foreach (SyntaxNode item in items)
             {
                 isPlain &= StyleLayout.IsBlank(source.content, position, item.SpanStart);
-                edits.Add(new(position, item.SpanStart, inner));
+                edits.Add(new StyleEdit(position, item.SpanStart, inner));
                 position = item.Span.End;
             }
 
             if (!isPlain || !StyleLayout.IsBlank(source.content, position, close.SpanStart)) continue;
-            edits.Add(new(position, close.SpanStart, outer));
+            edits.Add(new StyleEdit(position, close.SpanStart, outer));
             yield return (open, edits);
         }
     }

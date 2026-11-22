@@ -70,7 +70,7 @@ public sealed class GameLayerCatalog : ISerializable
     public IReadOnlyList<GameLayerDefinition> GetDefinitions()
     {
         ValidateState();
-        var result = new List<GameLayerDefinition>();
+        List<GameLayerDefinition> result = [];
         for (int index = 0; index < m_names.Length; index++)
         {
             if (m_names[index] is string name)

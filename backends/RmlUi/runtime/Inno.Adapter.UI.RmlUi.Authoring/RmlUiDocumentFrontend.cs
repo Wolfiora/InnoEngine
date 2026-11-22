@@ -75,14 +75,14 @@ public sealed class RmlUiDocumentFrontend : IUIDocumentFrontend
         ArgumentNullException.ThrowIfNull(source);
         if (string.IsNullOrWhiteSpace(source.text))
         {
-            return new(null, [new("RML_EMPTY", "The RML document is empty.", 1, 1)]);
+            return new(null, [new UIDocumentDiagnostic("RML_EMPTY", "The RML document is empty.", 1, 1)]);
         }
         if (!source.text.Contains("<rml", StringComparison.OrdinalIgnoreCase))
         {
-            return new(null, [new("RML_ROOT_MISSING", "The RML document has no root rml element.", 1, 1)]);
+            return new(null, [new UIDocumentDiagnostic("RML_ROOT_MISSING", "The RML document has no root rml element.", 1, 1)]);
         }
-        var diagnostics = new List<UIDocumentDiagnostic>();
-        var fonts = new List<UIDocumentFontDeclaration>();
+        List<UIDocumentDiagnostic> diagnostics = [];
+        List<UIDocumentFontDeclaration> fonts = [];
         var families = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         AssetPath documentPath = AssetPath.Parse(source.assetPath);
         string expanded;
@@ -92,7 +92,7 @@ public sealed class RmlUiDocumentFrontend : IUIDocumentFrontend
         }
         catch (Exception exception) when (exception is IOException or ArgumentException or InvalidOperationException)
         {
-            return new(null, [new("RML_STYLESHEET_UNAVAILABLE", exception.Message, 1, 1)]);
+            return new(null, [new UIDocumentDiagnostic("RML_STYLESHEET_UNAVAILABLE", exception.Message, 1, 1)]);
         }
         string withoutFaces = FONT_FACE.Replace(expanded, match =>
         {
@@ -106,13 +106,17 @@ public sealed class RmlUiDocumentFrontend : IUIDocumentFrontend
             if (!properties.TryGetValue("font-family", out string? logical)
                 || !url.Success
             ) {
-                diagnostics.Add(new("RML_FONT_FACE_INVALID", "@font-face requires font-family and src: url(...).", 1, 1));
+                diagnostics.Add(
+                    new UIDocumentDiagnostic("RML_FONT_FACE_INVALID", "@font-face requires font-family and src: url(...).", 1, 1)
+                );
                 return string.Empty;
             }
             logical = logical.Trim('\'', '"', ' ');
             if (logical.Length == 0 || logical.Equals("none", StringComparison.OrdinalIgnoreCase))
             {
-                diagnostics.Add(new("RML_FONT_FAMILY_INVALID", "A font face needs a named family other than none.", 1, 1));
+                diagnostics.Add(
+                    new UIDocumentDiagnostic("RML_FONT_FAMILY_INVALID", "A font face needs a named family other than none.", 1, 1)
+                );
                 return string.Empty;
             }
             string physical = families.TryGetValue(logical, out string? existing)
@@ -145,11 +149,11 @@ public sealed class RmlUiDocumentFrontend : IUIDocumentFrontend
                                       && styleText.Equals("italic", StringComparison.OrdinalIgnoreCase)
                                       ? TextFontStyle.Italic
                                       : TextFontStyle.Normal;
-                fonts.Add(new(fontPath.ToString(), physical, style, weight));
+                fonts.Add(new UIDocumentFontDeclaration(fontPath.ToString(), physical, style, weight));
             }
             catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
             {
-                diagnostics.Add(new("RML_FONT_ASSET_INVALID", exception.Message, 1, 1));
+                diagnostics.Add(new UIDocumentDiagnostic("RML_FONT_ASSET_INVALID", exception.Message, 1, 1));
             }
             return string.Empty;
         });
@@ -165,7 +169,7 @@ public sealed class RmlUiDocumentFrontend : IUIDocumentFrontend
             }
             return match.Groups[1].Value + string.Join(", ", requested);
         });
-        return diagnostics.Count == 0 ? new(canonical, diagnostics, fonts) : new(null, diagnostics);
+        return diagnostics.Count == 0 ? new UIDocumentAnalysis(canonical, diagnostics, fonts) : new UIDocumentAnalysis(null, diagnostics);
     }
 
     private static string PrivateFamily(

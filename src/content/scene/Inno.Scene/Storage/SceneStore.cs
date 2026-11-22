@@ -71,7 +71,8 @@ internal sealed class SceneStore
 
     internal SceneStore(SceneTypeCatalog types)
     {
-        m_types = types ?? throw new ArgumentNullException(nameof(types));
+        ArgumentNullException.ThrowIfNull(types);
+        m_types = types;
         lock (TYPE_CACHE_SYNC)
         {
             STORES.RemoveAll(static reference => !reference.TryGetTarget(out _));
@@ -277,7 +278,7 @@ internal sealed class SceneStore
     {
         if (!TryGetRecord(gameObject, out SceneObjectRecord? record) || !record!.isAlive)
         {
-            return Array.Empty<SceneStoreRemovedComponent>();
+            return [];
         }
 
         record.isAlive = false;
@@ -387,7 +388,7 @@ internal sealed class SceneStore
     {
         if (layers == GameLayerMask.none)
         {
-            return Array.Empty<GameObject>();
+            return [];
         }
         return GetObjects().Where(gameObject => layers.Contains(gameObject.layer)).ToArray();
     }
@@ -643,7 +644,7 @@ internal sealed class SceneStore
         }
 
         var seen = new HashSet<GameObject>(ReferenceEqualityComparer.Instance);
-        var result = new List<GameObject>();
+        List<GameObject> result = [];
         for (int i = 0; i < candidates.Length; i++)
         {
             GameComponent candidate = candidates[i];
@@ -674,7 +675,7 @@ internal sealed class SceneStore
             return cached;
         }
 
-        var result = new List<GameComponent>();
+        List<GameComponent> result = [];
         int[] concreteTypes = requestedType.assignableConcreteRuntimeTypeIDs;
         for (int i = 0; i < concreteTypes.Length; i++)
         {

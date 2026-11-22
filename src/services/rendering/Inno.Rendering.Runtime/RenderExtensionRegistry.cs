@@ -325,8 +325,10 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             var providers = new List<RequestProviderEntry>(m_requestProviders.Count);
             foreach ((string id, Type type) in m_requestProviders)
             {
-                RenderRequestProviderExtensionAttribute attribute =
-                    m_types!.GetAttribute<RenderRequestProviderExtensionAttribute>(m_types.GetTypeRef(type), inherit: false)!;
+                RenderRequestProviderExtensionAttribute attribute = m_types!.GetAttribute<RenderRequestProviderExtensionAttribute>(
+                    m_types.GetTypeRef(type),
+                    inherit: false
+                )!;
                 providers.Add(new RequestProviderEntry(id, attribute.priority, createProvider(type)));
             }
             providers.Sort(static (
@@ -389,10 +391,10 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             }
             catch
             {
-                m_providers = Array.Empty<RequestProviderEntry>();
+                m_providers = [];
                 throw;
             }
-            m_providers = Array.Empty<RequestProviderEntry>();
+            m_providers = [];
         }
 
         internal long typeCacheVersion { get; }
@@ -429,7 +431,7 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
 public void Dispose()
         {
             m_lifetime.Dispose();
-            m_sources = Array.Empty<ContentSourceEntry>();
+            m_sources = [];
         }
 
         internal long typeCacheVersion { get; }
@@ -465,7 +467,7 @@ public void Dispose()
 public void Dispose()
         {
             m_lifetime.Dispose();
-            m_models = Array.Empty<RenderModelEntry>();
+            m_models = [];
         }
 
         internal long typeCacheVersion { get; }

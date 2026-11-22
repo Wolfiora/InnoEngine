@@ -19,7 +19,8 @@ public sealed class InputRuntimeFactory : IRuntimeSubsystemFactory
     /// </param>
     public InputRuntimeFactory(Func<RuntimeSubsystemContext, IInputBackend> backendFactory)
     {
-        m_backendFactory = backendFactory ?? throw new ArgumentNullException(nameof(backendFactory));
+        ArgumentNullException.ThrowIfNull(backendFactory);
+        m_backendFactory = backendFactory;
     }
 
     /// <summary>

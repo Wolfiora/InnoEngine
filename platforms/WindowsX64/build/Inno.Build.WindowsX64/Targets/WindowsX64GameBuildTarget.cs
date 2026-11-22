@@ -24,7 +24,8 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
     /// </exception>
     public WindowsX64GameBuildTarget(IPlayerSupportPackValidator supportPackValidator)
     {
-        m_supportPackValidator = supportPackValidator ?? throw new ArgumentNullException(nameof(supportPackValidator));
+        ArgumentNullException.ThrowIfNull(supportPackValidator);
+        m_supportPackValidator = supportPackValidator;
     }
 
     /// <summary>

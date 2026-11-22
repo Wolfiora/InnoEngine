@@ -97,7 +97,7 @@ public static class ShaderGraphPrograms
         }
         foreach (string id in references)
         {
-            if (graph.FindNode(new(id))?.definitionID != ShaderGraphDocument.C_OUTPUT_DEFINITION_ID)
+            if (graph.FindNode(new GraphNodeID(id))?.definitionID != ShaderGraphDocument.C_OUTPUT_DEFINITION_ID)
             {
                 throw new ArgumentException($"Stage program '{id}' is unavailable.", nameof(stages));
             }

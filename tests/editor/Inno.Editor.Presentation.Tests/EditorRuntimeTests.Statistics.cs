@@ -11,12 +11,18 @@ public sealed partial class EditorRuntimeTests
     public void UnchangedStatisticsReuseAnImmutableSnapshot()
     {
         var statistics = new EditorStatistics();
-        statistics.Publish(new EditorStatistic(new("frame"), new("timing"), "Timing", "Frame", "16 ms"));
+        statistics.Publish(
+            new EditorStatistic(new EditorStatisticID("frame"), new EditorStatisticGroupID("timing"), "Timing", "Frame", "16 ms")
+        );
         IReadOnlyList<EditorStatistic> first = statistics.GetSnapshot();
         Assert.Same(first, statistics.GetSnapshot());
-        statistics.Publish(new EditorStatistic(new("frame"), new("timing"), "Timing", "Frame", "16 ms"));
+        statistics.Publish(
+            new EditorStatistic(new EditorStatisticID("frame"), new EditorStatisticGroupID("timing"), "Timing", "Frame", "16 ms")
+        );
         Assert.Same(first, statistics.GetSnapshot());
-        statistics.Publish(new EditorStatistic(new("frame"), new("timing"), "Timing", "Frame", "8 ms"));
+        statistics.Publish(
+            new EditorStatistic(new EditorStatisticID("frame"), new EditorStatisticGroupID("timing"), "Timing", "Frame", "8 ms")
+        );
         IReadOnlyList<EditorStatistic> changed = statistics.GetSnapshot();
         Assert.NotSame(first, changed);
         Assert.Equal("16 ms", Assert.Single(first).value);
@@ -27,11 +33,15 @@ public sealed partial class EditorRuntimeTests
     public void StatisticFrameHandoffRetainsLateProvidersAndRemovesExpiredContributions()
     {
         EditorStatistics statistics = m_runtime.context.statistics;
-        statistics.Publish(new EditorStatistic(new("first"), new("sampling"), "Sampling", "First", "1"));
+        statistics.Publish(
+            new EditorStatistic(new EditorStatisticID("first"), new EditorStatisticGroupID("sampling"), "Sampling", "First", "1")
+        );
         IReadOnlyList<EditorStatistic> first = statistics.GetSnapshot();
         m_runtime.Update(new EditorFrame(0.016f, 1f, isFocused: true));
         Assert.Same(first, statistics.GetSnapshot());
-        statistics.Publish(new EditorStatistic(new("second"), new("sampling"), "Sampling", "Second", "2"));
+        statistics.Publish(
+            new EditorStatistic(new EditorStatisticID("second"), new EditorStatisticGroupID("sampling"), "Sampling", "Second", "2")
+        );
         IReadOnlyList<EditorStatistic> combined = statistics.GetSnapshot();
         Assert.Equal(2, combined.Count(value => value.groupID == new EditorStatisticGroupID("sampling")));
         m_runtime.Update(new EditorFrame(0.016f, 2f, isFocused: true));
@@ -48,10 +58,16 @@ public sealed partial class EditorRuntimeTests
     public void StatisticGroupingAndOrderChangesInvalidateTheSnapshot()
     {
         var statistics = new EditorStatistics();
-        statistics.Publish(new EditorStatistic(new("a"), new("old"), "Old", "First", "1", groupOrder: 1));
-        statistics.Publish(new EditorStatistic(new("b"), new("second"), "Second", "Second", "2", groupOrder: 2));
+        statistics.Publish(
+            new EditorStatistic(new EditorStatisticID("a"), new EditorStatisticGroupID("old"), "Old", "First", "1", groupOrder: 1)
+        );
+        statistics.Publish(
+            new EditorStatistic(new EditorStatisticID("b"), new EditorStatisticGroupID("second"), "Second", "Second", "2", groupOrder: 2)
+        );
         IReadOnlyList<EditorStatistic> original = statistics.GetSnapshot();
-        statistics.Publish(new EditorStatistic(new("b"), new("new"), "New", "Renamed", "2", groupOrder: 0));
+        statistics.Publish(
+            new EditorStatistic(new EditorStatisticID("b"), new EditorStatisticGroupID("new"), "New", "Renamed", "2", groupOrder: 0)
+        );
         IReadOnlyList<EditorStatistic> changed = statistics.GetSnapshot();
         Assert.NotSame(original, changed);
         Assert.Equal("b", changed[0].id.value);

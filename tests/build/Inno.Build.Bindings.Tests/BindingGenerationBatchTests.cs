@@ -66,7 +66,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
     [Fact]
     public async Task OneBatchReusesSharedReadsOnlyWithinEachFreshPhase()
     {
-        NativeComponentDescriptor[] components = new[] { CreateComponent("first"), CreateComponent("second") };
+        NativeComponentDescriptor[] components = [CreateComponent("first"), CreateComponent("second")];
         var context = new NativeBuildContext(m_root, "release");
         NativeBindingGenerator generator = BindingTestProfiles.Generator();
         var request = new NativeBindingGenerationRequest(

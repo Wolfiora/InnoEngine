@@ -27,8 +27,6 @@ namespace Inno.Core.Mathematics;
 [DataContract]
 public struct Matrix : IEquatable<Matrix>
 {
-    #region Data (Row-major)
-
     /// <summary>
     /// Row 1, Column 1.
     /// </summary>
@@ -125,10 +123,6 @@ public struct Matrix : IEquatable<Matrix>
     [DataMember]
     public float m44;
 
-    #endregion
-
-    #region Construction
-
     /// <summary>
     /// Initializes a 4x4 matrix with explicit row-major elements.
     /// </summary>
@@ -209,9 +203,114 @@ public struct Matrix : IEquatable<Matrix>
     /// </summary>
     public static Matrix identity => new Matrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
 
-    #endregion
+    /// <summary>
+    /// Copies matrix elements into an array in column-major order.
+    /// Useful for APIs like bgfx that expect column-major float[16].
+    /// </summary>
+    /// <param name="destination">
+    /// Destination array.
+    /// </param>
+    /// <param name="startIndex">
+    /// Start index in the destination array.
+    /// </param>
+    public void CopyToColumnMajor(
+        float[] destination,
+        int startIndex = 0
+    ) {
+        ArgumentNullException.ThrowIfNull(destination);
 
-    #region Common Factories
+        if (startIndex < 0 || destination.Length - startIndex < 16)
+        {
+            throw new ArgumentOutOfRangeException(nameof(startIndex));
+        }
+
+        destination[startIndex + 0] = m11;
+        destination[startIndex + 1] = m21;
+        destination[startIndex + 2] = m31;
+        destination[startIndex + 3] = m41;
+        destination[startIndex + 4] = m12;
+        destination[startIndex + 5] = m22;
+        destination[startIndex + 6] = m32;
+        destination[startIndex + 7] = m42;
+        destination[startIndex + 8] = m13;
+        destination[startIndex + 9] = m23;
+        destination[startIndex + 10] = m33;
+        destination[startIndex + 11] = m43;
+        destination[startIndex + 12] = m14;
+        destination[startIndex + 13] = m24;
+        destination[startIndex + 14] = m34;
+        destination[startIndex + 15] = m44;
+    }
+
+    /// <summary>
+    /// Returns a new array containing matrix elements in column-major order.
+    /// </summary>
+    /// <returns>
+    /// An immutable snapshot of the values selected by the operation.
+    /// </returns>
+    public float[] ToColumnMajorArray()
+    {
+        var data = new float[16];
+        CopyToColumnMajor(data, 0);
+        return data;
+    }
+
+    /// <summary>
+    /// Determines whether this instance is equal to another matrix.
+    /// </summary>
+    /// <param name="other">
+    /// Other matrix.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if equal.
+    /// </returns>
+    public bool Equals(Matrix other) => this == other;
+
+    /// <summary>
+    /// Determines whether this instance and the supplied value represent the same logical state.
+    /// </summary>
+    /// <param name="obj">
+    /// The object to compare with this instance.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
+    /// </returns>
+    public override bool Equals(object? obj) => obj is Matrix other && Equals(other);
+
+    /// <summary>
+    /// Computes a hash code from the fields that participate in logical equality.
+    /// </summary>
+    /// <returns>
+    /// A hash code consistent with the implemented equality contract.
+    /// </returns>
+    public override int GetHashCode()
+        => m11.GetHashCode() + m12.GetHashCode() + m13.GetHashCode() + m14.GetHashCode()
+           + m21.GetHashCode() + m22.GetHashCode() + m23.GetHashCode() + m24.GetHashCode()
+           + m31.GetHashCode() + m32.GetHashCode() + m33.GetHashCode() + m34.GetHashCode()
+           + m41.GetHashCode() + m42.GetHashCode() + m43.GetHashCode() + m44.GetHashCode();
+
+    /// <summary>
+    /// Returns a multi-line string representation of the matrix in row-major layout.
+    /// </summary>
+    /// <returns>
+    /// The human-readable representation of this value.
+    /// </returns>
+    public override string ToString()
+        => $"[{m11}, {m12}, {m13}, {m14}]\n"
+           + $"[{m21}, {m22}, {m23}, {m24}]\n"
+           + $"[{m31}, {m32}, {m33}, {m34}]\n"
+           + $"[{m41}, {m42}, {m43}, {m44}]";
+
+    /// <summary>
+    /// Creates a translation matrix.
+    /// </summary>
+    /// <param name="v">
+    /// The concrete value read or transformed by this operation.
+    /// </param>
+    /// <returns>
+    /// A translation matrix.
+    /// </returns>
+    public static Matrix CreateTranslation(Vector3 v) => CreateTranslation(v.x, v.y, v.z);
 
     /// <summary>
     /// Creates a translation matrix.
@@ -235,17 +334,6 @@ public struct Matrix : IEquatable<Matrix>
     ) => new Matrix(1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z, 0, 0, 0, 1);
 
     /// <summary>
-    /// Creates a translation matrix.
-    /// </summary>
-    /// <param name="v">
-    /// The concrete value read or transformed by this operation.
-    /// </param>
-    /// <returns>
-    /// A translation matrix.
-    /// </returns>
-    public static Matrix CreateTranslation(Vector3 v) => CreateTranslation(v.x, v.y, v.z);
-
-    /// <summary>
     /// Creates a uniform scale matrix.
     /// </summary>
     /// <param name="scale">
@@ -255,6 +343,17 @@ public struct Matrix : IEquatable<Matrix>
     /// A scale matrix.
     /// </returns>
     public static Matrix CreateScale(float scale) => CreateScale(scale, scale, scale);
+
+    /// <summary>
+    /// Creates a non-uniform scale matrix.
+    /// </summary>
+    /// <param name="v">
+    /// The concrete value read or transformed by this operation.
+    /// </param>
+    /// <returns>
+    /// A scale matrix.
+    /// </returns>
+    public static Matrix CreateScale(Vector3 v) => CreateScale(v.x, v.y, v.z);
 
     /// <summary>
     /// Creates a non-uniform scale matrix.
@@ -276,17 +375,6 @@ public struct Matrix : IEquatable<Matrix>
         float y,
         float z
     ) => new Matrix(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1);
-
-    /// <summary>
-    /// Creates a non-uniform scale matrix.
-    /// </summary>
-    /// <param name="v">
-    /// The concrete value read or transformed by this operation.
-    /// </param>
-    /// <returns>
-    /// A scale matrix.
-    /// </returns>
-    public static Matrix CreateScale(Vector3 v) => CreateScale(v.x, v.y, v.z);
 
     /// <summary>
     /// Creates a rotation matrix around the X axis (radians).
@@ -376,10 +464,6 @@ public struct Matrix : IEquatable<Matrix>
             1
         );
     }
-
-    #endregion
-
-    #region Projection
 
     /// <summary>
     /// Creates a left-handed, perspective projection matrix ( depth range 0..1).
@@ -508,10 +592,6 @@ public struct Matrix : IEquatable<Matrix>
         return new Matrix(m00, 0,   0,   m14, 0,   m11, 0,   m24, 0,   0,   m22, m34, 0,   0,   0,   1);
     }
 
-    #endregion
-
-    #region View
-
     /// <summary>
     /// Creates a left-handed view matrix that looks from <paramref name="eye"/> to <paramref name="target"/>.
     /// </summary>
@@ -607,10 +687,6 @@ public struct Matrix : IEquatable<Matrix>
             1
         );
     }
-
-    #endregion
-
-    #region Operations
 
     /// <summary>
     /// Multiplies two matrices using standard matrix multiplication.
@@ -913,69 +989,6 @@ public struct Matrix : IEquatable<Matrix>
         );
     }
 
-    #endregion
-
-    #region Interop
-
-    /// <summary>
-    /// Copies matrix elements into an array in column-major order.
-    /// Useful for APIs like bgfx that expect column-major float[16].
-    /// </summary>
-    /// <param name="destination">
-    /// Destination array.
-    /// </param>
-    /// <param name="startIndex">
-    /// Start index in the destination array.
-    /// </param>
-    public void CopyToColumnMajor(
-        float[] destination,
-        int startIndex = 0
-    ) {
-        if (destination is null)
-        {
-            throw new ArgumentNullException(nameof(destination));
-        }
-
-        if (startIndex < 0 || destination.Length - startIndex < 16)
-        {
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        }
-
-        destination[startIndex + 0] = m11;
-        destination[startIndex + 1] = m21;
-        destination[startIndex + 2] = m31;
-        destination[startIndex + 3] = m41;
-        destination[startIndex + 4] = m12;
-        destination[startIndex + 5] = m22;
-        destination[startIndex + 6] = m32;
-        destination[startIndex + 7] = m42;
-        destination[startIndex + 8] = m13;
-        destination[startIndex + 9] = m23;
-        destination[startIndex + 10] = m33;
-        destination[startIndex + 11] = m43;
-        destination[startIndex + 12] = m14;
-        destination[startIndex + 13] = m24;
-        destination[startIndex + 14] = m34;
-        destination[startIndex + 15] = m44;
-    }
-
-    /// <summary>
-    /// Returns a new array containing matrix elements in column-major order.
-    /// </summary>
-    /// <returns>
-    /// An immutable snapshot of the values selected by the operation.
-    /// </returns>
-    public float[] ToColumnMajorArray()
-    {
-        var data = new float[16];
-        CopyToColumnMajor(data, 0);
-        return data;
-    }
-
-    #endregion
-
-    #region Operators
-
     /// <summary>
     /// Multiplies two matrices.
     /// </summary>
@@ -1102,56 +1115,4 @@ public struct Matrix : IEquatable<Matrix>
         m43 = m.M43,
         m44 = m.M44
     };
-
-    #endregion
-
-    #region Equality / Formatting
-
-    /// <summary>
-    /// Determines whether this instance is equal to another matrix.
-    /// </summary>
-    /// <param name="other">
-    /// Other matrix.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> if equal.
-    /// </returns>
-    public bool Equals(Matrix other) => this == other;
-
-    /// <summary>
-    /// Determines whether this instance and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="obj">
-    /// The object to compare with this instance.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
-    /// </returns>
-    public override bool Equals(object? obj) => obj is Matrix other && Equals(other);
-
-    /// <summary>
-    /// Computes a hash code from the fields that participate in logical equality.
-    /// </summary>
-    /// <returns>
-    /// A hash code consistent with the implemented equality contract.
-    /// </returns>
-    public override int GetHashCode()
-        => m11.GetHashCode() + m12.GetHashCode() + m13.GetHashCode() + m14.GetHashCode()
-           + m21.GetHashCode() + m22.GetHashCode() + m23.GetHashCode() + m24.GetHashCode()
-           + m31.GetHashCode() + m32.GetHashCode() + m33.GetHashCode() + m34.GetHashCode()
-           + m41.GetHashCode() + m42.GetHashCode() + m43.GetHashCode() + m44.GetHashCode();
-
-    /// <summary>
-    /// Returns a multi-line string representation of the matrix in row-major layout.
-    /// </summary>
-    /// <returns>
-    /// The human-readable representation of this value.
-    /// </returns>
-    public override string ToString()
-        => $"[{m11}, {m12}, {m13}, {m14}]\n"
-           + $"[{m21}, {m22}, {m23}, {m24}]\n"
-           + $"[{m31}, {m32}, {m33}, {m34}]\n"
-           + $"[{m41}, {m42}, {m43}, {m44}]";
-
-    #endregion
 }

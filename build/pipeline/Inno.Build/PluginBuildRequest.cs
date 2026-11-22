@@ -34,7 +34,7 @@ public sealed class PluginBuildRequest
     /// Gets or initializes the installed plugins this package actually requires.
     /// Their transitive dependencies are included in the package manifest.
     /// </summary>
-    public IReadOnlyList<string> dependencies { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> dependencies { get; init; } = [];
 
     /// <summary>
     /// Validates package identity and destination syntax.

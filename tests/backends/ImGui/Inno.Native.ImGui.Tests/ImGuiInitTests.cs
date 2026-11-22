@@ -9,28 +9,28 @@ namespace Inno.Native.ImGui.Tests;
 [Collection("ImGuiContext")]
 public sealed unsafe class ImGuiInitTests
 {
-    private readonly ITestOutputHelper output;
+    private readonly ITestOutputHelper m_output;
 
     public ImGuiInitTests(ITestOutputHelper output)
     {
-        this.output = output;
+        m_output = output;
     }
 
     [Fact]
-    public void CreateAndDestroyContext_ShouldSucceed()
+    public void CreateAndDestroyContextShouldSucceed()
     {
         ImGuiNativeContext* context = ImGui.Raw.CreateContext(null);
         Assert.True(context is not null);
 
         string? version = Marshal.PtrToStringUTF8((nint)ImGui.Raw.GetVersion());
-        output.WriteLine($"ImGui.GetVersion: {version}");
+        m_output.WriteLine($"ImGui.GetVersion: {version}");
         Assert.False(string.IsNullOrWhiteSpace(version));
 
         ImGui.Raw.DestroyContext(context);
     }
 
     [Fact]
-    public void TextDisabled_UsesTheLoadedCimguiSymbol()
+    public void TextDisabledUsesTheLoadedCimguiSymbol()
     {
         ImGuiNativeContext* context = ImGui.Raw.CreateContext(null);
         try

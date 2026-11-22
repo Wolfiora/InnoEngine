@@ -28,14 +28,8 @@ public sealed class BuildCachePolicy
         long minimumFreeBytes = 20L * 1024 * 1024 * 1024,
         TimeSpan? timeBudget = null
     ) {
-        if (maximumBytes < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(maximumBytes));
-        }
-        if (minimumFreeBytes < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(minimumFreeBytes));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(maximumBytes);
+        ArgumentOutOfRangeException.ThrowIfNegative(minimumFreeBytes);
         TimeSpan duration = timeBudget ?? TimeSpan.FromSeconds(5);
         if (duration <= TimeSpan.Zero || duration == Timeout.InfiniteTimeSpan)
         {

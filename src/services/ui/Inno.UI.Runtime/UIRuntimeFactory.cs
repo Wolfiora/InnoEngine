@@ -19,7 +19,8 @@ public sealed class UIRuntimeFactory : IRuntimeSubsystemFactory
     /// </param>
     public UIRuntimeFactory(Func<RuntimeSubsystemContext, UIRuntime> runtimeFactory)
     {
-        m_runtimeFactory = runtimeFactory ?? throw new ArgumentNullException(nameof(runtimeFactory));
+        ArgumentNullException.ThrowIfNull(runtimeFactory);
+        m_runtimeFactory = runtimeFactory;
     }
 
     /// <summary>

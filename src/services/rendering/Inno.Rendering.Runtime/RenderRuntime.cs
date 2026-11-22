@@ -121,10 +121,12 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
         IRenderLayerCompositionProgramProvider? compositionProgramProvider = null
     ) {
         ArgumentNullException.ThrowIfNull(types);
+        ArgumentNullException.ThrowIfNull(device);
+        ArgumentNullException.ThrowIfNull(diagnostics);
         resourceLimits ??= new RenderResourceLimits();
         resourceLimits.Validate();
-        m_device = device ?? throw new ArgumentNullException(nameof(device));
-        m_diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
+        m_device = device;
+        m_diagnostics = diagnostics;
         if (contributors is not null)
         {
             foreach (IRenderFrameGraphContributor contributor in contributors)

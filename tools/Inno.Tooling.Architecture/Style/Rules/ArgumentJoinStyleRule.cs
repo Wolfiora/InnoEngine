@@ -26,14 +26,14 @@ internal sealed class ArgumentJoinStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
-        var spans = new List<TextSpan>();
+        List<StyleEdit> edits = [];
+        List<TextSpan> spans = [];
         // Innermost lists first: an outer list is judged again once its content has settled.
         foreach ((StyleList list, string joined) in Joinable(source).OrderByDescending(static entry => entry.list.open.SpanStart))
         {
             TextSpan span = TextSpan.FromBounds(list.open.SpanStart, list.close.Span.End);
             if (spans.Any(inner => span.Contains(inner))) continue;
-            edits.Add(new(span.Start, span.End, joined));
+            edits.Add(new StyleEdit(span.Start, span.End, joined));
             spans.Add(span);
         }
 

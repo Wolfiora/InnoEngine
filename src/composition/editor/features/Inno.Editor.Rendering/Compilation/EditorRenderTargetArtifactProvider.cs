@@ -70,12 +70,18 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
         ITextureTargetCompiler textureCompiler,
         IDiagnosticReporter diagnostics
     ) {
-        m_assets = assets ?? throw new ArgumentNullException(nameof(assets));
-        m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
-        m_types = types ?? throw new ArgumentNullException(nameof(types));
-        m_shaderCompiler = shaderCompiler ?? throw new ArgumentNullException(nameof(shaderCompiler));
-        m_textureCompiler = textureCompiler ?? throw new ArgumentNullException(nameof(textureCompiler));
-        m_diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
+        ArgumentNullException.ThrowIfNull(assets);
+        ArgumentNullException.ThrowIfNull(serialization);
+        ArgumentNullException.ThrowIfNull(types);
+        ArgumentNullException.ThrowIfNull(shaderCompiler);
+        ArgumentNullException.ThrowIfNull(textureCompiler);
+        ArgumentNullException.ThrowIfNull(diagnostics);
+        m_assets = assets;
+        m_serialization = serialization;
+        m_types = types;
+        m_shaderCompiler = shaderCompiler;
+        m_textureCompiler = textureCompiler;
+        m_diagnostics = diagnostics;
     }
 
     /// <summary>
@@ -188,7 +194,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
         {
             _ = GetShaderArtifact(shader, variant, capabilities, out _);
             ShaderCompileTarget target = m_shaderCompiler.CreateTarget(capabilities, optimize: false, debugInformation: true);
-            ShaderEntry entry = m_shaders[new(shader.identity.persistentID, target.key, variant.value)];
+            ShaderEntry entry = m_shaders[new ShaderKey(shader.identity.persistentID, target.key, variant.value)];
             return new(
                 entry.pending is not null
                 ? EditorShaderCompilationState.Compiling
@@ -480,7 +486,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
 
     private Task<T> RunOwnedAsync<T>(
         Func<CancellationToken, ValueTask<T>> operation,
-        CancellationToken token
+        CancellationToken cancellationToken
     ) {
         // Admit before starting work or acquiring leases. Ordinary compilation errors are data;
         // retirement-pending failures stay in the lifetime and retain every dependent owner.
@@ -495,7 +501,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
                 {
                     return (default!, failure);
                 }
-            }, token)
+            }, cancellationToken)
         );
 
         static async Task<T> UnwrapAsync(Task<(T value, Exception? failure)> task)
@@ -591,7 +597,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
         internal string semanticHash { get; set; } = string.Empty;
         internal long extensionGeneration { get; set; } = long.MinValue;
         internal bool latestSucceeded { get; set; }
-        internal IReadOnlyList<ShaderDiagnostic> sourceDiagnostics { get; set; } = Array.Empty<ShaderDiagnostic>();
+        internal IReadOnlyList<ShaderDiagnostic> sourceDiagnostics { get; set; } = [];
         internal long attemptedContentVersion { get; set; } = long.MinValue;
         internal RenderShaderArtifact? artifact { get; set; }
         internal RenderTargetArtifactStatus status { get; set; } = RenderTargetArtifactStatus.Unavailable;

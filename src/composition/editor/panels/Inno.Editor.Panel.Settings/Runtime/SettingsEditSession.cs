@@ -100,18 +100,23 @@ internal sealed class SettingsEditSession : IDisposable
         BuildSettingsStore buildSettings,
         IEditorHistory history
     ) {
-        m_editorSettings = editorSettings ?? throw new ArgumentNullException(nameof(editorSettings));
-        m_projectSettings = projectSettings ?? throw new ArgumentNullException(nameof(projectSettings));
-        m_buildPipeline = buildPipeline ?? throw new ArgumentNullException(nameof(buildPipeline));
-        m_buildSettings = buildSettings ?? throw new ArgumentNullException(nameof(buildSettings));
-        m_history = history ?? throw new ArgumentNullException(nameof(history));
+        ArgumentNullException.ThrowIfNull(editorSettings);
+        ArgumentNullException.ThrowIfNull(projectSettings);
+        ArgumentNullException.ThrowIfNull(buildPipeline);
+        ArgumentNullException.ThrowIfNull(buildSettings);
+        ArgumentNullException.ThrowIfNull(history);
+        m_editorSettings = editorSettings;
+        m_projectSettings = projectSettings;
+        m_buildPipeline = buildPipeline;
+        m_buildSettings = buildSettings;
+        m_history = history;
         this.editorCatalogRevision = editorSettings.catalogRevision;
         this.projectCatalogRevision = projectSettings.catalogRevision;
         m_buildDefault = buildSettings.defaultSettings;
         m_buildOriginal = buildSettings.Load();
         m_buildValue = m_buildOriginal.Copy();
 
-        var fields = new List<SettingsField>();
+        List<SettingsField> fields = [];
         foreach (EditorSetting definition in editorSettings.definitions)
         {
             if (!definition.hasValue)

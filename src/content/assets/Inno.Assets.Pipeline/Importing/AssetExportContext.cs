@@ -15,9 +15,12 @@ public sealed class AssetExportContext
         SerializationRegistry serialization,
         IAssetArtifactLookup artifacts
     ) {
-        this.types = types ?? throw new ArgumentNullException(nameof(types));
-        this.serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
-        this.artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
+        ArgumentNullException.ThrowIfNull(types);
+        ArgumentNullException.ThrowIfNull(serialization);
+        ArgumentNullException.ThrowIfNull(artifacts);
+        this.types = types;
+        this.serialization = serialization;
+        this.artifacts = artifacts;
         this.services = new AssetSerializationServices(types, serialization, references: null, dependencySink: null);
     }
 

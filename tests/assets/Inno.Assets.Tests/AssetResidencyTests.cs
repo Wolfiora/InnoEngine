@@ -27,7 +27,7 @@ public sealed class AssetResidencyTests
     [Fact]
     public void RetentionScopeReleasesChildrenInReverseOrder()
     {
-        var order = new List<int>();
+        List<int> order = [];
         using (var scope = new RetentionScope())
         {
             _ = scope.Retain(new CallbackLease(() => order.Add(1)));

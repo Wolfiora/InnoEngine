@@ -54,7 +54,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
     {
         NativeComponentDescriptor owner = audio ? MiniAudioToolchain.componentDescriptor : Sdl3Toolchain.componentDescriptor;
         Write(owner.toolchainProject, "<Project />");
-        NativeBuildContext context = Context().WithComponentOptions(owner, new(NativeLibraryKind.Shared));
+        NativeBuildContext context = Context().WithComponentOptions(owner, new NativeComponentBuildOptions(NativeLibraryKind.Shared));
         NativeBuildRecipe recipe = audio ? MiniAudioToolchain.CreateRecipe(context) : Sdl3Toolchain.CreateRecipe(context);
         Assert.Equal(owner.id, recipe.component);
         Assert.Equal("fixture-target", recipe.targetID);
@@ -64,7 +64,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
             || input.physicalPath.Contains("BuildConstants", StringComparison.Ordinal)
         ));
         Assert.False(Directory.Exists(Path.Combine(m_root, "artifacts")));
-        NativeBuildContext staticContext = context.WithComponentOptions(owner, new(NativeLibraryKind.Static));
+        NativeBuildContext staticContext = context.WithComponentOptions(owner, new NativeComponentBuildOptions(NativeLibraryKind.Static));
         Assert.Throws<NotSupportedException>(() => (
             audio
             ? MiniAudioToolchain.CreateRecipe(staticContext)
@@ -80,7 +80,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
         NativeComponentDescriptor owner = ui ? UIToolchain.componentDescriptor : TextToolchain.componentDescriptor;
         Write(owner.toolchainProject, "<Project />");
         Write(Path.GetDirectoryName(owner.nativeProject)! + "/Native/Generated/unused.cpp", "unselected host output");
-        NativeBuildContext context = Context().WithComponentOptions(owner, new(NativeLibraryKind.Shared));
+        NativeBuildContext context = Context().WithComponentOptions(owner, new NativeComponentBuildOptions(NativeLibraryKind.Shared));
         NativeBuildRecipe recipe = ui ? UIToolchain.CreateRecipe(context) : TextToolchain.CreateRecipe(context);
         Assert.Equal(owner.id, recipe.component);
         Assert.DoesNotContain(recipe.declarations, value => value.Contains("BRIDGE_ROOT", StringComparison.Ordinal));
@@ -96,7 +96,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
     public void ProductSourceDeclarationUsesEachSelectedOwnerWithoutExecutingProducers()
     {
         int declarations = 0;
-        var steps = new List<ProductNativeBuildStep>();
+        List<ProductNativeBuildStep> steps = [];
         foreach (string id in new[] { "first", "second" })
         {
             var owner = new NativeComponentDescriptor(id, m_owner.nativeProject, m_owner.toolchainProject);
@@ -104,7 +104,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
                 new ProductNativeBuildStep(
                     id,
                     owner,
-                    new(NativeLibraryKind.Shared),
+                    new NativeComponentBuildOptions(NativeLibraryKind.Shared),
                     id == "first" ? [] : ["first"],
                     static (
                         context,
@@ -143,7 +143,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
         Assert.Throws<ArgumentException>(() => new ProductNativeBuildStep(
             "fixture",
             m_owner,
-            new(NativeLibraryKind.Shared),
+            new NativeComponentBuildOptions(NativeLibraryKind.Shared),
             [],
             static (
                 context,
@@ -159,7 +159,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
         var step = new ProductNativeBuildStep(
             "fixture",
             m_owner,
-            new(NativeLibraryKind.Shared),
+            new NativeComponentBuildOptions(NativeLibraryKind.Shared),
             [],
             static (
                 context,
@@ -210,10 +210,10 @@ public sealed class NativeRecipeClosureTests : IDisposable
         Task ProduceAsync(
             NativeBuildContext scoped,
             string output,
-            CancellationToken cancellation
+            CancellationToken cancellationToken
         ) {
             productions++;
-            return File.WriteAllTextAsync(Path.Combine(output, "fixture.native"), File.ReadAllText(generated), cancellation);
+            return File.WriteAllTextAsync(Path.Combine(output, "fixture.native"), File.ReadAllText(generated), cancellationToken);
         }
         using NativeBuildProduct first = await NativeArtifactPublisher.PublishAsync(firstContext, Recipe(firstContext), ProduceAsync);
         DateTime timestamp = File.GetLastWriteTimeUtc(generated);
@@ -266,7 +266,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
                     false
                 )
             )
-            .WithComponentOptions(m_owner, new(NativeLibraryKind.Shared));
+            .WithComponentOptions(m_owner, new NativeComponentBuildOptions(NativeLibraryKind.Shared));
 
     private NativeBuildRecipe Recipe(NativeBuildContext context)
     {
@@ -298,7 +298,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
             Path.Combine(bridge, "compilation.json"),
             JsonSerializer.Serialize(new NativeBindingCompilation
             {
-                roots = [new("generated", string.Empty, true, true)],
+                roots = [new NativeBindingSourceRoot("generated", string.Empty, true, true)],
                 files = [],
                 includeDirectories = [],
                 defines = [],

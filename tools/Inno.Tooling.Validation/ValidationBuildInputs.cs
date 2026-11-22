@@ -22,11 +22,11 @@ internal sealed class ValidationBuildInputs
         ValidationPlan plan,
         string context,
         Dictionary<string, string> outputDigests,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         m_plan = plan;
         m_outputDigests = outputDigests;
-        m_cancellation = cancellation;
+        m_cancellation = cancellationToken;
         m_checks = plan.checks.Where(check => check.kind == "build" && check.context == context && check.exclusion is null).ToArray();
         var variantInputs = new HashSet<string>(StringComparer.Ordinal);
         foreach (ValidationCheck check in m_checks)
@@ -56,7 +56,7 @@ internal sealed class ValidationBuildInputs
         m_completed = File.Exists(m_path)
                       ? JsonSerializer.Deserialize<Dictionary<string, Compilation>>(File.ReadAllBytes(m_path))
                         ?? throw new InvalidDataException("Completed compilation input identities are empty.")
-                      : new(StringComparer.Ordinal);
+                      : new Dictionary<string, Compilation>(StringComparer.Ordinal);
     }
 
     internal bool RequiresCompilation(ValidationDependencyInputs dependencies)
@@ -66,7 +66,7 @@ internal sealed class ValidationBuildInputs
             || !ValidationOutputs.Matches(
                 m_plan,
                 check,
-                new(check.id, "Passed", previous.inputs, 0, string.Empty, previous.outputs),
+                new ValidationResult(check.id, "Passed", previous.inputs, 0, string.Empty, previous.outputs),
                 m_cancellation,
                 m_outputDigests
             )
@@ -83,7 +83,7 @@ internal sealed class ValidationBuildInputs
                                : !ValidationOutputs.Matches(
                                    m_plan,
                                    check,
-                                   new(check.id, "Passed", previous.inputs, 0, string.Empty, previous.outputs),
+                                   new ValidationResult(check.id, "Passed", previous.inputs, 0, string.Empty, previous.outputs),
                                    m_cancellation,
                                    m_outputDigests
                                ) ? "compiled output content changed" : null;

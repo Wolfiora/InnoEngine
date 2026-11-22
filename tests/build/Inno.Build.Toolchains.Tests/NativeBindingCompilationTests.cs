@@ -102,12 +102,20 @@ public sealed class NativeBindingCompilationTests : IDisposable
         {
             roots =
             [
-                new("user", "source", false, true),
-                new("nested", "source/nested", false, true),
-                new("generated", string.Empty, true, true)
+                new NativeBindingSourceRoot("user", "source", false, true),
+                new NativeBindingSourceRoot("nested", "source/nested", false, true),
+                new NativeBindingSourceRoot("generated", string.Empty, true, true)
             ],
-            files = [new("user", "nested/api.hpp", 8, hash, false), new("nested", "api.hpp", 8, hash, true)],
-            includeDirectories = [new("user", string.Empty, false, false), new("nested", string.Empty, false, false)],
+            files =
+            [
+                new NativeBindingSourceFile("user", "nested/api.hpp", 8, hash, false),
+                new NativeBindingSourceFile("nested", "api.hpp", 8, hash, true)
+            ],
+            includeDirectories =
+            [
+                new NativeBindingIncludeDirectory("user", string.Empty, false, false),
+                new NativeBindingIncludeDirectory("nested", string.Empty, false, false)
+            ],
             defines = ["first", "second"],
             compilerDefines = ["__COMPILER_FACT=1"],
             cxxStandard = 20,

@@ -9,8 +9,10 @@ namespace Inno.Adapter.Serialization.DotNet;
 
 internal static class ReflectionObjectMetadata
 {
-    private const BindingFlags C_DECLARED_MEMBERS =
-        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+    private const BindingFlags C_DECLARED_MEMBERS = BindingFlags.Instance
+                                                    | BindingFlags.Public
+                                                    | BindingFlags.NonPublic
+                                                    | BindingFlags.DeclaredOnly;
 
     private static readonly ConditionalWeakTable<Type, MembersBox> MEMBERS = new();
     private static readonly ConditionalWeakTable<Type, RestoreHooksBox> RESTORE_HOOKS = new();
@@ -62,8 +64,7 @@ internal static class ReflectionObjectMetadata
             for (int i = 0; i < declaredMembers.Length; i++)
             {
                 MemberInfo declaredMember = declaredMembers[i];
-                SerializablePropertyAttribute? attribute =
-                    declaredMember.GetCustomAttribute<SerializablePropertyAttribute>(inherit: true);
+                SerializablePropertyAttribute? attribute = declaredMember.GetCustomAttribute<SerializablePropertyAttribute>(inherit: true);
                 if (attribute is null)
                 {
                     continue;

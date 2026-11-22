@@ -564,7 +564,7 @@ public sealed class ProjectSettings : IDisposable
             return ComposeReplacement(id, definition, contributors, projectRecord);
         }
 
-        var entries = new List<ProjectSettingCompositionEntry>();
+        List<ProjectSettingCompositionEntry> entries = [];
         foreach (ProjectSettingsContributor contributor in contributors)
         {
             ProjectSettingRecord? record = FindRecord(contributor, id);

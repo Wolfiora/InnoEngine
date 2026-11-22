@@ -38,7 +38,8 @@ internal sealed class EditorLayer : Layer
         LogRouter logs,
         IEnumerable<object>? hostServices = null
     ) {
-        m_presentation = presentation ?? throw new ArgumentNullException(nameof(presentation));
+        ArgumentNullException.ThrowIfNull(presentation);
+        m_presentation = presentation;
         m_context = context;
         m_log = logs.CreateLogger<EditorLayer>();
         m_resources.Own(m_diagnostics);

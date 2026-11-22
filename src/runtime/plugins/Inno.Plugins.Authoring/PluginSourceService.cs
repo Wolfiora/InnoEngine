@@ -75,8 +75,8 @@ public sealed class PluginSourceService
     /// </returns>
     public PluginScanResult Scan()
     {
-        var candidates = new List<PluginCandidate>();
-        var diagnostics = new List<PluginDiagnostic>();
+        List<PluginCandidate> candidates = [];
+        List<PluginDiagnostic> diagnostics = [];
         foreach (string unsupported in DiscoverUnsupportedSources())
         {
             diagnostics.Add(
@@ -189,10 +189,7 @@ public sealed class PluginSourceService
         ValidateMaterializedSnapshot(entries, destinationRoot);
 
         bool containsCode = ContainsCode(entries.Select(static entry => entry.path));
-        var candidates = new List<PluginCandidate>
-        {
-            CreateCandidate(packagePath, sourceKind, contentHash, manifest, contentRoot, containsCode)
-        };
+        List<PluginCandidate> candidates = [CreateCandidate(packagePath, sourceKind, contentHash, manifest, contentRoot, containsCode)];
         foreach (ValidatedPackageEntry dependency in entries.Where(static entry => (
             entry.path.StartsWith("Dependencies/", StringComparison.Ordinal)
             && entry.path.EndsWith(".iplugin", StringComparison.OrdinalIgnoreCase)

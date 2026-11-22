@@ -35,14 +35,8 @@ public sealed class EventDispatcher
         int queueCapacity = 65_536,
         int flushBudget = 4096
     ) {
-        if (queueCapacity <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(queueCapacity));
-        }
-        if (flushBudget <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(flushBudget));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(queueCapacity);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(flushBudget);
         m_queueCapacity = queueCapacity;
         m_flushBudget = flushBudget;
     }

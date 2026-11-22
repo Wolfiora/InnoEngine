@@ -88,8 +88,8 @@ internal sealed class AudioContentOwner : IDisposable
             content = ContentReadScope.empty;
         }
         using ContentReadScope contentScope = content;
-        var emitters = new List<AudioEmitterSnapshot>();
-        var listeners = new List<AudioListenerSnapshot>();
+        List<AudioEmitterSnapshot> emitters = [];
+        List<AudioListenerSnapshot> listeners = [];
         var ids = new HashSet<Guid>();
         int rejectedProviders = 0;
         foreach (string retiredID in m_providerDiagnosticIDs

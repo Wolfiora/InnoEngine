@@ -27,7 +27,8 @@ internal sealed class AssetWatcher : IDisposable
         string assetRoot,
         int flushDelayMs
     ) {
-        m_root = assetRoot ?? throw new ArgumentNullException(nameof(assetRoot));
+        ArgumentNullException.ThrowIfNull(assetRoot);
+        m_root = assetRoot;
         m_flushDelayMs = Math.Max(flushDelayMs, 1);
         m_watcher = new FileSystemWatcher(assetRoot)
         {
@@ -90,7 +91,7 @@ internal sealed class AssetWatcher : IDisposable
         {
             if (!force && m_pending.Count > 0 && !HasQuietPeriodElapsed())
             {
-                return new WatcherPollResult(Array.Empty<AssetChangedEvent>(), false);
+                return new WatcherPollResult([], false);
             }
             raw = m_pending.ToArray();
             m_pending.Clear();
@@ -117,7 +118,7 @@ internal sealed class AssetWatcher : IDisposable
                     && !m_requiresFullRescan
                     && stopwatch.ElapsedMilliseconds >= Math.Max(m_flushDelayMs * 2L, 50L)
                 ) {
-                    return new WatcherPollResult(Array.Empty<AssetChangedEvent>(), false);
+                    return new WatcherPollResult([], false);
                 }
             }
             if (stopwatch.Elapsed > DEFAULT_IDLE_WAIT_TIMEOUT)
@@ -197,13 +198,7 @@ internal sealed class AssetWatcher : IDisposable
         }
     }
 
-    private void ThrowIfDisposed()
-    {
-        if (m_disposed)
-        {
-            throw new ObjectDisposedException(nameof(AssetWatcher));
-        }
-    }
+    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(m_disposed, this);
 
     private static string NormalizeRelativePath(string relativePath)
     {
@@ -216,6 +211,6 @@ internal readonly struct WatcherPollResult(
     IReadOnlyList<AssetChangedEvent> changes,
     bool requiresFullRescan
 ) {
-    internal IReadOnlyList<AssetChangedEvent> changes { get; } = changes ?? Array.Empty<AssetChangedEvent>();
+    internal IReadOnlyList<AssetChangedEvent> changes { get; } = changes ?? [];
     internal bool requiresFullRescan { get; } = requiresFullRescan;
 }

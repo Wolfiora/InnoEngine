@@ -49,7 +49,7 @@ internal sealed class ConverterRegistry : IDisposable
         ConverterRegistrySnapshot snapshot,
         Type valueType
     ) {
-        var candidates = new List<ConverterCandidate>();
+        List<ConverterCandidate> candidates = [];
         for (int i = 0; i < snapshot.registrations.Count; i++)
         {
             if (TryCreateCandidate(snapshot, snapshot.registrations[i], valueType, out ConverterCandidate? candidate))
@@ -398,7 +398,7 @@ internal sealed class ConverterRegistry : IDisposable
             {
                 cache.Clear();
                 converterInstances.Clear();
-                registrations = Array.Empty<Type>();
+                registrations = [];
                 m_types = null;
             }
         }

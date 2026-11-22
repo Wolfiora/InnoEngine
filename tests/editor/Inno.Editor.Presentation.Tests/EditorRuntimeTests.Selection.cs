@@ -196,7 +196,7 @@ public sealed partial class EditorRuntimeTests
             [third.identity.runtimeIdentity!.Value, second.identity.runtimeIdentity!.Value, first.identity.runtimeIdentity!.Value],
             second
         );
-        var targets = new List<SelectionQueueTarget>();
+        List<SelectionQueueTarget> targets = [];
         Assert.Equal(2, m_runtime.interactions.selection.CopyTargets(targets));
         Assert.Equal([first, second], targets);
     }

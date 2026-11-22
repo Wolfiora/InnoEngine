@@ -329,11 +329,11 @@ public sealed class PlayerSupportPackCatalog
 
     private static async ValueTask VerifySelectionInputsAsync(
         Func<CancellationToken, ValueTask> verifyInputs,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         try
         {
-            await verifyInputs(cancellation).ConfigureAwait(false);
+            await verifyInputs(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception failure) when (failure is not OperationCanceledException)
         {

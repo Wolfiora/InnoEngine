@@ -109,12 +109,14 @@ public sealed class ShaderSourceRequest
         IShaderSourceResolver resolver,
         IReadOnlyDictionary<string, string>? defines = null
     ) {
-        this.source = source ?? throw new ArgumentNullException(nameof(source));
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(resolver);
+        this.source = source;
         ArgumentException.ThrowIfNullOrWhiteSpace(source.assetPath);
         ArgumentNullException.ThrowIfNull(source.text);
         ArgumentException.ThrowIfNullOrWhiteSpace(entryPoint);
         this.entryPoint = entryPoint;
-        this.resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
+        this.resolver = resolver;
         this.defines = new ReadOnlyDictionary<string, string>(
             defines is null
             ? new Dictionary<string, string>(StringComparer.Ordinal)

@@ -15,10 +15,10 @@ public static class WindowsX64BgfxShaderProfiles
     public static BgfxShaderTargetProfile target { get; } = new(
         WindowsX64BuildModule.target.id.value,
         [
-            new(BgfxTargetCapabilities.Create(GraphicsApi.direct3D11), "windows", "s_5_0", "s_5_0", "s_5_0"),
-            new(BgfxTargetCapabilities.Create(GraphicsApi.direct3D12), "windows", "s_5_0", "s_5_0", "s_5_0"),
-            new(BgfxTargetCapabilities.Create(GraphicsApi.vulkan), "windows", "spirv", "spirv", "spirv"),
-            new(BgfxTargetCapabilities.Create(GraphicsApi.openGL), "windows", "430", "430", "430")
+            new BgfxShaderCompilerProfile(BgfxTargetCapabilities.Create(GraphicsApi.direct3D11), "windows", "s_5_0", "s_5_0", "s_5_0"),
+            new BgfxShaderCompilerProfile(BgfxTargetCapabilities.Create(GraphicsApi.direct3D12), "windows", "s_5_0", "s_5_0", "s_5_0"),
+            new BgfxShaderCompilerProfile(BgfxTargetCapabilities.Create(GraphicsApi.vulkan), "windows", "spirv", "spirv", "spirv"),
+            new BgfxShaderCompilerProfile(BgfxTargetCapabilities.Create(GraphicsApi.openGL), "windows", "430", "430", "430")
         ]
     );
 }

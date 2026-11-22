@@ -33,9 +33,9 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         async Task ProduceAsync(
             NativeBuildContext scoped,
             string output,
-            CancellationToken cancellation
+            CancellationToken cancellationToken
         ) {
-            await File.WriteAllTextAsync(Path.Combine(output, "result.native"), "complete", cancellation);
+            await File.WriteAllTextAsync(Path.Combine(output, "result.native"), "complete", cancellationToken);
             if (Interlocked.Increment(ref calls) > 1)
             {
                 prepared.TrySetResult();
@@ -177,8 +177,8 @@ public sealed class NativeArtifactPublicationTests : IDisposable
             Task ProduceAsync(
                 NativeBuildContext scoped,
                 string output,
-                CancellationToken cancellation
-            ) => File.WriteAllTextAsync(Path.Combine(output, "api.native"), "complete", cancellation);
+                CancellationToken cancellationToken
+            ) => File.WriteAllTextAsync(Path.Combine(output, "api.native"), "complete", cancellationToken);
             Task<NativeBuildProduct> PublishAsync()
             {
                 NativeBuildContext operation = CreateContext();
@@ -234,7 +234,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         async Task ProduceAsync(
             NativeBuildContext scoped,
             string output,
-            CancellationToken cancellation
+            CancellationToken cancellationToken
         ) {
             Interlocked.Increment(ref builds);
             string intermediate = scoped.GetNativeBuildRoot(
@@ -248,7 +248,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
             Assert.Contains(Path.Combine("obj", "native", "fixture-x64"), physical);
             toolDirectory = intermediate;
             Assert.True(Directory.Exists(intermediate));
-            await File.WriteAllTextAsync(Path.Combine(output, "api.native"), "complete", cancellation);
+            await File.WriteAllTextAsync(Path.Combine(output, "api.native"), "complete", cancellationToken);
         }
         Task<NativeBuildProduct> PublishAsync()
             => NativeArtifactPublisher.PublishAsync(
@@ -295,8 +295,8 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         Task ProduceAsync(
             NativeBuildContext scoped,
             string output,
-            CancellationToken cancellation
-        ) => File.WriteAllTextAsync(Path.Combine(output, "api.native"), "complete", cancellation);
+            CancellationToken cancellationToken
+        ) => File.WriteAllTextAsync(Path.Combine(output, "api.native"), "complete", cancellationToken);
         using NativeBuildProduct result3 = await NativeArtifactPublisher.PublishAsync(
             context,
             CreateRecipe(
@@ -363,8 +363,8 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         Task ProduceAsync(
             NativeBuildContext scoped,
             string output,
-            CancellationToken cancellation
-        ) => File.WriteAllTextAsync(Path.Combine(output, "api.native"), "complete", cancellation);
+            CancellationToken cancellationToken
+        ) => File.WriteAllTextAsync(Path.Combine(output, "api.native"), "complete", cancellationToken);
         using NativeBuildProduct first = await NativeArtifactPublisher.PublishAsync(
             context,
             CreateRecipe(
@@ -474,7 +474,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
                 "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
                 "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
             ),
-            new(NativeLibraryKind.Shared),
+            new NativeComponentBuildOptions(NativeLibraryKind.Shared),
             [],
             (
                 context,

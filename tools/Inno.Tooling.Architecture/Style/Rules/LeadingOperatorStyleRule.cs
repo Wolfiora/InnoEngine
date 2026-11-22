@@ -27,7 +27,7 @@ internal sealed class LeadingOperatorStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         var seen = new HashSet<int>();
         foreach ((SyntaxNode chain, SyntaxToken anchor, IReadOnlyList<SyntaxToken> operators) in StyleOperators.Chains(source.root))
         {
@@ -44,7 +44,7 @@ internal sealed class LeadingOperatorStyleRule : StyleRule
                     {
                         continue;
                     }
-                    edits.Add(new(before.Span.End, token.SpanStart, lineBreak));
+                    edits.Add(new StyleEdit(before.Span.End, token.SpanStart, lineBreak));
                 }
             }
 
@@ -56,7 +56,7 @@ internal sealed class LeadingOperatorStyleRule : StyleRule
                 if (source.LineNumber(token.SpanStart) != source.LineNumber(previous.Span.End)) continue;
                 string gap = source.content[token.Span.End..next.SpanStart];
                 if (!StyleLayout.IsBlank(gap, 0, gap.Length) || !seen.Add(token.SpanStart)) continue;
-                edits.Add(new(previous.Span.End, next.SpanStart, gap + token.Text + " "));
+                edits.Add(new StyleEdit(previous.Span.End, next.SpanStart, gap + token.Text + " "));
             }
         }
 

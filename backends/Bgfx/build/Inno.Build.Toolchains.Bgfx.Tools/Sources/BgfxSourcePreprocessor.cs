@@ -23,8 +23,8 @@ internal sealed class BgfxSourcePreprocessor(ShaderSourceRequest request)
     {
         foreach ((string name, string value) in request.defines)
         {
-            List<BgfxSourceToken> replacement = BgfxSourceLexer.Tokenize(new(request.source.assetPath, value));
-            m_macros.Add(name, new(null, replacement.Where(static token => token.text != "\n").ToArray()));
+            List<BgfxSourceToken> replacement = BgfxSourceLexer.Tokenize(new ShaderSourceFile(request.source.assetPath, value));
+            m_macros.Add(name, new Macro(null, replacement.Where(static token => token.text != "\n").ToArray()));
         }
         return ProcessFile(request.source, 0);
     }
@@ -41,12 +41,12 @@ internal sealed class BgfxSourcePreprocessor(ShaderSourceRequest request)
         {
             throw new BgfxSourceSyntaxException(
                 "Shader include depth exceeded; check for an unguarded include cycle.",
-                new(source.assetPath, 1, 1)
+                new ShaderSourcePosition(source.assetPath, 1, 1)
             );
         }
         List<BgfxSourceToken> input = BgfxSourceLexer.Tokenize(source);
-        var output = new List<BgfxSourceToken>();
-        var pending = new List<BgfxSourceToken>();
+        List<BgfxSourceToken> output = [];
+        List<BgfxSourceToken> pending = [];
         var conditions = new Stack<Conditional>();
         bool active = true;
         for (int index = 0; index < input.Count;)
@@ -93,7 +93,7 @@ internal sealed class BgfxSourcePreprocessor(ShaderSourceRequest request)
                     bool selected = active && (directive.text == "if"
                                                ? Evaluate(arguments, directive)
                                                : m_macros.ContainsKey(arguments[0].text) == (directive.text == "ifdef"));
-                    conditions.Push(new(active, selected, false));
+                    conditions.Push(new Conditional(active, selected, false));
                     active = selected;
                     break;
                 }
@@ -208,7 +208,7 @@ internal sealed class BgfxSourcePreprocessor(ShaderSourceRequest request)
         Flush();
         if (conditions.Count != 0)
         {
-            throw new BgfxSourceSyntaxException("Unterminated preprocessor conditional.", new(source.assetPath, 1, 1));
+            throw new BgfxSourceSyntaxException("Unterminated preprocessor conditional.", new ShaderSourcePosition(source.assetPath, 1, 1));
         }
         return output;
 
@@ -231,7 +231,7 @@ internal sealed class BgfxSourcePreprocessor(ShaderSourceRequest request)
         {
             Fail("Expected a preprocessor expression.", directive);
         }
-        var replaced = new List<BgfxSourceToken>();
+        List<BgfxSourceToken> replaced = [];
         for (int i = 0; i < input.Count; i++)
         {
             BgfxSourceToken token = input[i];
@@ -254,7 +254,7 @@ internal sealed class BgfxSourcePreprocessor(ShaderSourceRequest request)
             {
                 Fail("Expected ')' after defined.", token);
             }
-            replaced.Add(new(defined ? "1" : "0", token.position));
+            replaced.Add(new BgfxSourceToken(defined ? "1" : "0", token.position));
         }
         List<BgfxSourceToken> expanded = Expand(replaced, [], 0);
         if (expanded.Count == 0)
@@ -280,7 +280,7 @@ internal sealed class BgfxSourcePreprocessor(ShaderSourceRequest request)
             && arguments[offset].position.column == name.position.column + name.text.Length
         ) {
             offset++;
-            var names = new List<string>();
+            List<string> names = [];
             while (offset < arguments.Count && arguments[offset].text != ")")
             {
                 if (!arguments[offset].isIdentifier)
@@ -335,7 +335,7 @@ internal sealed class BgfxSourcePreprocessor(ShaderSourceRequest request)
             Fail("Shader macro expansion exceeded its depth budget.", tokens[0]);
         }
         List<ExpansionToken> pending = tokens.Select(token => new ExpansionToken(token, disabled)).ToList();
-        var result = new List<BgfxSourceToken>();
+        List<BgfxSourceToken> result = [];
         for (int i = 0; i < pending.Count; i++)
         {
             ExpansionToken current = pending[i];
@@ -346,12 +346,12 @@ internal sealed class BgfxSourcePreprocessor(ShaderSourceRequest request)
             }
             if (token.text == "__LINE__")
             {
-                result.Add(new(token.position.line.ToString(CultureInfo.InvariantCulture), token.position));
+                result.Add(new BgfxSourceToken(token.position.line.ToString(CultureInfo.InvariantCulture), token.position));
                 continue;
             }
             if (token.text == "__FILE__")
             {
-                result.Add(new('"' + token.position.assetPath + '"', token.position));
+                result.Add(new BgfxSourceToken('"' + token.position.assetPath + '"', token.position));
                 continue;
             }
             if (!m_macros.TryGetValue(token.text, out Macro? macro) || current.disabled.Contains(token.text))
@@ -369,8 +369,8 @@ internal sealed class BgfxSourcePreprocessor(ShaderSourceRequest request)
                     continue;
                 }
                 i += 2;
-                var arguments = new List<List<BgfxSourceToken>>();
-                var argument = new List<BgfxSourceToken>();
+                List<List<BgfxSourceToken>> arguments = [];
+                List<BgfxSourceToken> argument = [];
                 int nesting = 0;
                 for (; i < pending.Count; i++)
                 {
@@ -434,7 +434,7 @@ internal sealed class BgfxSourcePreprocessor(ShaderSourceRequest request)
         HashSet<string> disabled,
         int depth
     ) {
-        var substituted = new List<BgfxSourceToken>();
+        List<BgfxSourceToken> substituted = [];
         for (int index = 0; index < macro.replacement.Length; index++)
         {
             BgfxSourceToken item = macro.replacement[index];
@@ -448,7 +448,7 @@ internal sealed class BgfxSourcePreprocessor(ShaderSourceRequest request)
                 string literal = string.Join(" ", arguments[parameter].Select(static value => value.text))
                     .Replace("\\", "\\\\", StringComparison.Ordinal)
                     .Replace("\"", "\\\"", StringComparison.Ordinal);
-                substituted.Add(new('"' + literal + '"', invocation.position));
+                substituted.Add(new BgfxSourceToken('"' + literal + '"', invocation.position));
                 continue;
             }
             int parameterIndex = Array.IndexOf(macro.parameters!, item.text);
@@ -461,7 +461,7 @@ internal sealed class BgfxSourcePreprocessor(ShaderSourceRequest request)
                           || index + 1 < macro.replacement.Length && macro.replacement[index + 1].text == "##";
             if (pasted && arguments[parameterIndex].Count == 0)
             {
-                substituted.Add(new(string.Empty, invocation.position));
+                substituted.Add(new BgfxSourceToken(string.Empty, invocation.position));
             }
             else
             {
@@ -475,7 +475,7 @@ internal sealed class BgfxSourcePreprocessor(ShaderSourceRequest request)
         List<BgfxSourceToken> substituted,
         BgfxSourceToken invocation
     ) {
-        var output = new List<BgfxSourceToken>();
+        List<BgfxSourceToken> output = [];
         for (int i = 0; i < substituted.Count; i++)
         {
             if (substituted[i].text != "##")
@@ -488,7 +488,7 @@ internal sealed class BgfxSourcePreprocessor(ShaderSourceRequest request)
                 Fail("Token pasting requires two nonempty operands.", invocation);
             }
             string combined = output[^1].text + substituted[++i].text;
-            List<BgfxSourceToken> joined = BgfxSourceLexer.Tokenize(new(invocation.position.assetPath, combined));
+            List<BgfxSourceToken> joined = BgfxSourceLexer.Tokenize(new ShaderSourceFile(invocation.position.assetPath, combined));
             if (combined.Length > 0 && joined.Count != 1)
             {
                 Fail("Token pasting did not produce one preprocessing token.", invocation);

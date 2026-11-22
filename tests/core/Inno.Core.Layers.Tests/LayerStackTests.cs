@@ -47,7 +47,7 @@ public sealed class LayerStackTests
     {
         var dispatcher = new EventDispatcher();
         using var stack = new LayerStack(() => dispatcher.CreateHub());
-        var order = new List<string>();
+        List<string> order = [];
         stack.PushLayer(new ProbeLayer("base", order));
         stack.PushOverlay(new ProbeLayer("overlay", order));
 
@@ -61,7 +61,7 @@ public sealed class LayerStackTests
     {
         var dispatcher = new EventDispatcher();
         using var stack = new LayerStack(() => dispatcher.CreateHub());
-        var calls = new List<string>();
+        List<string> calls = [];
         stack.PushLayer(new ProbeLayer("first", calls));
         stack.PushLayer(new ProbeLayer("second", calls) { throwOnRender = true });
 

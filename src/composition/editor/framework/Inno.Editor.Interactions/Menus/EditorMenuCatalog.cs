@@ -18,7 +18,7 @@ internal sealed class EditorMenuCatalog(
     {
         ArgumentNullException.ThrowIfNull(context);
         TemplateNode[] template = GetTemplate(context.area);
-        var dynamicPlacements = new List<Placement>();
+        List<Placement> dynamicPlacements = [];
         foreach (EditorExtensionCatalog.MenuSourceRegistration registration in catalog.extensions.menuSources)
         {
             if (!string.Equals(registration.area, context.area, StringComparison.Ordinal))
@@ -112,7 +112,7 @@ internal sealed class EditorMenuCatalog(
     ) {
         if (nodes.Length == 0)
         {
-            return Array.Empty<EditorMenuItem>();
+            return [];
         }
         var result = new List<EditorMenuItem>(nodes.Length);
         foreach (TemplateNode node in nodes)

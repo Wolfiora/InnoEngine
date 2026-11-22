@@ -163,7 +163,7 @@ public sealed partial class IndexedObjectStore<T>
         m_lock.EnterReadLock();
         try
         {
-            var result = new List<T>();
+            List<T> result = [];
             if (conditions.Count == 0)
             {
                 result.AddRange(m_activeList);
@@ -384,7 +384,7 @@ public sealed partial class IndexedObjectStore<T>
         TKey value
     ) where TKey : notnull
     {
-        var result = new List<T>();
+        List<T> result = [];
         if ((index.flags & IndexedObjectKeyFlags.Unique) != 0 && index.TryGetSingle(value, out T? single) && single is not null)
         {
             result.Add(single);

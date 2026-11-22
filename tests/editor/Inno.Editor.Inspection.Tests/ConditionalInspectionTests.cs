@@ -28,7 +28,9 @@ public sealed class ConditionalInspectionTests : IDisposable
     public ConditionalInspectionTests()
     {
         Directory.CreateDirectory(m_root);
-        m_modules = new(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ConditionalInspectionTests).Assembly) });
+        m_modules = new(
+            new ModuleHostOptions() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ConditionalInspectionTests).Assembly) }
+        );
         m_types = new(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new(m_types, new ReflectionSerializationMetadataSource());
         m_runtime = new(

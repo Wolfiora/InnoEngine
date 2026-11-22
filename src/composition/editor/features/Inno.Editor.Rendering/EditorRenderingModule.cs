@@ -29,11 +29,9 @@ public sealed class EditorRenderingModule : EditorModule
     private readonly Dictionary<string, string> m_compositionErrors = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> m_controllerIDs = new(StringComparer.Ordinal);
 
-    private readonly Dictionary<string, EditorViewportManipulationSpace> m_manipulationSpaces =
-        new(StringComparer.Ordinal);
+    private readonly Dictionary<string, EditorViewportManipulationSpace> m_manipulationSpaces = new(StringComparer.Ordinal);
 
-    private readonly Dictionary<string, EditorViewportPresentation> m_presentations =
-        new(StringComparer.Ordinal);
+    private readonly Dictionary<string, EditorViewportPresentation> m_presentations = new(StringComparer.Ordinal);
 
     private readonly Dictionary<string, RenderOutputInput> m_outputInputs = new(StringComparer.Ordinal);
     private readonly Dictionary<string, RenderOutputRoute> m_outputRoutes = new(StringComparer.Ordinal);
@@ -61,9 +59,12 @@ public sealed class EditorRenderingModule : EditorModule
         EditorInteractions interactions,
         TypeCatalog types
     ) {
-        m_host = host ?? throw new ArgumentNullException(nameof(host));
-        m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-        m_contributors = new EditorViewportContributorRegistry(types ?? throw new ArgumentNullException(nameof(types)));
+        ArgumentNullException.ThrowIfNull(host);
+        ArgumentNullException.ThrowIfNull(interactions);
+        ArgumentNullException.ThrowIfNull(types);
+        m_host = host;
+        m_interactions = interactions;
+        m_contributors = new EditorViewportContributorRegistry(types);
         m_gizmos = new EditorGizmoProviderRegistry(types);
     }
 
@@ -129,7 +130,8 @@ public sealed class EditorRenderingModule : EditorModule
         RenderOutputInput input
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(viewportID);
-        m_outputInputs[viewportID] = input ?? throw new ArgumentNullException(nameof(input));
+        ArgumentNullException.ThrowIfNull(input);
+        m_outputInputs[viewportID] = input;
     }
 
     /// <summary>
@@ -212,7 +214,7 @@ public sealed class EditorRenderingModule : EditorModule
         {
             previous.Dispose();
         }
-        m_contentScopes[viewportID] = content ?? throw new ArgumentNullException(nameof(content));
+        m_contentScopes[viewportID] = content;
     }
 
     /// <summary>
@@ -248,7 +250,7 @@ public sealed class EditorRenderingModule : EditorModule
         {
             return false;
         }
-        var failures = new List<string>();
+        List<string> failures = [];
         EditorViewportContributorRegistry.Registration[] contributors = GetApplicableContributors(context!, failures);
         foreach (EditorViewportContributorRegistry.Registration registration in contributors
             .OrderByDescending(static value => value.attribute.controllerPriority)
@@ -343,7 +345,7 @@ public sealed class EditorRenderingModule : EditorModule
         {
             return;
         }
-        var failures = new List<string>();
+        List<string> failures = [];
         EditorViewportContributorRegistry.Registration[] contributors = GetApplicableContributors(context!, failures);
         EditorViewportContributorRegistry.Registration? registration = SelectController(viewportID, contributors);
         if (registration is null)
@@ -395,7 +397,7 @@ public sealed class EditorRenderingModule : EditorModule
         {
             return false;
         }
-        var failures = new List<string>();
+        List<string> failures = [];
         EditorViewportContributorRegistry.Registration[] contributors = GetApplicableContributors(context!, failures);
         if (contributors.Length == 0)
         {
@@ -554,7 +556,7 @@ public sealed class EditorRenderingModule : EditorModule
         {
             return;
         }
-        var failures = new List<string>();
+        List<string> failures = [];
         EditorViewportContributorRegistry.Registration[] contributors = GetApplicableContributors(context!, failures);
         EditorViewportContributorRegistry.Registration? registration = SelectController(viewportID, contributors);
         if (registration is null)
@@ -779,13 +781,13 @@ public sealed class EditorRenderingModule : EditorModule
         string groupKey = $"inno.rendering.viewport.{viewportID}";
         var groupID = new EditorStatisticGroupID(groupKey);
         string groupName = GetDisplayName(viewportID);
-        var statistics = new List<EditorStatistic>
-        {
+        List<EditorStatistic> statistics =
+        [
             CreateStatistic("kind", "Kind", kind.value, 0),
             CreateStatistic("contributors", "Contributors", contributorIDs, 10),
             CreateStatistic("state", "State", state, 20),
             CreateStatistic("resolution", "Resolution", $"{pixelWidth} x {pixelHeight}", 30)
-        };
+        ];
         if (contributions is { Count: > 0 })
         {
             string pipeline = string.Join(

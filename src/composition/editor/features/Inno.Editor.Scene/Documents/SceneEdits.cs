@@ -34,8 +34,10 @@ public sealed partial class SceneEdits : EditorModule
         EditorSceneWorkspace workspace,
         EditorInteractions interactions
     ) {
-        m_workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
-        m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
+        ArgumentNullException.ThrowIfNull(workspace);
+        ArgumentNullException.ThrowIfNull(interactions);
+        m_workspace = workspace;
+        m_interactions = interactions;
     }
 
     /// <summary>
@@ -95,8 +97,7 @@ public sealed partial class SceneEdits : EditorModule
         RecordWithRollback(
             () =>
             {
-                EditorSceneWorkspace.SceneDocumentSnapshot snapshot =
-                    m_workspace.CaptureDocumentSnapshot(scene);
+                EditorSceneWorkspace.SceneDocumentSnapshot snapshot = m_workspace.CaptureDocumentSnapshot(scene);
                 RecordDocument(
                     historyName,
                     existsBefore: false,

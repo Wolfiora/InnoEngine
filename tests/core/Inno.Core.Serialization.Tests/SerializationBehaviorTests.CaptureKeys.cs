@@ -311,8 +311,12 @@ public sealed partial class SerializationBehaviorTests
     [Fact]
     public void RetainedCaptureKeysAndRetiredBuildersDoNotPinACollectiblePropertyAssembly()
     {
-        (SerializationSnapshot snapshot, SerializationCaptureKeyBuilder builder, WeakReference assembly, WeakReference context) =
-            CaptureCollectibleProperties();
+        (
+            SerializationSnapshot snapshot,
+            SerializationCaptureKeyBuilder builder,
+            WeakReference assembly,
+            WeakReference context
+        ) = CaptureCollectibleProperties();
         for (int index = 0; index < 10 && (assembly.IsAlive || context.IsAlive); index++)
         {
             GC.Collect();

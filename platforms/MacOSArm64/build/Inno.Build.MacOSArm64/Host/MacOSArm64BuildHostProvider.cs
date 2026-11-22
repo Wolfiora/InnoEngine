@@ -14,7 +14,7 @@ public sealed class MacOSArm64BuildHostProvider : IBuildHostProvider
         => !OperatingSystem.IsMacOS()
            || RuntimeInformation.ProcessArchitecture != Architecture.Arm64
            ? null
-           : new(
+           : new BuildHostDescriptor(
                "MacOS",
                "arm64",
                new BuildHostServices(

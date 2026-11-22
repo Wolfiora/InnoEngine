@@ -33,7 +33,8 @@ public sealed class EditorGameInputCapture
     /// </exception>
     public EditorGameInputCapture(Func<uint, uint?> resolveWindow)
     {
-        m_resolveWindow = resolveWindow ?? throw new ArgumentNullException(nameof(resolveWindow));
+        ArgumentNullException.ThrowIfNull(resolveWindow);
+        m_resolveWindow = resolveWindow;
     }
 
     /// <summary>

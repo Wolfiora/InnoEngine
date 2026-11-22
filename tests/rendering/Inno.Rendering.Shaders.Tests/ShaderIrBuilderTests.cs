@@ -65,7 +65,10 @@ public sealed class ShaderIrBuilderTests
         ShaderIrValue x = builder.Constant(1f);
         ShaderIrValue y = builder.Constant(2f);
         ShaderIrValue vector = builder.Construct(ShaderSourceType.Atomic("float2"), x, y);
-        ShaderSourceType structure = ShaderSourceType.Structure("Surface", [new("uv", vector.type), new("intensity", x.type)]);
+        ShaderSourceType structure = ShaderSourceType.Structure(
+            "Surface",
+            [new ShaderSourceField("uv", vector.type), new ShaderSourceField("intensity", x.type)]
+        );
         ShaderIrValue surface = builder.Construct(structure, vector, x);
         ShaderIrValue array = builder.Construct(ShaderSourceType.ArrayOf(structure, 2), surface, surface);
         Assert.True(structure.IsEquivalentTo(builder.Extract(array, 1).type));
@@ -185,7 +188,11 @@ public sealed class ShaderIrBuilderTests
 
     private static ShaderSourceModuleAnalysis Module(string text)
         => new ShaderSourceFrontendCatalog([new BgfxShaderSourceFrontend()]).AnalyzeModule([
-            new("test", "inno.shader-language.bgfx-sc", new(new("Module.ishadersource", text), "Shade", new NoIncludes()))]);
+            new ShaderSourceImplementationRequest(
+                "test",
+                "inno.shader-language.bgfx-sc",
+                new ShaderSourceRequest(new ShaderSourceFile("Module.ishadersource", text), "Shade", new NoIncludes())
+            )]);
 
     private sealed class NoIncludes : IShaderSourceResolver
     {

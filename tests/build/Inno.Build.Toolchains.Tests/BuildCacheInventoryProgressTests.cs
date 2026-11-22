@@ -125,7 +125,7 @@ public sealed class BuildCacheInventoryProgressTests : IDisposable
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Task.Run(() =>
                 BuildMaintenanceApplication.CleanAsync(
                     m_root,
-                    new(long.MaxValue, 0, TimeSpan.FromMinutes(2)),
+                    new BuildCachePolicy(long.MaxValue, 0, TimeSpan.FromMinutes(2)),
                     true,
                     false,
                     null,
@@ -194,7 +194,7 @@ public sealed class BuildCacheInventoryProgressTests : IDisposable
         // Full inventory and retirement assertions are foreground work, not a five-second automatic maintenance slice.
         BuildMaintenanceApplication.CleanAsync(
             m_root,
-            new(long.MaxValue, 0, TimeSpan.FromMinutes(2)),
+            new BuildCachePolicy(long.MaxValue, 0, TimeSpan.FromMinutes(2)),
             retireAll,
             dryRun,
             null,

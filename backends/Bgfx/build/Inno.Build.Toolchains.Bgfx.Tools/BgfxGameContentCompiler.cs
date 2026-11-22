@@ -63,6 +63,7 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
     ) {
         ArgumentNullException.ThrowIfNull(assets);
         ArgumentNullException.ThrowIfNull(serialization);
+        ArgumentNullException.ThrowIfNull(types);
         ArgumentNullException.ThrowIfNull(backends);
         ArgumentNullException.ThrowIfNull(tools);
         m_tools = tools;
@@ -76,7 +77,7 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
             throw new ArgumentException("A deployable Player cannot target the Noop graphics backend.", nameof(backends));
         }
         m_assets = assets;
-        m_types = types ?? throw new ArgumentNullException(nameof(types));
+        m_types = types;
         m_serialization = serialization;
         ArgumentNullException.ThrowIfNull(platform);
         foreach (GraphicsApi backend in snapshot)
@@ -205,7 +206,7 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
         );
         var shaders = new Dictionary<Guid, ShaderInput>();
         var textures = new Dictionary<TextureArtifactKey, TextureInput>();
-        var materialVariants = new List<(ShaderAsset shader, RenderShaderVariant variant)>();
+        List<(ShaderAsset shader, RenderShaderVariant variant)> materialVariants = [];
         AssetFileEntry[] entries = m_assets.GetFileSystemEntries(includeDirectories: false)
             .OrderBy(static entry => entry.assetPath.ToString(), StringComparer.Ordinal)
             .ToArray();

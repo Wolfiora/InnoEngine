@@ -33,7 +33,7 @@ internal sealed class BindingGenerationConfiguration
 
     internal GenerationRequest Load(
         NativeBuildContext context,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         if (context.toolchain is NativeToolchainSelection selected && selected.targetID != request.targetID)
         {
@@ -41,7 +41,7 @@ internal sealed class BindingGenerationConfiguration
         }
         using HostServices host = BindingHostFactory.CreateHostServices(context.engineRoot);
         GenerationRequest captured = GenerationRequest.FromFile(configPath)
-            .MaterializeAsync(host.paths, cancellation)
+            .MaterializeAsync(host.paths, cancellationToken)
             .AsTask()
             .GetAwaiter()
             .GetResult();
@@ -78,7 +78,7 @@ internal sealed class BindingGenerationConfiguration
                 request.componentOptions.GetValueOrDefault(component.nativeProject),
                 context.engineRoot
             )
-            .MaterializeAsync(host.paths, cancellation)
+            .MaterializeAsync(host.paths, cancellationToken)
             .AsTask()
             .GetAwaiter()
             .GetResult();

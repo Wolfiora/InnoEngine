@@ -19,6 +19,7 @@ public sealed class PrefabInstanceInfo
         int orphanedOverrideCount,
         AssetObject sourceAsset
     ) {
+        ArgumentNullException.ThrowIfNull(sourceAsset);
         this.sourceAssetID = sourceAssetID;
         this.sourceObjectID = sourceObjectID;
         this.instanceRoot = instanceRoot;
@@ -27,7 +28,7 @@ public sealed class PrefabInstanceInfo
         this.isMissing = isMissing;
         this.overrideCount = overrideCount;
         this.orphanedOverrideCount = orphanedOverrideCount;
-        this.sourceAsset = sourceAsset ?? throw new ArgumentNullException(nameof(sourceAsset));
+        this.sourceAsset = sourceAsset;
     }
 
     /// <summary>

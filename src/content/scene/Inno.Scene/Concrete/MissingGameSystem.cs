@@ -20,8 +20,7 @@ public sealed class MissingGameSystem : GameSystem
     private byte[] m_serializedState;
     private AssetDependency[] m_dependencies;
 
-    private IReadOnlyDictionary<Guid, Guid> m_referenceAliases =
-        new Dictionary<Guid, Guid>();
+    private IReadOnlyDictionary<Guid, Guid> m_referenceAliases = new Dictionary<Guid, Guid>();
 
     internal MissingGameSystem(
         TypeRef missingType,

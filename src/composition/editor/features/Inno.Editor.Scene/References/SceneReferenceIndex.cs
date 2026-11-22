@@ -18,7 +18,7 @@ internal static class SceneReferenceIndex
         ArgumentNullException.ThrowIfNull(workspace);
         var subtreeIDs = new HashSet<Guid>();
         CollectSubtreeIDs(root, subtreeIDs);
-        var result = new List<SceneIncomingReferenceState>();
+        List<SceneIncomingReferenceState> result = [];
         foreach (EngineObject owner in EnumerateSceneObjects(root.scene))
         {
             if (subtreeIDs.Contains(owner.identity.persistentID) || owner is not ISerializable serializable)
@@ -133,7 +133,7 @@ internal static class SceneReferenceIndex
         string? failure,
         EditorSceneWorkspace workspace
     ) {
-        var rollbackFailures = new List<string>();
+        List<string> rollbackFailures = [];
         for (int i = rollback.Count - 1; i >= 0; i--)
         {
             SceneReferenceRollbackState reference = rollback[i];
@@ -296,7 +296,7 @@ internal static class SceneReferenceIndex
         IReadOnlySet<Guid> targetIDs,
         EditorSceneWorkspace workspace
     ) {
-        var result = new List<SceneIncomingReferenceState>();
+        List<SceneIncomingReferenceState> result = [];
         foreach (EngineObject owner in EnumerateSceneObjects(scene))
         {
             if (targetIDs.Contains(owner.identity.persistentID) || owner is not ISerializable serializable)

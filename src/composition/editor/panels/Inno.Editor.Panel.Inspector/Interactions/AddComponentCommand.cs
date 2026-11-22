@@ -49,7 +49,7 @@ internal sealed class AddComponentCommand(
         {
             return[context.target];
         }
-        var targets = new List<GameObject>();
+        List<GameObject> targets = [];
         context.interactions.selection.CopyTargets(targets);
         return targets.Count == context.interactions.selection.count ? targets : [];
     }

@@ -54,7 +54,7 @@ internal sealed class DeleteGameObjectCommand(SceneEdits edits) : EditorAction<G
         {
             return[context.target];
         }
-        var values = new List<GameObject>();
+        List<GameObject> values = [];
         context.interactions.selection.CopyTargets(values);
         return values.Count == context.interactions.selection.count ? values.ToArray() : [];
     }

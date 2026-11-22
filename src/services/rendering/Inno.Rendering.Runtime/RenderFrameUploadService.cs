@@ -29,7 +29,8 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
         IRenderDevice device,
         RenderResourceLimits limits
     ) {
-        m_device = device ?? throw new ArgumentNullException(nameof(device));
+        ArgumentNullException.ThrowIfNull(device);
+        m_device = device;
         m_limits = limits;
     }
 

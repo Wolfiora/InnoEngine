@@ -89,7 +89,7 @@ public sealed partial class PublishTaskHostTask : Task, ICancelableTask
                                 "publication:" + cache + "/" + fingerprint,
                                 load,
                                 verifyOutputs: false,
-                                cancellation: cancellation
+                                cancellationToken: cancellation
                             )
                                 is ITaskItem[] publication
                             && publication.Length == files.Length

@@ -59,7 +59,7 @@ internal sealed class ModifierOrderStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         foreach (SyntaxTokenList modifiers in Violations(source.root))
         {
             SyntaxToken[] sorted = modifiers.OrderBy(Rank).ToArray();
@@ -67,7 +67,7 @@ internal sealed class ModifierOrderStyleRule : StyleRule
             {
                 if (modifiers[index].Text != sorted[index].Text)
                 {
-                    edits.Add(new(modifiers[index].SpanStart, modifiers[index].Span.End, sorted[index].Text));
+                    edits.Add(new StyleEdit(modifiers[index].SpanStart, modifiers[index].Span.End, sorted[index].Text));
                 }
             }
         }

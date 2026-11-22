@@ -33,7 +33,7 @@ public static class ShaderDefinitionValidator
         GraphicsCapabilities? capabilities = null
     ) {
         ArgumentNullException.ThrowIfNull(definition);
-        var diagnostics = new List<ShaderDiagnostic>();
+        List<ShaderDiagnostic> diagnostics = [];
         if (string.IsNullOrWhiteSpace(definition.name))
         {
             Error("SHADER_NAME_MISSING", "A shader requires a nonempty name.");
@@ -121,7 +121,7 @@ public static class ShaderDefinitionValidator
             if (capabilities is not null && (pass.requiredFeatures & ~capabilities.features) != 0)
             {
                 diagnostics.Add(
-                    new(
+                    new ShaderDiagnostic(
                         "SHADER_CAPABILITY_UNAVAILABLE",
                         DiagnosticSeverity.Warning,
                         $"Pass '{pass.name}' requires unavailable features '{pass.requiredFeatures & ~capabilities.features}'."
@@ -134,7 +134,7 @@ public static class ShaderDefinitionValidator
         void Error(
             string code,
             string message
-        ) => diagnostics.Add(new(code, DiagnosticSeverity.Error, message));
+        ) => diagnostics.Add(new ShaderDiagnostic(code, DiagnosticSeverity.Error, message));
         void Identifiers(
             IEnumerable<string> values,
             string kind

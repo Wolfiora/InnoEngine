@@ -11,12 +11,11 @@ namespace Inno.Scripting.Compiler;
 
 internal static class ScriptApiStubSourceBuilder
 {
-    private const BindingFlags C_DECLARED_MEMBERS =
-        BindingFlags.Public
-        | BindingFlags.NonPublic
-        | BindingFlags.Instance
-        | BindingFlags.Static
-        | BindingFlags.DeclaredOnly;
+    private const BindingFlags C_DECLARED_MEMBERS = BindingFlags.Public
+                                                    | BindingFlags.NonPublic
+                                                    | BindingFlags.Instance
+                                                    | BindingFlags.Static
+                                                    | BindingFlags.DeclaredOnly;
 
     private static readonly HashSet<string> KEYWORDS = new(StringComparer.Ordinal)
     {
@@ -31,26 +30,25 @@ internal static class ScriptApiStubSourceBuilder
         "void", "volatile", "while"
     };
 
-    private static readonly IReadOnlyDictionary<Type, string> TYPE_ALIASES =
-        new Dictionary<Type, string>
-        {
-            [typeof(void)] = "void",
-            [typeof(bool)] = "bool",
-            [typeof(byte)] = "byte",
-            [typeof(sbyte)] = "sbyte",
-            [typeof(short)] = "short",
-            [typeof(ushort)] = "ushort",
-            [typeof(int)] = "int",
-            [typeof(uint)] = "uint",
-            [typeof(long)] = "long",
-            [typeof(ulong)] = "ulong",
-            [typeof(char)] = "char",
-            [typeof(float)] = "float",
-            [typeof(double)] = "double",
-            [typeof(decimal)] = "decimal",
-            [typeof(string)] = "string",
-            [typeof(object)] = "object"
-        };
+    private static readonly IReadOnlyDictionary<Type, string> TYPE_ALIASES = new Dictionary<Type, string>
+    {
+        [typeof(void)] = "void",
+        [typeof(bool)] = "bool",
+        [typeof(byte)] = "byte",
+        [typeof(sbyte)] = "sbyte",
+        [typeof(short)] = "short",
+        [typeof(ushort)] = "ushort",
+        [typeof(int)] = "int",
+        [typeof(uint)] = "uint",
+        [typeof(long)] = "long",
+        [typeof(ulong)] = "ulong",
+        [typeof(char)] = "char",
+        [typeof(float)] = "float",
+        [typeof(double)] = "double",
+        [typeof(decimal)] = "decimal",
+        [typeof(string)] = "string",
+        [typeof(object)] = "object"
+    };
 
     [ThreadStatic]
     private static IReadOnlySet<Type>? s_exportedTypes;
@@ -282,7 +280,7 @@ internal static class ScriptApiStubSourceBuilder
         StringBuilder builder,
         Type type
     ) {
-        var baseTypes = new List<Type>();
+        List<Type> baseTypes = [];
         if (type.IsClass
             && !type.IsStaticClass()
             && type.BaseType is not null
@@ -327,7 +325,7 @@ internal static class ScriptApiStubSourceBuilder
         foreach (Type parameter in genericParameters)
         {
             GenericParameterAttributes attributes = parameter.GenericParameterAttributes;
-            var constraints = new List<string>();
+            List<string> constraints = [];
             if ((attributes & GenericParameterAttributes.ReferenceTypeConstraint) != 0)
             {
                 constraints.Add("class");
@@ -390,7 +388,14 @@ internal static class ScriptApiStubSourceBuilder
                     builder.Append("readonly ");
                 }
             }
-            builder.Append(FormatType(field.FieldType, s_nullability!.Create(field), new(field.GetCustomAttributesData(), field)))
+            builder
+                .Append(
+                    FormatType(
+                        field.FieldType,
+                        s_nullability!.Create(field),
+                        new NullableAnnotations(field.GetCustomAttributesData(), field)
+                    )
+                )
                 .Append(' ')
                 .Append(EscapeIdentifier(field.Name));
             if (field.IsLiteral)
@@ -460,7 +465,11 @@ internal static class ScriptApiStubSourceBuilder
             AppendMethodModifiers(builder, representative, type.IsInterface);
             builder
                 .Append(
-                    FormatType(property.PropertyType, s_nullability!.Create(property), new(property.GetCustomAttributesData(), property))
+                    FormatType(
+                        property.PropertyType,
+                        s_nullability!.Create(property),
+                        new NullableAnnotations(property.GetCustomAttributesData(), property)
+                    )
                 )
                 .Append(' ');
             ParameterInfo[] indexParameters = property.GetIndexParameters();
@@ -536,7 +545,7 @@ internal static class ScriptApiStubSourceBuilder
                     FormatType(
                         eventInfo.EventHandlerType!,
                         s_nullability!.Create(eventInfo),
-                        new(eventInfo.GetCustomAttributesData(), eventInfo)
+                        new NullableAnnotations(eventInfo.GetCustomAttributesData(), eventInfo)
                     )
                 )
                 .Append(' ')
@@ -827,7 +836,7 @@ internal static class ScriptApiStubSourceBuilder
         => FormatType(
             parameter.ParameterType,
             s_nullability!.Create(parameter),
-            new(parameter.GetCustomAttributesData(), parameter.Member)
+            new NullableAnnotations(parameter.GetCustomAttributesData(), parameter.Member)
         );
 
     private static void AppendFlowAttributes(

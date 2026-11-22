@@ -30,7 +30,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
             BuildCacheArtifactRole.ProcessWorkingDirectory
         );
         BuildCacheArtifactDescriptor reusable = owner.Add("reusable", 3);
-        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(m_root, [owner.descriptor], new(long.MaxValue, 0));
+        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(m_root, [owner.descriptor], new BuildCachePolicy(long.MaxValue, 0));
         Assert.Equal(process.directory, Assert.Single(plan.candidates).directory);
         Assert.Equal(process.directory, Assert.Single((await plan.ExecuteAsync()).retired));
         Assert.True(Directory.Exists(reusable.directory));
@@ -47,7 +47,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
         BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(
             m_root,
             [owner.descriptor],
-            new(0, 0),
+            new BuildCachePolicy(0, 0),
             retireAll: true,
             targetID: "windows-x64"
         );
@@ -67,7 +67,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
         BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(
             m_root,
             [owner.descriptor],
-            new(0, 0),
+            new BuildCachePolicy(0, 0),
             retireAll: true,
             targetID: "windows-x64"
         );
@@ -202,7 +202,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
         BuildCacheArtifactDescriptor dependency = owner.Add("old-dependency", 6);
         BuildCacheArtifactDescriptor parent = owner.Add("new-parent", 8, [dependency.directory]);
         BuildArtifactManifest.Write(parent.directory, "parent", ["Outputs"]);
-        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(m_root, [owner.descriptor], new(13, 0));
+        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(m_root, [owner.descriptor], new BuildCachePolicy(13, 0));
         Assert.Equal(dependency.directory, Assert.Single(plan.candidates).directory);
         using BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(
             parent.directory,
@@ -303,7 +303,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
         Assert.Throws<TimeoutException>(() => BuildCacheCleanupPlan.Create(
             m_root,
             [owner.descriptor],
-            new(0, 0, TimeSpan.FromTicks(1)),
+            new BuildCachePolicy(0, 0, TimeSpan.FromTicks(1)),
             retireAll: true
         ));
         using var cancellation = new CancellationTokenSource();
@@ -367,7 +367,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
         OwnedCache owner = AddOwner("native");
         BuildCacheArtifactDescriptor artifact = owner.Add("generation", 3);
         owner.roots.Add(artifact.directory);
-        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(m_root, [owner.descriptor], new(0, 0));
+        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(m_root, [owner.descriptor], new BuildCachePolicy(0, 0));
         Assert.Equal(3, plan.totalBytes);
         Assert.Equal(3, plan.protectedBytes);
         Assert.Empty(plan.candidates);
@@ -392,7 +392,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
         => BuildCacheCleanupPlan.Create(
             m_root,
             m_owners.Select(static owner => owner.descriptor).ToArray(),
-            new(0, 0),
+            new BuildCachePolicy(0, 0),
             retireAll: true
         );
 

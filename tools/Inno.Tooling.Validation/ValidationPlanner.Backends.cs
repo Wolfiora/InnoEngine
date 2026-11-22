@@ -34,7 +34,7 @@ internal static partial class ValidationPlanner
     internal static async Task<ValidationPlan> BindBackendsAsync(
         ValidationPlan plan,
         string packages,
-        CancellationToken cancellation,
+        CancellationToken cancellationToken,
         string? evidence = null
     ) {
         if (plan.backendStore is null || plan.backendPackages is not null || plan.nativeDependencies is null)
@@ -155,7 +155,7 @@ internal static partial class ValidationPlanner
             BackendInputPlan expected = await BackendInputsAsync(
                 plan,
                 target,
-                cancellation,
+                cancellationToken,
                 selectionBytes,
                 configuration
             ).ConfigureAwait(false);
@@ -187,7 +187,7 @@ internal static partial class ValidationPlanner
         {
             ValidationResult[] certificates = JsonSerializer.Deserialize<ValidationResult[]>(File.ReadAllBytes(evidence))
                                               ?? throw new InvalidDataException("Missing backend test certification inventory.");
-            var selected = new List<ValidationResult>();
+            List<ValidationResult> selected = [];
             foreach (ValidationCheck check in bound.checks.Where(static check => (
                 check.kind == "test"
                 && check.reusable
@@ -216,7 +216,7 @@ internal static partial class ValidationPlanner
     internal static async Task<BackendInputPlan> BackendInputsAsync(
         ValidationPlan plan,
         string target,
-        CancellationToken cancellation,
+        CancellationToken cancellationToken,
         byte[]? selectionBytes = null,
         string? configuration = null
     ) {
@@ -233,7 +233,7 @@ internal static partial class ValidationPlanner
                 && plan.contexts[check.context].properties.GetValueOrDefault("Configuration") == configuration
             ))
         ) {
-            return new(plan.commit, target, configuration, new(StringComparer.Ordinal), [], [], missing, null);
+            return new(plan.commit, target, configuration, new Dictionary<string, string>(StringComparer.Ordinal), [], [], missing, null);
         }
         ValidationContext graph = configuration == plan.configuration
                                   ? plan.contexts["managed"]
@@ -267,7 +267,7 @@ internal static partial class ValidationPlanner
                     string? hostTarget = tool.GetProperty("TargetId").GetString();
                     string? toolConfiguration = tool.GetProperty("Configuration").GetString();
                     tools[project.path].Add(
-                        new(
+                        new BackendNativeProduct(
                             tool.GetProperty("Identity").GetString()!,
                             string.IsNullOrEmpty(hostTarget) ? plan.backendHost ?? target : hostTarget,
                             (string.IsNullOrEmpty(toolConfiguration) ? configuration : toolConfiguration).ToLowerInvariant()
@@ -335,7 +335,11 @@ internal static partial class ValidationPlanner
             }
         }
 
-        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveDirectoryAsync(plan.dotnet, plan.root, cancellation).ConfigureAwait(false);
+        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveDirectoryAsync(
+            plan.dotnet,
+            plan.root,
+            cancellationToken
+        ).ConfigureAwait(false);
         string sdkRoot = Path.GetDirectoryName(sdk.cliPath)!;
         var common = new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -359,7 +363,7 @@ internal static partial class ValidationPlanner
             "Roslyn/bincore/Microsoft.CodeAnalysis.CSharp.dll"
         }) {
             using FileStream file = File.OpenRead(Path.Combine(sdkRoot, compiler));
-            common[compiler] = Convert.ToHexStringLower(await SHA256.HashDataAsync(file, cancellation).ConfigureAwait(false));
+            common[compiler] = Convert.ToHexStringLower(await SHA256.HashDataAsync(file, cancellationToken).ConfigureAwait(false));
         }
         foreach (KeyValuePair<string, string> pair in plan.inputs.Where(static pair => (
             pair.Key is "global.json" or ".editorconfig" or "Directory.Packages.props"
@@ -373,7 +377,7 @@ internal static partial class ValidationPlanner
         var references = new Dictionary<string, string[]>(StringComparer.Ordinal);
         foreach (KeyValuePair<string, HashSet<string>> pair in owners)
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             var current = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (string source in pair.Value)
             {
@@ -454,7 +458,7 @@ internal static partial class ValidationPlanner
             ))) {
                 proofInputs[input.Key] = input.Value;
             }
-            productInputs.Add(owner, new(ValidationInputs.Identity(proofInputs), closure.Where(IsBackend).ToArray()));
+            productInputs.Add(owner, new BackendConsumerInputs(ValidationInputs.Identity(proofInputs), closure.Where(IsBackend).ToArray()));
         }
         return new(
             plan.commit,

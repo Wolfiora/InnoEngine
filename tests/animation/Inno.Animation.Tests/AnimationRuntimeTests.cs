@@ -91,7 +91,7 @@ public sealed class AnimationRuntimeTests
     {
         var dispatcher = new EventDispatcher();
         using EventHub hub = dispatcher.CreateHub();
-        var markers = new List<AnimationMarkerEvent>();
+        List<AnimationMarkerEvent> markers = [];
         using IDisposable subscription = hub.Listen<AnimationMarkerEvent>(markers.Add);
         using var runtime = new AnimationRuntime(dispatcher, new RecordingSink());
         AnimationPlaybackHandle handle = runtime.Play(CreateClip(), AnimationTarget.samplingOnly);

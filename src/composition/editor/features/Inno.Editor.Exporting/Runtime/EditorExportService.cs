@@ -37,7 +37,8 @@ public sealed class EditorExportService : EditorModule
         BuildPipeline buildPipeline,
         LogRouter logs
     ) {
-        m_buildPipeline = buildPipeline ?? throw new ArgumentNullException(nameof(buildPipeline));
+        ArgumentNullException.ThrowIfNull(buildPipeline);
+        m_buildPipeline = buildPipeline;
         ArgumentNullException.ThrowIfNull(logs);
         m_log = logs.CreateLogger<EditorExportService>();
     }

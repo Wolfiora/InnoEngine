@@ -223,7 +223,7 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
         try
         {
             ThrowIfDisposed();
-            var values = new List<StorageKey>();
+            List<StorageKey> values = [];
             EnumerateDirectory(new DirectoryInfo(m_root), values, cancellationToken);
             IEnumerable<StorageKey> filtered = values;
             if (prefix is { } requestedPrefix)

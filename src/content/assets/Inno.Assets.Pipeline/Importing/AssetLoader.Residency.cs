@@ -158,7 +158,7 @@ public sealed partial class AssetLoader
     [MethodImpl(MethodImplOptions.NoInlining)]
     private SweepCandidate[] DetachSweepCandidatesLocked()
     {
-        var result = new List<SweepCandidate>();
+        List<SweepCandidate> result = [];
         foreach (AssetRecord record in m_recordsByPath.Values)
         {
             if (record.asset is null)

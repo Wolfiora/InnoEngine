@@ -59,7 +59,7 @@ public static partial class BuildApplication
                 case "plugin":
                 case "scripts":
                 case "import-sample":
-                    return await ProjectBuildWorkflow.RunAsync(arguments, cancellationToken);
+                    return await ProjectBuildWorkflow.RunAsync(arguments, cancellationToken).ConfigureAwait(false);
                 case "verify":
                     return ArchitectureValidator.Execute(options, cancellationToken);
                 case "style":
@@ -67,7 +67,7 @@ public static partial class BuildApplication
                 case "docs":
                     if (options.Length != 0 && options[0] == "export-plan")
                     {
-                        return await DocumentationReferences.PlanExportAsync(options[1..], cancellationToken);
+                        return await DocumentationReferences.PlanExportAsync(options[1..], cancellationToken).ConfigureAwait(false);
                     }
                     if (options.Length != 0 && options[0] == "export-projects")
                     {
@@ -79,21 +79,24 @@ public static partial class BuildApplication
                     }
                     if (options.Length > 0 && options[0] == "validate-api")
                     {
-                        return await DocumentationReferences.ValidateApiAsync(options[1..], cancellationToken);
+                        return await DocumentationReferences.ValidateApiAsync(options[1..], cancellationToken).ConfigureAwait(false);
                     }
                     if (options.Length > 0 && options[0] == "validate-examples")
                     {
-                        return await DocumentationExamples.ExecuteAsync(options[1..], cancellationToken);
+                        return await DocumentationExamples.ExecuteAsync(options[1..], cancellationToken).ConfigureAwait(false);
                     }
                     if (options.Length > 0 && options[0] == "example-plan")
                     {
-                        return await DocumentationExamples.ExecuteAsync([..options[1..], "--operation", "plan"], cancellationToken);
+                        return await DocumentationExamples.ExecuteAsync(
+                            [..options[1..], "--operation", "plan"],
+                            cancellationToken
+                        ).ConfigureAwait(false);
                     }
-                    return await ToolingCommand.ExecuteAsync(options, cancellationToken);
+                    return await ToolingCommand.ExecuteAsync(options, cancellationToken).ConfigureAwait(false);
                 case "validate":
-                    return await ValidationCommand.ExecuteAsync(options, cancellationToken);
+                    return await ValidationCommand.ExecuteAsync(options, cancellationToken).ConfigureAwait(false);
                 case "verify-native":
-                    return await NativeBindingsVerification.RunAsync(options, cancellationToken);
+                    return await NativeBindingsVerification.RunAsync(options, cancellationToken).ConfigureAwait(false);
                 case "native-dependencies":
                 case "support":
                 case "editor":
@@ -129,25 +132,25 @@ public static partial class BuildApplication
                     switch (command)
                     {
                         case "native-dependencies":
-                            await NativeDependenciesCommand.RunAsync(context, parsed, cancellationToken);
+                            await NativeDependenciesCommand.RunAsync(context, parsed, cancellationToken).ConfigureAwait(false);
                             break;
                         case "support":
-                            await SupportBuildCommand.RunAsync(context, parsed, cancellationToken);
+                            await SupportBuildCommand.RunAsync(context, parsed, cancellationToken).ConfigureAwait(false);
                             break;
                         case "editor":
-                            await EditorBuildCommand.RunAsync(context, parsed, cancellationToken);
+                            await EditorBuildCommand.RunAsync(context, parsed, cancellationToken).ConfigureAwait(false);
                             break;
                         case "clean":
-                            await CleanCommand.RunAsync(context, parsed, cancellationToken);
+                            await CleanCommand.RunAsync(context, parsed, cancellationToken).ConfigureAwait(false);
                             break;
                         case "bindings":
-                            await BindingCommand.RunAsync(context, parsed, cancellationToken);
+                            await BindingCommand.RunAsync(context, parsed, cancellationToken).ConfigureAwait(false);
                             break;
                         case "support-pack":
-                            await SupportPackCommand.RunAsync(context, parsed, cancellationToken);
+                            await SupportPackCommand.RunAsync(context, parsed, cancellationToken).ConfigureAwait(false);
                             break;
                         case "shader":
-                            await ShaderCommand.RunAsync(context, parsed, cancellationToken);
+                            await ShaderCommand.RunAsync(context, parsed, cancellationToken).ConfigureAwait(false);
                             break;
                     }
                     if (command is "support" or "editor" or "support-pack" or "bindings" or "shader")

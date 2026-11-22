@@ -296,7 +296,7 @@ internal sealed class MaterialSelectionDrawer(
                 ) {
                     continue;
                 }
-                var values = new List<MaterialValue>();
+                List<MaterialValue> values = [];
                 ShaderParameterPresentation presentation = owner.Presentation(first.shader, property.id, out string presentationError);
                 if (presentationError.Length != 0)
                 {
@@ -458,14 +458,14 @@ internal sealed class MaterialSelectionDrawer(
     {
         if (!interactions.TryGetModule<MaterialDocuments>(out MaterialDocuments? materials) || materials is null)
         {
-            return Array.Empty<Guid>();
+            return [];
         }
         var ids = new List<Guid>(target.identities.Count);
         var entries = new List<AssetFileEntry>(target.identities.Count);
         target.CopyTargets(interactions, entries);
         if (entries.Count != target.identities.Count)
         {
-            return Array.Empty<Guid>();
+            return [];
         }
         entries.Reverse();
         foreach (AssetFileEntry entry in entries)
@@ -475,7 +475,7 @@ internal sealed class MaterialSelectionDrawer(
                 || !materials.assets.TryGetInfo(entry.assetPath, out AssetInfo? info)
                 || info is null
             ) {
-                return Array.Empty<Guid>();
+                return [];
             }
             ids.Add(info.persistentID);
         }

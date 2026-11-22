@@ -123,7 +123,7 @@ internal static class ScriptApiReferenceBuilder
             .Where(export => !baseTypes.Contains(export.type))
             .OrderBy(static export => export.type.FullName, StringComparer.Ordinal)
             .ToArray();
-        var ideReferencePaths = new List<string>();
+        List<string> ideReferencePaths = [];
         if (baseReferences is not null)
         {
             ideReferencePaths.AddRange(baseReferences.ideReferencePaths);

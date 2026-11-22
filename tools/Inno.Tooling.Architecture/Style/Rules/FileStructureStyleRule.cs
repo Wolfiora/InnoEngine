@@ -27,7 +27,7 @@ internal sealed class FileStructureStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         int count = source.text.Lines.Count;
         int leading = 0;
         while (leading < count - 1 && StyleLines.IsBlank(source, leading))

@@ -13,7 +13,7 @@ public sealed class EventDispatchObservationTests
         var dispatcher = new EventDispatcher();
         using EventHub ui = dispatcher.CreateHub(100);
         using EventHub game = dispatcher.CreateHub();
-        var sequence = new List<string>();
+        List<string> sequence = [];
         using IDisposable uiSubscription = ui.Listen<TestEvent>(evnt =>
         {
             sequence.Add("ui");
@@ -58,7 +58,7 @@ public sealed class EventDispatchObservationTests
         var dispatcher = new EventDispatcher();
         var first = new TestEvent();
         var second = new TestEvent();
-        var observed = new List<Event>();
+        List<Event> observed = [];
         dispatcher.dispatched += evnt =>
         {
             observed.Add(evnt);

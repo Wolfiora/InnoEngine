@@ -34,7 +34,7 @@ internal sealed class UsingOrderStyleRule : StyleRule
     }
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
-        => Expected(source) is { } expected ? [new(expected.start, expected.end, expected.text)] : [];
+        => Expected(source) is { } expected ? [new StyleEdit(expected.start, expected.end, expected.text)] : [];
 
     // The span of the using block and the text it must have, or null when the block is already in order
     // or holds comments or directives that an automatic reorder could misplace.
@@ -50,7 +50,7 @@ internal sealed class UsingOrderStyleRule : StyleRule
             if (!StyleLayout.IsBlank(source.content, usings[index - 1].Span.End, usings[index].SpanStart)) return null;
         }
 
-        var lines = new List<string>();
+        List<string> lines = [];
         int previousGroup = -1;
         foreach (UsingDirectiveSyntax directive in usings.OrderBy(Group).ThenBy(Tier).ThenBy(Key, StringComparer.Ordinal))
         {

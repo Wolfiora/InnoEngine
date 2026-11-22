@@ -18,27 +18,30 @@ public sealed class ShaderResourceIrTests
     public void AggregateNamesCannotImpersonateGpuScalarVectorOrResourceTypes()
     {
         var builder = new ShaderIrBuilder();
-        ShaderSourceType impostor = ShaderSourceType.Structure("uint", [new("field", ShaderSourceType.Atomic("uint"))]);
+        ShaderSourceType impostor = ShaderSourceType.Structure("uint", [new ShaderSourceField("field", ShaderSourceType.Atomic("uint"))]);
         ShaderIrValue value = builder.Construct(impostor, builder.Constant(0u));
         ShaderIrValue storage = builder.Input(
             "storage",
             ShaderSourceType.Storage(ShaderStorageType.Buffer(impostor, RenderStorageAccess.ReadWrite))
         );
         Assert.Throws<ArgumentException>(() => builder.AtomicAddStorage(storage, builder.Constant(0u), value));
-        ShaderSourceType textureType = ShaderSourceType.Structure("sampled-texture2d", [new("field", ShaderSourceType.Atomic("float"))]);
+        ShaderSourceType textureType = ShaderSourceType.Structure(
+            "sampled-texture2d",
+            [new ShaderSourceField("field", ShaderSourceType.Atomic("float"))]
+        );
         ShaderIrValue texture = builder.Input("texture", textureType);
         ShaderIrValue uv = builder.Construct(ShaderSourceType.Atomic("float2"), builder.Constant(0f), builder.Constant(0f));
         Assert.Throws<ArgumentException>(() => builder.Sample(texture, uv));
         var color = new ShaderIrBuilder();
         ShaderIrValue fakeColor = color.Construct(
-            ShaderSourceType.Structure("float4", [new("field", ShaderSourceType.Atomic("float"))]),
+            ShaderSourceType.Structure("float4", [new ShaderSourceField("field", ShaderSourceType.Atomic("float"))]),
             color.Constant(1f)
         );
         Assert.Throws<ArgumentException>(() => new ShaderIrStage(
             ShaderStage.Fragment,
             color.Build(new Dictionary<string, ShaderIrValue> { ["color"] = fakeColor }),
             [],
-            [new("color", ShaderIrOutputKind.Color)]
+            [new ShaderIrStageOutput("color", ShaderIrOutputKind.Color)]
         ));
     }
 
@@ -106,9 +109,9 @@ public sealed class ShaderResourceIrTests
             ShaderStage.Compute,
             builder.Build(new Dictionary<string, ShaderIrValue>()),
             [
-                new("read", read.type, ShaderIrInputKind.Uniform),
-                new("write", write.type, ShaderIrInputKind.Storage),
-                new("image", image.type, ShaderIrInputKind.Storage, location: 1)
+                new ShaderIrStageInput("read", read.type, ShaderIrInputKind.Uniform),
+                new ShaderIrStageInput("write", write.type, ShaderIrInputKind.Storage),
+                new ShaderIrStageInput("image", image.type, ShaderIrInputKind.Storage, location: 1)
             ],
             []
         ));
@@ -124,7 +127,7 @@ public sealed class ShaderResourceIrTests
         Assert.Throws<ArgumentException>(() => new ShaderIrStage(
             ShaderStage.Compute,
             builder.Build(new Dictionary<string, ShaderIrValue>()),
-            [new("texture", texture.type, ShaderIrInputKind.SampledTexture)],
+            [new ShaderIrStageInput("texture", texture.type, ShaderIrInputKind.SampledTexture)],
             []
         ));
         Assert.Throws<ArgumentException>(() => builder.Sample(texture, builder.Constant(0f)));
@@ -150,7 +153,10 @@ public sealed class ShaderResourceIrTests
         var stage = new ShaderIrStage(
             ShaderStage.Compute,
             builder.Build(new Dictionary<string, ShaderIrValue>()),
-            [new("source", source.type, ShaderIrInputKind.Storage), new("target", target.type, ShaderIrInputKind.Storage, location: 1)],
+            [
+                new ShaderIrStageInput("source", source.type, ShaderIrInputKind.Storage),
+                new ShaderIrStageInput("target", target.type, ShaderIrInputKind.Storage, location: 1)
+            ],
             [],
             8
         );
@@ -185,7 +191,7 @@ public sealed class ShaderResourceIrTests
             var stage = new ShaderIrStage(
                 ShaderStage.Compute,
                 builder.Build(new Dictionary<string, ShaderIrValue>()),
-                [new("image", type, ShaderIrInputKind.Storage)],
+                [new ShaderIrStageInput("image", type, ShaderIrInputKind.Storage)],
                 []
             );
             Success(await CompileAsync(stage));
@@ -211,11 +217,11 @@ public sealed class ShaderResourceIrTests
             builder.Discard(builder.Binary(ShaderIrOperation.LessThan, builder.Extract(sampled, 3), builder.Constant(0.01f)));
             Success(
                 await CompileAsync(
-                    new(
+                    new ShaderIrStage(
                         ShaderStage.Fragment,
                         builder.Build(new Dictionary<string, ShaderIrValue> { ["color"] = color }),
-                        [new("texture", texture.type, ShaderIrInputKind.SampledTexture)],
-                        [new("color", ShaderIrOutputKind.Color)]
+                        [new ShaderIrStageInput("texture", texture.type, ShaderIrInputKind.SampledTexture)],
+                        [new ShaderIrStageOutput("color", ShaderIrOutputKind.Color)]
                     )
                 )
             );

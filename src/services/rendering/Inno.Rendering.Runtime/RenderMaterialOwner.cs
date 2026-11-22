@@ -197,7 +197,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
                         }
                     }
                 }
-                required.Add(new(selected.pass.name, expectedKind, vertexLayout));
+                required.Add(new ProgramLayout(selected.pass.name, expectedKind, vertexLayout));
                 if (count - (publication?.programs.Count ?? 0) + required.Count > m_capacity)
                 {
                     throw new InvalidOperationException("Shader program publication exceeds the configured program capacity.");
@@ -293,7 +293,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
             ProgramEntry? program = null;
             try
             {
-                program = CreateProgram(artifact, new(pass.name, pass.programKind, null));
+                program = CreateProgram(artifact, new ProgramLayout(pass.name, pass.programKind, null));
             }
             finally
             {
@@ -616,7 +616,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
         out MaterialBinding[] bindings,
         IDiagnosticReporter diagnostics
     ) {
-        var result = new List<MaterialBinding>();
+        List<MaterialBinding> result = [];
         Dictionary<ShaderPropertyID, ShaderPropertyDefinition> definitions = publication.properties;
         foreach (ShaderInterfaceBinding binding in shaderInterface.bindings)
         {

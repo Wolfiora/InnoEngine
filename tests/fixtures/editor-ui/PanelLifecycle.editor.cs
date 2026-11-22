@@ -24,8 +24,7 @@ public sealed class PanelLifecycle(
     IEditorSceneWorkspace workspace
 ) : EditorModule
 {
-    private const string C_RESOURCE_COLUMNS =
-        "managed-bytes-after-full-gc\tprivate-bytes\tselection-count\tscene-count\thistory-resident-bytes\thistory-disk-bytes\tpending-events"
+    private const string C_RESOURCE_COLUMNS = "managed-bytes-after-full-gc\tprivate-bytes\tselection-count\tscene-count\thistory-resident-bytes\thistory-disk-bytes\tpending-events"
         + "\tgc-index\tgc-generation\tgc-compacted\tgc-concurrent\tgc-heap-bytes\tgc-fragmented-bytes\testimated-managed-bytes";
 
     private readonly List<string> m_resources = ["completed-cycles\t" + C_RESOURCE_COLUMNS];

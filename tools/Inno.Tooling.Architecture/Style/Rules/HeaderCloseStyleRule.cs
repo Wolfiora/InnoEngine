@@ -29,7 +29,7 @@ internal sealed class HeaderCloseStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         foreach (SyntaxNode node in source.root.DescendantNodes())
         {
             if (StyleLayout.Header(node) is not { } header || header.open.IsMissing || header.close.IsMissing) continue;
@@ -46,13 +46,13 @@ internal sealed class HeaderCloseStyleRule : StyleRule
                     start--;
                 }
 
-                edits.Add(new(start, header.close.SpanStart, "\n" + new string(' ', indentation)));
+                edits.Add(new StyleEdit(start, header.close.SpanStart, "\n" + new string(' ', indentation)));
             }
 
             string gap = source.content[header.close.Span.End..brace.SpanStart];
             if (gap != " " && StyleLayout.IsBlank(gap, 0, gap.Length))
             {
-                edits.Add(new(header.close.Span.End, brace.SpanStart, " "));
+                edits.Add(new StyleEdit(header.close.Span.End, brace.SpanStart, " "));
             }
         }
 

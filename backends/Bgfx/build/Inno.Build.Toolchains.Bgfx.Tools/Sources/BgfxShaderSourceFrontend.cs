@@ -107,7 +107,7 @@ internal sealed class BgfxSourceDeclarationParser(
                     {
                         Fail("The exported function must be declared in its selected source file, not an include.", name);
                     }
-                    m_exports.Add(new(name.text, type, parameters, name.position));
+                    m_exports.Add(new ShaderSourceFunction(name.text, type, parameters, name.position));
                 }
                 continue;
             }
@@ -146,7 +146,7 @@ internal sealed class BgfxSourceDeclarationParser(
                 m_exports.Count == 0
                 ? $"Source does not define the selected public function '{request.entryPoint}'."
                 : $"Public function '{request.entryPoint}' is overloaded or defined more than once; select an unambiguous export.",
-                new(request.source.assetPath, 1, 1)
+                new ShaderSourcePosition(request.source.assetPath, 1, 1)
             );
         }
         ValidateExplicitInterfaces();
@@ -155,7 +155,7 @@ internal sealed class BgfxSourceDeclarationParser(
 
     private List<ShaderSourceParameter> ReadParameters()
     {
-        var parameters = new List<ShaderSourceParameter>();
+        List<ShaderSourceParameter> parameters = [];
         if (Match(")"))
         {
             return parameters;
@@ -207,7 +207,7 @@ internal sealed class BgfxSourceDeclarationParser(
             {
                 Fail("Duplicate public parameter name.", name);
             }
-            parameters.Add(new(name.text, type, direction));
+            parameters.Add(new ShaderSourceParameter(name.text, type, direction));
         }
         while (Match(","));
         Require(")");
@@ -219,7 +219,7 @@ internal sealed class BgfxSourceDeclarationParser(
         Require("struct");
         BgfxSourceToken name = ReadIdentifier();
         Require("{");
-        var fields = new List<ShaderSourceField>();
+        List<ShaderSourceField> fields = [];
         while (!Match("}"))
         {
             while (m_offset < tokens.Count && IsQualifier(tokens[m_offset].text))
@@ -239,7 +239,7 @@ internal sealed class BgfxSourceDeclarationParser(
                 {
                     Fail("Duplicate structure member name.", field);
                 }
-                fields.Add(new(field.text, fieldType));
+                fields.Add(new ShaderSourceField(field.text, fieldType));
             }
             while (Match(","));
             Require(";");
@@ -296,7 +296,7 @@ internal sealed class BgfxSourceDeclarationParser(
 
     private ShaderSourceType ReadArray(ShaderSourceType element)
     {
-        var lengths = new List<int>();
+        List<int> lengths = [];
         while (Match("["))
         {
             BgfxSourceToken start = Current();
@@ -304,7 +304,7 @@ internal sealed class BgfxSourceDeclarationParser(
             {
                 Fail("An array cannot contain void values.", start);
             }
-            var expression = new List<BgfxSourceToken>();
+            List<BgfxSourceToken> expression = [];
             while (!Match("]"))
             {
                 expression.Add(Next());
@@ -331,7 +331,7 @@ internal sealed class BgfxSourceDeclarationParser(
         {
             Fail("Expected a fixed integer expression.", location);
         }
-        var values = new List<BgfxSourceToken>();
+        List<BgfxSourceToken> values = [];
         foreach (BgfxSourceToken token in expression)
         {
             if (!token.isIdentifier)
@@ -343,20 +343,20 @@ internal sealed class BgfxSourceDeclarationParser(
             {
                 Fail($"Unresolved array constant '{token.text}'.", token);
             }
-            values.Add(new("(", token.position));
+            values.Add(new BgfxSourceToken("(", token.position));
             foreach (BgfxSourceToken literal in BgfxSourceLexer.Tokenize(
-                new(token.position.assetPath, constant.ToString(CultureInfo.InvariantCulture))
+                new ShaderSourceFile(token.position.assetPath, constant.ToString(CultureInfo.InvariantCulture))
             )) {
                 values.Add(literal with { position = token.position });
             }
-            values.Add(new(")", token.position));
+            values.Add(new BgfxSourceToken(")", token.position));
         }
         return new BgfxPreprocessorExpression(values).Evaluate();
     }
 
     private List<BgfxSourceToken> ReadUntilSemicolon()
     {
-        var result = new List<BgfxSourceToken>();
+        List<BgfxSourceToken> result = [];
         int braces = 0;
         int parentheses = 0;
         while (true)
@@ -388,7 +388,7 @@ internal sealed class BgfxSourceDeclarationParser(
 
     private List<BgfxSourceToken> ReadBody()
     {
-        var body = new List<BgfxSourceToken>();
+        List<BgfxSourceToken> body = [];
         int nesting = 1;
         while (nesting != 0)
         {
@@ -447,7 +447,7 @@ internal sealed class BgfxSourceDeclarationParser(
             throw new BgfxSourceSyntaxException(
                 "Unexpected end of source declaration.",
                 tokens.Count == 0
-                ? new(request.source.assetPath, 1, 1)
+                ? new ShaderSourcePosition(request.source.assetPath, 1, 1)
                 : tokens[^1].position
             );
         }

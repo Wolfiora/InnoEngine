@@ -33,14 +33,18 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         Action extensionsChanged
     ) : base(types)
     {
-        m_context = context ?? throw new ArgumentNullException(nameof(context));
-        m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-        m_log = log ?? throw new ArgumentNullException(nameof(log));
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(interactions);
+        ArgumentNullException.ThrowIfNull(log);
+        ArgumentNullException.ThrowIfNull(extensionsChanged);
+        m_context = context;
+        m_interactions = interactions;
+        m_log = log;
         ArgumentNullException.ThrowIfNull(hostServices);
         m_hostServices = hostServices
             .Select(static service => service ?? throw new ArgumentException("Host services cannot contain null.", nameof(hostServices)))
             .ToArray();
-        m_extensionsChanged = extensionsChanged ?? throw new ArgumentNullException(nameof(extensionsChanged));
+        m_extensionsChanged = extensionsChanged;
         m_state = new EditorExtensionStateStore(context, log);
     }
 
@@ -779,7 +783,7 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
 
     private void ValidateShortcuts(ActionRegistration[] actions)
     {
-        var shortcuts = new List<ShortcutValidationEntry>();
+        List<ShortcutValidationEntry> shortcuts = [];
         for (int actionIndex = 0; actionIndex < actions.Length; actionIndex++)
         {
             ActionRegistration registration = actions[actionIndex];
@@ -1048,7 +1052,7 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         IReadOnlyList<ModuleRegistration> modules,
         IReadOnlyList<PanelRegistration> panels
     ) {
-        var result = new List<StateRegistration>();
+        List<StateRegistration> result = [];
         for (int i = 0; i < modules.Count; i++)
         {
             ModuleRegistration module = modules[i];

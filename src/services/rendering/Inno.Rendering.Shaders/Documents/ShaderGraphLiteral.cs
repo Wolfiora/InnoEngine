@@ -33,7 +33,7 @@ public sealed class ShaderGraphLiteral : ISerializable
         {
             throw new InvalidOperationException("The input default must retain a type and scalar bits.");
         }
-        var scalars = new List<string>();
+        List<string> scalars = [];
         Flatten(type.CreateType(), scalars, 0);
         if (scalarBits.Length != scalars.Count)
         {
@@ -118,7 +118,7 @@ public sealed class ShaderGraphLiteral : ISerializable
     public static ShaderGraphLiteral Zero(ShaderSourceType type)
     {
         ArgumentNullException.ThrowIfNull(type);
-        var scalars = new List<string>();
+        List<string> scalars = [];
         Flatten(type, scalars, 0);
         return new() { type = ShaderGraphType.Capture(type), scalarBits = new uint[scalars.Count] };
     }

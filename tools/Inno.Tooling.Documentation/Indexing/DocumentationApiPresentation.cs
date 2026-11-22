@@ -22,7 +22,7 @@ internal static class DocumentationApiPresentation
         DocumentationApiFact fact,
         IReadOnlyDictionary<string, DocumentationApiFact[]> facts
     ) {
-        var names = new List<string>();
+        List<string> names = [];
         var visited = new HashSet<string>(StringComparer.Ordinal);
         while (true)
         {

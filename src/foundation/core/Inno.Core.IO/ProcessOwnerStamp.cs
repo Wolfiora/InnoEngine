@@ -27,10 +27,7 @@ public readonly record struct ProcessOwnerStamp
     ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(startedUtcTicks);
-        if (startedUtcTicks > DateTime.MaxValue.Ticks)
-        {
-            throw new ArgumentOutOfRangeException(nameof(startedUtcTicks));
-        }
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(startedUtcTicks, DateTime.MaxValue.Ticks);
         this.processId = processId;
         this.startedUtcTicks = startedUtcTicks;
     }

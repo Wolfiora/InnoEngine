@@ -233,7 +233,7 @@ internal sealed class DocumentationSourceModels
 
     private static string? FindProjectDirectory(string path)
     {
-        DirectoryInfo? directory = new(Path.GetDirectoryName(path)!);
+        var directory = new DirectoryInfo(Path.GetDirectoryName(path)!);
         while (directory is not null)
         {
             if (Directory.EnumerateFiles(directory.FullName, "*.csproj").Any())

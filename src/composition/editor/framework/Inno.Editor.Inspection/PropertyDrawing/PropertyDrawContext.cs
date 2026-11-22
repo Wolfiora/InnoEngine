@@ -39,10 +39,13 @@ public sealed class PropertyDrawContext
         SerializedPropertyRenderer renderer,
         bool hdrColor = false
     ) {
+        ArgumentNullException.ThrowIfNull(interactions);
+        ArgumentNullException.ThrowIfNull(edits);
+        ArgumentNullException.ThrowIfNull(owner);
         this.editorContext = editorContext;
-        this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-        m_edits = edits ?? throw new ArgumentNullException(nameof(edits));
-        m_owner = owner ?? throw new ArgumentNullException(nameof(owner));
+        this.interactions = interactions;
+        m_edits = edits;
+        m_owner = owner;
         m_rootPropertyName = string.IsNullOrWhiteSpace(rootPropertyName)
                              ? throw new ArgumentException(
                                  "The root property name is required.",

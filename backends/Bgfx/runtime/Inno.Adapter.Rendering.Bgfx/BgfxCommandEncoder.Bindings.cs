@@ -229,10 +229,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
             );
         }
         ArgumentOutOfRangeException.ThrowIfNegative(mipLevel);
-        if (mipLevel >= descriptor.mipCount)
-        {
-            throw new ArgumentOutOfRangeException(nameof(mipLevel));
-        }
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(mipLevel, descriptor.mipCount);
         if (!m_device.capabilities.SupportsStorage(descriptor.format, resource.descriptor.storageAccess))
         {
             throw new NotSupportedException(

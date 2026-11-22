@@ -36,7 +36,7 @@ internal sealed class LambdaBodyStyleRule : StyleRule
     {
         IReadOnlyList<TextSpan> protectedSpans = source.ProtectedSpans();
         LambdaExpressionSyntax[] violations = Violations(source).ToArray();
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         foreach (LambdaExpressionSyntax lambda in violations)
         {
             // Innermost lambdas first: an outer body is wrapped once its content has settled.
@@ -53,7 +53,7 @@ internal sealed class LambdaBodyStyleRule : StyleRule
             int inner = indentation + StyleLayout.C_INDENT;
             int column = source.Column(first.SpanStart);
             bool isSameLine = source.LineNumber(arrow.SpanStart) == firstLine;
-            edits.Add(new(arrow.Span.End, first.SpanStart, " (\n" + new string(' ', inner)));
+            edits.Add(new StyleEdit(arrow.Span.End, first.SpanStart, " (\n" + new string(' ', inner)));
             for (int line = firstLine + 1; line <= lastLine; line++)
             {
                 // A line aligned with the body follows it; a line indented from its statement moves one level.
@@ -63,7 +63,7 @@ internal sealed class LambdaBodyStyleRule : StyleRule
                 if (shift is not null) edits.Add(shift);
             }
 
-            edits.Add(new(last.Span.End, last.Span.End, "\n" + new string(' ', indentation) + ")"));
+            edits.Add(new StyleEdit(last.Span.End, last.Span.End, "\n" + new string(' ', indentation) + ")"));
         }
 
         return edits;

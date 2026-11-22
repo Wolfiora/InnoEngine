@@ -281,7 +281,7 @@ public sealed class DocumentationSnapshotTests : IDisposable
         Assert.Equal("csharp", page.codeBlocks[1].language);
         Assert.True(page.codeBlocks[1].line > page.codeBlocks[0].line);
         Assert.Equal("Unverified", catalog.sourceApiStatus);
-        DocumentationResult result = await snapshot.QueryAsync(new("symbol", C_SYMBOL, "Inno.Probe", "host-runtime"));
+        DocumentationResult result = await snapshot.QueryAsync(new DocumentationRequest("symbol", C_SYMBOL, "Inno.Probe", "host-runtime"));
         Assert.Contains("caller retains ownership", Assert.Single(result.hits).text);
         Assert.DoesNotContain("UnrelatedExample", Assert.Single(result.hits).text);
         Assert.Single(result.continuations);
@@ -299,7 +299,7 @@ public sealed class DocumentationSnapshotTests : IDisposable
         await Assert.ThrowsAsync<InvalidDataException>(() => IndexAsync());
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
         Assert.Equal(initial.snapshot, snapshot.identity);
-        Assert.Equal("Missing", (await snapshot.QueryAsync(new("read", "unsafe"))).status);
+        Assert.Equal("Missing", (await snapshot.QueryAsync(new DocumentationRequest("read", "unsafe"))).status);
     }
 
     [Fact]
@@ -319,9 +319,9 @@ public sealed class DocumentationSnapshotTests : IDisposable
         );
         await IndexAsync();
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
-        DocumentationResult result = await snapshot.QueryAsync(new("search", "WriteOnly"));
+        DocumentationResult result = await snapshot.QueryAsync(new DocumentationRequest("search", "WriteOnly"));
         Assert.Equal("writeonly", Assert.Single(result.hits).section);
-        DocumentationResult exact = await snapshot.QueryAsync(new("search", "M:Inno.Probe.WriteOnly"));
+        DocumentationResult exact = await snapshot.QueryAsync(new DocumentationRequest("search", "M:Inno.Probe.WriteOnly"));
         Assert.Equal("M:Inno.Probe.WriteOnly", Assert.Single(exact.hits).symbol);
     }
 
@@ -370,11 +370,11 @@ public sealed class DocumentationSnapshotTests : IDisposable
         Dictionary<string, string> before = Files();
         Directory.Move(source, Path.Combine(m_root, "unavailable-source"));
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
-        DocumentationResult result = await snapshot.QueryAsync(new("search", "ProbeStyle"));
+        DocumentationResult result = await snapshot.QueryAsync(new DocumentationRequest("search", "ProbeStyle"));
         Assert.Equal("Found", result.status);
         Assert.Equal("probe", result.hits[0].pageId);
         Assert.All(result.hits, hit => Assert.Equal("Excerpt", hit.completeness));
-        DocumentationResult read = await snapshot.QueryAsync(new("read", "probe", section: "ownership"));
+        DocumentationResult read = await snapshot.QueryAsync(new DocumentationRequest("read", "probe", section: "ownership"));
         Assert.Contains("final consumer", read.hits.Single().text);
         Assert.Equal("Unverified", read.sourceApiStatus);
         Assert.Equal(before.OrderBy(pair => pair.Key), Files().OrderBy(pair => pair.Key));
@@ -392,8 +392,8 @@ public sealed class DocumentationSnapshotTests : IDisposable
         DocumentationResult updated = await IndexAsync();
         Assert.NotEqual(indexed.snapshot, updated.snapshot);
         using DocumentationSnapshot current = await DocumentationStore.OpenAsync(cache);
-        Assert.Contains("Borrow", (await old.QueryAsync(new("read", "probe"))).hits.Single().text);
-        Assert.Contains("Retain", (await current.QueryAsync(new("read", "probe"))).hits.Single().text);
+        Assert.Contains("Borrow", (await old.QueryAsync(new DocumentationRequest("read", "probe"))).hits.Single().text);
+        Assert.Contains("Retain", (await current.QueryAsync(new DocumentationRequest("read", "probe"))).hits.Single().text);
     }
 
     [Fact]
@@ -448,7 +448,7 @@ public sealed class DocumentationSnapshotTests : IDisposable
             Assert.All(payloads, path => Assert.Equal(timestamps[path], File.GetLastWriteTimeUtc(path)));
         }
         using DocumentationSnapshot current = await DocumentationStore.OpenAsync(cache);
-        Assert.Equal("Found", (await current.QueryAsync(new("read", "probe"))).status);
+        Assert.Equal("Found", (await current.QueryAsync(new DocumentationRequest("read", "probe"))).status);
     }
 
     [Fact]
@@ -457,20 +457,22 @@ public sealed class DocumentationSnapshotTests : IDisposable
         await IndexAsync();
         using (DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache))
         {
-            DocumentationResult symbol = await snapshot.QueryAsync(new("symbol", C_SYMBOL, "Inno.Probe", "host-runtime"));
+            DocumentationResult symbol = await snapshot.QueryAsync(
+                new DocumentationRequest("symbol", C_SYMBOL, "Inno.Probe", "host-runtime")
+            );
             Assert.Equal("Partial", symbol.status);
             Assert.Contains("Read(string key)", symbol.hits.Single().text);
             Assert.Contains(symbol.continuations, next => next.pageId == "probe" && next.section == "ownership");
-            DocumentationResult resource = await snapshot.QueryAsync(new("resource", symbol.hits.Single().resource));
+            DocumentationResult resource = await snapshot.QueryAsync(new DocumentationRequest("resource", symbol.hits.Single().resource));
             Assert.Equal(symbol.hits.Single().text, resource.hits.Single().text);
         }
         Write("content/en/script.md", Api("probe-script", "runtime-script"));
         await IndexAsync();
         using DocumentationSnapshot updated = await DocumentationStore.OpenAsync(cache);
-        DocumentationResult ambiguous = await updated.QueryAsync(new("symbol", C_SYMBOL, "Inno.Probe"));
+        DocumentationResult ambiguous = await updated.QueryAsync(new DocumentationRequest("symbol", C_SYMBOL, "Inno.Probe"));
         Assert.Equal("Ambiguous", ambiguous.status);
         Assert.Equal(2, ambiguous.hits.Count);
-        Assert.Equal("Ambiguous", (await updated.QueryAsync(new("symbol", "Read", "Inno.Probe"))).status);
+        Assert.Equal("Ambiguous", (await updated.QueryAsync(new DocumentationRequest("symbol", "Read", "Inno.Probe"))).status);
     }
 
     [Fact]
@@ -478,16 +480,18 @@ public sealed class DocumentationSnapshotTests : IDisposable
     {
         await IndexAsync();
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
-        Assert.Equal("Empty", (await snapshot.QueryAsync(new("search", "NoSuchConcept"))).status);
-        Assert.Equal("Missing", (await snapshot.QueryAsync(new("read", "../../private.md"))).status);
-        Assert.Equal("Missing", (await snapshot.QueryAsync(new("symbol", "M:Missing"))).status);
-        Assert.Equal("Found", (await snapshot.QueryAsync(new("search", "控制台颜色"))).status);
+        Assert.Equal("Empty", (await snapshot.QueryAsync(new DocumentationRequest("search", "NoSuchConcept"))).status);
+        Assert.Equal("Missing", (await snapshot.QueryAsync(new DocumentationRequest("read", "../../private.md"))).status);
+        Assert.Equal("Missing", (await snapshot.QueryAsync(new DocumentationRequest("symbol", "M:Missing"))).status);
+        Assert.Equal("Found", (await snapshot.QueryAsync(new DocumentationRequest("search", "控制台颜色"))).status);
         using DocumentationSnapshot mismatched = await DocumentationStore.OpenAsync(cache, expectedSourceTree: new string('c', 40));
-        Assert.Equal("Mismatched", (await mismatched.QueryAsync(new("read", "probe"))).status);
+        Assert.Equal("Mismatched", (await mismatched.QueryAsync(new DocumentationRequest("read", "probe"))).status);
         using var canceled = new CancellationTokenSource();
         canceled.Cancel();
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => snapshot.QueryAsync(new("read", "probe"), canceled.Token));
-        Assert.Equal("Found", (await snapshot.QueryAsync(new("read", "probe"))).status);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => snapshot.QueryAsync(new DocumentationRequest("read", "probe"), canceled.Token)
+        );
+        Assert.Equal("Found", (await snapshot.QueryAsync(new DocumentationRequest("read", "probe"))).status);
     }
 
     [Fact]
@@ -501,12 +505,12 @@ public sealed class DocumentationSnapshotTests : IDisposable
         }
         using (DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache))
         {
-            await Assert.ThrowsAsync<InvalidDataException>(() => snapshot.QueryAsync(new("read", "probe")));
+            await Assert.ThrowsAsync<InvalidDataException>(() => snapshot.QueryAsync(new DocumentationRequest("read", "probe")));
         }
         DocumentationResult repaired = await IndexAsync();
         Assert.Equal(initial.snapshot, repaired.snapshot);
         using DocumentationSnapshot current = await DocumentationStore.OpenAsync(cache);
-        Assert.Equal("Found", (await current.QueryAsync(new("read", "probe"))).status);
+        Assert.Equal("Found", (await current.QueryAsync(new DocumentationRequest("read", "probe"))).status);
     }
 
     [Theory]
@@ -535,13 +539,13 @@ public sealed class DocumentationSnapshotTests : IDisposable
         Assert.NotEqual(initial.snapshot, moved.snapshot);
         using (DocumentationSnapshot current = await DocumentationStore.OpenAsync(cache))
         {
-            Assert.Equal("content/en/new.md", (await current.QueryAsync(new("read", "movable"))).hits.Single().page);
+            Assert.Equal("content/en/new.md", (await current.QueryAsync(new DocumentationRequest("read", "movable"))).hits.Single().page);
         }
         File.Delete(Path.Combine(source, "content/en/new.md"));
         await IndexAsync();
         using DocumentationSnapshot deleted = await DocumentationStore.OpenAsync(cache);
-        Assert.Equal("Missing", (await deleted.QueryAsync(new("read", "movable"))).status);
-        Assert.Equal("Found", (await before.QueryAsync(new("read", "movable"))).status);
+        Assert.Equal("Missing", (await deleted.QueryAsync(new DocumentationRequest("read", "movable"))).status);
+        Assert.Equal("Found", (await before.QueryAsync(new DocumentationRequest("read", "movable"))).status);
     }
 
     [Fact]
@@ -556,7 +560,9 @@ public sealed class DocumentationSnapshotTests : IDisposable
         int offset = 0;
         do
         {
-            DocumentationResult read = await snapshot.QueryAsync(new("read", "long", section: "long-contract", offset: offset));
+            DocumentationResult read = await snapshot.QueryAsync(
+                new DocumentationRequest("read", "long", section: "long-contract", offset: offset)
+            );
             recovered.Append(read.hits.Single().text);
             if (read.continuations.Count == 0)
             {
@@ -579,7 +585,7 @@ public sealed class DocumentationSnapshotTests : IDisposable
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-            snapshot.QueryAsync(new("search", "ownership"), cancellation.Token));
+            snapshot.QueryAsync(new DocumentationRequest("search", "ownership"), cancellation.Token));
 
         var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         Task<DocumentationResult>[] queries = Enumerable.Range(0, 12).Select(index => Task.Run(async () =>
@@ -588,9 +594,9 @@ public sealed class DocumentationSnapshotTests : IDisposable
             return await snapshot.QueryAsync(
                 (index % 3) switch
                 {
-                    0 => new("search", "ownership"),
-                    1 => new("symbol", C_SYMBOL, "Inno.Probe", "host-runtime"),
-                    _ => new("read", "probe", section: "ownership")
+                    0 => new DocumentationRequest("search", "ownership"),
+                    1 => new DocumentationRequest("symbol", C_SYMBOL, "Inno.Probe", "host-runtime"),
+                    _ => new DocumentationRequest("read", "probe", section: "ownership")
                 }
             );
         })).ToArray();
@@ -625,7 +631,9 @@ public sealed class DocumentationSnapshotTests : IDisposable
         DocumentationResult[] results = await Task.WhenAll(Enumerable.Range(0, 3).Select(_ => IndexAsync()));
         Assert.Single(results.Select(result => result.snapshot).Distinct());
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
-        DocumentationResult[] reads = await Task.WhenAll(Enumerable.Range(0, 10).Select(_ => snapshot.QueryAsync(new("read", "probe"))));
+        DocumentationResult[] reads = await Task.WhenAll(
+            Enumerable.Range(0, 10).Select(_ => snapshot.QueryAsync(new DocumentationRequest("read", "probe")))
+        );
         Assert.All(reads, result => Assert.Equal(results[0].snapshot, result.snapshot));
         byte[] pointer = File.ReadAllBytes(Path.Combine(cache, "current.json"));
         using var cancellation = new CancellationTokenSource();
@@ -667,7 +675,7 @@ public sealed class DocumentationSnapshotTests : IDisposable
                 cancellation.Cancel();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => preparation);
                 Assert.Equal(selected, File.ReadAllBytes(pointer));
-                DocumentationResult retained = await reader.QueryAsync(new("read", "probe-api"));
+                DocumentationResult retained = await reader.QueryAsync(new DocumentationRequest("read", "probe-api"));
                 Assert.Equal("Partial", retained.status);
                 Assert.Equal(initial.snapshot, retained.snapshot);
                 Assert.Contains(retained.continuations, item => item.pageId == "probe" && item.section == "ownership");
@@ -679,15 +687,18 @@ public sealed class DocumentationSnapshotTests : IDisposable
                 {
                     await preparation;
                 }
-                catch (OperationCanceledException) { /* Drain every worker before releasing the protected page. */ }
+                catch (OperationCanceledException)
+                {
+                    // Drain every worker before releasing the protected page.
+                }
             }
         }
         DocumentationResult resumed = await IndexAsync();
         Assert.NotEqual(initial.snapshot, resumed.snapshot);
         using DocumentationSnapshot current = await DocumentationStore.OpenAsync(cache);
         Assert.Equal(26, (await current.ExportCatalogAsync()).pages.Count);
-        Assert.Equal("Missing", (await reader.QueryAsync(new("read", "new-23"))).status);
-        Assert.Equal("Found", (await current.QueryAsync(new("read", "new-23"))).status);
+        Assert.Equal("Missing", (await reader.QueryAsync(new DocumentationRequest("read", "new-23"))).status);
+        Assert.Equal("Found", (await current.QueryAsync(new DocumentationRequest("read", "new-23"))).status);
     }
 
     [Theory]
@@ -734,7 +745,7 @@ public sealed class DocumentationSnapshotTests : IDisposable
         Write("content/en/query.md", Page("a-query", "Search documentation", "Example: search Console presentation.\n"));
         await IndexAsync();
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
-        DocumentationResult result = await snapshot.QueryAsync(new("search", "Console presentation"));
+        DocumentationResult result = await snapshot.QueryAsync(new DocumentationRequest("search", "Console presentation"));
         Assert.Equal("z-task", result.hits[0].pageId);
         Assert.Equal("customize-console-presentation", result.hits[0].section);
     }
@@ -767,7 +778,7 @@ public sealed class DocumentationSnapshotTests : IDisposable
         await IndexAsync();
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
         Dictionary<string, string> before = Files();
-        DocumentationResult result = await snapshot.QueryAsync(new("search", "read keyboard pointer text input"));
+        DocumentationResult result = await snapshot.QueryAsync(new DocumentationRequest("search", "read keyboard pointer text input"));
         Assert.Equal("z-task", result.hits[0].pageId);
         Assert.Equal("All query terms in heading", result.hits[0].reason);
         Assert.Equal("Excerpt", result.hits[0].completeness);
@@ -806,14 +817,16 @@ public sealed class DocumentationSnapshotTests : IDisposable
         await IndexAsync();
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
         Dictionary<string, string> before = Files();
-        DocumentationResult task = await snapshot.QueryAsync(new("search", "instantiate prefab", "Inno.Probe", limit: 1));
+        DocumentationResult task = await snapshot.QueryAsync(
+            new DocumentationRequest("search", "instantiate prefab", "Inno.Probe", limit: 1)
+        );
         Assert.Equal("z-prefab-task", Assert.Single(task.hits).pageId);
         Assert.Equal("Excerpt", task.hits[0].completeness);
         DocumentationResult next = await snapshot.QueryAsync(Assert.IsType<DocumentationRequest>(task.nextRequest));
         Assert.Equal("a-prefab-api", Assert.Single(next.hits).pageId);
-        DocumentationResult identifier = await snapshot.QueryAsync(new("search", "InstantiatePrefab"));
+        DocumentationResult identifier = await snapshot.QueryAsync(new DocumentationRequest("search", "InstantiatePrefab"));
         Assert.Equal("a-prefab-api", identifier.hits[0].pageId);
-        DocumentationResult exact = await snapshot.QueryAsync(new("search", C_PREFAB_SYMBOL));
+        DocumentationResult exact = await snapshot.QueryAsync(new DocumentationRequest("search", C_PREFAB_SYMBOL));
         Assert.Equal(C_PREFAB_SYMBOL, Assert.Single(exact.hits).symbol);
         Assert.Equal(before.OrderBy(static pair => pair.Key), Files().OrderBy(static pair => pair.Key));
     }
@@ -824,11 +837,11 @@ public sealed class DocumentationSnapshotTests : IDisposable
         Write("content/en/second.md", Page("second", "Ownership details", "Borrow the lease; observe the ownership contract.\n"));
         await IndexAsync();
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
-        DocumentationResult first = await snapshot.QueryAsync(new("search", "ownership", limit: 1));
+        DocumentationResult first = await snapshot.QueryAsync(new DocumentationRequest("search", "ownership", limit: 1));
         Assert.NotNull(first.nextRequest);
         DocumentationResult second = await snapshot.QueryAsync(first.nextRequest!);
         Assert.NotEqual(first.hits.Single().resource, second.hits.Single().resource);
-        DocumentationResult exact = await snapshot.QueryAsync(new("search", C_SYMBOL));
+        DocumentationResult exact = await snapshot.QueryAsync(new DocumentationRequest("search", C_SYMBOL));
         Assert.Equal(C_SYMBOL, exact.hits.Single().symbol);
         Assert.Equal("Excerpt", exact.hits.Single().completeness);
         Assert.Equal("Exact qualified symbol", exact.hits.Single().reason);
@@ -905,7 +918,7 @@ public sealed class DocumentationSnapshotTests : IDisposable
         await IndexAsync();
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
         var text = new StringBuilder();
-        DocumentationRequest? request = new("read", "long-contract");
+        var request = new DocumentationRequest("read", "long-contract");
         do
         {
             DocumentationResult result = await snapshot.QueryAsync(request);
@@ -918,7 +931,7 @@ public sealed class DocumentationSnapshotTests : IDisposable
         Assert.Equal(new[] { "first", "deep", "second" }, catalog.pages.Single(page => page.id == "long-contract").sections.Keys);
         Assert.Contains(
             "Retirement contract.",
-            (await snapshot.QueryAsync(new("read", "long-contract", section: "second"))).hits.Single().text
+            (await snapshot.QueryAsync(new DocumentationRequest("read", "long-contract", section: "second"))).hits.Single().text
         );
     }
 

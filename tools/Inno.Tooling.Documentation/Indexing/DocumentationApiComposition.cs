@@ -44,7 +44,7 @@ internal static class DocumentationApiComposition
             raw.ToDictionary(pair => pair.Key, pair => DocumentationMarkdown.Hash(pair.Value)),
             StringComparer.Ordinal
         );
-        var origins = new List<DocumentationApiOrigin>();
+        List<DocumentationApiOrigin> origins = [];
         string registryPath = DocumentationApiFacts.Resolve(root, DocumentationApiContent.C_REGISTRY);
         if (!File.Exists(registryPath)) return new(pages, inputs, origins);
         string registryText = File.ReadAllText(registryPath);
@@ -110,7 +110,7 @@ internal static class DocumentationApiComposition
             DocumentationApiContentEntry entry = entries[fact.key];
             DocumentationApiFragment fragment = fragments[fact.key];
             string? parent = DocumentationApiPresentation.Parent(fact);
-            var ancestors = new List<DocumentationApiFragment>();
+            List<DocumentationApiFragment> ancestors = [];
             var visited = new HashSet<string>(StringComparer.Ordinal) { fact.key };
             for (string? ancestor = parent; ancestor is not null; ancestor = DocumentationApiPresentation.Parent(facts[ancestor][0]))
             {
@@ -261,7 +261,7 @@ internal static class DocumentationApiComposition
                     .Append("\n```\n\n");
             }
             origins.Add(
-                new(
+                new DocumentationApiOrigin(
                     ownerPath,
                     fact.id,
                     fragment.path,
@@ -380,7 +380,7 @@ internal static class DocumentationApiComposition
             body,
             new MarkdownPipelineBuilder().UsePreciseSourceLocation().EnableTrackTrivia().Build()
         );
-        var changes = new List<(int start, int length, string value)>();
+        List<(int start, int length, string value)> changes = [];
         foreach (HeadingBlock heading in document.Descendants<HeadingBlock>())
         {
             var prefix = new string('#', Math.Min(6, heading.Level + level));

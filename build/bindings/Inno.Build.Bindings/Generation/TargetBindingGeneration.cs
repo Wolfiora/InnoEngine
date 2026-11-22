@@ -13,11 +13,11 @@ internal static class TargetBindingGeneration
         GenerationRequest loaded,
         BindingGenerationPublication publication,
         string fingerprint,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         string native = Path.Combine(publication.targetCandidate, "Native");
         string managed = Path.Combine(publication.targetCandidate, "Generated");
-        BindingGenerationDiagnostics.Generate(context, definition, loaded, publication.bgcsCandidate, native, managed, cancellation);
+        BindingGenerationDiagnostics.Generate(context, definition, loaded, publication.bgcsCandidate, native, managed, cancellationToken);
         if (definition.request.checkOnly)
         {
             BindingGenerationDiagnostics.RequireEqual(managed, Path.Combine(publication.managedDestination, "Generated"), true);

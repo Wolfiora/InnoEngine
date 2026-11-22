@@ -30,7 +30,7 @@ public static class StyleCommand
         }
 
         string root = Path.GetFullPath(arguments[1]);
-        var ruleIDs = new List<string>();
+        List<string> ruleIDs = [];
         string? pathsFrom = null;
         string? report = null;
         for (int index = 2; index < arguments.Length; index += 2)

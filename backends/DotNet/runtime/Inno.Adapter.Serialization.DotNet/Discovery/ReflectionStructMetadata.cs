@@ -9,8 +9,7 @@ namespace Inno.Adapter.Serialization.DotNet;
 
 internal static class ReflectionStructMetadata
 {
-    private const BindingFlags C_MEMBERS =
-        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+    private const BindingFlags C_MEMBERS = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
     private static readonly ConditionalWeakTable<Type, MembersBox> CACHE = new();
 
@@ -44,7 +43,7 @@ internal static class ReflectionStructMetadata
 
     private static SerializationMemberMetadata[] BuildMembers(Type structType)
     {
-        var members = new List<SerializationMemberMetadata>();
+        List<SerializationMemberMetadata> members = [];
         var names = new HashSet<string>(StringComparer.Ordinal);
         MemberInfo[] candidates = structType
             .GetMembers(C_MEMBERS)
@@ -95,8 +94,7 @@ internal static class ReflectionStructMetadata
             return null;
         }
 
-        SerializablePropertyAttribute? attribute =
-            field.GetCustomAttribute<SerializablePropertyAttribute>(inherit: true);
+        SerializablePropertyAttribute? attribute = field.GetCustomAttribute<SerializablePropertyAttribute>(inherit: true);
         bool isDefaultMember = field.IsPublic && !field.IsInitOnly;
         if (attribute is null && !isDefaultMember)
         {
@@ -130,8 +128,7 @@ internal static class ReflectionStructMetadata
             return null;
         }
 
-        SerializablePropertyAttribute? attribute =
-            property.GetCustomAttribute<SerializablePropertyAttribute>(inherit: true);
+        SerializablePropertyAttribute? attribute = property.GetCustomAttribute<SerializablePropertyAttribute>(inherit: true);
         MethodInfo? getter = property.GetGetMethod(nonPublic: true);
         MethodInfo? setter = property.GetSetMethod(nonPublic: true);
         bool isDefaultMember = getter?.IsPublic == true && setter?.IsPublic == true;

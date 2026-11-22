@@ -19,7 +19,8 @@ public sealed class StorageRuntimeFactory : IRuntimeSubsystemFactory
     /// </param>
     public StorageRuntimeFactory(Func<RuntimeSubsystemContext, IApplicationStorage> storageFactory)
     {
-        m_storageFactory = storageFactory ?? throw new ArgumentNullException(nameof(storageFactory));
+        ArgumentNullException.ThrowIfNull(storageFactory);
+        m_storageFactory = storageFactory;
     }
 
     /// <summary>

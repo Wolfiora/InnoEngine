@@ -77,13 +77,13 @@ public sealed class BrowserWasm32GameBuildTarget : IGameBuildTarget
             Path.Combine(context.managedDeployment.outputDirectory, "wwwroot"),
             site,
             cancellationToken
-        );
+        ).ConfigureAwait(false);
         if (!File.Exists(Path.Combine(site, "index.html")))
         {
             throw new InvalidDataException("The browser Support Pack has no index.html entry point.");
         }
         string contentDirectory = Path.Combine(site, "Content");
-        await CopyDirectoryAsync(context.contentDirectory, contentDirectory, cancellationToken);
+        await CopyDirectoryAsync(context.contentDirectory, contentDirectory, cancellationToken).ConfigureAwait(false);
         string[] packs = Directory.GetFiles(contentDirectory, "content-*.pack", SearchOption.TopDirectoryOnly);
         if (packs.Length != 1)
         {
@@ -106,7 +106,7 @@ public sealed class BrowserWasm32GameBuildTarget : IGameBuildTarget
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
             await using var input = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true);
             await using var output = new FileStream(target, FileMode.CreateNew, FileAccess.Write, FileShare.None, 131_072, true);
-            await input.CopyToAsync(output, cancellationToken);
+            await input.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
         }
     }
 }

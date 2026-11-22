@@ -14,11 +14,11 @@ public sealed class NativeArtifactIdentityTests : IDisposable
     {
         string script = Write("sdk/compiler.py", "print('one')");
         string compiler = Write("sdk/bin/clang", "compiler-one");
-        NativeBuildInput[] inputs = new[]
-        {
+        NativeBuildInput[] inputs =
+        [
             new NativeBuildInput("sdk", Path.GetDirectoryName(script)!),
             new NativeBuildInput("sdk/bin", Path.GetDirectoryName(compiler)!)
-        };
+        ];
         string original = NativeBuildFingerprint.Create(["wasm32"], inputs);
         Write("sdk/__pycache__/compiler.cpython-311.pyc", "derived-bytecode");
         Assert.Equal(original, NativeBuildFingerprint.Create(["wasm32"], inputs));
@@ -41,7 +41,10 @@ public sealed class NativeArtifactIdentityTests : IDisposable
             Path.GetRelativePath(m_root, project),
             Path.GetRelativePath(m_root, project)
         );
-        NativeBuildContext context = new NativeBuildContext(m_root, "release").WithComponentOptions(owner, new(NativeLibraryKind.Shared));
+        NativeBuildContext context = new NativeBuildContext(m_root, "release").WithComponentOptions(
+            owner,
+            new NativeComponentBuildOptions(NativeLibraryKind.Shared)
+        );
         NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(
             context,
             owner,

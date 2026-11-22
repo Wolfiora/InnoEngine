@@ -20,7 +20,7 @@ internal static class SceneHistoryCompensation
         GameObject[] created = scene.GetObjects()
             .Where(gameObject => !existing.Contains(gameObject))
             .ToArray();
-        var messages = new List<string>();
+        List<string> messages = [];
         bool statePreserved = true;
         for (int i = 0; i < created.Length; i++)
         {

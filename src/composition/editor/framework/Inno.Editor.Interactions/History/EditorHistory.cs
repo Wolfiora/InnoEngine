@@ -49,7 +49,8 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
         Logger log
     ) {
         ArgumentNullException.ThrowIfNull(options);
-        m_log = log ?? throw new ArgumentNullException(nameof(log));
+        ArgumentNullException.ThrowIfNull(log);
+        m_log = log;
         options.Validate();
         m_options = options;
         this.capacity = options.maxEntries;
@@ -1150,7 +1151,7 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
         /// </returns>
         protected override EditorHistoryResult Undo()
         {
-            var compensationFailures = new List<string>();
+            List<string> compensationFailures = [];
             for (int i = m_children.Count - 1; i >= 0; i--)
             {
                 EditorHistoryResult result = InvokeChild(m_children[i].UndoInternal, m_children[i].name, "undo");
@@ -1185,7 +1186,7 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
         /// </returns>
         protected override EditorHistoryResult Redo()
         {
-            var compensationFailures = new List<string>();
+            List<string> compensationFailures = [];
             for (int i = 0; i < m_children.Count; i++)
             {
                 EditorHistoryResult result = InvokeChild(m_children[i].RedoInternal, m_children[i].name, "redo");

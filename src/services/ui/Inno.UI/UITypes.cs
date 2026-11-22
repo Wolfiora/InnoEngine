@@ -261,9 +261,10 @@ public sealed class UIEvent : Event
         UIDocumentHandle document,
         string targetID
     ) {
+        ArgumentNullException.ThrowIfNull(targetID);
         this.type = type;
         this.document = document;
-        this.targetID = targetID ?? throw new ArgumentNullException(nameof(targetID));
+        this.targetID = targetID;
     }
 
     /// <summary>
@@ -324,14 +325,19 @@ public sealed class UIInputSnapshot
         IReadOnlyCollection<MouseButton> buttonsReleased,
         IReadOnlyList<string> textInput
     ) {
+        ArgumentNullException.ThrowIfNull(keysPressed);
+        ArgumentNullException.ThrowIfNull(keysReleased);
+        ArgumentNullException.ThrowIfNull(buttonsPressed);
+        ArgumentNullException.ThrowIfNull(buttonsReleased);
+        ArgumentNullException.ThrowIfNull(textInput);
         this.mousePosition = mousePosition;
         this.scrollDelta = scrollDelta;
         this.modifiers = modifiers;
-        this.keysPressed = keysPressed ?? throw new ArgumentNullException(nameof(keysPressed));
-        this.keysReleased = keysReleased ?? throw new ArgumentNullException(nameof(keysReleased));
-        this.buttonsPressed = buttonsPressed ?? throw new ArgumentNullException(nameof(buttonsPressed));
-        this.buttonsReleased = buttonsReleased ?? throw new ArgumentNullException(nameof(buttonsReleased));
-        this.textInput = textInput ?? throw new ArgumentNullException(nameof(textInput));
+        this.keysPressed = keysPressed;
+        this.keysReleased = keysReleased;
+        this.buttonsPressed = buttonsPressed;
+        this.buttonsReleased = buttonsReleased;
+        this.textInput = textInput;
     }
 
     /// <summary>

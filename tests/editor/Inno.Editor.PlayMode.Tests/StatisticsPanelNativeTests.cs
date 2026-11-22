@@ -62,8 +62,8 @@ public sealed unsafe class StatisticsPanelNativeTests
         int count = 0;
         host.Frame(() =>
         {
-            NativeImGui.SetNextWindowPos(new(20f, 20f), (int)ImGuiCond.Always);
-            NativeImGui.SetNextWindowSize(new(1000f, 800f), (int)ImGuiCond.Always);
+            NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), (int)ImGuiCond.Always);
+            NativeImGui.SetNextWindowSize(new Vector2(1000f, 800f), (int)ImGuiCond.Always);
             bool open = true;
             _ = NativeImGui.Begin("Statistics acceptance", ref open, (int)ImGuiWindowFlags.NoSavedSettings);
             var color = new Vector4(0.93f, 0.17f, 0.73f, 1f);

@@ -24,7 +24,7 @@ public sealed class NativeBuildContextTests : IDisposable
         File.WriteAllText(Path.Combine(m_root, "build", "fixture.csproj"), "<Project />");
         NativeBuildContext Context(string path)
             => new NativeBuildContext(path, "release")
-                .WithComponentOptions(owner, new(NativeLibraryKind.Shared));
+                .WithComponentOptions(owner, new NativeComponentBuildOptions(NativeLibraryKind.Shared));
         NativeBuildContext plain = Context(m_root);
         NativeBuildContext separated = Context(m_root + Path.DirectorySeparatorChar);
         Assert.Equal(plain.engineRoot, separated.engineRoot);

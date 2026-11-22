@@ -32,7 +32,7 @@ internal sealed class ArrowMemberStyleRule : StyleRule
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
         IReadOnlyList<TextSpan> protectedSpans = source.ProtectedSpans();
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         int fixedEnd = -1;
         foreach (SyntaxNode node in source.root.DescendantNodes())
         {
@@ -66,7 +66,7 @@ internal sealed class ArrowMemberStyleRule : StyleRule
         int firstLine = source.LineNumber(first.SpanStart);
         int lastLine = source.LineNumber(clause.Expression.Span.End);
         bool afterParameters = StyleLayout.ClosesMultiLineHeader(source, previous);
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         if (arrowLine != firstLine)
         {
             // '=>' ends its line: it moves in front of the expression.
@@ -78,8 +78,14 @@ internal sealed class ArrowMemberStyleRule : StyleRule
                 wrapped = firstLine != lastLine || joined > StyleLayout.C_WIDTH;
             }
 
-            edits.Add(new(previous.Span.End, arrow.SpanStart, wrapped ? "\n" + new string(' ', declaration + StyleLayout.C_INDENT) : " "));
-            edits.Add(new(arrow.Span.End, first.SpanStart, " "));
+            edits.Add(
+                new StyleEdit(
+                    previous.Span.End,
+                    arrow.SpanStart,
+                    wrapped ? "\n" + new string(' ', declaration + StyleLayout.C_INDENT) : " "
+                )
+            );
+            edits.Add(new StyleEdit(arrow.Span.End, first.SpanStart, " "));
             if (!wrapped)
             {
                 AddShifts(source, edits, firstLine + 1, lastLine, declaration - source.Indentation(first.SpanStart), protectedSpans);
@@ -95,7 +101,7 @@ internal sealed class ArrowMemberStyleRule : StyleRule
             // A multi-line string has no layout of its own to move.
             if (clause.Expression is LiteralExpressionSyntax or InterpolatedStringExpressionSyntax) return null;
             if (source.LineNumber(clause.Parent!.GetFirstToken().SpanStart) != arrowLine) return null;
-            edits.Add(new(previous.Span.End, arrow.SpanStart, "\n" + new string(' ', declaration + StyleLayout.C_INDENT)));
+            edits.Add(new StyleEdit(previous.Span.End, arrow.SpanStart, "\n" + new string(' ', declaration + StyleLayout.C_INDENT)));
             bool isDelimited = clause.Expression is SwitchExpressionSyntax or WithExpressionSyntax
                                or BaseObjectCreationExpressionSyntax { Initializer: not null };
             if (!isDelimited) AddShifts(source, edits, firstLine + 1, lastLine, StyleLayout.C_INDENT, protectedSpans);
@@ -109,7 +115,7 @@ internal sealed class ArrowMemberStyleRule : StyleRule
             && signature.End - signature.Start + 1 + source.text.Lines[arrowLine].End - arrow.SpanStart <= StyleLayout.C_WIDTH
             && source.LineNumber(clause.Parent!.GetFirstToken().SpanStart) == source.LineNumber(previous.Span.End)
         ) {
-            edits.Add(new(previous.Span.End, arrow.SpanStart, " "));
+            edits.Add(new StyleEdit(previous.Span.End, arrow.SpanStart, " "));
             return ("Keep '=> expression' on the declaration line: the member fits on one line.", edits);
         }
 

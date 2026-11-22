@@ -28,8 +28,8 @@ public sealed partial class EditorRuntimeTests
         {
             statistics.Publish(
                 new EditorStatistic(
-                    new("metric/" + index),
-                    new("group/" + index / 10),
+                    new EditorStatisticID("metric/" + index),
+                    new EditorStatisticGroupID("group/" + index / 10),
                     "Group " + index / 10,
                     "Metric " + index,
                     index.ToString(),

@@ -58,10 +58,14 @@ public sealed class SerializedPropertyRenderer
         IInspectionPropertyEditService edits,
         LogRouter logs
     ) {
-        m_drawers = drawers ?? throw new ArgumentNullException(nameof(drawers));
-        m_attributes = attributes ?? throw new ArgumentNullException(nameof(attributes));
-        m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-        m_edits = edits ?? throw new ArgumentNullException(nameof(edits));
+        ArgumentNullException.ThrowIfNull(drawers);
+        ArgumentNullException.ThrowIfNull(attributes);
+        ArgumentNullException.ThrowIfNull(interactions);
+        ArgumentNullException.ThrowIfNull(edits);
+        m_drawers = drawers;
+        m_attributes = attributes;
+        m_interactions = interactions;
+        m_edits = edits;
         ArgumentNullException.ThrowIfNull(logs);
         m_logger = logs.CreateLogger<SerializedPropertyRenderer>();
     }
@@ -460,6 +464,6 @@ public sealed class SerializedPropertyRenderer
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
-        return string.Concat(path, "\n", key);
+        return $"{path}\n{key}";
     }
 }

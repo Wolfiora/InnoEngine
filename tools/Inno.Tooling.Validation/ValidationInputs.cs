@@ -15,16 +15,16 @@ internal static class ValidationInputs
 {
     internal static async Task<Dictionary<string, string>> CaptureAsync(
         string root,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         Task<string> fileCapture = ValidationProcess.RunAsync(
             "git",
             ["ls-files", "-z", "--cached", "--others", "--exclude-standard"],
             root,
             null,
-            cancellation
+            cancellationToken
         );
-        Task<string> stageCapture = ValidationProcess.RunAsync("git", ["ls-files", "--stage", "-z"], root, null, cancellation);
+        Task<string> stageCapture = ValidationProcess.RunAsync("git", ["ls-files", "--stage", "-z"], root, null, cancellationToken);
         await Task.WhenAll(fileCapture, stageCapture).ConfigureAwait(false);
         string files = await fileCapture.ConfigureAwait(false);
         string staged = await stageCapture.ConfigureAwait(false);
@@ -55,7 +55,7 @@ internal static class ValidationInputs
             new ParallelOptions
             {
                 MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4),
-                CancellationToken = cancellation
+                CancellationToken = cancellationToken
             },
             async (
                 index,
@@ -93,17 +93,17 @@ internal static class ValidationInputs
         string root,
         string commit,
         IReadOnlyDictionary<string, string> inputs,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         string tree = await ValidationProcess.RunAsync(
             "git",
             ["ls-tree", "-r", "-z", commit],
             root,
             null,
-            cancellation
+            cancellationToken
         ).ConfigureAwait(false);
         var changes = new HashSet<string>(StringComparer.Ordinal);
-        var blobs = new List<KeyValuePair<string, string>>();
+        List<KeyValuePair<string, string>> blobs = [];
         foreach (string entry in tree.Split('\0', StringSplitOptions.RemoveEmptyEntries))
         {
             int separator = entry.IndexOf('\t');
@@ -121,7 +121,7 @@ internal static class ValidationInputs
             {
                 string current = inputs.TryGetValue(path, out string? captured)
                                  ? captured
-                                 : await CaptureSubmoduleAsync(Resolve(root, path), metadata[2], cancellation).ConfigureAwait(false);
+                                 : await CaptureSubmoduleAsync(Resolve(root, path), metadata[2], cancellationToken).ConfigureAwait(false);
                 if (current != metadata[2] && current != "unavailable:" + metadata[2])
                 {
                     changes.Add(path);
@@ -145,7 +145,7 @@ internal static class ValidationInputs
                         ["hash-object", "--stdin", "--no-filters"],
                         root,
                         null,
-                        cancellation,
+                        cancellationToken,
                         new UTF8Encoding(false, true).GetString(link)
                     ).ConfigureAwait(false);
                     if (identity.Trim() != metadata[2])
@@ -160,7 +160,7 @@ internal static class ValidationInputs
             }
             else
             {
-                blobs.Add(new(path, metadata[2]));
+                blobs.Add(new KeyValuePair<string, string>(path, metadata[2]));
             }
         }
         if (blobs.Count != 0)
@@ -171,7 +171,7 @@ internal static class ValidationInputs
                 ["hash-object", "--stdin-paths"],
                 root,
                 null,
-                cancellation,
+                cancellationToken,
                 string.Join('\n', blobs.Select(static pair => QuoteGitPath(pair.Key))) + "\n"
             ).ConfigureAwait(false);
             string[] identities = content.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
@@ -191,7 +191,7 @@ internal static class ValidationInputs
                     ["hash-object", "--no-filters", "--stdin-paths"],
                     root,
                     null,
-                    cancellation,
+                    cancellationToken,
                     string.Join('\n', different.Select(static pair => QuoteGitPath(pair.Key))) + "\n"
                 ).ConfigureAwait(false);
                 string[] rawIdentities = raw.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
@@ -262,10 +262,10 @@ internal static class ValidationInputs
             .Distinct(StringComparer.Ordinal)
             .Select(path => new KeyValuePair<string, string>(path, inputs.GetValueOrDefault(path, "missing")))
             .Concat(BackendPayloads(plan, check))
-            .Append(new("environment", plan.environment))
-            .Append(new("configuration", plan.configuration))
+            .Append(new KeyValuePair<string, string>("environment", plan.environment))
+            .Append(new KeyValuePair<string, string>("configuration", plan.configuration))
             .Append(
-                new(
+                new KeyValuePair<string, string>(
                     "context",
                     check.context is null
                     ? string.Empty
@@ -280,7 +280,7 @@ internal static class ValidationInputs
                     )
                 )
             )
-            .Append(new("definition", JsonSerializer.Serialize(check)))
+            .Append(new KeyValuePair<string, string>("definition", JsonSerializer.Serialize(check)))
     );
 
     internal static string Resolve(
@@ -320,11 +320,11 @@ internal static class ValidationInputs
             {
                 foreach (string key in keys)
                 {
-                    yield return new("deployed:" + key, plan.backendProductPayloads![key]);
+                    yield return new KeyValuePair<string, string>("deployed:" + key, plan.backendProductPayloads![key]);
                 }
                 foreach (string owner in owners)
                 {
-                    yield return new("backend:" + owner, plan.backendOwnerPayloads![owner]);
+                    yield return new KeyValuePair<string, string>("backend:" + owner, plan.backendOwnerPayloads![owner]);
                 }
                 yield break;
             }
@@ -335,20 +335,20 @@ internal static class ValidationInputs
             // A product can load its entire deployed closure, including tools from another host.
             foreach (BackendPackageReceipt package in plan.backendPackages)
             {
-                yield return new("backend:" + package.target, package.sha256);
+                yield return new KeyValuePair<string, string>("backend:" + package.target, package.sha256);
             }
             yield break;
         }
         foreach (string owner in owners)
         {
-            yield return new("backend:" + owner, plan.backendOwnerPayloads![owner]);
+            yield return new KeyValuePair<string, string>("backend:" + owner, plan.backendOwnerPayloads![owner]);
         }
     }
 
     private static async Task<string> CaptureSubmoduleAsync(
         string path,
         string expectedRevision,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         // Check checkout contents, never the mutable Git object store or its size/time index cache.
         if (!File.Exists(Path.Combine(path, ".git")) && !Directory.Exists(Path.Combine(path, ".git")))
@@ -360,15 +360,21 @@ internal static class ValidationInputs
             ["rev-parse", "HEAD"],
             path,
             null,
-            cancellation
+            cancellationToken
         ).ConfigureAwait(false)).Trim();
-        string dirty = await ValidationProcess.RunAsync("git", ["status", "--porcelain"], path, null, cancellation).ConfigureAwait(false);
+        string dirty = await ValidationProcess.RunAsync(
+            "git",
+            ["status", "--porcelain"],
+            path,
+            null,
+            cancellationToken
+        ).ConfigureAwait(false);
         if (dirty.Length != 0
             || (await FindContentChangesAsync(
                 path,
                 revision,
                 new Dictionary<string, string>(),
-                cancellation
+                cancellationToken
             ).ConfigureAwait(false)).Length != 0
         ) {
             throw new InvalidDataException(

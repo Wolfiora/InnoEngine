@@ -148,7 +148,7 @@ public sealed class EventDispatcherBehaviorTests
     {
         var dispatcher = new EventDispatcher();
         using EventHub hub = dispatcher.CreateHub();
-        var values = new List<int>();
+        List<int> values = [];
 
         hub.Listen<ProbeEvent>(e => values.Add(e.value));
 
@@ -164,7 +164,7 @@ public sealed class EventDispatcherBehaviorTests
     {
         var dispatcher = new EventDispatcher(queueCapacity: 2, flushBudget: 1);
         using EventHub hub = dispatcher.CreateHub();
-        var values = new List<int>();
+        List<int> values = [];
         hub.Listen<ProbeEvent>(value =>
         {
             values.Add(value.value);
@@ -189,7 +189,7 @@ public sealed class EventDispatcherBehaviorTests
         var dispatcher = new EventDispatcher();
         using EventHub lowHub = dispatcher.CreateHub(order: 0);
         using EventHub highHub = dispatcher.CreateHub(order: 10);
-        var order = new List<string>();
+        List<string> order = [];
 
         lowHub.Listen<ProbeEvent>(_ => order.Add("low"));
         highHub.Listen<ProbeEvent>(_ => order.Add("high"));

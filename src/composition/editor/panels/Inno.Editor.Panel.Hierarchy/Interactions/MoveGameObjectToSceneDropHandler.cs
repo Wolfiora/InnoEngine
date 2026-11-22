@@ -55,7 +55,7 @@ internal sealed class MoveGameObjectToSceneDropHandler(SceneEdits edits) : Edito
         {
             return[context.source];
         }
-        var values = new List<GameObject>();
+        List<GameObject> values = [];
         context.interactions.selection.CopyTargets(values);
         return values.Count == context.interactions.selection.count ? values.ToArray() : [];
     }

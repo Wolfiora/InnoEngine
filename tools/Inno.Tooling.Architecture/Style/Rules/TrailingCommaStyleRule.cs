@@ -26,10 +26,10 @@ internal sealed class TrailingCommaStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         foreach (SyntaxToken comma in TrailingCommas(source.root))
         {
-            edits.Add(new(comma.SpanStart, comma.Span.End, string.Empty));
+            edits.Add(new StyleEdit(comma.SpanStart, comma.Span.End, string.Empty));
         }
 
         return edits;

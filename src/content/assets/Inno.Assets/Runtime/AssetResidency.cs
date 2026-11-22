@@ -176,8 +176,9 @@ public sealed class ArtifactLease : IDisposable
         Func<Stream> openRead,
         Action release
     ) {
+        ArgumentNullException.ThrowIfNull(openRead);
         m_residency = new ResidencyLease<AssetArtifactInfo>(artifact, release);
-        m_openRead = openRead ?? throw new ArgumentNullException(nameof(openRead));
+        m_openRead = openRead;
     }
 
     /// <summary>

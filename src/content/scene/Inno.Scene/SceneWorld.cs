@@ -43,7 +43,8 @@ public sealed class SceneWorld : IDisposable
         IdentityAllocator identities,
         TypeCatalog types
     ) {
-        m_identities = identities ?? throw new ArgumentNullException(nameof(identities));
+        ArgumentNullException.ThrowIfNull(identities);
+        m_identities = identities;
         ArgumentNullException.ThrowIfNull(types);
         m_types = new SceneTypeCatalog(types);
     }

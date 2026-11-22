@@ -213,7 +213,7 @@ internal sealed class AssemblyCatalogRefreshSet(IReadOnlyList<IAssemblyCatalogTr
             TryCleanup(transactions[i].Complete, failures);
         }
         m_finished = true;
-        transactions = Array.Empty<IAssemblyCatalogTransaction>();
+        transactions = [];
         if (failures.Count > 0)
         {
             throw new AggregateException("Assembly catalog completion failed after all participants were attempted.", failures);
@@ -236,7 +236,7 @@ internal sealed class AssemblyCatalogRefreshSet(IReadOnlyList<IAssemblyCatalogTr
             TryCleanup(transactions[i].Rollback, failures);
         }
         m_finished = true;
-        transactions = Array.Empty<IAssemblyCatalogTransaction>();
+        transactions = [];
         if (failures.Count > 0)
         {
             throw new AggregateException("Assembly catalog rollback failed after all participants were attempted.", failures);

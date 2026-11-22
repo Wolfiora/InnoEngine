@@ -50,9 +50,10 @@ public sealed class ShaderSourceImplementationRequest
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(implementationID);
         ArgumentException.ThrowIfNullOrWhiteSpace(languageID);
+        ArgumentNullException.ThrowIfNull(source);
         this.implementationID = implementationID;
         this.languageID = languageID;
-        this.source = source ?? throw new ArgumentNullException(nameof(source));
+        this.source = source;
     }
 
     /// <summary>

@@ -11,7 +11,7 @@ internal static class BuildCacheFileInventory
     internal static long Measure(
         string directory,
         BuildCacheArtifactRole role,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         PathBoundary.RequireUnlinkedPath(directory, directory);
         long bytes = 0;
@@ -19,11 +19,11 @@ internal static class BuildCacheFileInventory
         pending.Push(directory);
         while (pending.TryPop(out string? current))
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             PathBoundary.RequireUnlinkedPath(directory, current);
             foreach (string entry in Directory.EnumerateFileSystemEntries(current))
             {
-                cancellation.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 FileAttributes attributes = File.GetAttributes(entry);
                 if ((attributes & FileAttributes.ReparsePoint) != 0)
                 {
@@ -31,7 +31,7 @@ internal static class BuildCacheFileInventory
                     {
                         throw new IOException($"Cache entry '{entry}' cannot contain this filesystem link.");
                     }
-                    ValidateFileLink(directory, entry, cancellation);
+                    ValidateFileLink(directory, entry, cancellationToken);
                     // A compiler's library-name alias owns no second copy of its target's bytes.
                     continue;
                 }
@@ -51,12 +51,12 @@ internal static class BuildCacheFileInventory
     private static void ValidateFileLink(
         string directory,
         string entry,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         var visited = new HashSet<string>(StringComparer.Ordinal);
         while (true)
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             entry = PathBoundary.RequireContained(directory, entry);
             PathBoundary.RequireUnlinkedPath(directory, Path.GetDirectoryName(entry)!);
             if (!visited.Add(entry))

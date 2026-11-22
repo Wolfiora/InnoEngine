@@ -558,8 +558,7 @@ public sealed unsafe partial class BgfxDevice
             vertexShader = CreateShader(descriptor.vertexShader.Span, $"{name}.Vertex");
             fragmentShader = CreateShader(descriptor.fragmentShader.Span, $"{name}.Fragment");
             Dictionary<string, ReflectedUniform> reflected = ReflectShaders(vertexShader, fragmentShader);
-            IReadOnlyDictionary<string, BgfxShaderBindingResource> bindings =
-                ValidateReflectedBindings(descriptor.bindings, reflected);
+            IReadOnlyDictionary<string, BgfxShaderBindingResource> bindings = ValidateReflectedBindings(descriptor.bindings, reflected);
 
             program = bgfx.create_program(vertexShader, fragmentShader, true);
             EnsureValid(program.Valid, name);
@@ -645,8 +644,7 @@ public sealed unsafe partial class BgfxDevice
         {
             computeShader = CreateShader(descriptor.computeShader.Span, $"{name}.Compute");
             Dictionary<string, ReflectedUniform> reflected = ReflectShaders(computeShader);
-            IReadOnlyDictionary<string, BgfxShaderBindingResource> bindings =
-                ValidateReflectedBindings(descriptor.bindings, reflected);
+            IReadOnlyDictionary<string, BgfxShaderBindingResource> bindings = ValidateReflectedBindings(descriptor.bindings, reflected);
             program = bgfx.create_compute_program(computeShader, true);
             EnsureValid(program.Valid, name);
             computeShader = InvalidShader();

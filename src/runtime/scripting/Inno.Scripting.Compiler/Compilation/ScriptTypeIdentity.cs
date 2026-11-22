@@ -6,8 +6,7 @@ namespace Inno.Scripting.Compiler;
 
 internal static class ScriptTypeIdentity
 {
-    private static readonly Guid SCRIPT_SOURCE_NAMESPACE =
-        Guid.Parse("6ca29f90-69d4-4f27-b42b-fdad7cc10e6a");
+    private static readonly Guid SCRIPT_SOURCE_NAMESPACE = Guid.Parse("6ca29f90-69d4-4f27-b42b-fdad7cc10e6a");
 
     internal static Guid CreateCanonical(Guid sourcePersistentID)
     {

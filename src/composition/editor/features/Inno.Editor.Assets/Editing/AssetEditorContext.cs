@@ -52,14 +52,19 @@ public sealed class AssetEditorContext
         Type? assetType,
         Func<EditorDragData> createDefaultDragData
     ) {
-        this.editorContext = editorContext ?? throw new ArgumentNullException(nameof(editorContext));
-        this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-        this.relativePath = relativePath ?? throw new ArgumentNullException(nameof(relativePath));
-        this.name = name ?? throw new ArgumentNullException(nameof(name));
+        ArgumentNullException.ThrowIfNull(editorContext);
+        ArgumentNullException.ThrowIfNull(interactions);
+        ArgumentNullException.ThrowIfNull(relativePath);
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(createDefaultDragData);
+        this.editorContext = editorContext;
+        this.interactions = interactions;
+        this.relativePath = relativePath;
+        this.name = name;
         this.isDirectory = isDirectory;
         this.info = info;
         this.assetType = assetType;
-        m_createDefaultDragData = createDefaultDragData ?? throw new ArgumentNullException(nameof(createDefaultDragData));
+        m_createDefaultDragData = createDefaultDragData;
     }
 
     /// <summary>

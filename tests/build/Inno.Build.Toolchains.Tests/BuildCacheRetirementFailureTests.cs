@@ -39,7 +39,7 @@ public sealed class BuildCacheRetirementFailureTests : IDisposable
         BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(
             m_root,
             [invalid.Describe("invalid"), healthy.Describe("healthy")],
-            new(0, 0),
+            new BuildCachePolicy(0, 0),
             retireAll: true
         );
         BuildCacheCleanupResult result = await plan.ExecuteAsync();
@@ -68,7 +68,7 @@ public sealed class BuildCacheRetirementFailureTests : IDisposable
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => BuildMaintenanceApplication.CleanAsync(
             m_root,
-            new(timeBudget: TimeSpan.FromSeconds(30)),
+            new BuildCachePolicy(timeBudget: TimeSpan.FromSeconds(30)),
             true,
             false,
             null,

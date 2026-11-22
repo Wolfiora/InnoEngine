@@ -20,7 +20,8 @@ internal sealed class SceneInspectionPropertyEditService : IInspectionPropertyEd
     /// </param>
     internal SceneInspectionPropertyEditService(SceneEdits edits)
     {
-        m_edits = edits ?? throw new ArgumentNullException(nameof(edits));
+        ArgumentNullException.ThrowIfNull(edits);
+        m_edits = edits;
     }
 
         /// <inheritdoc/>

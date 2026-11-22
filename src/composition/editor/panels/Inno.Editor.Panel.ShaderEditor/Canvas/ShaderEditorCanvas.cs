@@ -478,7 +478,7 @@ internal sealed partial class ShaderEditorCanvas(
             {
                 draft.portSnapshots[node.id] = Read(node, ShaderEditorDocuments.C_PORT_SNAPSHOT, Array.Empty<ShaderPortSnapshot>());
             }
-            var ports = new List<ShaderNodePort>();
+            List<ShaderNodePort> ports = [];
             try
             {
                 if (node.definitionID == ShaderGraphDocument.C_OUTPUT_DEFINITION_ID)
@@ -513,8 +513,8 @@ internal sealed partial class ShaderEditorCanvas(
             {
                 if (!ports.Any(port => port.id == old.id))
                 {
-                    ports.Add(new(old.id, old.type.CreateType(), old.direction, old.required));
-                    draft.missingPorts.Add(new(node.id, new(old.id)));
+                    ports.Add(new ShaderNodePort(old.id, old.type.CreateType(), old.direction, old.required));
+                    draft.missingPorts.Add(new GraphEndpoint(node.id, new GraphPortID(old.id)));
                 }
             }
 
@@ -550,7 +550,7 @@ internal sealed partial class ShaderEditorCanvas(
                 {
                     return;
                 }
-                ports.Add(new(endpoint.portID.value, ShaderSourceType.Atomic("missing"), direction, false));
+                ports.Add(new ShaderNodePort(endpoint.portID.value, ShaderSourceType.Atomic("missing"), direction, false));
                 draft.missingPorts.Add(endpoint);
             }
         }
@@ -762,8 +762,8 @@ internal sealed partial class ShaderEditorCanvas(
             float divider = (rect.min.X + rect.max.X) * 0.5f;
             float padding = 7f * zoom;
             draw.Line(
-                new(divider, rect.min.Y + C_HEADER * zoom + padding),
-                new(divider, rect.max.Y - padding),
+                new Vector2(divider, rect.min.Y + C_HEADER * zoom + padding),
+                new Vector2(divider, rect.max.Y - padding),
                 Color(0.62f, 0.63f, 0.69f, EditorPalette.C_OPACITY_FAINT),
                 1f
             );
@@ -823,7 +823,7 @@ internal sealed partial class ShaderEditorCanvas(
 
         if (draft.nodeErrors.TryGetValue(node.id, out string? error))
         {
-            draw.FilledCircle(new(rect.max.X - 14 * zoom, rect.min.Y + 16 * zoom), 4 * zoom, Color(1, 0.4f, 0.35f));
+            draw.FilledCircle(new Vector2(rect.max.X - 14 * zoom, rect.min.Y + 16 * zoom), 4 * zoom, Color(1, 0.4f, 0.35f));
             if (Contains(rect, ImGuiApi.GetMousePos()))
             {
                 EditorUI.current.widgets.DrawTooltip(error);
@@ -846,7 +846,7 @@ internal sealed partial class ShaderEditorCanvas(
             bool selected = draft.selectedGroupID == group.id;
             Vector4 headerColor = GroupHeaderColor(group);
             Vector4 bodyColor = EditorPalette.WithOpacity(headerColor, EditorPalette.C_OPACITY_SOFT);
-            Vector4 borderColor = selected ? new(0.65f, 0.47f, 0.88f, EditorPalette.C_OPACITY_OPAQUE) : new(
+            Vector4 borderColor = selected ? new Vector4(0.65f, 0.47f, 0.88f, EditorPalette.C_OPACITY_OPAQUE) : new Vector4(
                 MathF.Min(1f, headerColor.X * 1.22f),
                 MathF.Min(1f, headerColor.Y * 1.22f),
                 MathF.Min(1f, headerColor.Z * 1.22f),
@@ -854,8 +854,13 @@ internal sealed partial class ShaderEditorCanvas(
             );
             float headerHeight = C_HEADER * canvas.zoom;
             draw.FilledRectangle(min, max, ImGuiApi.ToPackedColor(bodyColor), 8 * canvas.zoom, false);
-            draw.FilledRectangle(min, new(max.X, min.Y + headerHeight), ImGuiApi.ToPackedColor(headerColor), 8 * canvas.zoom, true);
-            draw.Line(new(min.X, min.Y + headerHeight), new(max.X, min.Y + headerHeight), ImGuiApi.ToPackedColor(borderColor), 1f);
+            draw.FilledRectangle(min, new Vector2(max.X, min.Y + headerHeight), ImGuiApi.ToPackedColor(headerColor), 8 * canvas.zoom, true);
+            draw.Line(
+                new Vector2(min.X, min.Y + headerHeight),
+                new Vector2(max.X, min.Y + headerHeight),
+                ImGuiApi.ToPackedColor(borderColor),
+                1f
+            );
             draw.Rectangle(min, max, ImGuiApi.ToPackedColor(borderColor), 8 * canvas.zoom, selected ? 2f : 1f);
             {
                 draw.Text(
@@ -890,7 +895,7 @@ internal sealed partial class ShaderEditorCanvas(
         var max = new Vector2(float.MinValue);
         foreach (string id in group.nodes)
         {
-            if (controller.document.FindNode(new(id)) is GraphNodeRecord node)
+            if (controller.document.FindNode(new GraphNodeID(id)) is GraphNodeRecord node)
             {
                 (Vector2 min, Vector2 max) rect = Rect(node);
                 min = Vector2.Min(min, rect.min);
@@ -939,7 +944,7 @@ internal sealed partial class ShaderEditorCanvas(
             bool split = UsesSplitPortLayout(draft.ports[node.id]);
             int left = 0;
             int right = 0;
-            var ports = new List<GraphCanvasPort>();
+            List<GraphCanvasPort> ports = [];
             foreach (ShaderNodePort port in draft.ports[node.id])
             {
                 bool input = port.direction == GraphPortDirection.Input;
@@ -950,19 +955,19 @@ internal sealed partial class ShaderEditorCanvas(
                     new GraphCanvasPort(
                         endpoint,
                         port.direction,
-                        new(input ? 0f : width, y),
+                        new Vector2(input ? 0f : width, y),
                         port.id,
                         input && !port.required,
                         draft.missingPorts.Contains(endpoint),
-                        (new(split && !input ? width * 0.5f : 0f, y - C_ROW * 0.5f),
-                            new(split && input ? width * 0.5f : width, y + C_ROW * 0.5f))
+                        (new Vector2(split && !input ? width * 0.5f : 0f, y - C_ROW * 0.5f),
+                            new Vector2(split && input ? width * 0.5f : width, y + C_ROW * 0.5f))
                     )
                 );
             }
             return new GraphCanvasNode(
                 node.id,
                 node.position,
-                new(width, C_HEADER + Rows(node) * C_ROW + 20f),
+                new Vector2(width, C_HEADER + Rows(node) * C_ROW + 20f),
                 C_HEADER,
                 Title(node),
                 ports
@@ -1144,7 +1149,7 @@ internal sealed partial class ShaderEditorCanvas(
         int count = 0;
         foreach (string id in group.nodes)
         {
-            if (controller.document.FindNode(new(id)) is not GraphNodeRecord node)
+            if (controller.document.FindNode(new GraphNodeID(id)) is not GraphNodeRecord node)
             {
                 continue;
             }
@@ -1259,7 +1264,7 @@ internal sealed partial class ShaderEditorCanvas(
             0.1f,
             1f
         );
-        canvas.SetViewport(new(m_size.X / 2 - (minX + maxX) / 2 * scale, m_size.Y / 2 - (minY + maxY) / 2 * scale), scale);
+        canvas.SetViewport(new GraphPosition(m_size.X / 2 - (minX + maxX) / 2 * scale, m_size.Y / 2 - (minY + maxY) / 2 * scale), scale);
     }
 
     private static void InspectorRow(
@@ -1282,7 +1287,7 @@ internal sealed partial class ShaderEditorCanvas(
         float g,
         float b,
         float a = EditorPalette.C_OPACITY_OPAQUE
-    ) => ImGuiApi.ToPackedColor(new(r, g, b, a));
+    ) => ImGuiApi.ToPackedColor(new Vector4(r, g, b, a));
 
     private static Vector4 StableHeaderColor(
         string key,

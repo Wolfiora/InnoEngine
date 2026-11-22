@@ -28,7 +28,7 @@ internal sealed class OperatorAlignmentStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         int fixedEnd = -1;
         foreach ((int position, List<StyleEdit> chainEdits) in Violations(source))
         {
@@ -66,7 +66,7 @@ internal sealed class OperatorAlignmentStyleRule : StyleRule
                 target = source.Indentation(owner.GetFirstToken().SpanStart) + StyleLayout.C_INDENT;
             }
 
-            var edits = new List<StyleEdit>();
+            List<StyleEdit> edits = [];
             for (int index = 0; index < lines.Length; index++)
             {
                 int delta = target - source.Indentation(source.text.Lines[lines[index]].Start);

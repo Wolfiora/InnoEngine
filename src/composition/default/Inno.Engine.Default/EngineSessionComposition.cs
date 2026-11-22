@@ -51,13 +51,19 @@ public sealed class EngineSessionComposition
         Func<IApplicationStorage> createStorage,
         IRuntimeSubsystemFactory? audioOverride = null
     ) {
-        this.session = session ?? throw new ArgumentNullException(nameof(session));
-        this.adapters = adapters ?? throw new ArgumentNullException(nameof(adapters));
+        ArgumentNullException.ThrowIfNull(session);
+        ArgumentNullException.ThrowIfNull(adapters);
+        ArgumentNullException.ThrowIfNull(inputSource);
+        ArgumentNullException.ThrowIfNull(artifacts);
+        ArgumentNullException.ThrowIfNull(audioSettings);
+        ArgumentNullException.ThrowIfNull(createStorage);
+        this.session = session;
+        this.adapters = adapters;
         this.selection = selection;
-        this.inputSource = inputSource ?? throw new ArgumentNullException(nameof(inputSource));
-        this.artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
-        this.audioSettings = audioSettings ?? throw new ArgumentNullException(nameof(audioSettings));
-        this.createStorage = createStorage ?? throw new ArgumentNullException(nameof(createStorage));
+        this.inputSource = inputSource;
+        this.artifacts = artifacts;
+        this.audioSettings = audioSettings;
+        this.createStorage = createStorage;
         this.audioOverride = audioOverride;
     }
 

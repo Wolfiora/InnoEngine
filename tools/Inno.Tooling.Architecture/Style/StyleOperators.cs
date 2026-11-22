@@ -14,7 +14,7 @@ internal static class StyleOperators
     {
         foreach (SyntaxNode node in root.DescendantNodes())
         {
-            var operators = new List<SyntaxToken>();
+            List<SyntaxToken> operators = [];
             switch (node)
             {
                 case BinaryExpressionSyntax binary when IsChained(binary) && !IsSameTier(binary, node.Parent):

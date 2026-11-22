@@ -194,7 +194,7 @@ internal sealed class PluginPackageBuilder
             .ToArray();
         HashSet<string> dependencySet = dependencyIDs.ToHashSet(StringComparer.Ordinal);
         HashSet<string> overrideSet = overrides.ToHashSet(StringComparer.Ordinal);
-        var settings = new List<ProjectSettingRecord>();
+        List<ProjectSettingRecord> settings = [];
         foreach (ProjectSettingRecord record in settingsDocument.overrides
             .OrderBy(static value => value.id.value, StringComparer.Ordinal)
         ) {
@@ -239,7 +239,7 @@ internal sealed class PluginPackageBuilder
             settingContributions = settings.ToArray()
         };
         manifest.Validate();
-        var projectEntries = new List<SourceEntry>();
+        List<SourceEntry> projectEntries = [];
         foreach (string directory in CollectDirectories(relativeFiles))
         {
             string metadata = Path.Combine(projectMount.rootPath, directory.Replace('/', Path.DirectorySeparatorChar)) + ".imeta";
@@ -256,7 +256,7 @@ internal sealed class PluginPackageBuilder
             right
         ) => StringComparer.Ordinal.Compare(left.archivePath, right.archivePath));
 
-        var dependencies = new List<PluginDependencyPlan>();
+        List<PluginDependencyPlan> dependencies = [];
         if (request.includeDependencies)
         {
             foreach (PluginCandidate plugin in activePlugins)

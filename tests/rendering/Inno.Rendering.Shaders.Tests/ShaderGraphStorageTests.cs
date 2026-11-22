@@ -39,7 +39,7 @@ public sealed partial class ShaderGraphProgramTests
         var caps = new GraphicsCapabilities(
             GraphicsApi.metal,
             GraphicsCapability.Compute | GraphicsCapability.StorageBuffer,
-            new(256, 8, 8192, 16),
+            new GraphicsLimits(256, 8, 8192, 16),
             formats,
             formats,
             formats,
@@ -59,14 +59,14 @@ public sealed partial class ShaderGraphProgramTests
     {
         ShaderSourceType aggregate = ShaderSourceType.Structure(
             "Payload",
-            [new("points", ShaderSourceType.ArrayOf(ShaderSourceType.Atomic("float2"), 3))]
+            [new ShaderSourceField("points", ShaderSourceType.ArrayOf(ShaderSourceType.Atomic("float2"), 3))]
         );
         foreach (ShaderSourceType type in new[]
         {
             aggregate,
             ShaderSourceType.Storage(ShaderStorageType.Buffer(aggregate, RenderStorageAccess.ReadWrite))
         }) {
-            var node = new GraphNodeRecord(new("route"), "inno.shader.reroute");
+            var node = new GraphNodeRecord(new GraphNodeID("route"), "inno.shader.reroute");
             node.SetValue(
                 "valueType",
                 ShaderGraphDocument.Encode(ShaderGraphType.Capture(type), m_serialization, SerializationContext.empty)
@@ -80,7 +80,7 @@ public sealed partial class ShaderGraphProgramTests
     private GraphDocument StorageGraph()
     {
         GraphDocument graph = ShaderGraphDocument.Create(
-            new("Compute", [], [], [new("Main", ShaderProgramKind.Compute)]),
+            new ShaderDefinition("Compute", [], [], [new ShaderPassDefinition("Main", ShaderProgramKind.Compute)]),
             m_serialization,
             SerializationContext.empty
         );
@@ -126,7 +126,7 @@ public sealed partial class ShaderGraphProgramTests
             string id,
             string type
         ) {
-            var node = new GraphNodeRecord(new(id), type);
+            var node = new GraphNodeRecord(new GraphNodeID(id), type);
             if (id != "compute") Set(node, "stage", "compute");
             graph.AddNode(node);
             return node;
@@ -141,6 +141,12 @@ public sealed partial class ShaderGraphProgramTests
             string outputPort,
             GraphNodeRecord input,
             string inputPort
-        ) => graph.AddEdge(new(new(Guid.NewGuid().ToString("N")), new(output.id, new(outputPort)), new(input.id, new(inputPort))));
+        ) => graph.AddEdge(
+            new GraphEdgeRecord(
+                new GraphEdgeID(Guid.NewGuid().ToString("N")),
+                new GraphEndpoint(output.id, new GraphPortID(outputPort)),
+                new GraphEndpoint(input.id, new GraphPortID(inputPort))
+            )
+        );
     }
 }

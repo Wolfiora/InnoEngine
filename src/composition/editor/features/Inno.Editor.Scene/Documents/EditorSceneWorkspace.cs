@@ -92,11 +92,16 @@ internal sealed partial class EditorSceneWorkspace :
         LogRouter logs,
         IEditorSelectionCoordinator? selection = null
     ) {
-        m_runtimeSession = runtimeSession ?? throw new ArgumentNullException(nameof(runtimeSession));
-        m_assets = assets ?? throw new ArgumentNullException(nameof(assets));
-        m_types = types ?? throw new ArgumentNullException(nameof(types));
-        m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
-        m_reloads = reloads ?? throw new ArgumentNullException(nameof(reloads));
+        ArgumentNullException.ThrowIfNull(runtimeSession);
+        ArgumentNullException.ThrowIfNull(assets);
+        ArgumentNullException.ThrowIfNull(types);
+        ArgumentNullException.ThrowIfNull(serialization);
+        ArgumentNullException.ThrowIfNull(reloads);
+        m_runtimeSession = runtimeSession;
+        m_assets = assets;
+        m_types = types;
+        m_serialization = serialization;
+        m_reloads = reloads;
         ArgumentNullException.ThrowIfNull(logs);
         m_log = logs.CreateLogger<EditorSceneWorkspace>();
         m_selection = selection;

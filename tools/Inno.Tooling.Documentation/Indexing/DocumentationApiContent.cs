@@ -76,8 +76,8 @@ internal static class DocumentationApiContent
             throw new InvalidDataException("API content registry repeats an owned path.");
         }
         var edits = new Dictionary<string, DocumentationApiEdit>(StringComparer.Ordinal);
-        var warnings = new List<DocumentationApiWarning>();
-        var entries = new List<DocumentationApiContentEntry>();
+        List<DocumentationApiWarning> warnings = [];
+        List<DocumentationApiContentEntry> entries = [];
         Dictionary<string, string> typePaths = facts.Values.Where(contexts => contexts[0].kind == "NamedType")
             .ToDictionary(contexts => contexts[0].key, contexts => TypePath(contexts[0]), StringComparer.Ordinal);
         var categoryPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -157,12 +157,24 @@ internal static class DocumentationApiContent
                 if (string.IsNullOrWhiteSpace(existing.body)
                     || Normalize(existing.body) == Normalize(DocumentationXml.Read(fact.documentation).body)
                 ) {
-                    warnings.Add(new(fact.key, path, "EmptyManual", "Manual ownership has no independent explanatory content."));
+                    warnings.Add(
+                        new DocumentationApiWarning(
+                            fact.key,
+                            path,
+                            "EmptyManual",
+                            "Manual ownership has no independent explanatory content."
+                        )
+                    );
                 }
                 if (stale)
                 {
                     warnings.Add(
-                        new(fact.key, path, "ReviewRequired", "The authored explanation is marked outdated for the current source.")
+                        new DocumentationApiWarning(
+                            fact.key,
+                            path,
+                            "ReviewRequired",
+                            "The authored explanation is marked outdated for the current source."
+                        )
                     );
                 }
             }
@@ -178,7 +190,7 @@ internal static class DocumentationApiContent
                         Contract(pair.Value, normalizeXml: true)
                     )
                 );
-                warnings.Add(new(fact.key, path, "XmlOnly", "This API still uses XML-synchronized prose."));
+                warnings.Add(new DocumentationApiWarning(fact.key, path, "XmlOnly", "This API still uses XML-synchronized prose."));
             }
         }
         foreach (DocumentationApiContentEntry removed in prior.Values.Where(entry => !facts.ContainsKey(entry.symbol)))
@@ -199,7 +211,12 @@ internal static class DocumentationApiContent
             {
                 entries.Add(removed);
                 warnings.Add(
-                    new(removed.symbol, removed.path, "RemovedApi", "Preserved manual prose for an API absent from the current input.")
+                    new DocumentationApiWarning(
+                        removed.symbol,
+                        removed.path,
+                        "RemovedApi",
+                        "Preserved manual prose for an API absent from the current input."
+                    )
                 );
             }
         }

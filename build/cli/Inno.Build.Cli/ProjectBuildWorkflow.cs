@@ -96,7 +96,7 @@ internal static class ProjectBuildWorkflow
                 )
                 .GetAwaiter()
                 .GetResult();
-            result = await pipeline.BuildGameAsync(request, progress, cancellationToken);
+            result = await pipeline.BuildGameAsync(request, progress, cancellationToken).ConfigureAwait(false);
         }
         else if (command.kind == BuildCommandKind.Plugin)
         {
@@ -104,7 +104,7 @@ internal static class ProjectBuildWorkflow
                 command.CreatePluginRequest(workspace.projectID),
                 progress,
                 cancellationToken
-            );
+            ).ConfigureAwait(false);
         }
         else
         {

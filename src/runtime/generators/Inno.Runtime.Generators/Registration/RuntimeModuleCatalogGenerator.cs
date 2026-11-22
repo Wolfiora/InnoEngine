@@ -55,7 +55,7 @@ public sealed class RuntimeModuleCatalogGenerator : IIncrementalGenerator
             )
             .Append("    public static void Register(global::Inno.Extensibility.Catalogs.ITypeCatalogRegistrar register)\n    {\n")
             .Append("        global::System.ArgumentNullException.ThrowIfNull(register);\n");
-        var constructors = new List<INamedTypeSymbol>();
+        List<INamedTypeSymbol> constructors = [];
         foreach (INamedTypeSymbol type in types)
         {
             string typeName = GetTypeName(type);
@@ -284,7 +284,7 @@ public sealed class RuntimeModuleCatalogGenerator : IIncrementalGenerator
         }
         foreach (ITypeParameterSymbol parameter in parameters)
         {
-            var constraints = new List<string>();
+            List<string> constraints = [];
             if (parameter.HasUnmanagedTypeConstraint)
             {
                 constraints.Add("unmanaged");
@@ -366,7 +366,7 @@ public sealed class RuntimeModuleCatalogGenerator : IIncrementalGenerator
     private static string FormatOverrides(INamedTypeSymbol type)
     {
         var seen = new HashSet<string>(StringComparer.Ordinal);
-        var declarations = new List<string>();
+        List<string> declarations = [];
         foreach (INamedTypeSymbol owner in new[] { type }.Concat(GetBaseTypes(type)))
         {
             foreach (IMethodSymbol method in owner.GetMembers().OfType<IMethodSymbol>().Where(static method => (

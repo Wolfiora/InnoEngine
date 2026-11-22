@@ -100,12 +100,13 @@ public sealed class FilePlayerSupportPackPreparation
         ArgumentException.ThrowIfNullOrWhiteSpace(productProject);
         ArgumentException.ThrowIfNullOrWhiteSpace(templateFile);
         ArgumentNullException.ThrowIfNull(nativePlan);
+        ArgumentNullException.ThrowIfNull(nativeExecutor);
         ArgumentNullException.ThrowIfNull(toolchainProvider);
         ArgumentNullException.ThrowIfNull(host);
         m_productProject = productProject;
         m_templateFile = templateFile;
         m_nativePlan = nativePlan;
-        m_nativeExecutor = nativeExecutor ?? throw new ArgumentNullException(nameof(nativeExecutor));
+        m_nativeExecutor = nativeExecutor;
         m_toolchainProvider = toolchainProvider;
         ArgumentNullException.ThrowIfNull(bindingGenerator);
         ArgumentNullException.ThrowIfNull(preparationInputs);

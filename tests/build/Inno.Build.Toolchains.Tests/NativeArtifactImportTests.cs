@@ -255,8 +255,8 @@ public sealed class NativeArtifactImportTests : IDisposable
         string root,
         Func<NativeBuildContext, string, CancellationToken, Task> produce
     ) => NativeArtifactPublisher.PublishAsync(
-        new(root, "debug"),
-        new(
+        new NativeBuildContext(root, "debug"),
+        new NativeBuildRecipe(
             m_owner,
             "fixture",
             "fixture-target",
@@ -269,8 +269,8 @@ public sealed class NativeArtifactImportTests : IDisposable
     private static Task ProduceAsync(
         NativeBuildContext context,
         string directory,
-        CancellationToken cancellation
-    ) => File.WriteAllTextAsync(Path.Combine(directory, "result.fixture"), "result", cancellation);
+        CancellationToken cancellationToken
+    ) => File.WriteAllTextAsync(Path.Combine(directory, "result.fixture"), "result", cancellationToken);
 
     private static string Import(
         NativeBuildProduct source,

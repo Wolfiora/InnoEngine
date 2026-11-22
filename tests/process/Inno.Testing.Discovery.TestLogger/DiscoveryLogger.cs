@@ -41,7 +41,7 @@ public sealed class DiscoveryLogger : ITestLoggerWithParameters
         var owners = new Dictionary<string, Owner>(
             OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
         );
-        var errors = new List<string>();
+        List<string> errors = [];
         events.DiscoveryMessage += (
             _,
             message

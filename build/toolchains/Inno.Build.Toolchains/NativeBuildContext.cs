@@ -13,6 +13,10 @@ namespace Inno.Build.Toolchains;
 /// </summary>
 public sealed class NativeBuildContext
 {
+    private static readonly ReadOnlyDictionary<string, NativeBindingGenerationDescriptor> NO_BINDINGS = new(
+        new Dictionary<string, NativeBindingGenerationDescriptor>()
+    );
+
     private readonly NativeBuildInputState m_inputState;
     private readonly string? m_buildOwner;
     private readonly string? m_targetID;
@@ -23,8 +27,7 @@ public sealed class NativeBuildContext
     private NativeComponentDescriptor? m_component;
     private NativeComponentBuildOptions? m_componentOptions;
 
-    private IReadOnlyDictionary<string, NativeBindingGenerationDescriptor> m_bindings =
-        new ReadOnlyDictionary<string, NativeBindingGenerationDescriptor>(new Dictionary<string, NativeBindingGenerationDescriptor>());
+    private IReadOnlyDictionary<string, NativeBindingGenerationDescriptor> m_bindings = NO_BINDINGS;
 
     /// <summary>
     /// Creates a build context without consulting the tool assembly's checkout.

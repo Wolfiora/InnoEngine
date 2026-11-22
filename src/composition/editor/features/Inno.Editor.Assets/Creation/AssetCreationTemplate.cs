@@ -182,7 +182,8 @@ public sealed class AssetCreationContext
     [ScriptingApiIgnore]
     public AssetCreationContext(AssetSourceStore sources)
     {
-        m_sources = sources ?? throw new ArgumentNullException(nameof(sources));
+        ArgumentNullException.ThrowIfNull(sources);
+        m_sources = sources;
     }
 
     /// <summary>

@@ -208,11 +208,11 @@ internal sealed class GameBehaviorLifecycleRunner
         }
 
         IReadOnlyList<GameBehavior> behaviors = m_scene.GetComponents<GameBehavior>();
-        var activation = new List<GameBehavior>();
-        var variableFrame = new List<GameBehavior>();
-        var update = new List<GameBehavior>();
-        var fixedUpdate = new List<GameBehavior>();
-        var lateUpdate = new List<GameBehavior>();
+        List<GameBehavior> activation = [];
+        List<GameBehavior> variableFrame = [];
+        List<GameBehavior> update = [];
+        List<GameBehavior> fixedUpdate = [];
+        List<GameBehavior> lateUpdate = [];
         for (int index = 0; index < behaviors.Count; index++)
         {
             GameBehavior behavior = behaviors[index];

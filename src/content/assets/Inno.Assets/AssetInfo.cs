@@ -64,7 +64,7 @@ public sealed class AssetInfo
         this.stableAssetTypeID = stableAssetTypeID;
         this.artifactKey = artifactKey;
         this.lastSuccessfulArtifactKey = lastSuccessfulArtifactKey;
-        this.diagnostics = diagnostics ?? Array.Empty<string>();
+        this.diagnostics = diagnostics ?? [];
     }
 
     /// <summary>

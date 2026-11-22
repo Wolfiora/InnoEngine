@@ -21,11 +21,11 @@ internal sealed class BindingGenerationPublication : IDisposable
         string destination,
         string? native,
         bool target,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         this.managedDestination = destination;
         this.nativeDestination = native;
-        m_owner = ProcessOwnedDirectory.CreateAsync(workingRoot, cancellation).AsTask().GetAwaiter().GetResult();
+        m_owner = ProcessOwnedDirectory.CreateAsync(workingRoot, cancellationToken).AsTask().GetAwaiter().GetResult();
         m_workingRoot = workingRoot;
         m_target = target;
         m_candidates.Add(destination, Path.Combine(m_owner.directory, "Managed"));
@@ -71,7 +71,7 @@ internal sealed class BindingGenerationPublication : IDisposable
         // Generation locks protect the complete host output set. Keep every previous tree
         // in this claimed transaction until all candidate renames succeed.
         var previous = new Dictionary<string, string>(StringComparer.Ordinal);
-        var installed = new List<string>();
+        List<string> installed = [];
         try
         {
             foreach (KeyValuePair<string, string> candidate in m_candidates)
@@ -89,7 +89,7 @@ internal sealed class BindingGenerationPublication : IDisposable
         }
         catch (Exception commitFailure)
         {
-            var failures = new List<Exception> { commitFailure };
+            List<Exception> failures = [commitFailure];
             foreach (string destination in m_candidates.Keys.Reverse())
             {
                 try
@@ -128,13 +128,13 @@ internal sealed class BindingGenerationPublication : IDisposable
     internal static BindingGenerationPublication CreateTarget(
         string workingRoot,
         string destination,
-        CancellationToken cancellation
-    ) => new(workingRoot, destination, null, true, cancellation);
+        CancellationToken cancellationToken
+    ) => new(workingRoot, destination, null, true, cancellationToken);
 
     internal static BindingGenerationPublication CreateHost(
         string workingRoot,
         string managed,
         string? native,
-        CancellationToken cancellation
-    ) => new(workingRoot, managed, native, false, cancellation);
+        CancellationToken cancellationToken
+    ) => new(workingRoot, managed, native, false, cancellationToken);
 }

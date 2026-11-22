@@ -496,7 +496,7 @@ public sealed class DependencyGraph<TKey>
             var lowLinks = new Dictionary<TKey, int>(m_nodes.Count, m_equalityComparer);
             var active = new HashSet<TKey>(m_equalityComparer);
             var stack = new Stack<TKey>();
-            var components = new List<IReadOnlyList<TKey>>();
+            List<IReadOnlyList<TKey>> components = [];
 
             foreach (TKey node in OrderNodes(m_nodes.Keys))
             {
@@ -538,7 +538,7 @@ public sealed class DependencyGraph<TKey>
                     return;
                 }
 
-                var component = new List<TKey>();
+                List<TKey> component = [];
                 TKey current;
                 do
                 {
@@ -604,7 +604,7 @@ public sealed class DependencyGraph<TKey>
         {
             if (!m_nodes.TryGetValue(node, out Node? start))
             {
-                return Array.Empty<TKey>();
+                return [];
             }
             if (!recursive)
             {
@@ -638,7 +638,7 @@ public sealed class DependencyGraph<TKey>
     private IReadOnlyList<TKey> FindCycleLocked()
     {
         var states = new Dictionary<TKey, byte>(m_nodes.Count, m_equalityComparer);
-        var path = new List<TKey>();
+        List<TKey> path = [];
         var pathIndexes = new Dictionary<TKey, int>(m_nodes.Count, m_equalityComparer);
 
         foreach (TKey node in OrderNodes(m_nodes.Keys))
@@ -648,7 +648,7 @@ public sealed class DependencyGraph<TKey>
                 return cycle;
             }
         }
-        return Array.Empty<TKey>();
+        return [];
 
         bool Visit(
             TKey node,
@@ -683,7 +683,7 @@ public sealed class DependencyGraph<TKey>
             states[node] = 2;
             pathIndexes.Remove(node);
             path.RemoveAt(path.Count - 1);
-            cycle = Array.Empty<TKey>();
+            cycle = [];
             return false;
         }
     }

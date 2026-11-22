@@ -110,7 +110,7 @@ internal sealed partial class ConsolePanel
             EntryMeasurement measurement = sameShape && m_measurements.TryGetValue(row.key, out EntryMeasurement? previous)
                                            && ReferenceEquals(previous.row, row) && previous.open == open
                                            ? previous
-                                           : new(row, open, collapsedHeight);
+                                           : new EntryMeasurement(row, open, collapsedHeight);
             entries[index] = measurement;
             measurements.Add(row.key, measurement);
         }
@@ -226,7 +226,7 @@ internal sealed partial class ConsolePanel
         // A slot is reusable only after all rows have finished submitting this frame.
         RetireCardWindows();
         Gui.SetCursorScreenPosition(origin);
-        Gui.Dummy(new(1f, MathF.Max(1f, m_offsets[^1] - Gui.GetLayout().itemSpacing.Y)));
+        Gui.Dummy(new Vector2(1f, MathF.Max(1f, m_offsets[^1] - Gui.GetLayout().itemSpacing.Y)));
     }
 
     private int FindLayoutRow(float position)

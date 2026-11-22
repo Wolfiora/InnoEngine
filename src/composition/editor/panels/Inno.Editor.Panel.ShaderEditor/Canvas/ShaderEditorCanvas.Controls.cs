@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using Inno.Assets.Pipeline;
 using Inno.Core.Execution;
 using Inno.Core.Graphs;
@@ -9,6 +10,7 @@ using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.Interactions;
 using Inno.Editor.Rendering;
+using Inno.Editor.Shaders.ImGui;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 using Inno.Rendering.Assets.Authoring;
@@ -25,7 +27,7 @@ internal sealed partial class ShaderEditorCanvas
     {
         if (owner.drawers?.TryDraw(
             node.definitionID,
-            new(node, owner.serialization, owner.context, (
+            new ShaderNodeDrawContext(node, owner.serialization, owner.context, (
                 key,
                 value,
                 continuous
@@ -484,7 +486,7 @@ internal sealed partial class ShaderEditorCanvas
             {
                 id = prefix + suffix;
             }
-            apply([..ports, new() { id = id, type = new() { id = "float" }, required = false }]);
+            apply([..ports, new ShaderGraphNodePortDefinition() { id = id, type = new() { id = "float" }, required = false }]);
         }
 
         RepairPorts(node);
@@ -726,7 +728,7 @@ internal sealed partial class ShaderEditorCanvas
                         if (kind == ShaderIrInputKind.Builtin)
                         {
                             string stageID = Read(node, "stage", string.Empty);
-                            GraphNodeRecord? output = stageID.Length == 0 ? null : controller.document.FindNode(new(stageID));
+                            GraphNodeRecord? output = stageID.Length == 0 ? null : controller.document.FindNode(new GraphNodeID(stageID));
                             if (output is not null && Read(output, "settings", new ShaderGraphStageSettings()).stage == ShaderStage.Compute)
                             {
                                 input.semantic = "global-invocation-id";
@@ -864,7 +866,7 @@ internal sealed partial class ShaderEditorCanvas
                 TextureAsset? texture = definition.properties.FirstOrDefault(value => value.id.value == input.id).defaultValue.texture;
                 if (texture is not null && owner.previews.TryGetTexture(texture, out EditorPreviewHandle preview))
                 {
-                    owner.previews.Draw(preview, new(120 * canvas.zoom, 120 * canvas.zoom));
+                    owner.previews.Draw(preview, new Vector2(120 * canvas.zoom, 120 * canvas.zoom));
                 }
                 else
                 {

@@ -98,7 +98,7 @@ public sealed class JobSystemBehaviorTests
         jobs.BeginFrame();
 
         int mainThread = Environment.CurrentManagedThreadId;
-        var observed = new List<int>();
+        List<int> observed = [];
         JobHandle a = jobs.Schedule(() => observed.Add(Environment.CurrentManagedThreadId));
         JobHandle b = jobs.Schedule(() => observed.Add(Environment.CurrentManagedThreadId));
 
@@ -217,7 +217,7 @@ public sealed class JobSystemBehaviorTests
         jobs.BeginFrame();
 
         int mainThread = Environment.CurrentManagedThreadId;
-        var threadIDs = new List<int>();
+        List<int> threadIDs = [];
         jobs.EnqueueMainThread(() => threadIDs.Add(Environment.CurrentManagedThreadId));
         jobs.EnqueueMainThread(() => threadIDs.Add(Environment.CurrentManagedThreadId));
         jobs.DrainMainThreadQueue();

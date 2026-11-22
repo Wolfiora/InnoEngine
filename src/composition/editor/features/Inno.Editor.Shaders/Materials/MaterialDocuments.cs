@@ -16,7 +16,7 @@ using Inno.Rendering.Assets;
 using Inno.Rendering.Assets.Authoring;
 using Inno.Scripting.Api;
 
-using Draft = Inno.Editor.Assets.AssetDraftDocuments<Inno.Rendering.Assets.MaterialAsset>.Draft;
+using MaterialDraft = Inno.Editor.Assets.AssetDraftDocuments<Inno.Rendering.Assets.MaterialAsset>.Draft;
 
 namespace Inno.Editor.Shaders;
 
@@ -78,7 +78,7 @@ public sealed class MaterialDocuments : EditorModule
     /// The generation-scoped editable source draft.
     /// </returns>
     [ScriptingApiIgnore]
-    public Draft Open(MaterialAsset material)
+    public MaterialDraft Open(MaterialAsset material)
     {
         if (!assets.TryGetInfo(material.identity.persistentID, out AssetInfo? info) || info is null)
         {
@@ -140,7 +140,7 @@ public sealed class MaterialDocuments : EditorModule
     /// The generation-scoped draft; callers must not retain it across a reload.
     /// </returns>
     [ScriptingApiIgnore]
-    public Draft OpenDraft(AssetPath path) => m_documents.GetDraft(Open(path));
+    public MaterialDraft OpenDraft(AssetPath path) => m_documents.GetDraft(Open(path));
 
     /// <summary>
     /// Reads parameter presentation from the current authoring Shader graph.
@@ -163,7 +163,7 @@ public sealed class MaterialDocuments : EditorModule
         ShaderPropertyID propertyID,
         out string error
     ) {
-        PresentationCache cache = m_presentations.GetValue(shader, static _ => new());
+        PresentationCache cache = m_presentations.GetValue(shader, static _ => new PresentationCache());
         if (cache.contentVersion != shader.contentVersion)
         {
             cache.contentVersion = shader.contentVersion;
@@ -181,7 +181,7 @@ public sealed class MaterialDocuments : EditorModule
 
         error = cache.error;
         return cache.graph is null
-               ? new()
+               ? new ShaderParameterPresentation()
                : ShaderParameterPresentation.Read(cache.graph, propertyID, m_serialization, AssetSerializationContext.Create(assets));
     }
 

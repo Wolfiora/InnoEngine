@@ -426,7 +426,8 @@ public sealed partial class ShaderCompiler
     /// </param>
     public ShaderCompiler(IShaderCompilerToolchain toolchain)
     {
-        m_toolchain = toolchain ?? throw new ArgumentNullException(nameof(toolchain));
+        ArgumentNullException.ThrowIfNull(toolchain);
+        m_toolchain = toolchain;
     }
 
     /// <summary>

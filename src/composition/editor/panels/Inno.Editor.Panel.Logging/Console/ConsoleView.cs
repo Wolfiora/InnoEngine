@@ -14,7 +14,7 @@ internal sealed class ConsoleView
     private ulong m_levels;
     private bool m_collapsed;
 
-    internal IReadOnlyList<Row> rows { get; private set; } = Array.Empty<Row>();
+    internal IReadOnlyList<Row> rows { get; private set; } = [];
 
     internal bool Update(
         EditorConsoleSnapshot snapshot,
@@ -32,12 +32,12 @@ internal sealed class ConsoleView
         ) {
             return false;
         }
-        var filtered = new List<Row>();
+        List<Row> filtered = [];
         if (collapsed)
         {
             foreach (EditorConsoleGroup group in snapshot.groups)
             {
-                var matches = new List<EditorConsoleOccurrence>();
+                List<EditorConsoleOccurrence> matches = [];
                 foreach (EditorConsoleOccurrence occurrence in group.occurrences)
                 {
                     if (Matches(occurrence, query, levels))
@@ -97,7 +97,7 @@ internal sealed class ConsoleView
 
     internal void Clear()
     {
-        rows = Array.Empty<Row>();
+        rows = [];
         m_indices.Clear();
         m_revision = -1;
         m_query = string.Empty;

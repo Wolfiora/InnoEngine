@@ -162,7 +162,7 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
 
     private List<IEditorReloadParticipant> GetParticipants()
     {
-        var participants = new List<IEditorReloadParticipant>();
+        List<IEditorReloadParticipant> participants = [];
         lock (m_sync)
         {
             RemoveCollectedParticipants();

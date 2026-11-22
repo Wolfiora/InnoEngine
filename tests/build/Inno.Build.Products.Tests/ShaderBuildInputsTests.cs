@@ -76,7 +76,7 @@ public sealed class ShaderBuildInputsTests : IDisposable
     {
         string candidate = Path.Combine(m_root, "source.staging-" + Guid.NewGuid().ToString("N"));
         File.WriteAllText(candidate, "first");
-        NativeBuildInput[] explicitInputs = [new("explicit-input", candidate)];
+        NativeBuildInput[] explicitInputs = [new NativeBuildInput("explicit-input", candidate)];
         string before = NativeBuildFingerprint.Create([], explicitInputs);
         File.WriteAllText(candidate, "other");
         Assert.NotEqual(before, NativeBuildFingerprint.Create([], explicitInputs));

@@ -27,7 +27,7 @@ internal sealed class EmptyBodyStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         foreach (SyntaxNode node in source.root.DescendantNodes())
         {
             if (node is not BlockSyntax { Statements.Count: 0 } block || block.OpenBraceToken.IsMissing || block.CloseBraceToken.IsMissing)
@@ -51,7 +51,7 @@ internal sealed class EmptyBodyStyleRule : StyleRule
                 continue;
             }
             if (source.content[start..end] == " {}") continue;
-            edits.Add(new(start, end, " {}"));
+            edits.Add(new StyleEdit(start, end, " {}"));
         }
 
         return edits;
@@ -79,7 +79,7 @@ internal sealed class EmptyTypeStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         foreach (SyntaxNode node in source.root.DescendantNodes())
         {
             if (node is not TypeDeclarationSyntax { Members.Count: 0 } type
@@ -95,7 +95,7 @@ internal sealed class EmptyTypeStyleRule : StyleRule
                 continue;
             }
             if (type.DescendantTrivia().Any(static trivia => trivia.IsDirective)) continue;
-            edits.Add(new(previous.Span.End, type.CloseBraceToken.Span.End, ";"));
+            edits.Add(new StyleEdit(previous.Span.End, type.CloseBraceToken.Span.End, ";"));
         }
 
         return edits;

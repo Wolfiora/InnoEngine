@@ -57,10 +57,14 @@ internal sealed class InspectorPanel : EditorPanel
         IEditorPlayMode playMode,
         LogRouter logs
     ) {
-        m_inspection = inspection ?? throw new ArgumentNullException(nameof(inspection));
-        m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-        m_sceneEdits = sceneEdits ?? throw new ArgumentNullException(nameof(sceneEdits));
-        m_playMode = playMode ?? throw new ArgumentNullException(nameof(playMode));
+        ArgumentNullException.ThrowIfNull(inspection);
+        ArgumentNullException.ThrowIfNull(interactions);
+        ArgumentNullException.ThrowIfNull(sceneEdits);
+        ArgumentNullException.ThrowIfNull(playMode);
+        m_inspection = inspection;
+        m_interactions = interactions;
+        m_sceneEdits = sceneEdits;
+        m_playMode = playMode;
         ArgumentNullException.ThrowIfNull(logs);
         m_log = logs.CreateLogger<InspectorPanel>();
         m_targetHeader = new InspectorTargetHeader();

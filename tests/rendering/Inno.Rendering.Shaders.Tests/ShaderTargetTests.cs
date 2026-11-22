@@ -10,6 +10,7 @@ using Inno.Core.Graphs;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Shaders.Tests;
 
@@ -22,7 +23,7 @@ public sealed class ShaderTargetTests : IDisposable
 
     public ShaderTargetTests()
     {
-        m_modules = new(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderTargetTests).Assembly)});
+        m_modules = new(new ModuleHostOptions() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderTargetTests).Assembly)});
         m_types = new(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new(m_types, new ReflectionSerializationMetadataSource());
         m_targets = new(m_types);
@@ -31,7 +32,11 @@ public sealed class ShaderTargetTests : IDisposable
     [Fact]
     public void IndependentTargetExpandsIntoTheCommonCompilerWithoutMutatingItsSource()
     {
-        GraphDocument authored = ShaderGraphDocument.Create(new("Surface", [], [], []), m_serialization, SerializationContext.empty);
+        GraphDocument authored = ShaderGraphDocument.Create(
+            new ShaderDefinition("Surface", [], [], []),
+            m_serialization,
+            SerializationContext.empty
+        );
         ShaderGraphDocument.SetTarget(authored, "tests.surface-target", m_serialization, SerializationContext.empty);
         byte[] before = GraphDocumentCodec.Encode(authored, m_serialization);
         GraphDocument expanded = m_targets.Expand(authored, m_serialization, SerializationContext.empty);
@@ -115,7 +120,7 @@ public sealed class ShaderTargetTests : IDisposable
             SerializationRegistry serialization,
             SerializationContext context
         ) {
-            GraphDocument graph = ShaderGraphDocument.Create(new("Surface", [], [], []), serialization, context);
+            GraphDocument graph = ShaderGraphDocument.Create(new ShaderDefinition("Surface", [], [], []), serialization, context);
             ShaderGraphDocument.SetTarget(graph, "tests.surface-target", serialization, context);
             return graph;
         }

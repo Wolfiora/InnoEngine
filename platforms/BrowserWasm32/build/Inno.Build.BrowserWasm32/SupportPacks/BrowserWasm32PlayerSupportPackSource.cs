@@ -57,11 +57,12 @@ public sealed class BrowserWasm32PlayerSupportPackSource : IPlayerSupportPackSou
         ArgumentNullException.ThrowIfNull(nativePlan);
         ArgumentException.ThrowIfNullOrWhiteSpace(toolsTarget.value);
         ArgumentNullException.ThrowIfNull(bindingGenerator);
+        ArgumentNullException.ThrowIfNull(supportPackValidator);
         m_bindingGenerator = bindingGenerator;
         m_host = host;
         m_toolsTarget = toolsTarget;
         m_nativeProduct = nativePlan;
-        m_validator = supportPackValidator ?? throw new ArgumentNullException(nameof(supportPackValidator));
+        m_validator = supportPackValidator;
     }
 
     /// <inheritdoc/>

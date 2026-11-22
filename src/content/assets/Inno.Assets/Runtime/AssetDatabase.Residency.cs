@@ -270,7 +270,10 @@ public sealed partial class AssetDatabase
         {
             payload.preparation.GetAwaiter().GetResult();
         }
-        catch (Exception) { /* The acquisition reports IO failures; rollback only drains ownership. */ }
+        catch (Exception)
+        {
+            // The acquisition reports IO failures; rollback only drains ownership.
+        }
         m_payloadReads.Remove(payload.read);
         m_preparingBytes -= payload.read.length;
         payload.cancellation.Dispose();
@@ -287,13 +290,13 @@ public sealed partial class AssetDatabase
     private static async Task<byte[]> ReadPayloadAsync(
         PayloadRead read,
         ContentReadLease lease,
-        CancellationToken token,
+        CancellationToken cancellationToken,
         SemaphoreSlim slots
     ) {
-        await slots.WaitAsync(token).ConfigureAwait(false);
+        await slots.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            return await ReadPayloadContentAsync(read, lease, token).ConfigureAwait(false);
+            return await ReadPayloadContentAsync(read, lease, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -304,12 +307,12 @@ public sealed partial class AssetDatabase
     private static async Task<byte[]> ReadPayloadContentAsync(
         PayloadRead read,
         ContentReadLease lease,
-        CancellationToken token
+        CancellationToken cancellationToken
     ) {
         using Stream stream = lease.OpenRead();
         var bytes = new byte[checked((int)read.length)];
-        await stream.ReadExactlyAsync(bytes, token).ConfigureAwait(false);
-        token.ThrowIfCancellationRequested();
+        await stream.ReadExactlyAsync(bytes, cancellationToken).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
         if (stream.ReadByte() != -1 || bytes.LongLength != read.length
             || !string.Equals(Convert.ToHexString(SHA256.HashData(bytes)), read.hash, StringComparison.OrdinalIgnoreCase)
         ) {
@@ -391,19 +394,19 @@ public sealed partial class AssetDatabase
         private static async Task<byte[]> PrepareAsync(
             PayloadRead read,
             ContentReadLease lease,
-            CancellationToken cancellation,
+            CancellationToken cancellationToken,
             SemaphoreSlim slots
         ) {
             using (lease)
             {
-                return await ReadPayloadAsync(read, lease, cancellation, slots).ConfigureAwait(false);
+                return await ReadPayloadAsync(read, lease, cancellationToken, slots).ConfigureAwait(false);
             }
         }
     }
 
     private sealed class PendingAcquisition(
         Task<Dictionary<Guid, byte[]>> preparation,
-        CancellationToken cancellation,
+        CancellationToken cancellationToken,
         Action<Dictionary<Guid, byte[]>> publish,
         Action<Exception> fail,
         Action cancel,
@@ -415,7 +418,7 @@ public sealed partial class AssetDatabase
         {
             try
             {
-                cancellation.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 publish(preparation.GetAwaiter().GetResult());
             }
             catch (OperationCanceledException)
@@ -438,7 +441,10 @@ public sealed partial class AssetDatabase
             {
                 preparation.GetAwaiter().GetResult();
             }
-            catch (Exception) { /* The retiring owner reports cancellation instead of publishing. */ }
+            catch (Exception)
+            {
+                // The retiring owner reports cancellation instead of publishing.
+            }
             cancel();
             release();
         }

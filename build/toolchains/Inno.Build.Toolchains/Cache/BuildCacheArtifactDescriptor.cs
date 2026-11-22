@@ -62,10 +62,7 @@ public sealed class BuildCacheArtifactDescriptor
         ) {
             throw new ArgumentException("Cache artifact paths must be absolute.");
         }
-        if (bytes < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(bytes));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(bytes);
         if (targetID is not null && string.IsNullOrWhiteSpace(targetID))
         {
             throw new ArgumentException("A declared cache target cannot be blank.", nameof(targetID));

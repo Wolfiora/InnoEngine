@@ -30,7 +30,7 @@ internal sealed class EmbeddedBraceStyleRule : StyleRule
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
         (SyntaxNode owner, StatementSyntax body)[] violations = Violations(source).ToArray();
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         foreach ((SyntaxNode owner, StatementSyntax body) in violations)
         {
             // Innermost bodies first: an outer body is braced once its content has settled.
@@ -41,22 +41,24 @@ internal sealed class EmbeddedBraceStyleRule : StyleRule
             SyntaxToken next = last.GetNextToken();
             if (source.LineNumber(previous.SpanStart) == source.LineNumber(body.SpanStart))
             {
-                edits.Add(new(previous.Span.End, body.SpanStart, "\n" + indent + "{\n" + indent + new string(' ', StyleLayout.C_INDENT)));
+                edits.Add(
+                    new StyleEdit(previous.Span.End, body.SpanStart, "\n" + indent + "{\n" + indent + new string(' ', StyleLayout.C_INDENT))
+                );
             }
             else
             {
                 int end = source.text.Lines[source.LineNumber(previous.Span.End)].End;
-                edits.Add(new(end, end, "\n" + indent + "{"));
+                edits.Add(new StyleEdit(end, end, "\n" + indent + "{"));
             }
 
             if (!next.IsKind(SyntaxKind.None) && source.LineNumber(next.SpanStart) == source.LineNumber(last.Span.End))
             {
-                edits.Add(new(last.Span.End, next.SpanStart, "\n" + indent + "}\n" + indent));
+                edits.Add(new StyleEdit(last.Span.End, next.SpanStart, "\n" + indent + "}\n" + indent));
             }
             else
             {
                 int end = source.text.Lines[source.LineNumber(last.Span.End)].End;
-                edits.Add(new(end, end, "\n" + indent + "}"));
+                edits.Add(new StyleEdit(end, end, "\n" + indent + "}"));
             }
         }
 

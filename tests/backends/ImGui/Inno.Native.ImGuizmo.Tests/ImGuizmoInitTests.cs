@@ -6,18 +6,18 @@ namespace Inno.Native.ImGuizmo.Tests;
 
 public sealed class ImGuizmoInitTests
 {
-    private readonly ITestOutputHelper output;
+    private readonly ITestOutputHelper m_output;
 
     public ImGuizmoInitTests(ITestOutputHelper output)
     {
-        this.output = output;
+        m_output = output;
     }
 
     [Fact]
-    public void Init_ShouldLoad()
+    public void InitShouldLoad()
     {
         bool isUsing = ImGuizmo.IsUsing();
-        output.WriteLine($"ImGuizmo.IsUsing: {isUsing}");
+        m_output.WriteLine($"ImGuizmo.IsUsing: {isUsing}");
         Assert.False(isUsing);
     }
 
@@ -45,7 +45,7 @@ public sealed class ImGuizmoInitTests
     }
 
     [Fact]
-    public unsafe void IntegerScopeAndSingleStringIdRestoreTheirParentState()
+    public unsafe void IntegerScopeAndSingleStringIDRestoreTheirParentState()
     {
         ReadOnlySpan<byte> text = "gizmo-probe\0"u8;
         fixed (byte* bytes = text)

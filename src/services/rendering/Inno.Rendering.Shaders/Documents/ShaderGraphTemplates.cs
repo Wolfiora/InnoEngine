@@ -27,7 +27,7 @@ public static class ShaderGraphTemplates
         SerializationRegistry serialization,
         SerializationContext context
     ) {
-        var pass = new ShaderPassDefinition("Main", ShaderProgramKind.Raster, renderState: new()
+        var pass = new ShaderPassDefinition("Main", ShaderProgramKind.Raster, renderState: new ShaderRenderState()
         {
             cull = ShaderCullMode.None,
             depthCompare = ShaderCompareFunction.Always,
@@ -35,8 +35,8 @@ public static class ShaderGraphTemplates
             blend = RenderBlendState.alpha,
             colorWriteMask = 15
         });
-        var definition = new ShaderDefinition("New Shader", [new(
-            new("color"),
+        var definition = new ShaderDefinition("New Shader", [new ShaderPropertyDefinition(
+            new ShaderPropertyID("color"),
             "Color",
             ShaderPropertyType.Color,
             ShaderStage.Fragment,
@@ -50,7 +50,7 @@ public static class ShaderGraphTemplates
             new ShaderGraphStageSettings
             {
                 stage = ShaderStage.Vertex,
-                outputs = [new() { id = "position", kind = ShaderIrOutputKind.ClipPosition }]
+                outputs = [new ShaderGraphOutput() { id = "position", kind = ShaderIrOutputKind.ClipPosition }]
             }
         );
         GraphNodeRecord fragment = Node("fragment", ShaderGraphDocument.C_OUTPUT_DEFINITION_ID, 770, 640);
@@ -60,7 +60,7 @@ public static class ShaderGraphTemplates
             new ShaderGraphStageSettings
             {
                 stage = ShaderStage.Fragment,
-                outputs = [new() { id = "color", kind = ShaderIrOutputKind.Color }]
+                outputs = [new ShaderGraphOutput() { id = "color", kind = ShaderIrOutputKind.Color }]
             }
         );
         GraphNodeRecord position = Node("position", "inno.shader.stage-input", 40, 50, vertex);
@@ -111,7 +111,7 @@ public static class ShaderGraphTemplates
             float y,
             GraphNodeRecord? stage = null
         ) {
-            var node = new GraphNodeRecord(new(id), type) { position = new(x, y) };
+            var node = new GraphNodeRecord(new GraphNodeID(id), type) { position = new(x, y) };
             if (stage is not null)
             {
                 Set(node, "stage", stage.id.value);
@@ -129,6 +129,12 @@ public static class ShaderGraphTemplates
             string output,
             GraphNodeRecord b,
             string input
-        ) => graph.AddEdge(new(new(Guid.NewGuid().ToString("N")), new(a.id, new(output)), new(b.id, new(input))));
+        ) => graph.AddEdge(
+            new GraphEdgeRecord(
+                new GraphEdgeID(Guid.NewGuid().ToString("N")),
+                new GraphEndpoint(a.id, new GraphPortID(output)),
+                new GraphEndpoint(b.id, new GraphPortID(input))
+            )
+        );
     }
 }

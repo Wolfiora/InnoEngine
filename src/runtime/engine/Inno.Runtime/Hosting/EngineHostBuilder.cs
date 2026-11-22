@@ -31,10 +31,7 @@ public sealed class EngineHostBuilder
     /// </exception>
     public EngineHostBuilder UseRetirementTimeout(TimeSpan timeout)
     {
-        if (timeout <= TimeSpan.Zero)
-        {
-            throw new ArgumentOutOfRangeException(nameof(timeout));
-        }
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(timeout, TimeSpan.Zero);
         m_retirementTimeout = timeout;
         return this;
     }

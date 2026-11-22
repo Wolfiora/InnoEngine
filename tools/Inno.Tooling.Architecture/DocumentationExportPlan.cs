@@ -104,10 +104,10 @@ internal static class DocumentationExportPlan
         {
             throw new InvalidDataException("The evaluated API graph does not identify one selected SDK runtime.");
         }
-        var owners = new List<object>();
+        List<object> owners = [];
         var builds = new SortedSet<string>(StringComparer.Ordinal);
         var captures = new SortedDictionary<string, List<string>>(StringComparer.Ordinal);
-        var foreign = new List<object>();
+        List<object> foreign = [];
         using var cache = new DocumentationExportCache(root, cancellationToken);
         var reusedOwners = new Dictionary<string, Dictionary<string, JsonElement>>(StringComparer.Ordinal);
         foreach (string project in projects)

@@ -43,8 +43,9 @@ public sealed class InspectionDrawerRegistry : IDisposable
         TypeCatalog types,
         SerializationRegistry serialization
     ) {
+        ArgumentNullException.ThrowIfNull(serialization);
         m_registry = new InspectionTypeRegistry(interactions, factory, types);
-        m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
+        m_serialization = serialization;
     }
 
     /// <summary>
@@ -159,7 +160,7 @@ public sealed class InspectionDrawerRegistry : IDisposable
     private IReadOnlyList<SerializedProperty> GetProperties(object target)
         => target is ISerializable serializable
            ? m_serialization.GetProperties(serializable)
-           : Array.Empty<SerializedProperty>();
+           : [];
 
     private static void EnsureNoConflict(
         IReadOnlyList<Registration> registrations,
@@ -189,8 +190,10 @@ public sealed class InspectionDrawerRegistry : IDisposable
             TypeCatalog types
         ) : base(types)
         {
-            this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-            m_factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            ArgumentNullException.ThrowIfNull(interactions);
+            ArgumentNullException.ThrowIfNull(factory);
+            this.interactions = interactions;
+            m_factory = factory;
         }
 
         internal EditorInteractions interactions { get; }
@@ -207,7 +210,7 @@ public sealed class InspectionDrawerRegistry : IDisposable
         protected override Registration[] Build(TypeCacheSnapshot types)
         {
             var drawers = new Dictionary<Type, IInspectionDrawer>();
-            var registrations = new List<Registration>();
+            List<Registration> registrations = [];
             foreach (Type drawerType in types.GetTypesWithAttribute<InspectionDrawerAttribute>()
                 .Select(typeRef => typeRef.Resolve(types))
                 .OrderBy(static type => type.FullName, StringComparer.Ordinal)

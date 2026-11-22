@@ -34,8 +34,9 @@ public sealed class SerializationRegistry : IDisposable
         ISerializationMetadataSource metadata
     ) {
         ArgumentNullException.ThrowIfNull(types);
+        ArgumentNullException.ThrowIfNull(metadata);
         m_types = types;
-        m_metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
+        m_metadata = metadata;
         m_converters = new ConverterRegistry(types);
     }
 
@@ -666,13 +667,7 @@ public sealed class SerializationRegistry : IDisposable
         }
     }
 
-    private void EnsureInitialized()
-    {
-        if (m_disposed)
-        {
-            throw new ObjectDisposedException(nameof(SerializationRegistry));
-        }
-    }
+    private void EnsureInitialized() => ObjectDisposedException.ThrowIf(m_disposed, this);
 
     private SerializationContext CreateContext(SerializationContext? context)
     {

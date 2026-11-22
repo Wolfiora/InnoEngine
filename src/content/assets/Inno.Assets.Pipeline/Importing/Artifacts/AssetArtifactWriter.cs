@@ -10,8 +10,7 @@ namespace Inno.Assets.Pipeline;
 /// </summary>
 public sealed class AssetArtifactWriter
 {
-    private readonly Dictionary<string, ReadOnlyMemory<byte>> m_outputs =
-        new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ReadOnlyMemory<byte>> m_outputs = new(StringComparer.Ordinal);
 
     private readonly List<string> m_diagnostics = [];
     private readonly HashSet<string> m_authoringOutputs = new(StringComparer.Ordinal);

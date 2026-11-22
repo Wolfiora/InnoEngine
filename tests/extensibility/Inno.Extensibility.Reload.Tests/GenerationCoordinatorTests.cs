@@ -14,7 +14,7 @@ public sealed class GenerationCoordinatorTests
     {
         var owner = new GenerationCoordinator();
         var probe = new Probe();
-        var events = new List<string>();
+        List<string> events = [];
         owner.Execute("reload", new Publication(probe, events), [new Change("scene", events)]);
         Assert.Equal(["prepare:scene", "activate", "apply:scene", "commit", "complete:scene"], events);
         Assert.Equal(GenerationState.AwaitingCollection, owner.state);
@@ -29,7 +29,7 @@ public sealed class GenerationCoordinatorTests
     public void FailedApplyRollsBackStructureBeforePublicationAndThenRestoresValues()
     {
         var owner = new GenerationCoordinator();
-        var events = new List<string>();
+        List<string> events = [];
         Assert.Throws<InvalidOperationException>(() => owner.Execute(
             "reload",
             new Publication(new Probe { isCompleted = true }, events),
@@ -44,7 +44,7 @@ public sealed class GenerationCoordinatorTests
     public void IrreversibleCleanupFailureFaultsOwnerAndStillAttemptsAllCleanup()
     {
         var owner = new GenerationCoordinator();
-        var events = new List<string>();
+        List<string> events = [];
         Assert.Throws<AggregateException>(() => owner.Execute(
             "reload",
             new Publication(new Probe { isCompleted = true }, events),
@@ -71,7 +71,7 @@ public sealed class GenerationCoordinatorTests
     public void RollbackFailureIsTerminalEvenWhenNoCollectibleMonitorExists()
     {
         var owner = new GenerationCoordinator();
-        var events = new List<string>();
+        List<string> events = [];
         Assert.Throws<AggregateException>(() => owner.Execute(
             "reload",
             new Publication(new Probe { isCompleted = true }, events),
@@ -107,7 +107,7 @@ public sealed class GenerationCoordinatorTests
     public void PendingRetirementNeverFallsThroughToLowerCleanupOrReopensAdmission(string phase)
     {
         var owner = new GenerationCoordinator();
-        var events = new List<string>();
+        List<string> events = [];
         var failure = new RetirementTimeoutException("Pending generation-owned work exceeded its deadline.");
         var change = new PendingChange(phase, events, failure);
         Exception reported = Assert.ThrowsAny<Exception>(() => owner.Execute(
@@ -202,7 +202,7 @@ public sealed class GenerationCoordinatorTests
     public void ExecuteBorrowsOperationAdmissionWithoutReopeningItBetweenDomainPhases()
     {
         var owner = new GenerationCoordinator();
-        var events = new List<string>();
+        List<string> events = [];
         owner.Execute(
             "reload",
             new Publication(new Probe { isCompleted = true }, events),
@@ -236,7 +236,7 @@ public sealed class GenerationCoordinatorTests
     public void WrappedPendingRetainsTheTransactionWithoutContinuingDependentPhases(string phase)
     {
         var owner = new GenerationCoordinator();
-        var events = new List<string>();
+        List<string> events = [];
         var pending = new RetirementTimeoutException("unfinished native callback");
         var failure = new AggregateException(
             new InvalidOperationException("completed sibling"),
@@ -268,7 +268,7 @@ public sealed class GenerationCoordinatorTests
     public void CleanupFailureBeforeAPendingParticipantRemainsInTheTerminalReport()
     {
         var owner = new GenerationCoordinator();
-        var events = new List<string>();
+        List<string> events = [];
         var pending = new RetirementPendingException("unfinished callback");
         AggregateException failure = Assert.Throws<AggregateException>(() => owner.Execute(
             "reload",

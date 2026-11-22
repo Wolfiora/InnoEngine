@@ -59,7 +59,7 @@ public sealed partial class AssetPipeline
         string transactionRoot = Path.Combine(libraryRoot, "AssetDatabase", "Transactions", Guid.NewGuid().ToString("N"));
         IDisposable generation = m_generations.AcquireRead("import an Asset sample");
         SerializationGeneration? serialization = null;
-        var rewriters = new List<IAssetSampleSourceRewriter>();
+        List<IAssetSampleSourceRewriter> rewriters = [];
         try
         {
             serialization = m_serialization.CaptureGeneration();
@@ -202,7 +202,7 @@ public sealed partial class AssetPipeline
         EnsureSampleImportOwner(transaction);
         var changes = new List<AssetChangedEvent>(transaction.entries.Count + 1)
         {
-            new(transaction.target.localPath, WatcherChangeTypes.Created)
+            new AssetChangedEvent(transaction.target.localPath, WatcherChangeTypes.Created)
         };
         changes.AddRange(transaction.entries.Select(static path => new AssetChangedEvent(path, WatcherChangeTypes.Created)));
         AssetChange[] committed = CreateCommittedChanges(

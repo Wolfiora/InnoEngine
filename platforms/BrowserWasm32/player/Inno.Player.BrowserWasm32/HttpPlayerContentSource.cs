@@ -19,7 +19,8 @@ internal sealed class HttpPlayerContentSource : IPlayerContentSource
 
     internal HttpPlayerContentSource(HttpClient client)
     {
-        m_client = client ?? throw new ArgumentNullException(nameof(client));
+        ArgumentNullException.ThrowIfNull(client);
+        m_client = client;
     }
 
     /// <summary>

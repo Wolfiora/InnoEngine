@@ -157,7 +157,7 @@ public static partial class ShaderSourceBundle
                 return new ShaderSourceImplementationRequest(
                     value.id,
                     value.language,
-                    new(files[value.root], value.entry, new FrozenResolver(files, edges), macros)
+                    new ShaderSourceRequest(files[value.root], value.entry, new FrozenResolver(files, edges), macros)
                 );
             }).ToArray()
         );

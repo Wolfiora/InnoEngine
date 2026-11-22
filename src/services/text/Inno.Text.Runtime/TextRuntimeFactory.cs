@@ -19,7 +19,8 @@ public sealed class TextRuntimeFactory : IRuntimeSubsystemFactory
     /// </param>
     public TextRuntimeFactory(Func<RuntimeSubsystemContext, TextRuntime> runtimeFactory)
     {
-        m_runtimeFactory = runtimeFactory ?? throw new ArgumentNullException(nameof(runtimeFactory));
+        ArgumentNullException.ThrowIfNull(runtimeFactory);
+        m_runtimeFactory = runtimeFactory;
     }
 
     /// <summary>

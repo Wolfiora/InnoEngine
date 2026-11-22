@@ -30,9 +30,16 @@ public sealed class BuildCacheOwnerCatalogTests : IDisposable
             publisher.Record(owned, owned + ".read.lock", [], null, "windows-x64");
         }
         Assert.Single(BuildCacheOwnerCatalog.ReadOwners(m_root));
-        await BuildMaintenanceApplication.CleanAsync(m_root, new(0, 0), true, true, "windows-x64", CancellationToken.None);
+        await BuildMaintenanceApplication.CleanAsync(m_root, new BuildCachePolicy(0, 0), true, true, "windows-x64", CancellationToken.None);
         Assert.True(Directory.Exists(owned));
-        await BuildMaintenanceApplication.CleanAsync(m_root, new(0, 0), true, false, "windows-x64", CancellationToken.None);
+        await BuildMaintenanceApplication.CleanAsync(
+            m_root,
+            new BuildCachePolicy(0, 0),
+            true,
+            false,
+            "windows-x64",
+            CancellationToken.None
+        );
         Assert.False(Directory.Exists(owned));
         Assert.True(Directory.Exists(unknown));
     }

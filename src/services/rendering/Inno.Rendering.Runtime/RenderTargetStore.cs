@@ -35,7 +35,8 @@ public sealed class RenderTargetStore : IDisposable
         IRenderDevice device,
         int capacity = 1024
     ) {
-        m_device = device ?? throw new ArgumentNullException(nameof(device));
+        ArgumentNullException.ThrowIfNull(device);
+        m_device = device;
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(capacity);
         m_capacity = capacity;
     }

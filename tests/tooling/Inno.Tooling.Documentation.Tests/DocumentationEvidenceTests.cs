@@ -33,7 +33,7 @@ public sealed class DocumentationEvidenceTests : IDisposable
         using DocumentationSnapshot raw = await DocumentationStore.OpenAsync(cache);
         using DocumentationSnapshot verified = await DocumentationStore.OpenAsync(cache, sourceEvidence: evidence);
         Assert.Equal(raw.identity, verified.identity);
-        Assert.Equal("Unverified", (await raw.QueryAsync(new("status"))).sourceApiStatus);
+        Assert.Equal("Unverified", (await raw.QueryAsync(new DocumentationRequest("status"))).sourceApiStatus);
         Assert.Equal("Verified", (await verified.ExportCatalogAsync()).sourceApiStatus);
         Assert.Equal(evidence.identity, (await verified.ExportCatalogAsync()).sourceEvidenceIdentity);
         string manifest = Path.Combine(cache, "generations", verified.identity, "manifest.json");
@@ -41,7 +41,7 @@ public sealed class DocumentationEvidenceTests : IDisposable
         File.WriteAllText(Path.Combine(source, "content/en/probe.md"), "Mutable authoring changes are not read by a prepared session.");
         File.WriteAllText(Path.Combine(m_root, "certificate.json"), "The imported immutable value does not retain a file dependency.");
         DocumentationResult[] results = await Task.WhenAll(
-            Enumerable.Range(0, 8).Select(_ => verified.QueryAsync(new("search", "ownership")))
+            Enumerable.Range(0, 8).Select(_ => verified.QueryAsync(new DocumentationRequest("search", "ownership")))
         );
         Assert.All(results, result =>
         {
@@ -60,8 +60,8 @@ public sealed class DocumentationEvidenceTests : IDisposable
             expectedSourceTree: new string('c', 40),
             sourceEvidence: evidence
         );
-        Assert.Equal("Mismatched", (await mismatch.QueryAsync(new("status"))).status);
-        Assert.Equal("Unverified", (await mismatch.QueryAsync(new("status"))).sourceApiStatus);
+        Assert.Equal("Mismatched", (await mismatch.QueryAsync(new DocumentationRequest("status"))).status);
+        Assert.Equal("Unverified", (await mismatch.QueryAsync(new DocumentationRequest("status"))).sourceApiStatus);
     }
 
     [Theory]

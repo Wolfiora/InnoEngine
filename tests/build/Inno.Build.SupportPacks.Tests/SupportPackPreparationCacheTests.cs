@@ -84,7 +84,7 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(
             m_root,
             [new BuildCachePublisher(output, BuildCacheArtifactRole.ImmutableArtifact).Describe("packs")],
-            new(),
+            new BuildCachePolicy(),
             retireAll: true
         );
         Assert.Empty((await plan.ExecuteAsync()).failures);

@@ -34,7 +34,7 @@ internal static class DocumentationApiExtractor
 
     internal static IReadOnlyList<ScriptExport> ReadExports(Compilation? compilation)
     {
-        var exports = new List<ScriptExport>();
+        List<ScriptExport> exports = [];
         foreach (AttributeData attribute in compilation?.Assembly.GetAttributes() ?? [])
         {
             if (attribute.AttributeClass?.ToDisplayString() != "Inno.Scripting.Api.ScriptingApiExportAttribute"
@@ -51,7 +51,7 @@ internal static class DocumentationApiExtractor
             {
                 throw new InvalidDataException("Unknown scripting API scope for " + exported);
             }
-            exports.Add(new(exported.ContainingAssembly.Name, exported.OriginalDefinition.GetDocumentationCommentId()!, name));
+            exports.Add(new ScriptExport(exported.ContainingAssembly.Name, exported.OriginalDefinition.GetDocumentationCommentId()!, name));
         }
         return exports
             .OrderBy(export => export.assembly, StringComparer.Ordinal)
@@ -67,7 +67,7 @@ internal static class DocumentationApiExtractor
         ICollection<string> failures,
         CancellationToken cancellationToken
     ) {
-        var result = new List<DocumentationApiEntry>();
+        List<DocumentationApiEntry> result = [];
         var seen = new HashSet<string>(StringComparer.Ordinal);
         Dictionary<string, string> scopes = ReadExports(compilation).Where(export => export.assembly == compilation?.AssemblyName)
             .ToDictionary(export => export.type, export => export.scope, StringComparer.Ordinal);
@@ -109,7 +109,7 @@ internal static class DocumentationApiExtractor
                     Location location = symbol.Locations.FirstOrDefault(static location => location.IsInSource) ?? node.GetLocation();
                     string source = Path.GetRelativePath(root, location.SourceTree?.FilePath ?? tree.FilePath).Replace('\\', '/');
                     result.Add(
-                        new(
+                        new DocumentationApiEntry(
                             Path.GetFileNameWithoutExtension(project),
                             id,
                             signature,
@@ -192,7 +192,7 @@ internal static class DocumentationApiExtractor
                 string documentation = Documentation(symbol, new HashSet<ISymbol>(SymbolEqualityComparer.Default), cancellationToken);
                 entries.Add(
                     id,
-                    new(
+                    new DocumentationApiEntry(
                         origin.project,
                         id,
                         signature,
@@ -256,16 +256,14 @@ internal static class DocumentationApiExtractor
         {
             return signature;
         }
-        var modifiers = new List<string>
+        string accessibility = type.DeclaredAccessibility switch
         {
-            type.DeclaredAccessibility switch
-            {
-                Accessibility.Public => "public",
-                Accessibility.Protected => "protected",
-                Accessibility.ProtectedOrInternal => "protected internal",
-                _ => throw new InvalidOperationException("A Wiki type signature must have externally visible accessibility.")
-            }
+            Accessibility.Public => "public",
+            Accessibility.Protected => "protected",
+            Accessibility.ProtectedOrInternal => "protected internal",
+            _ => throw new InvalidOperationException("A Wiki type signature must have externally visible accessibility.")
         };
+        List<string> modifiers = [accessibility];
         if (type.IsStatic)
         {
             modifiers.Add("static");
@@ -287,7 +285,7 @@ internal static class DocumentationApiExtractor
             return signature;
         }
         SymbolDisplayFormat reference = SIGNATURE.WithKindOptions(SymbolDisplayKindOptions.None);
-        var bases = new List<string>();
+        List<string> bases = [];
         if (type.EnumUnderlyingType is not null)
         {
             bases.Add(type.EnumUnderlyingType.ToDisplayString(reference));

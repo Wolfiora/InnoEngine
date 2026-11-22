@@ -45,10 +45,7 @@ public sealed unsafe partial class BgfxDevice
         {
             throw new ArgumentException("Texture was not created for readback.", nameof(texture));
         }
-        if (mipLevel >= descriptor.mipCount)
-        {
-            throw new ArgumentOutOfRangeException(nameof(mipLevel));
-        }
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(mipLevel, descriptor.mipCount);
         int width = Math.Max(1, descriptor.width >> mipLevel);
         int height = Math.Max(1, descriptor.height >> mipLevel);
         int layers = descriptor.GetSubresourceLayerCount(mipLevel);

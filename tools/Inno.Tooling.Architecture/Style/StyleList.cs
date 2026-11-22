@@ -17,12 +17,12 @@ internal sealed record StyleList(
     {
         StyleList? list = node switch
         {
-            ArgumentListSyntax arguments => new(
+            ArgumentListSyntax arguments => new StyleList(
                 arguments.OpenParenToken,
                 arguments.CloseParenToken,
                 arguments.Arguments.ToArray<SyntaxNode>()
             ),
-            AttributeArgumentListSyntax arguments => new(
+            AttributeArgumentListSyntax arguments => new StyleList(
                 arguments.OpenParenToken,
                 arguments.CloseParenToken,
                 arguments.Arguments.ToArray<SyntaxNode>()
@@ -38,22 +38,24 @@ internal sealed record StyleList(
     {
         StyleList? list = node switch
         {
-            InitializerExpressionSyntax initializer when !initializer.IsKind(SyntaxKind.ComplexElementInitializerExpression) => new(
+            InitializerExpressionSyntax initializer when !initializer.IsKind(
+                SyntaxKind.ComplexElementInitializerExpression
+            ) => new StyleList(
                 initializer.OpenBraceToken,
                 initializer.CloseBraceToken,
                 initializer.Expressions.ToArray<SyntaxNode>()
             ),
-            AnonymousObjectCreationExpressionSyntax anonymous => new(
+            AnonymousObjectCreationExpressionSyntax anonymous => new StyleList(
                 anonymous.OpenBraceToken,
                 anonymous.CloseBraceToken,
                 anonymous.Initializers.ToArray<SyntaxNode>()
             ),
-            SwitchExpressionSyntax expression => new(
+            SwitchExpressionSyntax expression => new StyleList(
                 expression.OpenBraceToken,
                 expression.CloseBraceToken,
                 expression.Arms.ToArray<SyntaxNode>()
             ),
-            CollectionExpressionSyntax collection => new(
+            CollectionExpressionSyntax collection => new StyleList(
                 collection.OpenBracketToken,
                 collection.CloseBracketToken,
                 collection.Elements.ToArray<SyntaxNode>()

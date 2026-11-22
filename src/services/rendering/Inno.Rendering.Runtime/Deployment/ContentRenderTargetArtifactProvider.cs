@@ -38,9 +38,12 @@ public sealed class ContentRenderTargetArtifactProvider : IRenderTargetArtifactP
         SerializationRegistry serialization,
         SerializationContext context
     ) {
-        m_content = content ?? throw new ArgumentNullException(nameof(content));
-        m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
-        m_context = context ?? throw new ArgumentNullException(nameof(context));
+        ArgumentNullException.ThrowIfNull(content);
+        ArgumentNullException.ThrowIfNull(serialization);
+        ArgumentNullException.ThrowIfNull(context);
+        m_content = content;
+        m_serialization = serialization;
+        m_context = context;
     }
 
     /// <summary>

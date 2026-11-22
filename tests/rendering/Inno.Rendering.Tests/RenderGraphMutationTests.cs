@@ -11,12 +11,12 @@ public sealed class RenderGraphMutationTests
     public void LaterScopeCannotChangeAnyPreviouslyAcceptedPassDeclaration()
     {
         RenderGraphBuilder graph = CreateGraph();
-        RasterPassBuilder accepted = graph.AddRasterPass("Accepted", new("first"), 0, Execute);
+        RasterPassBuilder accepted = graph.AddRasterPass("Accepted", new RenderPhaseID("first"), 0, Execute);
         accepted.HasSideEffect();
         using (RenderGraphMutationScope mutation = graph.BeginMutationScope())
         {
-            Assert.Throws<InvalidOperationException>(() => accepted.Before(new("late")));
-            Assert.Throws<InvalidOperationException>(() => accepted.After(new("late")));
+            Assert.Throws<InvalidOperationException>(() => accepted.Before(new RenderPhaseID("late")));
+            Assert.Throws<InvalidOperationException>(() => accepted.After(new RenderPhaseID("late")));
             Assert.Throws<InvalidOperationException>(() => accepted.AllowParallelRecording());
             Assert.Throws<InvalidOperationException>(() => accepted.ClearPresentationTarget(default));
             mutation.Commit();
@@ -28,12 +28,12 @@ public sealed class RenderGraphMutationTests
     public void InvalidCommitRollsBackOutputsResourcesPhasesAndValidation()
     {
         RenderGraphBuilder graph = CreateGraph();
-        graph.AddRasterPass("Accepted", new("first"), 0, Execute).HasSideEffect();
+        graph.AddRasterPass("Accepted", new RenderPhaseID("first"), 0, Execute).HasSideEffect();
         RenderGraphValidationResult baseline = graph.Validate();
         using (RenderGraphMutationScope mutation = graph.BeginMutationScope())
         {
             RenderTextureHandle texture = graph.CreateTexture("Missing Producer", Descriptor());
-            graph.AddRasterPass("Invalid", new("bad"), 0, Execute).ReadTexture(texture).HasSideEffect();
+            graph.AddRasterPass("Invalid", new RenderPhaseID("bad"), 0, Execute).ReadTexture(texture).HasSideEffect();
             graph.MarkOutput(texture);
             Assert.False(graph.Validate().isValid);
             Assert.Throws<InvalidOperationException>(() => mutation.Commit());
@@ -57,17 +57,20 @@ public sealed class RenderGraphMutationTests
         using (graph.BeginMutationScope())
         {
             retired = graph.CreateTexture("Retired", Descriptor());
-            retiredBuffer = graph.CreateBuffer("Retired Buffer", new(16, 4, RenderBufferUsage.Vertex));
-            retiredPass = graph.AddRasterPass("Retired", new("retired"), 0, Execute);
+            retiredBuffer = graph.CreateBuffer("Retired Buffer", new RenderBufferDescriptor(16, 4, RenderBufferUsage.Vertex));
+            retiredPass = graph.AddRasterPass("Retired", new RenderPhaseID("retired"), 0, Execute);
         }
         RenderTextureHandle current = graph.CreateTexture("Current", Descriptor());
-        RenderBufferHandle currentBuffer = graph.CreateBuffer("Current Buffer", new(16, 4, RenderBufferUsage.Vertex));
+        RenderBufferHandle currentBuffer = graph.CreateBuffer(
+            "Current Buffer",
+            new RenderBufferDescriptor(16, 4, RenderBufferUsage.Vertex)
+        );
         Assert.NotEqual(retired, current);
         Assert.NotEqual(retiredBuffer, currentBuffer);
         Assert.Throws<ArgumentException>(() => graph.MarkOutput(retired));
         Assert.Throws<ArgumentException>(() => graph.MarkOutput(retiredBuffer));
         Assert.Throws<InvalidOperationException>(() => retiredPass.HasSideEffect());
-        graph.AddRasterPass("Current", new("current"), 0, Execute).UseColorAttachment(current, 0, RenderLoadAction.Clear);
+        graph.AddRasterPass("Current", new RenderPhaseID("current"), 0, Execute).UseColorAttachment(current, 0, RenderLoadAction.Clear);
         graph.MarkOutput(current);
         Assert.True(graph.Compile().succeeded);
     }
@@ -78,7 +81,7 @@ public sealed class RenderGraphMutationTests
         RenderGraphBuilder graph = CreateGraph();
         RenderGraphMutationScope outer = graph.BeginMutationScope();
         RenderGraphMutationScope inner = graph.BeginMutationScope();
-        graph.AddRasterPass("Nested", new("nested"), 0, Execute).HasSideEffect();
+        graph.AddRasterPass("Nested", new RenderPhaseID("nested"), 0, Execute).HasSideEffect();
         Assert.Throws<InvalidOperationException>(() => outer.Dispose());
         Assert.Throws<InvalidOperationException>(() => graph.Compile());
         inner.Commit();
@@ -100,7 +103,7 @@ public sealed class RenderGraphMutationTests
         using (graph.BeginNameScope("Current"))
         {
             retired.Dispose();
-            graph.AddRasterPass("Visible", new("visible"), 0, Execute).HasSideEffect();
+            graph.AddRasterPass("Visible", new RenderPhaseID("visible"), 0, Execute).HasSideEffect();
         }
         Assert.Equal("Current/Visible", Assert.Single(graph.Compile().graph!.passes).name);
     }
@@ -114,7 +117,7 @@ public sealed class RenderGraphMutationTests
         {
             Assert.Throws<InvalidOperationException>(() => name.Dispose());
         }
-        graph.AddRasterPass("Visible", new("visible"), 0, Execute).HasSideEffect();
+        graph.AddRasterPass("Visible", new RenderPhaseID("visible"), 0, Execute).HasSideEffect();
         Assert.Equal("Accepted/Visible", Assert.Single(graph.Compile().graph!.passes).name);
     }
 
@@ -122,19 +125,19 @@ public sealed class RenderGraphMutationTests
     public void AcceptedFuturePhaseOrderingStillDetectsALaterCycleAndRollsBack()
     {
         RenderGraphBuilder graph = CreateGraph();
-        graph.AddRasterPass("First", new("first"), 0, Execute).HasSideEffect().Before(new("future"));
+        graph.AddRasterPass("First", new RenderPhaseID("first"), 0, Execute).HasSideEffect().Before(new RenderPhaseID("future"));
         using (RenderGraphMutationScope accepted = graph.BeginMutationScope())
         {
             accepted.Commit();
         }
         using (graph.BeginMutationScope())
         {
-            graph.AddRasterPass("Future", new("future"), 0, Execute).HasSideEffect().Before(new("first"));
+            graph.AddRasterPass("Future", new RenderPhaseID("future"), 0, Execute).HasSideEffect().Before(new RenderPhaseID("first"));
             Assert.Contains(graph.Validate().diagnostics, diagnostic => diagnostic.code == "RENDER_GRAPH_CYCLE");
         }
         using (RenderGraphMutationScope next = graph.BeginMutationScope())
         {
-            graph.AddRasterPass("Valid", new("future"), 0, Execute).HasSideEffect();
+            graph.AddRasterPass("Valid", new RenderPhaseID("future"), 0, Execute).HasSideEffect();
             next.Commit();
         }
         Assert.Equal(new[] { "First", "Valid" }, graph.Compile().graph!.passes.Select(static pass => pass.name));
@@ -150,9 +153,9 @@ public sealed class RenderGraphMutationTests
             for (int index = 0; index < 12; index++)
             {
                 using RenderGraphMutationScope? mutation = incremental ? graph.BeginMutationScope() : null;
-                graph.AddRasterPass("Writer" + index, new("write"), 0, Execute)
+                graph.AddRasterPass("Writer" + index, new RenderPhaseID("write"), 0, Execute)
                     .UseColorAttachment(texture, 0, index == 0 ? RenderLoadAction.Clear : RenderLoadAction.Load);
-                graph.AddRasterPass("Reader" + index, new("read"), 0, Execute).ReadTexture(texture).HasSideEffect();
+                graph.AddRasterPass("Reader" + index, new RenderPhaseID("read"), 0, Execute).ReadTexture(texture).HasSideEffect();
                 mutation?.Commit();
             }
             graph.MarkOutput(texture);
@@ -165,11 +168,11 @@ public sealed class RenderGraphMutationTests
     public void EditingAnUncommittedValidatedPassRebuildsItsAnalysis()
     {
         RenderGraphBuilder graph = CreateGraph();
-        RasterPassBuilder first = graph.AddRasterPass("First", new("first"), 0, Execute);
+        RasterPassBuilder first = graph.AddRasterPass("First", new RenderPhaseID("first"), 0, Execute);
         first.HasSideEffect();
-        graph.AddRasterPass("Last", new("last"), 0, Execute).HasSideEffect();
+        graph.AddRasterPass("Last", new RenderPhaseID("last"), 0, Execute).HasSideEffect();
         Assert.True(graph.Validate().isValid);
-        first.After(new("last"));
+        first.After(new RenderPhaseID("last"));
         Assert.Equal(new[] { "Last", "First" }, graph.Compile().graph!.passes.Select(static pass => pass.name));
     }
 

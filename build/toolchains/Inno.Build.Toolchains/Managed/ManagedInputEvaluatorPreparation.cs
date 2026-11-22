@@ -14,22 +14,23 @@ internal static class ManagedInputEvaluatorPreparation
     internal static async ValueTask<Result> PrepareAsync(
         NativeBuildContext context,
         DotNetSdkDescriptor sdk,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         using Stream source = typeof(ManagedInputEvaluatorPreparation).Assembly.GetManifestResourceStream(
             "Inno.Build.Toolchains.Managed.ManagedInputGraphTask.cs.txt"
         )
                               ?? throw new InvalidOperationException("The managed graph evaluator source resource is absent.");
         using var reader = new StreamReader(source);
-        string code = await reader.ReadToEndAsync(cancellation).ConfigureAwait(false);
+        string code = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
         using Stream compilerInputs = typeof(ManagedInputEvaluatorPreparation).Assembly.GetManifestResourceStream(
             "Inno.Build.Toolchains.Managed.ManagedCompilerInputs.targets"
         )
                                       ?? throw new InvalidOperationException("The compiler input target resource is absent.");
         using var compilerInputsReader = new StreamReader(compilerInputs);
-        string compilerInputsCode = await compilerInputsReader.ReadToEndAsync(cancellation).ConfigureAwait(false);
+        string compilerInputsCode = await compilerInputsReader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
         string sdkRoot = Path.GetDirectoryName(sdk.cliPath)!;
-        string[] assemblies = [
+        string[] assemblies =
+        [
             "Microsoft.Build.dll",
             "Microsoft.Build.Framework.dll",
             "Microsoft.Build.Utilities.Core.dll",
@@ -48,7 +49,7 @@ internal static class ManagedInputEvaluatorPreparation
             )
             .ToArray();
         string[] declarations = ["managed-input-evaluator", "net10.0", "Release", sdk.sdkIdentity, code, compilerInputsCode];
-        string fingerprint = NativeBuildFingerprint.Create(context, declarations, inputs, cancellation);
+        string fingerprint = NativeBuildFingerprint.Create(context, declarations, inputs, cancellationToken);
         string directory = Path.Combine(context.engineRoot, "artifacts", "build-tools", "managed-inputs", "evaluators", fingerprint);
         var cache = new BuildCachePublisher(Path.GetDirectoryName(directory)!, BuildCacheArtifactRole.ImmutableArtifact);
         BuildCacheOwnerCatalog.Register(
@@ -56,22 +57,22 @@ internal static class ManagedInputEvaluatorPreparation
             Path.GetDirectoryName(directory)!,
             "managed-evaluators",
             cache.role,
-            cancellation
+            cancellationToken
         );
-        using FileLease activity = await cache.AcquireUseAsync(cancellation).ConfigureAwait(false);
+        using FileLease activity = await cache.AcquireUseAsync(cancellationToken).ConfigureAwait(false);
         BuildArtifactReadLease? existing = await BuildArtifactReadLease.TryAcquireAsync(
             directory,
             Path.GetDirectoryName(directory)!,
             fingerprint,
             ["Outputs"],
             context,
-            cancellation
+            cancellationToken
         ).ConfigureAwait(false);
         if (existing is not null)
         {
             try
             {
-                cache.Record(directory, directory + ".read.lock", [], sdk.sdkIdentity, null, cancellation);
+                cache.Record(directory, directory + ".read.lock", [], sdk.sdkIdentity, null, cancellationToken);
                 return new(directory, fingerprint, existing);
             }
             catch
@@ -83,7 +84,7 @@ internal static class ManagedInputEvaluatorPreparation
         using (FileLease generation = await FileLease.AcquireAsync(
             directory + ".generation.lock",
             Timeout.InfiniteTimeSpan,
-            cancellation
+            cancellationToken
         ).ConfigureAwait(false)
         ) {
             Verify("managed-evaluator-lock");
@@ -91,7 +92,7 @@ internal static class ManagedInputEvaluatorPreparation
             {
                 using ProcessOwnedDirectory candidateOwner = await ProcessOwnedDirectory.CreateAsync(
                     Path.GetDirectoryName(directory)!,
-                    cancellation
+                    cancellationToken
                 ).ConfigureAwait(false);
                 string candidate = candidateOwner.directory;
                 try
@@ -124,11 +125,11 @@ internal static class ManagedInputEvaluatorPreparation
                             ))
                         )
                     );
-                    await File.WriteAllTextAsync(project, definition.ToString(), cancellation).ConfigureAwait(false);
+                    await File.WriteAllTextAsync(project, definition.ToString(), cancellationToken).ConfigureAwait(false);
                     await File.WriteAllTextAsync(
                         Path.Combine(candidate, "ManagedInputGraphTask.cs"),
                         code,
-                        cancellation
+                        cancellationToken
                     ).ConfigureAwait(false);
                     context.RecordManagedProcess();
                     await ToolchainEnvironment.RunAsync(
@@ -148,7 +149,7 @@ internal static class ManagedInputEvaluatorPreparation
                             "-v:quiet"
                         ],
                         context.engineRoot,
-                        cancellation,
+                        cancellationToken,
                         DotNetSdkEnvironment.Create(sdk.hostPath)
                     ).ConfigureAwait(false);
                     Verify("managed-evaluator-build");
@@ -163,7 +164,7 @@ internal static class ManagedInputEvaluatorPreparation
                     using BuildArtifactWriteLease mutation = await BuildArtifactWriteLease.AcquireAsync(
                         directory,
                         Path.GetDirectoryName(directory)!,
-                        cancellation
+                        cancellationToken
                     ).ConfigureAwait(false);
                     try
                     {
@@ -185,12 +186,12 @@ internal static class ManagedInputEvaluatorPreparation
             Path.GetDirectoryName(directory)!,
             fingerprint,
             ["Outputs"],
-            cancellation,
+            cancellationToken,
             context
         ).ConfigureAwait(false);
         try
         {
-            cache.Record(directory, directory + ".read.lock", [], sdk.sdkIdentity, null, cancellation);
+            cache.Record(directory, directory + ".read.lock", [], sdk.sdkIdentity, null, cancellationToken);
             return new(directory, fingerprint, reading);
         }
         catch
@@ -201,8 +202,13 @@ internal static class ManagedInputEvaluatorPreparation
 
         void Verify(string phase)
         {
-            if (NativeBuildFingerprint.Create(context.BeginInputVerification(phase), declarations, inputs, cancellation) != fingerprint)
-            {
+            if (NativeBuildFingerprint.Create(
+                context.BeginInputVerification(phase),
+                declarations,
+                inputs,
+                cancellationToken
+            ) != fingerprint
+            ) {
                 throw new InvalidOperationException("The managed evaluator's selected SDK changed; no candidate was published.");
             }
         }

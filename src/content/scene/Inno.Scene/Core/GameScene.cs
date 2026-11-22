@@ -40,7 +40,8 @@ public sealed class GameScene : EngineObject, ISerializable
         string name,
         Guid? persistentID
     ) {
-        m_types = types ?? throw new ArgumentNullException(nameof(types));
+        ArgumentNullException.ThrowIfNull(types);
+        m_types = types;
         m_name = name ?? string.Empty;
         m_store = new SceneStore(types);
         m_hierarchy = new HierarchyService(this);

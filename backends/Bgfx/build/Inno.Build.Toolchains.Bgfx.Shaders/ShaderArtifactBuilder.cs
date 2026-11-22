@@ -196,7 +196,7 @@ public static class ShaderArtifactBuilder
         diagnostics.RegisterSink(new DiagnosticOutput());
         using var logs = new LogRouter();
         using var modules = new ModuleHost(
-            new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderArtifactBuilder).Assembly)}
+            new ModuleHostOptions() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderArtifactBuilder).Assembly)}
         );
         using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         using var serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
@@ -207,7 +207,7 @@ public static class ShaderArtifactBuilder
             identities,
             diagnostics,
             logs,
-            new() { assetRoot = Path.GetFullPath(assetRoot), libraryRoot = Path.Combine(scratch, "Library") }
+            new AssetPipelineOptions() { assetRoot = Path.GetFullPath(assetRoot), libraryRoot = Path.Combine(scratch, "Library") }
         );
         AssetPath path = AssetPath.Project(shaderPath);
         // A fresh source import must succeed. An earlier build artifact never masks current source errors.

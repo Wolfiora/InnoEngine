@@ -153,10 +153,7 @@ public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore
     /// </returns>
     public IndexedObjectEntry<T> Add(T item)
     {
-        if (item is null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        ArgumentNullException.ThrowIfNull(item);
 
         m_lock.EnterWriteLock();
         try
@@ -192,10 +189,7 @@ public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore
     /// </returns>
     public bool Remove(T item)
     {
-        if (item is null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        ArgumentNullException.ThrowIfNull(item);
 
         m_lock.EnterWriteLock();
         try

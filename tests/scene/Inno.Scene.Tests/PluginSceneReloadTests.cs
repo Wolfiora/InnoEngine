@@ -18,8 +18,7 @@ namespace Inno.Scene.Tests;
 [Collection(SceneTestsCollection.C_NAME)]
 public sealed class PluginSceneReloadTests : IDisposable
 {
-    private static readonly Guid COMPONENT_TYPE_ID =
-        Guid.Parse("9f67d41e-082b-46d5-aaf0-dfc76c693182");
+    private static readonly Guid COMPONENT_TYPE_ID = Guid.Parse("9f67d41e-082b-46d5-aaf0-dfc76c693182");
 
     private readonly ModuleHost m_modules;
     private readonly TypeCatalog m_types;
@@ -28,7 +27,7 @@ public sealed class PluginSceneReloadTests : IDisposable
     private readonly IDisposable m_sceneScope;
     private readonly string m_artifactRoot;
     private AssemblyModuleHandle? m_activeModule;
-    private IReadOnlyList<ReferenceRecoveryChange> m_changes = Array.Empty<ReferenceRecoveryChange>();
+    private IReadOnlyList<ReferenceRecoveryChange> m_changes = [];
 
     public PluginSceneReloadTests(SceneTestsFixture fixture)
     {

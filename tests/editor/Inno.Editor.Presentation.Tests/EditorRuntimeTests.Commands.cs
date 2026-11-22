@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Xunit;
+using Inno.Core.Events;
 using Inno.Core.Input;
 using Inno.Editor.Interactions;
 
@@ -57,12 +58,12 @@ public sealed partial class EditorRuntimeTests
     public void ShortcutIndexRefreshPreservesDispatchAndRejectsRepeats()
     {
         m_runtime.interactions.For("tests/multiple-shortcuts").Focus();
-        m_runtime.HandleKeyPressed(new(0, KeyCode.F3));
+        m_runtime.HandleKeyPressed(new KeyPressedEvent(0, KeyCode.F3));
         Assert.Equal(1, MultiShortcutAction.executeCount);
         m_types.Rebuild();
-        m_runtime.HandleKeyPressed(new(0, KeyCode.F4));
+        m_runtime.HandleKeyPressed(new KeyPressedEvent(0, KeyCode.F4));
         Assert.Equal(2, MultiShortcutAction.executeCount);
-        m_runtime.HandleKeyPressed(new(0, KeyCode.F4, repeat: true));
+        m_runtime.HandleKeyPressed(new KeyPressedEvent(0, KeyCode.F4, repeat: true));
         Assert.Equal(2, MultiShortcutAction.executeCount);
     }
 }
@@ -81,7 +82,7 @@ public sealed class MenuStateAction : EditorAction
 {
     protected override EditorActionState Query(EditorActionContext context)
         => context.target is MenuStateTarget target
-           ? new(target.visible, target.enabled, target.isChecked, target.label, "Current owner is read-only.")
+           ? new EditorActionState(target.visible, target.enabled, target.isChecked, target.label, "Current owner is read-only.")
            : EditorActionState.hidden;
 
     protected override void Execute(EditorActionContext context) {}

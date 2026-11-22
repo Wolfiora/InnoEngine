@@ -21,7 +21,8 @@ public sealed partial class NativeBindingGenerator : INativeBindingGenerator
     /// </param>
     public NativeBindingGenerator(NativeBindingProfile profile)
     {
-        m_profile = profile ?? throw new ArgumentNullException(nameof(profile));
+        ArgumentNullException.ThrowIfNull(profile);
+        m_profile = profile;
     }
 
     /// <inheritdoc/>

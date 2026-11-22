@@ -25,7 +25,7 @@ public sealed class ShaderConstantNodeCompiler : IShaderNodeCompiler
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
     public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext context)
-        => [new("value", ShaderSourceType.Atomic(context.Read("type", "float")), GraphPortDirection.Output)];
+        => [new ShaderNodePort("value", ShaderSourceType.Atomic(context.Read("type", "float")), GraphPortDirection.Output)];
 
     /// <summary>
     /// Lowers this graph node to typed shader IR after validating its inputs.
@@ -75,9 +75,9 @@ public sealed class ShaderBinaryNodeCompiler : IShaderNodeCompiler
         ShaderSourceType type = ShaderSourceType.Atomic(context.Read("type", "float"));
         ShaderIrOperation operation = Operation(context);
         return [
-            new("left", type, GraphPortDirection.Input),
-            new("right", type, GraphPortDirection.Input),
-            new(
+            new ShaderNodePort("left", type, GraphPortDirection.Input),
+            new ShaderNodePort("right", type, GraphPortDirection.Input),
+            new ShaderNodePort(
                 "value",
                 operation is ShaderIrOperation.Equal or ShaderIrOperation.LessThan ? ShaderSourceType.Atomic("bool") : type,
                 GraphPortDirection.Output
@@ -139,7 +139,7 @@ public sealed class ShaderConstructNodeCompiler : IShaderNodeCompiler
         (ShaderSourceType type, ShaderSourceType scalar, int count) = Shape(context);
         return Enumerable.Range(0, count)
             .Select(index => new ShaderNodePort("component." + index, scalar, GraphPortDirection.Input))
-            .Append(new("value", type, GraphPortDirection.Output))
+            .Append(new ShaderNodePort("value", type, GraphPortDirection.Output))
             .ToArray();
     }
 
@@ -206,7 +206,7 @@ public sealed class ShaderStageInputNodeCompiler : IShaderNodeCompiler
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
     public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext context)
-        => [new("value", RequireBinding(context).type, GraphPortDirection.Output)];
+        => [new ShaderNodePort("value", RequireBinding(context).type, GraphPortDirection.Output)];
 
     /// <summary>
     /// Lowers this graph node to typed shader IR after validating its inputs.
@@ -250,10 +250,10 @@ public sealed class ShaderSelectNodeCompiler : IShaderNodeCompiler
     {
         ShaderSourceType type = ShaderSourceType.Atomic(context.Read("type", "float"));
         return [
-            new("condition", ShaderSourceType.Atomic("bool"), GraphPortDirection.Input),
-            new("true", type, GraphPortDirection.Input),
-            new("false", type, GraphPortDirection.Input),
-            new("value", type, GraphPortDirection.Output)
+            new ShaderNodePort("condition", ShaderSourceType.Atomic("bool"), GraphPortDirection.Input),
+            new ShaderNodePort("true", type, GraphPortDirection.Input),
+            new ShaderNodePort("false", type, GraphPortDirection.Input),
+            new ShaderNodePort("value", type, GraphPortDirection.Output)
         ];
     }
 
@@ -295,7 +295,7 @@ public sealed class ShaderSourceNodeCompiler : IShaderNodeCompiler
     public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext context)
     {
         ShaderSourceFunction function = RequireModule(context).function!;
-        var ports = new List<ShaderNodePort>();
+        List<ShaderNodePort> ports = [];
         foreach (ShaderSourceParameter parameter in function.parameters)
         {
             if (parameter.direction != ShaderSourceParameterDirection.Output)
@@ -317,7 +317,7 @@ public sealed class ShaderSourceNodeCompiler : IShaderNodeCompiler
             ShaderSourceType type,
             GraphPortDirection direction
         ) {
-            ports.Add(new(name, type, direction, required: false));
+            ports.Add(new ShaderNodePort(name, type, direction, required: false));
             foreach (ShaderSourceField field in type.fields)
             {
                 Add(name + "." + field.name, field.type, direction);

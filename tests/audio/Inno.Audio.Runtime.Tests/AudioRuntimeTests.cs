@@ -163,7 +163,7 @@ public sealed class AudioRuntimeTests : IDisposable
             new AudioRuntimeOptions { maxVoices = 1 }
         );
         using EventHub hub = events.CreateHub();
-        var completions = new List<AudioVoiceCompletedEvent>();
+        List<AudioVoiceCompletedEvent> completions = [];
         hub.Listen<AudioVoiceCompletedEvent>(completions.Add);
         AudioVoiceHandle previous = runtime.Play(CreateClip(48_000), new AudioPlayOptions(loop: true));
         runtime.Update(0);
@@ -196,7 +196,7 @@ public sealed class AudioRuntimeTests : IDisposable
     {
         using AudioRuntime runtime = CreateRuntime();
         using EventHub hub = m_events.CreateHub();
-        var completed = new List<AudioVoiceCompletedEvent>();
+        List<AudioVoiceCompletedEvent> completed = [];
         hub.Listen<AudioVoiceCompletedEvent>(completed.Add);
         AudioVoiceHandle voice = runtime.Play(new AudioClipAsset());
         Assert.True(runtime.TryGetVoiceState(voice, out AudioPlaybackState preparing));
@@ -528,7 +528,7 @@ public sealed class AudioRuntimeTests : IDisposable
         using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.completion", "Completion"));
         using var runtime = new AudioRuntime(m_types, new ReadyAudioDevice(), m_artifacts, events, reporter);
         using EventHub hub = events.CreateHub();
-        var completed = new List<AudioVoiceCompletedEvent>();
+        List<AudioVoiceCompletedEvent> completed = [];
         hub.Listen<AudioVoiceCompletedEvent>(completed.Add);
         AudioVoiceHandle voice = runtime.Play(CreateClip(4800));
         events.Enqueue(new AudioVoiceCompletedEvent(voice, AudioCompletionReason.Stopped));
@@ -665,7 +665,7 @@ public sealed class AudioRuntimeTests : IDisposable
         AudioClipAsset clip = CreateClip(frameCount: 4800);
         using AudioRuntime runtime = CreateRuntime();
         using EventHub hub = m_events.CreateHub();
-        var completions = new List<AudioVoiceCompletedEvent>();
+        List<AudioVoiceCompletedEvent> completions = [];
         hub.Listen<AudioVoiceCompletedEvent>(completions.Add);
 
         AudioVoiceHandle voice = runtime.Play(clip);
@@ -710,7 +710,7 @@ public sealed class AudioRuntimeTests : IDisposable
         AudioClipAsset clip = CreateClip(frameCount: 480_000);
         using AudioRuntime runtime = CreateRuntime(maxVoices: 2);
         using EventHub hub = m_events.CreateHub();
-        var completions = new List<AudioVoiceCompletedEvent>();
+        List<AudioVoiceCompletedEvent> completions = [];
         hub.Listen<AudioVoiceCompletedEvent>(completions.Add);
         AudioVoiceHandle first = runtime.Play(clip, new AudioPlayOptions(priority: 1));
         AudioVoiceHandle second = runtime.Play(clip, new AudioPlayOptions(priority: 10));

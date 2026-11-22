@@ -163,7 +163,7 @@ internal sealed class DocumentationProjectReferences
         CancellationToken cancellationToken
     ) {
         CSharpCompilation contract = Evaluate(project, cancellationToken, sourceOnly: true);
-        var trees = new List<SyntaxTree>();
+        List<SyntaxTree> trees = [];
         foreach (string source in m_sources[project])
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -190,7 +190,7 @@ internal sealed class DocumentationProjectReferences
         CSharpCompilation compilation,
         CancellationToken cancellationToken
     ) {
-        var sources = new List<object>();
+        List<object> sources = [];
         foreach (SyntaxTree tree in compilation.SyntaxTrees)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -282,7 +282,7 @@ internal sealed class DocumentationProjectReferences
             documentation: xml is null ? null : new AssemblyDocumentationProvider(xmlPath, xml)
         );
         string identity = Hash(Encoding.UTF8.GetBytes(Hash(image) + "\n" + (xml is null ? "absent" : Hash(xml))));
-        m_frozenReferences.Add(path, new(reference, identity));
+        m_frozenReferences.Add(path, new FrozenReference(reference, identity));
         return reference;
     }
 

@@ -93,7 +93,8 @@ public sealed class TaskRuntimeBuildTests : IDisposable
             new BuildCachePublisher(Path.Combine(m_root, "hosts"), BuildCacheArtifactRole.ImmutableArtifact).Describe("hosts"),
             new BuildCachePublisher(Path.Combine(m_root, "loads"), BuildCacheArtifactRole.ProcessWorkingDirectory).Describe("loads")
         ];
-        BuildCacheCleanupResult maintained = await BuildCacheCleanupPlan.Create(m_root, owners, new(), retireAll: true).ExecuteAsync();
+        BuildCacheCleanupResult maintained = await BuildCacheCleanupPlan.Create(m_root, owners, new BuildCachePolicy(), retireAll: true)
+            .ExecuteAsync();
         Assert.Empty(maintained.failures);
         Assert.True(File.Exists(assets));
         BuildTaskRuntimeTask repeated = CreateTask(engine);
@@ -186,14 +187,14 @@ public sealed class TaskRuntimeBuildTests : IDisposable
             }
         }
         canceled.Cancel();
-        Assert.True(CreateTask(new(() => true)).Execute());
+        Assert.True(CreateTask(new RecordingEngine(() => true)).Execute());
     }
 
     [Fact]
     public void FailedBuildDoesNotRetainSharedOwnership()
     {
-        Assert.False(CreateTask(new(() => false)).Execute());
-        Assert.True(CreateTask(new(() => true)).Execute());
+        Assert.False(CreateTask(new RecordingEngine(() => false)).Execute());
+        Assert.True(CreateTask(new RecordingEngine(() => true)).Execute());
     }
 
     [Theory]
@@ -201,7 +202,7 @@ public sealed class TaskRuntimeBuildTests : IDisposable
     [InlineData("Configuration=Debug;Configuration=Release")]
     public void InvalidPropertiesFailBeforeCreatingSharedOutput(string declarations)
     {
-        BuildTaskRuntimeTask task = CreateTask(new(() => true));
+        BuildTaskRuntimeTask task = CreateTask(new RecordingEngine(() => true));
         task.Properties = declarations.Split(';');
         Assert.False(task.Execute());
         Assert.False(Directory.Exists(Path.Combine(m_root, "bootstrap")));

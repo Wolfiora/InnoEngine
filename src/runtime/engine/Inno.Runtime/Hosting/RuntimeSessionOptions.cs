@@ -79,13 +79,12 @@ public sealed class RuntimeSessionOptions
     /// <summary>
     /// Gets or initializes the backend-neutral subsystem factories composed into each session.
     /// </summary>
-    public Func<RuntimeSession, IReadOnlyList<IRuntimeSubsystemFactory>> createSubsystems { get; init; }
-        = static _ => Array.Empty<IRuntimeSubsystemFactory>();
+    public Func<RuntimeSession, IReadOnlyList<IRuntimeSubsystemFactory>> createSubsystems { get; init; } = static _ => [];
 
     /// <summary>
     /// Gets or initializes capabilities verified by composition for this session's selected services.
     /// </summary>
-    public IReadOnlyList<RuntimeCapabilityID> capabilities { get; init; } = Array.Empty<RuntimeCapabilityID>();
+    public IReadOnlyList<RuntimeCapabilityID> capabilities { get; init; } = [];
 
     /// <summary>
     /// Gets or initializes owner-provided resolvers included in this session's immutable reference catalog.
@@ -93,6 +92,5 @@ public sealed class RuntimeSessionOptions
     /// <remarks>
     /// A deployed <c>AssetDatabase</c> automatically contributes its asset resolver and must not be repeated here.
     /// </remarks>
-    public IReadOnlyList<IReferenceResolver> referenceResolvers { get; init; }
-        = Array.Empty<IReferenceResolver>();
+    public IReadOnlyList<IReferenceResolver> referenceResolvers { get; init; } = [];
 }

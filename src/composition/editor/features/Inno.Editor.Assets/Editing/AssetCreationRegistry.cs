@@ -26,7 +26,7 @@ internal sealed class AssetCreationRegistry : TypeRegistry<AssetCreationRegistry
     /// </returns>
     protected override Snapshot Build(TypeCacheSnapshot types)
     {
-        var registrations = new List<Registration>();
+        List<Registration> registrations = [];
         var byID = new Dictionary<string, Registration>(StringComparer.Ordinal);
         var byMenuPath = new Dictionary<string, Registration>(StringComparer.OrdinalIgnoreCase);
         foreach (Type type in types

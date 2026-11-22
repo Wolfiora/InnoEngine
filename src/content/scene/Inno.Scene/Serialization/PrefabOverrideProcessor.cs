@@ -26,8 +26,7 @@ internal static class PrefabOverrideProcessor
             return connection.overrides;
         }
 
-        (GameScene sourceScene, _, PrefabConnectionRecord sourceConnection) =
-            InstantiateSource(connection.sourceAsset, context);
+        (GameScene sourceScene, _, PrefabConnectionRecord sourceConnection) = InstantiateSource(connection.sourceAsset, context);
         try
         {
             SceneGraphReferenceMap currentReferences = CreateComparisonReferences(scene, connection);
@@ -75,8 +74,7 @@ internal static class PrefabOverrideProcessor
         }
 
         GameScene scene = instanceRoot.scene;
-        (GameScene sourceScene, _, PrefabConnectionRecord sourceConnection) =
-            InstantiateSource(connection.sourceAsset, context);
+        (GameScene sourceScene, _, PrefabConnectionRecord sourceConnection) = InstantiateSource(connection.sourceAsset, context);
         try
         {
             MarkOrphanedOverrides(connection, sourceConnection, sourceScene, context);
@@ -183,8 +181,10 @@ internal static class PrefabOverrideProcessor
                 continue;
             }
 
-            IReadOnlyList<SerializationMemberMetadata> members =
-                SerializedPropertyValueCodec.GetMembers(sourceComponent.GetType(), context);
+            IReadOnlyList<SerializationMemberMetadata> members = SerializedPropertyValueCodec.GetMembers(
+                sourceComponent.GetType(),
+                context
+            );
             for (int memberIndex = 0; memberIndex < members.Count; memberIndex++)
             {
                 SerializationMemberMetadata member = members[memberIndex];
@@ -488,8 +488,10 @@ internal static class PrefabOverrideProcessor
                 continue;
             }
 
-            IReadOnlyList<SerializationMemberMetadata> members =
-                SerializedPropertyValueCodec.GetMembers(sourceComponent.GetType(), context);
+            IReadOnlyList<SerializationMemberMetadata> members = SerializedPropertyValueCodec.GetMembers(
+                sourceComponent.GetType(),
+                context
+            );
             for (int memberIndex = 0; memberIndex < members.Count; memberIndex++)
             {
                 SerializationMemberMetadata member = members[memberIndex];

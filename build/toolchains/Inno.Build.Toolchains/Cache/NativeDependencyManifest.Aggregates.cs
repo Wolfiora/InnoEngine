@@ -36,7 +36,7 @@ public static partial class NativeDependencyManifest
         ProductNativeBuildPlan plan,
         ProductNativeBuildResult products,
         string output,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         NativeBuildRecipe recipe = products.aggregateRecipe
                                    ?? throw new InvalidDataException("An aggregate export must retain its producer recipe.");
@@ -65,7 +65,7 @@ public static partial class NativeDependencyManifest
                 .Concat(plan.steps.SelectMany(static step => new[] { step.component.nativeProject, step.component.toolchainProject }))
                 .Append(recipe.owner.nativeProject)
                 .Append(recipe.owner.toolchainProject),
-            cancellation
+            cancellationToken
         ).ConfigureAwait(false);
         Dictionary<string, BindingAsset> bindings = products.bindingGenerations.ToDictionary(
             static pair => pair.Key,
@@ -85,14 +85,14 @@ public static partial class NativeDependencyManifest
         Directory.CreateDirectory(output);
         string assetName = product.component + "-" + product.targetID + "-" + product.fingerprint + ".zip";
         string archive = Path.Combine(output, assetName);
-        await NativeArtifactTransfer.ExportAsync(context.engineRoot, archive, cancellation, directories).ConfigureAwait(false);
+        await NativeArtifactTransfer.ExportAsync(context.engineRoot, archive, cancellationToken, directories).ConfigureAwait(false);
         using FileStream payload = File.OpenRead(archive);
-        string hash = Convert.ToHexStringLower(await SHA256.HashDataAsync(payload, cancellation).ConfigureAwait(false));
+        string hash = Convert.ToHexStringLower(await SHA256.HashDataAsync(payload, cancellationToken).ConfigureAwait(false));
         string revision = (await ToolchainEnvironment.CaptureOutputAsync(
             "git",
             ["rev-parse", "HEAD"],
             context.engineRoot,
-            cancellation
+            cancellationToken
         ).ConfigureAwait(false)).Trim();
         var asset = new AggregateAsset(
             plan.productID,
@@ -112,7 +112,7 @@ public static partial class NativeDependencyManifest
             revision
         );
         string path = Path.Combine(output, plan.productID + "-" + product.targetID + "-" + context.configuration + ".json");
-        await VerifySourcesAsync(context.engineRoot, sources, cancellation).ConfigureAwait(false);
+        await VerifySourcesAsync(context.engineRoot, sources, cancellationToken).ConfigureAwait(false);
         AtomicFile.WriteAllBytes(
             path,
             JsonSerializer.SerializeToUtf8Bytes(
@@ -130,7 +130,7 @@ public static partial class NativeDependencyManifest
         string archive,
         AggregateAsset asset,
         ProductNativeBuildPlan plan,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         string[] owners = plan.steps
             .Where(static step => step.component.bindingDefinition is not null)
@@ -142,7 +142,7 @@ public static partial class NativeDependencyManifest
         {
             throw new InvalidDataException("The aggregate dependency has a different binding closure.");
         }
-        await VerifySourcesAsync(root, asset.sources, cancellation).ConfigureAwait(false);
+        await VerifySourcesAsync(root, asset.sources, cancellationToken).ConfigureAwait(false);
         RequireDigest(asset.fingerprint);
         RequireDigest(asset.sha256);
         string directory = Resolve(asset.directory, "native", asset.component, asset.fingerprint);
@@ -151,15 +151,15 @@ public static partial class NativeDependencyManifest
         {
             using (FileStream payload = File.OpenRead(archive))
             {
-                if (Convert.ToHexStringLower(await SHA256.HashDataAsync(payload, cancellation).ConfigureAwait(false)) != asset.sha256)
+                if (Convert.ToHexStringLower(await SHA256.HashDataAsync(payload, cancellationToken).ConfigureAwait(false)) != asset.sha256)
                 {
                     throw new InvalidDataException("Native aggregate archive differs from its pinned digest.");
                 }
             }
-            await NativeArtifactTransfer.ImportAsync(root, archive, cancellation).ConfigureAwait(false);
+            await NativeArtifactTransfer.ImportAsync(root, archive, cancellationToken).ConfigureAwait(false);
         }
 
-        var readers = new List<IDisposable>();
+        List<IDisposable> readers = [];
         NativeBuildProduct? product = null;
         try
         {
@@ -174,7 +174,7 @@ public static partial class NativeDependencyManifest
                 );
                 bindings.Add(
                     pair.Key,
-                    new()
+                    new NativeBindingGenerationDescriptor()
                     {
                         fingerprint = binding.fingerprint,
                         usesRuntimeImports = binding.runtimeImports,
@@ -204,7 +204,7 @@ public static partial class NativeDependencyManifest
                 throw;
             }
 
-            await VerifySourcesAsync(root, asset.sources, cancellation).ConfigureAwait(false);
+            await VerifySourcesAsync(root, asset.sources, cancellationToken).ConfigureAwait(false);
             return new([product], new NativeBindingGenerationResult(bindings, readers), PathBoundary.Resolve(directory, asset.aggregate));
         }
         catch
@@ -249,19 +249,19 @@ public static partial class NativeDependencyManifest
             string[] outputs,
             string[] dependencies
         ) {
-            BuildCacheOwnerCatalog.Register(root, owner, id, BuildCacheArtifactRole.ImmutableArtifact, cancellation);
+            BuildCacheOwnerCatalog.Register(root, owner, id, BuildCacheArtifactRole.ImmutableArtifact, cancellationToken);
             BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(
                 location,
                 owner,
                 fingerprint,
                 outputs,
-                cancellation
+                cancellationToken
             ).ConfigureAwait(false);
             try
             {
                 var publisher = new BuildCachePublisher(owner, BuildCacheArtifactRole.ImmutableArtifact);
-                using FileLease activity = await publisher.AcquireUseAsync(cancellation).ConfigureAwait(false);
-                publisher.Record(location, location + ".read.lock", dependencies, null, asset.target, cancellation);
+                using FileLease activity = await publisher.AcquireUseAsync(cancellationToken).ConfigureAwait(false);
+                publisher.Record(location, location + ".read.lock", dependencies, null, asset.target, cancellationToken);
                 return reading;
             }
             catch
@@ -275,12 +275,12 @@ public static partial class NativeDependencyManifest
     private static async Task VerifySourcesAsync(
         string root,
         Dictionary<string, string> expected,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         Dictionary<string, string> current = await NativeDependencySource.CaptureAsync(
             root,
             expected.Keys,
-            cancellation
+            cancellationToken
         ).ConfigureAwait(false);
         if (current.Count != expected.Count
             || current.Any(pair => !expected.TryGetValue(pair.Key, out string? value) || value != pair.Value)

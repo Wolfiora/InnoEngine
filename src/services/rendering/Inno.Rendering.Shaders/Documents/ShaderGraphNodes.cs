@@ -339,7 +339,7 @@ public static class ShaderGraphNodes
         }
         ShaderGraphNodeSettings settings = ReadSettings(graph, serialization, context);
         ShaderGraphNodeInputSettings input = inputs.Length == 0
-                                             ? new()
+                                             ? new ShaderGraphNodeInputSettings()
                                              : ShaderGraphDocument.Read(
                                                  inputs[0],
                                                  ShaderGraphDocument.C_SETTINGS_KEY,
@@ -348,7 +348,7 @@ public static class ShaderGraphNodes
                                                  context
                                              );
         ShaderGraphNodeOutputSettings output = outputs.Length == 0
-                                               ? new()
+                                               ? new ShaderGraphNodeOutputSettings()
                                                : ShaderGraphDocument.Read(
                                                    outputs[0],
                                                    ShaderGraphDocument.C_SETTINGS_KEY,
@@ -589,7 +589,13 @@ public static class ShaderGraphNodes
             }
             else if (map.TryGetValue(edge.input.nodeID, out GraphNodeID targetNode))
             {
-                parent.AddEdge(new(new(call.id.value + "/" + edge.id.value), mappedSource, new(targetNode, edge.input.portID)));
+                parent.AddEdge(
+                    new GraphEdgeRecord(
+                        new GraphEdgeID(call.id.value + "/" + edge.id.value),
+                        mappedSource,
+                        new GraphEndpoint(targetNode, edge.input.portID)
+                    )
+                );
             }
         }
         foreach (ShaderGraphNodePortDefinition port in nodeInterface.outputs)
@@ -604,7 +610,7 @@ public static class ShaderGraphNodes
             }
             foreach (GraphEdgeRecord edge in edges)
             {
-                parent.AddEdge(new(new(call.id.value + "/return/" + edge.id.value), source, edge.input));
+                parent.AddEdge(new GraphEdgeRecord(new GraphEdgeID(call.id.value + "/return/" + edge.id.value), source, edge.input));
             }
         }
         parent.RemoveNode(call.id);
@@ -620,8 +626,9 @@ public static class ShaderGraphNodes
         ShaderDefinition parentDefinition = ShaderGraphDocument.ReadDefinition(parent, serialization, context);
         ShaderDefinition childDefinition = ShaderGraphDocument.ReadDefinition(child, serialization, context);
         ShaderStage callerStage = ShaderStage.None;
-        if (stageID.Length != 0 && parent.FindNode(new(stageID)) is { definitionID: ShaderGraphDocument.C_OUTPUT_DEFINITION_ID } stageNode)
-        {
+        if (stageID.Length != 0
+            && parent.FindNode(new GraphNodeID(stageID)) is { definitionID: ShaderGraphDocument.C_OUTPUT_DEFINITION_ID } stageNode
+        ) {
             callerStage = ShaderGraphDocument.Read(
                 stageNode,
                 ShaderGraphDocument.C_SETTINGS_KEY,
@@ -677,7 +684,7 @@ public static class ShaderGraphNodes
             node.SetValue(ShaderGraphDocument.C_STAGE_KEY, ShaderGraphDocument.Encode(stage, serialization, context));
         }
         graph.AddNode(node);
-        return new(id, new("value"));
+        return new(id, new GraphPortID("value"));
     }
 
     private static void Validate(

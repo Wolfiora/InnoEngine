@@ -48,7 +48,7 @@ public sealed class ListPanelKeyboardNativeTests
         float height
     ) {
         using var host = new NativeProjectPanelHost(typeof(ListPanelKeyboardNativeTests).Assembly);
-        host.native.SetDisplayMetrics(new(width, height), framebufferScale, zoom);
+        host.native.SetDisplayMetrics(new Vector2(width, height), framebufferScale, zoom);
         GameScene scene = host.CreateScene();
         GameObject[] objects = Enumerable.Range(0, 12).Select(index => scene.CreateObject("Object " + index.ToString("D2"))).ToArray();
         GameObject child = scene.CreateObject("Collapsed child");
@@ -96,7 +96,7 @@ public sealed class ListPanelKeyboardNativeTests
         float height
     ) {
         using var host = new NativeProjectPanelHost(typeof(ListPanelKeyboardNativeTests).Assembly);
-        host.native.SetDisplayMetrics(new(width, height), framebufferScale, zoom);
+        host.native.SetDisplayMetrics(new Vector2(width, height), framebufferScale, zoom);
         AssetFileEntry[] entries = Enumerable.Range(0, 12).Select(index =>
         {
             AssetPath path = AssetPath.Project("Folder " + index.ToString("D2"));

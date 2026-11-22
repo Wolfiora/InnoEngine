@@ -30,7 +30,8 @@ public sealed class AnimationBindingRuntime : IAnimationBindingSink, IDisposable
         IDiagnosticReporter diagnostics
     ) {
         ArgumentNullException.ThrowIfNull(types);
-        m_diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
+        ArgumentNullException.ThrowIfNull(diagnostics);
+        m_diagnostics = diagnostics;
         m_registry = new Registry(types);
         try
         {

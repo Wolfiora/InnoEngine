@@ -36,7 +36,7 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
         Task ProduceAsync(
             NativeBuildContext scoped,
             string output,
-            CancellationToken cancellation
+            CancellationToken cancellationToken
         ) {
             string current = scoped.GetNativeBuildRoot(m_owner);
             string physical = new DirectoryInfo(current).LinkTarget ?? current;
@@ -48,7 +48,7 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
             workspace = physical;
             File.WriteAllText(Path.Combine(current, "retained.object"), "compiler intermediate");
             Interlocked.Increment(ref compilations);
-            return File.WriteAllTextAsync(Path.Combine(output, "result.native"), File.ReadAllText(source), cancellation);
+            return File.WriteAllTextAsync(Path.Combine(output, "result.native"), File.ReadAllText(source), cancellationToken);
         }
         NativeBuildRecipe Recipe()
             => new(
@@ -58,12 +58,24 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
                 [new NativeBuildInput("input.cpp", source)],
                 ["shared", "compiler-flag"]
             );
-        using NativeBuildProduct first = await NativeArtifactPublisher.PublishAsync(new(m_root, "release"), Recipe(), ProduceAsync);
+        using NativeBuildProduct first = await NativeArtifactPublisher.PublishAsync(
+            new NativeBuildContext(m_root, "release"),
+            Recipe(),
+            ProduceAsync
+        );
         DateTime timestamp = File.GetLastWriteTimeUtc(source);
         await File.WriteAllTextAsync(source, "other");
         File.SetLastWriteTimeUtc(source, timestamp);
-        using NativeBuildProduct changed = await NativeArtifactPublisher.PublishAsync(new(m_root, "release"), Recipe(), ProduceAsync);
-        using NativeBuildProduct hit = await NativeArtifactPublisher.PublishAsync(new(m_root, "release"), Recipe(), ProduceAsync);
+        using NativeBuildProduct changed = await NativeArtifactPublisher.PublishAsync(
+            new NativeBuildContext(m_root, "release"),
+            Recipe(),
+            ProduceAsync
+        );
+        using NativeBuildProduct hit = await NativeArtifactPublisher.PublishAsync(
+            new NativeBuildContext(m_root, "release"),
+            Recipe(),
+            ProduceAsync
+        );
         Assert.NotEqual(first.fingerprint, changed.fingerprint);
         Assert.Equal(changed.fingerprint, hit.fingerprint);
         Assert.Equal(2, compilations);
@@ -82,7 +94,7 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
         Task ProduceAsync(
             NativeBuildContext scoped,
             string output,
-            CancellationToken cancellation
+            CancellationToken cancellationToken
         ) {
             string current = scoped.GetNativeBuildRoot(m_owner);
             if (calls++ == 0)
@@ -93,13 +105,13 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
             {
                 Assert.NotEqual(first, current);
             }
-            return File.WriteAllTextAsync(Path.Combine(output, "result.native"), "complete", cancellation);
+            return File.WriteAllTextAsync(Path.Combine(output, "result.native"), "complete", cancellationToken);
         }
         foreach (string argument in new[] { "-O0", "-O2" })
         {
             using NativeBuildProduct product = await NativeArtifactPublisher.PublishAsync(
-                new(m_root, "release"),
-                new(m_owner, "fixture", "fixture-x64", [new NativeBuildInput("input.cpp", source)], [argument]),
+                new NativeBuildContext(m_root, "release"),
+                new NativeBuildRecipe(m_owner, "fixture", "fixture-x64", [new NativeBuildInput("input.cpp", source)], [argument]),
                 ProduceAsync
             );
         }
@@ -148,7 +160,7 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
                 Path.Combine(bridge, "compilation.json"),
                 JsonSerializer.Serialize(new NativeBindingCompilation
                 {
-                    roots = [new("generated", string.Empty, true, true)],
+                    roots = [new NativeBindingSourceRoot("generated", string.Empty, true, true)],
                     files = [],
                     includeDirectories = [],
                     defines = [],

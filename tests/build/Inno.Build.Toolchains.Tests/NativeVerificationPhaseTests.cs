@@ -72,7 +72,7 @@ public sealed class NativeVerificationPhaseTests
             string file = Path.Combine(root, "input.txt");
             File.WriteAllText(file, "first");
             var context = new NativeBuildContext(root, "release");
-            NativeBuildInput[] inputs = new[] { new NativeBuildInput("first-owner", file), new NativeBuildInput("second-owner", file) };
+            NativeBuildInput[] inputs = [new NativeBuildInput("first-owner", file), new NativeBuildInput("second-owner", file)];
             string initial = NativeBuildFingerprint.Create(context, ["recipe"], inputs, CancellationToken.None);
             Assert.Equal(1, context.statistics.hashedFiles);
             DateTime timestamp = File.GetLastWriteTimeUtc(file);

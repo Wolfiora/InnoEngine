@@ -19,17 +19,17 @@ internal sealed class BuildCacheInventoryProgress(
         string metadata,
         string leasePath,
         BuildCacheArtifactRole role,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         FileLease reading;
         try
         {
-            reading = FileLease.AcquireSharedAsync(leasePath, TimeSpan.Zero, cancellation).AsTask().GetAwaiter().GetResult();
+            reading = FileLease.AcquireSharedAsync(leasePath, TimeSpan.Zero, cancellationToken).AsTask().GetAwaiter().GetResult();
         }
         catch (TimeoutException)
         {
             // A live writer's changing size is never persisted as completed inventory.
-            return BuildCacheFileInventory.Measure(directory, role, cancellation);
+            return BuildCacheFileInventory.Measure(directory, role, cancellationToken);
         }
         using (reading)
         {
@@ -56,13 +56,13 @@ internal sealed class BuildCacheInventoryProgress(
                     return saved.GetProperty("bytes").GetInt64();
                 }
             }
-            long bytes = BuildCacheFileInventory.Measure(directory, role, cancellation);
-            cancellation.ThrowIfCancellationRequested();
+            long bytes = BuildCacheFileInventory.Measure(directory, role, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
             if (!readOnly)
             {
                 // Only completed measurements are checkpoints. Dependencies, roots and retirement authority
                 // are always read again from the publisher; the checkpoint never authorizes deletion.
-                using FileLease writing = FileLease.AcquireAsync(Path.Combine(root, "progress.lock"), TimeSpan.Zero, cancellation)
+                using FileLease writing = FileLease.AcquireAsync(Path.Combine(root, "progress.lock"), TimeSpan.Zero, cancellationToken)
                     .AsTask()
                     .GetAwaiter()
                     .GetResult();
@@ -78,7 +78,7 @@ internal sealed class BuildCacheInventoryProgress(
     internal static void PruneRetired(
         string workspace,
         IReadOnlyList<BuildCacheOwnerDescriptor> owners,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         string root = PathBoundary.RequireUnlinkedPath(workspace, Path.Combine(workspace, "artifacts", "cache-owners", "inventory"));
         if (!Directory.Exists(root))
@@ -86,13 +86,13 @@ internal sealed class BuildCacheInventoryProgress(
             return;
         }
         // The retirement caller retains every selected publisher gate. Progress never authorizes payload removal.
-        using FileLease writing = FileLease.AcquireAsync(Path.Combine(root, "progress.lock"), TimeSpan.Zero, cancellation)
+        using FileLease writing = FileLease.AcquireAsync(Path.Combine(root, "progress.lock"), TimeSpan.Zero, cancellationToken)
             .AsTask()
             .GetAwaiter()
             .GetResult();
         foreach (string checkpoint in Directory.EnumerateFiles(root, "*.inventory").Order(StringComparer.Ordinal))
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             using JsonDocument document = JsonDocument.Parse(File.ReadAllBytes(PathBoundary.RequireUnlinkedPath(root, checkpoint)));
             JsonElement saved = document.RootElement;
             string relative = saved.GetProperty("directory").GetString() ?? throw new InvalidDataException("Inventory owner is absent.");

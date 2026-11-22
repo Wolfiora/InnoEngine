@@ -12,8 +12,10 @@ public sealed class EditorHistoryContext
         EditorContext editor,
         EditorInteractions interactions
     ) {
-        this.editor = editor ?? throw new ArgumentNullException(nameof(editor));
-        this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
+        ArgumentNullException.ThrowIfNull(editor);
+        ArgumentNullException.ThrowIfNull(interactions);
+        this.editor = editor;
+        this.interactions = interactions;
     }
 
     /// <summary>

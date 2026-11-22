@@ -29,7 +29,7 @@ public sealed partial class ShaderIrBuilder
     ) {
         ValidateSample(texture, coordinate);
         ShaderIrValue output = NewValue(ShaderSourceType.Atomic("float4"));
-        m_instructions.Add(new(ShaderIrOperation.TextureSample, [texture, coordinate], [output]));
+        m_instructions.Add(new ShaderIrInstruction(ShaderIrOperation.TextureSample, [texture, coordinate], [output]));
         return output;
     }
 
@@ -63,7 +63,7 @@ public sealed partial class ShaderIrBuilder
             throw new ArgumentException("A mip level must be float.", nameof(level));
         }
         ShaderIrValue output = NewValue(ShaderSourceType.Atomic("float4"));
-        m_instructions.Add(new(ShaderIrOperation.TextureSampleLevel, [texture, coordinate, level], [output]));
+        m_instructions.Add(new ShaderIrInstruction(ShaderIrOperation.TextureSampleLevel, [texture, coordinate, level], [output]));
         return output;
     }
 
@@ -92,7 +92,7 @@ public sealed partial class ShaderIrBuilder
             throw new ArgumentException("A write-only resource cannot be loaded.", nameof(resource));
         }
         ShaderIrValue output = NewValue(storage.valueType);
-        m_instructions.Add(new(ShaderIrOperation.StorageLoad, [resource, coordinate], [output]));
+        m_instructions.Add(new ShaderIrInstruction(ShaderIrOperation.StorageLoad, [resource, coordinate], [output]));
         return output;
     }
 
@@ -122,7 +122,7 @@ public sealed partial class ShaderIrBuilder
         {
             throw new ArgumentException("A store requires a writable resource and its exact element type.", nameof(resource));
         }
-        m_instructions.Add(new(ShaderIrOperation.StorageStore, [resource, coordinate, value], []));
+        m_instructions.Add(new ShaderIrInstruction(ShaderIrOperation.StorageStore, [resource, coordinate, value], []));
     }
 
     /// <summary>
@@ -158,7 +158,7 @@ public sealed partial class ShaderIrBuilder
                 throw new ArgumentException("Atomic add requires a read-write scalar integer buffer.", nameof(resource));
         }
         ShaderIrValue output = NewValue(storage.valueType);
-        m_instructions.Add(new(ShaderIrOperation.StorageAtomicAdd, [resource, index, value], [output]));
+        m_instructions.Add(new ShaderIrInstruction(ShaderIrOperation.StorageAtomicAdd, [resource, index, value], [output]));
         return output;
     }
 
@@ -178,7 +178,7 @@ public sealed partial class ShaderIrBuilder
         {
             throw new ArgumentException("Discard requires bool.", nameof(condition));
         }
-        m_instructions.Add(new(ShaderIrOperation.Discard, [condition], []));
+        m_instructions.Add(new ShaderIrInstruction(ShaderIrOperation.Discard, [condition], []));
     }
 
     private void ValidateSample(

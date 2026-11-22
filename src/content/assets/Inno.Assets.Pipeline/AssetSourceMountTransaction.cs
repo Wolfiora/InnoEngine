@@ -270,9 +270,6 @@ public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnaps
         {
             throw m_terminalFailure;
         }
-        if (isFinished)
-        {
-            throw new ObjectDisposedException(nameof(AssetSourceMountTransaction));
-        }
+        ObjectDisposedException.ThrowIf(isFinished, this);
     }
 }

@@ -107,7 +107,7 @@ public sealed unsafe class NativePanelHost : IDisposable
         this.diagnostics = new DiagnosticHub();
         m_diagnosticScope = diagnostics.EnterScope();
         this.logs = new LogRouter();
-        m_modules = new ModuleHost(new() { catalogSource = new DotNetAssemblyCatalogSource(composition) });
+        m_modules = new ModuleHost(new ModuleHostOptions() { catalogSource = new DotNetAssemblyCatalogSource(composition) });
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         this.console = new EditorConsole(logs, diagnostics, new InactivePlayMode());
         console.Start();
@@ -235,8 +235,8 @@ public sealed unsafe class NativePanelHost : IDisposable
     ) {
         ImGuiIO* io = NativeImGui.Raw.GetIO();
         io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(logicalSize);
-        io->DisplayFramebufferScale = Unsafe.BitCast<Vector2, NativeVector2>(new(framebufferScale));
-        m_panelSize = Vector2.Min(new(1000f, 800f), logicalSize - new Vector2(40f));
+        io->DisplayFramebufferScale = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(framebufferScale));
+        m_panelSize = Vector2.Min(new Vector2(1000f, 800f), logicalSize - new Vector2(40f));
         ui.widgets.style.SetZoom(zoom);
         using IDisposable scope = ui.Enter();
         ui.widgets.SetupStyle();

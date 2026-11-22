@@ -108,7 +108,7 @@ public sealed class AssetCoreTests
     [Fact]
     public void RuntimeContentSummaryOwnsItsFrozenSourceInventory()
     {
-        var sources = new List<AssetSourceID> { AssetSourceID.project };
+        List<AssetSourceID> sources = [AssetSourceID.project];
         var summary = new AssetRuntimeContentInfo(sources, 2, 1, 4);
         sources[0] = new AssetSourceID("replacement");
         sources.Clear();

@@ -79,7 +79,7 @@ public sealed class ShaderParameterPresentation : ISerializable
                    ShaderGraphDocument.Decode<byte[]>(encoded!, serialization, context),
                    context
                )
-               : new();
+               : new ShaderParameterPresentation();
     }
 
     /// <summary>

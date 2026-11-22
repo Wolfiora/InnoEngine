@@ -33,8 +33,9 @@ public sealed class EditorHistoryChange : IDisposable
         string? mergeKey = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(kind);
+        ArgumentNullException.ThrowIfNull(payload);
         this.kind = kind;
-        this.payload = payload ?? throw new ArgumentNullException(nameof(payload));
+        this.payload = payload;
         this.mergeKey = string.IsNullOrWhiteSpace(mergeKey) ? null : mergeKey;
     }
 

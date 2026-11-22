@@ -225,7 +225,10 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
             context = context.WithToolchain(toolchain);
             Dictionary<string, string>? expected = ExpectedFingerprint.Length == 0
                                                    ? null
-                                                   : new(StringComparer.Ordinal) { [owner.nativeProject] = ExpectedFingerprint };
+                                                   : new Dictionary<string, string>(StringComparer.Ordinal)
+                                                   {
+                                                       [owner.nativeProject] = ExpectedFingerprint
+                                                   };
             // A source project can also host an offline producer that owns no runtime bindings.
             NativeComponentBuildOptions[] configured = distribution.platforms
                 .Where(platform => platform.descriptor.id.value == TargetId)
@@ -249,7 +252,7 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
             }
             Dictionary<string, NativeComponentBuildOptions>? componentOptions = selectedOptions is null
                 ? null
-                : new(StringComparer.Ordinal) { [owner.nativeProject] = selectedOptions };
+                : new Dictionary<string, NativeComponentBuildOptions>(StringComparer.Ordinal) { [owner.nativeProject] = selectedOptions };
             var request = new NativeBindingGenerationRequest(
                 [owner],
                 TargetId,

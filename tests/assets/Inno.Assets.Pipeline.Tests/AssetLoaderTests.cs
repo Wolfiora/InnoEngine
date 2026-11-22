@@ -271,7 +271,11 @@ public sealed class AssetLoaderTests : IDisposable
                 assetRoot = workspace.assetRoot,
                 libraryRoot = workspace.libraryRoot,
                 deferUnavailableExtensions = true,
-                sourceMounts = [new(AssetSourceID.project, workspace.assetRoot, false), new(source, package.assetRoot, true)]
+                sourceMounts =
+                [
+                    new AssetSourceMount(AssetSourceID.project, workspace.assetRoot, false),
+                    new AssetSourceMount(source, package.assetRoot, true)
+                ]
             }
         );
         var path = new AssetPath(source, "surface.extensionasset");
@@ -1829,8 +1833,7 @@ public sealed class AssetLoaderTests : IDisposable
             Assert.True(restarted.TryGetInfo(removedID, out AssetInfo? tombstone));
             Assert.Equal(AssetImportStatus.Missing, tombstone!.status);
 
-            using AssetSourceMountTransaction generation =
-                restarted.PrepareSourceMounts(restarted.sourceMounts);
+            using AssetSourceMountTransaction generation = restarted.PrepareSourceMounts(restarted.sourceMounts);
             generation.Activate();
 
             Assert.Empty(generation.recoveryChanges);
@@ -2627,7 +2630,7 @@ internal sealed class DeferredAssetImporter : AssetImporter<DeferredAsset>
 {
     private static readonly IReadOnlyList<string> EXTENSIONS = [".deferredasset"];
 
-    public override IReadOnlyList<string> supportedExtensions => isAvailable ? EXTENSIONS : Array.Empty<string>();
+    public override IReadOnlyList<string> supportedExtensions => isAvailable ? EXTENSIONS : [];
 
     internal static bool isAvailable { get; set; } = true;
 

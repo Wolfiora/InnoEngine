@@ -31,8 +31,8 @@ internal sealed class ParameterListStyleRule : StyleRule
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
         IReadOnlyList<TextSpan> protectedSpans = source.ProtectedSpans();
-        var edits = new List<StyleEdit>();
-        var spans = new List<TextSpan>();
+        List<StyleEdit> edits = [];
+        List<TextSpan> spans = [];
         foreach ((StyleList list, bool expand) in Violations(source).OrderBy(static entry => entry.list.open.SpanStart))
         {
             // Nested lists are fixed in a later round, after their container has settled.
@@ -48,7 +48,7 @@ internal sealed class ParameterListStyleRule : StyleRule
             {
                 string? joined = StyleLayout.Join(source, list.open, list.close);
                 if (joined is null) continue;
-                edits.Add(new(span.Start, span.End, joined));
+                edits.Add(new StyleEdit(span.Start, span.End, joined));
             }
 
             spans.Add(span);

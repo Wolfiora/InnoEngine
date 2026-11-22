@@ -34,8 +34,10 @@ public sealed class PlayerSupportPackClosureValidator : IPlayerSupportPackValida
         IPlayerSupportPackValidator platform,
         IPlayerSupportPackValidator? deployment
     ) {
-        m_requirements = requirements ?? throw new ArgumentNullException(nameof(requirements));
-        m_platform = platform ?? throw new ArgumentNullException(nameof(platform));
+        ArgumentNullException.ThrowIfNull(requirements);
+        ArgumentNullException.ThrowIfNull(platform);
+        m_requirements = requirements;
+        m_platform = platform;
         m_deployment = deployment;
     }
 

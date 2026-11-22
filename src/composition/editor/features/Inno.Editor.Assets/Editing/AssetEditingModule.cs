@@ -57,9 +57,12 @@ public sealed partial class AssetEditingModule : EditorModule
         TypeCatalog types,
         LogRouter logs
     ) {
-        m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-        m_pipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
-        m_plugins = plugins ?? throw new ArgumentNullException(nameof(plugins));
+        ArgumentNullException.ThrowIfNull(interactions);
+        ArgumentNullException.ThrowIfNull(pipeline);
+        ArgumentNullException.ThrowIfNull(plugins);
+        m_interactions = interactions;
+        m_pipeline = pipeline;
+        m_plugins = plugins;
         ArgumentNullException.ThrowIfNull(types);
         ArgumentNullException.ThrowIfNull(logs);
         m_log = logs.CreateLogger<AssetEditingModule>();

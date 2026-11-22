@@ -28,7 +28,8 @@ public sealed class PropertyDrawerAttribute : Attribute
         bool useForChildren = false,
         int priority = 0
     ) {
-        this.targetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
+        ArgumentNullException.ThrowIfNull(targetType);
+        this.targetType = targetType;
         this.useForChildren = useForChildren;
         this.priority = priority;
     }

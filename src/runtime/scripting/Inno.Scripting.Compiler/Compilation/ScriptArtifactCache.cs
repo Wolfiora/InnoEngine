@@ -32,7 +32,7 @@ internal sealed class ScriptArtifactCache
         {
             candidates = candidates.Concat(Directory.EnumerateDirectories(assemblyRoot));
         }
-        var discoveredEntries = new List<Entry>();
+        List<Entry> discoveredEntries = [];
         foreach (string path in candidates.Where(IsArtifactDirectory))
         {
             if (TryCreateEntry(path, out Entry entry))

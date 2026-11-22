@@ -36,7 +36,9 @@ public sealed class NativeBindingConfigurationTests
         BuildCompositionContext environment = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetID("windows-x64"));
         ProductNativeBuildPlan product = StandardBuildDistribution.Create(environment).build
             .ResolveNativeProduct("windows-x64", "editor").plan;
-        using HostServices services = new HostServicesProvider().Create(new(root, JsonSerializer.SerializeToElement(new { })));
+        using HostServices services = new HostServicesProvider().Create(
+            new HostServicesRequest(root, JsonSerializer.SerializeToElement(new { }))
+        );
         foreach (NativeComponentDescriptor owner in product.steps.Select(step => step.component)
             .Where(owner => owner.bindingDefinition is not null)
             .DistinctBy(owner => owner.nativeProject)

@@ -28,8 +28,8 @@ public sealed partial class RenderRuntimeGenerationTests
             Assert.True(
                 resources.TryResolveGraphicsMaterial(
                     material,
-                    new("test.publication"),
-                    new("draw"),
+                    new ShaderContractID("test.publication"),
+                    new ShaderPassRoleID("draw"),
                     null,
                     null,
                     out RenderMaterialPass? saved
@@ -37,11 +37,11 @@ public sealed partial class RenderRuntimeGenerationTests
             );
             Assert.True(
                 resources.TryResolveMaterialArtifact(
-                    new("preview/document"),
+                    new RenderPersistentResourceID("preview/document"),
                     draft,
                     material,
-                    new("test.publication"),
-                    new("draw"),
+                    new ShaderContractID("test.publication"),
+                    new ShaderPassRoleID("draw"),
                     ShaderProgramKind.Raster,
                     null,
                     null,
@@ -56,11 +56,11 @@ public sealed partial class RenderRuntimeGenerationTests
             Assert.NotEqual(canonical, preview);
             Assert.True(
                 resources.TryResolveMaterialArtifact(
-                    new("preview/document"),
+                    new RenderPersistentResourceID("preview/document"),
                     Publication("next-frame"),
                     material,
-                    new("test.publication"),
-                    new("draw"),
+                    new ShaderContractID("test.publication"),
+                    new ShaderPassRoleID("draw"),
                     ShaderProgramKind.Raster,
                     null,
                     null,
@@ -72,15 +72,15 @@ public sealed partial class RenderRuntimeGenerationTests
         };
         RunResourceFrame(runtime);
         Assert.Equal(1, provider.requests);
-        runtime.resources.Release(new("preview/document"));
+        runtime.resources.Release(new RenderPersistentResourceID("preview/document"));
         Assert.DoesNotContain(preview, device.destroyedPrograms);
         ResourceProbePipeline.action = resources =>
         {
             Assert.True(
                 resources.TryResolveGraphicsMaterial(
                     material,
-                    new("test.publication"),
-                    new("draw"),
+                    new ShaderContractID("test.publication"),
+                    new ShaderPassRoleID("draw"),
                     null,
                     null,
                     out RenderMaterialPass? saved
@@ -109,11 +109,11 @@ public sealed partial class RenderRuntimeGenerationTests
         {
             Assert.True(
                 resources.TryResolveMaterialArtifact(
-                    new("preview/a"),
+                    new RenderPersistentResourceID("preview/a"),
                     draft,
                     material,
-                    new("test.publication"),
-                    new("draw"),
+                    new ShaderContractID("test.publication"),
+                    new ShaderPassRoleID("draw"),
                     ShaderProgramKind.Raster,
                     null,
                     null,
@@ -135,8 +135,8 @@ public sealed partial class RenderRuntimeGenerationTests
             Assert.True(
                 resources.TryResolveGraphicsMaterial(
                     material,
-                    new("test.publication"),
-                    new("draw"),
+                    new ShaderContractID("test.publication"),
+                    new ShaderPassRoleID("draw"),
                     null,
                     null,
                     out RenderMaterialPass? saved
@@ -165,8 +165,8 @@ public sealed partial class RenderRuntimeGenerationTests
             ResourceProbePipeline.action = resources => Assert.True(
                 resources.TryResolveGraphicsMaterial(
                     material,
-                    new("test.publication"),
-                    new("draw"),
+                    new ShaderContractID("test.publication"),
+                    new ShaderPassRoleID("draw"),
                     null,
                     null,
                     out pass
@@ -196,7 +196,7 @@ public sealed partial class RenderRuntimeGenerationTests
         var provider = new PublicationProvider(m_serialization) { artifact = Publication("main", "shadow") };
         var device = new RecordingRenderDevice();
         using var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink(), targetArtifacts: provider);
-        var resolved = new List<GraphicsPipelineHandle>();
+        List<GraphicsPipelineHandle> resolved = [];
         ResourceProbePipeline.action = resources =>
         {
             resolved.Clear();
@@ -205,8 +205,8 @@ public sealed partial class RenderRuntimeGenerationTests
                 Assert.True(
                     resources.TryResolveGraphicsMaterial(
                         material,
-                        new("test.publication"),
-                        new(role),
+                        new ShaderContractID("test.publication"),
+                        new ShaderPassRoleID(role),
                         null,
                         null,
                         out RenderMaterialPass? pass
@@ -245,11 +245,25 @@ public sealed partial class RenderRuntimeGenerationTests
         ResourceProbePipeline.action = resources =>
         {
             Assert.True(
-                resources.TryResolveGraphicsMaterial(material, new("test.publication"), new("draw"), null, null, out RenderMaterialPass? a)
+                resources.TryResolveGraphicsMaterial(
+                    material,
+                    new ShaderContractID("test.publication"),
+                    new ShaderPassRoleID("draw"),
+                    null,
+                    null,
+                    out RenderMaterialPass? a
+                )
             );
             provider.artifact = second;
             Assert.True(
-                resources.TryResolveGraphicsMaterial(material, new("test.publication"), new("draw"), null, null, out RenderMaterialPass? b)
+                resources.TryResolveGraphicsMaterial(
+                    material,
+                    new ShaderContractID("test.publication"),
+                    new ShaderPassRoleID("draw"),
+                    null,
+                    null,
+                    out RenderMaterialPass? b
+                )
             );
             Assert.Equal(a!.graphicsPipeline, b!.graphicsPipeline);
         };
@@ -268,7 +282,16 @@ public sealed partial class RenderRuntimeGenerationTests
         {
             foreach (string role in new[] { "draw", "shadow" })
             {
-                Assert.True(resources.TryResolveGraphicsMaterial(material, new("test.publication"), new(role), null, null, out _));
+                Assert.True(
+                    resources.TryResolveGraphicsMaterial(
+                        material,
+                        new ShaderContractID("test.publication"),
+                        new ShaderPassRoleID(role),
+                        null,
+                        null,
+                        out _
+                    )
+                );
             }
         };
         RunResourceFrame(runtime);
@@ -290,7 +313,16 @@ public sealed partial class RenderRuntimeGenerationTests
         {
             foreach (string role in new[] { "draw", "shadow" })
             {
-                Assert.True(resources.TryResolveGraphicsMaterial(material, new("test.publication"), new(role), null, null, out _));
+                Assert.True(
+                    resources.TryResolveGraphicsMaterial(
+                        material,
+                        new ShaderContractID("test.publication"),
+                        new ShaderPassRoleID(role),
+                        null,
+                        null,
+                        out _
+                    )
+                );
             }
         };
         RunResourceFrame(runtime);
@@ -340,13 +372,13 @@ public sealed partial class RenderRuntimeGenerationTests
         "Publication",
         "test.noop",
         RenderShaderVariant.empty,
-        new([]),
+        new ShaderInterface([]),
         passes.Select(name => new RenderShaderPassArtifact(
             name,
             ShaderProgramKind.Raster,
-            new(),
-            new([]),
-            [new(ShaderStage.Vertex, [marker]), new(ShaderStage.Fragment, [marker])]
+            new RenderRasterState(),
+            new ShaderInterface([]),
+            [new RenderShaderStageArtifact(ShaderStage.Vertex, [marker]), new RenderShaderStageArtifact(ShaderStage.Fragment, [marker])]
         )).ToArray(),
         m_serialization.Serialize(PublicationDefinition(passes), SerializationContext.empty)
     );
@@ -357,13 +389,13 @@ public sealed partial class RenderRuntimeGenerationTests
             [],
             [],
             passes.Select(name => new ShaderPassDefinition(name, ShaderProgramKind.Raster)),
-            [new(
-                new("default"),
-                new("test.publication"),
+            [new ShaderTechniqueDefinition(
+                new ShaderTechniqueID("default"),
+                new ShaderContractID("test.publication"),
                 passes.Select((
                     name,
                     index
-                ) => new ShaderTechniquePass(new(index == 0 ? "draw" : name), name))
+                ) => new ShaderTechniquePass(new ShaderPassRoleID(index == 0 ? "draw" : name), name))
             )]
         );
 

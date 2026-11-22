@@ -125,7 +125,7 @@ public sealed class GraphDocumentControllerTests : IDisposable
     {
         GraphEditorModule module = Assert.IsType<GraphEditorModule>(m_sink.module);
         Guid identity = Guid.NewGuid();
-        var retired = new List<(GraphDocumentController controller, WeakReference<GraphDocument> document)>();
+        List<(GraphDocumentController controller, WeakReference<GraphDocument> document)> retired = [];
         for (int iteration = 0; iteration < 100; iteration++)
         {
             retired.Add(OpenAndClose());
@@ -146,7 +146,7 @@ public sealed class GraphDocumentControllerTests : IDisposable
         {
             var document = new GraphDocument();
             GraphDocumentController controller = module.OpenDocument(identity, document, m_runtime.interactions.history);
-            controller.AddNode("missing.example", new(7f, 9f));
+            controller.AddNode("missing.example", new GraphPosition(7f, 9f));
             Assert.True(module.CloseDocument(identity));
             return (controller, new WeakReference<GraphDocument>(document));
         }
@@ -267,21 +267,21 @@ public sealed class GraphDocumentControllerTests : IDisposable
     {
         GraphEditorModule module = Assert.IsType<GraphEditorModule>(m_sink.module);
         IEditorHistory history = m_runtime.interactions.history;
-        GraphDocumentController controller = module.OpenDocument(Guid.NewGuid(), new(), history);
+        GraphDocumentController controller = module.OpenDocument(Guid.NewGuid(), new GraphDocument(), history);
         GraphNodeID node = controller.AddNode("test.node", default);
         controller.MoveNodes(new Dictionary<GraphNodeID, GraphPosition> { [node] = new(10, 20) });
         controller.MarkSaved();
         controller.MoveNodes(new Dictionary<GraphNodeID, GraphPosition> { [node] = new(30, 40) });
         controller.MarkSaved();
         Assert.True(history.Undo().succeeded);
-        Assert.Equal(new(10, 20), controller.document.FindNode(node)!.position);
+        Assert.Equal(new GraphPosition(10, 20), controller.document.FindNode(node)!.position);
         Assert.True(controller.isDirty);
         controller.MarkSaved();
         Assert.True(history.Undo().succeeded);
         Assert.Equal(default, controller.document.FindNode(node)!.position);
         Assert.True(controller.isDirty);
         Assert.True(history.Redo().succeeded);
-        Assert.Equal(new(10, 20), controller.document.FindNode(node)!.position);
+        Assert.Equal(new GraphPosition(10, 20), controller.document.FindNode(node)!.position);
     }
 
     [Fact]
@@ -289,15 +289,15 @@ public sealed class GraphDocumentControllerTests : IDisposable
     {
         GraphEditorModule module = Assert.IsType<GraphEditorModule>(m_sink.module);
         IEditorHistory history = m_runtime.interactions.history;
-        GraphDocumentController controller = module.OpenDocument(Guid.NewGuid(), new(), history);
+        GraphDocumentController controller = module.OpenDocument(Guid.NewGuid(), new GraphDocument(), history);
         GraphNodeID owner = controller.AddNode("test.owner", default);
         GraphNodeID child = controller.AddNode("test.child", default);
         GraphClipboardData copy = controller.Copy([owner, child]);
-        IReadOnlyList<GraphNodeID> created = controller.Paste(copy, new(10, 10), (
+        IReadOnlyList<GraphNodeID> created = controller.Paste(copy, new GraphPosition(10, 10), (
             node,
             remap
         ) =>
-            node.SetValue("owner", new(Encoding.UTF8.GetBytes(remap[owner].value))));
+            node.SetValue("owner", new GraphSerializedValue(Encoding.UTF8.GetBytes(remap[owner].value))));
         Assert.Equal(
             created[0].value,
             Encoding.UTF8.GetString(controller.document.FindNode(created[1])!.values["owner"].data.Span)

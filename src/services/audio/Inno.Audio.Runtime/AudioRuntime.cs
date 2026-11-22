@@ -85,10 +85,14 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
         Func<IAudioDevice>? deviceRecoveryFactory = null
     ) {
         ArgumentNullException.ThrowIfNull(types);
-        m_device = device ?? throw new ArgumentNullException(nameof(device));
-        m_artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
-        m_events = events ?? throw new ArgumentNullException(nameof(events));
-        m_diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
+        ArgumentNullException.ThrowIfNull(device);
+        ArgumentNullException.ThrowIfNull(artifacts);
+        ArgumentNullException.ThrowIfNull(events);
+        ArgumentNullException.ThrowIfNull(diagnostics);
+        m_device = device;
+        m_artifacts = artifacts;
+        m_events = events;
+        m_diagnostics = diagnostics;
         m_options = (options ?? new AudioRuntimeOptions()).Validate();
         m_contentScopeProvider = contentScopeProvider;
         m_deviceRecoveryFactory = deviceRecoveryFactory;

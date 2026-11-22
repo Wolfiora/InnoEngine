@@ -51,9 +51,12 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
         SerializationRegistry serialization,
         LogRouter logs
     ) {
-        m_edits = edits ?? throw new ArgumentNullException(nameof(edits));
-        m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
-        m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
+        ArgumentNullException.ThrowIfNull(edits);
+        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(serialization);
+        m_edits = edits;
+        m_settings = settings;
+        m_serialization = serialization;
         m_cardControls = new InspectorCardControls(logs);
     }
 
@@ -137,7 +140,7 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
             MissingGameSystem? missing = system as MissingGameSystem;
             IReadOnlyList<SerializedProperty> properties = missing is null
                                                            ? m_serialization.GetProperties(system)
-                                                           : Array.Empty<SerializedProperty>();
+                                                           : [];
             string systemID = system.identity.persistentID.ToString("N");
             GameSystem editorTarget = system;
             string title = missing?.missingTypeName ?? system.GetType().Name;

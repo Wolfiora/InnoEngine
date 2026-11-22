@@ -115,7 +115,7 @@ public sealed class BgfxNativeProfileTests : IDisposable
         );
         return new NativeBuildContext(m_root, "debug")
             .WithToolchain(selection)
-            .WithComponentOptions(BgfxNativeBuild.componentDescriptor, new(NativeLibraryKind.Shared));
+            .WithComponentOptions(BgfxNativeBuild.componentDescriptor, new NativeComponentBuildOptions(NativeLibraryKind.Shared));
     }
 
     private sealed class FixtureProfile(string target) : BgfxNativeBuildProfile

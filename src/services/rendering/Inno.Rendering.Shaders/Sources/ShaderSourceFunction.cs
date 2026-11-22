@@ -49,16 +49,17 @@ public sealed class ShaderSourceParameter
         ShaderSourceParameterDirection direction
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentNullException.ThrowIfNull(type);
         if (!Enum.IsDefined(direction))
         {
             throw new ArgumentOutOfRangeException(nameof(direction));
         }
-        if (type?.id == "void")
+        if (type.id == "void")
         {
             throw new ArgumentException("A parameter cannot have void type.", nameof(type));
         }
         this.name = name;
-        this.type = type ?? throw new ArgumentNullException(nameof(type));
+        this.type = type;
         this.direction = direction;
     }
 
@@ -108,6 +109,7 @@ public sealed class ShaderSourceFunction
         ShaderSourcePosition location
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentNullException.ThrowIfNull(returnType);
         ArgumentNullException.ThrowIfNull(parameters);
         if (name == "main")
         {
@@ -120,7 +122,7 @@ public sealed class ShaderSourceFunction
             throw new ArgumentException("A function requires unique parameter names.", nameof(parameters));
         }
         this.name = name;
-        this.returnType = returnType ?? throw new ArgumentNullException(nameof(returnType));
+        this.returnType = returnType;
         this.parameters = Array.AsReadOnly(snapshot);
         this.location = location;
     }

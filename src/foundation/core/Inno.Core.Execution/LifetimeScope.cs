@@ -271,7 +271,10 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
             {
                 throw;
             }
-            catch (Exception) { /* Cancel retained ordinary callback failures for the final report. */ }
+            catch (Exception)
+            {
+                // Cancel retained ordinary callback failures for the final report.
+            }
             RetireResources();
         }
         finally
@@ -306,7 +309,10 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         {
             throw;
         }
-        catch (Exception) { /* Cancel retained ordinary callback failures for the final report. */ }
+        catch (Exception)
+        {
+            // Cancel retained ordinary callback failures for the final report.
+        }
         Task[] pending;
         lock (m_sync)
         {
@@ -316,7 +322,10 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         {
             await Task.WhenAll(pending).ConfigureAwait(false);
         }
-        catch { /* Dispose observes every fault after all work has completed. */ }
+        catch
+        {
+            // Dispose observes every fault after all work has completed.
+        }
         Dispose();
     }
 

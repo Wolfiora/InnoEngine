@@ -45,6 +45,6 @@ internal static class CimguiSourceOverlay
                 "The cimgui window-background source no longer matches its validated overlay. Review the upstream change before building."
             );
         }
-        return string.Concat(source.AsSpan(0, index), replacement, source.AsSpan(index + expected.Length));
+        return $"{source.AsSpan(0, index)}{replacement}{source.AsSpan(index + expected.Length)}";
     }
 }

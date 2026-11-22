@@ -20,12 +20,13 @@ namespace Inno.Editor.Panel.Logging;
 [EditorPanel("diagnostics.console", "Console", order: 400, menuPath: "Diagnostics")]
 internal sealed partial class ConsolePanel : EditorPanel
 {
-#region State
     private readonly ConsolePanelContent m_content = new();
     private readonly HashSet<LogLevel> m_filterLevels = Enum.GetValues<LogLevel>().ToHashSet();
     private readonly LogLevel[] m_levels = Enum.GetValues<LogLevel>();
     private readonly HashSet<string> m_openEntries = new(StringComparer.Ordinal);
     private readonly ConsoleView m_view = new();
+    private readonly IEditorConsole m_console;
+    private readonly EditorInteractions m_interactions;
     private string m_query = string.Empty;
     private string? m_focusedKey;
     private string? m_selectedKey;
@@ -36,15 +37,7 @@ internal sealed partial class ConsolePanel : EditorPanel
     private bool m_collapse = true;
     private long m_lastRevision = -1;
     private bool m_requestScrollToBottom = true;
-    private readonly IEditorConsole m_console;
-    private readonly EditorInteractions m_interactions;
-#endregion
-    /// <summary>
-    /// Lets the Console entries region own vertical scrolling.
-    /// </summary>
-    public override bool allowScrolling => false;
 
-#region Lifecycle
     /// <summary>
     /// Creates the panel.
     /// </summary>
@@ -61,9 +54,16 @@ internal sealed partial class ConsolePanel : EditorPanel
         IEditorConsole console,
         EditorInteractions interactions
     ) {
-        m_console = console ?? throw new ArgumentNullException(nameof(console));
-        m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
+        ArgumentNullException.ThrowIfNull(console);
+        ArgumentNullException.ThrowIfNull(interactions);
+        m_console = console;
+        m_interactions = interactions;
     }
+
+    /// <summary>
+    /// Lets the Console entries region own vertical scrolling.
+    /// </summary>
+    public override bool allowScrolling => false;
 
     /// <summary>
     /// Captures the persistent Console layout preferences without retaining log content.
@@ -118,8 +118,6 @@ internal sealed partial class ConsolePanel : EditorPanel
         }
     }
 
-#endregion
-#region Toolbar
     private static ConsoleStyle consoleStyle => new(EditorUI.current.widgets.style);
 
     private void DrawToolbar()
@@ -184,8 +182,6 @@ internal sealed partial class ConsolePanel : EditorPanel
         return changed;
     }
 
-#endregion
-#region Console Region
     private void DrawConsoleRegion()
     {
         Gui.BeginChild("ConsoleRegion", Vector2.Zero, 0, 0);
@@ -232,8 +228,6 @@ internal sealed partial class ConsolePanel : EditorPanel
         }
     }
 
-#endregion
-#region Entries
     private void ClearFocus()
     {
         m_focusedKey = null;
@@ -265,8 +259,6 @@ internal sealed partial class ConsolePanel : EditorPanel
         DrawVisibleEntries();
     }
 
-#endregion
-#region Entry Card
     private float DrawConsoleEntry(
         ConsoleView.Row row,
         bool measure
@@ -349,39 +341,6 @@ internal sealed partial class ConsolePanel : EditorPanel
         }
     }
 
-    private static void DrawOccurrences(
-        IReadOnlyList<EditorConsoleOccurrence> occurrences,
-        Vector4 cardBackground
-    ) {
-        Gui.PushStyleColor(ImGuiCol.Separator, ConsoleStyle.GetSeparator(cardBackground));
-        try
-        {
-            Gui.Separator();
-            for (int i = 0; i < occurrences.Count; i++)
-            {
-                if (i > 0)
-                {
-                    Gui.Separator();
-                }
-                Gui.PushID(unchecked((int)occurrences[i].sequence));
-                try
-                {
-                    DrawDetail(occurrences[i]);
-                }
-                finally
-                {
-                    Gui.PopID();
-                }
-            }
-        }
-        finally
-        {
-            Gui.PopStyleColor();
-        }
-    }
-
-#endregion
-#region Entry Header / Detail
     private void DrawHeader(
         EditorConsoleOccurrence entry,
         int repeatCount,
@@ -471,63 +430,6 @@ internal sealed partial class ConsolePanel : EditorPanel
             {
                 Gui.EndTable();
             }
-        }
-    }
-
-    private static void DrawDetail(EditorConsoleOccurrence entry)
-    {
-        string timeText = entry.time.ToString("HH:mm:ss");
-        string sourceText = entry.source;
-        if (string.IsNullOrWhiteSpace(sourceText))
-        {
-            sourceText = "-";
-        }
-
-        string fileText = string.IsNullOrWhiteSpace(entry.file) ? "-" : entry.file;
-        string fileWithLineText = entry.line > 0 ? entry.column > 0 ? $"{fileText}:{entry.line}:{entry.column}" : $"{fileText}:{entry.line}" : fileText;
-        // These cards may be culled between frames; do not rely on a previous frame's auto-fit width.
-        float labelWidth = Gui.MeasureText("Session:").X;
-        float availableWidth = Gui.GetContentRegionAvailable().X;
-        if (availableWidth < labelWidth + Gui.MeasureText("Diagnostic").X + Gui.GetLayout().cellPadding.X * 4)
-        {
-            DrawStackedField("Kind:", entry.kind.ToString());
-            DrawStackedField("File:", fileWithLineText);
-            DrawStackedField("Source:", sourceText);
-            if (entry.sessionID.isAssigned)
-            {
-                DrawStackedField("Session:", entry.sessionID.ToString());
-            }
-            DrawStackedField("Time:", timeText);
-        }
-        else if (Gui.BeginTable(
-            "##ConsoleEntryDetails",
-            2,
-            (ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings),
-            new Vector2(availableWidth, 0)
-        )) {
-            try
-            {
-                Gui.TableSetupColumn("##label", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), labelWidth);
-                Gui.TableSetupColumn("##value", (ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize), 1f);
-                DrawDetailFieldRow("Kind:", entry.kind.ToString());
-                DrawDetailFieldRow("File:", fileWithLineText);
-                DrawDetailFieldRow("Source:", sourceText);
-                if (entry.sessionID.isAssigned)
-                {
-                    DrawDetailFieldRow("Session:", entry.sessionID.ToString());
-                }
-                DrawDetailFieldRow("Time:", timeText);
-            }
-            finally
-            {
-                Gui.EndTable();
-            }
-        }
-
-        if (!string.IsNullOrWhiteSpace(entry.stackTrace))
-        {
-            Gui.Separator();
-            EditorUI.current.widgets.WrappedText(entry.stackTrace);
         }
     }
 
@@ -623,6 +525,94 @@ internal sealed partial class ConsolePanel : EditorPanel
         m_openEntries.RemoveWhere(id => !activeIDs.Contains(id));
     }
 
+    private static void DrawOccurrences(
+        IReadOnlyList<EditorConsoleOccurrence> occurrences,
+        Vector4 cardBackground
+    ) {
+        Gui.PushStyleColor(ImGuiCol.Separator, ConsoleStyle.GetSeparator(cardBackground));
+        try
+        {
+            Gui.Separator();
+            for (int i = 0; i < occurrences.Count; i++)
+            {
+                if (i > 0)
+                {
+                    Gui.Separator();
+                }
+                Gui.PushID(unchecked((int)occurrences[i].sequence));
+                try
+                {
+                    DrawDetail(occurrences[i]);
+                }
+                finally
+                {
+                    Gui.PopID();
+                }
+            }
+        }
+        finally
+        {
+            Gui.PopStyleColor();
+        }
+    }
+
+    private static void DrawDetail(EditorConsoleOccurrence entry)
+    {
+        string timeText = entry.time.ToString("HH:mm:ss");
+        string sourceText = entry.source;
+        if (string.IsNullOrWhiteSpace(sourceText))
+        {
+            sourceText = "-";
+        }
+
+        string fileText = string.IsNullOrWhiteSpace(entry.file) ? "-" : entry.file;
+        string fileWithLineText = entry.line > 0 ? entry.column > 0 ? $"{fileText}:{entry.line}:{entry.column}" : $"{fileText}:{entry.line}" : fileText;
+        // These cards may be culled between frames; do not rely on a previous frame's auto-fit width.
+        float labelWidth = Gui.MeasureText("Session:").X;
+        float availableWidth = Gui.GetContentRegionAvailable().X;
+        if (availableWidth < labelWidth + Gui.MeasureText("Diagnostic").X + Gui.GetLayout().cellPadding.X * 4)
+        {
+            DrawStackedField("Kind:", entry.kind.ToString());
+            DrawStackedField("File:", fileWithLineText);
+            DrawStackedField("Source:", sourceText);
+            if (entry.sessionID.isAssigned)
+            {
+                DrawStackedField("Session:", entry.sessionID.ToString());
+            }
+            DrawStackedField("Time:", timeText);
+        }
+        else if (Gui.BeginTable(
+            "##ConsoleEntryDetails",
+            2,
+            (ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings),
+            new Vector2(availableWidth, 0)
+        )) {
+            try
+            {
+                Gui.TableSetupColumn("##label", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), labelWidth);
+                Gui.TableSetupColumn("##value", (ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize), 1f);
+                DrawDetailFieldRow("Kind:", entry.kind.ToString());
+                DrawDetailFieldRow("File:", fileWithLineText);
+                DrawDetailFieldRow("Source:", sourceText);
+                if (entry.sessionID.isAssigned)
+                {
+                    DrawDetailFieldRow("Session:", entry.sessionID.ToString());
+                }
+                DrawDetailFieldRow("Time:", timeText);
+            }
+            finally
+            {
+                Gui.EndTable();
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(entry.stackTrace))
+        {
+            Gui.Separator();
+            EditorUI.current.widgets.WrappedText(entry.stackTrace);
+        }
+    }
+
     private static void DrawDetailFieldRow(
         string label,
         string value
@@ -641,5 +631,4 @@ internal sealed partial class ConsolePanel : EditorPanel
         EditorUI.current.widgets.ColoredText(EditorPalette.textDisabled, label);
         EditorUI.current.widgets.WrappedText(value);
     }
-#endregion
 }

@@ -188,8 +188,10 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
             var entries = new List<ProviderEntry>(m_providers.Count);
             foreach ((string id, Type type) in m_providers)
             {
-                AudioContentProviderExtensionAttribute attribute =
-                    m_types!.GetAttribute<AudioContentProviderExtensionAttribute>(m_types.GetTypeRef(type), inherit: false)!;
+                AudioContentProviderExtensionAttribute attribute = m_types!.GetAttribute<AudioContentProviderExtensionAttribute>(
+                    m_types.GetTypeRef(type),
+                    inherit: false
+                )!;
                 entries.Add(new ProviderEntry(id, attribute.priority, createProvider(type)));
             }
             entries.Sort(static (
@@ -253,11 +255,11 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
             }
             catch
             {
-                providers = Array.Empty<ProviderEntry>();
+                providers = [];
                 m_disposed = true;
                 throw;
             }
-            providers = Array.Empty<ProviderEntry>();
+            providers = [];
             m_disposed = true;
         }
 

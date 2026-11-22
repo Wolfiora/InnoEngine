@@ -27,7 +27,8 @@ public sealed class ShaderGraphProgramCompiler
     /// </param>
     public ShaderGraphProgramCompiler(ShaderNodeCompilerRegistry nodes)
     {
-        m_nodes = nodes ?? throw new ArgumentNullException(nameof(nodes));
+        ArgumentNullException.ThrowIfNull(nodes);
+        m_nodes = nodes;
     }
 
     /// <summary>
@@ -64,8 +65,8 @@ public sealed class ShaderGraphProgramCompiler
     ) {
         ArgumentNullException.ThrowIfNull(document);
         ArgumentNullException.ThrowIfNull(sources);
-        var diagnostics = new List<ShaderGraphDiagnostic>();
-        var passes = new List<ShaderGraphPass>();
+        List<ShaderGraphDiagnostic> diagnostics = [];
+        List<ShaderGraphPass> passes = [];
         GraphNodeID? activeNode = null;
         try
         {
@@ -193,7 +194,7 @@ public sealed class ShaderGraphProgramCompiler
                     );
                 }
                 ShaderGraphLoweringResult lowered = m_nodes.Lower(
-                    new(
+                    new ShaderGraphLoweringRequest(
                         region,
                         endpoints,
                         implementationID,
@@ -259,7 +260,7 @@ public sealed class ShaderGraphProgramCompiler
                 {
                     ValidateVaryings(selected[ShaderStage.Vertex], selected[ShaderStage.Fragment]);
                 }
-                passes.Add(new(pass.name, expected.Select(stage => selected[stage])));
+                passes.Add(new ShaderGraphPass(pass.name, expected.Select(stage => selected[stage])));
             }
         }
         catch (Exception failure) when (failure is ArgumentException
@@ -276,7 +277,7 @@ public sealed class ShaderGraphProgramCompiler
             string code,
             string message,
             GraphNodeID? node = null
-        ) => diagnostics.Add(new(code, DiagnosticSeverity.Error, message, node));
+        ) => diagnostics.Add(new ShaderGraphDiagnostic(code, DiagnosticSeverity.Error, message, node));
     }
 
     private void ConnectRasterStages(
@@ -353,7 +354,7 @@ public sealed class ShaderGraphProgramCompiler
                                         : null;
             foreach (ShaderNodePort port in m_nodes.DescribePorts(node, serialization, context, source, implementationID, input))
             {
-                ports.Add(new(node.id, new(port.id)), port);
+                ports.Add(new GraphEndpoint(node.id, new GraphPortID(port.id)), port);
             }
         }
 
@@ -460,7 +461,9 @@ public sealed class ShaderGraphProgramCompiler
                     ShaderGraphDocument.C_SETTINGS_KEY,
                     ShaderGraphDocument.Encode(outputSettings, serialization, context)
                 );
-                graph.AddEdge(new(new(edgeID), edge.output, new(sourceOutput.id, new(portID))));
+                graph.AddEdge(
+                    new GraphEdgeRecord(new GraphEdgeID(edgeID), edge.output, new GraphEndpoint(sourceOutput.id, new GraphPortID(portID)))
+                );
                 sourceBridge = (portID, location);
                 sourceBridges.Add(edge.output, sourceBridge);
             }
@@ -476,11 +479,11 @@ public sealed class ShaderGraphProgramCompiler
                     )
                 )[..16];
                 string id = "__stage-bridge-" + token;
-                if (graph.FindNode(new(id)) is not null)
+                if (graph.FindNode(new GraphNodeID(id)) is not null)
                 {
                     throw new InvalidOperationException($"Generated stage bridge identity '{id}' collides with an authored node.");
                 }
-                inputNode = new(new(id), "inno.shader.stage-input");
+                inputNode = new(new GraphNodeID(id), "inno.shader.stage-input");
                 inputNode.SetValue(
                     ShaderGraphDocument.C_STAGE_KEY,
                     ShaderGraphDocument.Encode(destinationOwner, serialization, context)
@@ -502,7 +505,11 @@ public sealed class ShaderGraphProgramCompiler
 
             graph.RemoveEdge(edge.id);
             graph.AddEdge(
-                new(new(inputNode.id.value + "/read/" + edge.id.value), new(inputNode.id, new("value")), edge.input)
+                new GraphEdgeRecord(
+                    new GraphEdgeID(inputNode.id.value + "/read/" + edge.id.value),
+                    new GraphEndpoint(inputNode.id, new GraphPortID("value")),
+                    edge.input
+                )
             );
         }
     }

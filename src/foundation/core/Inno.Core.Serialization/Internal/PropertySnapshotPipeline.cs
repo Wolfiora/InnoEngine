@@ -46,7 +46,7 @@ internal static class PropertySnapshotPipeline
                     captured = [.. before!];
                     captured.RemoveRange(count, captured.Count - count);
                 }
-                captured?.Add(new(member.name, node));
+                captured?.Add(new KeyValuePair<string, SerializationNode>(member.name, node));
                 count++;
             }
         }
@@ -140,7 +140,7 @@ internal static class PropertySnapshotPipeline
         }
 
         ValidateSnapshots(snapshots);
-        var failures = new List<SerializationPropertyRestoreFailure>();
+        List<SerializationPropertyRestoreFailure> failures = [];
         int restoredCount = 0;
         int ignoredCount = 0;
         var operation = new SerializationOperation(context, converters);

@@ -116,8 +116,10 @@ public sealed class InspectorAttributeDrawerRegistry : IDisposable
             IEnumerable<object> services
         ) : base(types)
         {
-            m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-            m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
+            ArgumentNullException.ThrowIfNull(interactions);
+            ArgumentNullException.ThrowIfNull(serialization);
+            m_interactions = interactions;
+            m_serialization = serialization;
             ArgumentNullException.ThrowIfNull(services);
             m_services = services.Select(static service => (
                 service ?? throw new ArgumentException(
@@ -139,7 +141,7 @@ public sealed class InspectorAttributeDrawerRegistry : IDisposable
         protected override Registration[] Build(TypeCacheSnapshot types)
         {
             var drawers = new Dictionary<Type, IInspectorAttributeDrawer>();
-            var registrations = new List<Registration>();
+            List<Registration> registrations = [];
             foreach (Type drawerType in types.GetTypesWithAttribute<InspectorAttributeDrawerAttribute>()
                 .Select(typeRef => typeRef.Resolve(types))
                 .OrderBy(static type => type.FullName, StringComparer.Ordinal)

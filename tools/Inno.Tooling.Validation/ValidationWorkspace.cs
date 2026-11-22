@@ -17,7 +17,7 @@ internal static class ValidationWorkspace
     internal static void RestoreOutputs(
         ValidationPlan plan,
         string source,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         source = Path.GetFullPath(source);
         if (!Directory.Exists(source))
@@ -35,7 +35,7 @@ internal static class ValidationWorkspace
         }
         foreach (string file in files)
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             string relative = Path.GetRelativePath(source, file);
             string destination = PathBoundary.Resolve(plan.artifacts, relative);
             Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
@@ -45,18 +45,18 @@ internal static class ValidationWorkspace
 
     internal static void RecordCompleted(
         ValidationPlan plan,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         var publisher = new BuildCachePublisher(
             Path.GetDirectoryName(plan.artifacts)!,
             BuildCacheArtifactRole.ReusableWorkspace
         );
-        publisher.Record(plan.artifacts, plan.artifacts + ".lock", [], null, null, cancellation);
+        publisher.Record(plan.artifacts, plan.artifacts + ".lock", [], null, null, cancellationToken);
     }
 
     internal static async Task<CoordinatedFileLease> AcquireReadAsync(
         ValidationPlan plan,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         string parent = Path.GetDirectoryName(plan.artifacts)
                         ?? throw new InvalidDataException("A validation output owner requires a parent directory.");
@@ -72,13 +72,13 @@ internal static class ValidationWorkspace
             leaf,
             Timeout.InfiniteTimeSpan,
             shared: true,
-            cancellationToken: cancellation
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
     }
 
     internal static async Task<CoordinatedFileLease> AcquireAsync(
         ValidationPlan plan,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         string parent = Path.GetDirectoryName(plan.artifacts)
                         ?? throw new InvalidDataException("A validation output owner requires a parent directory.");
@@ -87,17 +87,17 @@ internal static class ValidationWorkspace
             SHA256.HashData(Encoding.UTF8.GetBytes(Path.GetRelativePath(plan.root, parent).Replace('\\', '/')))
         );
         var publisher = new BuildCachePublisher(parent, BuildCacheArtifactRole.ReusableWorkspace);
-        BuildCacheOwnerCatalog.Register(plan.root, parent, "validation-workspaces-" + key, publisher.role, cancellation);
-        using FileLease activity = await publisher.AcquireUseAsync(cancellation).ConfigureAwait(false);
+        BuildCacheOwnerCatalog.Register(plan.root, parent, "validation-workspaces-" + key, publisher.role, cancellationToken);
+        using FileLease activity = await publisher.AcquireUseAsync(cancellationToken).ConfigureAwait(false);
         CoordinatedFileLease ownership = await CoordinatedFileLease.AcquireAsync(
             Path.Combine(parent, "owner.lock"),
             plan.artifacts + ".lock",
             Timeout.InfiniteTimeSpan,
-            cancellationToken: cancellation
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
         try
         {
-            publisher.BeginWorkingDirectory(plan.artifacts, plan.artifacts + ".lock", null, cancellation);
+            publisher.BeginWorkingDirectory(plan.artifacts, plan.artifacts + ".lock", null, cancellationToken);
             return ownership;
         }
         catch

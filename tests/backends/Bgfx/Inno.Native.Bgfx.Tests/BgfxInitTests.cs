@@ -6,7 +6,7 @@ namespace Inno.Native.Bgfx.Tests;
 public sealed class BgfxInitTests
 {
     [Fact]
-    public unsafe void InitAndShutdown_ShouldSucceed()
+    public unsafe void InitAndShutdownShouldSucceed()
     {
         bgfx.Init init;
         bgfx.Raw.init_ctor(&init);

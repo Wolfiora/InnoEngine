@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Inno.Core.Identity;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui.ImGuiWidget;
@@ -48,15 +49,15 @@ internal sealed partial class HierarchyPanel
             return;
         }
 
-        var rows = new List<HierarchyRow>();
-        var inputs = new List<(RuntimeIdentity, ulong)>();
+        List<HierarchyRow> rows = [];
+        List<(RuntimeIdentity, ulong)> inputs = [];
         var pending = new Stack<(GameObject target, int depth)>();
         var visited = new HashSet<RuntimeIdentity>();
         foreach (GameScene scene in scenes)
         {
             RuntimeIdentity sceneID = RequireIdentity(scene);
             inputs.Add((sceneID, scene.hierarchyRevision));
-            rows.Add(new(sceneID, 0));
+            rows.Add(new HierarchyRow(sceneID, 0));
             if (!widgets.IsTreeNodeOpen("scene_" + scene.identity.persistentID.ToString("N")))
             {
                 continue;
@@ -77,7 +78,7 @@ internal sealed partial class HierarchyPanel
                 {
                     throw new InvalidOperationException("A hierarchy view encountered a duplicate object identity.");
                 }
-                rows.Add(new(identity, next.depth));
+                rows.Add(new HierarchyRow(identity, next.depth));
                 if (!widgets.IsTreeNodeOpen("hierarchy_" + next.target.identity.persistentID.ToString("N")))
                 {
                     continue;
@@ -137,12 +138,12 @@ internal sealed partial class HierarchyPanel
                     }
                     else
                     {
-                        Gui.Dummy(new(1f, Gui.GetFrameHeight()));
+                        Gui.Dummy(new Vector2(1f, Gui.GetFrameHeight()));
                     }
                 }
                 else
                 {
-                    Gui.Dummy(new(1f, Gui.GetFrameHeight()));
+                    Gui.Dummy(new Vector2(1f, Gui.GetFrameHeight()));
                 }
             }
         }, preserved[..count]);

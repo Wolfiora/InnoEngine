@@ -46,7 +46,7 @@ public sealed class EditorInteractionRuntime : EditorRuntime
         EditorContext context,
         TypeCatalog types,
         LogRouter logs
-    ) : this(context, types, logs, Array.Empty<object>()) {}
+    ) : this(context, types, logs, []) {}
 
     /// <summary>
     /// Creates an interaction runtime for one project.

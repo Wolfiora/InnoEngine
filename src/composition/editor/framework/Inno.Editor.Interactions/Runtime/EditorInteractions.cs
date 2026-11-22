@@ -39,10 +39,12 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
         IEnumerable<IdentityAllocator> identityDomains,
         Logger log
     ) {
-        m_editor = editor ?? throw new ArgumentNullException(nameof(editor));
+        ArgumentNullException.ThrowIfNull(editor);
+        ArgumentNullException.ThrowIfNull(log);
+        m_editor = editor;
         ArgumentNullException.ThrowIfNull(identityDomains);
         m_identityDomains = identityDomains.ToDictionary(static allocator => allocator.domainID);
-        m_log = log ?? throw new ArgumentNullException(nameof(log));
+        m_log = log;
         this.selection = new EditorSelectionState(this);
         m_documents = new EditorDocumentService(events);
         m_history = new EditorHistory(
@@ -141,8 +143,7 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     /// <returns>
     /// Current panel declarations; the snapshot contains no panel or extension instances.
     /// </returns>
-    public IReadOnlyList<EditorPanelAttribute> GetPanelDeclarations()
-        => m_catalog?.GetPanelDeclarations() ?? Array.Empty<EditorPanelAttribute>();
+    public IReadOnlyList<EditorPanelAttribute> GetPanelDeclarations() => m_catalog?.GetPanelDeclarations() ?? [];
 
     /// <summary>
     /// Reads whether one available panel is currently open.
@@ -241,7 +242,7 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     public void ToggleSelection(IdentityObject target)
     {
         ArgumentNullException.ThrowIfNull(target);
-        var values = new List<IdentityObject>();
+        List<IdentityObject> values = [];
         _ = selection.CopyTargets(values);
         bool removed = values.Remove(target);
         if (!removed)
@@ -304,7 +305,7 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
             anchor = target;
         }
 
-        var values = new List<IdentityObject>();
+        List<IdentityObject> values = [];
         if (additive)
         {
             _ = selection.CopyTargets(values);

@@ -161,7 +161,7 @@ public sealed class EditorSelectionState
         IdentityObject? anchor
     ) {
         ArgumentNullException.ThrowIfNull(targets);
-        var entries = new List<EditorTargetReference>();
+        List<EditorTargetReference> entries = [];
         var seen = new HashSet<RuntimeIdentity>();
         foreach (IdentityObject target in targets)
         {

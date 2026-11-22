@@ -19,7 +19,7 @@ internal static class TaskRuntimeBuildScope
         string identity,
         string load,
         bool verifyOutputs = true,
-        CancellationToken cancellation = default
+        CancellationToken cancellationToken = default
     ) {
         if (engine.GetRegisteredTaskObject(C_PREFIX + identity, RegisteredTaskObjectLifetime.Build) is not string[][] rows)
         {
@@ -36,16 +36,17 @@ internal static class TaskRuntimeBuildScope
         }
         try
         {
-            using FileLease activity = FileLease.AcquireSharedAsync(Path.Combine(owner, "owner.lock"), TimeSpan.Zero, cancellation)
+            using FileLease activity = FileLease.AcquireSharedAsync(Path.Combine(owner, "owner.lock"), TimeSpan.Zero, cancellationToken)
                 .AsTask()
                 .GetAwaiter()
                 .GetResult();
-            using FileLease reading = FileLease.AcquireSharedAsync(publication + ".lock", TimeSpan.Zero, cancellation)
+            using FileLease reading = FileLease.AcquireSharedAsync(publication + ".lock", TimeSpan.Zero, cancellationToken)
                 .AsTask()
                 .GetAwaiter()
                 .GetResult();
-            if (verifyOutputs && !TaskRuntimePreparation.IsComplete(runtime, TaskRuntimePreparation.FreezeFiles(outputs), cancellation))
-            {
+            if (verifyOutputs
+                && !TaskRuntimePreparation.IsComplete(runtime, TaskRuntimePreparation.FreezeFiles(outputs), cancellationToken)
+            ) {
                 return null;
             }
             TaskRuntimePreparation.RegisterReader(load, assembly);

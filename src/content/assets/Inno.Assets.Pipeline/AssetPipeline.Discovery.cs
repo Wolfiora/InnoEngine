@@ -154,8 +154,7 @@ public sealed partial class AssetPipeline
             {
                 candidate.candidateLoader.ActivateExtensionDiscovery();
                 candidate.candidateLoader.RefreshRegistries();
-                IReadOnlyList<AssetImportFailure> failures =
-                    candidate.candidateLoader.FindIntroducedImportFailures(existingFailures);
+                IReadOnlyList<AssetImportFailure> failures = candidate.candidateLoader.FindIntroducedImportFailures(existingFailures);
                 if (failures.Count != 0)
                 {
                     string details = string.Join(

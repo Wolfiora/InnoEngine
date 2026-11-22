@@ -17,14 +17,14 @@ internal static class ManagedBuildInputReader
         DotNetSdkDescriptor sdk,
         string project,
         IReadOnlyDictionary<string, string> properties,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         using ManagedInputEvaluation evaluation = await ManagedInputEvaluation.OpenAsync(
             context,
             sdk,
             project,
             properties,
-            cancellation
+            cancellationToken
         ).ConfigureAwait(false);
         context.RecordManagedProcess();
         await ToolchainEnvironment.RunAsync(
@@ -41,18 +41,25 @@ internal static class ManagedBuildInputReader
                 .. evaluation.properties.Select(static pair => "-p:" + pair.Key + "=" + pair.Value)
             ],
             context.engineRoot,
-            cancellation,
+            cancellationToken,
             DotNetSdkEnvironment.Create(sdk.hostPath, context.toolchain?.environment)
         ).ConfigureAwait(false);
-        _ = await EvaluateAsync(context, sdk, project, evaluation.properties, true, cancellation).ConfigureAwait(false);
-        XElement captured = await EvaluateAsync(context, sdk, project, evaluation.properties, false, cancellation).ConfigureAwait(false);
+        _ = await EvaluateAsync(context, sdk, project, evaluation.properties, true, cancellationToken).ConfigureAwait(false);
+        XElement captured = await EvaluateAsync(
+            context,
+            sdk,
+            project,
+            evaluation.properties,
+            false,
+            cancellationToken
+        ).ConfigureAwait(false);
         List<NativeBuildInput> inputs = captured.Elements("Input").Select(element => NativeBuildInput.FromPath(
             context.engineRoot,
             (string?)element.Attribute("Path") ?? throw new InvalidDataException("A managed input has no physical location.")
         )).ToList();
         foreach (XElement assets in captured.Elements("Assets"))
         {
-            CollectPackageInputs(context, assets, inputs, cancellation);
+            CollectPackageInputs(context, assets, inputs, cancellationToken);
         }
         inputs.AddRange(
             new[]
@@ -75,8 +82,8 @@ internal static class ManagedBuildInputReader
             + ((string?)captured.Attribute("EvaluatorFingerprint") ?? throw new InvalidDataException("The evaluator identity is absent."))
             )
             .ToArray();
-        string fingerprint = NativeBuildFingerprint.Create(context, declarations, inputs, cancellation);
-        evaluation.Complete(cancellation);
+        string fingerprint = NativeBuildFingerprint.Create(context, declarations, inputs, cancellationToken);
+        evaluation.Complete(cancellationToken);
         return new ManagedBuildInputCapture(fingerprint, declarations);
     }
 
@@ -86,7 +93,7 @@ internal static class ManagedBuildInputReader
         string project,
         IReadOnlyDictionary<string, string> properties,
         bool restoreContributions,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         string requests = Path.Combine(context.engineRoot, "artifacts", "build-tools", "managed-inputs", "requests");
         BuildCacheOwnerCatalog.Register(
@@ -94,9 +101,12 @@ internal static class ManagedBuildInputReader
             requests,
             "managed-input-requests",
             BuildCacheArtifactRole.ProcessWorkingDirectory,
-            cancellation
+            cancellationToken
         );
-        using ProcessOwnedDirectory requestOwner = await ProcessOwnedDirectory.CreateAsync(requests, cancellation).ConfigureAwait(false);
+        using ProcessOwnedDirectory requestOwner = await ProcessOwnedDirectory.CreateAsync(
+            requests,
+            cancellationToken
+        ).ConfigureAwait(false);
         string request = requestOwner.directory;
         string manifest = Path.Combine(request, "Inputs.xml");
         string entry = Path.Combine(request, "Capture.proj");
@@ -106,7 +116,7 @@ internal static class ManagedBuildInputReader
             using ManagedInputEvaluatorPreparation.Result evaluator = await ManagedInputEvaluatorPreparation.PrepareAsync(
                 context,
                 sdk,
-                cancellation
+                cancellationToken
             ).ConfigureAwait(false);
             using Stream template = typeof(ManagedBuildInputReader).Assembly.GetManifestResourceStream(
                 "Inno.Build.Toolchains.Managed.ManagedBuildInputs.targets"
@@ -120,7 +130,7 @@ internal static class ManagedBuildInputReader
             string compilerInputsPath = Path.Combine(request, "CompilerInputs.targets");
             using (FileStream destination = File.Create(compilerInputsPath))
             {
-                await compilerInputs.CopyToAsync(destination, cancellation).ConfigureAwait(false);
+                await compilerInputs.CopyToAsync(destination, cancellationToken).ConfigureAwait(false);
             }
             document.AddFirst(
                 new XElement(
@@ -143,13 +153,13 @@ internal static class ManagedBuildInputReader
                         ))
                 )
             );
-            await File.WriteAllTextAsync(entry, document.ToString(), cancellation).ConfigureAwait(false);
+            await File.WriteAllTextAsync(entry, document.ToString(), cancellationToken).ConfigureAwait(false);
             context.RecordManagedProcess();
             await ToolchainEnvironment.RunAsync(
                 sdk.hostPath,
                 [sdk.cliPath, "msbuild", entry, "-t:CaptureManagedInputs", "-nologo", "-v:quiet", "-m:1", "-nodeReuse:false"],
                 context.engineRoot,
-                cancellation,
+                cancellationToken,
                 DotNetSdkEnvironment.Create(sdk.hostPath, context.toolchain?.environment)
             ).ConfigureAwait(false);
             XElement captured = XElement.Load(manifest);
@@ -166,7 +176,7 @@ internal static class ManagedBuildInputReader
         NativeBuildContext context,
         XElement selected,
         ICollection<NativeBuildInput> inputs,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         string assets = (string)selected.Attribute("Path")!;
         if (!File.Exists(assets))
@@ -189,7 +199,7 @@ internal static class ManagedBuildInputReader
         JsonElement libraries = root.GetProperty("libraries");
         foreach (JsonProperty dependency in target.EnumerateObject())
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             if (dependency.Value.GetProperty("type").GetString() != "package")
             {
                 continue;

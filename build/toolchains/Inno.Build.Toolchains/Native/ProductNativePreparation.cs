@@ -39,15 +39,12 @@ public static class ProductNativePreparation
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(plan);
         NativeToolchainSelection tools = context.RequireToolchain();
-        var identities = new List<string>
-        {
-            NativeBuildFingerprint.Create(
-                context,
-                tools.declarations,
-                tools.inputPaths.Select(path => NativeBuildInput.FromPath(context.engineRoot, path)),
-                cancellationToken
-            )
-        };
+        List<string> identities = [NativeBuildFingerprint.Create(
+            context,
+            tools.declarations,
+            tools.inputPaths.Select(path => NativeBuildInput.FromPath(context.engineRoot, path)),
+            cancellationToken
+        )];
         foreach (NativeBuildRecipe recipe in plan.CreateRecipes(context))
         {
             identities.Add(NativeBuildFingerprint.Create(context, recipe.declarations, recipe.inputs, cancellationToken));
@@ -122,7 +119,7 @@ public static class ProductNativePreparation
         ) {
             return null;
         }
-        var rows = new List<string[]> { new[] { "request", requestIdentity } };
+        List<string[]> rows = [new[] { "request", requestIdentity }];
         foreach (NativeInputSnapshot.Entry input in context.inputState.CaptureRecordedInputs(context.engineRoot).entries)
         {
             rows.Add(["input", input.physicalPath, Convert.ToHexStringLower(input.hash)]);
@@ -201,8 +198,8 @@ public static class ProductNativePreparation
         ) {
             return null;
         }
-        var products = new List<NativeBuildProduct>();
-        var leases = new List<IDisposable>();
+        List<NativeBuildProduct> products = [];
+        List<IDisposable> leases = [];
         var generations = new Dictionary<string, NativeBindingGenerationDescriptor>(StringComparer.Ordinal);
         var byComponent = new Dictionary<string, NativeBindingGenerationDescriptor>(StringComparer.Ordinal);
         bool transferred = false;

@@ -176,8 +176,8 @@ internal static class SceneGraphSerialization
 
         var gameObjectBySourceID = new Dictionary<Guid, GameObject>();
         var componentBySourceID = new Dictionary<Guid, GameComponent>();
-        var componentRestores = new List<(GameComponent component, byte[] state)>();
-        var missingPlaceholders = new List<EngineObject>();
+        List<(GameComponent component, byte[] state)> componentRestores = [];
+        List<EngineObject> missingPlaceholders = [];
 
         for (int objectIndex = 0; objectIndex < objectReaders.Count; objectIndex++)
         {

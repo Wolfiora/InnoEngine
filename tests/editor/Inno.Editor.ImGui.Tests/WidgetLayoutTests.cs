@@ -36,27 +36,27 @@ public sealed unsafe class WidgetLayoutTests
         {
             context.Frame(() =>
             {
-                BeginWindow("Color format contract", new(400f, 300f));
+                BeginWindow("Color format contract", new Vector2(400f, 300f));
                 try
                 {
                     float[] boundaries = [float.NegativeInfinity, -1f, -0f, 0f, 0.5f, 1f, 2f, float.PositiveInfinity, float.NaN];
                     foreach (float value in boundaries)
                     {
-                        Verify(new(value, 0f, 0f, 0f));
-                        Verify(new(0f, value, 0f, 0f));
-                        Verify(new(0f, 0f, value, 0f));
-                        Verify(new(0f, 0f, 0f, value));
+                        Verify(new Vector4(value, 0f, 0f, 0f));
+                        Verify(new Vector4(0f, value, 0f, 0f));
+                        Verify(new Vector4(0f, 0f, value, 0f));
+                        Verify(new Vector4(0f, 0f, 0f, value));
                     }
                     for (int channel = 0; channel < 255; channel++)
                     {
                         float half = (channel + 0.5f) / 255f;
-                        Verify(new(MathF.BitDecrement(half), half, MathF.BitIncrement(half), 1f));
+                        Verify(new Vector4(MathF.BitDecrement(half), half, MathF.BitIncrement(half), 1f));
                     }
                     var random = new Random(0x2DCA);
                     for (int index = 0; index < 4096; index++)
                     {
                         Verify(
-                            new(
+                            new Vector4(
                                 random.NextSingle() * 3f - 1f,
                                 random.NextSingle() * 3f - 1f,
                                 random.NextSingle() * 3f - 1f,
@@ -103,7 +103,7 @@ public sealed unsafe class WidgetLayoutTests
             context.Frame(() =>
             {
                 widgets.SetupStyle();
-                BeginWindow("Stable style input", new(400f, 300f));
+                BeginWindow("Stable style input", new Vector2(400f, 300f));
                 try
                 {
                     if (frame == 0)
@@ -140,7 +140,7 @@ public sealed unsafe class WidgetLayoutTests
         context.Frame(() =>
         {
             widgets.SetupStyle();
-            BeginWindow("Suspended style owner", new(400f, 300f));
+            BeginWindow("Suspended style owner", new Vector2(400f, 300f));
             try
             {
                 ImGuiNativeContext* own = NativeImGui.Raw.GetCurrentContext();
@@ -180,7 +180,7 @@ public sealed unsafe class WidgetLayoutTests
         Assert.Throws<InvalidOperationException>(() => EditorImGui.GetWindowBounds());
         context.Frame(() =>
         {
-            BeginWindow("Geometry owner", new(400f, 300f));
+            BeginWindow("Geometry owner", new Vector2(400f, 300f));
             try
             {
                 (Vector2 minimum, Vector2 maximum) clip = EditorImGui.GetClipBounds();
@@ -204,7 +204,7 @@ public sealed unsafe class WidgetLayoutTests
         {
             context.Frame(() =>
             {
-                BeginWindow("Flattened tree", new(400f, 300f));
+                BeginWindow("Flattened tree", new Vector2(400f, 300f));
                 try
                 {
                     Widget widgets = EditorUI.current.widgets;
@@ -213,20 +213,26 @@ public sealed unsafe class WidgetLayoutTests
                     widgets.SetTreeNodeOpen("root", true);
                     Assert.Equal(revision, widgets.treeExpansionRevision);
                     int nativeDepth = NativeImGui.Raw.GetCurrentWindow()->DC.TreeDepth;
-                    TreeNodeResult root = widgets.TreeNode("root", _ => NativeImGui.TextUnformatted("Root"), new() { depth = 0 });
+                    TreeNodeResult root = widgets.TreeNode(
+                        "root",
+                        _ => NativeImGui.TextUnformatted("Root"),
+                        new TreeNodeOptions() { depth = 0 }
+                    );
                     Assert.True(root.isOpen);
                     Assert.True(widgets.IsTreeNodeOpen("root"));
                     Assert.Equal(nativeDepth, NativeImGui.Raw.GetCurrentWindow()->DC.TreeDepth);
                     TreeNodeResult child = widgets.TreeNode(
                         "child",
                         _ => NativeImGui.TextUnformatted("Deep child"),
-                        new() { depth = 7, isLeaf = true }
+                        new TreeNodeOptions() { depth = 7, isLeaf = true }
                     );
                     Assert.True(child.contentMin.X > root.contentMin.X);
                     var failure = new InvalidOperationException("Rejected flat content");
                     Assert.Same(
                         failure,
-                        Assert.Throws<InvalidOperationException>(() => widgets.TreeNode("failed", _ => throw failure, new() { depth = 2 }))
+                        Assert.Throws<InvalidOperationException>(
+                            () => widgets.TreeNode("failed", _ => throw failure, new TreeNodeOptions() { depth = 2 })
+                        )
                     );
                     Assert.Equal(nativeDepth, NativeImGui.Raw.GetCurrentWindow()->DC.TreeDepth);
                     widgets.SetTreeNodeOpen("root", false);
@@ -249,7 +255,7 @@ public sealed unsafe class WidgetLayoutTests
         {
             context.Frame(() =>
             {
-                BeginWindow("Large tree", new(400f, 300f));
+                BeginWindow("Large tree", new Vector2(400f, 300f));
                 int drawn = 0;
                 Action<TreeNodeDrawContext> draw = _ =>
                 {
@@ -258,7 +264,7 @@ public sealed unsafe class WidgetLayoutTests
                 };
                 for (int row = 0; row < 10_000; row++)
                 {
-                    _ = EditorUI.current.widgets.TreeNode("row-" + row, draw, new() { isLeaf = true });
+                    _ = EditorUI.current.widgets.TreeNode("row-" + row, draw, new TreeNodeOptions() { isLeaf = true });
                 }
                 Assert.InRange(drawn, 1, 64);
                 if (frame == 1)
@@ -276,7 +282,7 @@ public sealed unsafe class WidgetLayoutTests
         using var context = new NativeContext(1f);
         context.Frame(() =>
         {
-            BeginWindow("Clipped rows", new(400f, 300f));
+            BeginWindow("Clipped rows", new Vector2(400f, 300f));
             int submitted = 0;
             bool preserved = false;
             float height = NativeImGui.GetTextLineHeightWithSpacing();
@@ -290,7 +296,7 @@ public sealed unsafe class WidgetLayoutTests
                 preserved |= start <= 9999 && end > 9999;
                 for (int row = start; row < end; row++)
                 {
-                    NativeImGui.Dummy(new(100f, NativeImGui.GetTextLineHeight()));
+                    NativeImGui.Dummy(new Vector2(100f, NativeImGui.GetTextLineHeight()));
                 }
             }, [9999]);
             Assert.InRange(submitted, 1, 64);
@@ -307,7 +313,7 @@ public sealed unsafe class WidgetLayoutTests
         {
             context.Frame(() =>
             {
-                BeginWindow("Clipper failure", new(400f, 300f));
+                BeginWindow("Clipper failure", new Vector2(400f, 300f));
                 int before = NativeImGui.Raw.GetCurrentContext()->ClipperTempDataStacked;
                 var failure = new InvalidOperationException("Row extension rejected drawing.");
                 Assert.Same(
@@ -365,7 +371,7 @@ public sealed unsafe class WidgetLayoutTests
         {
             var diagnostics = new DiagnosticHub();
             using IDisposable diagnosticScope = diagnostics.EnterScope();
-            using var modules = new ModuleHost(new()
+            using var modules = new ModuleHost(new ModuleHostOptions()
             {
                 catalogSource = new DotNetAssemblyCatalogSource(typeof(WidgetLayoutTests).Assembly)
             });
@@ -487,17 +493,17 @@ public sealed unsafe class WidgetLayoutTests
                                 rejected();
                             }
                             EditorImGui.Text("Extension");
-                        }, new() { drawViewportOverlay = failure == "tree-overlay" ? rejected : null });
+                        }, new TreeNodeOptions() { drawViewportOverlay = failure == "tree-overlay" ? rejected : null });
                     }
                 });
                 Assert.Equal(window, (nint)NativeImGui.Raw.GetCurrentWindow());
                 Assert.Equal(depth, NativeImGui.Raw.GetCurrentWindow()->DC.TreeDepth);
                 Assert.Equal(padding, Unsafe.BitCast<NativeVector2, Vector2>(NativeImGui.Raw.GetStyle()->FramePadding));
                 widgets.SetNextTreeNodeOpen(true);
-                TreeNodeResult next = widgets.TreeNode("next-tree", _ => EditorImGui.Text("Next valid row"), new());
+                TreeNodeResult next = widgets.TreeNode("next-tree", _ => EditorImGui.Text("Next valid row"), new TreeNodeOptions());
                 Assert.True(next.isOpen);
                 NativeImGui.TreePop();
-                EditorImGui.GetDrawList().Line(new(30f, 30f), new(60f, 60f), uint.MaxValue);
+                EditorImGui.GetDrawList().Line(new Vector2(30f, 30f), new Vector2(60f, 60f), uint.MaxValue);
                 NativeImGui.End();
             });
         }
@@ -512,7 +518,7 @@ public sealed unsafe class WidgetLayoutTests
         {
             BeginWindow("Drawing owner", new Vector2(400f, 300f));
             borrow = EditorImGui.GetDrawList();
-            borrow.Line(new(30f, 30f), new(60f, 60f), uint.MaxValue);
+            borrow.Line(new Vector2(30f, 30f), new Vector2(60f, 60f), uint.MaxValue);
             _ = EditorImGui.BeginChild("Other owner", new Vector2(100f, 100f));
             Assert.Throws<InvalidOperationException>(() => borrow.Line(Vector2.Zero, Vector2.One, 0));
             EditorImGui.EndChild();
@@ -885,7 +891,7 @@ public sealed unsafe class WidgetLayoutTests
             TreeNodeResult result = EditorUI.current.widgets.TreeNode(
                 $"content-{isLeaf}-{zoom}",
                 _ => EditorUI.current.widgets.IconText("O", "Selected object", false),
-                new()
+                new TreeNodeOptions()
                 {
                     isLeaf = isLeaf,
                     drawViewportOverlay = () =>
@@ -926,7 +932,7 @@ public sealed unsafe class WidgetLayoutTests
             TreeNodeResult result = EditorUI.current.widgets.TreeNode(
                 "disclosure",
                 _ => NativeImGui.TextUnformatted("Parent"),
-                new() { isLeaf = false }
+                new TreeNodeOptions() { isLeaf = false }
             );
             hit = new Vector2(result.contentMin.X - NativeImGui.GetTreeNodeToLabelSpacing() * 0.5f, (result.min.Y + result.max.Y) * 0.5f);
             opened = result.isOpen;
@@ -963,7 +969,7 @@ public sealed unsafe class WidgetLayoutTests
             TreeNodeResult result = EditorUI.current.widgets.TreeNode(
                 $"overlay-{settleHover}",
                 _ => NativeImGui.TextUnformatted("Object"),
-                new()
+                new TreeNodeOptions()
                 {
                     isLeaf = true,
                     drawViewportOverlay = () =>
@@ -1005,7 +1011,7 @@ public sealed unsafe class WidgetLayoutTests
             TreeNodeResult result = EditorUI.current.widgets.TreeNode(
                 "double-click",
                 _ => NativeImGui.TextUnformatted("Parent"),
-                new() { isLeaf = false }
+                new TreeNodeOptions() { isLeaf = false }
             );
             hit = new Vector2(result.contentMin.X + 80f, (result.min.Y + result.max.Y) * 0.5f);
             opened = result.isOpen;

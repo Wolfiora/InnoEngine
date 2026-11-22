@@ -34,7 +34,7 @@ internal sealed partial class FileBrowserPanel : EditorPanel
     private readonly FileBrowserRename m_rename;
     private readonly FileBrowserContextMenu m_contextMenu;
     private readonly FileBrowserTree m_tree;
-    private IReadOnlyList<RuntimeIdentity> m_visibleSelection = Array.Empty<RuntimeIdentity>();
+    private IReadOnlyList<RuntimeIdentity> m_visibleSelection = [];
     private RuntimeIdentity? m_keyboardFocus;
     private RuntimeIdentity? m_requestedKeyboardFocus;
     private RuntimeIdentity? m_drawKeyboardFocus;
@@ -56,8 +56,9 @@ internal sealed partial class FileBrowserPanel : EditorPanel
         AssetBrowserModule assets,
         EditorUISession ui
     ) {
+        ArgumentNullException.ThrowIfNull(ui);
         m_assets = assets;
-        m_ui = ui ?? throw new ArgumentNullException(nameof(ui));
+        m_ui = ui;
         var style = new AssetBrowserStyle(ui.widgets.style);
         m_gridScale = style.gridDefaultScale;
         m_listNameSeparatorPosition = style.listNameSeparatorPosition;

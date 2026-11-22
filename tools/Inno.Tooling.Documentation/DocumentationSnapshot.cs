@@ -91,11 +91,11 @@ public sealed class DocumentationSnapshot : IDisposable
         {
             throw new InvalidOperationException("Cannot export a catalog bound to a different source tree.");
         }
-        var pages = new List<DocumentationPageInfo>();
+        List<DocumentationPageInfo> pages = [];
         foreach (string path in m_manifest.pages.Keys.Order(StringComparer.Ordinal))
         {
             DocumentationPage page = await LoadAsync(m_manifest.pages[path].pageId, cancellationToken).ConfigureAwait(false);
-            pages.Add(new(
+            pages.Add(new DocumentationPageInfo(
                 page.metadata.uid,
                 path,
                 page.identity,
@@ -322,7 +322,7 @@ public sealed class DocumentationSnapshot : IDisposable
             if (symbol is not null)
             {
                 return await SymbolAsync(
-                    new("symbol", symbol.id, page.metadata.owners.Single(), page.metadata.apiSurface),
+                    new DocumentationRequest("symbol", symbol.id, page.metadata.owners.Single(), page.metadata.apiSurface),
                     cancellationToken
                 ).ConfigureAwait(false);
             }
@@ -351,7 +351,12 @@ public sealed class DocumentationSnapshot : IDisposable
         {
             continuations.Insert(
                 0,
-                new(pageID, section?.anchor, end, "Continue the original content before treating this selection as complete.")
+                new DocumentationContinuation(
+                    pageID,
+                    section?.anchor,
+                    end,
+                    "Continue the original content before treating this selection as complete."
+                )
             );
         }
         return new(
@@ -375,7 +380,7 @@ public sealed class DocumentationSnapshot : IDisposable
 
     private async Task<DocumentationResult> SearchAsync(
         DocumentationRequest request,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(request.value);
         if (m_symbols.TryGetValue(request.value, out DocumentationSymbolReference[]? exact))
@@ -387,10 +392,10 @@ public sealed class DocumentationSnapshot : IDisposable
                     || (symbol.surfaces ?? []).Contains(request.surface, StringComparer.Ordinal))
                 && Scope(m_manifest.pages[m_paths[symbol.pageId]].metadata, request)
             )).ToArray();
-            var symbolHits = new List<DocumentationHit>();
+            List<DocumentationHit> symbolHits = [];
             foreach (DocumentationSymbolReference symbol in matches.Skip(request.offset).Take(request.limit))
             {
-                DocumentationPage page = await LoadAsync(symbol.pageId, cancellation).ConfigureAwait(false);
+                DocumentationPage page = await LoadAsync(symbol.pageId, cancellationToken).ConfigureAwait(false);
                 symbolHits.Add(Hit(page, symbol.anchor, 1, symbol.id, "Exact qualified symbol", "Excerpt", symbol.id));
             }
             return Result(
@@ -414,7 +419,7 @@ public sealed class DocumentationSnapshot : IDisposable
         Dictionary<string, int[]> terms = m_terms.Value;
         foreach (string token in tokens)
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             if (!terms.TryGetValue(token, out int[]? postings))
             {
                 return Result("Empty", "No matching documentation. No content was inferred.");
@@ -430,12 +435,12 @@ public sealed class DocumentationSnapshot : IDisposable
             .ThenBy(static pair => pair.entry.pageId, StringComparer.Ordinal)
             .ThenBy(static pair => pair.entry.section, StringComparer.Ordinal)
             .ToArray();
-        var hits = new List<DocumentationHit>();
+        List<DocumentationHit> hits = [];
         foreach ((DocumentationSearchEntry entry, (int score, bool taskGuide, string reason) match) pair in ranked
             .Skip(request.offset)
             .Take(request.limit)
         ) {
-            DocumentationPage page = await LoadAsync(pair.entry.pageId, cancellation).ConfigureAwait(false);
+            DocumentationPage page = await LoadAsync(pair.entry.pageId, cancellationToken).ConfigureAwait(false);
             DocumentationSection section = page.sections.Single(candidate => candidate.anchor == pair.entry.section);
             string body = DocumentationMarkdown.OwnText(page, section);
             string excerpt = body[..Math.Min(body.Length, 320)];
@@ -485,7 +490,7 @@ public sealed class DocumentationSnapshot : IDisposable
 
     private async Task<DocumentationResult> SymbolAsync(
         DocumentationRequest request,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(request.value);
         DocumentationSymbolReference[] matches = m_symbols.GetValueOrDefault(request.value, [])
@@ -509,10 +514,10 @@ public sealed class DocumentationSnapshot : IDisposable
                     && Scope(m_manifest.pages[m_paths[symbol.pageId]].metadata, request)
                 ))
                 .ToArray();
-            var hits = new List<DocumentationHit>();
+            List<DocumentationHit> hits = [];
             foreach (DocumentationSymbolReference candidate in candidates.Skip(request.offset).Take(request.limit))
             {
-                DocumentationPage page = await LoadAsync(candidate.pageId, cancellation).ConfigureAwait(false);
+                DocumentationPage page = await LoadAsync(candidate.pageId, cancellationToken).ConfigureAwait(false);
                 hits.Add(Hit(page, candidate.anchor, 1, candidate.id, "Qualified symbol candidate", "Excerpt", candidate.id));
             }
             return Result(
@@ -527,7 +532,7 @@ public sealed class DocumentationSnapshot : IDisposable
                                   : null
                 };
         }
-        DocumentationPage owner = await LoadAsync(matches[0].pageId, cancellation).ConfigureAwait(false);
+        DocumentationPage owner = await LoadAsync(matches[0].pageId, cancellationToken).ConfigureAwait(false);
         DocumentationSymbol selected = owner.symbols.Single(symbol => symbol.id == request.value);
         DocumentationSection section = owner.sections.Single(candidate => candidate.anchor == selected.section);
         List<DocumentationContinuation> continuations = Contracts(owner);
@@ -537,7 +542,12 @@ public sealed class DocumentationSnapshot : IDisposable
         {
             continuations.Insert(
                 0,
-                new(owner.metadata.uid, independentPage ? null : section.anchor, 0, "Read the complete declaration and its constraints.")
+                new DocumentationContinuation(
+                    owner.metadata.uid,
+                    independentPage ? null : section.anchor,
+                    0,
+                    "Read the complete declaration and its constraints."
+                )
             );
             return new(
                 "Navigation",
@@ -560,7 +570,7 @@ public sealed class DocumentationSnapshot : IDisposable
 
     private async Task<DocumentationResult> ResourceAsync(
         DocumentationRequest request,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         if (!Uri.TryCreate(request.value, UriKind.Absolute, out Uri? resource) || resource.Scheme != "inno-doc"
             || resource.Host != "innoengine" || resource.Query.Length != 0 || resource.UserInfo.Length != 0
@@ -577,7 +587,7 @@ public sealed class DocumentationSnapshot : IDisposable
             return Result("Mismatched", "The resource belongs to a different snapshot. Open that exact generation explicitly.");
         }
         return await QueryAsync(
-            new(
+            new DocumentationRequest(
                 "read",
                 Uri.UnescapeDataString(parts[3]),
                 section: resource.Fragment.Length == 0
@@ -585,15 +595,15 @@ public sealed class DocumentationSnapshot : IDisposable
                          : Uri.UnescapeDataString(resource.Fragment[1..]),
                 offset: request.offset
             ),
-            cancellation
+            cancellationToken
         ).ConfigureAwait(false);
     }
 
     private async Task<DocumentationPage> LoadAsync(
         string pageID,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
-        cancellation.ThrowIfCancellationRequested();
+        cancellationToken.ThrowIfCancellationRequested();
         if (m_pages.TryGetValue(pageID, out DocumentationPage? loaded))
         {
             return loaded;
@@ -602,9 +612,13 @@ public sealed class DocumentationSnapshot : IDisposable
         DocumentationPageReference reference = m_manifest.pages[path];
         DocumentationStore.RequireHash(reference.key, "page payload");
         string lease = PathBoundary.RequireUnlinkedPath(m_cache, Path.Combine(m_cache, "leases", reference.key + ".lock"));
-        using FileLease reading = await FileLease.AcquireSharedAsync(lease, Timeout.InfiniteTimeSpan, cancellation).ConfigureAwait(false);
+        using FileLease reading = await FileLease.AcquireSharedAsync(
+            lease,
+            Timeout.InfiniteTimeSpan,
+            cancellationToken
+        ).ConfigureAwait(false);
         string payload = PathBoundary.RequireUnlinkedPath(m_cache, Path.Combine(m_cache, "pages", reference.key, "page.json"));
-        byte[] bytes = await File.ReadAllBytesAsync(payload, cancellation).ConfigureAwait(false);
+        byte[] bytes = await File.ReadAllBytesAsync(payload, cancellationToken).ConfigureAwait(false);
         if (DocumentationMarkdown.Hash(bytes) != reference.payloadIdentity)
         {
             throw new InvalidDataException("Corrupt documentation page payload. Explicitly refresh its index: " + path);

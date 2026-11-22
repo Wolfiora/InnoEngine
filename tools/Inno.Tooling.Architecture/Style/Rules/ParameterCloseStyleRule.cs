@@ -31,10 +31,10 @@ internal sealed class ParameterCloseStyleRule : StyleRule
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
         IReadOnlyList<TextSpan> protectedSpans = source.ProtectedSpans();
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         foreach ((SyntaxToken close, SyntaxToken next, string gap) in Violations(source))
         {
-            edits.Add(new(close.Span.End, next.SpanStart, gap));
+            edits.Add(new StyleEdit(close.Span.End, next.SpanStart, gap));
             // What moved up keeps its own continuation lines relative to the declaration.
             int delta = source.Indentation(close.SpanStart) - source.Indentation(next.SpanStart);
             if (delta == 0 || next.IsKind(SyntaxKind.OpenBraceToken) || next.IsKind(SyntaxKind.SemicolonToken))

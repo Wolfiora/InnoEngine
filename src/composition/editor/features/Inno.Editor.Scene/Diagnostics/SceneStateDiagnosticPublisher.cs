@@ -14,7 +14,7 @@ internal static class SceneStateDiagnosticPublisher
     internal static void PublishMissingElements(IReadOnlyList<GameScene> scenes)
     {
         ArgumentNullException.ThrowIfNull(scenes);
-        var diagnostics = new List<Diagnostic>();
+        List<Diagnostic> diagnostics = [];
         foreach (GameScene scene in scenes)
         {
             foreach (GameObject gameObject in scene.GetObjects())

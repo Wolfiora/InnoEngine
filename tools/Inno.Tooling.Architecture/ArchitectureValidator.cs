@@ -76,7 +76,7 @@ public static partial class ArchitectureValidator
         string? dotnetHost = null;
         string? projectGraphPath = null;
         string? artifactsPath = null;
-        var paths = new List<string>();
+        List<string> paths = [];
         for (int index = 0; index < arguments.Length; index++)
         {
             string argument = arguments[index];
@@ -288,7 +288,7 @@ public static partial class ArchitectureValidator
         string start = arguments.Count == 0
                        ? Directory.GetCurrentDirectory()
                        : Path.GetFullPath(arguments[0]);
-        DirectoryInfo? current = new(start);
+        var current = new DirectoryInfo(start);
         while (current is not null)
         {
             if (File.Exists(Path.Combine(current.FullName, "InnoEngine.sln")))
@@ -981,7 +981,7 @@ public static partial class ArchitectureValidator
             return "<solution-root>";
         }
 
-        var segments = new List<string>();
+        List<string> segments = [];
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         while (visited.Add(currentID))
         {

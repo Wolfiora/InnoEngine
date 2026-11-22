@@ -32,7 +32,7 @@ public sealed class NativeInputBatchTests : IDisposable
     public void AliasesShareReadsWhileFreshPhasesObserveAllBytes()
     {
         var context = new NativeBuildContext(m_root, "debug");
-        NativeBuildInput[] inputs = [new("first", m_source), new("second", m_source)];
+        NativeBuildInput[] inputs = [new NativeBuildInput("first", m_source), new NativeBuildInput("second", m_source)];
         string initial = NativeBuildFingerprint.Create(context, ["fixture"], inputs);
         Assert.Equal(initial, NativeBuildFingerprint.Create(["fixture"], inputs.Reverse()));
         NativeBuildPhaseStatistics first = Assert.Single(context.statistics.phases);
@@ -57,7 +57,7 @@ public sealed class NativeInputBatchTests : IDisposable
     public async Task FailedBatchDrainsReadersAndDoesNotFreezePartialContent()
     {
         var context = new NativeBuildContext(m_root, "debug");
-        NativeBuildInput[] inputs = [new("source", m_source)];
+        NativeBuildInput[] inputs = [new NativeBuildInput("source", m_source)];
         using (var locked = new FileStream(Path.Combine(m_source, "63.h"), FileMode.Open, FileAccess.ReadWrite, FileShare.None))
         {
             await Assert.ThrowsAnyAsync<IOException>(() => Task.Run(() => NativeBuildFingerprint.Create(context, [], inputs)));
@@ -74,7 +74,7 @@ public sealed class NativeInputBatchTests : IDisposable
     public void CancellationAfterInventoryCannotReturnSuccessfulPartialSnapshot()
     {
         var context = new NativeBuildContext(m_root, "debug");
-        NativeBuildInput[] inputs = [new("source", m_source)];
+        NativeBuildInput[] inputs = [new NativeBuildInput("source", m_source)];
         using var cancellation = new CancellationTokenSource();
         Assert.ThrowsAny<OperationCanceledException>(() =>
             NativeBuildFingerprint.Create(context, [], CancelAfterInventory(), cancellation.Token));

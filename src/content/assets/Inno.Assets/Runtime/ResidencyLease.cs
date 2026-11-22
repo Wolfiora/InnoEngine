@@ -17,8 +17,10 @@ internal sealed class ResidencyLease<TValue> : IDisposable
         TValue value,
         Action release
     ) {
-        m_value = value ?? throw new ArgumentNullException(nameof(value));
-        m_release = release ?? throw new ArgumentNullException(nameof(release));
+        ArgumentNullException.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(release);
+        m_value = value;
+        m_release = release;
     }
 
     /// <summary>

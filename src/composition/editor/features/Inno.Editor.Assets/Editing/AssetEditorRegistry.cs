@@ -26,7 +26,7 @@ internal sealed class AssetEditorRegistry : TypeRegistry<AssetEditorRegistry.Sna
     protected override Snapshot Build(TypeCacheSnapshot types)
     {
         var instances = new Dictionary<Type, AssetEditor>();
-        var registrations = new List<Registration>();
+        List<Registration> registrations = [];
         foreach (Type type in types.GetTypesWithAttribute<AssetEditorAttribute>().Select(typeRef => typeRef.Resolve(types)).OrderBy(
             static value => value.FullName,
             StringComparer.Ordinal

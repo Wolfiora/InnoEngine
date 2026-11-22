@@ -89,7 +89,7 @@ public sealed partial class SceneEdits
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
         m_workspace.EnsureEditable(gameObject.scene);
-        GameObject[] affected = (relatedObjects ?? Array.Empty<GameObject>())
+        GameObject[] affected = (relatedObjects ?? [])
             .Prepend(gameObject)
             .DistinctBy(static candidate => candidate.identity.persistentID)
             .ToArray();

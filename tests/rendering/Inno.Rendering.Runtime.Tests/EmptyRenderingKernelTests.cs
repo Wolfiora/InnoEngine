@@ -133,7 +133,11 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         m_identities.Register(geometry);
         byte[] bytes = GeometryArtifact.Encode(
             new GeometryData(
-                [new(default, default, default, default), new(default, default, default, default), new(default, default, default, default)],
+                [
+                    new GeometryVertex(default, default, default, default),
+                    new GeometryVertex(default, default, default, default),
+                    new GeometryVertex(default, default, default, default)
+                ],
                 [0, 1, 2],
                 [new GeometrySection(0, 3)]
             )
@@ -541,8 +545,11 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         proxy.ReleaseRecordedGraph();
 
         QueueCollectiblePayload(runtime, m_types, asset);
-        (IAssemblyUnloadProbe removalMonitor, IRenderRuntimeReloadTransaction renderingRemoval) =
-            RemoveRenderingPlugin(runtime, m_modules, plugin);
+        (IAssemblyUnloadProbe removalMonitor, IRenderRuntimeReloadTransaction renderingRemoval) = RemoveRenderingPlugin(
+            runtime,
+            m_modules,
+            plugin
+        );
 
         ForceCollection();
         Assert.True(removalMonitor.isCompleted);
@@ -1420,10 +1427,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             DotNetModuleSource plugin
         ) {
         IRenderRuntimeReloadTransaction rendering = runtime.BeginExtensionReload();
-        using AssemblyReloadSession removal = modules.BeginReload(
-            Array.Empty<DotNetModuleSource>(),
-            [plugin.moduleName]
-        );
+        using AssemblyReloadSession removal = modules.BeginReload([], [plugin.moduleName]);
         removal.Activate();
         rendering.Prepare();
         rendering.Activate();
@@ -1437,10 +1441,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         ModuleHost modules,
         DotNetModuleSource plugin
     ) {
-        using AssemblyReloadSession removal = modules.BeginReload(
-            Array.Empty<DotNetModuleSource>(),
-            [plugin.moduleName]
-        );
+        using AssemblyReloadSession removal = modules.BeginReload([], [plugin.moduleName]);
         removal.Activate();
         return removal.Complete();
     }

@@ -125,7 +125,7 @@ public sealed class PlatformOwnershipContractTests
         Assert.Throws<ArgumentException>(() => new ProductNativeBuildStep(
             "fixture",
             Step("fixture", []).component,
-            new(NativeLibraryKind.Static),
+            new NativeComponentBuildOptions(NativeLibraryKind.Static),
             [],
             null,
             null,
@@ -152,7 +152,7 @@ public sealed class PlatformOwnershipContractTests
             distribution.ResolveShaderTarget(new BuildTargetID("browser-wasm"))
         );
         Assert.Throws<NotSupportedException>(() => distribution.build.ResolveNativeProduct("linux-arm64", "shader-tools"));
-        Assert.Throws<NotSupportedException>(() => distribution.ResolveShaderTarget(new("unregistered-target")));
+        Assert.Throws<NotSupportedException>(() => distribution.ResolveShaderTarget(new BuildTargetID("unregistered-target")));
         Assert.Throws<NotSupportedException>(() => distribution.build.ResolveNativeProduct("browser-wasm", "shader-tools"));
     }
 
@@ -278,7 +278,7 @@ public sealed class PlatformOwnershipContractTests
             "backends/Fixture/native/Inno.Native.Fixture/Inno.Native.Fixture.csproj",
             "backends/Fixture/build/Inno.Build.Toolchains.Fixture/Inno.Build.Toolchains.Fixture.csproj"
         ),
-        new(NativeLibraryKind.Shared),
+        new NativeComponentBuildOptions(NativeLibraryKind.Shared),
         dependencies,
         static (
             context,

@@ -26,8 +26,10 @@ public sealed class AssetBuildContext<TDefinition>
         TDefinition definition,
         IReadOnlyList<AssetInfo> inputs
     ) {
-        this.definition = definition ?? throw new ArgumentNullException(nameof(definition));
-        this.inputs = inputs ?? throw new ArgumentNullException(nameof(inputs));
+        ArgumentNullException.ThrowIfNull(definition);
+        ArgumentNullException.ThrowIfNull(inputs);
+        this.definition = definition;
+        this.inputs = inputs;
     }
 
     /// <summary>

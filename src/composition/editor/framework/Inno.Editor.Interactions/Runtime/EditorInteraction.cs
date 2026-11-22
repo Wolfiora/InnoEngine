@@ -21,7 +21,8 @@ public readonly struct EditorInteraction
         string area,
         object? target
     ) {
-        m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
+        ArgumentNullException.ThrowIfNull(interactions);
+        m_interactions = interactions;
         ArgumentException.ThrowIfNullOrWhiteSpace(area);
         this.area = area;
         this.target = target;

@@ -6,11 +6,11 @@ namespace Inno.Native.Sdl3.Tests;
 
 public sealed class Sdl3InitTests
 {
-    private readonly ITestOutputHelper output;
+    private readonly ITestOutputHelper m_output;
 
     public Sdl3InitTests(ITestOutputHelper output)
     {
-        this.output = output;
+        m_output = output;
     }
 
     [Fact]
@@ -22,7 +22,7 @@ public sealed class Sdl3InitTests
     }
 
     [Fact]
-    public unsafe void InitAndQuit_ShouldSucceed()
+    public unsafe void InitAndQuitShouldSucceed()
     {
         bool initResult = SDL.Init(SDLInitFlags.Events);
         if (!initResult)
@@ -32,14 +32,14 @@ public sealed class Sdl3InitTests
         }
 
         string? platform = Marshal.PtrToStringUTF8((nint)SDL.Raw.GetPlatform());
-        output.WriteLine($"SDL.GetPlatform: {platform}");
+        m_output.WriteLine($"SDL.GetPlatform: {platform}");
         Assert.False(string.IsNullOrWhiteSpace(platform));
 
         int version = SDL.GetVersion();
         int major = version / 1_000_000;
         int minor = (version / 1000) % 1000;
         int patch = version % 1000;
-        output.WriteLine($"SDL.GetVersion: {major}.{minor}.{patch} ({version})");
+        m_output.WriteLine($"SDL.GetVersion: {major}.{minor}.{patch} ({version})");
         Assert.True(version > 0);
 
         SDL.Quit();

@@ -23,9 +23,9 @@ internal sealed class RenderLayerCompositor : IDisposable
 
     private static readonly RenderVertexLayout VERTEX_LAYOUT = new(
         [
-            new(RenderVertexSemantic.Position, RenderVertexFormat.Float2),
-            new(RenderVertexSemantic.TextureCoordinate0, RenderVertexFormat.Float2),
-            new(RenderVertexSemantic.Color0, RenderVertexFormat.UInt8Normalized4)
+            new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float2),
+            new RenderVertexAttribute(RenderVertexSemantic.TextureCoordinate0, RenderVertexFormat.Float2),
+            new RenderVertexAttribute(RenderVertexSemantic.Color0, RenderVertexFormat.UInt8Normalized4)
         ]
     );
 
@@ -41,7 +41,8 @@ internal sealed class RenderLayerCompositor : IDisposable
         IRenderDevice device,
         IRenderLayerCompositionProgramProvider? programProvider
     ) {
-        m_device = device ?? throw new ArgumentNullException(nameof(device));
+        ArgumentNullException.ThrowIfNull(device);
+        m_device = device;
         m_programProvider = programProvider;
     }
 

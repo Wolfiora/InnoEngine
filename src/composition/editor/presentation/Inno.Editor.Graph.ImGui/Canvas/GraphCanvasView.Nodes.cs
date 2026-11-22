@@ -145,7 +145,7 @@ public readonly partial struct GraphCanvasView
         ArgumentNullException.ThrowIfNull(layout);
         Vector2 minimum = Vector2.Min(first, second);
         Vector2 maximum = Vector2.Max(first, second);
-        var nodes = new List<GraphNodeID>();
+        List<GraphNodeID> nodes = [];
         foreach (GraphCanvasNode node in layout.nodes)
         {
             (Vector2 minimum, Vector2 maximum) bounds = NodeBounds(node);
@@ -225,7 +225,7 @@ public readonly partial struct GraphCanvasView
                 false
             );
             draw.FilledRectangle(minimum, maximum, Pack(0.115f, 0.12f, 0.14f), 6f * zoom, false);
-            draw.FilledRectangle(minimum, new(maximum.X, minimum.Y + node.headerHeight * zoom), headerColor, 6f * zoom, true);
+            draw.FilledRectangle(minimum, new Vector2(maximum.X, minimum.Y + node.headerHeight * zoom), headerColor, 6f * zoom, true);
             draw.Rectangle(
                 minimum,
                 maximum,

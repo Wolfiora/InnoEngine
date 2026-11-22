@@ -55,7 +55,7 @@ internal static class DocumentationPackageReferences
             .EnumerateObject()
             .Select(static folder => folder.Name)
             .ToArray();
-        var paths = new List<string>();
+        List<string> paths = [];
         foreach (JsonProperty dependency in target.EnumerateObject())
         {
             if (dependency.Value.GetProperty("type").GetString() != "package"

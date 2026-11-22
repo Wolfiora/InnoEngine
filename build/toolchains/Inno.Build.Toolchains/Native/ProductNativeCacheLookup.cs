@@ -13,7 +13,7 @@ internal static class ProductNativeCacheLookup
     internal static async Task<IReadOnlyList<NativeBuildProduct>?> TryAcquireAsync(
         NativeBuildContext context,
         IReadOnlyList<ProductNativeBuildStep> steps,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         if (steps.Any(static step => (
             step.createRecipe is null
@@ -30,29 +30,29 @@ internal static class ProductNativeCacheLookup
             Path.Combine(context.engineRoot, "artifacts", "native"),
             "native",
             cache.role,
-            cancellation
+            cancellationToken
         );
-        var activities = new List<FileLease>();
-        var ownership = new List<FileLease>();
+        List<FileLease> activities = [];
+        List<FileLease> ownership = [];
         var products = new Dictionary<string, NativeBuildProduct>(StringComparer.Ordinal);
-        var candidates = new List<Candidate>();
+        List<Candidate> candidates = [];
         bool transferred = false;
         try
         {
-            activities.Add(await cache.AcquireUseAsync(cancellation).ConfigureAwait(false));
+            activities.Add(await cache.AcquireUseAsync(cancellationToken).ConfigureAwait(false));
             foreach (string root in steps.Select(step => Path.Combine(step.component.GetToolchainRoot(context.engineRoot), "obj", "native"))
                 .Distinct(pathComparer)
                 .Order(pathComparer)
             ) {
                 activities.Add(
                     await new BuildCachePublisher(root, BuildCacheArtifactRole.ReusableWorkspace)
-                        .AcquireUseAsync(cancellation)
+                        .AcquireUseAsync(cancellationToken)
                         .ConfigureAwait(false)
                 );
             }
             foreach (ProductNativeBuildStep step in steps)
             {
-                cancellation.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 NativeBuildContext selected = (step.configuration is string configuration
                                                ? context.WithConfiguration(configuration)
                                                : context).WithComponentOptions(step.component, step.options);
@@ -80,13 +80,13 @@ internal static class ProductNativeCacheLookup
                 {
                     recipe = recipe.WithBindingGeneration(context.engineRoot, binding);
                 }
-                NativeInputSnapshot snapshot = context.inputState.CaptureInitial(recipe.inputs, cancellation);
+                NativeInputSnapshot snapshot = context.inputState.CaptureInitial(recipe.inputs, cancellationToken);
                 string fingerprint = NativeBuildFingerprint.Create(recipe.declarations, snapshot);
                 string identity = NativeWorkspaceIdentity.Create(selected, recipe, snapshot);
                 string workspace = selected.WithIdentity(step.component, recipe.targetID, identity).GetNativeBuildRoot(step.component);
                 string directory = Path.Combine(context.engineRoot, "artifacts", "native", step.id, recipe.targetID, fingerprint);
                 var candidate = new Candidate(selected, recipe, fingerprint, directory, workspace, binding);
-                NativeBuildProduct? product = await AcquireProductAsync(candidate, cancellation).ConfigureAwait(false);
+                NativeBuildProduct? product = await AcquireProductAsync(candidate, cancellationToken).ConfigureAwait(false);
                 if (product is null)
                 {
                     return null;
@@ -107,12 +107,12 @@ internal static class ProductNativeCacheLookup
                 .Order(pathComparer)
             ) {
                 ownership.Add(
-                    await FileLease.AcquireAsync(workspace + ".lock", Timeout.InfiniteTimeSpan, cancellation).ConfigureAwait(false)
+                    await FileLease.AcquireAsync(workspace + ".lock", Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false)
                 );
             }
             foreach (Candidate candidate in candidates)
             {
-                NativeBuildProduct? product = await AcquireProductAsync(candidate, cancellation).ConfigureAwait(false);
+                NativeBuildProduct? product = await AcquireProductAsync(candidate, cancellationToken).ConfigureAwait(false);
                 if (product is null)
                 {
                     return null;
@@ -126,7 +126,7 @@ internal static class ProductNativeCacheLookup
                     verification,
                     candidate.recipe.declarations,
                     candidate.recipe.inputs,
-                    cancellation
+                    cancellationToken
                 ) != candidate.fingerprint
                 ) {
                     throw new InvalidOperationException(
@@ -142,7 +142,7 @@ internal static class ProductNativeCacheLookup
                     candidate.binding is { artifactDirectory.Length: > 0 } ? [candidate.binding.artifactDirectory] : [],
                     candidate.recipe.component + "/" + candidate.recipe.targetID + "/" + candidate.context.configuration,
                     candidate.recipe.targetID,
-                    cancellation
+                    cancellationToken
                 );
             }
             transferred = true;
@@ -172,7 +172,7 @@ internal static class ProductNativeCacheLookup
 
     private static async ValueTask<NativeBuildProduct?> AcquireProductAsync(
         Candidate candidate,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         BuildArtifactReadLease? reading = await BuildArtifactReadLease.TryAcquireAsync(
             candidate.directory,
@@ -180,7 +180,7 @@ internal static class ProductNativeCacheLookup
             candidate.fingerprint,
             ["Outputs", "Metadata"],
             candidate.context,
-            cancellation
+            cancellationToken
         ).ConfigureAwait(false);
         return reading is null ? null : new NativeBuildProduct(
             candidate.recipe.component,

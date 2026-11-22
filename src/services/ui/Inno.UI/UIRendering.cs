@@ -288,10 +288,7 @@ public sealed class UIRenderFrameBuilder
         {
             throw new ArgumentException("A mesh update requires an assigned handle.", nameof(mesh));
         }
-        if (revision == 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(revision));
-        }
+        ArgumentOutOfRangeException.ThrowIfZero(revision);
         ArgumentNullException.ThrowIfNull(vertices);
         ArgumentNullException.ThrowIfNull(indices);
         if (vertices.Length == 0 || indices.Length == 0)
@@ -305,7 +302,7 @@ public sealed class UIRenderFrameBuilder
                 throw new ArgumentException("A mesh index references a vertex outside the update.", nameof(indices));
             }
         }
-        m_meshUpdates.Add(new(mesh, revision, vertices, indices));
+        m_meshUpdates.Add(new UIMeshUpdate(mesh, revision, vertices, indices));
     }
 
     /// <summary>
@@ -354,10 +351,7 @@ public sealed class UIRenderFrameBuilder
         {
             throw new ArgumentException("A texture update requires an assigned handle.", nameof(texture));
         }
-        if (revision == 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(revision));
-        }
+        ArgumentOutOfRangeException.ThrowIfZero(revision);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
         ArgumentNullException.ThrowIfNull(pixels);
@@ -365,7 +359,7 @@ public sealed class UIRenderFrameBuilder
         {
             throw new ArgumentException("Texture pixels must be tightly packed RGBA8.", nameof(pixels));
         }
-        m_textureUpdates.Add(new(texture, revision, width, height, pixels));
+        m_textureUpdates.Add(new UITextureUpdate(texture, revision, width, height, pixels));
     }
 
     /// <summary>

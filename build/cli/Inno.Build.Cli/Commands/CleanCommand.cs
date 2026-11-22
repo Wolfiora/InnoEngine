@@ -36,7 +36,7 @@ internal static class CleanCommand
         BuildCommandContext context,
         BuildCommandLine options,
         bool automatic,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         long ReadBytes(
             string name,
@@ -73,7 +73,7 @@ internal static class CleanCommand
             !automatic,
             options.Has("dry-run"),
             !automatic && options.Has("target") ? options.Require("target") : null,
-            cancellation
+            cancellationToken
         ).ConfigureAwait(false);
     }
 }

@@ -24,7 +24,8 @@ internal sealed class EngineObjectReferencePropertyDrawer : IPropertyDrawer
 
     internal EngineObjectReferencePropertyDrawer(RuntimeSession runtimeSession)
     {
-        m_runtimeSession = runtimeSession ?? throw new ArgumentNullException(nameof(runtimeSession));
+        ArgumentNullException.ThrowIfNull(runtimeSession);
+        m_runtimeSession = runtimeSession;
     }
 
     /// <summary>

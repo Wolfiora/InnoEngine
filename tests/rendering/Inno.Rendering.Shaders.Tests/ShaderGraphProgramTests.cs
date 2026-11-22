@@ -25,7 +25,9 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
 
     public ShaderGraphProgramTests()
     {
-        m_modules = new(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderGraphProgramTests).Assembly)});
+        m_modules = new(
+            new ModuleHostOptions() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderGraphProgramTests).Assembly)}
+        );
         m_types = new(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new(m_types, new ReflectionSerializationMetadataSource());
         m_nodes = new(m_types);
@@ -69,8 +71,12 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
         property.stages = ShaderStage.None;
         definition.properties = [property, property];
         definition.passes = [definition.passes[0], definition.passes[0]];
-        definition.keywords = [new("quality", ["low", "low"])];
-        definition.techniques = [new(new("surface"), new("arbitrary.render-model"), [new(new("forward"), "absent")])];
+        definition.keywords = [new ShaderKeywordDefinition("quality", ["low", "low"])];
+        definition.techniques = [new ShaderTechniqueDefinition(
+            new ShaderTechniqueID("surface"),
+            new ShaderContractID("arbitrary.render-model"),
+            [new ShaderTechniquePass(new ShaderPassRoleID("forward"), "absent")]
+        )];
         string[] codes = ShaderDefinitionValidator.Validate(definition)
             .Where(static value => value.severity == DiagnosticSeverity.Error)
             .Select(static value => value.code)
@@ -98,7 +104,7 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
         var capabilities = new GraphicsCapabilities(
             GraphicsApi.noop,
             GraphicsCapability.None,
-            new(64, 1, 4096, 0),
+            new GraphicsLimits(64, 1, 4096, 0),
             formats,
             formats,
             formats,
@@ -116,7 +122,7 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
     public void RenamingAnExposedInputAtomicallyChangesItsParameterAndPreservesTheDefault()
     {
         GraphDocument graph = Template();
-        GraphNodeRecord color = graph.FindNode(new("color"))!;
+        GraphNodeRecord color = graph.FindNode(new GraphNodeID("color"))!;
         ShaderGraphInputSettings input = ShaderGraphDocument.Read(
             color,
             "settings",
@@ -139,14 +145,20 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
     {
         GraphDocument graph = Template();
         ShaderGraphInputSettings input = ShaderGraphDocument.Read(
-            graph.FindNode(new("color"))!,
+            graph.FindNode(new GraphNodeID("color"))!,
             "settings",
             new ShaderGraphInputSettings(),
             m_serialization,
             SerializationContext.empty
         );
         input.id = string.Empty;
-        GraphDocument changed = ShaderGraphBindings.ChangeInput(graph, new("color"), input, m_serialization, SerializationContext.empty);
+        GraphDocument changed = ShaderGraphBindings.ChangeInput(
+            graph,
+            new GraphNodeID("color"),
+            input,
+            m_serialization,
+            SerializationContext.empty
+        );
         Assert.Equal(graph.nodes.Count, changed.nodes.Count);
         Assert.Equal(graph.edges.Count, changed.edges.Count);
         Assert.False(Lower(changed).succeeded);
@@ -158,8 +170,13 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
     {
         GraphDocument graph = Template();
         byte[] before = GraphDocumentCodec.Encode(graph, m_serialization);
-        GraphDocument edited = ShaderGraphBindings.RemoveNodes(graph, [new("color")], m_serialization, SerializationContext.empty);
-        Assert.Null(edited.FindNode(new("color")));
+        GraphDocument edited = ShaderGraphBindings.RemoveNodes(
+            graph,
+            [new GraphNodeID("color")],
+            m_serialization,
+            SerializationContext.empty
+        );
+        Assert.Null(edited.FindNode(new GraphNodeID("color")));
         Assert.Empty(ShaderGraphDocument.ReadDefinition(edited, m_serialization, SerializationContext.empty).properties);
         Assert.Equal(before, GraphDocumentCodec.Encode(graph, m_serialization));
         Assert.DoesNotContain(edited.edges, edge => edge.output.nodeID.value == "color");
@@ -169,7 +186,7 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
     public void RemovingOneSharedBindingPreservesItsDefaultAndRemainingStageVisibility()
     {
         GraphDocument graph = Template();
-        var node = new GraphNodeRecord(new("vertex-color"), "inno.shader.stage-input");
+        var node = new GraphNodeRecord(new GraphNodeID("vertex-color"), "inno.shader.stage-input");
         node.SetValue("stage", ShaderGraphDocument.Encode("vertex", m_serialization, SerializationContext.empty));
         graph.AddNode(node);
         var settings = new ShaderGraphInputSettings
@@ -196,8 +213,13 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
     public void RemovingNodesFromAnIncompleteDocumentDoesNotRequireSuccessfulCompilation()
     {
         var graph = new GraphDocument();
-        graph.AddNode(new(new("unknown"), "tests.uninstalled"));
-        GraphDocument edited = ShaderGraphBindings.RemoveNodes(graph, [new("unknown")], m_serialization, SerializationContext.empty);
+        graph.AddNode(new GraphNodeRecord(new GraphNodeID("unknown"), "tests.uninstalled"));
+        GraphDocument edited = ShaderGraphBindings.RemoveNodes(
+            graph,
+            [new GraphNodeID("unknown")],
+            m_serialization,
+            SerializationContext.empty
+        );
         Assert.Empty(edited.nodes);
         Assert.Single(graph.nodes);
     }

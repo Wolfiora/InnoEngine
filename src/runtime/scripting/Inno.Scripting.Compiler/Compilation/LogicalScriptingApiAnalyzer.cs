@@ -226,7 +226,7 @@ public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
         SyntaxNode node,
         string apiNamespace
     ) {
-        var usings = new List<UsingDirectiveSyntax>();
+        List<UsingDirectiveSyntax> usings = [];
         if (node.SyntaxTree.GetRoot() is CompilationUnitSyntax compilationUnit)
         {
             usings.AddRange(compilationUnit.Usings);

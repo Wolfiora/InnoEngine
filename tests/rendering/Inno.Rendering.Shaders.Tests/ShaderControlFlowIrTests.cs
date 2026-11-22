@@ -182,12 +182,12 @@ public sealed class ShaderControlFlowIrTests
         builder.StoreStorage(buffer, builder.Constant(0u), result["a"]);
         builder.StoreStorage(buffer, builder.Constant(1u), result["b"]);
         await CompileAsync(
-            new(
+            new ShaderIrStage(
                 ShaderStage.Compute,
                 builder.Build(Values()),
                 [
-                    new("output", bufferType, ShaderIrInputKind.Storage),
-                    new("gid", gid.type, ShaderIrInputKind.Builtin, "global-invocation-id")
+                    new ShaderIrStageInput("output", bufferType, ShaderIrInputKind.Storage),
+                    new ShaderIrStageInput("gid", gid.type, ShaderIrInputKind.Builtin, "global-invocation-id")
                 ],
                 [],
                 8
@@ -202,7 +202,7 @@ public sealed class ShaderControlFlowIrTests
         var builder = new ShaderIrBuilder();
         ShaderSourceType pair = ShaderSourceType.Structure(
             "Pair",
-            [new("a", ShaderSourceType.Atomic("float")), new("b", ShaderSourceType.Atomic("float"))]
+            [new ShaderSourceField("a", ShaderSourceType.Atomic("float")), new ShaderSourceField("b", ShaderSourceType.Atomic("float"))]
         );
         ShaderIrValue initial = builder.Construct(pair, builder.Constant(1f), builder.Constant(2f));
         IReadOnlyDictionary<string, ShaderIrValue> result = builder.Loop(
@@ -220,7 +220,12 @@ public sealed class ShaderControlFlowIrTests
         ShaderIrValue b = builder.Extract(result["pair"], 1);
         ShaderIrValue color = builder.Construct(ShaderSourceType.Atomic("float4"), a, b, a, builder.Constant(1f));
         await CompileAsync(
-            new(ShaderStage.Fragment, builder.Build(Values(("color", color))), [], [new("color", ShaderIrOutputKind.Color)])
+            new ShaderIrStage(
+                ShaderStage.Fragment,
+                builder.Build(Values(("color", color))),
+                [],
+                [new ShaderIrStageOutput("color", ShaderIrOutputKind.Color)]
+            )
         );
     }
 

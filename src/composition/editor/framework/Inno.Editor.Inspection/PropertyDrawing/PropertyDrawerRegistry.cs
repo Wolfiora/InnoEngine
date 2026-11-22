@@ -139,8 +139,10 @@ public sealed class PropertyDrawerRegistry : IDisposable
             IEnumerable<object> drawerServices
         ) : base(types)
         {
-            m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-            m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
+            ArgumentNullException.ThrowIfNull(interactions);
+            ArgumentNullException.ThrowIfNull(serialization);
+            m_interactions = interactions;
+            m_serialization = serialization;
             ArgumentNullException.ThrowIfNull(drawerServices);
             m_drawerServices = drawerServices.Select(static service => (
                 service ?? throw new ArgumentException(
@@ -162,7 +164,7 @@ public sealed class PropertyDrawerRegistry : IDisposable
         protected override Registration[] Build(TypeCacheSnapshot types)
         {
             var drawers = new Dictionary<Type, IPropertyDrawer>();
-            var registrations = new List<Registration>();
+            List<Registration> registrations = [];
             foreach (Type drawerType in types.GetTypesWithAttribute<PropertyDrawerAttribute>()
                 .Select(typeRef => typeRef.Resolve(types))
                 .OrderBy(static type => type.FullName, StringComparer.Ordinal)

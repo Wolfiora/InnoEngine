@@ -134,7 +134,7 @@ public sealed class ProductNativePreparationTests : IDisposable
             changed == "target" ? "other-target" : "fixture-target"
         );
         ProductNativeBuildPlan current = changed == "product"
-                                         ? new("different-product", plan.steps)
+                                         ? new ProductNativeBuildPlan("different-product", plan.steps)
                                          : changed == "recipe" ? Plan(NativeLibraryKind.Static) : plan;
         Assert.Null(await ProductNativePreparation.TryAcquireAsync(consumer, current, rows, identity));
         Assert.Equal(1, m_productions);

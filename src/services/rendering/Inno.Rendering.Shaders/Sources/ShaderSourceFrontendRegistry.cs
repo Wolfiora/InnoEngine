@@ -88,7 +88,7 @@ public sealed class ShaderSourceFrontendRegistry : TypeRegistry<ShaderSourceFron
     /// </returns>
     protected override ShaderSourceFrontendCatalog Build(TypeCacheSnapshot types)
     {
-        var providers = new List<IShaderSourceFrontend>();
+        List<IShaderSourceFrontend> providers = [];
         foreach (Type type in types.GetTypesImplementing<IShaderSourceFrontend>()
             .Select(reference => reference.Resolve(types))
             .OrderBy(static type => type.FullName, StringComparer.Ordinal)

@@ -248,7 +248,7 @@ public sealed partial class IndexedObjectStore<T>
         List<IIndexedObjectQueryCondition<T>> conditions
     ) where TKey : notnull
     {
-        var result = new List<T>();
+        List<T> result = [];
         foreach (TKey key in index.EnumerateOrderedKeys())
         {
             if (index.TryGetSingle(key, out T? single) && single is not null)

@@ -55,7 +55,8 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
     /// </exception>
     public MiniAudioDevice(MiniAudioDeviceOptions options)
     {
-        m_options = (options ?? throw new ArgumentNullException(nameof(options))).Validate();
+        ArgumentNullException.ThrowIfNull(options);
+        m_options = (options).Validate();
         this.generation = NextGeneration();
         m_state = AudioDeviceState.Initializing;
         m_engine = (MaEngine*)NativeMemory.AllocZeroed((nuint)sizeof(MaEngine));
@@ -1001,13 +1002,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         NativeMemory.Free(bus.group);
     }
 
-    private void EnsureActive()
-    {
-        if (m_state == AudioDeviceState.Disposed)
-        {
-            throw new ObjectDisposedException(nameof(MiniAudioDevice));
-        }
-    }
+    private void EnsureActive() => ObjectDisposedException.ThrowIf(m_state == AudioDeviceState.Disposed, this);
 
     private static uint NextGeneration()
     {

@@ -15,7 +15,8 @@ internal sealed class PrefabConnectionRecord
         bool isVariant,
         PrefabOverrideSet? overrides = null
     ) {
-        this.sourceAsset = sourceAsset ?? throw new ArgumentNullException(nameof(sourceAsset));
+        ArgumentNullException.ThrowIfNull(sourceAsset);
+        this.sourceAsset = sourceAsset;
         this.sourceRootID = sourceRootID;
         this.isVariant = isVariant;
         this.overrides = overrides ?? new PrefabOverrideSet();

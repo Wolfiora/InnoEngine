@@ -39,8 +39,8 @@ internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
         varying.AppendLine("// Generated stage interface; an empty declaration set is intentional.");
         var declarations = new StringBuilder();
         var stageInputs = new Dictionary<string, string>(StringComparer.Ordinal);
-        var inputNames = new List<string>();
-        var outputNames = new List<string>();
+        List<string> inputNames = [];
+        List<string> outputNames = [];
         foreach (ShaderIrStageInput input in stage.inputs.OrderBy(static input => input.id, StringComparer.Ordinal))
         {
             string name;
@@ -79,7 +79,7 @@ internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
                         .Append("uniform ")
                         .Append(Declaration(packed ? ShaderSourceType.Atomic("float4") : input.type, name))
                         .AppendLine(";");
-                    m_bindings.Add(new(input.id, name, input.location));
+                    m_bindings.Add(new ShaderStageBinding(input.id, name, input.location));
                     if (packed)
                     {
                         name += input.type.id switch { "float" => ".x", "float2" => ".xy", _ => ".xyz" };
@@ -96,7 +96,7 @@ internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
                         _ => throw Error($"Unsupported sampled resource '{input.type.id}'.")
                     };
                     declarations.Append(macro).Append('(').Append(name).Append(", ").Append(input.location).AppendLine(");");
-                    m_bindings.Add(new(input.id, name, input.location));
+                    m_bindings.Add(new ShaderStageBinding(input.id, name, input.location));
                     break;
                 case ShaderIrInputKind.Builtin:
                     (name, string type) = Builtin(input.semantic, stage.stage);
@@ -108,7 +108,7 @@ internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
                 case ShaderIrInputKind.Storage:
                     name = BindingName("r_inno_", input.id);
                     EmitStorageDeclaration(declarations, input, name);
-                    m_bindings.Add(new(input.id, name, input.location));
+                    m_bindings.Add(new ShaderStageBinding(input.id, name, input.location));
                     break;
                 default:
                     throw Error("Unsupported stage input kind.");
@@ -358,7 +358,7 @@ internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
         {
             m_body.Append("    ").Append(Declaration(output.type, NewLocal(output))).AppendLine(";");
         }
-        var arguments = new List<string>();
+        List<string> arguments = [];
         foreach (ShaderSourceParameter parameter in function.parameters)
         {
             if (parameter.direction == ShaderSourceParameterDirection.Input)

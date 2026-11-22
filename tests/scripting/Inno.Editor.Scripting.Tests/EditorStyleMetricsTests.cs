@@ -550,7 +550,7 @@ public sealed unsafe class EditorStyleMetricsTests
             io->DeltaTime = 1f / 60f;
             io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
             io->Fonts->RendererHasTextures = 1;
-            var popupWidths = new List<float>();
+            List<float> popupWidths = [];
             int openFrames = 0;
             for (int frame = 0; frame < 5; frame++)
             {

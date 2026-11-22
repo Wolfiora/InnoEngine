@@ -262,7 +262,7 @@ internal sealed partial class FileBrowserPanel
         }
         finally
         {
-            m_visibleSelection = Array.Empty<RuntimeIdentity>();
+            m_visibleSelection = [];
             m_drawKeyboardFocus = null;
         }
         RuntimeIdentity? activation = m_pendingActivation;

@@ -78,7 +78,7 @@ public sealed class DiagnosticReporter : IDiagnosticReporter, IDisposable
         lock (m_sync)
         {
             DiagnosticHub hub = GetHub();
-            if (!m_issues.Remove(new(code, semanticID, objectID)))
+            if (!m_issues.Remove(new IssueKey(code, semanticID, objectID)))
             {
                 return;
             }
@@ -105,7 +105,7 @@ public sealed class DiagnosticReporter : IDiagnosticReporter, IDisposable
         foreach (Diagnostic diagnostic in diagnostics)
         {
             ArgumentNullException.ThrowIfNull(diagnostic);
-            if (!candidate.TryAdd(new(diagnostic.code, diagnostic.semanticID, diagnostic.objectID), diagnostic))
+            if (!candidate.TryAdd(new IssueKey(diagnostic.code, diagnostic.semanticID, diagnostic.objectID), diagnostic))
             {
                 throw new ArgumentException("A complete diagnostic report contains duplicate issue identities.", nameof(diagnostics));
             }

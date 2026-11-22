@@ -22,7 +22,7 @@ public sealed class NativeProductExecutorTests : IDisposable
         var plan = new ProductNativeBuildPlan("probe-product", [new ProductNativeBuildStep(
             "probe",
             m_owner,
-            new(NativeLibraryKind.Static),
+            new NativeComponentBuildOptions(NativeLibraryKind.Static),
             [],
             ProduceAsync,
             Recipe,
@@ -63,7 +63,7 @@ public sealed class NativeProductExecutorTests : IDisposable
         var plan = new ProductNativeBuildPlan("probe-product", [new ProductNativeBuildStep(
             "probe",
             m_owner,
-            new(NativeLibraryKind.Shared),
+            new NativeComponentBuildOptions(NativeLibraryKind.Shared),
             [],
             ProduceAsync,
             Recipe,
@@ -141,7 +141,7 @@ public sealed class NativeProductExecutorTests : IDisposable
     private Task<NativeBuildProduct> ProduceAsync(
         NativeBuildContext context,
         IReadOnlyDictionary<string, NativeBuildProduct> dependencies,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) => NativeArtifactPublisher.PublishAsync(
         context,
         Recipe(context),
@@ -154,7 +154,7 @@ public sealed class NativeProductExecutorTests : IDisposable
             m_productions++;
             return File.WriteAllTextAsync(Path.Combine(output, "probe-output.data"), "archive", token);
         },
-        cancellation,
+        cancellationToken,
         describeOutputs: static (
             operation,
             output

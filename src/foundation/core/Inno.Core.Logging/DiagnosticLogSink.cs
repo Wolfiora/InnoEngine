@@ -29,8 +29,10 @@ public sealed class DiagnosticLogSink : IDiagnosticSink, IDisposable
         DiagnosticHub hub,
         LogRouter logs
     ) {
-        m_hub = hub ?? throw new ArgumentNullException(nameof(hub));
-        m_logs = logs ?? throw new ArgumentNullException(nameof(logs));
+        ArgumentNullException.ThrowIfNull(hub);
+        ArgumentNullException.ThrowIfNull(logs);
+        m_hub = hub;
+        m_logs = logs;
         m_hub.RegisterSink(this);
     }
 

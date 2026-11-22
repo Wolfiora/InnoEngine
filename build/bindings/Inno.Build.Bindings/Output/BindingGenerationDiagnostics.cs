@@ -18,7 +18,7 @@ internal static class BindingGenerationDiagnostics
         string candidate,
         string nativeOutput,
         string managedOutput,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         GenerationRequest selected = request.WithConfiguration(
             request.configuration with
@@ -35,16 +35,16 @@ internal static class BindingGenerationDiagnostics
             root,
             "bgcs-workspaces",
             BuildCacheArtifactRole.ReusableWorkspace,
-            cancellation
+            cancellationToken
         );
-        using FileLease activity = cache.AcquireUseAsync(cancellation).AsTask().GetAwaiter().GetResult();
-        using FileLease ownership = FileLease.AcquireAsync(workspace + ".lock", Timeout.InfiniteTimeSpan, cancellation)
+        using FileLease activity = cache.AcquireUseAsync(cancellationToken).AsTask().GetAwaiter().GetResult();
+        using FileLease ownership = FileLease.AcquireAsync(workspace + ".lock", Timeout.InfiniteTimeSpan, cancellationToken)
             .AsTask()
             .GetAwaiter()
             .GetResult();
-        cache.BeginWorkingDirectory(workspace, workspace + ".lock", definition.request.targetID, cancellation);
-        BindingHostExecution.Generate(selected, definition.profile, context.engineRoot, nativeOutput, managedOutput, cancellation);
-        cache.Record(workspace, workspace + ".lock", [], null, definition.request.targetID, cancellation);
+        cache.BeginWorkingDirectory(workspace, workspace + ".lock", definition.request.targetID, cancellationToken);
+        BindingHostExecution.Generate(selected, definition.profile, context.engineRoot, nativeOutput, managedOutput, cancellationToken);
+        cache.Record(workspace, workspace + ".lock", [], null, definition.request.targetID, cancellationToken);
     }
 
     internal static void RequireEqual(
@@ -60,14 +60,13 @@ internal static class BindingGenerationDiagnostics
         foreach (string file in files)
         {
             string other = Path.Combine(current, Path.GetRelativePath(candidate, file));
-            bool equal =
-                File.Exists(other)
-                && (
-                    normalizeNewlines
-                    ? File.ReadAllText(file).Replace("\r\n", "\n", StringComparison.Ordinal)
-                      == File.ReadAllText(other).Replace("\r\n", "\n", StringComparison.Ordinal)
-                    : File.ReadAllBytes(file).AsSpan().SequenceEqual(File.ReadAllBytes(other))
-                );
+            bool equal = File.Exists(other)
+                         && (
+                             normalizeNewlines
+                             ? File.ReadAllText(file).Replace("\r\n", "\n", StringComparison.Ordinal)
+                               == File.ReadAllText(other).Replace("\r\n", "\n", StringComparison.Ordinal)
+                             : File.ReadAllBytes(file).AsSpan().SequenceEqual(File.ReadAllBytes(other))
+                         );
             if (!equal)
             {
                 throw new InvalidDataException($"Generated output is out of date: {other}");

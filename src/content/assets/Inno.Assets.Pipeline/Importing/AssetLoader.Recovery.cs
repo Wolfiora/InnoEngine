@@ -92,7 +92,7 @@ public sealed partial class AssetLoader
             {
                 return;
             }
-            var attempted = new List<AssetObject>();
+            List<AssetObject> attempted = [];
             try
             {
                 foreach (AssetRecord record in m_recordsByID.Values)

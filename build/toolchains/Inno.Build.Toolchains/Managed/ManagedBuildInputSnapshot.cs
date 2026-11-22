@@ -86,7 +86,7 @@ public sealed class ManagedBuildInputSnapshot
         ).ConfigureAwait(false);
         if (current.fingerprint != fingerprint)
         {
-            var changed = new List<string>();
+            List<string> changed = [];
             foreach (NativeInputSnapshot.Entry input in m_context.inputState.CaptureRecordedInputs(m_context.engineRoot).entries)
             {
                 cancellationToken.ThrowIfCancellationRequested();

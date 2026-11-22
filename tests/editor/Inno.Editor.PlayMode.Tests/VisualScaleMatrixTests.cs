@@ -28,8 +28,8 @@ public sealed unsafe class VisualScaleMatrixTests
     ) {
         using var host = new NativePanelHost(typeof(VisualScaleMatrixTests).Assembly);
         ImGuiIO* io = NativeGui.Raw.GetIO();
-        io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector>(new(width, height));
-        io->DisplayFramebufferScale = Unsafe.BitCast<Vector2, NativeVector>(new(density));
+        io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector>(new Vector2(width, height));
+        io->DisplayFramebufferScale = Unsafe.BitCast<Vector2, NativeVector>(new Vector2(density));
         host.ui.widgets.style.SetZoom(zoom);
         float labelWidth = 0f;
         float valueWidth = 0f;

@@ -70,7 +70,7 @@ public sealed partial class ShaderIrBuilder
         }
         ShaderIrValue output = NewValue(type);
         m_inputs.Add(name, output);
-        m_instructions.Add(new(ShaderIrOperation.Input, [], [output], inputName: name));
+        m_instructions.Add(new ShaderIrInstruction(ShaderIrOperation.Input, [], [output], inputName: name));
         return output;
     }
 
@@ -173,7 +173,7 @@ public sealed partial class ShaderIrBuilder
             throw new ArgumentException($"Operation '{operation}' is not defined for '{left.type.id}'.", nameof(operation));
         }
         ShaderIrValue output = NewValue(comparison ? ShaderSourceType.Atomic("bool") : left.type);
-        m_instructions.Add(new(operation, [left, right], [output]));
+        m_instructions.Add(new ShaderIrInstruction(operation, [left, right], [output]));
         return output;
     }
 
@@ -212,7 +212,7 @@ public sealed partial class ShaderIrBuilder
             throw new ArgumentException("Selection requires a scalar bool and two values of identical type.");
         }
         ShaderIrValue output = NewValue(whenTrue.type);
-        m_instructions.Add(new(ShaderIrOperation.Select, [condition, whenTrue, whenFalse], [output]));
+        m_instructions.Add(new ShaderIrInstruction(ShaderIrOperation.Select, [condition, whenTrue, whenFalse], [output]));
         return output;
     }
 
@@ -266,7 +266,7 @@ public sealed partial class ShaderIrBuilder
             throw new ArgumentException("Aggregate members do not match the complete type layout.", nameof(members));
         }
         ShaderIrValue output = NewValue(type);
-        m_instructions.Add(new(ShaderIrOperation.Construct, members, [output]));
+        m_instructions.Add(new ShaderIrInstruction(ShaderIrOperation.Construct, members, [output]));
         return output;
     }
 
@@ -305,10 +305,7 @@ public sealed partial class ShaderIrBuilder
         else if (type.fields.Count != 0)
         {
             count = type.fields.Count;
-            if (memberIndex >= count)
-            {
-                throw new ArgumentOutOfRangeException(nameof(memberIndex));
-            }
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(memberIndex, count);
             memberType = type.fields[memberIndex].type;
         }
         else if (TryNumeric(type, out string scalar, out int columns, out int rows) && columns * rows > 1)
@@ -320,12 +317,9 @@ public sealed partial class ShaderIrBuilder
         {
             throw new ArgumentException("Extraction requires a vector, matrix, structure or array.", nameof(value));
         }
-        if (memberIndex >= count)
-        {
-            throw new ArgumentOutOfRangeException(nameof(memberIndex));
-        }
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(memberIndex, count);
         ShaderIrValue output = NewValue(memberType);
-        m_instructions.Add(new(ShaderIrOperation.Extract, [value], [output], memberIndex: memberIndex));
+        m_instructions.Add(new ShaderIrInstruction(ShaderIrOperation.Extract, [value], [output], memberIndex: memberIndex));
         return output;
     }
 
@@ -372,7 +366,7 @@ public sealed partial class ShaderIrBuilder
         {
             throw new ArgumentException("Source inputs must match every input/inout parameter exactly.", nameof(inputs));
         }
-        var operands = new List<ShaderIrValue>();
+        List<ShaderIrValue> operands = [];
         foreach (ShaderSourceParameter parameter in parameters)
         {
             if (!inputs.TryGetValue(parameter.name, out ShaderIrValue? value))
@@ -398,7 +392,7 @@ public sealed partial class ShaderIrBuilder
                 outputs.Add("output." + parameter.name, NewValue(parameter.type));
             }
         }
-        m_instructions.Add(new(ShaderIrOperation.SourceCall, operands, outputs.Values, source: source));
+        m_instructions.Add(new ShaderIrInstruction(ShaderIrOperation.SourceCall, operands, outputs.Values, source: source));
         return new ReadOnlyDictionary<string, ShaderIrValue>(outputs);
     }
 
@@ -444,7 +438,7 @@ public sealed partial class ShaderIrBuilder
         ulong bits
     ) {
         ShaderIrValue output = NewValue(ShaderSourceType.Atomic(type));
-        m_instructions.Add(new(ShaderIrOperation.Constant, [], [output], constantBits: bits));
+        m_instructions.Add(new ShaderIrInstruction(ShaderIrOperation.Constant, [], [output], constantBits: bits));
         return output;
     }
 

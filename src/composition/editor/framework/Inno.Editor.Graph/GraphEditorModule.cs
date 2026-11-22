@@ -30,8 +30,10 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
         SerializationRegistry serialization,
         EditorReloadCoordinator reloads
     ) {
-        m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
-        m_reloads = reloads ?? throw new ArgumentNullException(nameof(reloads));
+        ArgumentNullException.ThrowIfNull(serialization);
+        ArgumentNullException.ThrowIfNull(reloads);
+        m_serialization = serialization;
+        m_reloads = reloads;
     }
 
     /// <summary>

@@ -38,8 +38,10 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         IRenderTargetArtifactProvider? targetArtifacts,
         RenderResourceLimits limits
     ) {
-        m_device = device ?? throw new ArgumentNullException(nameof(device));
-        m_diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
+        ArgumentNullException.ThrowIfNull(device);
+        ArgumentNullException.ThrowIfNull(diagnostics);
+        m_device = device;
+        m_diagnostics = diagnostics;
         m_targetArtifacts = targetArtifacts;
         m_readbacks = new(device, limits.pendingReadbacks);
         m_buffers = new(entry => m_device.DestroyBuffer(entry.handle), limits.resourcesPerKind);

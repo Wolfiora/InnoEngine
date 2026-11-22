@@ -36,7 +36,7 @@ internal sealed class BraceListStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         int fixedEnd = -1;
         foreach ((StyleList list, List<StyleEdit> listEdits) in Violations(source).OrderBy(
             static violation => violation.list.open.SpanStart
@@ -78,7 +78,7 @@ internal sealed class BraceListStyleRule : StyleRule
                 if (owner.Span.End == ownerLine.End
                     && ownerLine.End - ownerLine.Start + 1 + braceLine.End - list.open.SpanStart <= StyleLayout.C_WIDTH
                 ) {
-                    yield return (list, [new(owner.Span.End, list.open.SpanStart, " ")]);
+                    yield return (list, [new StyleEdit(owner.Span.End, list.open.SpanStart, " ")]);
                     continue;
                 }
 
@@ -110,7 +110,7 @@ internal sealed class BraceListStyleRule : StyleRule
                 ) {
                     indentation -= StyleLayout.C_INDENT;
                 }
-                yield return (list, [new(previous.Span.End, list.open.SpanStart, "\n" + new string(' ', indentation))]);
+                yield return (list, [new StyleEdit(previous.Span.End, list.open.SpanStart, "\n" + new string(' ', indentation))]);
                 continue;
             }
 

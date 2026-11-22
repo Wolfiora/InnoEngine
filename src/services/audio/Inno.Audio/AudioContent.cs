@@ -32,12 +32,13 @@ public readonly record struct AudioEmitterSnapshot
         bool shouldPlay,
         ulong playbackRevision = 0
     ) {
+        ArgumentNullException.ThrowIfNull(clip);
         if (id == Guid.Empty)
         {
             throw new ArgumentException("An emitter identity cannot be empty.", nameof(id));
         }
         this.id = id;
-        this.clip = clip ?? throw new ArgumentNullException(nameof(clip));
+        this.clip = clip;
         this.options = options;
         this.shouldPlay = shouldPlay;
         this.playbackRevision = playbackRevision;

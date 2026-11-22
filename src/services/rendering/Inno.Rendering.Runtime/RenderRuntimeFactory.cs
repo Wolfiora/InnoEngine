@@ -19,7 +19,8 @@ public sealed class RenderRuntimeFactory : IRuntimeSubsystemFactory
     /// </param>
     public RenderRuntimeFactory(Func<RuntimeSubsystemContext, RenderRuntime> runtimeFactory)
     {
-        m_runtimeFactory = runtimeFactory ?? throw new ArgumentNullException(nameof(runtimeFactory));
+        ArgumentNullException.ThrowIfNull(runtimeFactory);
+        m_runtimeFactory = runtimeFactory;
     }
 
     /// <summary>

@@ -15,14 +15,11 @@ namespace Inno.Core.Serialization.Generators;
 [Generator(LanguageNames.CSharp)]
 public sealed class SerializationConverterGenerator : IIncrementalGenerator
 {
-    private const string C_GENERATE_ATTRIBUTE =
-        "Inno.Core.Serialization.GenerateSerializationConverterAttribute";
+    private const string C_GENERATE_ATTRIBUTE = "Inno.Core.Serialization.GenerateSerializationConverterAttribute";
 
-    private const string C_PROPERTY_ATTRIBUTE =
-        "Inno.Core.Serialization.SerializablePropertyAttribute";
+    private const string C_PROPERTY_ATTRIBUTE = "Inno.Core.Serialization.SerializablePropertyAttribute";
 
-    private const string C_SERIALIZABLE_INTERFACE =
-        "Inno.Core.Serialization.ISerializable";
+    private const string C_SERIALIZABLE_INTERFACE = "Inno.Core.Serialization.ISerializable";
 
     private static readonly DiagnosticDescriptor INVALID_TYPE = new(
         "INNOSER001",

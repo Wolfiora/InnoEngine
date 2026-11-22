@@ -19,7 +19,8 @@ public sealed class HierarchySceneDropTarget
     /// </exception>
     public HierarchySceneDropTarget(GameScene scene)
     {
-        this.scene = scene ?? throw new ArgumentNullException(nameof(scene));
+        ArgumentNullException.ThrowIfNull(scene);
+        this.scene = scene;
     }
 
     /// <summary>

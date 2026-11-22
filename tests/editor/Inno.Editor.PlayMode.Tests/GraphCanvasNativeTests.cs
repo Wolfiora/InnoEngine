@@ -24,8 +24,8 @@ public sealed unsafe class GraphCanvasNativeTests
     {
         using var host = new NativeProjectPanelHost(typeof(GraphCanvasNativeTests).Assembly);
         var document = new GraphDocument();
-        var first = new GraphNodeRecord(new("workflow.first"), "workflow.step") { position = new(20f, 20f) };
-        var second = new GraphNodeRecord(new("workflow.second"), "workflow.step") { position = new(300f, 20f) };
+        var first = new GraphNodeRecord(new GraphNodeID("workflow.first"), "workflow.step") { position = new(20f, 20f) };
+        var second = new GraphNodeRecord(new GraphNodeID("workflow.second"), "workflow.step") { position = new(300f, 20f) };
         document.AddNode(first);
         document.AddNode(second);
         IEditorHistory history = host.runtime.interactions.history;
@@ -34,8 +34,8 @@ public sealed unsafe class GraphCanvasNativeTests
         var pointer = new GraphCanvasPointerController(state);
         var layout = new GraphCanvasLayout();
         Vector2 origin = default;
-        Frame(new(0f, 0f), false);
-        Frame(new(0f, 0f), false);
+        Frame(new Vector2(0f, 0f), false);
+        Frame(new Vector2(0f, 0f), false);
         Vector2 hit = origin + new Vector2(30f, 25f);
         Frame(hit, true);
         Frame(hit + new Vector2(50f, 40f), true);
@@ -77,16 +77,26 @@ public sealed unsafe class GraphCanvasNativeTests
                         controller.document.nodes.Select(node => new GraphCanvasNode(
                             node.id,
                             node.position,
-                            new(200f, 100f),
+                            new Vector2(200f, 100f),
                             24f,
                             "Workflow step",
                             [
-                                new(new(node.id, new("previous")), GraphPortDirection.Input, new(0f, 40f), "Previous"),
-                                new(new(node.id, new("next")), GraphPortDirection.Output, new(200f, 40f), "Next")
+                                new GraphCanvasPort(
+                                    new GraphEndpoint(node.id, new GraphPortID("previous")),
+                                    GraphPortDirection.Input,
+                                    new Vector2(0f, 40f),
+                                    "Previous"
+                                ),
+                                new GraphCanvasPort(
+                                    new GraphEndpoint(node.id, new GraphPortID("next")),
+                                    GraphPortDirection.Output,
+                                    new Vector2(200f, 40f),
+                                    "Next"
+                                )
                             ]
                         ))
                     );
-                    GraphCanvasPointerResult result = pointer.Step(view, layout, new()
+                    GraphCanvasPointerResult result = pointer.Step(view, layout, new GraphCanvasPointerInput()
                     {
                         position = Gui.GetMousePos(),
                         isHovered = Gui.IsItemHovered(GuiHoveredFlags.AllowWhenBlockedByActiveItem),
@@ -130,11 +140,17 @@ public sealed unsafe class GraphCanvasNativeTests
         var id = new GraphNodeID("workflow.begin");
         var node = new GraphCanvasNode(
             id,
-            new(10f, 10f),
-            new(200f, 100f),
+            new GraphPosition(10f, 10f),
+            new Vector2(200f, 100f),
             24f,
             "Workflow step",
-            [new(new(id, new("next")), GraphPortDirection.Output, new(200f, 40f), "Continue", labelBounds: (new(0f, 28f), new(200f, 52f)))]
+            [new GraphCanvasPort(
+                new GraphEndpoint(id, new GraphPortID("next")),
+                GraphPortDirection.Output,
+                new Vector2(200f, 40f),
+                "Continue",
+                labelBounds: (new Vector2(0f, 28f), new Vector2(200f, 52f))
+            )]
         );
         for (int frame = 0; frame < 3; frame++)
         {
@@ -149,7 +165,7 @@ public sealed unsafe class GraphCanvasNativeTests
                     ImGuiWindow* window = NativeGui.Raw.GetCurrentWindow();
                     int clipDepth = window->DrawList->ClipRectStack.Size;
                     GuiDrawList draw = Gui.GetDrawList();
-                    var view = new GraphCanvasView(state, new(40f, 60f), new(540f, 300f));
+                    var view = new GraphCanvasView(state, new Vector2(40f, 60f), new Vector2(540f, 300f));
                     var failure = new InvalidOperationException("Workflow node extension failed.");
                     Assert.Same(
                         failure,
@@ -164,9 +180,9 @@ public sealed unsafe class GraphCanvasNativeTests
                     Assert.Equal(clipDepth, window->DrawList->ClipRectStack.Size);
                     Assert.True(view.DrawNode(draw, node, 0xFF50_4030, false));
                     var offscreen = new GraphCanvasNode(
-                        new("workflow.hidden"),
-                        new(5000f, 5000f),
-                        new(200f, 100f),
+                        new GraphNodeID("workflow.hidden"),
+                        new GraphPosition(5000f, 5000f),
+                        new Vector2(200f, 100f),
                         24f,
                         "Hidden",
                         []
@@ -181,14 +197,14 @@ public sealed unsafe class GraphCanvasNativeTests
                         )
                     );
                     var outsideWindow = new GraphCanvasNode(
-                        new("workflow.clipped-parent"),
-                        new(900f, 900f),
-                        new(200f, 100f),
+                        new GraphNodeID("workflow.clipped-parent"),
+                        new GraphPosition(900f, 900f),
+                        new Vector2(200f, 100f),
                         24f,
                         "Clipped by parent",
                         []
                     );
-                    var oversized = new GraphCanvasView(state, new(40f, 60f), new(1800f, 1800f));
+                    var oversized = new GraphCanvasView(state, new Vector2(40f, 60f), new Vector2(1800f, 1800f));
                     Assert.False(
                         oversized.DrawNode(
                             draw,

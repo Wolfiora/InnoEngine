@@ -183,7 +183,7 @@ public sealed unsafe class FontCoverageTests
         retained.SetIniFile(null);
         nint source = CaptureSource(retained);
         long baseline = CollectLiveManagedBytes();
-        var retired = new List<WeakReference<PlatformImGuiContext>>();
+        List<WeakReference<PlatformImGuiContext>> retired = [];
         for (int cycle = 0; cycle < 10; cycle++)
         {
             retired.Add(CreateAndRetire(application, source));

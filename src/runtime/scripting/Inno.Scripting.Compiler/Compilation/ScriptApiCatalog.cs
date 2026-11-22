@@ -89,7 +89,7 @@ internal static class ScriptApiCatalog
             .ToArray();
         ValidateExports(declaredExports, namespaceMappings);
 
-        var exports = new List<ScriptApiAssembly>();
+        List<ScriptApiAssembly> exports = [];
         var implementationAssemblies = new HashSet<Assembly>();
         foreach (IGrouping<Assembly, DeclaredTypeExport> implementationGroup in declaredExports
             .GroupBy(static export => export.type.Assembly)

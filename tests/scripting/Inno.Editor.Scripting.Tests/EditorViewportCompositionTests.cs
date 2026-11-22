@@ -36,7 +36,7 @@ public sealed class EditorViewportCompositionTests
     public void CompositionSnapshotsTheCallerCollection()
     {
         var retained = new EditorViewportLayer("tests.retained", null, new RenderFrameData(), 0);
-        var source = new List<EditorViewportLayer> { retained };
+        List<EditorViewportLayer> source = [retained];
         var composition = new EditorViewportComposition(
             "tests.game-view",
             640,
@@ -60,7 +60,7 @@ public sealed class EditorViewportCompositionTests
             64,
             64,
             RenderTextureFormat.RGBA8Srgb,
-            Array.Empty<EditorViewportLayer>()
+            []
         ));
         Assert.Throws<ArgumentException>(() => new EditorViewportComposition(
             "tests.null",

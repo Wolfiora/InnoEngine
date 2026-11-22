@@ -10,7 +10,7 @@ internal sealed class EditorToolbarCatalog(
     internal EditorToolbarModel Build(EditorActionContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        var items = new List<(EditorToolbarItem item, string typeName)>();
+        List<(EditorToolbarItem item, string typeName)> items = [];
         EditorExtensionCatalog.Snapshot snapshot = catalog.extensions;
         for (int actionIndex = 0; actionIndex < snapshot.actions.Length; actionIndex++)
         {

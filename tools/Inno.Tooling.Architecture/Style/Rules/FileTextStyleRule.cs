@@ -34,10 +34,10 @@ internal sealed class FileTextStyleRule : StyleRule
     {
         string content = source.content;
         IReadOnlyList<TextSpan> protectedSpans = source.ProtectedSpans();
-        var violations = new List<Violation>();
+        List<Violation> violations = [];
         if (content.Length > 0 && content[0] == '\uFEFF')
         {
-            violations.Add(new(0, 1, "Remove the byte order mark.", string.Empty));
+            violations.Add(new Violation(0, 1, "Remove the byte order mark.", string.Empty));
         }
 
         int blankRun = 0;
@@ -115,7 +115,7 @@ internal sealed class FileTextStyleRule : StyleRule
 
             // A removed surplus blank line may contain trailing whitespace that was already reported.
             if (violations.Count > 0 && violations[^1].end > start) return;
-            violations.Add(new(start, end, message, replacement));
+            violations.Add(new Violation(start, end, message, replacement));
         }
 
         void AddFinalNewline()
@@ -131,7 +131,7 @@ internal sealed class FileTextStyleRule : StyleRule
             if (content[trimmed..end] == "\n") return;
             // Earlier edits may already cover part of the tail; replace the tail as one edit.
             violations.RemoveAll(violation => violation.start >= trimmed);
-            violations.Add(new(trimmed, end, "End the file with exactly one newline.", "\n"));
+            violations.Add(new Violation(trimmed, end, "End the file with exactly one newline.", "\n"));
         }
     }
 

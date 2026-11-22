@@ -27,7 +27,7 @@ public sealed unsafe class ConsoleSearchNativeTests
         float height
     ) {
         using var host = new NativePanelHost(typeof(ConsoleSearchNativeTests).Assembly, "Inno.Editor.Panel.Logging");
-        host.SetDisplayMetrics(new(width, height), density, zoom);
+        host.SetDisplayMetrics(new Vector2(width, height), density, zoom);
         EditorPanelExtension panel = host.GetPanel("diagnostics.console");
         Logger logger = host.logs.CreateLogger<ConsoleSearchNativeTests>();
         for (int occurrence = 0; occurrence < 2; occurrence++)
@@ -38,9 +38,14 @@ public sealed unsafe class ConsoleSearchNativeTests
         var longMessage = new string('x', 300);
         logger.Write(LogLevel.Info, longMessage);
         host.logs.Flush();
-        using DiagnosticReporter reporter = host.diagnostics.CreateReporter(new("search-source", "SOURCE-NAME"));
+        using DiagnosticReporter reporter = host.diagnostics.CreateReporter(new DiagnosticSource("search-source", "SOURCE-NAME"));
         reporter.Publish(
-            new("SEARCH_CODE", "A diagnostic", DiagnosticSeverity.Error, location: new DiagnosticLocation("Assets/漢字.shader", 42, 3))
+            new Diagnostic(
+                "SEARCH_CODE",
+                "A diagnostic",
+                DiagnosticSeverity.Error,
+                location: new DiagnosticLocation("Assets/漢字.shader", 42, 3)
+            )
         );
         host.DrawPanel(panel);
         host.DrawPanel(panel);
@@ -68,7 +73,7 @@ public sealed unsafe class ConsoleSearchNativeTests
         float height
     ) {
         using var host = new NativePanelHost(typeof(ConsoleSearchNativeTests).Assembly, "Inno.Editor.Panel.Logging");
-        host.SetDisplayMetrics(new(width, height), density, zoom);
+        host.SetDisplayMetrics(new Vector2(width, height), density, zoom);
         EditorPanelExtension panel = host.GetPanel("diagnostics.console");
         Logger logger = host.logs.CreateLogger<ConsoleSearchNativeTests>();
         for (int occurrence = 0; occurrence < 2; occurrence++)

@@ -29,7 +29,7 @@ internal sealed class AssetSourceMetadataStage
                 throw new IOException($"Asset source metadata '{entry.path}' changed while its candidate was being prepared.");
             }
         }
-        var applied = new List<Entry>();
+        List<Entry> applied = [];
         try
         {
             foreach (Entry entry in snapshot)
@@ -46,7 +46,7 @@ internal sealed class AssetSourceMetadataStage
         }
         catch (Exception failure)
         {
-            var failures = new List<Exception> { failure };
+            List<Exception> failures = [failure];
             for (int index = applied.Count - 1; index >= 0; index--)
             {
                 try

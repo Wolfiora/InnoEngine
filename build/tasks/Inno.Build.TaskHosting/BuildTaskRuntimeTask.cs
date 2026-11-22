@@ -102,8 +102,8 @@ public sealed class BuildTaskRuntimeTask : Task, ICancelableTask
             );
             ownerUses = AcquireOwnerUses(
                 [
-                    new(cache, BuildCacheArtifactRole.ImmutableArtifact),
-                    new(taskRoot, BuildCacheArtifactRole.ProcessWorkingDirectory),
+                    new BuildCachePublisher(cache, BuildCacheArtifactRole.ImmutableArtifact),
+                    new BuildCachePublisher(taskRoot, BuildCacheArtifactRole.ProcessWorkingDirectory),
                     workspaces
                 ],
                 engine,
@@ -114,7 +114,7 @@ public sealed class BuildTaskRuntimeTask : Task, ICancelableTask
             bool restoreRequired = initial.needsRestore;
             bool restoreRequested = targets.Contains("Restore", StringComparer.OrdinalIgnoreCase);
             string? request = restoreRequired ? null : initial.key;
-            if (request is not null && (TaskRuntimeBuildScope.Read(engine, request, load, cancellation: token)
+            if (request is not null && (TaskRuntimeBuildScope.Read(engine, request, load, cancellationToken: token)
                                         ?? TaskRuntimePreparation.ReadRequest(cache, request, load, token)) is ITaskItem[] reused
             ) {
                 TargetOutputs = reused;
@@ -210,7 +210,7 @@ public sealed class BuildTaskRuntimeTask : Task, ICancelableTask
                     throw new InvalidOperationException("Task-runtime inputs changed while waiting for build ownership.");
                 }
                 request = locked.key;
-                if ((TaskRuntimeBuildScope.Read(engine, request, load, cancellation: token)
+                if ((TaskRuntimeBuildScope.Read(engine, request, load, cancellationToken: token)
                      ?? TaskRuntimePreparation.ReadRequest(cache, request, load, token)) is ITaskItem[] completed
                 ) {
                     TargetOutputs = completed;
@@ -338,7 +338,7 @@ public sealed class BuildTaskRuntimeTask : Task, ICancelableTask
     private static FileLease[] AcquireOwnerUses(
         IReadOnlyList<BuildCachePublisher> publishers,
         IBuildEngine4 engine,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         var activities = new Stack<FileLease>();
         engine.Yield();
@@ -348,7 +348,7 @@ public sealed class BuildTaskRuntimeTask : Task, ICancelableTask
                 static entry => entry.Describe("task-runtime").coordinationPath,
                 StringComparer.Ordinal
             )) {
-                activities.Push(publisher.AcquireUseAsync(cancellation).AsTask().GetAwaiter().GetResult());
+                activities.Push(publisher.AcquireUseAsync(cancellationToken).AsTask().GetAwaiter().GetResult());
             }
         }
         catch

@@ -30,7 +30,7 @@ internal static class DocumentationApiLinks
                     .Where(link => link.Url is not null)
                     .Select(link => (url: link.Url!, span: link.UrlSpan))
             );
-        var changes = new List<(int start, int length, string value)>();
+        List<(int start, int length, string value)> changes = [];
         foreach ((string url, SourceSpan span) link in links)
         {
             if (Uri.TryCreate(link.url, UriKind.Absolute, out _) || link.url.StartsWith('/')) continue;

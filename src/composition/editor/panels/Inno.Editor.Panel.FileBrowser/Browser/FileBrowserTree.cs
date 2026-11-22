@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Identity;
@@ -86,7 +87,7 @@ internal sealed partial class FileBrowserTree
             if (!m_assets.edits.interactions.TryResolveIdentity(identity, out IdentityObject? resolved)
                 || resolved is not AssetFileEntry current
             ) {
-                Gui.Dummy(new(1f, Gui.GetFrameHeight()));
+                Gui.Dummy(new Vector2(1f, Gui.GetFrameHeight()));
                 return;
             }
             entry = current;

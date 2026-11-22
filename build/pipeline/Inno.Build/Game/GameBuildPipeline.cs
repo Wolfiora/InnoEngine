@@ -109,7 +109,7 @@ internal sealed class GameBuildPipeline
         using CancellationTokenSource stagingCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         Task<AssetRuntimeContentInfo>? assetExportTask = null;
         Task? targetContentTask = null;
-        var publicationDiagnostics = new List<BuildDiagnostic>();
+        List<BuildDiagnostic> publicationDiagnostics = [];
         bool committed = false;
         try
         {
@@ -268,7 +268,9 @@ internal sealed class GameBuildPipeline
             }
             catch (DirectoryCleanupException cleanupFailure)
             {
-                publicationDiagnostics.Add(new(BuildDiagnosticSeverity.Warning, "INNO-BUILD-CLEANUP", cleanupFailure.Message));
+                publicationDiagnostics.Add(
+                    new BuildDiagnostic(BuildDiagnosticSeverity.Warning, "INNO-BUILD-CLEANUP", cleanupFailure.Message)
+                );
             }
             committed = true;
             try
@@ -278,7 +280,7 @@ internal sealed class GameBuildPipeline
             catch (Exception observerFailure)
             {
                 publicationDiagnostics.Add(
-                    new(
+                    new BuildDiagnostic(
                         BuildDiagnosticSeverity.Warning,
                         "INNO-BUILD-PROGRESS",
                         $"The complete game was committed, but its progress observer failed: {observerFailure.Message}"
@@ -308,7 +310,7 @@ internal sealed class GameBuildPipeline
             catch (Exception cleanupFailure) when (committed && cleanupFailure is IOException or UnauthorizedAccessException)
             {
                 publicationDiagnostics.Add(
-                    new(
+                    new BuildDiagnostic(
                         BuildDiagnosticSeverity.Warning,
                         "INNO-BUILD-CLEANUP",
                         $"The complete game was committed, but staging cleanup was deferred for '{staging}': {cleanupFailure.Message}"

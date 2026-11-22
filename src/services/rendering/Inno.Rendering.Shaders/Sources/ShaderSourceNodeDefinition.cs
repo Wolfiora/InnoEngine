@@ -23,7 +23,7 @@ public sealed class ShaderSourceNodeDefinition : GraphNodeDefinition
         : base("inno.shader.source", function?.name ?? throw new ArgumentNullException(nameof(function)), "Code")
     {
         this.function = function;
-        var ports = new List<GraphPortDefinition>();
+        List<GraphPortDefinition> ports = [];
         foreach (ShaderSourceParameter parameter in function.parameters)
         {
             if (parameter.direction != ShaderSourceParameterDirection.Output)
@@ -48,7 +48,7 @@ public sealed class ShaderSourceNodeDefinition : GraphNodeDefinition
             GraphPortDirection direction
         ) {
             ports.Add(
-                new(
+                new GraphPortDefinition(
                     new GraphPortID(id),
                     label,
                     TypeIdentity(type),

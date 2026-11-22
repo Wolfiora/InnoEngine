@@ -34,7 +34,8 @@ public sealed class StorageRuntime : RuntimeSubsystem, IApplicationStorage
         int maxPendingOperations = 128,
         int maxWriteBytes = 64 * 1024 * 1024
     ) {
-        m_storage = storage ?? throw new ArgumentNullException(nameof(storage));
+        ArgumentNullException.ThrowIfNull(storage);
+        m_storage = storage;
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxWriteBytes);
         m_maxWriteBytes = maxWriteBytes;
         m_operations = lifetime.Own(new LifetimeScope(maxPendingOperations));

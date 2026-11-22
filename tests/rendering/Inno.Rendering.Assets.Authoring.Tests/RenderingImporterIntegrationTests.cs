@@ -80,15 +80,19 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
         definition.properties =
         [
             .. definition.properties,
-            new(
-                new("roughness"),
+            new ShaderPropertyDefinition(
+                new ShaderPropertyID("roughness"),
                 "Roughness",
                 ShaderPropertyType.Float,
                 ShaderStage.Fragment,
                 MaterialValue.FromFloat(0.5f)
             )
         ];
-        definition.techniques = [new(new("default"), new("tests.surface"), [new(new("draw"), "Main")])];
+        definition.techniques = [new ShaderTechniqueDefinition(
+            new ShaderTechniqueID("default"),
+            new ShaderContractID("tests.surface"),
+            [new ShaderTechniquePass(new ShaderPassRoleID("draw"), "Main")]
+        )];
         graph.SetMetadata(
             ShaderGraphDocument.C_DEFINITION_KEY,
             ShaderGraphDocument.Encode(m_serialization.Serialize(definition), m_serialization, SerializationContext.empty)
@@ -292,8 +296,14 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
     {
         AssetPath path = AssetPath.Project("unfinished.ishader");
         GraphDocument graph = ShaderGraphTemplates.CreateRaster(m_serialization, SerializationContext.empty);
-        graph.AddNode(new(new("missing"), "unavailable.shader-node"));
-        graph.AddEdge(new(new("unresolved"), new(new("missing"), new("old-output")), new(new("fragment"), new("old-input"))));
+        graph.AddNode(new GraphNodeRecord(new GraphNodeID("missing"), "unavailable.shader-node"));
+        graph.AddEdge(
+            new GraphEdgeRecord(
+                new GraphEdgeID("unresolved"),
+                new GraphEndpoint(new GraphNodeID("missing"), new GraphPortID("old-output")),
+                new GraphEndpoint(new GraphNodeID("fragment"), new GraphPortID("old-input"))
+            )
+        );
         byte[] expected = GraphDocumentCodec.Encode(graph, m_serialization);
         using (AssetPipeline pipeline = CreatePipeline())
         {
@@ -343,7 +353,9 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
             })
         );
         var id = new AssetSourceID("test.installed");
-        using AssetPipeline pipeline = CreatePipeline([new(AssetSourceID.project, m_assets, false), new(id, installed, true)]);
+        using AssetPipeline pipeline = CreatePipeline(
+            [new AssetSourceMount(AssetSourceID.project, m_assets, false), new AssetSourceMount(id, installed, true)]
+        );
         var store = new ShaderGraphSourceStore(pipeline, m_serialization);
         var path = new AssetPath(id, "shader.ishader");
         ShaderGraphSourceSnapshot snapshot = store.Read(path);

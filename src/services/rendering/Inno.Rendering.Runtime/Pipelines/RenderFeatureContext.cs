@@ -28,7 +28,8 @@ public sealed class RenderFeatureContext
         RenderPipelineContext pipeline,
         RenderFeatureConfiguration configuration
     ) {
-        this.pipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
+        ArgumentNullException.ThrowIfNull(pipeline);
+        this.pipeline = pipeline;
         this.configuration = configuration;
     }
 

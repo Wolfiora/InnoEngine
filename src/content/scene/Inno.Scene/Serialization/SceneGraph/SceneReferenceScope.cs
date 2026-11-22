@@ -27,7 +27,8 @@ internal abstract class SceneReferenceScope
         GameScene scene,
         GameObject? captureRoot = null
     ) {
-        this.scene = scene ?? throw new ArgumentNullException(nameof(scene));
+        ArgumentNullException.ThrowIfNull(scene);
+        this.scene = scene;
         m_captureRoot = captureRoot;
     }
 

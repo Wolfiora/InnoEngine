@@ -481,11 +481,7 @@ public sealed class ScriptReloadHost : IDisposable
         m_activeCompilationDirectory = pending.unavailability is null
                                        ? pending.compilation.outputDirectory
                                        : null;
-        _ = m_compiler.CollectArtifacts(
-            m_activeCompilationDirectory is null
-            ? Array.Empty<string?>()
-            : [m_activeCompilationDirectory]
-        );
+        _ = m_compiler.CollectArtifacts(m_activeCompilationDirectory is null ? [] : [m_activeCompilationDirectory]);
         RefreshModuleHandles();
         UpdateActiveFingerprints(plan);
         string completedStatus = pending.unavailability is null
@@ -890,7 +886,7 @@ public sealed class ScriptReloadHost : IDisposable
     {
         if (pending.unavailability is not null)
         {
-            return new ReloadPlan(Array.Empty<ScriptModuleDeployment>(), pending.unavailability.removedModuleNames);
+            return new ReloadPlan([], pending.unavailability.removedModuleNames);
         }
 
         IReadOnlyList<ScriptModuleDeployment> requests = pending.compilation.moduleDeployments;

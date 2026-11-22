@@ -22,7 +22,7 @@ public sealed class ReferenceRecoveryTransaction : IGenerationChange
     private Phase m_phase;
     private int m_preparedCount;
     private Exception? m_retirementFailure;
-    private IReadOnlyList<ReferenceRecoveryChange> m_changes = Array.Empty<ReferenceRecoveryChange>();
+    private IReadOnlyList<ReferenceRecoveryChange> m_changes = [];
 
     /// <summary>
     /// Captures neutral slots and ordered domain owners without resolving or mutating live state.
@@ -165,7 +165,7 @@ public sealed class ReferenceRecoveryTransaction : IGenerationChange
             Attempt(m_participants[index].RollbackStructure, failures);
         }
         m_phase = Phase.RolledBack;
-        m_changes = Array.Empty<ReferenceRecoveryChange>();
+        m_changes = [];
         ThrowFailures(failures, "Reference recovery structure rollback failed.");
     }
 

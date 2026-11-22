@@ -218,7 +218,7 @@ public sealed class AssetFileSystem : IDisposable
             AssetFileEntry[] previous = m_entries.All().ToArray();
             Dictionary<Guid, AssetFileEntry> existing = previous.ToDictionary(static entry => entry.identity.persistentID);
             var prepared = new List<(SourceEntry source, AssetFileEntry entry)>(candidate.Count);
-            var registered = new List<AssetFileEntry>();
+            List<AssetFileEntry> registered = [];
             try
             {
                 foreach (SourceEntry source in candidate)
@@ -420,7 +420,7 @@ public sealed class AssetFileSystem : IDisposable
         if (!m_watcher.isWatching)
         {
             requiresFullRescan = false;
-            return Array.Empty<AssetChangedEvent>();
+            return [];
         }
 
         WatcherPollResult result = m_watcher.WaitForIdle();
@@ -460,7 +460,7 @@ public sealed class AssetFileSystem : IDisposable
             {
                 return;
             }
-            var registered = new List<AssetFileEntry>();
+            List<AssetFileEntry> registered = [];
             try
             {
                 foreach (AssetFileEntry entry in m_entries.All())
@@ -520,7 +520,7 @@ public sealed class AssetFileSystem : IDisposable
 
     private List<SourceEntry> CollectEntries()
     {
-        var entries = new List<SourceEntry>();
+        List<SourceEntry> entries = [];
         var identities = new HashSet<Guid>();
         foreach (AssetSourceMount mount in m_mounts.Values.OrderBy(static value => value.id.value, StringComparer.Ordinal))
         {
@@ -561,7 +561,7 @@ public sealed class AssetFileSystem : IDisposable
             {
                 throw new InvalidDataException($"Asset source path '{path}' duplicates a persistent entry identity.");
             }
-            entries.Add(new(path, entryID, isReadOnly, isDirectory));
+            entries.Add(new SourceEntry(path, entryID, isReadOnly, isDirectory));
         }
     }
 

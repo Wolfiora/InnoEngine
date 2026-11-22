@@ -123,7 +123,9 @@ public static class ShaderGraphClipboard
                 ShaderPassDefinition pass = source.passes[index];
                 pass.name = destination;
                 definition.passes = [.. definition.passes, pass];
-                programs.Add(new() { pass = destination, stages = copiedStages.Select(id => remap[id].value).ToArray() });
+                programs.Add(
+                    new ShaderGraphPassProgram() { pass = destination, stages = copiedStages.Select(id => remap[id].value).ToArray() }
+                );
             }
         }
         if (definition is not null && source is not null)
@@ -145,7 +147,7 @@ public static class ShaderGraphClipboard
                 definition.techniques =
                 [
                     .. definition.techniques,
-                    new ShaderTechniqueDefinition(new(id), technique.contract, mappings, technique.requiredFeatures)
+                    new ShaderTechniqueDefinition(new ShaderTechniqueID(id), technique.contract, mappings, technique.requiredFeatures)
                 ];
             }
         }
@@ -164,12 +166,13 @@ public static class ShaderGraphClipboard
             string stage = ShaderGraphDocument.Read(node, "stage", string.Empty, serialization, context);
             if (stage.Length != 0)
             {
-                if (remap.TryGetValue(new(stage), out GraphNodeID mapped))
+                if (remap.TryGetValue(new GraphNodeID(stage), out GraphNodeID mapped))
                 {
                     stage = mapped.value;
                 }
-                else if ((!preserveExternalStageReferences || candidate.FindNode(new(stage)) is null) && targetStage is GraphNodeID target)
-                {
+                else if ((!preserveExternalStageReferences || candidate.FindNode(new GraphNodeID(stage)) is null)
+                         && targetStage is GraphNodeID target
+                ) {
                     stage = target.value;
                 }
                 clone.SetValue("stage", ShaderGraphDocument.Encode(stage, serialization, context));
@@ -179,10 +182,10 @@ public static class ShaderGraphClipboard
         foreach (GraphEdgeRecord edge in fragment.edges)
         {
             candidate.AddEdge(
-                new(
-                    new(Guid.NewGuid().ToString("N")),
-                    new(remap[edge.output.nodeID], edge.output.portID),
-                    new(remap[edge.input.nodeID], edge.input.portID)
+                new GraphEdgeRecord(
+                    new GraphEdgeID(Guid.NewGuid().ToString("N")),
+                    new GraphEndpoint(remap[edge.output.nodeID], edge.output.portID),
+                    new GraphEndpoint(remap[edge.input.nodeID], edge.input.portID)
                 )
             );
         }

@@ -15,9 +15,9 @@ public static class ShaderProfileFixture
     public static BgfxShaderTargetProfile windows { get; } = new(
         "fixture-windows",
         [
-            new(BgfxTargetCapabilities.Create(GraphicsApi.direct3D11), "windows", "s_5_0", "s_5_0", "s_5_0"),
-            new(BgfxTargetCapabilities.Create(GraphicsApi.openGL), "windows", "430", "430", "430"),
-            new(BgfxTargetCapabilities.Create(GraphicsApi.vulkan), "windows", "spirv", "spirv", "spirv")
+            new BgfxShaderCompilerProfile(BgfxTargetCapabilities.Create(GraphicsApi.direct3D11), "windows", "s_5_0", "s_5_0", "s_5_0"),
+            new BgfxShaderCompilerProfile(BgfxTargetCapabilities.Create(GraphicsApi.openGL), "windows", "430", "430", "430"),
+            new BgfxShaderCompilerProfile(BgfxTargetCapabilities.Create(GraphicsApi.vulkan), "windows", "spirv", "spirv", "spirv")
         ]
     );
 
@@ -27,9 +27,16 @@ public static class ShaderProfileFixture
     public static BgfxShaderTargetProfile mac { get; } = new(
         "fixture-mac",
         [
-            new(BgfxTargetCapabilities.Create(GraphicsApi.metal), "osx", "metal", "metal", "metal"),
-            new(BgfxTargetCapabilities.Create(GraphicsApi.openGL), "osx", "430", "430", "430"),
-            new(BgfxTargetCapabilities.Create(GraphicsApi.vulkan), "osx", "spirv", "spirv", "spirv", ["BGFX_SHADER_LANGUAGE_SPIRV=1"])
+            new BgfxShaderCompilerProfile(BgfxTargetCapabilities.Create(GraphicsApi.metal), "osx", "metal", "metal", "metal"),
+            new BgfxShaderCompilerProfile(BgfxTargetCapabilities.Create(GraphicsApi.openGL), "osx", "430", "430", "430"),
+            new BgfxShaderCompilerProfile(
+                BgfxTargetCapabilities.Create(GraphicsApi.vulkan),
+                "osx",
+                "spirv",
+                "spirv",
+                "spirv",
+                ["BGFX_SHADER_LANGUAGE_SPIRV=1"]
+            )
         ]
     );
 
@@ -38,7 +45,7 @@ public static class ShaderProfileFixture
     /// </summary>
     public static BgfxShaderTargetProfile browser { get; } = new(
         "fixture-browser",
-        [new(
+        [new BgfxShaderCompilerProfile(
             new GraphicsCapabilities(
                 GraphicsApi.openGLES,
                 GraphicsCapability.None,

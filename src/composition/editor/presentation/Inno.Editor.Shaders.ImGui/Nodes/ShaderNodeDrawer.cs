@@ -40,9 +40,11 @@ public sealed class ShaderNodeDrawerAttribute : Attribute
         bool separatorBefore = false
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(definitionID);
+        ArgumentNullException.ThrowIfNull(displayName);
+        ArgumentNullException.ThrowIfNull(createPath);
         this.definitionID = definitionID;
-        this.displayName = displayName ?? throw new ArgumentNullException(nameof(displayName));
-        this.createPath = createPath ?? throw new ArgumentNullException(nameof(createPath));
+        this.displayName = displayName;
+        this.createPath = createPath;
         this.createOrder = createOrder;
         this.separatorBefore = separatorBefore;
     }

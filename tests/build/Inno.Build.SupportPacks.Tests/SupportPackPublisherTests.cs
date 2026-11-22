@@ -370,7 +370,7 @@ public sealed class SupportPackPublisherTests : IDisposable
     }
 
     private sealed class ForeignPlan(BuildTargetID? target = null) : PlayerSupportPackPlan(
-        target ?? new("foreign-target"),
+        target ?? new BuildTargetID("foreign-target"),
         InputIdentity("foreign")
     )
     {

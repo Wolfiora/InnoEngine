@@ -21,7 +21,7 @@ namespace Inno.Rendering.Assets.Authoring.Tests;
 public sealed class ShaderGraphArtifactTests : IDisposable
 {
     private readonly ModuleHost m_modules = new(
-        new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderGraphArtifactTests).Assembly)}
+        new ModuleHostOptions() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderGraphArtifactTests).Assembly)}
     );
 
     private readonly TypeCatalog m_types;
@@ -57,7 +57,7 @@ public sealed class ShaderGraphArtifactTests : IDisposable
         graph.nodes[0].position = new(1000, -500);
         graph.SetMetadata("inno.editor.groups", ShaderGraphDocument.Encode("view-only", m_serialization, SerializationContext.empty));
         Assert.Equal(initial, Hash([]));
-        Assert.NotEqual(initial, Hash(new() { [new("module")] = [1, 2, 3] }));
+        Assert.NotEqual(initial, Hash(new Dictionary<GraphNodeID, byte[]>() { [new GraphNodeID("module")] = [1, 2, 3] }));
         graph.nodes[0].SetValue("semantic-property", ShaderGraphDocument.Encode(7f, m_serialization, SerializationContext.empty));
         Assert.NotEqual(initial, Hash([]));
     }
@@ -65,7 +65,11 @@ public sealed class ShaderGraphArtifactTests : IDisposable
     [Fact]
     public void ExpandedProgramCompilesWhileAuthoringExportRetainsTheSmallSourceGraph()
     {
-        GraphDocument authored = ShaderGraphDocument.Create(new("Surface", [], [], []), m_serialization, SerializationContext.empty);
+        GraphDocument authored = ShaderGraphDocument.Create(
+            new ShaderDefinition("Surface", [], [], []),
+            m_serialization,
+            SerializationContext.empty
+        );
         ShaderGraphDocument.SetTarget(authored, "example.surface", m_serialization, SerializationContext.empty);
         GraphDocument expanded = ShaderGraphTemplates.CreateRaster(m_serialization, SerializationContext.empty);
         byte[] bytes = ShaderGraphArtifact.Encode(authored, new Dictionary<GraphNodeID, byte[]>(), m_serialization, expanded);
@@ -86,7 +90,7 @@ public sealed class ShaderGraphArtifactTests : IDisposable
         );
         string hash = ShaderGraphArtifact.GetSemanticHash(bytes, m_serialization);
         expanded
-            .FindNode(new("color"))!
+            .FindNode(new GraphNodeID("color"))!
             .SetValue("semantic-value", ShaderGraphDocument.Encode(3f, m_serialization, SerializationContext.empty));
         Assert.NotEqual(
             hash,
@@ -101,7 +105,7 @@ public sealed class ShaderGraphArtifactTests : IDisposable
     public void TemporarilyEmptyInputNameRetainsItsMaterialDefaultWhileTyping()
     {
         GraphDocument graph = ShaderGraphTemplates.CreateRaster(m_serialization, SerializationContext.empty);
-        GraphNodeRecord input = graph.FindNode(new("color"))!;
+        GraphNodeRecord input = graph.FindNode(new GraphNodeID("color"))!;
         ShaderGraphInputSettings settings = ShaderGraphDocument.Read(
             input,
             "settings",
@@ -124,7 +128,11 @@ public sealed class ShaderGraphArtifactTests : IDisposable
     {
         GraphDocument graph = ShaderGraphTemplates.CreateRaster(m_serialization, SerializationContext.empty);
         ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(graph, m_serialization, SerializationContext.empty);
-        definition.techniques = [new(new("default"), new("tests.surface"), [new(new("tests.draw"), "Main")])];
+        definition.techniques = [new ShaderTechniqueDefinition(
+            new ShaderTechniqueID("default"),
+            new ShaderContractID("tests.surface"),
+            [new ShaderTechniquePass(new ShaderPassRoleID("tests.draw"), "Main")]
+        )];
         SetDefinition(graph, definition);
         byte[] bytes = ShaderGraphArtifact.Encode(graph, new Dictionary<GraphNodeID, byte[]>(), m_serialization);
         GraphDocument restored = ShaderGraphArtifact.ReadDocument(bytes, m_serialization);
@@ -144,7 +152,7 @@ public sealed class ShaderGraphArtifactTests : IDisposable
         GraphDocument restored = ShaderGraphArtifact.ReadDocument(committed, m_serialization);
         byte[] original = GraphDocumentCodec.Encode(restored, m_serialization);
         restored.nodes[0].position = new(123, 456);
-        restored.nodes[0].SetValue("unavailable.extension", new([1, 2, 3]));
+        restored.nodes[0].SetValue("unavailable.extension", new GraphSerializedValue([1, 2, 3]));
         Assert.Equal(original, GraphDocumentCodec.Encode(ShaderGraphArtifact.ReadDocument(committed, m_serialization), m_serialization));
     }
 
@@ -152,7 +160,7 @@ public sealed class ShaderGraphArtifactTests : IDisposable
     public void GraphDefinitionPreservesPipelineOwnedStorageTextureContract()
     {
         var property = new ShaderPropertyDefinition(
-            new("outputImage"),
+            new ShaderPropertyID("outputImage"),
             "Output Image",
             ShaderPropertyType.Texture2D,
             ShaderStage.Compute,

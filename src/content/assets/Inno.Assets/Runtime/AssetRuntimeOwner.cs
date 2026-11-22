@@ -23,7 +23,7 @@ public sealed class AssetRuntimeOwner
     /// </param>
     public AssetRuntimeOwner(IAssetPropertyStateResolver? properties = null)
     {
-        m_properties = properties is null ? null : new(properties);
+        m_properties = properties is null ? null : new WeakReference<IAssetPropertyStateResolver>(properties);
     }
 
     /// <summary>

@@ -55,7 +55,7 @@ internal sealed class MoveAssetEntryDropHandler(AssetBrowserModule assets) : Edi
         {
             return[context.source];
         }
-        var values = new List<AssetFileEntry>();
+        List<AssetFileEntry> values = [];
         context.interactions.selection.CopyTargets(values);
         return values.Count == context.interactions.selection.count ? values : [];
     }

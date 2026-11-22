@@ -27,7 +27,8 @@ internal sealed class AssetReferencePropertyDrawer : IPropertyDrawer, IDisposabl
 
     internal AssetReferencePropertyDrawer(AssetPipeline assets)
     {
-        m_assets = assets ?? throw new ArgumentNullException(nameof(assets));
+        ArgumentNullException.ThrowIfNull(assets);
+        m_assets = assets;
         m_assets.changed += OnAssetsChanged;
     }
 

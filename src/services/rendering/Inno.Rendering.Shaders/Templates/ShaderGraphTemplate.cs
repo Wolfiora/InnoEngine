@@ -1,6 +1,7 @@
 using System;
 using Inno.Core.Graphs;
 using Inno.Core.Serialization;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Shaders;
 
@@ -105,9 +106,9 @@ internal sealed class ReusableShaderGraphNodeTemplate : ShaderGraphTemplate
         SerializationRegistry serialization,
         SerializationContext context
     ) {
-        GraphDocument graph = ShaderGraphDocument.Create(new("Graph Node", [], [], []), serialization, context);
+        GraphDocument graph = ShaderGraphDocument.Create(new ShaderDefinition("Graph Node", [], [], []), serialization, context);
         ShaderGraphNodes.WriteSettings(graph, new ShaderGraphNodeSettings(), serialization, context);
-        var input = new GraphNodeRecord(new("node-inputs"), ShaderGraphNodes.C_INPUT_DEFINITION_ID)
+        var input = new GraphNodeRecord(new GraphNodeID("node-inputs"), ShaderGraphNodes.C_INPUT_DEFINITION_ID)
         {
             position = new(40, 120)
         };
@@ -115,10 +116,10 @@ internal sealed class ReusableShaderGraphNodeTemplate : ShaderGraphTemplate
             ShaderGraphDocument.C_SETTINGS_KEY,
             ShaderGraphDocument.Encode(new ShaderGraphNodeInputSettings
             {
-                ports = [new() { id = "value", type = new() { id = "float" } }]
+                ports = [new ShaderGraphNodePortDefinition() { id = "value", type = new() { id = "float" } }]
             }, serialization, context)
         );
-        var output = new GraphNodeRecord(new("node-outputs"), ShaderGraphNodes.C_OUTPUT_DEFINITION_ID)
+        var output = new GraphNodeRecord(new GraphNodeID("node-outputs"), ShaderGraphNodes.C_OUTPUT_DEFINITION_ID)
         {
             position = new(620, 120)
         };
@@ -126,12 +127,18 @@ internal sealed class ReusableShaderGraphNodeTemplate : ShaderGraphTemplate
             ShaderGraphDocument.C_SETTINGS_KEY,
             ShaderGraphDocument.Encode(new ShaderGraphNodeOutputSettings
             {
-                ports = [new() { id = "value", type = new() { id = "float" } }]
+                ports = [new ShaderGraphNodePortDefinition() { id = "value", type = new() { id = "float" } }]
             }, serialization, context)
         );
         graph.AddNode(input);
         graph.AddNode(output);
-        graph.AddEdge(new(new("node-value"), new(input.id, new("value")), new(output.id, new("value"))));
+        graph.AddEdge(
+            new GraphEdgeRecord(
+                new GraphEdgeID("node-value"),
+                new GraphEndpoint(input.id, new GraphPortID("value")),
+                new GraphEndpoint(output.id, new GraphPortID("value"))
+            )
+        );
         return graph;
     }
 }

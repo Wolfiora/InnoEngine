@@ -51,11 +51,15 @@ public sealed class EditorAudioHost : IEditorAudioHost
         Func<IAudioDevice> deviceFactory,
         Func<AudioProjectSettings>? settingsProvider = null
     ) {
-        m_types = types ?? throw new ArgumentNullException(nameof(types));
-        m_artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
-        m_diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
+        ArgumentNullException.ThrowIfNull(types);
+        ArgumentNullException.ThrowIfNull(artifacts);
+        ArgumentNullException.ThrowIfNull(diagnostics);
+        ArgumentNullException.ThrowIfNull(deviceFactory);
+        m_types = types;
+        m_artifacts = artifacts;
+        m_diagnostics = diagnostics;
         m_settingsProvider = settingsProvider ?? (() => new AudioProjectSettings());
-        m_deviceFactory = deviceFactory ?? throw new ArgumentNullException(nameof(deviceFactory));
+        m_deviceFactory = deviceFactory;
     }
 
     /// <summary>

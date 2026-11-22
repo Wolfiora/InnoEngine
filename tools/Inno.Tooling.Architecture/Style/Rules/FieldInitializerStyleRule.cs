@@ -35,10 +35,12 @@ internal sealed class FieldInitializerStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         foreach (ObjectCreationExpressionSyntax creation in Repeated(source.root))
         {
-            edits.Add(new(creation.NewKeyword.Span.End, creation.Type.Span.End, creation.ArgumentList is null ? "()" : string.Empty));
+            edits.Add(
+                new StyleEdit(creation.NewKeyword.Span.End, creation.Type.Span.End, creation.ArgumentList is null ? "()" : string.Empty)
+            );
         }
 
         foreach (SyntaxNode node in source.root.DescendantNodes())
@@ -52,7 +54,7 @@ internal sealed class FieldInitializerStyleRule : StyleRule
             for (int index = 0; index < declaration.Variables.SeparatorCount; index++)
             {
                 SyntaxToken comma = declaration.Variables.GetSeparator(index);
-                edits.Add(new(comma.SpanStart, declaration.Variables[index + 1].SpanStart, separator));
+                edits.Add(new StyleEdit(comma.SpanStart, declaration.Variables[index + 1].SpanStart, separator));
             }
         }
 

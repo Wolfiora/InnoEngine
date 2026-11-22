@@ -47,7 +47,7 @@ internal static class Program
             return arguments;
         }
         bool implicitSupport = arguments.Length == 0 || arguments[0].StartsWith("--", StringComparison.Ordinal);
-        var result = new List<string> { implicitSupport ? "support" : arguments[0] };
+        List<string> result = [implicitSupport ? "support" : arguments[0]];
         result.AddRange(implicitSupport ? arguments : arguments[1..]);
         if (result[0] is not ("support" or "editor" or "clean" or "bindings" or "support-pack" or "shader"))
         {

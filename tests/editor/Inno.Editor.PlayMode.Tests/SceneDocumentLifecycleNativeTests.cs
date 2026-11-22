@@ -22,7 +22,7 @@ public sealed class SceneDocumentLifecycleNativeTests
         byte[] source = File.ReadAllBytes(Path.Combine(host.projectRoot, "Assets", path));
         Assert.True(host.edits.CloseScene(original));
         EditorPanelExtension panel = host.native.GetPanel("scene.hierarchy");
-        var retired = new List<WeakReference<GameScene>>();
+        List<WeakReference<GameScene>> retired = [];
         for (int iteration = 0; iteration < 100; iteration++)
         {
             retired.Add(OpenDrawAndClose(host, panel, path));

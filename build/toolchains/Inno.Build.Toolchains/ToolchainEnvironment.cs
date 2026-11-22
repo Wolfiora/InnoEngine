@@ -595,7 +595,7 @@ public static class ToolchainEnvironment
         Task exited = process.WaitForExitAsync(cancellationToken);
         try
         {
-            var pending = new List<Task> { exited, output, error };
+            List<Task> pending = [exited, output, error];
             while (pending.Count > 0)
             {
                 Task completed = await Task.WhenAny(pending).ConfigureAwait(false);

@@ -172,10 +172,7 @@ public readonly record struct RenderVertexAttribute
         RenderVertexFormat format,
         int byteOffset = -1
     ) {
-        if (byteOffset < -1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(byteOffset));
-        }
+        ArgumentOutOfRangeException.ThrowIfLessThan(byteOffset, -1);
         this.semantic = semantic;
         this.format = format;
         this.byteOffset = byteOffset;

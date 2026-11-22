@@ -45,10 +45,14 @@ public sealed partial class AssetImportSettingsEdits : EditorModule
         TypeCatalog types,
         EditorInteractions interactions
     ) {
-        m_assets = assets ?? throw new ArgumentNullException(nameof(assets));
-        m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
-        m_types = types ?? throw new ArgumentNullException(nameof(types));
-        m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
+        ArgumentNullException.ThrowIfNull(assets);
+        ArgumentNullException.ThrowIfNull(serialization);
+        ArgumentNullException.ThrowIfNull(types);
+        ArgumentNullException.ThrowIfNull(interactions);
+        m_assets = assets;
+        m_serialization = serialization;
+        m_types = types;
+        m_interactions = interactions;
     }
 
     /// <summary>

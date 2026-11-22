@@ -149,7 +149,7 @@ internal sealed class AudioMixerOwner : IDisposable
         }
         var masters = new List<KeyValuePair<AudioBusHandle, bool>>(m_retiredMasterPauses)
         {
-            new(m_buses[AudioBusID.master], m_busControls[AudioBusID.master].paused)
+            new KeyValuePair<AudioBusHandle, bool>(m_buses[AudioBusID.master], m_busControls[AudioBusID.master].paused)
         };
         int applied = 0;
         try

@@ -29,7 +29,7 @@ internal sealed class ChainStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         int fixedEnd = -1;
         foreach ((int position, string _, List<StyleEdit> chainEdits) in Violations(source))
         {
@@ -68,7 +68,7 @@ internal sealed class ChainStyleRule : StyleRule
             string lineBreak = "\n" + new string(' ', indent);
             int delta = indent - source.Indentation(line.Start);
             bool isFirstCall = true;
-            var edits = new List<StyleEdit>();
+            List<StyleEdit> edits = [];
             foreach (ExpressionSyntax link in links)
             {
                 if (!IsCall(link)) continue;
@@ -81,7 +81,7 @@ internal sealed class ChainStyleRule : StyleRule
                     continue;
                 }
                 if (!StyleLayout.IsBlank(source.content, previous.Span.End, lead.SpanStart)) continue;
-                edits.Add(new(previous.Span.End, lead.SpanStart, lineBreak));
+                edits.Add(new StyleEdit(previous.Span.End, lead.SpanStart, lineBreak));
 
                 // The lines of arguments that continue below keep their offset from the line the call now starts.
                 int closeLine = source.LineNumber(link.Parent!.Span.End);
@@ -115,7 +115,7 @@ internal sealed class ChainStyleRule : StyleRule
             ExpressionSyntax[] links = chain.OrderBy(static link => Dot(link).SpanStart).ToArray();
             int indent = source.Indentation(top.SpanStart) + StyleLayout.C_INDENT;
             string lineBreak = "\n" + new string(' ', indent);
-            var edits = new List<StyleEdit>();
+            List<StyleEdit> edits = [];
             string? message = null;
             // The receiver and the first call may share the statement line; every later call starts a line.
             bool isBroken = links.Any(link => source.IsFirstOnLine(Lead(Dot(link))));
@@ -130,7 +130,7 @@ internal sealed class ChainStyleRule : StyleRule
                     // A '.' that ends its line moves in front of the member it selects.
                     string gap = source.content[dot.Span.End..next.SpanStart];
                     if (!StyleLayout.IsBlank(gap, 0, gap.Length) || source.IsFirstOnLine(lead)) continue;
-                    edits.Add(new(previous.Span.End, next.SpanStart, lineBreak + source.content[lead.SpanStart..dot.Span.End]));
+                    edits.Add(new StyleEdit(previous.Span.End, next.SpanStart, lineBreak + source.content[lead.SpanStart..dot.Span.End]));
                     message ??= "Start the continuation line with '.' instead of ending the line with it.";
                     isBroken = true;
                     continue;
@@ -149,7 +149,7 @@ internal sealed class ChainStyleRule : StyleRule
                 }
 
                 if (!StyleLayout.IsBlank(source.content, previous.Span.End, lead.SpanStart)) continue;
-                edits.Add(new(previous.Span.End, lead.SpanStart, lineBreak));
+                edits.Add(new StyleEdit(previous.Span.End, lead.SpanStart, lineBreak));
                 message ??= "Put each call of a broken chain on its own line.";
 
                 // The lines of the arguments keep their offset from the line the call now starts.

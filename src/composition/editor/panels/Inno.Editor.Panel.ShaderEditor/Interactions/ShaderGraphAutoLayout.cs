@@ -192,7 +192,7 @@ internal static class ShaderGraphAutoLayout
                     }
                     catch (Exception failure) when (failure is InvalidOperationException or ArgumentException or FormatException)
                     {
-                        ports = Array.Empty<ShaderNodePort>();
+                        ports = [];
                     }
                     GraphPortDirection direction = towardOutput ? GraphPortDirection.Input : GraphPortDirection.Output;
                     ShaderNodePort[] matching = ports.Where(candidate => candidate.direction == direction).ToArray();

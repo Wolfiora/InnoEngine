@@ -30,8 +30,7 @@ public sealed partial class RenderRuntimeGenerationTests
         );
         runtime.SetPrimaryModelOutputEnabled(false);
         WeakReference contributor = CompleteCollectibleContributorFrame(runtime, proxy, rejectGraph);
-        (IAssemblyUnloadProbe monitor, IRenderRuntimeReloadTransaction transaction) =
-            RemoveRenderingPlugin(runtime, m_modules, plugin);
+        (IAssemblyUnloadProbe monitor, IRenderRuntimeReloadTransaction transaction) = RemoveRenderingPlugin(runtime, m_modules, plugin);
         ForceCollection();
         Assert.False(contributor.IsAlive);
         Assert.True(monitor.isCompleted);
@@ -125,7 +124,7 @@ public sealed partial class RenderRuntimeGenerationTests
             new TestDiagnosticSink()
         );
         runtime.SetPrimaryModelOutputEnabled(false);
-        var contributors = new List<CountingContributor>();
+        List<CountingContributor> contributors = [];
         for (int index = 0; index < contributorCount; index++)
         {
             var contributor = new CountingContributor { fail = fail };
@@ -299,7 +298,7 @@ public sealed partial class RenderRuntimeGenerationTests
             builds++;
             graph.AddRasterPass(
                 fail ? "Discarded" : "Accepted",
-                new("tests.contributor"),
+                new RenderPhaseID("tests.contributor"),
                 0,
                 static (
                     payload,

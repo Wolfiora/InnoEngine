@@ -18,8 +18,10 @@ internal sealed class SaveSceneAssetDropHandler : EditorDrop<GameScene, string>
         IEditorSceneWorkspace workspace,
         AssetPipeline assets
     ) {
-        m_workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
-        m_assets = assets ?? throw new ArgumentNullException(nameof(assets));
+        ArgumentNullException.ThrowIfNull(workspace);
+        ArgumentNullException.ThrowIfNull(assets);
+        m_workspace = workspace;
+        m_assets = assets;
     }
 
     /// <summary>

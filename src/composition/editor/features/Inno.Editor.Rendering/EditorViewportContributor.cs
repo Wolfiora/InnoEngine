@@ -361,7 +361,8 @@ public sealed class EditorViewportContribution
         RenderTextureFormat targetFormat = RenderTextureFormat.RGBA8Srgb,
         EditorViewportManipulationSpace? manipulationSpace = null
     ) {
-        this.data = data ?? throw new ArgumentNullException(nameof(data));
+        ArgumentNullException.ThrowIfNull(data);
+        this.data = data;
         this.pipeline = pipeline;
         this.targetFormat = targetFormat;
         this.manipulationSpace = manipulationSpace;

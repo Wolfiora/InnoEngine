@@ -262,7 +262,7 @@ public sealed partial class PlayerWithoutFileSystemTests
     private sealed class MemoryUI(List<string> retired) : IUIBackend
     {
         public string implementationID => "tests.ui";
-        public UIBackendCapabilities capabilities { get; } = new([new("tests.ui-language")], true);
+        public UIBackendCapabilities capabilities { get; } = new([new UIDocumentLanguageID("tests.ui-language")], true);
 
         public UIContextHandle CreateContext(UIContextOptions options) => new(1);
 

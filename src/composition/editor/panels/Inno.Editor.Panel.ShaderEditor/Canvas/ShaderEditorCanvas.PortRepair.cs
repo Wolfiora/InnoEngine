@@ -43,7 +43,7 @@ internal sealed partial class ShaderEditorCanvas
                     }
                     foreach (ShaderNodePort replacement in draft.ports[node.id])
                     {
-                        var target = new GraphEndpoint(node.id, new(replacement.id));
+                        var target = new GraphEndpoint(node.id, new GraphPortID(replacement.id));
                         if (replacement.direction != old.direction || draft.missingPorts.Contains(target))
                         {
                             continue;
@@ -69,7 +69,11 @@ internal sealed partial class ShaderEditorCanvas
                         ) {
                             candidate.RemoveEdge(edge.id);
                             candidate.AddEdge(
-                                new(edge.id, edge.output == endpoint ? target : edge.output, edge.input == endpoint ? target : edge.input)
+                                new GraphEdgeRecord(
+                                    edge.id,
+                                    edge.output == endpoint ? target : edge.output,
+                                    edge.input == endpoint ? target : edge.input
+                                )
                             );
                         }
 

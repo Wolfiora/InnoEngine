@@ -64,7 +64,11 @@ public sealed partial class BgfxShadercToolchain
         }
         catch (BgfxSourceSyntaxException failure)
         {
-            return new([], [], [new("BGFX_IR_GENERATION", DiagnosticSeverity.Error, failure.Message, failure.position)]);
+            return new(
+                [],
+                [],
+                [new ShaderSourceDiagnostic("BGFX_IR_GENERATION", DiagnosticSeverity.Error, failure.Message, failure.position)]
+            );
         }
         BgfxShadercResult native = await RunCompilerAsync(
             generated.source,
@@ -74,7 +78,11 @@ public sealed partial class BgfxShadercToolchain
             cancellationToken
         ).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
-        List<ShaderSourceDiagnostic> diagnostics = ParseDiagnostics(native, generated.sourcePositions, new("inno-generated-stage", 0, 0));
+        List<ShaderSourceDiagnostic> diagnostics = ParseDiagnostics(
+            native,
+            generated.sourcePositions,
+            new ShaderSourcePosition("inno-generated-stage", 0, 0)
+        );
         if (native.exitCode != 0
             || native.bytes is null
             || native.bytes.Length == 0
@@ -83,11 +91,11 @@ public sealed partial class BgfxShadercToolchain
             if (!diagnostics.Any(static diagnostic => diagnostic.severity == DiagnosticSeverity.Error))
             {
                 diagnostics.Add(
-                    new(
+                    new ShaderSourceDiagnostic(
                         "BGFX_SHADER_COMPILE_FAILED",
                         DiagnosticSeverity.Error,
                         $"BGFX shaderc exited with code {native.exitCode} without a usable binary.",
-                        new("inno-generated-stage", 0, 0)
+                        new ShaderSourcePosition("inno-generated-stage", 0, 0)
                     )
                 );
             }
@@ -111,11 +119,11 @@ public sealed partial class BgfxShadercToolchain
         catch (InvalidDataException failure)
         {
             diagnostics.Add(
-                new(
+                new ShaderSourceDiagnostic(
                     "BGFX_SHADER_REFLECTION",
                     DiagnosticSeverity.Error,
                     failure.Message,
-                    new("inno-generated-stage", 0, 0)
+                    new ShaderSourcePosition("inno-generated-stage", 0, 0)
                 )
             );
             return new([], [], diagnostics);
@@ -244,7 +252,7 @@ public sealed partial class BgfxShadercToolchain
         IReadOnlyList<ShaderSourcePosition> sourcePositions,
         ShaderSourcePosition fallback
     ) {
-        var diagnostics = new List<ShaderSourceDiagnostic>();
+        List<ShaderSourceDiagnostic> diagnostics = [];
         string[] lines = (native.standardOutput + "\n" + native.standardError).Split(
             '\n',
             StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
@@ -279,10 +287,15 @@ public sealed partial class BgfxShadercToolchain
                 _ = int.TryParse(match.Groups["column"].Value, out int column);
                 position = sourceMap.TryGetValue(sourceLine, out ShaderSourcePosition original)
                            ? original
-                           : new(fallback.assetPath, sourceLine, column);
+                           : new ShaderSourcePosition(fallback.assetPath, sourceLine, column);
             }
             diagnostics.Add(
-                new(severity == DiagnosticSeverity.Warning ? "BGFX_SHADER_WARNING" : "BGFX_SHADER_DIAGNOSTIC", severity, line, position)
+                new ShaderSourceDiagnostic(
+                    severity == DiagnosticSeverity.Warning ? "BGFX_SHADER_WARNING" : "BGFX_SHADER_DIAGNOSTIC",
+                    severity,
+                    line,
+                    position
+                )
             );
         }
         return diagnostics;
@@ -320,7 +333,7 @@ public sealed partial class BgfxShadercToolchain
                 {
                     throw new BgfxSourceSyntaxException(
                         "The BGFX runtime contract exposes storage bindings only for compute passes.",
-                        new("inno-generated-stage", 1, 1)
+                        new ShaderSourcePosition("inno-generated-stage", 1, 1)
                     );
                 }
                 Require(storage.isImage ? GraphicsCapability.StorageTexture : GraphicsCapability.StorageBuffer);
@@ -328,7 +341,7 @@ public sealed partial class BgfxShadercToolchain
                 {
                     throw new BgfxSourceSyntaxException(
                         "A storage binding exceeds the target compute binding limit.",
-                        new("inno-generated-stage", 1, 1)
+                        new ShaderSourcePosition("inno-generated-stage", 1, 1)
                     );
                 }
                 if (storage.isImage)
@@ -345,7 +358,7 @@ public sealed partial class BgfxShadercToolchain
                     {
                         throw new BgfxSourceSyntaxException(
                             $"Storage format '{storage.format}' does not support '{storage.access}' on this target.",
-                            new("inno-generated-stage", 1, 1)
+                            new ShaderSourcePosition("inno-generated-stage", 1, 1)
                         );
                     }
                 }
@@ -361,7 +374,7 @@ public sealed partial class BgfxShadercToolchain
             {
                 throw new BgfxSourceSyntaxException(
                     $"Color attachment {output.location} exceeds the target limit {capabilities.limits.maxColorAttachments}.",
-                    new("inno-generated-stage", 1, 1)
+                    new ShaderSourcePosition("inno-generated-stage", 1, 1)
                 );
             }
         }
@@ -372,7 +385,7 @@ public sealed partial class BgfxShadercToolchain
             {
                 throw new BgfxSourceSyntaxException(
                     $"The stage requires unsupported capability '{capability}'.",
-                    new("inno-generated-stage", 1, 1)
+                    new ShaderSourcePosition("inno-generated-stage", 1, 1)
                 );
             }
         }

@@ -28,7 +28,7 @@ internal sealed class StatementLineStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         IReadOnlyList<TextSpan> protectedSpans = source.ProtectedSpans();
         int fixedLine = -1;
         foreach ((StatementSyntax statement, int indentation) in Violations(source))
@@ -37,7 +37,13 @@ internal sealed class StatementLineStyleRule : StyleRule
             int first = source.LineNumber(statement.SpanStart);
             if (first <= fixedLine) continue;
             int last = source.LineNumber(statement.Span.End);
-            edits.Add(new(statement.GetFirstToken().GetPreviousToken().Span.End, statement.SpanStart, "\n" + new string(' ', indentation)));
+            edits.Add(
+                new StyleEdit(
+                    statement.GetFirstToken().GetPreviousToken().Span.End,
+                    statement.SpanStart,
+                    "\n" + new string(' ', indentation)
+                )
+            );
             int delta = indentation - source.Indentation(statement.SpanStart);
             for (int line = first + 1; delta != 0 && line <= last; line++)
             {

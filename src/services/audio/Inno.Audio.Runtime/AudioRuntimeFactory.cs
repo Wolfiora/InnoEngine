@@ -19,7 +19,8 @@ public sealed class AudioRuntimeFactory : IRuntimeSubsystemFactory
     /// </param>
     public AudioRuntimeFactory(Func<RuntimeSubsystemContext, AudioRuntime> runtimeFactory)
     {
-        m_runtimeFactory = runtimeFactory ?? throw new ArgumentNullException(nameof(runtimeFactory));
+        ArgumentNullException.ThrowIfNull(runtimeFactory);
+        m_runtimeFactory = runtimeFactory;
     }
 
     /// <summary>

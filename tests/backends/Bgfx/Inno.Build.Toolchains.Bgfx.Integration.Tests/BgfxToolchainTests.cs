@@ -51,7 +51,7 @@ public sealed class BgfxToolchainTests : IDisposable
         {
             return;
         }
-        using var modules = new ModuleHost(new()
+        using var modules = new ModuleHost(new ModuleHostOptions()
         {
             catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderNodeCompilerRegistry).Assembly)
         });
@@ -95,7 +95,7 @@ public sealed class BgfxToolchainTests : IDisposable
         {
             return;
         }
-        using var modules = new ModuleHost(new()
+        using var modules = new ModuleHost(new ModuleHostOptions()
         {
             catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderNodeCompilerRegistry).Assembly)
         });
@@ -158,11 +158,11 @@ public sealed class BgfxToolchainTests : IDisposable
             ShaderStage.Fragment,
             builder.Build(new Dictionary<string, ShaderIrValue> { ["color"] = output }),
             [
-                new("used-tint", colorType, ShaderIrInputKind.Uniform),
-                new("unused-tint", colorType, ShaderIrInputKind.Uniform),
-                new("sampled", textureType, ShaderIrInputKind.SampledTexture)
+                new ShaderIrStageInput("used-tint", colorType, ShaderIrInputKind.Uniform),
+                new ShaderIrStageInput("unused-tint", colorType, ShaderIrInputKind.Uniform),
+                new ShaderIrStageInput("sampled", textureType, ShaderIrInputKind.SampledTexture)
             ],
-            [new("color", ShaderIrOutputKind.Color)]
+            [new ShaderIrStageOutput("color", ShaderIrOutputKind.Color)]
         );
         BgfxShaderTargetProfile platform = backend == GraphicsApi.openGLES
                                            ? ShaderProfileFixture.browser
@@ -236,7 +236,10 @@ public sealed class BgfxToolchainTests : IDisposable
             ShaderStage.Fragment,
             builder.Build(new Dictionary<string, ShaderIrValue> { ["first"] = color, ["third"] = color }),
             [],
-            [new("first", ShaderIrOutputKind.Color, location: 0), new("third", ShaderIrOutputKind.Color, location: 2)]
+            [
+                new ShaderIrStageOutput("first", ShaderIrOutputKind.Color, location: 0),
+                new ShaderIrStageOutput("third", ShaderIrOutputKind.Color, location: 2)
+            ]
         );
         var compiler = new ShaderCompiler(new BgfxShadercToolchain(platform));
 

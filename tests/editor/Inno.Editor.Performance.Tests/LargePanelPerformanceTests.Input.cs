@@ -151,7 +151,7 @@ public sealed partial class LargePanelPerformanceTests
         );
         Assert.InRange(repetitions, 1, 5);
         using Process process = Process.GetCurrentProcess();
-        var samples = new List<object>();
+        List<object> samples = [];
         for (int repetition = 0; repetition < repetitions; repetition++)
         {
             var milliseconds = new double[10];

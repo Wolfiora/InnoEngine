@@ -18,7 +18,9 @@ public sealed class GameContentCompilerBindingTests
         Assert.Same(compiler, binding.compiler);
         Assert.Throws<ArgumentNullException>(() => new GameBuildTargetBinding(null!, compiler));
         Assert.Throws<ArgumentNullException>(() => new GameBuildTargetBinding(packager, null!));
-        Assert.Throws<ArgumentException>(() => new GameBuildTargetBinding(packager, new FixtureCompiler(new("other-target"))));
+        Assert.Throws<ArgumentException>(
+            () => new GameBuildTargetBinding(packager, new FixtureCompiler(new BuildTargetID("other-target")))
+        );
     }
 
     [Fact]

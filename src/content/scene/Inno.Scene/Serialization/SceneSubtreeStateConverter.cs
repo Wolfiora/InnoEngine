@@ -71,8 +71,7 @@ internal sealed class SceneSubtreeStateConverter : SerializationConverter<SceneS
         ArgumentNullException.ThrowIfNull(reader);
         GameScene scene = reader.context.GetRequired<GameScene>();
         Guid rootID = reader.Read<Guid>(C_ROOT_ID_KEY);
-        IReadOnlyList<SerializationReader> objectReaders =
-            reader.ReadObjectArray(SceneGraphSerialization.C_OBJECTS_KEY);
+        IReadOnlyList<SerializationReader> objectReaders = reader.ReadObjectArray(SceneGraphSerialization.C_OBJECTS_KEY);
         SceneGraphSerialization.ValidateMissingReferenceAliases(reader);
         SceneGraphSerialization.ValidateObjects(objectReaders);
         var existing = new HashSet<GameObject>(scene.GetObjects(), ReferenceEqualityComparer.Instance);

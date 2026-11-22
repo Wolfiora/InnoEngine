@@ -222,7 +222,10 @@ public sealed class ValidationCompletionTests
             {
                 await execution;
             }
-            catch (Exception) { /* The assertion above owns the original failure; drain before retiring the fixture. */ }
+            catch (Exception)
+            {
+                // The assertion above owns the original failure; drain before retiring the fixture.
+            }
         }
     }
 

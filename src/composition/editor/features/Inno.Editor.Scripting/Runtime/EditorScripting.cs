@@ -49,13 +49,20 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
         LogRouter logs,
         Func<ScriptModuleDeployment, IModuleSource> moduleSourceFactory
     ) {
-        m_assets = assets ?? throw new ArgumentNullException(nameof(assets));
-        m_plugins = plugins ?? throw new ArgumentNullException(nameof(plugins));
-        m_modules = modules ?? throw new ArgumentNullException(nameof(modules));
-        m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
-        m_compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
-        m_moduleSourceFactory = moduleSourceFactory ?? throw new ArgumentNullException(nameof(moduleSourceFactory));
-        m_reloads = reloads ?? throw new ArgumentNullException(nameof(reloads));
+        ArgumentNullException.ThrowIfNull(assets);
+        ArgumentNullException.ThrowIfNull(plugins);
+        ArgumentNullException.ThrowIfNull(modules);
+        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(compiler);
+        ArgumentNullException.ThrowIfNull(reloads);
+        ArgumentNullException.ThrowIfNull(moduleSourceFactory);
+        m_assets = assets;
+        m_plugins = plugins;
+        m_modules = modules;
+        m_settings = settings;
+        m_compiler = compiler;
+        m_moduleSourceFactory = moduleSourceFactory;
+        m_reloads = reloads;
         ArgumentNullException.ThrowIfNull(logs);
         m_log = logs.CreateLogger<EditorScripting>();
     }

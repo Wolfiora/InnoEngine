@@ -34,10 +34,7 @@ public sealed class IndexedObjectQuery<T>
     /// </returns>
     public IndexedObjectQuery<T> Where(IIndexedObjectQueryCondition<T> condition)
     {
-        if (condition is null)
-        {
-            throw new ArgumentNullException(nameof(condition));
-        }
+        ArgumentNullException.ThrowIfNull(condition);
 
         m_conditions.Add(condition);
         return this;

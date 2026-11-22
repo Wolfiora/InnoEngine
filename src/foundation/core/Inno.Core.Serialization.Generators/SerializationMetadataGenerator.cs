@@ -183,7 +183,7 @@ public sealed class SerializationMetadataGenerator : IIncrementalGenerator
         {
             return;
         }
-        var memberCode = new List<string>();
+        List<string> memberCode = [];
         var keys = new HashSet<string>(StringComparer.Ordinal);
         foreach (ISymbol member in members)
         {
@@ -497,7 +497,7 @@ public sealed class SerializationMetadataGenerator : IIncrementalGenerator
         StringBuilder accessors,
         SourceProductionContext output
     ) {
-        var calls = new List<string>();
+        List<string> calls = [];
         foreach (INamedTypeSymbol ancestor in hierarchy.Reverse())
         {
             IMethodSymbol[] hooks = ancestor.GetMembers().OfType<IMethodSymbol>().Where(static method =>

@@ -636,7 +636,8 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
 
         internal FactorySnapshot(IRuntimeSubsystemFactory factory)
         {
-            m_factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            ArgumentNullException.ThrowIfNull(factory);
+            m_factory = factory;
             this.descriptor = factory.descriptor ?? throw new InvalidOperationException("A subsystem descriptor cannot be null.");
         }
 

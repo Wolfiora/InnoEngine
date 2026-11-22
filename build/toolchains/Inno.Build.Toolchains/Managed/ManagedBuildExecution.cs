@@ -113,7 +113,7 @@ public sealed class ManagedBuildExecution : IDisposable
         DotNetSdkDescriptor sdk,
         string project,
         IReadOnlyDictionary<string, string> properties,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         string entry = Path.GetRelativePath(context.engineRoot, project);
         if (Path.IsPathRooted(entry) || entry == ".." || entry.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal))
@@ -145,14 +145,14 @@ public sealed class ManagedBuildExecution : IDisposable
             Path.GetDirectoryName(workspace)!,
             "managed-workspaces",
             cache.role,
-            cancellation
+            cancellationToken
         );
-        using FileLease cacheUse = await cache.AcquireUseAsync(cancellation).ConfigureAwait(false);
+        using FileLease cacheUse = await cache.AcquireUseAsync(cancellationToken).ConfigureAwait(false);
         CoordinatedFileLease ownership = await CoordinatedFileLease.AcquireAsync(
             Path.Combine(Path.GetDirectoryName(workspace)!, "owner.lock"),
             workspace + ".lock",
             Timeout.InfiniteTimeSpan,
-            cancellationToken: cancellation
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
         try
         {
@@ -160,7 +160,7 @@ public sealed class ManagedBuildExecution : IDisposable
                 workspace,
                 workspace + ".lock",
                 properties.TryGetValue("InnoNativeTarget", out string? selectedTarget) ? selectedTarget : context.toolchain?.targetID,
-                cancellation
+                cancellationToken
             );
             string sourceRoot = Path.Combine(workspace, "Sources");
             string metadata = Path.Combine(workspace, "inputs.json");
@@ -186,13 +186,13 @@ public sealed class ManagedBuildExecution : IDisposable
                     }
                 }
             }
-            var fixedInputs = new List<NativeInputSnapshot.Entry>();
+            List<NativeInputSnapshot.Entry> fixedInputs = [];
             foreach (NativeInputSnapshot.Entry input in selected)
             {
                 string relative = input.logicalPath["engine/".Length..];
                 string destination = PathBoundary.Resolve(sourceRoot, relative);
-                await NativeInputMaterializer.CopyAsync(context, input.physicalPath, destination, cancellation).ConfigureAwait(false);
-                fixedInputs.Add(new(input.logicalPath, destination, input.hash));
+                await NativeInputMaterializer.CopyAsync(context, input.physicalPath, destination, cancellationToken).ConfigureAwait(false);
+                fixedInputs.Add(new NativeInputSnapshot.Entry(input.logicalPath, destination, input.hash));
             }
             string marker = Path.Combine(sourceRoot, "InnoEngine.sln");
             if (!File.Exists(marker))

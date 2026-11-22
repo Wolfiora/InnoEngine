@@ -76,8 +76,9 @@ internal sealed class TypeIdentityRegistry
 
         var stableByType = new Dictionary<Type, Guid>();
         var typeByStable = new Dictionary<Guid, Type>();
-        IReadOnlyDictionary<Assembly, IReadOnlyDictionary<string, GeneratedStableTypeMapping>> mappings =
-            BuildGeneratedMappings(sourceTypes);
+        IReadOnlyDictionary<Assembly, IReadOnlyDictionary<string, GeneratedStableTypeMapping>> mappings = BuildGeneratedMappings(
+            sourceTypes
+        );
 
         foreach (Type type in sourceTypes)
         {

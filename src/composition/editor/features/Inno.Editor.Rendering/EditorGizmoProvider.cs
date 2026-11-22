@@ -32,7 +32,8 @@ public sealed class EditorGizmoContext
         int pixelWidth,
         int pixelHeight
     ) {
-        this.content = content ?? throw new ArgumentNullException(nameof(content));
+        ArgumentNullException.ThrowIfNull(content);
+        this.content = content;
         this.selected = selected;
         this.pixelWidth = pixelWidth;
         this.pixelHeight = pixelHeight;

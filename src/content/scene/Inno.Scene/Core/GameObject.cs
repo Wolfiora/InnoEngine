@@ -34,7 +34,8 @@ public sealed class GameObject : EngineObject, ISerializable
         GameScene scene,
         string name
     ) {
-        m_scene = scene ?? throw new ArgumentNullException(nameof(scene));
+        ArgumentNullException.ThrowIfNull(scene);
+        m_scene = scene;
         m_name = name ?? string.Empty;
     }
 

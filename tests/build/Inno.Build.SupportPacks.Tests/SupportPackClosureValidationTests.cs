@@ -16,7 +16,7 @@ public sealed class SupportPackClosureValidationTests : IDisposable
         Write("PlayerLink/References/Custom.Runtime.dll");
         Write("native/custom/fixture-target/arbitrary-name.fixture");
         var requirements = new PlayerSupportPackRequirements(
-            new("fixture-target"),
+            new BuildTargetID("fixture-target"),
             ["PlayerLink/References/Custom.Runtime.dll"],
             "native",
             ["custom/fixture-target"],
@@ -33,7 +33,7 @@ public sealed class SupportPackClosureValidationTests : IDisposable
     {
         Write("PlayerLink/Native/custom/fixture-target/other.a");
         var requirements = new PlayerSupportPackRequirements(
-            new("fixture-target"),
+            new BuildTargetID("fixture-target"),
             ["PlayerLink/Native/custom/fixture-target/required.a"],
             "PlayerLink/Native",
             ["custom/fixture-target"],
@@ -51,7 +51,7 @@ public sealed class SupportPackClosureValidationTests : IDisposable
     {
         Write("PlayerLink/Native/custom/fixture-target/required.a");
         var requirements = new PlayerSupportPackRequirements(
-            new("fixture-target"),
+            new BuildTargetID("fixture-target"),
             ["PlayerLink/Native/custom/fixture-target/required.a"],
             "PlayerLink/Native",
             ["custom/fixture-target"],
@@ -70,7 +70,7 @@ public sealed class SupportPackClosureValidationTests : IDisposable
     [InlineData("C:/outside")]
     public void RequirementPathsCannotEscapeTheirOwner(string path)
         => Assert.Throws<ArgumentException>(() => new PlayerSupportPackRequirements(
-            new("fixture-target"),
+            new BuildTargetID("fixture-target"),
             [path],
             "native",
             ["custom"],

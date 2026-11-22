@@ -85,7 +85,7 @@ public sealed class BuildCompositionTests
         var second = new FixtureTarget(new BuildTargetID("fixture-b"));
         ProductNativeBuildPlan complete = BuildTestProducts.Player();
         var reduced = new ProductNativeBuildPlan("player", [complete.steps[0]]);
-        NativeProductContribution[] products = [new(complete, new ComponentNativeProductExecutor())];
+        NativeProductContribution[] products = [new NativeProductContribution(complete, new ComponentNativeProductExecutor())];
         var firstContribution = new BuildPlatformContribution(
             Descriptor(first),
             () => first,
@@ -98,7 +98,7 @@ public sealed class BuildCompositionTests
             () => second,
             second,
             new FixtureToolchain(),
-            nativeProducts: [new(reduced, new ComponentNativeProductExecutor())]
+            nativeProducts: [new NativeProductContribution(reduced, new ComponentNativeProductExecutor())]
         );
         var distribution = new BuildDistribution(
             [Game(firstContribution, first), Game(secondContribution, second)],
@@ -115,7 +115,10 @@ public sealed class BuildCompositionTests
                 () => first,
                 first,
                 new FixtureToolchain(),
-                nativeProducts: [new(complete, new ComponentNativeProductExecutor()), new(reduced, new ComponentNativeProductExecutor())]
+                nativeProducts: [
+                    new NativeProductContribution(complete, new ComponentNativeProductExecutor()),
+                    new NativeProductContribution(reduced, new ComponentNativeProductExecutor())
+                ]
             )
         );
     }
@@ -190,7 +193,7 @@ public sealed class BuildCompositionTests
     private static GameBuildContribution Contribution(
         FixtureTarget target,
         BuildTargetFactory factory
-    ) => Game(new(Descriptor(target), factory, target, new FixtureToolchain()), target);
+    ) => Game(new BuildPlatformContribution(Descriptor(target), factory, target, new FixtureToolchain()), target);
 
     private static GameBuildContribution Game(
         BuildPlatformContribution platform,

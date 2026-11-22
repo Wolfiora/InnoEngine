@@ -117,7 +117,7 @@ public static class BuildCacheOwnerCatalog
             TimeSpan.FromSeconds(30),
             cancellationToken
         ).AsTask().GetAwaiter().GetResult();
-        var result = new List<BuildCacheOwnerDescriptor>();
+        List<BuildCacheOwnerDescriptor> result = [];
         var identities = new HashSet<string>(StringComparer.Ordinal);
         foreach (string file in PathBoundary.EnumerateFiles(catalog).Where(static file => file.EndsWith(".json", StringComparison.Ordinal)))
         {

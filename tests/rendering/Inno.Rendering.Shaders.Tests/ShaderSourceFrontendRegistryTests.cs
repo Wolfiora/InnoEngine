@@ -20,7 +20,7 @@ public sealed class ShaderSourceFrontendRegistryTests
         {
             Assert.Contains("inno.shader-language.bgfx-sc", registry.languageIDs);
             Assert.Contains("tests.registry.language", registry.languageIDs);
-            var request = new ShaderSourceRequest(new("value.ishadersource", "source"), "Value", new NoIncludes());
+            var request = new ShaderSourceRequest(new ShaderSourceFile("value.ishadersource", "source"), "Value", new NoIncludes());
             Assert.True(registry.Analyze("tests.registry.language", request).succeeded);
             fixture.modules.Rebuild();
             Assert.True(registry.Analyze("tests.registry.language", request).succeeded);
@@ -101,7 +101,16 @@ internal sealed class RegistryFrontendProbe : IShaderSourceFrontend, IDisposable
     public string languageID => m_languageID;
 
     public ShaderSourceAnalysis Analyze(ShaderSourceRequest request)
-        => new(new(request.entryPoint, ShaderSourceType.Atomic("float"), [], new(request.source.assetPath, 1, 1)), [], []);
+        => new(
+            new ShaderSourceFunction(
+                request.entryPoint,
+                ShaderSourceType.Atomic("float"),
+                [],
+                new ShaderSourcePosition(request.source.assetPath, 1, 1)
+            ),
+            [],
+            []
+        );
 
     public void Dispose() => disposed++;
 }

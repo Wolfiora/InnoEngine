@@ -28,7 +28,7 @@ public sealed class ContentRenderTargetArtifactProviderTests : IDisposable
 
     public ContentRenderTargetArtifactProviderTests()
     {
-        m_modules = new(new()
+        m_modules = new(new ModuleHostOptions()
         {
             catalogSource = new DotNetAssemblyCatalogSource(typeof(ContentRenderTargetArtifactProviderTests).Assembly)
         });

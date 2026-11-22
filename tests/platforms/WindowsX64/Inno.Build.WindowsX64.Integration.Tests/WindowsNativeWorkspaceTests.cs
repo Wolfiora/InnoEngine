@@ -36,7 +36,7 @@ public sealed class WindowsNativeWorkspaceTests : IDisposable
         NativeToolchainSelection tools = await new WindowsX64NativeToolchainProvider(
             ToolchainEnvironment.ResolveExecutable("dotnet")
         ).ResolveAsync(
-            new(m_root, "release"),
+            new NativeBuildContext(m_root, "release"),
             (new WindowsBuildHostProvider().TryCapture()
              ?? throw new PlatformNotSupportedException("A Windows build host is required.")),
             "windows-x64",
@@ -59,7 +59,7 @@ public sealed class WindowsNativeWorkspaceTests : IDisposable
         async Task ProduceAsync(
             NativeBuildContext scoped,
             string output,
-            CancellationToken cancellation
+            CancellationToken cancellationToken
         ) {
             string current = scoped.GetNativeBuildRoot(m_owner);
             string physical = new DirectoryInfo(current).LinkTarget ?? current;
@@ -68,7 +68,7 @@ public sealed class WindowsNativeWorkspaceTests : IDisposable
                 Assert.Equal(workspace, physical);
             }
             workspace = physical;
-            string build = await NativeCMakeExecutor.BuildAsync(scoped, m_owner, source, "fixture", [], cancellation);
+            string build = await NativeCMakeExecutor.BuildAsync(scoped, m_owner, source, "fixture", [], cancellationToken);
             File.Copy(NativeCMakeExecutor.FindOutput(scoped, build, "fixture.dll"), Path.Combine(output, "fixture.dll"));
             string objectPath = Directory.EnumerateFiles(physical, "*.obj", SearchOption.AllDirectories)
                 .Single(path => Path.GetFileName(path) is "stable.obj" or "stable.c.obj");
@@ -85,7 +85,7 @@ public sealed class WindowsNativeWorkspaceTests : IDisposable
         }
         NativeBuildContext Context()
             => new NativeBuildContext(m_root, "release").WithToolchain(tools)
-                .WithComponentOptions(m_owner, new(NativeLibraryKind.Shared));
+                .WithComponentOptions(m_owner, new NativeComponentBuildOptions(NativeLibraryKind.Shared));
         NativeBuildRecipe Recipe()
             => new(
                 m_owner,

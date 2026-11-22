@@ -78,7 +78,7 @@ public sealed class StaticTypeCatalogSource : ITypeCatalogSource
         );
         foreach (Assembly assembly in assemblies)
         {
-            m_types.TryAdd(assembly, Array.Empty<Type>());
+            m_types.TryAdd(assembly, []);
         }
     }
 

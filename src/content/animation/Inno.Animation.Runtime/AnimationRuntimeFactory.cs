@@ -19,7 +19,8 @@ public sealed class AnimationRuntimeFactory : IRuntimeSubsystemFactory
     /// </param>
     public AnimationRuntimeFactory(Func<RuntimeSubsystemContext, AnimationRuntime> runtimeFactory)
     {
-        m_runtimeFactory = runtimeFactory ?? throw new ArgumentNullException(nameof(runtimeFactory));
+        ArgumentNullException.ThrowIfNull(runtimeFactory);
+        m_runtimeFactory = runtimeFactory;
     }
 
     /// <summary>

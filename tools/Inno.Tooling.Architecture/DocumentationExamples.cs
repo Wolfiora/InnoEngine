@@ -168,13 +168,13 @@ public static class DocumentationExamples
                          : null
         );
         var frozen = new Dictionary<string, FrozenReference>(StringComparer.OrdinalIgnoreCase);
-        var results = new List<ExampleGroupResult>();
+        List<ExampleGroupResult> results = [];
         foreach ((DocumentationPageInfo page, DocumentationCodeBlockInfo[] blocks) group in groups)
         {
             cancellationToken.ThrowIfCancellationRequested();
             DocumentationExampleContext? context = group.page.examples;
             var identities = new SortedDictionary<string, string>(StringComparer.Ordinal);
-            var errors = new List<string>();
+            List<string> errors = [];
             string status;
             try
             {
@@ -258,7 +258,7 @@ public static class DocumentationExamples
                 errors.Add(failure.Message);
             }
             results.Add(
-                new(
+                new ExampleGroupResult(
                     group.page.id,
                     group.page.contentIdentity,
                     context?.mode,

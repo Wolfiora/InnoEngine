@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Numerics;
 using Inno.Assets.Pipeline;
 using Inno.Editor.Assets;
 using Inno.Editor.ImGui;
@@ -393,7 +394,7 @@ internal static class MaterialInspector
                                 height = 128f;
                             }
 
-                            documents.previews.Draw(preview, new(width, height));
+                            documents.previews.Draw(preview, new Vector2(width, height));
                         }
                     }
                 }

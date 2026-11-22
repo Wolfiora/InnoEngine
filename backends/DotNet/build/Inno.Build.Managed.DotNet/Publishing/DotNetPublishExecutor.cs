@@ -47,8 +47,8 @@ internal static class DotNetPublishExecutor
             [physicalProjectDirectory, workspace.toolPath],
             cancellationToken
         ).ConfigureAwait(false);
-        var arguments = new List<string>
-        {
+        List<string> arguments =
+        [
             request.sdk.cliPath,
             "publish",
             Path.Combine(workspace.toolPath, Path.GetFileName(publication.projectPath)),
@@ -67,7 +67,7 @@ internal static class DotNetPublishExecutor
             "-p:TreatWarningsAsErrors=true",
             "-p:TrimmerSingleWarn=false",
             "-p:InnoGameManagedRoot=" + publication.codeInputDirectory
-        };
+        ];
         arguments.AddRange(request.properties.Select(static property => "-p:" + property));
         await using var output = new TailLogWriter(Path.Combine(publication.logDirectory, "managed-output.log"));
         await using var error = new TailLogWriter(Path.Combine(publication.logDirectory, "managed-error.log"));

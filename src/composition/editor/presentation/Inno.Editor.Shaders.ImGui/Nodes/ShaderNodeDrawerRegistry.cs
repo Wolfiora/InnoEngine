@@ -23,7 +23,8 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
     /// </param>
     public ShaderNodeDrawerRegistry(TypeCatalog types)
     {
-        m_types = types ?? throw new ArgumentNullException(nameof(types));
+        ArgumentNullException.ThrowIfNull(types);
+        m_types = types;
         m_registry = new(types);
     }
 
@@ -129,7 +130,12 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
                     names.Add(id, attribute.displayName);
                     presentations.Add(
                         id,
-                        new(attribute.displayName, Normalize(attribute.createPath), attribute.createOrder, attribute.separatorBefore)
+                        new ShaderNodePresentation(
+                            attribute.displayName,
+                            Normalize(attribute.createPath),
+                            attribute.createOrder,
+                            attribute.separatorBefore
+                        )
                     );
                 }
 

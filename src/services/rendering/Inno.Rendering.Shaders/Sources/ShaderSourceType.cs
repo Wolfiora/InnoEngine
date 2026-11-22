@@ -190,12 +190,13 @@ public sealed class ShaderSourceField
         ShaderSourceType type
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        if (type?.id == "void" || type?.storage is not null)
+        ArgumentNullException.ThrowIfNull(type);
+        if (type.id == "void" || type.storage is not null)
         {
             throw new ArgumentException("A structure field cannot have void type or contain an opaque storage binding.", nameof(type));
         }
         this.name = name;
-        this.type = type ?? throw new ArgumentNullException(nameof(type));
+        this.type = type;
     }
 
     /// <summary>

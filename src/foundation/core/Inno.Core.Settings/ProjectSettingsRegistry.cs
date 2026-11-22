@@ -45,8 +45,7 @@ internal sealed class ProjectSettingsRegistry : TypeRegistry<ProjectSettingsRegi
             {
                 throw new InvalidOperationException($"Project setting type '{type.FullName}' requires StableTypeID.");
             }
-            ProjectSettingDefinitionAttribute attribute =
-                types.GetAttribute<ProjectSettingDefinitionAttribute>(typeRef, inherit: false)!;
+            ProjectSettingDefinitionAttribute attribute = types.GetAttribute<ProjectSettingDefinitionAttribute>(typeRef, inherit: false)!;
             var id = new ProjectSettingID(attribute.id);
             if (!settingTypes.TryAdd(id, (stableType.stableID, type, attribute.allowPluginContributions)))
             {
@@ -70,8 +69,7 @@ internal sealed class ProjectSettingsRegistry : TypeRegistry<ProjectSettingsRegi
                     $"Project setting composer '{type.FullName}' requires a factory in the current type catalog."
                 );
             }
-            ProjectSettingComposerAttribute attribute =
-                types.GetAttribute<ProjectSettingComposerAttribute>(typeRef, inherit: false)!;
+            ProjectSettingComposerAttribute attribute = types.GetAttribute<ProjectSettingComposerAttribute>(typeRef, inherit: false)!;
             if (!settingTypes.TryGetValue(
                 attribute.settingID,
                 out (Guid stableTypeID, Type runtimeType, bool allowPluginContributions) setting

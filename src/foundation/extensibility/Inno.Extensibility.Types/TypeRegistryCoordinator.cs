@@ -246,7 +246,7 @@ internal sealed class TypeRegistryRefreshSet(IReadOnlyList<ITypeRegistryTransact
             TryCleanup(transactions[i].Complete, failures);
         }
         m_finished = true;
-        transactions = Array.Empty<ITypeRegistryTransaction>();
+        transactions = [];
         if (failures.Count > 0)
         {
             throw new AggregateException("Type registry completion failed after all participants were attempted.", failures);
@@ -269,7 +269,7 @@ internal sealed class TypeRegistryRefreshSet(IReadOnlyList<ITypeRegistryTransact
             TryCleanup(transactions[i].Rollback, failures);
         }
         m_finished = true;
-        transactions = Array.Empty<ITypeRegistryTransaction>();
+        transactions = [];
         if (failures.Count > 0)
         {
             throw new AggregateException("Type registry rollback failed after all participants were attempted.", failures);

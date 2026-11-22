@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Execution;
@@ -37,7 +38,7 @@ internal sealed partial class ShaderEditorCanvas
                 EditorImGui.OpenPopup("##source-settings");
             }
         });
-        EditorImGui.SetNextWindowSize(new(580, 470), (ImGuiCond.Appearing));
+        EditorImGui.SetNextWindowSize(new Vector2(580, 470), (ImGuiCond.Appearing));
         if (!EditorImGui.BeginPopup("##source-settings"))
         {
             return;

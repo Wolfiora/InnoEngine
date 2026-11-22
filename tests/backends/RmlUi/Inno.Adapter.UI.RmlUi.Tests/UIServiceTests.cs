@@ -78,7 +78,7 @@ public sealed class UIServiceTests : IDisposable
     {
         var frontend = new RmlUiDocumentFrontend();
         UIDocumentAnalysis first = frontend.Analyze(
-            new("Hud.rml", """
+            new UIDocumentSourceFile("Hud.rml", """
             <rml><head><style>
             @font-face { font-family: Interface; src: url(Lato.ttf); font-weight: 400; }
             body { font-family: Interface; font-size: 18px; }
@@ -87,7 +87,7 @@ public sealed class UIServiceTests : IDisposable
             """)
         );
         UIDocumentAnalysis second = frontend.Analyze(
-            new("Other.rml", """
+            new UIDocumentSourceFile("Other.rml", """
             <rml><head><style>
             @font-face { font-family: Interface; src: url(Lato.ttf); font-weight: 400; }
             body { font-family: Interface; }
@@ -108,7 +108,7 @@ public sealed class UIServiceTests : IDisposable
     public void UndeclaredFontFamilyProducesNoGlyphDraw()
     {
         using var backend = new RmlUiBackend();
-        backend.RegisterFont(new(File.ReadAllBytes(FontPath()), 0, "Declared", TextFontStyle.Normal, 400));
+        backend.RegisterFont(new UIFontRegistration(File.ReadAllBytes(FontPath()), 0, "Declared", TextFontStyle.Normal, 400));
         UIContextHandle context = backend.CreateContext(new UIContextOptions("missing-font", 320, 180));
         UIDocumentHandle document = backend.LoadDocument(
             context,
@@ -163,7 +163,7 @@ public sealed class UIServiceTests : IDisposable
                           ? string.Empty
                           : $"@font-face {{ font-family: {family}; src: url(Lato.ttf); font-weight: 400; }}";
             UIDocumentAnalysis analysis = frontend.Analyze(
-                new(
+                new UIDocumentSourceFile(
                     "FontSwitch.rml",
                     $"<rml><head><style>{face}body {{ margin: 0; font-family: {family}; font-size: 24px; }}</style></head><body>Visible text</body></rml>"
                 )
@@ -171,7 +171,7 @@ public sealed class UIServiceTests : IDisposable
             Assert.True(analysis.succeeded);
             foreach (UIDocumentFontDeclaration declaration in analysis.fonts)
             {
-                backend.RegisterFont(new(font, 0, declaration.family, declaration.style, declaration.weight));
+                backend.RegisterFont(new UIFontRegistration(font, 0, declaration.family, declaration.style, declaration.weight));
             }
             UIDocumentHandle document = backend.LoadDocument(context, Rml(analysis.text!));
             backend.ShowDocument(context, document);
@@ -185,9 +185,9 @@ public sealed class UIServiceTests : IDisposable
     public void CssWeightSelectsDifferentFacesOfOneDeclaredFamily()
     {
         using var backend = new RmlUiBackend();
-        backend.RegisterFont(new(File.ReadAllBytes(FontPath()), 0, "WeightFamily", TextFontStyle.Normal, 400));
+        backend.RegisterFont(new UIFontRegistration(File.ReadAllBytes(FontPath()), 0, "WeightFamily", TextFontStyle.Normal, 400));
         backend.RegisterFont(
-            new(
+            new UIFontRegistration(
                 File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "TestData", "LatoLatin-Bold.ttf")),
                 0,
                 "WeightFamily",
@@ -256,7 +256,7 @@ public sealed class UIServiceTests : IDisposable
     public void NativeBackendBuildsGeometryAndDrainsDomEvents()
     {
         using var backend = new RmlUiBackend();
-        backend.RegisterFont(new(File.ReadAllBytes(FontPath()), 0, "Lato", TextFontStyle.Normal, 400));
+        backend.RegisterFont(new UIFontRegistration(File.ReadAllBytes(FontPath()), 0, "Lato", TextFontStyle.Normal, 400));
         UIContextHandle context = backend.CreateContext(new UIContextOptions("test", 640, 360));
         UIDocumentHandle document = backend.LoadDocument(
             context,
@@ -317,15 +317,15 @@ public sealed class UIServiceTests : IDisposable
         using var first = new RmlUiBackend();
         using var second = new RmlUiBackend();
 
-        first.RegisterFont(new(font, 0, "SharedLato", TextFontStyle.Normal, 400));
-        second.RegisterFont(new(font, 0, "SharedLato", TextFontStyle.Normal, 400));
+        first.RegisterFont(new UIFontRegistration(font, 0, "SharedLato", TextFontStyle.Normal, 400));
+        second.RegisterFont(new UIFontRegistration(font, 0, "SharedLato", TextFontStyle.Normal, 400));
     }
 
     [Fact]
     public void NativeBackendRetiresContextsWithLiveDocumentsAndTextures()
     {
         using var backend = new RmlUiBackend();
-        backend.RegisterFont(new(File.ReadAllBytes(FontPath()), 0, "RetirementFont", TextFontStyle.Normal, 400));
+        backend.RegisterFont(new UIFontRegistration(File.ReadAllBytes(FontPath()), 0, "RetirementFont", TextFontStyle.Normal, 400));
         for (int index = 0; index < 8; index++)
         {
             UIContextHandle context = backend.CreateContext(new UIContextOptions($"retire-{index}", 320, 180));

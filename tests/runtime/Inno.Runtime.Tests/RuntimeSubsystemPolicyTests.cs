@@ -50,10 +50,10 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
     [Fact]
     public void SuppliedCapabilitiesAndDescriptorCollectionsAreImmutableSnapshots()
     {
-        RuntimeCapabilityID[] required = [new("test.output")];
+        RuntimeCapabilityID[] required = [new RuntimeCapabilityID("test.output")];
         Factory factory = Create("test.ready", capabilities: required);
         required[0] = new RuntimeCapabilityID("test.changed");
-        RuntimeCapabilityID[] supplied = [new("test.output")];
+        RuntimeCapabilityID[] supplied = [new RuntimeCapabilityID("test.output")];
         RuntimeSubsystemPipeline pipeline = m_host.CreateHostPipeline([factory], supplied);
         supplied[0] = new RuntimeCapabilityID("test.changed");
         Assert.Contains(new RuntimeCapabilityID("test.output"), factory.context!.capabilities);

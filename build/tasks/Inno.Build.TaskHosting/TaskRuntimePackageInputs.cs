@@ -20,7 +20,7 @@ internal static class TaskRuntimePackageInputs
     internal static bool Collect(
         ProjectInstance project,
         ISet<string> inputs,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         string assets = project.GetPropertyValue("ProjectAssetsFile");
         if (assets.Length == 0)
@@ -52,7 +52,7 @@ internal static class TaskRuntimePackageInputs
             .ToArray();
         foreach (JsonProperty dependency in target.EnumerateObject())
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             if (dependency.Value.GetProperty("type").GetString() != "package")
             {
                 continue;
@@ -93,7 +93,7 @@ internal static class TaskRuntimePackageInputs
             }
             foreach (string relativeInput in selected)
             {
-                cancellation.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 if (Path.GetFileName(relativeInput) == "_._")
                 {
                     continue;

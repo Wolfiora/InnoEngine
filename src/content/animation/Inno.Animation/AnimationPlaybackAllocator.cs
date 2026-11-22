@@ -51,10 +51,7 @@ public sealed class AnimationPlaybackAllocator
         uint slotGeneration
     ) {
         ArgumentOutOfRangeException.ThrowIfNegative(slot);
-        if (slotGeneration == 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(slotGeneration));
-        }
+        ArgumentOutOfRangeException.ThrowIfZero(slotGeneration);
         return new AnimationPlaybackHandle(((ulong)slotGeneration << 32) | ((uint)slot + 1u), generation);
     }
 

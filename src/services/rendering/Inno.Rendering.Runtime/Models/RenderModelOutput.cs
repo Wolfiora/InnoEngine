@@ -37,8 +37,9 @@ public sealed class RenderModelOutput
         RenderTextureFormat targetFormat = RenderTextureFormat.RGBA8Srgb
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentNullException.ThrowIfNull(pipeline);
         this.name = name;
-        this.pipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
+        this.pipeline = pipeline;
         this.data = data?.Snapshot() ?? throw new ArgumentNullException(nameof(data));
         this.targetFormat = targetFormat;
     }

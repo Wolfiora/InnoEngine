@@ -53,25 +53,29 @@ public sealed unsafe class TreeKeyboardOwnershipNativeTests
                     host.ui.widgets.SetNextTreeNodeOpen(true);
                     initialize = false;
                 }
-                TreeNodeResult row = host.ui.widgets.TreeNode("keyboard-row", _ => Gui.Text("A domain-independent row"), new()
-                {
-                    requestFocus = rowFocus,
-                    drawViewportOverlay = () =>
+                TreeNodeResult row = host.ui.widgets.TreeNode(
+                    "keyboard-row",
+                    _ => Gui.Text("A domain-independent row"),
+                    new TreeNodeOptions()
                     {
-                        NativeImGui.SameLine(0f, -1f);
-                        if (overlayFocus)
+                        requestFocus = rowFocus,
+                        drawViewportOverlay = () =>
                         {
-                            Gui.FocusNextItem();
+                            NativeImGui.SameLine(0f, -1f);
+                            if (overlayFocus)
+                            {
+                                Gui.FocusNextItem();
+                            }
+                            if (NativeImGui.SmallButton("Overlay"))
+                            {
+                                overlayPresses++;
+                            }
+                            overlayID = NativeImGui.Raw.GetCurrentContext()->LastItemData.ID;
+                            ImGuiNativeContext* state = NativeImGui.Raw.GetCurrentContext();
+                            overlayState = $"id={overlayID:X}, nav={state->NavId:X}, active={state->ActiveId:X}, activate={state->NavActivateId:X}, pressed={state->NavActivatePressedId:X}, keyOwner={NativeImGui.GetKeyOwner(ImGuiKey.Space):X}";
                         }
-                        if (NativeImGui.SmallButton("Overlay"))
-                        {
-                            overlayPresses++;
-                        }
-                        overlayID = NativeImGui.Raw.GetCurrentContext()->LastItemData.ID;
-                        ImGuiNativeContext* state = NativeImGui.Raw.GetCurrentContext();
-                        overlayState = $"id={overlayID:X}, nav={state->NavId:X}, active={state->ActiveId:X}, activate={state->NavActivateId:X}, pressed={state->NavActivatePressedId:X}, keyOwner={NativeImGui.GetKeyOwner(ImGuiKey.Space):X}";
                     }
-                });
+                );
                 open = row.isOpen;
                 if (open)
                 {

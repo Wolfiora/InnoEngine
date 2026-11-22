@@ -53,7 +53,8 @@ public sealed class ScriptingApiExportAttribute : Attribute
         string name,
         ScriptingApiScope scope
     ) {
-        this.type = type ?? throw new ArgumentNullException(nameof(type));
+        ArgumentNullException.ThrowIfNull(type);
+        this.type = type;
         if (string.IsNullOrWhiteSpace(name))
         {
             throw new ArgumentException("A script-facing type name is required.", nameof(name));

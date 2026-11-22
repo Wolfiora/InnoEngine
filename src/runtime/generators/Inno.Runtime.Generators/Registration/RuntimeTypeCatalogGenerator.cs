@@ -62,7 +62,7 @@ internal static class RuntimeTypeCatalogGenerator
             .Where(static type => type.IsGenericType && type.TypeParameters.Length != 0 && GetConverterPattern(type) is not null)
             .ToArray();
         var factories = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
-        var rejected = new List<(INamedTypeSymbol definition, ITypeSymbol[] arguments)>();
+        List<(INamedTypeSymbol definition, ITypeSymbol[] arguments)> rejected = [];
         foreach (ITypeSymbol value in values)
         {
             if (value is INamedTypeSymbol { IsGenericType: true } named && IsAvailable(named, compilation))

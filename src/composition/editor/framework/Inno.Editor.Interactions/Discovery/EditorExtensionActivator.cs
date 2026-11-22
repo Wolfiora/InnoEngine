@@ -24,13 +24,17 @@ internal sealed class EditorExtensionActivator
         IEnumerable<object> hostServices,
         IEnumerable<object>? retainedInstances = null
     ) {
-        m_context = context ?? throw new ArgumentNullException(nameof(context));
-        m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(interactions);
+        ArgumentNullException.ThrowIfNull(activeTypes);
+        ArgumentNullException.ThrowIfNull(hostServices);
+        m_context = context;
+        m_interactions = interactions;
         m_moduleTypes = moduleTypes
             .OrderBy(static type => type.FullName, StringComparer.Ordinal)
             .ToArray();
-        m_hostServices = (hostServices ?? throw new ArgumentNullException(nameof(hostServices))).ToArray();
-        var activeTypeSet = new HashSet<Type>(activeTypes ?? throw new ArgumentNullException(nameof(activeTypes)));
+        m_hostServices = (hostServices).ToArray();
+        var activeTypeSet = new HashSet<Type>(activeTypes);
         if (retainedInstances is null)
         {
             return;

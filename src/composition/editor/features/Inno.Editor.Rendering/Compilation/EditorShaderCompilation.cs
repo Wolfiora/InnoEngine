@@ -88,8 +88,10 @@ public sealed class EditorShaderCompilation
         EditorRenderTargetArtifactProvider provider,
         GraphicsCapabilities capabilities
     ) {
-        m_provider = provider ?? throw new ArgumentNullException(nameof(provider));
-        m_capabilities = capabilities ?? throw new ArgumentNullException(nameof(capabilities));
+        ArgumentNullException.ThrowIfNull(provider);
+        ArgumentNullException.ThrowIfNull(capabilities);
+        m_provider = provider;
+        m_capabilities = capabilities;
     }
 
     /// <summary>
@@ -105,8 +107,10 @@ public sealed class EditorShaderCompilation
         EditorRenderTargetArtifactProvider provider,
         IEditorShaderArtifactValidator validator
     ) {
-        m_provider = provider ?? throw new ArgumentNullException(nameof(provider));
-        m_validator = validator ?? throw new ArgumentNullException(nameof(validator));
+        ArgumentNullException.ThrowIfNull(provider);
+        ArgumentNullException.ThrowIfNull(validator);
+        m_provider = provider;
+        m_validator = validator;
         m_capabilities = validator.capabilities;
     }
 
@@ -202,9 +206,9 @@ public sealed class EditorShaderCompilation
             .ToArray();
         return validated.state switch
         {
-            EditorShaderCompilationState.Compiling => new(validated.state, false, diagnostics, null),
-            EditorShaderCompilationState.Failed => new(validated.state, false, diagnostics, null),
-            _ => new(validated.state, false, diagnostics, compiled.artifact)
+            EditorShaderCompilationState.Compiling => new EditorShaderDraftCompilationSnapshot(validated.state, false, diagnostics, null),
+            EditorShaderCompilationState.Failed => new EditorShaderDraftCompilationSnapshot(validated.state, false, diagnostics, null),
+            _ => new EditorShaderDraftCompilationSnapshot(validated.state, false, diagnostics, compiled.artifact)
         };
     }
 

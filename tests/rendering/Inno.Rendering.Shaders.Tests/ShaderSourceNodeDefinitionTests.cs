@@ -12,14 +12,14 @@ public sealed class ShaderSourceNodeDefinitionTests
     public void FunctionPortsUseSemanticNamesAndInOutCreatesBothDirections()
     {
         var definition = new ShaderSourceNodeDefinition(
-            new(
+            new ShaderSourceFunction(
                 "Shade",
                 ShaderSourceType.Atomic("float4"),
                 [
-                    new("uv", ShaderSourceType.Atomic("float2"), ShaderSourceParameterDirection.Input),
-                    new("color", ShaderSourceType.Atomic("float4"), ShaderSourceParameterDirection.InputOutput)
+                    new ShaderSourceParameter("uv", ShaderSourceType.Atomic("float2"), ShaderSourceParameterDirection.Input),
+                    new ShaderSourceParameter("color", ShaderSourceType.Atomic("float4"), ShaderSourceParameterDirection.InputOutput)
                 ],
-                new("source", 1, 1)
+                new ShaderSourcePosition("source", 1, 1)
             )
         );
         Assert.Equal(
@@ -33,13 +33,16 @@ public sealed class ShaderSourceNodeDefinitionTests
     [Fact]
     public void AggregatesExposeMembersWithoutDiscardingTheirWholeValuePorts()
     {
-        ShaderSourceType aggregate = ShaderSourceType.Structure("Surface", [new("normal", ShaderSourceType.Atomic("float3"))]);
+        ShaderSourceType aggregate = ShaderSourceType.Structure(
+            "Surface",
+            [new ShaderSourceField("normal", ShaderSourceType.Atomic("float3"))]
+        );
         var definition = new ShaderSourceNodeDefinition(
-            new(
+            new ShaderSourceFunction(
                 "Shade",
                 aggregate,
-                [new("surface", aggregate, ShaderSourceParameterDirection.Input)],
-                new("source", 1, 1)
+                [new ShaderSourceParameter("surface", aggregate, ShaderSourceParameterDirection.Input)],
+                new ShaderSourcePosition("source", 1, 1)
             )
         );
         Assert.Equal(
@@ -53,15 +56,15 @@ public sealed class ShaderSourceNodeDefinitionTests
     public void ArrayLengthsAndStructureLayoutsCannotAliasGraphValueTypes()
     {
         string FirstPortType(ShaderSourceType type)
-            => new ShaderSourceNodeDefinition(new("Shade", type, [], new("source", 1, 1)))
+            => new ShaderSourceNodeDefinition(new ShaderSourceFunction("Shade", type, [], new ShaderSourcePosition("source", 1, 1)))
                 .GetPorts(NODE)[0].valueTypeID;
         Assert.NotEqual(
             FirstPortType(ShaderSourceType.ArrayOf(ShaderSourceType.Atomic("float"), 2)),
             FirstPortType(ShaderSourceType.ArrayOf(ShaderSourceType.Atomic("float"), 3))
         );
         Assert.NotEqual(
-            FirstPortType(ShaderSourceType.Structure("Surface", [new("a", ShaderSourceType.Atomic("float3"))])),
-            FirstPortType(ShaderSourceType.Structure("Surface", [new("a", ShaderSourceType.Atomic("float4"))]))
+            FirstPortType(ShaderSourceType.Structure("Surface", [new ShaderSourceField("a", ShaderSourceType.Atomic("float3"))])),
+            FirstPortType(ShaderSourceType.Structure("Surface", [new ShaderSourceField("a", ShaderSourceType.Atomic("float4"))]))
         );
     }
 }

@@ -55,11 +55,16 @@ public sealed class RuntimeSubsystemContext
         bool isEditMode = false,
         IEnumerable<RuntimeCapabilityID>? capabilities = null
     ) {
-        this.events = events ?? throw new ArgumentNullException(nameof(events));
-        this.diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
-        this.identities = identities ?? throw new ArgumentNullException(nameof(identities));
-        this.types = types ?? throw new ArgumentNullException(nameof(types));
-        this.resources = resources ?? throw new ArgumentNullException(nameof(resources));
+        ArgumentNullException.ThrowIfNull(events);
+        ArgumentNullException.ThrowIfNull(diagnostics);
+        ArgumentNullException.ThrowIfNull(identities);
+        ArgumentNullException.ThrowIfNull(types);
+        ArgumentNullException.ThrowIfNull(resources);
+        this.events = events;
+        this.diagnostics = diagnostics;
+        this.identities = identities;
+        this.types = types;
+        this.resources = resources;
         this.lifetime = lifetime;
         this.isEditMode = isEditMode;
         this.capabilities = (capabilities ?? []).ToFrozenSet();

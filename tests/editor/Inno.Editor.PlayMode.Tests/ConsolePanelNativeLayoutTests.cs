@@ -45,7 +45,7 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
             io->Fonts->RendererHasTextures = 1;
             io->IniFilename = null;
             using var modules = new ModuleHost(
-                new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ConsolePanelNativeLayoutTests).Assembly) }
+                new ModuleHostOptions() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ConsolePanelNativeLayoutTests).Assembly) }
             );
             using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
             using var logs = new LogRouter();
@@ -65,7 +65,7 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
             for (int frame = 0; frame < 2; frame++)
             {
                 ImGuiApi.NewFrame();
-                ImGuiApi.SetNextWindowSize(new(800f, 600f));
+                ImGuiApi.SetNextWindowSize(new Vector2(800f, 600f));
                 using NativeStringLease title = Utf8Codec.EncodeNullTerminated("Failure parent", allowsNull: false);
                 _ = ImGuiApi.Raw.Begin((sbyte*)title.pointer, null, 0);
                 nint parent = (nint)ImGuiApi.Raw.GetCurrentWindow();
@@ -109,14 +109,14 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
             ImGuiApi.Raw.GetIO()->Fonts->RendererHasTextures = 1;
             ImGuiApi.Raw.ScaleAllSizes(ImGuiApi.Raw.GetStyle(), scale);
             using var modules = new ModuleHost(
-                new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ConsolePanelNativeLayoutTests).Assembly)}
+                new ModuleHostOptions() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ConsolePanelNativeLayoutTests).Assembly)}
             );
             using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
             using var logs = new LogRouter();
             var hub = new DiagnosticHub();
             using var console = new EditorConsole(logs, hub, new InactivePlayMode());
             console.Start();
-            using DiagnosticReporter reporter = hub.CreateReporter(new("shader", "Rendering"));
+            using DiagnosticReporter reporter = hub.CreateReporter(new DiagnosticSource("shader", "Rendering"));
             using var ui = new EditorUISession();
             using var runtime = new EditorInteractionRuntime(
                 new EditorContext(root, new EditorKeyboardPolicy(KeyModifier.Control, "Super")),
@@ -129,7 +129,9 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
             console.Clear();
             if (diagnostic)
             {
-                reporter.Publish(new("BGFX_IR_GENERATION", "BGFX has no position builtin for stage Compute.", DiagnosticSeverity.Error));
+                reporter.Publish(
+                    new Diagnostic("BGFX_IR_GENERATION", "BGFX has no position builtin for stage Compute.", DiagnosticSeverity.Error)
+                );
             }
             else
             {
@@ -142,8 +144,8 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
             {
                 using IDisposable scope = ui.Enter();
                 ImGuiApi.NewFrame();
-                ImGuiApi.SetNextWindowPos(new(0, 0));
-                ImGuiApi.SetNextWindowSize(new(width, 700));
+                ImGuiApi.SetNextWindowPos(new Vector2(0, 0));
+                ImGuiApi.SetNextWindowSize(new Vector2(width, 700));
                 using NativeStringLease nativeTestText0 = Utf8Codec.EncodeNullTerminated("Console Layout", allowsNull: false);
                 _ = ImGuiApi.Raw.Begin((sbyte*)nativeTestText0.pointer, null, 0);
                 Assert.True(panel.Draw(runtime.context));

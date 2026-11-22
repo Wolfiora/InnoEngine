@@ -183,8 +183,7 @@ public sealed class ModuleHost : IDisposable
             }
 
             var handle = new AssemblyModuleHandle(Guid.NewGuid());
-            IReadOnlyDictionary<string, PlannedAssembly> plannedAssemblies =
-                BuildPlannedAssemblyMap([request]);
+            IReadOnlyDictionary<string, PlannedAssembly> plannedAssemblies = BuildPlannedAssemblyMap([request]);
             AssemblyModuleEntry module = StageModule(
                 handle,
                 request,
@@ -739,8 +738,7 @@ public sealed class ModuleHost : IDisposable
             );
         }).ToArray();
         ValidateReloadClosure(orderedRequests, removedModules);
-        IReadOnlyDictionary<string, PlannedAssembly> plannedAssemblies =
-            BuildPlannedAssemblyMap(orderedRequests);
+        IReadOnlyDictionary<string, PlannedAssembly> plannedAssemblies = BuildPlannedAssemblyMap(orderedRequests);
 
         var previousModules = new AssemblyModuleEntry?[orderedRequests.Length];
         var candidates = new List<AssemblyModuleEntry>(orderedRequests.Length);

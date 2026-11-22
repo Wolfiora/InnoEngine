@@ -25,7 +25,7 @@ internal sealed class BraceBlankLineStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         int count = source.text.Lines.Count;
         for (int line = 1; line < count - 1; line++)
         {

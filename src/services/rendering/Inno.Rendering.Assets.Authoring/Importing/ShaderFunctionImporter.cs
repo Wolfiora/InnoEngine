@@ -72,10 +72,11 @@ internal sealed class ShaderFunctionImporter : AssetImporter<ShaderFunctionAsset
         var modules = new Dictionary<string, ShaderSourceModuleAnalysis>(StringComparer.Ordinal);
         foreach (string export in exports)
         {
-            var requests = new List<ShaderSourceImplementationRequest>
-            {
-                new(settings.implementationId, settings.languageId, new(source, export, new SourceResolver(context)))
-            };
+            List<ShaderSourceImplementationRequest> requests = [new ShaderSourceImplementationRequest(
+                settings.implementationId,
+                settings.languageId,
+                new ShaderSourceRequest(source, export, new SourceResolver(context))
+            )];
             foreach (ShaderFunctionAsset implementation in settings.implementations ?? [])
             {
                 if (implementation is null || implementation.isMissing)

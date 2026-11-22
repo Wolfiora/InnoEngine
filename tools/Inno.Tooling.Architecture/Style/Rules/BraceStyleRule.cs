@@ -27,7 +27,7 @@ internal sealed class BraceStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         foreach ((int position, string indent, string _) in Violations(source))
         {
             int start = position;
@@ -36,7 +36,7 @@ internal sealed class BraceStyleRule : StyleRule
                 start--;
             }
 
-            edits.Add(new(start, position, "\n" + indent));
+            edits.Add(new StyleEdit(start, position, "\n" + indent));
         }
 
         return edits;
@@ -57,13 +57,13 @@ internal sealed class BraceStyleRule : StyleRule
                                   : source.Indentation(previous.SpanStart);
                 if (!source.IsFirstOnLine(pair.open) && !StyleLayout.ClosesMultiLineHeader(source, previous))
                 {
-                    yield return (pair.open.SpanStart, new(' ', indentation), "Put the opening brace on its own line.");
+                    yield return (pair.open.SpanStart, new string(' ', indentation), "Put the opening brace on its own line.");
                 }
 
                 SyntaxToken next = pair.open.GetNextToken();
                 if (source.LineNumber(next.SpanStart) == source.LineNumber(pair.open.SpanStart))
                 {
-                    yield return (next.SpanStart, new(
+                    yield return (next.SpanStart, new string(
                         ' ',
                         indentation + StyleLayout.C_INDENT
                     ), "Nothing follows an opening brace on its line.");
@@ -71,7 +71,7 @@ internal sealed class BraceStyleRule : StyleRule
 
                 if (!source.IsFirstOnLine(pair.close))
                 {
-                    yield return (pair.close.SpanStart, new(' ', indentation), "Put the closing brace on its own line.");
+                    yield return (pair.close.SpanStart, new string(' ', indentation), "Put the closing brace on its own line.");
                 }
             }
 
@@ -86,7 +86,10 @@ internal sealed class BraceStyleRule : StyleRule
             if (keyword.IsKind(SyntaxKind.None) || keyword.IsMissing || source.IsFirstOnLine(keyword)) continue;
             SyntaxToken before = keyword.GetPreviousToken();
             if (!before.IsKind(SyntaxKind.CloseBraceToken)) continue;
-            yield return (keyword.SpanStart, new(' ', source.Indentation(before.SpanStart)), $"Start a new line for '{keyword.Text}'.");
+            yield return (keyword.SpanStart, new string(
+                ' ',
+                source.Indentation(before.SpanStart)
+            ), $"Start a new line for '{keyword.Text}'.");
         }
     }
 

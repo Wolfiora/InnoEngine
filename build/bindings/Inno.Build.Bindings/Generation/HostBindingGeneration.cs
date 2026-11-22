@@ -12,11 +12,11 @@ internal static class HostBindingGeneration
         GenerationRequest loaded,
         BindingGenerationPublication publication,
         string fingerprint,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         string managed = publication.GetHostCandidate(publication.managedDestination);
         string native = publication.GetHostCandidate(publication.nativeDestination!);
-        BindingGenerationDiagnostics.Generate(context, definition, loaded, publication.bgcsCandidate, native, managed, cancellation);
+        BindingGenerationDiagnostics.Generate(context, definition, loaded, publication.bgcsCandidate, native, managed, cancellationToken);
         if (definition.request.checkOnly)
         {
             BindingGenerationDiagnostics.RequireEqual(managed, publication.managedDestination, true);

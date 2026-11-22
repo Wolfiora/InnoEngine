@@ -20,7 +20,7 @@ internal static class TaskRuntimeRequestKey
         string artifacts,
         IReadOnlyList<string> targets,
         IDictionary properties,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         Dictionary<string, string> globals = properties.Cast<DictionaryEntry>().ToDictionary(
             static entry => (string)entry.Key,
@@ -32,8 +32,8 @@ internal static class TaskRuntimeRequestKey
         bool needsRestore = false;
         StringComparer paths = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
         var inputs = new HashSet<string>(paths);
-        var restoreRequests = new List<TaskRuntimeRestoreRequest>();
-        var declarations = new List<string> { project, artifacts, string.Join(";", targets) };
+        List<TaskRuntimeRestoreRequest> restoreRequests = [];
+        List<string> declarations = [project, artifacts, string.Join(";", targets)];
         // Execution ownership reaches nested tool builds, but is not a compiler input itself.
         // Evaluated source, imports and compiler properties below still capture any derived behavior.
         declarations.AddRange(
@@ -43,7 +43,7 @@ internal static class TaskRuntimeRequestKey
         );
         foreach (ProjectGraphNode node in graph.ProjectNodes.OrderBy(static node => node.ProjectInstance.FullPath, paths))
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             ProjectInstance instance = node.ProjectInstance;
             foreach (ProjectItemInstance item in instance.GetItems("InnoBuildInputRestoreProject"))
             {
@@ -69,7 +69,11 @@ internal static class TaskRuntimeRequestKey
                     restoreProperties[declaration[..separator]] = ProjectCollection.Unescape(declaration[(separator + 1)..]);
                 }
                 restoreRequests.Add(
-                    new(restoreProject, new ReadOnlyDictionary<string, string>(restoreProperties), removedProperties)
+                    new TaskRuntimeRestoreRequest(
+                        restoreProject,
+                        new ReadOnlyDictionary<string, string>(restoreProperties),
+                        removedProperties
+                    )
                 );
             }
             inputs.Add(instance.FullPath);
@@ -77,7 +81,7 @@ internal static class TaskRuntimeRequestKey
             {
                 inputs.Add(import);
             }
-            needsRestore |= !TaskRuntimePackageInputs.Collect(instance, inputs, cancellation);
+            needsRestore |= !TaskRuntimePackageInputs.Collect(instance, inputs, cancellationToken);
             declarations.AddRange(
                 instance.GlobalProperties.Where(static entry => IsInputProperty(entry.Key))
                     .OrderBy(static entry => entry.Key, StringComparer.OrdinalIgnoreCase)
@@ -164,7 +168,7 @@ internal static class TaskRuntimeRequestKey
         }
         foreach (string input in inputs.Order(paths))
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             digest.AppendData(Encoding.UTF8.GetBytes(input + "\n"));
             using FileStream stream = File.OpenRead(input);
             byte[] hash = SHA256.HashData(stream);

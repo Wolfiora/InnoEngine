@@ -60,7 +60,8 @@ public abstract class Shell : IDisposable
         IAdapterCatalog adapterCatalog,
         ShellOptions options
     ) {
-        m_adapterCatalog = adapterCatalog ?? throw new ArgumentNullException(nameof(adapterCatalog));
+        ArgumentNullException.ThrowIfNull(adapterCatalog);
+        m_adapterCatalog = adapterCatalog;
         ArgumentNullException.ThrowIfNull(options);
         m_adapterSelection = options.adapters;
         m_suspendWhenHidden = options.suspendWhenHidden;

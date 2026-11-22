@@ -161,8 +161,14 @@ public sealed class NativeComponentBuildOptionsTests
                 ["component/Profile.cs"]
             );
             string identity = Identity(options);
-            Assert.NotEqual(identity, Identity(new(NativeLibraryKind.Static, options.cmakeArguments, options.inputPaths)));
-            Assert.NotEqual(identity, Identity(new(NativeLibraryKind.Shared, ["-DB=two", "-DA=one"], options.inputPaths)));
+            Assert.NotEqual(
+                identity,
+                Identity(new NativeComponentBuildOptions(NativeLibraryKind.Static, options.cmakeArguments, options.inputPaths))
+            );
+            Assert.NotEqual(
+                identity,
+                Identity(new NativeComponentBuildOptions(NativeLibraryKind.Shared, ["-DB=two", "-DA=one"], options.inputPaths))
+            );
             DateTime timestamp = File.GetLastWriteTimeUtc(config);
             File.WriteAllText(config, "two");
             File.SetLastWriteTimeUtc(config, timestamp);

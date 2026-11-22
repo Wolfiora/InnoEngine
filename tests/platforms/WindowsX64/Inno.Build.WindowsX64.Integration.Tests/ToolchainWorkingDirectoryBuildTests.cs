@@ -26,7 +26,7 @@ public sealed class ToolchainWorkingDirectoryBuildTests
             using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
             string cmake = OperatingSystem.IsWindows()
                            ? (await new WindowsX64NativeToolchainProvider(dotnet).ResolveAsync(
-                               new(repository, "debug"),
+                               new NativeBuildContext(repository, "debug"),
                                (new WindowsBuildHostProvider().TryCapture()
                                 ?? throw new PlatformNotSupportedException("A Windows build host is required.")),
                                "windows-x64",

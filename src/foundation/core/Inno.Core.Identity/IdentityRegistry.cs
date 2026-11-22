@@ -629,7 +629,7 @@ internal sealed class IdentityRegistry
             IdentityObject obj,
             Guid persistentID
         ) {
-            objectRef = new WeakReference<IdentityObject>(obj);
+            this.objectRef = new WeakReference<IdentityObject>(obj);
             this.persistentID = persistentID;
         }
 

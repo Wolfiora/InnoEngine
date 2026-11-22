@@ -32,8 +32,9 @@ public sealed class ShaderGraphSourceStore
         SerializationRegistry serialization
     ) {
         ArgumentNullException.ThrowIfNull(assets);
+        ArgumentNullException.ThrowIfNull(serialization);
         m_sources = assets.CreateSourceStore();
-        m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
+        m_serialization = serialization;
     }
 
     /// <summary>

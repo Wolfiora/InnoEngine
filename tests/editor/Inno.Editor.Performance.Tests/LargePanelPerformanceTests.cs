@@ -205,7 +205,7 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
         int repetitions = requested is null ? 5 : int.Parse(requested, CultureInfo.InvariantCulture);
         Assert.InRange(repetitions, 1, 5);
         using Process process = Process.GetCurrentProcess();
-        var samples = new List<object>();
+        List<object> samples = [];
         for (int repetition = 0; repetition < repetitions; repetition++)
         {
             var milliseconds = new double[10];

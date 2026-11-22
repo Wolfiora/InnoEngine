@@ -34,7 +34,7 @@ public sealed class ImmutableRegistrationTests : IDisposable
         BuildCacheCleanupPlan protectedPlan = BuildCacheCleanupPlan.Create(
             Path.GetDirectoryName(m_root)!,
             [publisher.Describe("documentation")],
-            new(0, 0),
+            new BuildCachePolicy(0, 0),
             retireAll: true
         );
         Assert.Empty((await protectedPlan.ExecuteAsync()).retired);

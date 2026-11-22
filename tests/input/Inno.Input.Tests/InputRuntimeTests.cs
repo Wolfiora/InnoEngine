@@ -150,7 +150,7 @@ public sealed class InputRuntimeTests
     {
         string root = Path.Combine(Path.GetTempPath(), "InnoInputRuntimeTests", Guid.NewGuid().ToString("N"));
         using var source = new EventInputSource(windowID: 1);
-        var observations = new List<bool>();
+        List<bool> observations = [];
         using EngineHost host = new EngineHostBuilder()
             .UseMetadataSources(
                 new DotNetAssemblyCatalogSource(typeof(InputRuntimeTests).Assembly),

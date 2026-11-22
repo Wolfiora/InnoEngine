@@ -63,12 +63,17 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
         Assert.Contains(lowered.block!.instructions, instruction => instruction.operation == ShaderIrOperation.SourceCall);
         Assert.Contains(lowered.block.instructions, instruction => instruction.operation == ShaderIrOperation.Multiply);
         Assert.Equal(BitConverter.SingleToUInt32Bits(0.25f), lowered.block.instructions[0].constantBits);
-        var stage = new ShaderIrStage(ShaderStage.Fragment, lowered.block, [], [new("color", ShaderIrOutputKind.Color)]);
+        var stage = new ShaderIrStage(
+            ShaderStage.Fragment,
+            lowered.block,
+            [],
+            [new ShaderIrStageOutput("color", ShaderIrOutputKind.Color)]
+        );
         var compiler = new ShaderCompiler(new BgfxShadercToolchain(MacOSArm64BgfxShaderProfiles.target));
         var caps = new GraphicsCapabilities(
             GraphicsApi.metal,
             GraphicsCapability.None,
-            new(256, 8, 8192, 16),
+            new GraphicsLimits(256, 8, 8192, 16),
             Enum.GetValues<RenderTextureFormat>(),
             Enum.GetValues<RenderTextureFormat>(),
             Enum.GetValues<RenderTextureFormat>(),
@@ -100,7 +105,12 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
             );
             ShaderGraphLoweringResult result = Catalog(new DoubleCompiler()).Lower(request, m_serialization, SerializationContext.empty);
             Assert.True(result.succeeded, Errors(result));
-            return new ShaderIrStage(ShaderStage.Fragment, result.block!, [], [new("color", ShaderIrOutputKind.Color)]).contentHash;
+            return new ShaderIrStage(
+                ShaderStage.Fragment,
+                result.block!,
+                [],
+                [new ShaderIrStageOutput("color", ShaderIrOutputKind.Color)]
+            ).contentHash;
         }
         string first = Hash();
         constant.position = new(912, -8);
@@ -184,7 +194,10 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
         GraphNodeRecord node,
         string property,
         T value
-    ) => node.SetValue(property, new(m_serialization.Encode(writer => writer.Write("value", value), SerializationContext.empty)));
+    ) => node.SetValue(
+        property,
+        new GraphSerializedValue(m_serialization.Encode(writer => writer.Write("value", value), SerializationContext.empty))
+    );
 
     private static ShaderNodeCompilerCatalog Catalog(params IShaderNodeCompiler[] extra)
         => new(
@@ -204,7 +217,7 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
         string id,
         string definition
     ) {
-        var node = new GraphNodeRecord(new(id), definition);
+        var node = new GraphNodeRecord(new GraphNodeID(id), definition);
         graph.AddNode(node);
         return node;
     }
@@ -212,7 +225,7 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
     private static GraphEndpoint Endpoint(
         GraphNodeRecord node,
         string port
-    ) => new(node.id, new(port));
+    ) => new(node.id, new GraphPortID(port));
 
     private static void Connect(
         GraphDocument graph,
@@ -220,13 +233,19 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
         string output,
         GraphNodeRecord target,
         string input
-    ) => graph.AddEdge(new(new("edge." + graph.edges.Count), Endpoint(source, output), Endpoint(target, input)));
+    ) => graph.AddEdge(
+        new GraphEdgeRecord(new GraphEdgeID("edge." + graph.edges.Count), Endpoint(source, output), Endpoint(target, input))
+    );
 
     private static ShaderSourceModuleAnalysis Source(
         string text,
         string path = "module.ishadersource"
     ) => new ShaderSourceFrontendCatalog([new BgfxShaderSourceFrontend()]).AnalyzeModule(
-        [new("metal", "inno.shader-language.bgfx-sc", new(new(path, text), "Shade", new NoIncludes()))]
+        [new ShaderSourceImplementationRequest(
+            "metal",
+            "inno.shader-language.bgfx-sc",
+            new ShaderSourceRequest(new ShaderSourceFile(path, text), "Shade", new NoIncludes())
+        )]
     );
 
     private static string Errors(ShaderGraphLoweringResult result)
@@ -246,8 +265,8 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
 
         public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext context)
             => [
-                new("input", ShaderSourceType.Atomic("float"), GraphPortDirection.Input),
-                new("value", ShaderSourceType.Atomic("float"), GraphPortDirection.Output)
+                new ShaderNodePort("input", ShaderSourceType.Atomic("float"), GraphPortDirection.Input),
+                new ShaderNodePort("value", ShaderSourceType.Atomic("float"), GraphPortDirection.Output)
             ];
 
         public IReadOnlyDictionary<string, ShaderIrValue> Lower(ShaderNodeLoweringContext context)

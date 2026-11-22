@@ -26,7 +26,7 @@ internal static class ValidationShards
             ),
             StringComparer.Ordinal
         );
-        var shards = new List<ValidationShard>();
+        List<ValidationShard> shards = [];
         foreach (IGrouping<string, ValidationCheck> group in checks.GroupBy(check => owners[check.id], StringComparer.Ordinal))
         {
             var prerequisites = new HashSet<string>(StringComparer.Ordinal);
@@ -43,7 +43,11 @@ internal static class ValidationShards
                 }
             }
             shards.Add(
-                new(group.Key, group.Select(static check => check.id).ToArray(), prerequisites.Order(StringComparer.Ordinal).ToArray())
+                new ValidationShard(
+                    group.Key,
+                    group.Select(static check => check.id).ToArray(),
+                    prerequisites.Order(StringComparer.Ordinal).ToArray()
+                )
             );
         }
         return shards.ToArray();
@@ -156,7 +160,7 @@ internal static class ValidationShards
         }
         HashSet<string> expected = checks.Select(static check => check.id).ToHashSet(StringComparer.Ordinal);
         ILookup<string, ValidationResult> observed = evidence.results.ToLookup(static result => result.id, StringComparer.Ordinal);
-        var errors = new List<string>();
+        List<string> errors = [];
         foreach (IGrouping<string, ValidationResult> group in observed)
         {
             if (!expected.Contains(group.Key))
@@ -224,7 +228,7 @@ internal static class ValidationShards
         {
             throw new InvalidDataException("The required shard matrix is incomplete or duplicated.");
         }
-        var results = new List<ValidationResult>();
+        List<ValidationResult> results = [];
         foreach (ValidationShard shard in plan.shards)
         {
             _ = Require(plan, shard.id);

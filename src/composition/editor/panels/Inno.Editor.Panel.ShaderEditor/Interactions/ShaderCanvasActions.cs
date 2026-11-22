@@ -58,7 +58,7 @@ internal sealed class ShaderCanvasMenu(ShaderEditorDocuments documents) : Editor
         foreach (string definition in documents.nodes.definitionIDs)
         {
             if (definition is not ("inno.shader.source" or ShaderGraphNodes.C_CALL_DEFINITION_ID)
-                && documents.CanCreate(draft, new(definition))
+                && documents.CanCreate(draft, new ShaderNodeCreation(definition))
             ) {
                 string category = Category(definition);
                 int order = CategoryOrder(category);
@@ -85,7 +85,7 @@ internal sealed class ShaderCanvasMenu(ShaderEditorDocuments documents) : Editor
             }
         }
 
-        var functionLibraries = new List<(AssetFileEntry source, AssetInfo info, ShaderFunctionAsset library)>();
+        List<(AssetFileEntry source, AssetInfo info, ShaderFunctionAsset library)> functionLibraries = [];
         foreach (AssetFileEntry source in documents.assets.GetFileSystemEntries(includeDirectories: false))
         {
             if (source.extension == ".ishadersource"
@@ -114,7 +114,7 @@ internal sealed class ShaderCanvasMenu(ShaderEditorDocuments documents) : Editor
         ) {
             foreach (string function in library.exports)
             {
-                if (documents.CanCreate(draft, new("inno.shader.source", info.persistentID, function)))
+                if (documents.CanCreate(draft, new ShaderNodeCreation("inno.shader.source", info.persistentID, function)))
                 {
                     string catalog = NormalizeCatalog(library.catalogPath);
                     string prefix = "Create/Functions/" + (catalog.Length == 0 ? "General" : catalog);
@@ -285,7 +285,7 @@ internal sealed class CreateShaderOutput(ShaderEditorDocuments documents) : Edit
                                                  program => (
                                                      definition.passes.Any(pass => pass.name == program.pass && pass.programKind == kind)
                                                      && !program.stages
-                                                         .Select(id => graph.FindNode(new(id)))
+                                                         .Select(id => graph.FindNode(new GraphNodeID(id)))
                                                          .OfType<GraphNodeRecord>()
                                                          .Any(
                                                              node => (
@@ -316,7 +316,7 @@ internal sealed class CreateShaderOutput(ShaderEditorDocuments documents) : Edit
             {
                 name = prefix + " " + suffix;
             }
-            definition.passes = [..definition.passes, new(name, kind)];
+            definition.passes = [..definition.passes, new ShaderPassDefinition(name, kind)];
             graph.SetMetadata(
                 ShaderGraphDocument.C_DEFINITION_KEY,
                 ShaderGraphDocument.Encode(
@@ -341,7 +341,7 @@ internal sealed class CreateShaderOutput(ShaderEditorDocuments documents) : Edit
                     stage = stage,
                     outputs = stage == ShaderStage.Compute
                               ? []
-                              : [new()
+                              : [new ShaderGraphOutput()
                               {
                                   id = stage == ShaderStage.Vertex ? "position" : "color",
                                   kind = stage == ShaderStage.Vertex ? ShaderIrOutputKind.ClipPosition : ShaderIrOutputKind.Color

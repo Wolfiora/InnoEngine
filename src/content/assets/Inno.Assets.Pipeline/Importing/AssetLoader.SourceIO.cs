@@ -258,14 +258,14 @@ public sealed partial class AssetLoader
 
     private string CreateImportFingerprint(AssetMeta meta)
     {
-        var parts = new List<string>
-        {
+        List<string> parts =
+        [
             "Inno.AssetImport",
             meta.sourceHash,
             meta.importerId,
             meta.importerImplementationFingerprint,
             meta.importerSettingsHash
-        };
+        ];
         foreach (AssetDependencyData dependency in meta.runtimeDependencies
             .OrderBy(static value => value.persistentId)
         ) {
@@ -291,8 +291,8 @@ public sealed partial class AssetLoader
         AssetObject definition,
         IReadOnlyList<AssetInfo> inputs
     ) {
-        var parts = new List<string>
-        {
+        List<string> parts =
+        [
             "Inno.AssetBuild",
             processor.processorID,
             processor.GetType().Assembly.ManifestModule.ModuleVersionId.ToString("D"),
@@ -302,7 +302,7 @@ public sealed partial class AssetLoader
             m_runtimeOwner.GetSourceHash(definition),
             ComputeSha256Hex(CaptureAssetState(definition)),
             ComputeSha256Hex(definition.runtimePayload.ToArray())
-        };
+        ];
         foreach (AssetInfo input in inputs.OrderBy(static value => value.persistentID))
         {
             parts.Add(input.persistentID.ToString("D"));

@@ -92,8 +92,13 @@ public sealed class EditorPlayModeController :
         LogRouter logs,
         IEditorAudioHost? audio = null
     ) {
-        m_engineHost = engineHost ?? throw new ArgumentNullException(nameof(engineHost));
-        m_runtimeOptions = runtimeOptions ?? throw new ArgumentNullException(nameof(runtimeOptions));
+        ArgumentNullException.ThrowIfNull(engineHost);
+        ArgumentNullException.ThrowIfNull(runtimeOptions);
+        ArgumentNullException.ThrowIfNull(scenes);
+        ArgumentNullException.ThrowIfNull(scripting);
+        ArgumentNullException.ThrowIfNull(history);
+        m_engineHost = engineHost;
+        m_runtimeOptions = runtimeOptions;
         if (runtimeOptions.kind != RuntimeSessionKind.Play)
         {
             throw new ArgumentException(
@@ -101,9 +106,9 @@ public sealed class EditorPlayModeController :
                 nameof(runtimeOptions)
             );
         }
-        m_scenes = scenes ?? throw new ArgumentNullException(nameof(scenes));
-        m_scripting = scripting ?? throw new ArgumentNullException(nameof(scripting));
-        m_history = history ?? throw new ArgumentNullException(nameof(history));
+        m_scenes = scenes;
+        m_scripting = scripting;
+        m_history = history;
         m_audio = audio;
         ArgumentNullException.ThrowIfNull(logs);
         m_log = logs.CreateLogger<EditorPlayModeController>();

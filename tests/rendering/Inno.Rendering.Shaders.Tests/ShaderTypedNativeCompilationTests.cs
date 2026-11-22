@@ -143,9 +143,9 @@ public sealed class ShaderTypedNativeCompilationTests
             builder,
             color,
             [
-                new("texture-id", image.type, ShaderIrInputKind.SampledTexture, location: 3),
-                new("tint-id", tint.type, ShaderIrInputKind.Uniform),
-                new("uv-id", uv.type, ShaderIrInputKind.Varying, "texcoord")
+                new ShaderIrStageInput("texture-id", image.type, ShaderIrInputKind.SampledTexture, location: 3),
+                new ShaderIrStageInput("tint-id", tint.type, ShaderIrInputKind.Uniform),
+                new ShaderIrStageInput("uv-id", uv.type, ShaderIrInputKind.Varying, "texcoord")
             ]
         );
         ShaderStageToolResult result = await CompileAsync(stage);
@@ -168,14 +168,17 @@ public sealed class ShaderTypedNativeCompilationTests
         ShaderIrBlock vertexBody = vertex.Build(new Dictionary<string, ShaderIrValue> { ["clip"] = clip, ["color"] = instance });
         AssertSuccess(
             await CompileAsync(
-                new(
+                new ShaderIrStage(
                     ShaderStage.Vertex,
                     vertexBody,
                     [
-                        new("position", position.type, ShaderIrInputKind.VertexAttribute, "position"),
-                        new("instance", instance.type, ShaderIrInputKind.VertexAttribute, "instance-data")
+                        new ShaderIrStageInput("position", position.type, ShaderIrInputKind.VertexAttribute, "position"),
+                        new ShaderIrStageInput("instance", instance.type, ShaderIrInputKind.VertexAttribute, "instance-data")
                     ],
-                    [new("clip", ShaderIrOutputKind.ClipPosition), new("color", ShaderIrOutputKind.Varying, "color")]
+                    [
+                        new ShaderIrStageOutput("clip", ShaderIrOutputKind.ClipPosition),
+                        new ShaderIrStageOutput("color", ShaderIrOutputKind.Varying, "color")
+                    ]
                 )
             )
         );
@@ -184,11 +187,14 @@ public sealed class ShaderTypedNativeCompilationTests
         ShaderIrBlock fragmentBody = fragment.Build(new Dictionary<string, ShaderIrValue> { ["base"] = color, ["emission"] = color });
         AssertSuccess(
             await CompileAsync(
-                new(
+                new ShaderIrStage(
                     ShaderStage.Fragment,
                     fragmentBody,
-                    [new("color", color.type, ShaderIrInputKind.Varying, "color")],
-                    [new("base", ShaderIrOutputKind.Color), new("emission", ShaderIrOutputKind.Color, location: 1)]
+                    [new ShaderIrStageInput("color", color.type, ShaderIrInputKind.Varying, "color")],
+                    [
+                        new ShaderIrStageOutput("base", ShaderIrOutputKind.Color),
+                        new ShaderIrStageOutput("emission", ShaderIrOutputKind.Color, location: 1)
+                    ]
                 )
             )
         );
@@ -204,7 +210,7 @@ public sealed class ShaderTypedNativeCompilationTests
         var stage = new ShaderIrStage(
             ShaderStage.Compute,
             builder.Build(new Dictionary<string, ShaderIrValue>()),
-            [new("invocation", id.type, ShaderIrInputKind.Builtin, "global-invocation-id")],
+            [new ShaderIrStageInput("invocation", id.type, ShaderIrInputKind.Builtin, "global-invocation-id")],
             [],
             8,
             4,
@@ -294,7 +300,7 @@ public sealed class ShaderTypedNativeCompilationTests
         ShaderStage.Fragment,
         builder.Build(new Dictionary<string, ShaderIrValue> { ["color"] = color }),
         inputs ?? [],
-        [new("color", ShaderIrOutputKind.Color)]
+        [new ShaderIrStageOutput("color", ShaderIrOutputKind.Color)]
     );
 
     private static ShaderSourceModuleAnalysis Module(
@@ -303,7 +309,11 @@ public sealed class ShaderTypedNativeCompilationTests
         IShaderSourceResolver? resolver = null
     ) {
         ShaderSourceModuleAnalysis result = new ShaderSourceFrontendCatalog([new BgfxShaderSourceFrontend()]).AnalyzeModule(
-            [new("metal", "inno.shader-language.bgfx-sc", new(new(path, source), "Shade", resolver ?? new AliasedInclude()))]
+            [new ShaderSourceImplementationRequest(
+                "metal",
+                "inno.shader-language.bgfx-sc",
+                new ShaderSourceRequest(new ShaderSourceFile(path, source), "Shade", resolver ?? new AliasedInclude())
+            )]
         );
         Assert.True(result.succeeded, string.Join("\n", result.diagnostics.Select(static diagnostic => diagnostic.message)));
         return result;
@@ -344,7 +354,7 @@ public sealed class ShaderTypedNativeCompilationTests
             string includingFile,
             string include
         ) => available && include == "@library/math"
-             ? new("plugin:library/scale.ishadersource", "float Scale(float value) { return value * 2.0; }")
+             ? new ShaderSourceFile("plugin:library/scale.ishadersource", "float Scale(float value) { return value * 2.0; }")
              : throw new FileNotFoundException(include);
     }
 }

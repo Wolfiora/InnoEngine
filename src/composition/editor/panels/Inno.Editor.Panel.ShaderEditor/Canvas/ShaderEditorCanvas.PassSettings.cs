@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Inno.Core.Graphs;
 using Inno.Editor.ImGui;
 using Inno.Rendering;
@@ -18,7 +19,7 @@ internal sealed partial class ShaderEditorCanvas
         GraphNodeRecord node,
         ShaderGraphStageSettings stage
     ) {
-        EditorImGui.SetNextWindowSize(new(540, 600), (ImGuiCond.Appearing));
+        EditorImGui.SetNextWindowSize(new Vector2(540, 600), (ImGuiCond.Appearing));
         if (!EditorImGui.BeginPopup("##stage-settings"))
         {
             return;
@@ -185,7 +186,7 @@ internal sealed partial class ShaderEditorCanvas
                 stage.outputs =
                 [
                     ..stage.outputs,
-                    new()
+                    new ShaderGraphOutput()
                     {
                         id = "output-" + Guid.NewGuid().ToString("N"),
                         kind = stage.stage == ShaderStage.Vertex ? ShaderIrOutputKind.Varying : ShaderIrOutputKind.Color,
@@ -452,7 +453,11 @@ internal sealed partial class ShaderEditorCanvas
 
                 if (CenteredAddButton("Add Keyword"))
                 {
-                    definition.keywords = [..definition.keywords, new("Keyword" + definition.keywords.Length, ["Off", "On"])];
+                    definition.keywords =
+                    [
+                        ..definition.keywords,
+                        new ShaderKeywordDefinition("Keyword" + definition.keywords.Length, ["Off", "On"])
+                    ];
                     definitionChanged = true;
                 }
             }

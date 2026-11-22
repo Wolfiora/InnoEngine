@@ -75,7 +75,7 @@ public sealed unsafe class ConsoleEntryLayoutTests
             "occurrence/diagnostic/1",
             "occurrence/log/2"
         ];
-        var bounds = new List<(Vector2 minimum, Vector2 maximum)>();
+        List<(Vector2 minimum, Vector2 maximum)> bounds = [];
         for (int i = 0; i < identities.Length; i++)
         {
             NativeImGui.PushID(identities[i]);

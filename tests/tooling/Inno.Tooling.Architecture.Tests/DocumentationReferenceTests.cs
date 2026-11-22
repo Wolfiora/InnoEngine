@@ -576,7 +576,7 @@ public sealed class DocumentationReferenceTests : IDisposable
             BuildCacheCleanupPlan retirement = BuildCacheCleanupPlan.Create(
                 m_root,
                 BuildCacheOwnerCatalog.ReadOwners(m_root),
-                new(0, 0),
+                new BuildCachePolicy(0, 0),
                 retireAll: true
             );
             BuildCacheCleanupResult result = await retirement.ExecuteAsync();
@@ -587,7 +587,7 @@ public sealed class DocumentationReferenceTests : IDisposable
         BuildCacheCleanupResult released = await BuildCacheCleanupPlan.Create(
             m_root,
             BuildCacheOwnerCatalog.ReadOwners(m_root),
-            new(0, 0),
+            new BuildCachePolicy(0, 0),
             retireAll: true
         ).ExecuteAsync();
         Assert.Empty(released.failures);

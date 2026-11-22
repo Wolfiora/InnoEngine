@@ -29,7 +29,8 @@ public sealed class LayerStack : IDisposable
     /// </exception>
     public LayerStack(Func<EventHub> eventHubFactory)
     {
-        m_eventHubFactory = eventHubFactory ?? throw new ArgumentNullException(nameof(eventHubFactory));
+        ArgumentNullException.ThrowIfNull(eventHubFactory);
+        m_eventHubFactory = eventHubFactory;
     }
 
     /// <summary>

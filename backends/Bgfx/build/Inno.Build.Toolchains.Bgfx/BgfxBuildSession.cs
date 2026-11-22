@@ -55,7 +55,7 @@ internal static class BgfxBuildSession
                         source,
                         output,
                         scoped.configuration,
-                        new(
+                        new BuildArtifactOptions(
                             ".build",
                             ["bgfx-shared-lib"],
                             [scoped.RequireToolchain().sharedLibraryExtension],

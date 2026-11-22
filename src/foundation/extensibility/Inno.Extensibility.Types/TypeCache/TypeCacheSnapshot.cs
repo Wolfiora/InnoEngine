@@ -243,9 +243,9 @@ public sealed class TypeCacheSnapshot
     ) {
         ArgumentNullException.ThrowIfNull(assemblies);
 
-        var discoveredTypes = new List<Type>();
+        List<Type> discoveredTypes = [];
         var typesByAssembly = new Dictionary<Assembly, Type[]>(ReferenceEqualityComparer.Instance);
-        var loaderExceptions = new List<Exception>();
+        List<Exception> loaderExceptions = [];
         foreach (Assembly assembly in assemblies.Where(static value => !value.IsDynamic))
         {
             if (typesByAssembly.ContainsKey(assembly))

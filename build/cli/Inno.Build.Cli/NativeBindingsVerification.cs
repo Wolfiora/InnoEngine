@@ -107,7 +107,7 @@ internal static partial class NativeBindingsVerification
                     repositoryRoot,
                     cancellationToken,
                     DotNetSdkEnvironment.Create(options.dotnet)
-                );
+                ).ConfigureAwait(false);
             }
 
             AuditNativeImports(repositoryRoot);
@@ -129,13 +129,13 @@ internal static partial class NativeBindingsVerification
                 repositoryRoot,
                 cancellationToken,
                 DotNetSdkEnvironment.Create(options.dotnet)
-            );
+            ).ConfigureAwait(false);
 
             (ProductNativeBuildPlan plan, ProductNativeBuildResult products) native = await BuildNativeDependenciesAsync(
                 nativeContext,
                 contribution,
                 cancellationToken
-            );
+            ).ConfigureAwait(false);
             using ProductNativeBuildResult nativeOwnership = native.products;
 
             Console.WriteLine("[inno-bindings] Build the complete InnoEngine solution.");
@@ -158,7 +158,7 @@ internal static partial class NativeBindingsVerification
                 repositoryRoot,
                 cancellationToken,
                 DotNetSdkEnvironment.Create(options.dotnet)
-            );
+            ).ConfigureAwait(false);
 
             IReadOnlyList<string> testProjects = DiscoverTestProjects(repositoryRoot);
             string testResults = await RunTestsAsync(
@@ -171,7 +171,7 @@ internal static partial class NativeBindingsVerification
                 testEntry,
                 artifactsPath,
                 cancellationToken
-            );
+            ).ConfigureAwait(false);
             string reportPath = await WriteReportAsync(
                 repositoryRoot,
                 target,
@@ -180,7 +180,7 @@ internal static partial class NativeBindingsVerification
                 native.plan,
                 testResults,
                 cancellationToken
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine(
                 $"[inno-bindings] Project binding diffs, native builds, solution build, import audit, "
                 + $"and {testProjects.Count} test projects passed."
@@ -253,7 +253,7 @@ internal static partial class NativeBindingsVerification
     {
         const int C_MAX_REPORTED_VIOLATIONS = 50;
         string nativeRoot = Path.Combine(repositoryRoot, "backends");
-        var violations = new List<string>();
+        List<string> violations = [];
         foreach (string path in Directory.EnumerateFiles(nativeRoot, "*.cs", SearchOption.AllDirectories))
         {
             string relativePath = Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/');
@@ -355,7 +355,7 @@ internal static partial class NativeBindingsVerification
                 repositoryRoot,
                 cancellationToken,
                 DotNetSdkEnvironment.Create(options.dotnet)
-            )).Trim();
+            ).ConfigureAwait(false)).Trim();
             if (!Path.IsPathFullyQualified(output))
             {
                 throw new InvalidDataException("The test project did not declare an absolute target output directory.");
@@ -406,7 +406,7 @@ internal static partial class NativeBindingsVerification
             repositoryRoot,
             cancellationToken,
             DotNetSdkEnvironment.Create(options.dotnet)
-        );
+        ).ConfigureAwait(false);
         return Path.GetRelativePath(repositoryRoot, results).Replace('\\', '/');
     }
 
@@ -424,7 +424,7 @@ internal static partial class NativeBindingsVerification
             ["-C", repositoryRoot, "rev-parse", "HEAD"],
             repositoryRoot,
             cancellationToken
-        )).Trim();
+        ).ConfigureAwait(false)).Trim();
         Assembly bindingImplementation = typeof(NativeBindingGenerator).Assembly;
         string packageVersion = bindingImplementation.GetCustomAttributes<AssemblyMetadataAttribute>()
             .Single(static metadata => metadata.Key == "Inno.BindingPackageVersion").Value
@@ -436,7 +436,7 @@ internal static partial class NativeBindingsVerification
                 ["-C", repositoryRoot, "status", "--porcelain", "--untracked-files=all"],
                 repositoryRoot,
                 cancellationToken
-            )
+            ).ConfigureAwait(false)
         );
         DateTimeOffset generatedAt = DateTimeOffset.UtcNow;
         string reportDirectory = Path.Combine(repositoryRoot, "artifacts", "bindings", "acceptance", target);

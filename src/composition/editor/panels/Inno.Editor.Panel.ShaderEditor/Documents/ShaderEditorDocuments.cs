@@ -446,7 +446,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         GraphDocument candidate = ShaderGraphBindings.RemoveNodes(controller.document, draft.canvas.selectedNodes, serialization, context);
         ShaderCanvasGroup[] groups = GroupShaderNodes.Read(this, candidate).Select(group =>
         {
-            group.nodes = group.nodes.Where(id => candidate.FindNode(new(id)) is not null).ToArray();
+            group.nodes = group.nodes.Where(id => candidate.FindNode(new GraphNodeID(id)) is not null).ToArray();
             return group;
         }).Where(static group => group.nodes.Length != 0).ToArray();
         candidate.SetMetadata(GroupShaderNodes.C_GROUPS, ShaderGraphDocument.Encode(groups, serialization, context));
@@ -624,7 +624,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         };
         if (m_views.TryGetValue(draft.id, out ViewState view))
         {
-            draft.canvas.SetViewport(new(view.x, view.y), view.zoom);
+            draft.canvas.SetViewport(new GraphPosition(view.x, view.y), view.zoom);
         }
         else
         {
@@ -771,7 +771,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         {
             ShaderDiagnostic shader = snapshot.diagnostics[index];
             DiagnosticLocation? location = shader.location is ShaderSourceLocation source
-                                           ? new(source.assetPath, source.line, source.column)
+                                           ? new DiagnosticLocation(source.assetPath, source.line, source.column)
                                            : null;
             diagnostics.Add(
                 shader.severity switch

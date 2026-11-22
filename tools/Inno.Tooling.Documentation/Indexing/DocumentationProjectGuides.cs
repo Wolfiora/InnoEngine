@@ -61,8 +61,8 @@ internal static class DocumentationProjectGuides
         DocumentationBinding binding,
         IReadOnlyDictionary<string, DocumentationApiFact[]> facts
     ) {
-        var edits = new List<DocumentationApiEdit>();
-        var warnings = new List<DocumentationApiWarning>();
+        List<DocumentationApiEdit> edits = [];
+        List<DocumentationApiWarning> warnings = [];
         Dictionary<string, DocumentationProject> projects = JsonSerializer
             .Deserialize<DocumentationProject[]>(
                 File.ReadAllText(DocumentationApiFacts.Resolve(root, binding.projectManifest))
@@ -72,7 +72,7 @@ internal static class DocumentationProjectGuides
         string registryPath = DocumentationApiFacts.Resolve(root, C_REGISTRY);
         // A checkout without the registry does not manage project guides.
         DocumentationProjectGuide[] created = File.Exists(registryPath) ? NewGuides(root, projects.Values, registered) : [];
-        var entries = new List<DocumentationProjectGuide>();
+        List<DocumentationProjectGuide> entries = [];
         foreach (DocumentationProjectGuide entry in registered.Concat(created))
         {
             bool isNew = !registered.Contains(entry);
@@ -97,7 +97,7 @@ internal static class DocumentationProjectGuides
             {
                 // The same removal rule as API pages: synchronized prose leaves with its source,
                 // authored prose stays for editorial resolution.
-                edits.Add(new(entry.path, DocumentationMarkdown.Hash(text!), null));
+                edits.Add(new DocumentationApiEdit(entry.path, DocumentationMarkdown.Hash(text!), null));
                 continue;
             }
             entries.Add(entry);
@@ -106,7 +106,7 @@ internal static class DocumentationProjectGuides
             if (project is null)
             {
                 warnings.Add(
-                    new(
+                    new DocumentationApiWarning(
                         entry.project,
                         entry.path,
                         "RemovedProject",
@@ -116,19 +116,26 @@ internal static class DocumentationProjectGuides
             }
             else if (stale)
             {
-                warnings.Add(new(entry.project, entry.path, "ReviewRequired", "The authored project guide is outdated."));
+                warnings.Add(
+                    new DocumentationApiWarning(entry.project, entry.path, "ReviewRequired", "The authored project guide is outdated.")
+                );
             }
             if (!manual || string.IsNullOrWhiteSpace(fragment.body) || fragment.body.Trim() == Body(entry, contexts).Trim())
             {
                 warnings.Add(
-                    new(entry.project, entry.path, "ManualExplanationRequired", "This project guide uses generated source information.")
+                    new DocumentationApiWarning(
+                        entry.project,
+                        entry.path,
+                        "ManualExplanationRequired",
+                        "This project guide uses generated source information."
+                    )
                 );
             }
             string updated = Metadata(entry, fragment, contract, staleProse)
                              + (manual || project is null ? fragment.body : "\n\n" + Body(entry, contexts));
             if (updated != text)
             {
-                edits.Add(new(entry.path, text is null ? null : DocumentationMarkdown.Hash(text), updated));
+                edits.Add(new DocumentationApiEdit(entry.path, text is null ? null : DocumentationMarkdown.Hash(text), updated));
             }
         }
         if (created.Length != 0 || entries.Count != registered.Length)
@@ -139,7 +146,7 @@ internal static class DocumentationProjectGuides
             );
             var options = new JsonSerializerOptions { WriteIndented = true, NewLine = "\n" };
             edits.Add(
-                new(
+                new DocumentationApiEdit(
                     C_REGISTRY,
                     DocumentationMarkdown.Hash(File.ReadAllText(registryPath)),
                     JsonSerializer.Serialize(registry, options) + "\n"
@@ -252,7 +259,7 @@ internal static class DocumentationProjectGuides
     ) {
         var owned = new HashSet<string>(registered.Select(entry => entry.project), StringComparer.Ordinal);
         owned.UnionWith(DocumentationApiPresentation.ProjectDescriptions(root).Keys);
-        var guides = new List<DocumentationProjectGuide>();
+        List<DocumentationProjectGuide> guides = [];
         foreach (DocumentationProject project in projects.OrderBy(project => project.name, StringComparer.Ordinal))
         {
             if (project.path.StartsWith("platforms/", StringComparison.Ordinal) || owned.Contains(project.name))
@@ -263,7 +270,7 @@ internal static class DocumentationProjectGuides
             string directory = project.path.StartsWith("tests/", StringComparison.Ordinal)
                                ? C_TEST_GUIDES
                                : project.path.StartsWith("backends/", StringComparison.Ordinal) ? C_BACKEND_GUIDES : C_GUIDES;
-            guides.Add(new(directory + slug + ".md", "project." + slug, project.name));
+            guides.Add(new DocumentationProjectGuide(directory + slug + ".md", "project." + slug, project.name));
         }
         return guides.ToArray();
     }

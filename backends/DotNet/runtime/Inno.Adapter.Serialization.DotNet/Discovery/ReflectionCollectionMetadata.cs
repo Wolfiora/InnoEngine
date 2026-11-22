@@ -97,7 +97,7 @@ internal static class ReflectionCollectionMetadata
 
     internal static List<object?> EnumerateSequence(object? sequence)
     {
-        var values = new List<object?>();
+        List<object?> values = [];
         if (sequence is not IEnumerable enumerable)
         {
             return values;

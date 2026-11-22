@@ -15,7 +15,7 @@ public static class BrowserWasm32BgfxShaderProfiles
     public static BgfxShaderTargetProfile target { get; } = new(
         BrowserWasm32BuildModule.target.id.value,
         [
-            new(CreateCapabilities(), "asm.js", "300_es", "300_es", string.Empty)
+            new BgfxShaderCompilerProfile(CreateCapabilities(), "asm.js", "300_es", "300_es", string.Empty)
         ]
     );
 

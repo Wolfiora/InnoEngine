@@ -83,7 +83,7 @@ internal static class StyleLayout
         string content = source.content;
         int indentation = source.Indentation(list.open.SpanStart);
         var argumentIndent = new string(' ', indentation + C_INDENT);
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         int previousEnd = list.open.Span.End;
         foreach (SyntaxNode argument in list.items)
         {
@@ -91,7 +91,7 @@ internal static class StyleLayout
             if (!IsBlank(content, previousEnd, first.SpanStart)) return null;
             int startLine = source.LineNumber(first.SpanStart);
             int delta = indentation + C_INDENT - source.Indentation(first.SpanStart);
-            edits.Add(new(previousEnd, first.SpanStart, "\n" + argumentIndent));
+            edits.Add(new StyleEdit(previousEnd, first.SpanStart, "\n" + argumentIndent));
             int endLine = source.LineNumber(argument.Span.End);
             for (int line = startLine + 1; line <= endLine && delta != 0; line++)
             {
@@ -105,7 +105,7 @@ internal static class StyleLayout
         }
 
         if (!IsBlank(content, previousEnd, list.close.SpanStart)) return null;
-        edits.Add(new(previousEnd, list.close.SpanStart, "\n" + new string(' ', indentation)));
+        edits.Add(new StyleEdit(previousEnd, list.close.SpanStart, "\n" + new string(' ', indentation)));
         return edits;
     }
 

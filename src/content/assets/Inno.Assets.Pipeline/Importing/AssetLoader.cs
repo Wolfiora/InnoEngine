@@ -40,8 +40,7 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     private readonly SemaphoreSlim m_operationGate = new(1, 1);
     private readonly object m_asyncSync = new();
 
-    private readonly Dictionary<string, Task<AssetObject?>> m_inFlightPathLoads =
-        new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, Task<AssetObject?>> m_inFlightPathLoads = new(StringComparer.OrdinalIgnoreCase);
 
     private readonly Dictionary<Guid, Task<AssetObject?>> m_inFlightIDLoads = [];
     private readonly AssetImporterRegistry m_importers;

@@ -293,7 +293,7 @@ internal sealed class AssetArtifactStore
 
     private ArtifactDirectory[] EnumerateBundles()
     {
-        var result = new List<ArtifactDirectory>();
+        List<ArtifactDirectory> result = [];
         foreach (string firstLevel in Directory.EnumerateDirectories(m_root))
         {
             if (string.Equals(Path.GetFileName(firstLevel), ".staging", StringComparison.Ordinal))

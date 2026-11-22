@@ -13,7 +13,7 @@ internal static class ValidationOutputs
     internal static Dictionary<string, string> Capture(
         ValidationPlan plan,
         ValidationCheck check,
-        CancellationToken cancellation,
+        CancellationToken cancellationToken,
         Dictionary<string, string>? directoryCache = null
     ) {
         var outputs = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -75,7 +75,7 @@ internal static class ValidationOutputs
             var files = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (string file in EnumerateFiles(directory).Order(StringComparer.Ordinal))
             {
-                cancellation.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 using FileStream stream = File.OpenRead(file);
                 files[Path.GetRelativePath(directory, file).Replace('\\', '/')] = Convert.ToHexStringLower(SHA256.HashData(stream));
             }
@@ -93,7 +93,7 @@ internal static class ValidationOutputs
         ValidationPlan plan,
         ValidationCheck check,
         ValidationResult result,
-        CancellationToken cancellation,
+        CancellationToken cancellationToken,
         Dictionary<string, string>? directoryCache = null
     ) {
         if (result.outputs is null)
@@ -103,7 +103,7 @@ internal static class ValidationOutputs
         try
         {
             return ValidationInputs.Identity(
-                Capture(plan, check, cancellation, directoryCache)
+                Capture(plan, check, cancellationToken, directoryCache)
             ) == ValidationInputs.Identity(result.outputs);
         }
         catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)

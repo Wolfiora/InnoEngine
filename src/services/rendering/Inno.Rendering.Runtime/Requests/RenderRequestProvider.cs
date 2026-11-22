@@ -89,9 +89,13 @@ public sealed class RenderRequestProviderContext
         IViewContentCollector viewContent,
         RenderOutputInput? input = null
     ) {
-        this.requests = requests ?? throw new ArgumentNullException(nameof(requests));
-        this.content = content ?? throw new ArgumentNullException(nameof(content));
-        this.capabilities = capabilities ?? throw new ArgumentNullException(nameof(capabilities));
+        ArgumentNullException.ThrowIfNull(requests);
+        ArgumentNullException.ThrowIfNull(content);
+        ArgumentNullException.ThrowIfNull(capabilities);
+        ArgumentNullException.ThrowIfNull(viewContent);
+        this.requests = requests;
+        this.content = content;
+        this.capabilities = capabilities;
         this.primaryPresentationSize = primaryPresentationSize;
         if (primaryPresentationSize.HasValue != primaryPresentationViewport.HasValue)
         {
@@ -110,7 +114,7 @@ public sealed class RenderRequestProviderContext
         this.primaryPresentationViewport = primaryPresentationViewport;
         this.frameIndex = frameIndex;
         this.deltaTime = deltaTime;
-        this.viewContent = viewContent ?? throw new ArgumentNullException(nameof(viewContent));
+        this.viewContent = viewContent;
         this.input = primaryPresentationSize.HasValue ? input ?? RenderOutputInput.empty : RenderOutputInput.suspended;
     }
 

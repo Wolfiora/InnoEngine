@@ -156,10 +156,10 @@ public sealed class PlayerSupportPackPreparationIdentity
 
     private async ValueTask<string> ComputeAsync(
         NativeBuildContext context,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
-        cancellation.ThrowIfCancellationRequested();
-        var declarations = new List<string> { "support-pack-preparation", m_nativePlan.productID };
+        cancellationToken.ThrowIfCancellationRequested();
+        List<string> declarations = ["support-pack-preparation", m_nativePlan.productID];
         if (m_properties.TryGetValue("InnoNativeDependencyManifest", out string? manifest))
         {
             IReadOnlyList<NativeDependencyAsset> assets = await NativeDependencyManifest.SelectAsync(
@@ -168,7 +168,7 @@ public sealed class PlayerSupportPackPreparationIdentity
                 m_properties["InnoNativeTarget"],
                 context.configuration,
                 m_nativePlan,
-                cancellation
+                cancellationToken
             ).ConfigureAwait(false);
             declarations.AddRange(
                 assets.OrderBy(static asset => asset.asset, StringComparer.Ordinal)
@@ -182,7 +182,7 @@ public sealed class PlayerSupportPackPreparationIdentity
             foreach (NativeBuildRecipe recipe in recipes)
             {
                 declarations.Add(
-                    recipe.component + "=" + NativeBuildFingerprint.Create(context, recipe.declarations, recipe.inputs, cancellation)
+                    recipe.component + "=" + NativeBuildFingerprint.Create(context, recipe.declarations, recipe.inputs, cancellationToken)
                 );
             }
             NativeComponentDescriptor[] generated = m_nativePlan.steps.Select(static step => step.component)
@@ -202,7 +202,7 @@ public sealed class PlayerSupportPackPreparationIdentity
                                 .GroupBy(static step => step.component.nativeProject, StringComparer.Ordinal)
                                 .ToDictionary(static group => group.Key, static group => group.First().options, StringComparer.Ordinal)
                         ),
-                        cancellation
+                        cancellationToken
                     ).ConfigureAwait(false)
                 );
             }
@@ -212,7 +212,7 @@ public sealed class PlayerSupportPackPreparationIdentity
             m_sdk,
             m_project,
             m_properties,
-            cancellation
+            cancellationToken
         ).ConfigureAwait(false);
         m_managed ??= managed;
         declarations.Add("managed=" + managed.fingerprint);
@@ -230,7 +230,7 @@ public sealed class PlayerSupportPackPreparationIdentity
             context,
             declarations,
             inputs.Select(path => NativeBuildInput.FromPath(context.engineRoot, path)),
-            cancellation
+            cancellationToken
         );
     }
 }

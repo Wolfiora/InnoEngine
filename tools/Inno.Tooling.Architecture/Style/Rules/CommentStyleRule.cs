@@ -35,13 +35,13 @@ internal sealed class CommentStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         var movedLines = new HashSet<int>();
         foreach ((SyntaxTrivia comment, bool isTrailing) in Violations(source))
         {
             if (!isTrailing)
             {
-                edits.Add(new(comment.SpanStart + C_PREFIX.Length, comment.SpanStart + C_PREFIX.Length, " "));
+                edits.Add(new StyleEdit(comment.SpanStart + C_PREFIX.Length, comment.SpanStart + C_PREFIX.Length, " "));
                 continue;
             }
 
@@ -49,8 +49,8 @@ internal sealed class CommentStyleRule : StyleRule
             if (!movedLines.Add(line.LineNumber)) continue;
             string code = source.content[line.Start..comment.SpanStart];
             string indent = code[..(code.Length - code.TrimStart().Length)];
-            edits.Add(new(line.Start, line.Start, indent + comment + "\n"));
-            edits.Add(new(line.Start + code.TrimEnd().Length, comment.Span.End, string.Empty));
+            edits.Add(new StyleEdit(line.Start, line.Start, indent + comment + "\n"));
+            edits.Add(new StyleEdit(line.Start + code.TrimEnd().Length, comment.Span.End, string.Empty));
         }
 
         return edits;

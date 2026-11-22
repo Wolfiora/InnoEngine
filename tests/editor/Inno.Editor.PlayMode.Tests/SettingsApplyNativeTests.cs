@@ -126,7 +126,7 @@ public sealed unsafe class SettingsApplyNativeTests
                 driver.Apply();
                 Assert.True(obstructed);
                 Assert.Equal(42, editor.Get("Editor/Atomic Editor/Value").GetAsInt32("value"));
-                Assert.Equal(0, host.projectSettings.Get<AtomicProjectSetting>(new("tests.ui.atomic-settings")).value);
+                Assert.Equal(0, host.projectSettings.Get<AtomicProjectSetting>(new ProjectSettingID("tests.ui.atomic-settings")).value);
                 Assert.True(host.runtime.interactions.history.isFaulted);
                 Assert.False(host.runtime.interactions.history.canUndo);
                 Assert.False(host.runtime.interactions.history.canRedo);
@@ -143,7 +143,7 @@ public sealed unsafe class SettingsApplyNativeTests
             document.failWrites = false;
             driver.Apply();
             Assert.True(host.runtime.interactions.history.isFaulted);
-            Assert.Equal(0, host.projectSettings.Get<AtomicProjectSetting>(new("tests.ui.atomic-settings")).value);
+            Assert.Equal(0, host.projectSettings.Get<AtomicProjectSetting>(new ProjectSettingID("tests.ui.atomic-settings")).value);
             driver.Cancel();
             host.native.logs.Flush();
             Assert.False(
@@ -190,20 +190,20 @@ public sealed unsafe class SettingsApplyNativeTests
             document.failWrites = true;
             driver.Apply();
             Assert.Equal(0, editor!.Get("Editor/Atomic Editor/Value").GetAsInt32("value"));
-            Assert.Equal(0, host.projectSettings.Get<AtomicProjectSetting>(new("tests.ui.atomic-settings")).value);
+            Assert.Equal(0, host.projectSettings.Get<AtomicProjectSetting>(new ProjectSettingID("tests.ui.atomic-settings")).value);
             Assert.False(host.runtime.interactions.history.canUndo);
             Assert.False(host.runtime.interactions.history.isFaulted);
             document.failWrites = false;
             driver.Apply();
             Assert.Equal(42, editor.Get("Editor/Atomic Editor/Value").GetAsInt32("value"));
-            Assert.Equal(84, host.projectSettings.Get<AtomicProjectSetting>(new("tests.ui.atomic-settings")).value);
+            Assert.Equal(84, host.projectSettings.Get<AtomicProjectSetting>(new ProjectSettingID("tests.ui.atomic-settings")).value);
             Assert.True(host.runtime.interactions.history.Undo().succeeded);
             Assert.Equal(0, editor.Get("Editor/Atomic Editor/Value").GetAsInt32("value"));
-            Assert.Equal(0, host.projectSettings.Get<AtomicProjectSetting>(new("tests.ui.atomic-settings")).value);
+            Assert.Equal(0, host.projectSettings.Get<AtomicProjectSetting>(new ProjectSettingID("tests.ui.atomic-settings")).value);
             Assert.False(host.runtime.interactions.history.canUndo);
             Assert.True(host.runtime.interactions.history.Redo().succeeded);
             Assert.Equal(42, editor.Get("Editor/Atomic Editor/Value").GetAsInt32("value"));
-            Assert.Equal(84, host.projectSettings.Get<AtomicProjectSetting>(new("tests.ui.atomic-settings")).value);
+            Assert.Equal(84, host.projectSettings.Get<AtomicProjectSetting>(new ProjectSettingID("tests.ui.atomic-settings")).value);
         }
         finally
         {

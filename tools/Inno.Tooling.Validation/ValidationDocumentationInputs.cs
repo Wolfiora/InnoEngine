@@ -64,7 +64,9 @@ internal static class ValidationDocumentationInputs
                 plan.environment,
                 check.documentation.configuration,
                 check.documentation.target,
-                ValidationDependencyInputs.Required(check) ? dependencies.CapturePackages(selected) : new(StringComparer.Ordinal),
+                ValidationDependencyInputs.Required(check)
+                ? dependencies.CapturePackages(selected)
+                : new Dictionary<string, string>(StringComparer.Ordinal),
                 sources
             );
         }).ToArray();

@@ -20,8 +20,10 @@ internal sealed class SerializableObjectPropertyDrawer : IPropertyDrawer
         TypeCacheSnapshot types,
         SerializationRegistry serialization
     ) {
-        m_types = types ?? throw new ArgumentNullException(nameof(types));
-        m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
+        ArgumentNullException.ThrowIfNull(types);
+        ArgumentNullException.ThrowIfNull(serialization);
+        m_types = types;
+        m_serialization = serialization;
     }
 
     /// <summary>

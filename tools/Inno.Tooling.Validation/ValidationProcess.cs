@@ -18,7 +18,7 @@ internal static class ValidationProcess
         IEnumerable<string> arguments,
         string directory,
         string? log,
-        CancellationToken cancellation,
+        CancellationToken cancellationToken,
         string? input = null
     ) {
         var start = new ProcessStartInfo(executable)
@@ -72,10 +72,10 @@ internal static class ValidationProcess
         {
             if (input is not null)
             {
-                await process.StandardInput.WriteAsync(input.AsMemory(), cancellation).ConfigureAwait(false);
+                await process.StandardInput.WriteAsync(input.AsMemory(), cancellationToken).ConfigureAwait(false);
                 process.StandardInput.Close();
             }
-            await process.WaitForExitAsync(cancellation).ConfigureAwait(false);
+            await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
         }
         catch
         {

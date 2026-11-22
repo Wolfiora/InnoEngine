@@ -247,7 +247,7 @@ public sealed class StorageTests
         public ValueTask<IReadOnlyList<StorageKey>> ListAsync(
             StorageKey? prefix = null,
             CancellationToken cancellationToken = default
-        ) => ValueTask.FromResult<IReadOnlyList<StorageKey>>(Array.Empty<StorageKey>());
+        ) => ValueTask.FromResult<IReadOnlyList<StorageKey>>([]);
 
         public void Dispose() => disposed = true;
 

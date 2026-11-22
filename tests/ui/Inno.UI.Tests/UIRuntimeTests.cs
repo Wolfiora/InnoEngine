@@ -68,7 +68,7 @@ public sealed class UIRuntimeTests
     private sealed class CapturingBackend : IUIBackend
     {
         public string implementationID => "tests.ui";
-        public UIBackendCapabilities capabilities { get; } = new([new("tests.ui-language")], true);
+        public UIBackendCapabilities capabilities { get; } = new([new UIDocumentLanguageID("tests.ui-language")], true);
 
         public UIContextHandle CreateContext(UIContextOptions options) => new(1);
 

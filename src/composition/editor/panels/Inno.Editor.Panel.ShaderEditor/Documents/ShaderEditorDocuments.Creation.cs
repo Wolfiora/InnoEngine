@@ -26,11 +26,11 @@ internal sealed partial class ShaderEditorDocuments
     ) {
         GraphDocument graph = Controller(draft).document;
         GraphNodeID? stage = draft.createFromPort is GraphEndpoint endpoint
-            ? new(ShaderGraphDocument.Read(graph.FindNode(endpoint.nodeID)!, "stage", string.Empty, serialization, context))
+            ? new GraphNodeID(ShaderGraphDocument.Read(graph.FindNode(endpoint.nodeID)!, "stage", string.Empty, serialization, context))
             : draft.activeStage
               ?? graph.nodes.FirstOrDefault(static node => node.definitionID == ShaderGraphDocument.C_OUTPUT_DEFINITION_ID)?.id;
         var node = new GraphNodeRecord(
-            new(Guid.NewGuid().ToString("N")),
+            new GraphNodeID(Guid.NewGuid().ToString("N")),
             creation.definitionID
         ) { position = draft.menuPosition };
         if (stage is GraphNodeID id)
@@ -223,7 +223,13 @@ internal sealed partial class ShaderEditorDocuments
         }
         if (input is not null && draft.createFromPort is GraphEndpoint source)
         {
-            graph.AddEdge(new(new(Guid.NewGuid().ToString("N")), source, new(node.id, new(input.id))));
+            graph.AddEdge(
+                new GraphEdgeRecord(
+                    new GraphEdgeID(Guid.NewGuid().ToString("N")),
+                    source,
+                    new GraphEndpoint(node.id, new GraphPortID(input.id))
+                )
+            );
         }
         Controller(draft).ReplaceDocument(graph, "Create Shader Node");
         draft.createFromPort = null;

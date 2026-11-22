@@ -37,7 +37,7 @@ internal sealed class LineWidthStyleRule : StyleRule
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
         IReadOnlyList<TextSpan> protectedSpans = source.ProtectedSpans();
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         int fixedEnd = -1;
         foreach ((TextLine line, StyleList? list) in Violations(source))
         {
@@ -123,7 +123,7 @@ internal sealed class LineWidthStyleRule : StyleRule
             if (source.LineNumber(clause.Parent.GetFirstToken().SpanStart) != line.LineNumber) continue;
             if (!StyleLayout.IsBlank(source.content, previous.Span.End, arrow.SpanStart)) continue;
             int indentation = source.Indentation(line.Start) + StyleLayout.C_INDENT;
-            return [new(previous.Span.End, arrow.SpanStart, "\n" + new string(' ', indentation))];
+            return [new StyleEdit(previous.Span.End, arrow.SpanStart, "\n" + new string(' ', indentation))];
         }
 
         return null;
@@ -206,12 +206,12 @@ internal sealed class LineWidthStyleRule : StyleRule
         int column
     ) {
         string lineBreak = "\n" + new string(' ', column);
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         foreach (SyntaxToken token in operators)
         {
             SyntaxToken previous = token.GetPreviousToken();
             if (!StyleLayout.IsBlank(source.content, previous.Span.End, token.SpanStart)) return null;
-            edits.Add(new(previous.Span.End, token.SpanStart, lineBreak));
+            edits.Add(new StyleEdit(previous.Span.End, token.SpanStart, lineBreak));
         }
 
         return edits.Count == 0 ? null : edits;

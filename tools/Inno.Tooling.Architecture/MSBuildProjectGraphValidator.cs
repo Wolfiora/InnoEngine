@@ -35,7 +35,7 @@ internal static class MSBuildProjectGraphValidator
             .Where(project => selectedOwners is null || selectedOwners.Contains(Relative(root, project)))
             .Order(StringComparer.Ordinal)
             .ToArray();
-        var evaluated = new List<EvaluatedProject>();
+        List<EvaluatedProject> evaluated = [];
         var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["Configuration"] = configuration,

@@ -42,8 +42,10 @@ public class EditorActionContext
         object? target = null,
         object? argument = null
     ) {
-        this.editor = editor ?? throw new ArgumentNullException(nameof(editor));
-        this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
+        ArgumentNullException.ThrowIfNull(editor);
+        ArgumentNullException.ThrowIfNull(interactions);
+        this.editor = editor;
+        this.interactions = interactions;
         ArgumentException.ThrowIfNullOrWhiteSpace(area);
         this.area = area;
         this.target = target;

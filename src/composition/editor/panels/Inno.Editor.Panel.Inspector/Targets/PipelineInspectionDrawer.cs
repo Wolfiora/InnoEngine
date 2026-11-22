@@ -356,7 +356,10 @@ internal static class PipelineInspector
                     return;
                 }
 
-                var settingsEdits = new SettingsEdits(edits, () => assign(new(documents.assets.CaptureProperties(settings))));
+                var settingsEdits = new SettingsEdits(
+                    edits,
+                    () => assign(new SerializedRenderExtensionState(documents.assets.CaptureProperties(settings)))
+                );
                 foreach (SerializedProperty property in documents.serialization.GetProperties(settings))
                 {
                     context.properties.DrawDraftProperty(

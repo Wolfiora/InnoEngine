@@ -19,7 +19,7 @@ public sealed class RetirementFailureTests
         Assert.Same(timeout, RetirementPendingException.Find(new RetirementPendingException("outer", wrapped)));
         Assert.Null(RetirementPendingException.Find(ordinary));
         Assert.Throws<ArgumentNullException>(() => RetirementPendingException.Find(null!));
-        var failures = new List<Exception>();
+        List<Exception> failures = [];
         RetirementPendingException.CollectCompletedFailures(wrapped, failures);
         RetirementPendingException.CollectCompletedFailures(wrapped, failures);
         Assert.Same(ordinary, Assert.Single(failures));

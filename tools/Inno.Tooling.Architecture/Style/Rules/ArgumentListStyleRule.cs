@@ -33,8 +33,8 @@ internal sealed class ArgumentListStyleRule : StyleRule
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
         IReadOnlyList<TextSpan> protectedSpans = source.ProtectedSpans();
-        var edits = new List<StyleEdit>();
-        var fixedSpans = new List<TextSpan>();
+        List<StyleEdit> edits = [];
+        List<TextSpan> fixedSpans = [];
         foreach (StyleList list in Violations(source).OrderBy(static list => list.open.SpanStart))
         {
             // Nested lists are fixed in a later round, after their container has settled.

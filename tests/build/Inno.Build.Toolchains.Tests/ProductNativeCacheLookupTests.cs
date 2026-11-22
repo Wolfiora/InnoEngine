@@ -85,7 +85,7 @@ public sealed class ProductNativeCacheLookupTests : IDisposable
 
     private NativeBuildContext Context()
         => new NativeBuildContext(m_root, "release").WithToolchain(
-            new(
+            new NativeToolchainSelection(
                 "fixture-x64",
                 new BuildHostDescriptor("Fixture", "x64"),
                 new Dictionary<string, string> { ["compiler"] = Environment.ProcessPath! },
@@ -103,7 +103,7 @@ public sealed class ProductNativeCacheLookupTests : IDisposable
             new[] { "first", "second" }.Select(id => new ProductNativeBuildStep(
                 id,
                 m_owner,
-                new(NativeLibraryKind.Shared),
+                new NativeComponentBuildOptions(NativeLibraryKind.Shared),
                 [],
                 (
                     context,

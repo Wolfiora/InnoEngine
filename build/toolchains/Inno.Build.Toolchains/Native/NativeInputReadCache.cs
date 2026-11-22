@@ -86,7 +86,7 @@ internal sealed class NativeInputReadCache
         CancellationToken cancellationToken
     ) {
         var physicalPaths = new string[paths.Count];
-        var pending = new List<string>();
+        List<string> pending = [];
         var unique = new HashSet<string>(pathComparer);
         for (int index = 0; index < paths.Count; index++)
         {

@@ -11,7 +11,8 @@ internal static partial class ArchitectureRules
 {
     private static readonly string[] SCAN_ROOTS = ["entry", "src", "backends", "platforms", "build", "tests"];
 
-    private static readonly string[] FORBIDDEN_PLAYER_PROJECT_FRAGMENTS = [
+    private static readonly string[] FORBIDDEN_PLAYER_PROJECT_FRAGMENTS =
+    [
         "Inno.Editor.",
         "Inno.Build",
         "Inno.Scripting.Compiler",
@@ -28,7 +29,8 @@ internal static partial class ArchitectureRules
 
     private static readonly string[] FORBIDDEN_IMPLEMENTATION_WORDS = ["Legacy", "Compatibility", "Migration", "Former", "Deprecated"];
 
-    private static readonly string[] REMOVED_PROJECT_NAMES = [
+    private static readonly string[] REMOVED_PROJECT_NAMES =
+    [
         "Inno.Core.Framework",
         "Inno.Core.Assemblies",
         "Inno.Core.Reflection",
@@ -48,7 +50,8 @@ internal static partial class ArchitectureRules
         "Inno.Build.Platform.Browser"
     ];
 
-    private static readonly string[] CONCRETE_ADAPTER_MARKERS = [
+    private static readonly string[] CONCRETE_ADAPTER_MARKERS =
+    [
         "Inno.Adapter.Platform.Sdl3",
         "Inno.Adapter.Storage.FileSystem",
         "Inno.Adapter.Rendering.Bgfx",
@@ -549,7 +552,7 @@ internal static partial class ArchitectureRules
         ICollection<string> failures
     ) {
         var states = new Dictionary<ProjectNode, VisitState>();
-        var stack = new List<ProjectNode>();
+        List<ProjectNode> stack = [];
         foreach (ProjectNode node in graph.Values)
         {
             Visit(node);

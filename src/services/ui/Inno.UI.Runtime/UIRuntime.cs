@@ -37,8 +37,10 @@ public sealed class UIRuntime : RuntimeSubsystem, IUIService
         IUIBackend backend,
         IAssetArtifactLookup artifacts
     ) {
-        m_backend = backend ?? throw new ArgumentNullException(nameof(backend));
-        m_artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
+        ArgumentNullException.ThrowIfNull(backend);
+        ArgumentNullException.ThrowIfNull(artifacts);
+        m_backend = backend;
+        m_artifacts = artifacts;
     }
 
     /// <summary>
@@ -457,8 +459,9 @@ public sealed class UIRuntime : RuntimeSubsystem, IUIService
         UIContextHandle context,
         UIInputSnapshot input
     ) {
+        ArgumentNullException.ThrowIfNull(input);
         EnsureActive();
-        m_backend.Update(context, input ?? throw new ArgumentNullException(nameof(input)));
+        m_backend.Update(context, input);
     }
 
     /// <summary>

@@ -46,15 +46,15 @@ internal sealed class BuildCacheInventory
     internal static BuildCacheInventory Read(
         string workspace,
         IReadOnlyList<BuildCacheOwnerDescriptor> owners,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         var result = new BuildCacheInventory();
         foreach (BuildCacheOwnerDescriptor owner in owners)
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             BuildCacheCleanupPlan.RequireChild(workspace, owner.directory);
             BuildCacheCleanupPlan.RequireChild(owner.directory, owner.coordinationPath);
-            foreach (BuildCacheArtifactDescriptor artifact in owner.ReadArtifacts(cancellation))
+            foreach (BuildCacheArtifactDescriptor artifact in owner.ReadArtifacts(cancellationToken))
             {
                 if (artifact is null)
                 {
@@ -71,7 +71,7 @@ internal sealed class BuildCacheInventory
                     throw new InvalidDataException("A cache artifact has repeated ownership.");
                 }
             }
-            foreach (string path in owner.ReadProtectedArtifacts(cancellation))
+            foreach (string path in owner.ReadProtectedArtifacts(cancellationToken))
             {
                 BuildCacheCleanupPlan.RequireChild(owner.directory, path);
                 result.roots.Add(Path.TrimEndingDirectorySeparator(Path.GetFullPath(path)));
@@ -132,7 +132,7 @@ internal sealed class BuildCacheInventory
         );
         while (ready.TryDequeue(out string? path))
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             result.retirementOrder.Add(path);
             foreach (string dependency in result.artifacts[path].artifact.dependencies.Distinct(PATH_COMPARER))
             {

@@ -17,7 +17,8 @@ internal sealed class SceneSubtreeHistoryHandler : EditorHistoryHandler
         EditorSceneWorkspace workspace,
         LogRouter logs
     ) {
-        m_workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+        ArgumentNullException.ThrowIfNull(workspace);
+        m_workspace = workspace;
         ArgumentNullException.ThrowIfNull(logs);
         m_log = logs.CreateLogger<SceneSubtreeHistoryHandler>();
     }
@@ -131,19 +132,17 @@ internal sealed class SceneSubtreeHistoryHandler : EditorHistoryHandler
                 }
                 catch (Exception exception)
                 {
-                    SceneHistoryCompensationResult cleanup =
-                        SceneHistoryCompensation.RemoveCreatedObjects(
-                            scene,
-                            existing,
-                            $"Partial scene subtree '{data.rootID}'",
-                            m_workspace
-                        );
+                    SceneHistoryCompensationResult cleanup = SceneHistoryCompensation.RemoveCreatedObjects(
+                        scene,
+                        existing,
+                        $"Partial scene subtree '{data.rootID}'",
+                        m_workspace
+                    );
                     return cleanup.statePreserved
                            ? EditorHistoryResult.Failure(JoinFailures(exception.Message, cleanup.message))
                            : StateIntegrityFailure(JoinFailures(exception.Message, cleanup.message));
                 }
-                SceneReferenceRestoreResult referenceResult =
-                    SceneReferenceIndex.RestoreIncoming(data.incomingReferences, m_workspace);
+                SceneReferenceRestoreResult referenceResult = SceneReferenceIndex.RestoreIncoming(data.incomingReferences, m_workspace);
                 if (!referenceResult.succeeded)
                 {
                     SceneHistoryCompensationResult cleanup = SceneHistoryCompensation.Remove(
@@ -186,8 +185,10 @@ internal sealed class SceneSubtreeHistoryHandler : EditorHistoryHandler
                             parent,
                             data.siblingIndex
                         );
-                        SceneReferenceRestoreResult referenceRollback =
-                            SceneReferenceIndex.RestoreIncoming(data.incomingReferences, m_workspace);
+                        SceneReferenceRestoreResult referenceRollback = SceneReferenceIndex.RestoreIncoming(
+                            data.incomingReferences,
+                            m_workspace
+                        );
                         if (!referenceRollback.succeeded)
                         {
                             throw new InvalidOperationException(referenceRollback.message);

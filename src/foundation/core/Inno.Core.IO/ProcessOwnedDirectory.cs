@@ -275,7 +275,7 @@ public sealed class ProcessOwnedDirectory : IDisposable
         string root,
         CancellationToken cancellationToken = default
     ) {
-        var result = new List<ProcessOwnedDirectoryDescriptor>();
+        List<ProcessOwnedDirectoryDescriptor> result = [];
         if (!Directory.Exists(root))
         {
             return result;
@@ -291,7 +291,7 @@ public sealed class ProcessOwnedDirectory : IDisposable
             }
             if (Directory.Exists(path))
             {
-                result.Add(new(path, path + ".work.lock", QueryOwners(record, null)));
+                result.Add(new ProcessOwnedDirectoryDescriptor(path, path + ".work.lock", QueryOwners(record, null)));
             }
         }
         return result;

@@ -18,7 +18,8 @@ internal sealed class AssetIconRegistry : TypeRegistry<AssetIconRegistry.Snapsho
         TypeCatalog types
     ) : base(types)
     {
-        m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        ArgumentNullException.ThrowIfNull(settings);
+        m_settings = settings;
     }
 
     /// <summary>
@@ -32,8 +33,8 @@ internal sealed class AssetIconRegistry : TypeRegistry<AssetIconRegistry.Snapsho
     /// </returns>
     protected override Snapshot Build(TypeCacheSnapshot types)
     {
-        var typeRegistrations = new List<TypeRegistration>();
-        var extensionRegistrations = new List<ExtensionRegistration>();
+        List<TypeRegistration> typeRegistrations = [];
+        List<ExtensionRegistration> extensionRegistrations = [];
         foreach (Type declarationType in types.types.Select(typeRef => typeRef.Resolve(types)).OrderBy(
             static type => type.Assembly.GetName().Name,
             StringComparer.Ordinal

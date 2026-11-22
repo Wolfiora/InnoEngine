@@ -41,7 +41,7 @@ public sealed class RuntimeFactoryGenerator : IIncrementalGenerator
         string? deploymentDefinition = compilation.GetTypeByMetadataName(
             assemblyName + ".Generated.PlayerDeploymentDefinition"
         )?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-        var catalogs = new List<(string name, bool host)>();
+        List<(string name, bool host)> catalogs = [];
         foreach (IAssemblySymbol assembly in compilation.SourceModule.ReferencedAssemblySymbols)
         {
             if (assembly.GetTypeByMetadataName(assembly.Name + ".Generated.RuntimeModuleCatalog") is null)

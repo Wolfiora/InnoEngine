@@ -15,7 +15,7 @@ internal static class ValidationDeliverables
     internal static void Create(
         ValidationPlan plan,
         ValidationCheck check,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         JsonElement editor = plan.contexts[check.context!].sdkGraph.EnumerateArray().Single(snapshot => (
             Path.GetRelativePath(plan.root, snapshot.GetProperty("Path").GetString()!).Replace('\\', '/') == check.owner
@@ -32,7 +32,7 @@ internal static class ValidationDeliverables
                 {
                     foreach (string file in PathBoundary.EnumerateFiles(source).Order(StringComparer.Ordinal))
                     {
-                        cancellation.ThrowIfCancellationRequested();
+                        cancellationToken.ThrowIfCancellationRequested();
                         ZipArchiveEntry entry = archive.CreateEntry(
                             Path.GetRelativePath(source, file).Replace('\\', '/'),
                             CompressionLevel.Fastest
@@ -49,7 +49,7 @@ internal static class ValidationDeliverables
                 }
                 stream.Flush(flushToDisk: true);
             }
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             AtomicFile.Install(candidate, destination);
         }
         finally
@@ -62,7 +62,7 @@ internal static class ValidationDeliverables
         var files = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (string name in new[] { "Editor.zip", "PlayerSupportPack.zip" })
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             using FileStream stream = File.OpenRead(Path.Combine(directory, name));
             files.Add(name, Convert.ToHexStringLower(SHA256.HashData(stream)));
         }

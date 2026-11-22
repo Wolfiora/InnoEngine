@@ -21,8 +21,10 @@ public sealed class AssetSerializationServices
         IAssetReferenceResolver? references,
         Action<AssetDependency>? dependencySink
     ) {
-        m_types = types ?? throw new ArgumentNullException(nameof(types));
-        m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
+        ArgumentNullException.ThrowIfNull(types);
+        ArgumentNullException.ThrowIfNull(serialization);
+        m_types = types;
+        m_serialization = serialization;
         m_references = references;
         m_dependencySink = dependencySink;
     }

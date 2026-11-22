@@ -182,8 +182,9 @@ internal sealed partial class EditorSceneWorkspace
         IDisposable? identityDomain
     ) : IDisposable
     {
-        private readonly Dictionary<Guid, SceneDocumentSnapshot> m_snapshotBySceneID =
-            sceneSnapshots.ToDictionary(static snapshot => snapshot.sceneID);
+        private readonly Dictionary<Guid, SceneDocumentSnapshot> m_snapshotBySceneID = sceneSnapshots.ToDictionary(
+            static snapshot => snapshot.sceneID
+        );
 
         private bool m_disposed;
 

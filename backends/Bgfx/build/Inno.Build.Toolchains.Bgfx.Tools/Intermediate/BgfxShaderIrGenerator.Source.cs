@@ -17,7 +17,7 @@ internal sealed partial class BgfxShaderIrGenerator
         {
             throw new BgfxSourceSyntaxException(
                 $"BGFX SC generation cannot embed language '{implementation.languageID}'.",
-                new(implementation.sourcePath, 1, 1)
+                new ShaderSourcePosition(implementation.sourcePath, 1, 1)
             );
         }
         ShaderSourceRequest request = implementation.CreateSourceRequest();
@@ -51,7 +51,7 @@ internal sealed partial class BgfxShaderIrGenerator
             {
                 throw new BgfxSourceSyntaxException(
                     "BGFX SC does not support array typedef declarations; declare fixed arrays at their use sites.",
-                    new(implementation.sourcePath, 1, 1)
+                    new ShaderSourcePosition(implementation.sourcePath, 1, 1)
                 );
             }
             symbols.Add(name, TypeName(type));
@@ -377,7 +377,7 @@ internal sealed partial class BgfxShaderIrGenerator
         _ => throw Error($"BGFX has no '{semantic}' builtin for stage '{kind}'.")
     };
 
-    private static BgfxSourceSyntaxException Error(string message) => new(message, new("inno-generated-stage", 1, 1));
+    private static BgfxSourceSyntaxException Error(string message) => new(message, new ShaderSourcePosition("inno-generated-stage", 1, 1));
 
     private static void Fail(string message) => throw Error(message);
 }

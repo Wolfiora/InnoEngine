@@ -81,13 +81,13 @@ internal static class DocumentationMarkdown
         {
             throw new InvalidDataException("Documentation requires exactly one H1: " + path);
         }
-        var sections = new List<DocumentationSection>();
+        List<DocumentationSection> sections = [];
         for (int index = 0; index < headings.Length; index++)
         {
             HeadingBlock heading = headings[index];
             HeadingBlock? next = headings.Skip(index + 1).FirstOrDefault(candidate => candidate.Level <= heading.Level);
             sections.Add(
-                new(
+                new DocumentationSection(
                     heading.GetAttributes().Id ?? throw new InvalidDataException("Missing section identity: " + path),
                     HeadingText(heading),
                     heading.Level,
@@ -129,7 +129,7 @@ internal static class DocumentationMarkdown
         {
             throw new InvalidDataException("Documentation contains an unclosed code fence: " + path);
         }
-        var symbols = new List<DocumentationSymbol>();
+        List<DocumentationSymbol> symbols = [];
         foreach (string block in html)
         {
         foreach (Match marker in Regex.Matches(block, @"<!-- api: (?<id>\S+) (?<hash>[a-f0-9]{64}) -->"))
@@ -146,7 +146,7 @@ internal static class DocumentationMarkdown
                                 .Where(item => item.Span.Start >= section.start && item.Span.End < section.end && item.Info == "csharp")
                                 .Select(static item => item.Lines.ToString().Replace("\r\n", "\n").TrimEnd('\n'))
                                 .ToArray();
-            symbols.Add(new(id, marker.Groups["hash"].Value, anchor, section.anchor, declaration, code));
+            symbols.Add(new DocumentationSymbol(id, marker.Groups["hash"].Value, anchor, section.anchor, declaration, code));
         }
         }
         string[] includes = html.SelectMany(block => Regex.Matches(block, @"<!-- api-include: (?<path>[^\r\n]+?) -->")

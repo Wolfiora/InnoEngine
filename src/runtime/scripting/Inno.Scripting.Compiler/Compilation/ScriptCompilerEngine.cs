@@ -156,9 +156,9 @@ internal static class ScriptCompilerEngine
         string stagingRoot = Path.Combine(options.outputDirectory, ".staging");
         using var generationStaging = new TemporaryDirectory(stagingRoot);
         string stagingDirectory = generationStaging.path;
-        var diagnostics = new List<ScriptDiagnostic>();
-        var compiledAssemblies = new List<string>();
-        var reusedAssemblies = new List<string>();
+        List<ScriptDiagnostic> diagnostics = [];
+        List<string> compiledAssemblies = [];
+        List<string> reusedAssemblies = [];
         progress.Begin("Preparing isolated Plugin module boundaries...");
         progress.Complete("Isolated Plugin module boundaries prepared.");
 
@@ -904,7 +904,7 @@ internal static class ScriptCompilerEngine
             static assembly => assembly.name,
             StringComparer.OrdinalIgnoreCase
         );
-        var requests = new List<ScriptModuleDeployment>();
+        List<ScriptModuleDeployment> requests = [];
         foreach (IGrouping<string, ScriptAssemblyInput> group in pluginAssemblies
             .GroupBy(static assembly => assembly.ownerPluginID, StringComparer.Ordinal)
             .OrderBy(static group => group.Key, StringComparer.Ordinal)

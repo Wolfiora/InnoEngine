@@ -135,7 +135,7 @@ internal static class StyleEngine
                 }
 
                 var source = new StyleSource(relativePath, content);
-                var local = new List<StyleFinding>();
+                List<StyleFinding> local = [];
                 foreach (StyleRule rule in rules)
                 {
                     rule.Check(source, local);
@@ -164,7 +164,7 @@ internal static class StyleEngine
         string relativePath,
         string content
     ) {
-        var findings = new List<StyleFinding>();
+        List<StyleFinding> findings = [];
         if (!IsHandwritten(relativePath, content)) return findings;
         var source = new StyleSource(relativePath, content);
         if (source.hasSyntaxErrors) return findings;
@@ -194,7 +194,7 @@ internal static class StyleEngine
                 var source = new StyleSource(relativePath, content);
                 if (source.hasSyntaxErrors)
                 {
-                    rejections.Add(new(rule.id, relativePath, "The file has syntax errors."));
+                    rejections.Add(new StyleRejection(rule.id, relativePath, "The file has syntax errors."));
                     return content;
                 }
 
@@ -207,7 +207,7 @@ internal static class StyleEngine
                 if (reason is not null)
                 {
                     rejectedRules.Add(rule.id);
-                    rejections.Add(new(rule.id, relativePath, reason));
+                    rejections.Add(new StyleRejection(rule.id, relativePath, reason));
                     continue;
                 }
 
@@ -218,7 +218,7 @@ internal static class StyleEngine
             if (!isChanged) return content;
         }
 
-        rejections.Add(new("*", relativePath, "The fixes did not converge."));
+        rejections.Add(new StyleRejection("*", relativePath, "The fixes did not converge."));
         return content;
     }
 

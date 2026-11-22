@@ -15,7 +15,8 @@ internal sealed class SceneDocumentHistoryHandler : EditorHistoryHandler
         EditorSceneWorkspace workspace,
         LogRouter logs
     ) {
-        m_workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+        ArgumentNullException.ThrowIfNull(workspace);
+        m_workspace = workspace;
         ArgumentNullException.ThrowIfNull(logs);
         m_log = logs.CreateLogger<SceneDocumentHistoryHandler>();
     }

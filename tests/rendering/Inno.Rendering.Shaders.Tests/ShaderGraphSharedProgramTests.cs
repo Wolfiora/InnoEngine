@@ -47,9 +47,14 @@ public sealed partial class ShaderGraphProgramTests
     public void RemovingAnOutputRemovesEveryAffectedPassAndItsNowUnreferencedStagePair()
     {
         GraphDocument original = SharedGraph();
-        GraphDocument changed = ShaderGraphBindings.RemoveNodes(original, [new("fragment")], m_serialization, SerializationContext.empty);
-        Assert.Null(changed.FindNode(new("vertex")));
-        Assert.Null(changed.FindNode(new("fragment")));
+        GraphDocument changed = ShaderGraphBindings.RemoveNodes(
+            original,
+            [new GraphNodeID("fragment")],
+            m_serialization,
+            SerializationContext.empty
+        );
+        Assert.Null(changed.FindNode(new GraphNodeID("vertex")));
+        Assert.Null(changed.FindNode(new GraphNodeID("fragment")));
         Assert.Empty(ShaderGraphPrograms.Read(changed, m_serialization, SerializationContext.empty));
         Assert.Empty(ShaderGraphDocument.ReadDefinition(changed, m_serialization, SerializationContext.empty).passes);
         Assert.Empty(changed.nodes);
@@ -60,10 +65,10 @@ public sealed partial class ShaderGraphProgramTests
     {
         GraphDocument graph = SharedGraph();
         ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(graph, m_serialization, SerializationContext.empty);
-        definition.techniques = [new(
-            new("surface"),
-            new("tests.surface"),
-            definition.passes.Select(pass => new ShaderTechniquePass(new(pass.name.ToLowerInvariant()), pass.name))
+        definition.techniques = [new ShaderTechniqueDefinition(
+            new ShaderTechniqueID("surface"),
+            new ShaderContractID("tests.surface"),
+            definition.passes.Select(pass => new ShaderTechniquePass(new ShaderPassRoleID(pass.name.ToLowerInvariant()), pass.name))
         )];
         graph.SetMetadata(
             ShaderGraphDocument.C_DEFINITION_KEY,
@@ -72,7 +77,7 @@ public sealed partial class ShaderGraphProgramTests
         byte[] original = GraphDocumentCodec.Encode(graph, m_serialization);
         GraphDocument fragment = ShaderGraphClipboard.Copy(
             graph,
-            [new("vertex"), new("fragment")],
+            [new GraphNodeID("vertex"), new GraphNodeID("fragment")],
             m_serialization,
             SerializationContext.empty
         );
@@ -105,8 +110,8 @@ public sealed partial class ShaderGraphProgramTests
     public void CopyAndPasteUnknownNodesPreserveTheirUnresolvedData()
     {
         var graph = new GraphDocument();
-        var node = new GraphNodeRecord(new("unknown"), "uninstalled.node");
-        node.SetValue("payload", new([1, 3, 5]));
+        var node = new GraphNodeRecord(new GraphNodeID("unknown"), "uninstalled.node");
+        node.SetValue("payload", new GraphSerializedValue([1, 3, 5]));
         graph.AddNode(node);
         GraphDocument fragment = ShaderGraphClipboard.Copy(graph, [node.id], m_serialization, SerializationContext.empty);
         ShaderGraphPasteResult pasted = ShaderGraphClipboard.Paste(
@@ -141,7 +146,7 @@ public sealed partial class ShaderGraphProgramTests
             graph = ShaderGraphPrograms.Bind(
                 graph,
                 pass.name,
-                [new("vertex"), new("fragment")],
+                [new GraphNodeID("vertex"), new GraphNodeID("fragment")],
                 m_serialization,
                 SerializationContext.empty
             );

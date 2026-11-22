@@ -15,7 +15,7 @@ public sealed class ReferenceRecoveryTests
     [InlineData("validate")]
     public void CandidateFailureCompensatesAttemptedOwnersAroundPublication(string phase)
     {
-        var events = new List<string>();
+        List<string> events = [];
         var first = new Participant("first", events);
         var second = new Participant("second", events, phase);
         var third = new Participant("third", events);
@@ -47,7 +47,7 @@ public sealed class ReferenceRecoveryTests
         string phase,
         bool wrapped
     ) {
-        var events = new List<string>();
+        List<string> events = [];
         var first = new Participant("first", events);
         var pending = new Participant("pending", events, phase, pending: true, wrapped: wrapped);
         var gate = new GenerationCoordinator();
@@ -92,7 +92,7 @@ public sealed class ReferenceRecoveryTests
     [Fact]
     public void OrdinaryCleanupFailureStillRetiresOtherOwnersAndCannotPretendToRollback()
     {
-        var events = new List<string>();
+        List<string> events = [];
         var recovery = new ReferenceRecoveryTransaction(
             ReferenceCatalog.empty,
             [],
@@ -112,7 +112,7 @@ public sealed class ReferenceRecoveryTests
     [InlineData("restore")]
     public void EarlierParticipantFailureIsRetainedAlongsidePendingOwnership(string phase)
     {
-        var events = new List<string>();
+        List<string> events = [];
         var ordinary = new Participant("ordinary", events, phase);
         var pending = new Participant("pending", events, phase, pending: true);
         var dependency = new Participant("dependency", events);
@@ -147,7 +147,7 @@ public sealed class ReferenceRecoveryTests
     [Fact]
     public void RecoveryRejectsAnotherThreadBeforeInvokingDomainCode()
     {
-        var events = new List<string>();
+        List<string> events = [];
         var recovery = new ReferenceRecoveryTransaction(ReferenceCatalog.empty, [], [new Participant("owner", events)]);
         Exception? failure = null;
         var thread = new Thread(() =>

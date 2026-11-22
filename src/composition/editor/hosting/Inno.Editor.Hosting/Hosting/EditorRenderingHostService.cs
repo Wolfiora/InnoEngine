@@ -40,8 +40,10 @@ internal sealed class EditorRenderingHostService :
         IPresentationContext presentation,
         EditorReloadCoordinator reloads
     ) {
-        m_runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
-        m_presentation = presentation ?? throw new ArgumentNullException(nameof(presentation));
+        ArgumentNullException.ThrowIfNull(runtime);
+        ArgumentNullException.ThrowIfNull(presentation);
+        m_runtime = runtime;
+        m_presentation = presentation;
         ArgumentNullException.ThrowIfNull(reloads);
         m_reloadRegistration = reloads.Register(this);
         m_runtime.SetPrimaryModelOutputEnabled(false);

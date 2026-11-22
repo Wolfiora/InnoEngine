@@ -17,8 +17,10 @@ public sealed class EditorViewportToolContext
         IEditorHistory history,
         IEditorViewportCoordinateConverter coordinates
     ) {
-        m_history = history ?? throw new ArgumentNullException(nameof(history));
-        m_coordinates = coordinates ?? throw new ArgumentNullException(nameof(coordinates));
+        ArgumentNullException.ThrowIfNull(history);
+        ArgumentNullException.ThrowIfNull(coordinates);
+        m_history = history;
+        m_coordinates = coordinates;
     }
 
     /// <summary>

@@ -35,9 +35,12 @@ public sealed class SceneReloadService
         SerializationRegistry serialization,
         IAssetReferenceResolver assets
     ) {
-        m_world = world ?? throw new ArgumentNullException(nameof(world));
-        m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
-        m_assets = assets ?? throw new ArgumentNullException(nameof(assets));
+        ArgumentNullException.ThrowIfNull(world);
+        ArgumentNullException.ThrowIfNull(serialization);
+        ArgumentNullException.ThrowIfNull(assets);
+        m_world = world;
+        m_serialization = serialization;
+        m_assets = assets;
     }
 
     /// <summary>

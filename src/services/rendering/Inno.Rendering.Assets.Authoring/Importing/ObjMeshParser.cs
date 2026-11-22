@@ -14,13 +14,13 @@ internal static partial class MeshSourceParser
         string sourcePath,
         string text
     ) {
-        var positions = new List<Vector3>();
-        var normals = new List<Vector3>();
-        var textureCoordinates = new List<Vector2>();
-        var vertices = new List<MutableVertex>();
-        var indices = new List<uint>();
+        List<Vector3> positions = [];
+        List<Vector3> normals = [];
+        List<Vector2> textureCoordinates = [];
+        List<MutableVertex> vertices = [];
+        List<uint> indices = [];
         var vertexMap = new Dictionary<ObjVertexKey, uint>();
-        var sections = new List<GeometrySection>();
+        List<GeometrySection> sections = [];
         int subMeshStart = 0;
 
         string[] lines = text.Split('\n');

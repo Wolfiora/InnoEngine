@@ -78,7 +78,7 @@ internal sealed partial class ShaderEditorCanvas
             {
                 Vector2 graphPoint = layout.ToWorld(Vector2.Clamp(ImGuiApi.GetMousePos(), minimum, maximum));
                 canvas.SetViewport(
-                    new(m_size.X * 0.5f - graphPoint.X * canvas.zoom, m_size.Y * 0.5f - graphPoint.Y * canvas.zoom),
+                    new GraphPosition(m_size.X * 0.5f - graphPoint.X * canvas.zoom, m_size.Y * 0.5f - graphPoint.Y * canvas.zoom),
                     canvas.zoom
                 );
             }
@@ -111,7 +111,7 @@ internal sealed partial class ShaderEditorCanvas
             GraphPosition position = draft.pointer.previewPositions.GetValueOrDefault(node.id, node.position);
             var nodeMinimum = new Vector2(position.x, position.y);
             Vector2 nodeMaximum = nodeMinimum + new Vector2(NodeWidth(node), C_HEADER + Rows(node) * C_ROW + 20f);
-            m_miniMapGeometry.Add(node.id, new(nodeMinimum, nodeMaximum));
+            m_miniMapGeometry.Add(node.id, new MiniMapNodeGeometry(nodeMinimum, nodeMaximum));
             worldMinimum = Vector2.Min(worldMinimum, nodeMinimum);
             worldMaximum = Vector2.Max(worldMaximum, nodeMaximum);
         }

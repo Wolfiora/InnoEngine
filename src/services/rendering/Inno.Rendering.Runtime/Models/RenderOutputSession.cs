@@ -53,12 +53,14 @@ public sealed class RenderOutputSession
         RenderOutputRoute? route = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        ArgumentNullException.ThrowIfNull(content);
+        ArgumentNullException.ThrowIfNull(viewContent);
         this.id = id;
-        this.content = content ?? throw new ArgumentNullException(nameof(content));
+        this.content = content;
         this.viewport = viewport;
         this.frameIndex = frameIndex;
         this.deltaTime = deltaTime;
-        this.viewContent = viewContent ?? throw new ArgumentNullException(nameof(viewContent));
+        this.viewContent = viewContent;
         this.input = input ?? RenderOutputInput.empty;
         this.route = route;
     }

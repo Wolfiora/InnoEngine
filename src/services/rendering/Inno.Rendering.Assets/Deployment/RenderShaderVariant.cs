@@ -13,8 +13,9 @@ namespace Inno.Rendering.Assets;
 [StableTypeID("c6c7b7a6-5e4f-5822-af8f-e894d7bb2d38")]
 public readonly struct RenderShaderVariant : IEquatable<RenderShaderVariant>
 {
-    private static readonly IReadOnlyDictionary<string, string> EMPTY_OPTIONS =
-        new ReadOnlyDictionary<string, string>(new Dictionary<string, string>());
+    private static readonly IReadOnlyDictionary<string, string> EMPTY_OPTIONS = new ReadOnlyDictionary<string, string>(
+        new Dictionary<string, string>()
+    );
 
     private readonly IReadOnlyDictionary<string, string>? m_options;
     private readonly string? m_value;

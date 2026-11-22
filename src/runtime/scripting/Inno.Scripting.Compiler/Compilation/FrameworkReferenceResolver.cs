@@ -18,7 +18,7 @@ internal static class FrameworkReferenceResolver
         CancellationToken cancellationToken = default
     ) {
         ScriptCompilationInputs inputs = provider.Capture(cancellationToken);
-        var references = new List<MetadataReference>();
+        List<MetadataReference> references = [];
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "System.Private.CoreLib" };
         using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         foreach (string identity in new[]

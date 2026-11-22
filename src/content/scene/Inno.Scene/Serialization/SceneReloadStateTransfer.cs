@@ -285,7 +285,7 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
-        var scenes = new List<SceneState>();
+        List<SceneState> scenes = [];
         foreach (GameScene scene in world.loadedScenes)
         {
             SceneStructureSnapshot structure = scene.CaptureStructure();
@@ -299,7 +299,7 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
                 sourceIDs.Add(target, target.identity.persistentID);
             }
             var references = new SceneGraphReferenceMap(scene, sourceIDs);
-            var states = new List<ObjectState>();
+            List<ObjectState> states = [];
             using (references.Enter())
             {
                 foreach (GameComponent component in structure.objects.SelectMany(static entry => entry.components))
@@ -746,8 +746,7 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         internal byte[] data { get; } = data;
         internal AssetDependency[] dependencies { get; } = dependencies;
 
-        internal bool lifecycleWasEnabled { get; } =
-            target is ISceneLifecycleObject lifecycle && lifecycle.lifecycleWasEnabled;
+        internal bool lifecycleWasEnabled { get; } = target is ISceneLifecycleObject lifecycle && lifecycle.lifecycleWasEnabled;
 
         internal EngineObject currentTarget { get; set; } = target;
     }

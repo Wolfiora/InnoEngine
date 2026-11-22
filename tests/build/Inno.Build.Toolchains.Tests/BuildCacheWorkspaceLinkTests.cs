@@ -37,12 +37,17 @@ public sealed class BuildCacheWorkspaceLinkTests
             BuildCacheCleanupPlan measured = BuildCacheCleanupPlan.Create(
                 root,
                 [publisher.Describe("fixture")],
-                new(0, 0),
+                new BuildCachePolicy(0, 0),
                 retireAll: true
             );
             Assert.Equal(bytes, measured.totalBytes);
         }
-        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(root, [publisher.Describe("fixture")], new(0, 0), retireAll: true);
+        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(
+            root,
+            [publisher.Describe("fixture")],
+            new BuildCachePolicy(0, 0),
+            retireAll: true
+        );
         BuildCacheCleanupResult result = await plan.ExecuteAsync();
         Assert.Equal(workspace, Assert.Single(result.retired));
         Assert.Empty(result.failures);

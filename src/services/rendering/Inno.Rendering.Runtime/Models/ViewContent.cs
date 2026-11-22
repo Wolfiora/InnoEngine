@@ -116,7 +116,8 @@ public sealed class ViewContentContext
         IReadOnlyList<RenderView>? views = null,
         IReadOnlyList<string>? sourceIDs = null
     ) {
-        this.content = content ?? throw new ArgumentNullException(nameof(content));
+        ArgumentNullException.ThrowIfNull(content);
+        this.content = content;
         ArgumentException.ThrowIfNullOrWhiteSpace(sessionID);
         this.sessionID = sessionID;
         this.view = view;
@@ -311,11 +312,12 @@ public sealed class ViewContentItem
         IViewDrawable drawable,
         IViewPointerTarget? pointerTarget = null
     ) {
+        ArgumentNullException.ThrowIfNull(drawable);
         this.owner = owner;
         this.localToWorld = localToWorld;
         this.localBoundsMin = localBoundsMin;
         this.localBoundsMax = localBoundsMax;
-        this.drawable = drawable ?? throw new ArgumentNullException(nameof(drawable));
+        this.drawable = drawable;
         this.pointerTarget = pointerTarget;
     }
 
@@ -466,8 +468,10 @@ public sealed class SelectedViewContentCollector : IViewContentCollector
         IViewContentCollector inner,
         IReadOnlyList<string> sourceIDs
     ) {
-        m_inner = inner ?? throw new ArgumentNullException(nameof(inner));
-        m_sourceIDs = sourceIDs ?? throw new ArgumentNullException(nameof(sourceIDs));
+        ArgumentNullException.ThrowIfNull(inner);
+        ArgumentNullException.ThrowIfNull(sourceIDs);
+        m_inner = inner;
+        m_sourceIDs = sourceIDs;
     }
 
     /// <summary>

@@ -28,14 +28,14 @@ internal sealed class LocalTypeStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         foreach ((VariableDeclarationSyntax declaration, string _, string? created) in Violations(source.root))
         {
             if (created is null) continue;
-            edits.Add(new(declaration.Type.SpanStart, declaration.Type.Span.End, "var"));
+            edits.Add(new StyleEdit(declaration.Type.SpanStart, declaration.Type.Span.End, "var"));
             if (declaration.Variables[0].Initializer!.Value is ImplicitObjectCreationExpressionSyntax creation)
             {
-                edits.Add(new(creation.NewKeyword.Span.End, creation.NewKeyword.Span.End, " " + created));
+                edits.Add(new StyleEdit(creation.NewKeyword.Span.End, creation.NewKeyword.Span.End, " " + created));
             }
         }
 

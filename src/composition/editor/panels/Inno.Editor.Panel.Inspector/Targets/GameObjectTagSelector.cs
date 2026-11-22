@@ -36,8 +36,10 @@ internal sealed class GameObjectTagSelector
         SceneProjectSettingsModule settings,
         SceneEdits edits
     ) {
-        m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
-        m_edits = edits ?? throw new ArgumentNullException(nameof(edits));
+        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(edits);
+        m_settings = settings;
+        m_edits = edits;
     }
 
     /// <summary>

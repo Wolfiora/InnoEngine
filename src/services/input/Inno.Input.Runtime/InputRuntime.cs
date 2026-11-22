@@ -19,7 +19,8 @@ public sealed class InputRuntime : RuntimeSubsystem, IInputService
     /// </param>
     public InputRuntime(IInputBackend backend)
     {
-        m_backend = backend ?? throw new ArgumentNullException(nameof(backend));
+        ArgumentNullException.ThrowIfNull(backend);
+        m_backend = backend;
     }
 
     /// <summary>

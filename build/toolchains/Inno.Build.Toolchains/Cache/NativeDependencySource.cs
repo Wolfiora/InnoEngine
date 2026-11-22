@@ -15,7 +15,7 @@ internal static class NativeDependencySource
     internal static async Task<Dictionary<string, string>> CaptureAsync(
         string root,
         IEnumerable<string> paths,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         string index = await GitAsync(["ls-files", "--stage", "-z"]).ConfigureAwait(false);
         string[] modules = index
@@ -62,17 +62,17 @@ internal static class NativeDependencySource
             }
         }
 
-        await VerifyWorkingTreeAsync(root, "HEAD", roots, cancellation).ConfigureAwait(false);
+        await VerifyWorkingTreeAsync(root, "HEAD", roots, cancellationToken).ConfigureAwait(false);
         return result;
         Task<string> GitAsync(string[] arguments)
-            => ToolchainEnvironment.CaptureOutputAsync("git", ["--literal-pathspecs", ..arguments], root, cancellation);
+            => ToolchainEnvironment.CaptureOutputAsync("git", ["--literal-pathspecs", ..arguments], root, cancellationToken);
     }
 
     private static async Task VerifyWorkingTreeAsync(
         string root,
         string revision,
         string[] paths,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         var blobs = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (string[] batch in paths.Chunk(80))
@@ -107,13 +107,13 @@ internal static class NativeDependencySource
                             "git",
                             ["rev-parse", "HEAD"],
                             path,
-                            cancellation
+                            cancellationToken
                         ).ConfigureAwait(false);
                         if (head.Trim() != metadata[2])
                         {
                             throw new InvalidDataException("Native submodule revision differs from its committed owner: " + relative);
                         }
-                        await VerifyWorkingTreeAsync(path, metadata[2], ["."], cancellation).ConfigureAwait(false);
+                        await VerifyWorkingTreeAsync(path, metadata[2], ["."], cancellationToken).ConfigureAwait(false);
                     }
                 }
                 else if (metadata[0] == "120000")
@@ -174,6 +174,6 @@ internal static class NativeDependencySource
             }
         }
         Task<string> GitAsync(string[] arguments)
-            => ToolchainEnvironment.CaptureOutputAsync("git", ["--literal-pathspecs", ..arguments], root, cancellation);
+            => ToolchainEnvironment.CaptureOutputAsync("git", ["--literal-pathspecs", ..arguments], root, cancellationToken);
     }
 }

@@ -12,13 +12,13 @@ public sealed class GraphDocumentTests
     {
         var document = new GraphDocument();
         IReadOnlyList<GraphNodeRecord> view = document.nodes;
-        var first = new GraphNodeRecord(new("first"), "test.node");
-        var second = new GraphNodeRecord(new("second"), "test.node");
+        var first = new GraphNodeRecord(new GraphNodeID("first"), "test.node");
+        var second = new GraphNodeRecord(new GraphNodeID("second"), "test.node");
         document.AddNode(first);
         document.AddNode(second);
         Assert.Same(first, document.FindNode(first.id));
         Assert.Same(second, document.FindNode(second.id));
-        Assert.Throws<ArgumentException>(() => document.AddNode(new(first.id, "duplicate")));
+        Assert.Throws<ArgumentException>(() => document.AddNode(new GraphNodeRecord(first.id, "duplicate")));
         Assert.Equal(2, view.Count);
         Assert.True(document.RemoveNode(first.id));
         Assert.Null(document.FindNode(first.id));
@@ -43,7 +43,7 @@ public sealed class GraphDocumentTests
         var document = new GraphDocument();
         for (int index = 0; index < 2_000; index++)
         {
-            document.AddNode(new(new("node-" + index), "test.node"));
+            document.AddNode(new GraphNodeRecord(new GraphNodeID("node-" + index), "test.node"));
         }
         GraphNodeRecord node = document.nodes[^1];
         GraphNodeID id = node.id;

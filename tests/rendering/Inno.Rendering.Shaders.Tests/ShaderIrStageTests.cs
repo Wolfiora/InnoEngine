@@ -28,7 +28,7 @@ public sealed class ShaderIrStageTests
             return new ShaderIrStage(
                 ShaderStage.Compute,
                 builder.Build(new Dictionary<string, ShaderIrValue>()),
-                [new("resource", resourceType, ShaderIrInputKind.Storage, location: slot)],
+                [new ShaderIrStageInput("resource", resourceType, ShaderIrInputKind.Storage, location: slot)],
                 [],
                 threads
             ).contentHash;
@@ -54,10 +54,15 @@ public sealed class ShaderIrStageTests
         Assert.Throws<ArgumentException>(() => new ShaderIrStage(ShaderStage.Vertex, body, [], [output]));
         Assert.Throws<ArgumentException>(() => new ShaderIrStage(ShaderStage.Vertex, body, [input], []));
         Assert.Throws<ArgumentException>(
-            () => new ShaderIrStage(ShaderStage.Vertex, body, [input], [new("clip", ShaderIrOutputKind.Varying, "texcoord")])
+            () => new ShaderIrStage(
+                ShaderStage.Vertex,
+                body,
+                [input],
+                [new ShaderIrStageOutput("clip", ShaderIrOutputKind.Varying, "texcoord")]
+            )
         );
         Assert.Throws<ArgumentException>(
-            () => new ShaderIrStage(ShaderStage.Fragment, body, [input], [new("clip", ShaderIrOutputKind.Color)])
+            () => new ShaderIrStage(ShaderStage.Fragment, body, [input], [new ShaderIrStageOutput("clip", ShaderIrOutputKind.Color)])
         );
         Assert.Throws<ArgumentException>(() => new ShaderIrStage(ShaderStage.Vertex, body, [input], [output], threadsX: 2));
     }
@@ -73,8 +78,20 @@ public sealed class ShaderIrStageTests
             ShaderStage.Fragment,
             body,
             [
-                new("first", ShaderSourceType.Atomic("sampled-texture2d"), ShaderIrInputKind.SampledTexture, "ignored-1", 2),
-                new("second", ShaderSourceType.Atomic("sampled-texture2d"), ShaderIrInputKind.SampledTexture, "ignored-2", 2)
+                new ShaderIrStageInput(
+                    "first",
+                    ShaderSourceType.Atomic("sampled-texture2d"),
+                    ShaderIrInputKind.SampledTexture,
+                    "ignored-1",
+                    2
+                ),
+                new ShaderIrStageInput(
+                    "second",
+                    ShaderSourceType.Atomic("sampled-texture2d"),
+                    ShaderIrInputKind.SampledTexture,
+                    "ignored-2",
+                    2
+                )
             ],
             []
         ));
@@ -85,10 +102,10 @@ public sealed class ShaderIrStageTests
     {
         var builder = new ShaderIrBuilder();
         ShaderIrBlock body = builder.Build(new Dictionary<string, ShaderIrValue>());
-        var inputs = new List<ShaderIrStageInput>();
-        var outputs = new List<ShaderIrStageOutput>();
+        List<ShaderIrStageInput> inputs = [];
+        List<ShaderIrStageOutput> outputs = [];
         var stage = new ShaderIrStage(ShaderStage.Compute, body, inputs, outputs, 8, 4, 2);
-        inputs.Add(new("late", ShaderSourceType.Atomic("float"), ShaderIrInputKind.Uniform));
+        inputs.Add(new ShaderIrStageInput("late", ShaderSourceType.Atomic("float"), ShaderIrInputKind.Uniform));
         Assert.Empty(stage.inputs);
         Assert.Equal(8, stage.threadsX);
         Assert.Throws<ArgumentException>(() => new ShaderIrStage(ShaderStage.Compute, body, [], [], 0));

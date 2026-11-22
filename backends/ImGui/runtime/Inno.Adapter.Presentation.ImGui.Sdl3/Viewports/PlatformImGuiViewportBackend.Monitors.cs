@@ -12,7 +12,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend
 {
     private static void RefreshMonitors(SDLWindow* fallbackWindow)
     {
-        var monitors = new List<ImGuiPlatformMonitor>();
+        List<ImGuiPlatformMonitor> monitors = [];
         int displayCount = 0;
         uint* displays = SDL.Raw.GetDisplays(&displayCount);
         try

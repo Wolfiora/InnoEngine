@@ -25,7 +25,8 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
     /// </exception>
     public MacOSArm64GameBuildTarget(IPlayerSupportPackValidator supportPackValidator)
     {
-        m_supportPackValidator = supportPackValidator ?? throw new ArgumentNullException(nameof(supportPackValidator));
+        ArgumentNullException.ThrowIfNull(supportPackValidator);
+        m_supportPackValidator = supportPackValidator;
     }
 
     /// <summary>

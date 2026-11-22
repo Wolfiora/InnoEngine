@@ -107,7 +107,7 @@ public sealed class GameSystemTests : IDisposable
     public void ManualSystemOrderIsIndependentFromExecutionPriorityAndBreaksPriorityTies()
     {
         var scene = new GameScene("System Order");
-        var execution = new List<string>();
+        List<string> execution = [];
         var highA = new OrderedSystem("High A", 10, execution);
         var low = new OrderedSystem("Low", -10, execution);
         var highB = new OrderedSystem("High B", 10, execution);

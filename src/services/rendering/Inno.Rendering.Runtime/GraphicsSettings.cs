@@ -42,7 +42,8 @@ internal sealed class GraphicsSettingsState
 
     internal GraphicsSettingsState(GraphicsCapabilities capabilities)
     {
-        this.capabilities = capabilities ?? throw new ArgumentNullException(nameof(capabilities));
+        ArgumentNullException.ThrowIfNull(capabilities);
+        this.capabilities = capabilities;
     }
 
     internal GraphicsCapabilities capabilities { get; }

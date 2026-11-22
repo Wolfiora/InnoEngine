@@ -98,7 +98,7 @@ public sealed class BgfxCompositionProgramProvider : IRenderLayerCompositionProg
         return new GraphicsPipelineDescriptor(
             program.vertexShader.Span,
             program.fragmentShader.Span,
-            [new(TEXTURE, RenderShaderBindingKind.Texture, slot: 0, nativeName: binding.nativeName)],
+            [new RenderShaderBindingDescriptor(TEXTURE, RenderShaderBindingKind.Texture, slot: 0, nativeName: binding.nativeName)],
             vertexLayout,
             raster
         );

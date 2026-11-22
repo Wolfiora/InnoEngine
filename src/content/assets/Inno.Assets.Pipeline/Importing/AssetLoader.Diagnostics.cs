@@ -249,9 +249,8 @@ public sealed partial class AssetLoader
         {
             return;
         }
-        string diagnostic =
-            $"Warning: source '{relativePath}' matched {matchCount} removed assets; "
-            + "a new persistent identity was assigned instead of guessing a rename.";
+        string diagnostic = $"Warning: source '{relativePath}' matched {matchCount} removed assets; "
+                            + "a new persistent identity was assigned instead of guessing a rename.";
         record.meta.diagnostics = record.meta.diagnostics
             .Append(diagnostic)
             .Distinct(StringComparer.Ordinal)

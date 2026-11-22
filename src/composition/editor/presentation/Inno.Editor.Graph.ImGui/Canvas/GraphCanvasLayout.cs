@@ -11,7 +11,7 @@ namespace Inno.Editor.Graph.ImGui;
 /// </summary>
 public sealed class GraphCanvasLayout
 {
-    private IReadOnlyList<GraphCanvasNode> m_nodes = Array.Empty<GraphCanvasNode>();
+    private IReadOnlyList<GraphCanvasNode> m_nodes = [];
     private Dictionary<GraphNodeID, GraphCanvasNode> m_byID = [];
 
     /// <summary>

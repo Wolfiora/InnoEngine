@@ -56,7 +56,7 @@ public sealed class GraphicsProgramArtifactTests
     public void InvalidBindingAndRasterValuesCannotBeEncodedAsValidArtifacts()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => new RenderShaderBindingDescriptor(
-            new("invalid"),
+            new RenderBindingID("invalid"),
             RenderShaderBindingKind.Uniform,
             uniformType: (RenderUniformType)99
         ));

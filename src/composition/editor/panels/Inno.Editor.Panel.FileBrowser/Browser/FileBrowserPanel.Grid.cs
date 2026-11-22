@@ -135,7 +135,7 @@ internal sealed partial class FileBrowserPanel
         float cellSize = GetGridCellSize();
         if (!m_data.TryResolve(item, out AssetFileEntry? entry))
         {
-            Gui.Dummy(new(cellSize, cellSize));
+            Gui.Dummy(new Vector2(cellSize, cellSize));
             return;
         }
         string icon = m_assets.GetIcon(entry);

@@ -30,8 +30,10 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
         ITextBackend backend,
         IAssetArtifactLookup artifacts
     ) {
-        m_backend = backend ?? throw new ArgumentNullException(nameof(backend));
-        m_artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
+        ArgumentNullException.ThrowIfNull(backend);
+        ArgumentNullException.ThrowIfNull(artifacts);
+        m_backend = backend;
+        m_artifacts = artifacts;
     }
 
     /// <summary>

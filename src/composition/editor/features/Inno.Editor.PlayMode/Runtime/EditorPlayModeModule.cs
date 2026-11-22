@@ -28,8 +28,10 @@ internal sealed class EditorPlayModeModule : EditorModule, IEditorPlayMode
         EditorReloadCoordinator reloads,
         IEditorAudioHost audio
     ) {
-        m_loop = loop ?? throw new ArgumentNullException(nameof(loop));
-        m_reloads = reloads ?? throw new ArgumentNullException(nameof(reloads));
+        ArgumentNullException.ThrowIfNull(loop);
+        ArgumentNullException.ThrowIfNull(reloads);
+        m_loop = loop;
+        m_reloads = reloads;
         m_controller = new EditorPlayModeController(
             engineHost,
             runtimeOptions,

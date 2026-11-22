@@ -34,7 +34,7 @@ internal sealed class AccessModifierStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         foreach (MemberDeclarationSyntax member in source.root.DescendantNodes().OfType<MemberDeclarationSyntax>())
         {
             if (Missing(member) is { } accessibility)
@@ -42,12 +42,12 @@ internal sealed class AccessModifierStyleRule : StyleRule
                 // Another part of a partial type may state a different accessibility, so only the author can write it.
                 if (member is BaseTypeDeclarationSyntax && member.Modifiers.Any(SyntaxKind.PartialKeyword)) continue;
                 int start = Anchor(member).SpanStart;
-                edits.Add(new(start, start, accessibility + " "));
+                edits.Add(new StyleEdit(start, start, accessibility + " "));
             }
             else if (Redundant(member) is { } plain
                      && plain.TrailingTrivia.All(static trivia => trivia.IsKind(SyntaxKind.WhitespaceTrivia))
             ) {
-                edits.Add(new(plain.SpanStart, plain.FullSpan.End, string.Empty));
+                edits.Add(new StyleEdit(plain.SpanStart, plain.FullSpan.End, string.Empty));
             }
         }
 

@@ -78,9 +78,13 @@ public sealed class NativeBindingCMakeTests
                 """);
             var compilation = new NativeBindingCompilation
             {
-                roots = [new("generated", string.Empty, true, true), new("user", headerRoot, false, true)],
+                roots =
+                [
+                    new NativeBindingSourceRoot("generated", string.Empty, true, true),
+                    new NativeBindingSourceRoot("user", headerRoot, false, true)
+                ],
                 files = [Input("generated", "binding.c", unit, true), Input("user", "api.h", header, false)],
-                includeDirectories = [new("user", string.Empty, false, false)],
+                includeDirectories = [new NativeBindingIncludeDirectory("user", string.Empty, false, false)],
                 defines = ["INNO_BINDING_ONLY=1"],
                 compilerDefines = [],
                 cxxStandard = 0,
@@ -112,7 +116,7 @@ public sealed class NativeBindingCMakeTests
             );
             NativeToolchainSelection tools = await new WindowsX64NativeToolchainProvider(ToolchainEnvironment.ResolveExecutable("dotnet"))
                 .ResolveAsync(
-                    new(root, "release"),
+                    new NativeBuildContext(root, "release"),
                     (new WindowsBuildHostProvider().TryCapture()
                      ?? throw new PlatformNotSupportedException("A Windows build host is required.")),
                     "windows-x64",
@@ -120,7 +124,7 @@ public sealed class NativeBindingCMakeTests
                 );
             NativeBuildContext context = new NativeBuildContext(sourceAlias.toolPath, "release").WithToolchain(tools)
                 .WithBindings(bindings)
-                .WithComponentOptions(owner, new(NativeLibraryKind.Shared));
+                .WithComponentOptions(owner, new NativeComponentBuildOptions(NativeLibraryKind.Shared));
             var recipe = new NativeBuildRecipe(
                 owner,
                 "fixture",

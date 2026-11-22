@@ -215,7 +215,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages.Where(page => page.kind == "api"));
         Assert.Equal(expected, page.title);
         Assert.Contains("<h1>" + WebUtility.HtmlEncode(expected) + "</h1>", Markdown.ToHtml(page.markdown));
-        Assert.Contains(expected, (await snapshot.QueryAsync(new("symbol", id, "Inno.Probe"))).hits.Single().text);
+        Assert.Contains(expected, (await snapshot.QueryAsync(new DocumentationRequest("symbol", id, "Inno.Probe"))).hits.Single().text);
     }
 
     [Fact]
@@ -319,7 +319,10 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         {
             DocumentationResult index = await DocumentationStore.IndexAsync(m_root, m_root, path);
             using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(path, index.snapshot);
-            Assert.Contains("> [!" + status + "]", (await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe"))).hits.Single().text);
+            Assert.Contains(
+                "> [!" + status + "]",
+                (await snapshot.QueryAsync(new DocumentationRequest("symbol", C_MEMBER, "Inno.Probe"))).hits.Single().text
+            );
         }
         await AssertStatusAsync("OUTDATED");
         File.WriteAllText(
@@ -533,14 +536,16 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         foreach (string surface in new[] { "runtime-script", "editor-script" })
         {
             DocumentationHit hit = Assert.Single(
-                (await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe", surface, scope: scope))).hits
+                (await snapshot.QueryAsync(new DocumentationRequest("symbol", C_MEMBER, "Inno.Probe", surface, scope: scope))).hits
             );
             Assert.Equal(script.id, hit.pageId);
             Assert.Equal(scope, hit.scope);
             Assert.Equal(new[] { "editor-script", "runtime-script" }, hit.surfaces);
         }
         Assert.Empty(
-            (await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe", scope: scope == "Editor" ? "Runtime" : "Editor"))).hits
+            (await snapshot.QueryAsync(
+                new DocumentationRequest("symbol", C_MEMBER, "Inno.Probe", scope: scope == "Editor" ? "Runtime" : "Editor")
+            )).hits
         );
     }
 
@@ -583,16 +588,22 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.DoesNotContain("Edit this explanation", page.markdown);
         Assert.Contains("reference/api/content.json", catalog.sourceFiles.Keys);
         Assert.Contains(Path.GetRelativePath(m_root, member).Replace('\\', '/'), catalog.sourceFiles.Keys);
-        DocumentationResult result = await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe", "source-clr"));
+        DocumentationResult result = await snapshot.QueryAsync(new DocumentationRequest("symbol", C_MEMBER, "Inno.Probe", "source-clr"));
         DocumentationHit hit = Assert.Single(result.hits);
         Assert.Equal("Ada Example", hit.contentSourceKind);
         Assert.Contains("public long Inno.Probe.Value.count", hit.text);
         Assert.Contains("Read the count only after publication.", hit.text);
         Assert.Equal(Body(manual), Body(File.ReadAllText(member)));
         Assert.Contains("outdatedFor:", File.ReadAllText(member));
-        Assert.Contains(hit.text, Assert.Single((await snapshot.QueryAsync(new("read", hit.contentSource))).hits).text);
+        Assert.Contains(
+            hit.text,
+            Assert.Single((await snapshot.QueryAsync(new DocumentationRequest("read", hit.contentSource))).hits).text
+        );
         Directory.Move(Path.Combine(m_root, "content"), Path.Combine(m_root, "unavailable-content"));
-        Assert.Equal(hit.text, Assert.Single((await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe"))).hits).text);
+        Assert.Equal(
+            hit.text,
+            Assert.Single((await snapshot.QueryAsync(new DocumentationRequest("symbol", C_MEMBER, "Inno.Probe"))).hits).text
+        );
     }
 
     [Fact]
@@ -733,8 +744,9 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         JsonNode registry = JsonNode.Parse(File.ReadAllText(registryPath))!;
         registry["entries"]!
             .AsArray()
-            .Single(entry => entry!["symbol"]!.GetValue<string>().EndsWith(C_MEMBER, StringComparison.Ordinal))!["path"]
-            = Path.GetRelativePath(m_root, legacy).Replace('\\', '/');
+            .Single(
+                entry => entry!["symbol"]!.GetValue<string>().EndsWith(C_MEMBER, StringComparison.Ordinal)
+            )!["path"] = Path.GetRelativePath(m_root, legacy).Replace('\\', '/');
         File.WriteAllText(registryPath, registry.ToJsonString());
         Write(
             "content/en/manual/count.md",
@@ -855,7 +867,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
         DocumentationHit hit = Assert.Single(
-            (await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe", "editor-script", scope: "Runtime"))).hits
+            (await snapshot.QueryAsync(new DocumentationRequest("symbol", C_MEMBER, "Inno.Probe", "editor-script", scope: "Runtime"))).hits
         );
         Assert.Equal(new[] { "editor-script", "runtime-script" }, hit.surfaces);
     }
@@ -1012,7 +1024,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
             ) < page.markdown.IndexOf("## Remarks", StringComparison.Ordinal)
         );
         Assert.DoesNotContain("#### Remarks", page.markdown);
-        DocumentationHit hit = Assert.Single((await snapshot.QueryAsync(new("symbol", C_TYPE, "Inno.Probe"))).hits);
+        DocumentationHit hit = Assert.Single((await snapshot.QueryAsync(new DocumentationRequest("symbol", C_TYPE, "Inno.Probe"))).hits);
         Assert.Contains("Owns a value.", hit.text);
         Assert.Contains("Keep the owner alive.", hit.text);
         Assert.Equal(1, page.markdown.Split("Owns a value.", StringSplitOptions.None).Length - 1);
@@ -1057,7 +1069,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
             catalog.pages,
             page => page.markdown.Contains("Custom type introduction<br><br>Second type paragraph", StringComparison.Ordinal)
         );
-        DocumentationHit hit = Assert.Single((await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe"))).hits);
+        DocumentationHit hit = Assert.Single((await snapshot.QueryAsync(new DocumentationRequest("symbol", C_MEMBER, "Inno.Probe"))).hits);
         Assert.Contains("Custom member introduction", hit.text);
         Assert.DoesNotContain("Changed XML.", member.markdown);
     }
@@ -1101,7 +1113,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Contains("<blockquote>\n<ul>", html);
         Assert.Contains("## Remarks\n\nShared lifetime.", File.ReadAllText(Fragment(C_TYPE)));
         Assert.DoesNotContain("First declaration.", File.ReadAllText(Fragment(C_TYPE)));
-        DocumentationHit hit = Assert.Single((await snapshot.QueryAsync(new("symbol", C_TYPE, "Inno.Probe"))).hits);
+        DocumentationHit hit = Assert.Single((await snapshot.QueryAsync(new DocumentationRequest("symbol", C_TYPE, "Inno.Probe"))).hits);
         Assert.Contains("> - Second declaration with `Value`.", hit.text);
     }
 
@@ -1227,8 +1239,8 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
 
     private Task<int> SyncAsync() => SyncAsync(CancellationToken.None);
 
-    private Task<int> SyncAsync(CancellationToken cancellation)
-        => DocumentationCommand.ExecuteAsync(["api-sync", "--docs-root", m_root], cancellation);
+    private Task<int> SyncAsync(CancellationToken cancellationToken)
+        => DocumentationCommand.ExecuteAsync(["api-sync", "--docs-root", m_root], cancellationToken);
 
     private void SaveFacts(JsonNode facts)
     {

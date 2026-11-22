@@ -59,12 +59,15 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
         SerializationRegistry serialization,
         LogRouter logs
     ) {
-        m_edits = edits ?? throw new ArgumentNullException(nameof(edits));
+        ArgumentNullException.ThrowIfNull(edits);
+        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(serialization);
+        m_edits = edits;
         ArgumentNullException.ThrowIfNull(classificationSettings);
         m_tagSelector = new GameObjectTagSelector(classificationSettings, edits);
         m_layerSelector = new GameObjectLayerSelector(classificationSettings, edits);
-        m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
-        m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
+        m_settings = settings;
+        m_serialization = serialization;
         m_cardControls = new InspectorCardControls(logs);
     }
 
@@ -192,7 +195,7 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
             MissingGameComponent? missing = component as MissingGameComponent;
             IReadOnlyList<SerializedProperty> properties = missing is null
                                                            ? m_serialization.GetProperties(component)
-                                                           : Array.Empty<SerializedProperty>();
+                                                           : [];
             string componentID = component.identity.persistentID.ToString("N");
             GameBehavior? behavior = component as GameBehavior;
             GameComponent editorTarget = component;

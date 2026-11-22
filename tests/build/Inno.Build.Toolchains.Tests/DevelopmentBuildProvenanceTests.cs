@@ -33,7 +33,7 @@ public sealed class DevelopmentBuildProvenanceTests
                             ?? throw new InvalidOperationException("An explicit SDK host is required."),
                             OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
                         );
-        DirectoryInfo? repository = new(Directory.GetCurrentDirectory());
+        var repository = new DirectoryInfo(Directory.GetCurrentDirectory());
         while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "InnoEngine.sln")))
         {
             repository = repository.Parent;

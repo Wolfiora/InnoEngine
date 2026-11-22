@@ -32,7 +32,8 @@ public sealed class InspectionDrawerAttribute : Attribute
         int priority = 0,
         bool conditional = false
     ) {
-        this.targetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
+        ArgumentNullException.ThrowIfNull(targetType);
+        this.targetType = targetType;
         this.useForChildren = useForChildren;
         this.priority = priority;
         this.conditional = conditional;

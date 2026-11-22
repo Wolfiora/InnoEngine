@@ -257,7 +257,7 @@ public static partial class ShaderGraphArtifact
             static source => new GraphNodeID(source.node),
             source =>
             {
-                GraphNodeRecord node = graph.FindNode(new(source.node))
+                GraphNodeRecord node = graph.FindNode(new GraphNodeID(source.node))
                                        ?? throw new InvalidOperationException($"Captured source node '{source.node}' is unavailable.");
                 string function = ShaderGraphDocument.Read(node, "function", string.Empty, serialization, context);
                 if (string.IsNullOrWhiteSpace(function))

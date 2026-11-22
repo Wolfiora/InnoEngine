@@ -52,7 +52,7 @@ internal static class ScriptApiDocumentationBuilder
         IReadOnlyList<ScriptApiTypeMapping> typeMappings,
         Inputs inputs
     ) {
-        var outputMembers = new List<XElement>();
+        List<XElement> outputMembers = [];
         var emittedNames = new HashSet<string>(StringComparer.Ordinal);
         (string source, string target)[] replacements = CreateIdentityReplacements(namespaceMappings, typeMappings);
         foreach (IGrouping<Assembly, ScriptApiTypeExport> group in exports.GroupBy(

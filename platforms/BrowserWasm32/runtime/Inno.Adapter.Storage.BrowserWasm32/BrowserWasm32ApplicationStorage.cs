@@ -142,7 +142,7 @@ public sealed partial class BrowserWasm32ApplicationStorage : IApplicationStorag
         CancellationToken cancellationToken = default
     ) {
         cancellationToken.ThrowIfCancellationRequested();
-        var keys = new List<StorageKey>();
+        List<StorageKey> keys = [];
         for (int index = 0; index < GetItemCount(); index++)
         {
             string? browserKey = GetKeyAt(index);

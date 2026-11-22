@@ -25,7 +25,8 @@ public sealed class ShaderTargetRegistry : IDisposable
     /// </param>
     public ShaderTargetRegistry(TypeCatalog types)
     {
-        m_types = types ?? throw new ArgumentNullException(nameof(types));
+        ArgumentNullException.ThrowIfNull(types);
+        m_types = types;
         m_registry = new(types);
     }
 
@@ -85,7 +86,7 @@ public sealed class ShaderTargetRegistry : IDisposable
         {
             throw new ShaderTargetUnavailableException(id);
         }
-        GraphDocument expanded = target.Expand(new(document.Clone(), serialization, context), cancellationToken)
+        GraphDocument expanded = target.Expand(new ShaderTargetContext(document.Clone(), serialization, context), cancellationToken)
                                  ?? throw new InvalidOperationException($"Shader target '{id}' returned no program.");
         cancellationToken.ThrowIfCancellationRequested();
         return expanded.Clone();

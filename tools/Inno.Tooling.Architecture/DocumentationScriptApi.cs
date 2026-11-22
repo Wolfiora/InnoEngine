@@ -424,7 +424,7 @@ internal static class DocumentationScriptApi
             throw new InvalidDataException("Required script projection facts are absent for the selected configuration and target.");
         }
         if (selected.Length == 0) return [];
-        var sourceFacts = new List<byte[]>();
+        List<byte[]> sourceFacts = [];
         HashSet<string> requiredOwners = selected.SelectMany(static reference => reference.projects).ToHashSet(StringComparer.Ordinal);
         foreach (DocumentationReferenceInfo source in catalog.references.Where(reference => (
             reference.model == "source-clr"
@@ -433,10 +433,10 @@ internal static class DocumentationScriptApi
         ))) {
             sourceFacts.Add(await snapshot.ReadReferenceAsync(source.path, cancellationToken).ConfigureAwait(false));
         }
-        var results = new List<Comparison>();
+        List<Comparison> results = [];
         foreach (DocumentationReferenceInfo reference in selected)
         {
-            var differences = new List<string>();
+            List<string> differences = [];
             IReadOnlyDictionary<string, string> identities = new Dictionary<string, string>();
             string? xmlIdentity = null;
             string status;
@@ -502,7 +502,7 @@ internal static class DocumentationScriptApi
                 differences.Add(failure.Message);
             }
             results.Add(
-                new(
+                new Comparison(
                     reference.path,
                     reference.identity,
                     reference.model,

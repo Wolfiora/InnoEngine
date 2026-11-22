@@ -103,7 +103,7 @@ internal static class ScriptProjectGenerator
         );
         var pending = new Queue<string>(userAssembly.references);
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var references = new List<string>();
+        List<string> references = [];
         while (pending.Count > 0)
         {
             string name = pending.Dequeue();

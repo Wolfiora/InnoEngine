@@ -238,7 +238,7 @@ public sealed class BuildCacheCleanupPlan
             Math.Max(0, total - policy.maximumBytes),
             Math.Max(0, policy.minimumFreeBytes - free)
         );
-        var selected = new List<BuildCacheArtifactDescriptor>();
+        List<BuildCacheArtifactDescriptor> selected = [];
         long proposed = 0;
         foreach (BuildCacheArtifactDescriptor artifact in inventory.artifacts.Values.Select(static entry => entry.artifact)
             .Where(entry => !protectedPaths.Contains(entry.directory))

@@ -22,7 +22,7 @@ public sealed class BuildCacheMetadataRetirementTests : IDisposable
         Stopwatch elapsed = Stopwatch.StartNew();
         await Assert.ThrowsAsync<TimeoutException>(() => BuildMaintenanceApplication.CleanAsync(
             m_root,
-            new(timeBudget: TimeSpan.FromMilliseconds(100)),
+            new BuildCachePolicy(timeBudget: TimeSpan.FromMilliseconds(100)),
             false,
             false,
             null,
@@ -44,7 +44,12 @@ public sealed class BuildCacheMetadataRetirementTests : IDisposable
             publisher.Record(output, output + ".read.lock", [], null, null);
         }
         File.WriteAllText(Path.Combine(cache, "unknown.lock"), "user-owned");
-        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(m_root, [publisher.Describe("fixture")], new(0, 0), retireAll: true);
+        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(
+            m_root,
+            [publisher.Describe("fixture")],
+            new BuildCachePolicy(0, 0),
+            retireAll: true
+        );
         Assert.Empty((await plan.ExecuteAsync()).failures);
         Assert.False(Directory.Exists(output));
         Assert.False(File.Exists(output + ".read.lock"));
@@ -68,7 +73,7 @@ public sealed class BuildCacheMetadataRetirementTests : IDisposable
         Assert.Empty(Directory.GetFiles(cache, "*.work.json"));
         Assert.Empty(Directory.GetFiles(cache, "*.work.lock"));
 
-        BuildCacheCleanupPlan Plan() => BuildCacheCleanupPlan.Create(m_root, [publisher.Describe("fixture")], new());
+        BuildCacheCleanupPlan Plan() => BuildCacheCleanupPlan.Create(m_root, [publisher.Describe("fixture")], new BuildCachePolicy());
     }
 
     [Fact]
@@ -90,7 +95,7 @@ public sealed class BuildCacheMetadataRetirementTests : IDisposable
             Assert.Equal(stamp, File.GetLastWriteTimeUtc(pointer));
             File.WriteAllText(pointer, "../escaped");
         }
-        Assert.ThrowsAny<IOException>(() => BuildCacheCleanupPlan.Create(m_root, [publisher.Describe("fixture")], new()));
+        Assert.ThrowsAny<IOException>(() => BuildCacheCleanupPlan.Create(m_root, [publisher.Describe("fixture")], new BuildCachePolicy()));
         Assert.True(Directory.Exists(output));
     }
 

@@ -16,7 +16,7 @@ internal static class DocumentationApiSynchronization
     internal static async Task<int> ExecuteAsync(
         string operation,
         string[] arguments,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         if (arguments.Length != 2 || arguments[0] != "--docs-root")
         {
@@ -25,24 +25,24 @@ internal static class DocumentationApiSynchronization
         string root = Path.GetFullPath(arguments[1]);
         return await WithOwnershipAsync(
             root,
-            () => Task.FromResult(ExecuteOwned(operation, root, cancellation)),
-            cancellation
+            () => Task.FromResult(ExecuteOwned(operation, root, cancellationToken)),
+            cancellationToken
         ).ConfigureAwait(false);
     }
 
     internal static async Task<int> WithOwnershipAsync(
         string root,
         Func<Task<int>> operation,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         string output = PathBoundary.RequireUnlinkedPath(root, Path.Combine(root, "artifacts", "api-sync"));
         var publisher = new BuildCachePublisher(output, BuildCacheArtifactRole.ReusableWorkspace);
-        BuildCacheOwnerCatalog.Register(root, output, "documentation-api-sync", publisher.role, cancellation);
-        using FileLease activity = await publisher.AcquireUseAsync(cancellation).ConfigureAwait(false);
+        BuildCacheOwnerCatalog.Register(root, output, "documentation-api-sync", publisher.role, cancellationToken);
+        using FileLease activity = await publisher.AcquireUseAsync(cancellationToken).ConfigureAwait(false);
         using FileLease writing = await FileLease.AcquireAsync(
             Path.Combine(output, "writer.lock"),
             Timeout.InfiniteTimeSpan,
-            cancellation
+            cancellationToken
         ).ConfigureAwait(false);
         return await operation().ConfigureAwait(false);
     }
@@ -50,7 +50,7 @@ internal static class DocumentationApiSynchronization
     internal static int ExecuteOwned(
         string operation,
         string root,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         string bindingPath = DocumentationApiFacts.Resolve(root, "reference/engine.lock.json");
         byte[] bindingBytes = File.ReadAllBytes(bindingPath);
@@ -93,7 +93,7 @@ internal static class DocumentationApiSynchronization
         {
             throw new IOException("API input binding changed before synchronization.");
         }
-        cancellation.ThrowIfCancellationRequested();
+        cancellationToken.ThrowIfCancellationRequested();
         // This bounded local transaction is committed to Git only by the protected publisher.
         // Cancellation is observed before mutation; I/O failures restore every original byte.
         try

@@ -147,17 +147,15 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
             reader.context,
             restoreProperties: false
         );
-        IReadOnlyList<SerializationReader> systemReaders =
-            reader.ReadObjectArray(SceneGraphSerialization.C_SYSTEMS_KEY);
+        IReadOnlyList<SerializationReader> systemReaders = reader.ReadObjectArray(SceneGraphSerialization.C_SYSTEMS_KEY);
         List<EngineObject> missingPlaceholders = graph.missingPlaceholders.ToList();
-        IReadOnlyList<(GameSystem system, byte[] state)> systemStates =
-            SceneGraphSerialization.CreateSystems(
-                scene,
-                systemReaders,
-                preservePersistentIDs,
-                references,
-                missingPlaceholders
-            );
+        IReadOnlyList<(GameSystem system, byte[] state)> systemStates = SceneGraphSerialization.CreateSystems(
+            scene,
+            systemReaders,
+            preservePersistentIDs,
+            references,
+            missingPlaceholders
+        );
         SceneGraphSerialization.RestoreMissingReferenceAliases(
             graph with { missingPlaceholders = missingPlaceholders },
             references

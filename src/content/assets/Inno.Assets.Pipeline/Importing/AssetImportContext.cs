@@ -70,24 +70,32 @@ public sealed class AssetImportContext
         Func<string, ReadOnlyMemory<byte>> sourceReader,
         IAssetArtifactLookup artifacts
     ) {
-        this.assetPath = AssetPath.Parse(relativePath ?? throw new ArgumentNullException(nameof(relativePath)));
-        this.absolutePath = absolutePath ?? throw new ArgumentNullException(nameof(absolutePath));
+        ArgumentNullException.ThrowIfNull(relativePath);
+        ArgumentNullException.ThrowIfNull(absolutePath);
+        ArgumentNullException.ThrowIfNull(sourceHash);
+        ArgumentNullException.ThrowIfNull(types);
+        ArgumentNullException.ThrowIfNull(serialization);
+        ArgumentNullException.ThrowIfNull(references);
+        ArgumentNullException.ThrowIfNull(dependencyResolver);
+        ArgumentNullException.ThrowIfNull(sourceReader);
+        ArgumentNullException.ThrowIfNull(artifacts);
+        this.assetPath = AssetPath.Parse(relativePath);
+        this.absolutePath = absolutePath;
         this.sourceBytes = sourceBytes;
-        this.sourceHash = sourceHash ?? throw new ArgumentNullException(nameof(sourceHash));
+        this.sourceHash = sourceHash;
         this.persistentID = persistentID;
-        this.types = types ?? throw new ArgumentNullException(nameof(types));
-        this.serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
-        this.references = references ?? throw new ArgumentNullException(nameof(references));
+        this.types = types;
+        this.serialization = serialization;
+        this.references = references;
         this.services = new AssetSerializationServices(
             types,
             serialization,
             references,
             dependency => m_runtimeDependencies.Add(dependency)
         );
-        m_dependencyResolver = dependencyResolver
-                               ?? throw new ArgumentNullException(nameof(dependencyResolver));
-        m_sourceReader = sourceReader ?? throw new ArgumentNullException(nameof(sourceReader));
-        m_artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
+        m_dependencyResolver = dependencyResolver;
+        m_sourceReader = sourceReader;
+        m_artifacts = artifacts;
     }
 
     /// <summary>

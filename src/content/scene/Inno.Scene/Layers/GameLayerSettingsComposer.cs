@@ -27,11 +27,11 @@ internal sealed class GameLayerSettingsComposer : ProjectSettingComposer<GameLay
         GameLayerCatalog baseline,
         GameLayerCatalog value
     ) {
-        var removedSlots = new List<int>();
-        var removedLocalIDs = new List<string>();
-        var upsertSlots = new List<int>();
-        var upsertLocalIDs = new List<string>();
-        var upsertNames = new List<string>();
+        List<int> removedSlots = [];
+        List<string> removedLocalIDs = [];
+        List<int> upsertSlots = [];
+        List<string> upsertLocalIDs = [];
+        List<string> upsertNames = [];
         for (int index = 0; index < GameLayer.C_MAX_COUNT; index++)
         {
             var layer = new GameLayer(index);
@@ -54,9 +54,9 @@ internal sealed class GameLayerSettingsComposer : ProjectSettingComposer<GameLay
             }
         }
 
-        var interactionFirstSlots = new List<int>();
-        var interactionSecondSlots = new List<int>();
-        var interactionValues = new List<bool>();
+        List<int> interactionFirstSlots = [];
+        List<int> interactionSecondSlots = [];
+        List<bool> interactionValues = [];
         for (int first = 0; first < GameLayer.C_MAX_COUNT; first++)
         {
             for (int second = first; second < GameLayer.C_MAX_COUNT; second++)

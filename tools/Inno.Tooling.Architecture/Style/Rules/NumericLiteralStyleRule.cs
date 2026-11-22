@@ -106,7 +106,7 @@ internal sealed class NumericLiteralStyleRule : StyleRule
         string digits,
         int size
     ) {
-        var parts = new List<string>();
+        List<string> parts = [];
         for (int end = digits.Length; end > 0; end -= size)
         {
             parts.Add(digits[Math.Max(0, end - size)..end]);

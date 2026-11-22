@@ -15,9 +15,16 @@ public static class MacOSArm64BgfxShaderProfiles
     public static BgfxShaderTargetProfile target { get; } = new(
         MacOSArm64BuildModule.target.id.value,
         [
-            new(BgfxTargetCapabilities.Create(GraphicsApi.metal), "osx", "metal", "metal", "metal"),
-            new(BgfxTargetCapabilities.Create(GraphicsApi.vulkan), "osx", "spirv", "spirv", "spirv", ["BGFX_SHADER_LANGUAGE_SPIRV=1"]),
-            new(BgfxTargetCapabilities.Create(GraphicsApi.openGL), "osx", "430", "430", "430")
+            new BgfxShaderCompilerProfile(BgfxTargetCapabilities.Create(GraphicsApi.metal), "osx", "metal", "metal", "metal"),
+            new BgfxShaderCompilerProfile(
+                BgfxTargetCapabilities.Create(GraphicsApi.vulkan),
+                "osx",
+                "spirv",
+                "spirv",
+                "spirv",
+                ["BGFX_SHADER_LANGUAGE_SPIRV=1"]
+            ),
+            new BgfxShaderCompilerProfile(BgfxTargetCapabilities.Create(GraphicsApi.openGL), "osx", "430", "430", "430")
         ]
     );
 }

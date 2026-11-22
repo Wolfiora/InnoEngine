@@ -49,8 +49,8 @@ public sealed class MacOSArm64NativeToolchainProvider : INativeToolchainProvider
             ["dotnet"] = ToolchainEnvironment.ResolveExecutable(m_dotnetHost)
         };
         Dictionary<string, string> environment = NativeToolchainPreparation.CreateEnvironment();
-        var inputs = new List<string>();
-        var cmakeArguments = new List<string>();
+        List<string> inputs = [];
+        List<string> cmakeArguments = [];
         string xcrun = ToolchainEnvironment.ResolveExecutable("xcrun");
         tools["clang"] = (await ToolchainEnvironment.CaptureOutputAsync(
             xcrun,

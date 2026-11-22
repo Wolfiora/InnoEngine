@@ -645,13 +645,7 @@ internal sealed class SingleThreadJobSystem : IJobSystem
         }
     }
 
-    private void ThrowIfDisposed()
-    {
-        if (m_disposed)
-        {
-            throw new ObjectDisposedException(nameof(SingleThreadJobSystem));
-        }
-    }
+    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(m_disposed, this);
 
     private sealed class ParallelForRangeState
     {

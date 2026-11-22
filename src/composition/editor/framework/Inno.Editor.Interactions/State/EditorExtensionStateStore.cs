@@ -26,8 +26,9 @@ internal sealed class EditorExtensionStateStore
         Logger log
     ) {
         ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(log);
         m_context = context;
-        m_log = log ?? throw new ArgumentNullException(nameof(log));
+        m_log = log;
     }
 
     internal bool TryGetPanelOpen(
@@ -49,7 +50,7 @@ internal sealed class EditorExtensionStateStore
         IReadOnlyList<EditorExtensionCatalog.StateRegistration> registrations,
         IReadOnlyList<EditorExtensionCatalog.PanelRegistration> panels
     ) {
-        var failures = new List<(string message, Exception exception)>();
+        List<(string message, Exception exception)> failures = [];
         for (int i = 0; i < registrations.Count; i++)
         {
             EditorExtensionCatalog.StateRegistration registration = registrations[i];
@@ -91,7 +92,7 @@ internal sealed class EditorExtensionStateStore
 
     internal void Restore(IReadOnlyList<EditorExtensionCatalog.StateRegistration> registrations)
     {
-        var failures = new List<(string message, Exception exception)>();
+        List<(string message, Exception exception)> failures = [];
         for (int i = 0; i < registrations.Count; i++)
         {
             EditorExtensionCatalog.StateRegistration registration = registrations[i];

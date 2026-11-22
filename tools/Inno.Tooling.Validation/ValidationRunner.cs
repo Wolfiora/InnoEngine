@@ -23,7 +23,7 @@ internal static class ValidationRunner
         ValidationPlan plan,
         string directory,
         ValidationEvidence? previous,
-        CancellationToken cancellation,
+        CancellationToken cancellationToken,
         ValidationShard? shard = null,
         IReadOnlyList<ValidationEvidence>? prerequisites = null,
         bool continuation = false,
@@ -37,13 +37,13 @@ internal static class ValidationRunner
                                                              : await DocumentationStore.OpenAsync(
                                                                  plan.documentation.cacheRoot,
                                                                  plan.documentation.snapshot,
-                                                                 cancellationToken: cancellation
+                                                                 cancellationToken: cancellationToken
                                                              ).ConfigureAwait(false);
         DocumentationCatalogReport? documentationCatalog = documentationSnapshot is null
             ? null
-            : await ValidationDocumentation.ReadCatalogAsync(plan, documentationSnapshot, cancellation).ConfigureAwait(false);
+            : await ValidationDocumentation.ReadCatalogAsync(plan, documentationSnapshot, cancellationToken).ConfigureAwait(false);
         var results = new List<ValidationResult>(imported);
-        var failures = new List<ValidationRunFailure>();
+        List<ValidationRunFailure> failures = [];
         double closingSeconds = 0;
         var batchSeconds = new Dictionary<string, double>(StringComparer.Ordinal);
         DateTimeOffset started = DateTimeOffset.UtcNow;
@@ -52,11 +52,11 @@ internal static class ValidationRunner
         await File.WriteAllTextAsync(
             Path.Combine(directory, "execution-plan.json"),
             JsonSerializer.Serialize(plan, new JsonSerializerOptions { WriteIndented = true }),
-            cancellation
+            cancellationToken
         ).ConfigureAwait(false);
         Console.WriteLine("Validation phase: acquire the selected workspace ownership and freeze current inputs.");
         using CoordinatedFileLease? workspace = checks.Any(static check => check.kind == "build" && check.exclusion is null)
-                                                ? await ValidationWorkspace.AcquireAsync(plan, cancellation).ConfigureAwait(false)
+                                                ? await ValidationWorkspace.AcquireAsync(plan, cancellationToken).ConfigureAwait(false)
                                                 : null;
         if (retainedOutputs is not null)
         {
@@ -64,17 +64,17 @@ internal static class ValidationRunner
             {
                 throw new InvalidDataException("Restoring compilation outputs requires a continuation with workspace ownership.");
             }
-            ValidationWorkspace.RestoreOutputs(plan, retainedOutputs, cancellation);
+            ValidationWorkspace.RestoreOutputs(plan, retainedOutputs, cancellationToken);
         }
         foreach (KeyValuePair<string, ValidationContext> context in plan.contexts)
         {
             await File.WriteAllTextAsync(
                 Path.Combine(directory, context.Key + "-sdk-graph.json"),
                 context.Value.sdkGraph.GetRawText(),
-                cancellation
+                cancellationToken
             ).ConfigureAwait(false);
         }
-        Dictionary<string, string> current = await ValidationInputs.CaptureAsync(plan.root, cancellation).ConfigureAwait(false);
+        Dictionary<string, string> current = await ValidationInputs.CaptureAsync(plan.root, cancellationToken).ConfigureAwait(false);
         if (ValidationInputs.Identity(current) != plan.tree)
         {
             string[] changed = current.Keys.Union(plan.inputs.Keys).Where(path => (
@@ -109,7 +109,7 @@ internal static class ValidationRunner
                     ],
                     plan.root,
                     Path.Combine(directory, solution.Key + "-restore-retained.log"),
-                    cancellation
+                    cancellationToken
                 ).ConfigureAwait(false);
             }
         }
@@ -121,7 +121,7 @@ internal static class ValidationRunner
         var testFailures = new Dictionary<string, string>(StringComparer.Ordinal);
         var testDetails = new Dictionary<string, (bool passed, string detail)>(StringComparer.Ordinal);
         var outputDigests = new Dictionary<string, string>(StringComparer.Ordinal);
-        var dependencyInputs = new ValidationDependencyInputs(plan, cancellation);
+        var dependencyInputs = new ValidationDependencyInputs(plan, cancellationToken);
         var compilationGraphs = new Dictionary<string, string>(StringComparer.Ordinal);
         HashSet<string>? invalidated = ValidationShards.InvalidatedChecks(plan, previous);
         var reused = new Dictionary<string, ValidationResult>(StringComparer.Ordinal);
@@ -143,7 +143,7 @@ internal static class ValidationRunner
                 status = "NotApplicable";
                 detail = check.exclusion;
             }
-            else if (cancellation.IsCancellationRequested)
+            else if (cancellationToken.IsCancellationRequested)
             {
                 status = "Blocked";
                 detail = "Validation was canceled before this required check completed.";
@@ -185,7 +185,7 @@ internal static class ValidationRunner
                     switch (check.kind)
                     {
                         case "release-bundle":
-                            ValidationDeliverables.Create(plan, check, cancellation);
+                            ValidationDeliverables.Create(plan, check, cancellationToken);
                             break;
                         case "cold-inputs":
                             foreach (string cache in new[] { "artifacts/native", "artifacts/bindings" })
@@ -260,7 +260,7 @@ internal static class ValidationRunner
                                     ],
                                     plan.root,
                                     Path.Combine(directory, "native-aot-restore.log"),
-                                    cancellation
+                                    cancellationToken
                                 ).ConfigureAwait(false);
                             }
                             break;
@@ -274,7 +274,7 @@ internal static class ValidationRunner
                                 plan.dotnet,
                                 "--sdk-snapshot",
                                 graphPath
-                            ], cancellation) != 0
+                            ], cancellationToken) != 0
                             ) {
                                 throw new InvalidDataException("Repository architecture validation failed.");
                             }
@@ -303,7 +303,7 @@ internal static class ValidationRunner
                                 "--sdk-snapshot",
                                 await ResolveCompilationGraphAsync(contextID).ConfigureAwait(false),
                                 ..projects
-                            ], cancellation) != 0
+                            ], cancellationToken) != 0
                             ) {
                                 throw new InvalidDataException("Affected compiled API boundaries failed.");
                             }
@@ -337,7 +337,7 @@ internal static class ValidationRunner
                                     capturePath,
                                     ..captureTarget,
                                     ..captureOwners.SelectMany(static owner => new[] { "--project", owner })
-                                ], cancellation);
+                                ], cancellationToken);
                                 detail += " Unverified source facts retained at " + capturePath + "; review and compare the resulting documentation in a subsequent validation.";
                             }
                             break;
@@ -346,7 +346,9 @@ internal static class ValidationRunner
                             {
                                 throw new InvalidDataException("Required external documentation snapshot is unavailable.");
                             }
-                            documentationCatalog ??= await documentationSnapshot.ExportCatalogAsync(cancellation).ConfigureAwait(false);
+                            documentationCatalog ??= await documentationSnapshot.ExportCatalogAsync(
+                                cancellationToken
+                            ).ConfigureAwait(false);
                             string[] missing = plan.inputSets.Keys.Where(static path => path.EndsWith(".csproj", StringComparison.Ordinal))
                                 // Platform implementations remain source provenance, not reader-facing documentation owners.
                                 .Where(static path => !path.StartsWith("platforms/", StringComparison.Ordinal))
@@ -390,14 +392,14 @@ internal static class ValidationRunner
                                 "--output",
                                 Path.Combine(directory, check.id.Replace(':', '-') + ".json"),
                                 ..referenceArguments
-                            ], cancellation).ConfigureAwait(false)
+                            ], cancellationToken).ConfigureAwait(false)
                                 != 0
                             ) {
                                 throw new InvalidDataException("Selected documentation source references differ from current source.");
                             }
                             break;
                         case "agent-documents":
-                            if (ArchitectureValidator.Execute([plan.root, "--agent-documents-only"], cancellation) != 0)
+                            if (ArchitectureValidator.Execute([plan.root, "--agent-documents-only"], cancellationToken) != 0)
                             {
                                 throw new InvalidDataException("Agent document structure or links failed.");
                             }
@@ -407,9 +409,11 @@ internal static class ValidationRunner
                             {
                                 throw new InvalidDataException("Required canonical example discovery is empty.");
                             }
-                            documentationCatalog ??= await documentationSnapshot.ExportCatalogAsync(cancellation).ConfigureAwait(false);
+                            documentationCatalog ??= await documentationSnapshot.ExportCatalogAsync(
+                                cancellationToken
+                            ).ConfigureAwait(false);
                             string[] pages = check.documentation.pages.SelectMany(static page => new[] { "--page", page }).ToArray();
-                            var scriptArguments = new List<string>();
+                            List<string> scriptArguments = [];
                             if (documentationCatalog.pages.Any(page => (
                                 check.documentation.pages.Contains(page.id, StringComparer.Ordinal)
                                 && page.examples?.mode is "runtime-script" or "editor-script"
@@ -432,7 +436,7 @@ internal static class ValidationRunner
                                 await File.WriteAllTextAsync(
                                     Path.Combine(project, "Assets", "DocumentationProbe.cs"),
                                     "public sealed class DocumentationProbe { }",
-                                    cancellation
+                                    cancellationToken
                                 ).ConfigureAwait(false);
                                 await ValidationProcess.RunAsync(
                                     plan.dotnet,
@@ -451,7 +455,7 @@ internal static class ValidationRunner
                                     ],
                                     plan.root,
                                     Path.Combine(directory, contextID + "-documentation-projection.log"),
-                                    cancellation
+                                    cancellationToken
                                 ).ConfigureAwait(false);
                                 XDocument projection = XDocument.Load(Path.Combine(project, "Inno.EditorScripts.csproj"));
                                 foreach (string scope in new[] { "Runtime", "Editor" })
@@ -492,7 +496,7 @@ internal static class ValidationRunner
                                 ..targetArguments,
                                 ..scriptArguments,
                                 ..pages
-                            ], cancellation).ConfigureAwait(false) != 0
+                            ], cancellationToken).ConfigureAwait(false) != 0
                             ) {
                                 throw new InvalidDataException(
                                     "Selected documentation examples failed or require unavailable compilation inputs."
@@ -524,7 +528,7 @@ internal static class ValidationRunner
                                     plan,
                                     productDirectory,
                                     project,
-                                    cancellation
+                                    cancellationToken
                                 ).ConfigureAwait(false);
                                 await ShellAsync(
                                     "tests/Invoke-EditorSmoke.ps1",
@@ -614,7 +618,7 @@ internal static class ValidationRunner
                                     ],
                                     plan.root,
                                     Path.Combine(directory, "support-pack.log"),
-                                    cancellation
+                                    cancellationToken
                                 ).ConfigureAwait(false);
                                 await ShellAsync(
                                     "tests/ci/Test-SupportPackClosure.ps1",
@@ -637,7 +641,7 @@ internal static class ValidationRunner
                                         plan,
                                         contextID,
                                         outputDigests,
-                                        cancellation
+                                        cancellationToken
                                     );
                                     string[] properties = plan.contexts[contextID].properties
                                         .Select(static pair => "-p:" + pair.Key + "=" + pair.Value)
@@ -665,7 +669,7 @@ internal static class ValidationRunner
                                             ],
                                             plan.root,
                                             Path.Combine(directory, contextID + "-clean.log"),
-                                            cancellation
+                                            cancellationToken
                                         ).ConfigureAwait(false);
                                     }
                                     await ValidationProcess.RunAsync(
@@ -686,7 +690,7 @@ internal static class ValidationRunner
                                         ],
                                         plan.root,
                                         Path.Combine(directory, contextID + "-build.log"),
-                                        cancellation
+                                        cancellationToken
                                     ).ConfigureAwait(false);
                                     built.Add(contextID);
                                     outputDigests.Clear();
@@ -765,7 +769,7 @@ internal static class ValidationRunner
                                     {
                                         // Preserve the process failure even when individual owners have complete successful evidence.
                                         failures.Add(
-                                            new(
+                                            new ValidationRunFailure(
                                                 "test-execution",
                                                 failure.Message.Split('\n')[0],
                                                 contextID,
@@ -823,7 +827,7 @@ internal static class ValidationRunner
                     }
                     if (status != "Blocked")
                     {
-                        outputs = ValidationOutputs.Capture(plan, check, cancellation, outputDigests);
+                        outputs = ValidationOutputs.Capture(plan, check, cancellationToken, outputDigests);
                         dependencyIdentity = dependencyInputs.Capture(check);
                         documentationInputs = ValidationDocumentationInputs.Capture(plan, check, dependencyInputs);
                         status = "Passed";
@@ -840,15 +844,24 @@ internal static class ValidationRunner
                 }
             }
             results.Add(
-                new(check.id, status, identity, elapsed.Elapsed.TotalSeconds, detail, outputs, dependencyIdentity, documentationInputs)
+                new ValidationResult(
+                    check.id,
+                    status,
+                    identity,
+                    elapsed.Elapsed.TotalSeconds,
+                    detail,
+                    outputs,
+                    dependencyIdentity,
+                    documentationInputs
+                )
             );
             string measurement = check.kind == "test" ? " owner reconciliation" : string.Empty;
             Console.WriteLine($"{status}: {check.id} ({elapsed.Elapsed.TotalSeconds:F2}s{measurement}) {detail}");
             await SaveAsync().ConfigureAwait(false);
         }
-        if (cancellation.IsCancellationRequested)
+        if (cancellationToken.IsCancellationRequested)
         {
-            failures.Add(new("execution-canceled", "The run was canceled before closing verification."));
+            failures.Add(new ValidationRunFailure("execution-canceled", "The run was canceled before closing verification."));
             await SaveAsync().ConfigureAwait(false);
             return new(
                 plan.commit,
@@ -872,7 +885,12 @@ internal static class ValidationRunner
         catch (Exception failure)
         {
             closingSeconds = Stopwatch.GetElapsedTime(closingStart).TotalSeconds;
-            failures.Add(new(failure is OperationCanceledException ? "execution-canceled" : "closing-verification", failure.Message));
+            failures.Add(
+                new ValidationRunFailure(
+                    failure is OperationCanceledException ? "execution-canceled" : "closing-verification",
+                    failure.Message
+                )
+            );
             await SaveAsync().ConfigureAwait(false);
             throw;
         }
@@ -895,13 +913,13 @@ internal static class ValidationRunner
 
         async Task VerifyClosingStateAsync()
         {
-            Task<Dictionary<string, string>> sourceCapture = ValidationInputs.CaptureAsync(plan.root, cancellation);
+            Task<Dictionary<string, string>> sourceCapture = ValidationInputs.CaptureAsync(plan.root, cancellationToken);
             Task<string> environmentCapture = Task.Run(() => ValidationEnvironment.CaptureAsync(
                 plan.root,
                 plan.dotnet,
-                cancellation,
+                cancellationToken,
                 plan.contexts.Values
-            ), cancellation);
+            ), cancellationToken);
             await Task.WhenAll(sourceCapture, environmentCapture).ConfigureAwait(false);
             Dictionary<string, string> after = await sourceCapture.ConfigureAwait(false);
             outputDigests.Clear();
@@ -910,15 +928,20 @@ internal static class ValidationRunner
             foreach (ValidationCheck check in checks.Where(static check => check.exclusion is null))
             {
                 ValidationResult result = results.Single(record => record.id == check.id);
-                if (result.status is "Passed" or "Reused" && (!ValidationOutputs.Matches(plan, check, result, cancellation, outputDigests)
-                                                              || !dependencyInputs.Matches(check, result.dependencyIdentity))
+                if (result.status is "Passed" or "Reused"
+                    && (!ValidationOutputs.Matches(plan, check, result, cancellationToken, outputDigests)
+                        || !dependencyInputs.Matches(check, result.dependencyIdentity))
                 ) {
                     if (check.kind == "build")
                     {
                         unstableCompilations.Add(check.context!);
                     }
                     failures.Add(
-                        new("output-stability", "Compiled outputs or restored dependencies changed after verification.", check.id)
+                        new ValidationRunFailure(
+                            "output-stability",
+                            "Compiled outputs or restored dependencies changed after verification.",
+                            check.id
+                        )
                     );
                     await SaveAsync().ConfigureAwait(false);
                 }
@@ -927,12 +950,14 @@ internal static class ValidationRunner
             bool environmentStable = plan.environment == await environmentCapture.ConfigureAwait(false);
             if (!sourceStable)
             {
-                failures.Add(new("input-stability", "Inputs changed during validation."));
+                failures.Add(new ValidationRunFailure("input-stability", "Inputs changed during validation."));
                 await SaveAsync().ConfigureAwait(false);
             }
             if (!environmentStable)
             {
-                failures.Add(new("environment-stability", "SDK, runtime, shell or imports changed during validation."));
+                failures.Add(
+                    new ValidationRunFailure("environment-stability", "SDK, runtime, shell or imports changed during validation.")
+                );
                 await SaveAsync().ConfigureAwait(false);
             }
             if (sourceStable && environmentStable)
@@ -945,7 +970,7 @@ internal static class ValidationRunner
             }
             if (workspace is not null)
             {
-                ValidationWorkspace.RecordCompleted(plan, cancellation);
+                ValidationWorkspace.RecordCompleted(plan, cancellationToken);
             }
         }
 
@@ -958,7 +983,7 @@ internal static class ValidationRunner
             ["-NoProfile", "-File", Path.Combine(plan.root, script), ..arguments],
             plan.root,
             Path.Combine(directory, log),
-            cancellation
+            cancellationToken
         );
 
         async Task<string> ResolveCompilationGraphAsync(string context)
@@ -996,11 +1021,11 @@ internal static class ValidationRunner
                 plan.dotnet,
                 projects,
                 plan.contexts[context].properties,
-                cancellation,
+                cancellationToken,
                 resolveReferences: true
             ).ConfigureAwait(false);
             string destination = Path.Combine(directory, context + "-resolved-sdk-graph.json");
-            await File.WriteAllTextAsync(destination, graph, cancellation).ConfigureAwait(false);
+            await File.WriteAllTextAsync(destination, graph, cancellationToken).ConfigureAwait(false);
             compilationGraphs.Add(context, destination);
             return destination;
         }
@@ -1105,7 +1130,7 @@ internal static class ValidationRunner
             if (retained is not { status: "Passed" or "Reused" }
                 || retained.inputIdentity != ValidationInputs.CheckIdentity(plan, candidate, current)
                 || !dependencyInputs.Matches(candidate, retained.dependencyIdentity)
-                || !ValidationOutputs.Matches(plan, candidate, retained, cancellation, outputDigests)
+                || !ValidationOutputs.Matches(plan, candidate, retained, cancellationToken, outputDigests)
             ) {
                 return false;
             }

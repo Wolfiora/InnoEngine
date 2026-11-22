@@ -109,10 +109,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
             throw new ArgumentException("The buffer was not created for vertex input.", nameof(buffer));
         }
 
-        if (firstVertex >= buffer.descriptor.elementCount)
-        {
-            throw new ArgumentOutOfRangeException(nameof(firstVertex));
-        }
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(firstVertex, buffer.descriptor.elementCount);
 
         m_vertexBuffer = buffer;
         m_firstVertex = firstVertex;
@@ -128,10 +125,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
             throw new ArgumentException("The buffer was not created for index input.", nameof(buffer));
         }
 
-        if (firstIndex >= buffer.descriptor.elementCount)
-        {
-            throw new ArgumentOutOfRangeException(nameof(firstIndex));
-        }
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(firstIndex, buffer.descriptor.elementCount);
 
         m_indexBuffer = buffer;
         m_firstIndex = firstIndex;

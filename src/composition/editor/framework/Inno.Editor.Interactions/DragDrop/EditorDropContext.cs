@@ -49,13 +49,18 @@ public sealed class EditorDropContext
         object target,
         EditorDropPlacement placement = EditorDropPlacement.None
     ) {
-        this.editor = editor ?? throw new ArgumentNullException(nameof(editor));
-        this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
+        ArgumentNullException.ThrowIfNull(editor);
+        ArgumentNullException.ThrowIfNull(interactions);
+        ArgumentNullException.ThrowIfNull(data);
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(target);
+        this.editor = editor;
+        this.interactions = interactions;
         ArgumentException.ThrowIfNullOrWhiteSpace(area);
         this.area = area;
-        this.data = data ?? throw new ArgumentNullException(nameof(data));
-        this.source = source ?? throw new ArgumentNullException(nameof(source));
-        this.target = target ?? throw new ArgumentNullException(nameof(target));
+        this.data = data;
+        this.source = source;
+        this.target = target;
         this.placement = placement;
     }
 

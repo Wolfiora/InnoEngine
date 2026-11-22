@@ -172,7 +172,7 @@ public sealed class ShaderSourceFrontendTests
         string entry
     ) {
         ShaderSourceAnalysis result = new BgfxShaderSourceFrontend().Analyze(
-            new(new("bad.ishadersource", source), entry, new Includes([]))
+            new ShaderSourceRequest(new ShaderSourceFile("bad.ishadersource", source), entry, new Includes([]))
         );
         Assert.False(result.succeeded);
         Assert.NotEmpty(result.diagnostics);
@@ -219,7 +219,7 @@ public sealed class ShaderSourceFrontendTests
     {
         var catalog = new ShaderSourceFrontendCatalog([new BgfxShaderSourceFrontend(), new IndependentFrontend()]);
         Assert.Equal(2, catalog.languageIDs.Count);
-        var request = new ShaderSourceRequest(new("custom.ishadersource", "custom"), "custom", new Includes([]));
+        var request = new ShaderSourceRequest(new ShaderSourceFile("custom.ishadersource", "custom"), "custom", new Includes([]));
         Assert.True(catalog.Analyze("tests.language", request).succeeded);
         Assert.Throws<NotSupportedException>(() => catalog.Analyze("missing.language", request));
         Assert.Throws<ArgumentException>(() => new ShaderSourceFrontendCatalog([new IndependentFrontend(), new IndependentFrontend()]));
@@ -229,7 +229,9 @@ public sealed class ShaderSourceFrontendTests
         string source,
         Dictionary<string, string>? includes = null,
         IReadOnlyDictionary<string, string>? defines = null
-    ) => new BgfxShaderSourceFrontend().Analyze(new(new("module.ishadersource", source), "Shade", new Includes(includes ?? []), defines));
+    ) => new BgfxShaderSourceFrontend().Analyze(
+        new ShaderSourceRequest(new ShaderSourceFile("module.ishadersource", source), "Shade", new Includes(includes ?? []), defines)
+    );
 
     private static string Errors(ShaderSourceAnalysis result) => string.Join("; ", result.diagnostics.Select(static item => item.message));
 
@@ -238,7 +240,9 @@ public sealed class ShaderSourceFrontendTests
         public ShaderSourceFile ReadInclude(
             string includingFile,
             string include
-        ) => sources.TryGetValue(include, out string? source) ? new(include, source) : throw new FileNotFoundException(include);
+        ) => sources.TryGetValue(include, out string? source)
+             ? new ShaderSourceFile(include, source)
+             : throw new FileNotFoundException(include);
     }
 
     private sealed class IndependentFrontend : IShaderSourceFrontend
@@ -246,6 +250,15 @@ public sealed class ShaderSourceFrontendTests
         public string languageID => "tests.language";
 
         public ShaderSourceAnalysis Analyze(ShaderSourceRequest request)
-            => new(new(request.entryPoint, ShaderSourceType.Atomic("float"), [], new(request.source.assetPath, 1, 1)), [], []);
+            => new(
+                new ShaderSourceFunction(
+                    request.entryPoint,
+                    ShaderSourceType.Atomic("float"),
+                    [],
+                    new ShaderSourcePosition(request.source.assetPath, 1, 1)
+                ),
+                [],
+                []
+            );
     }
 }

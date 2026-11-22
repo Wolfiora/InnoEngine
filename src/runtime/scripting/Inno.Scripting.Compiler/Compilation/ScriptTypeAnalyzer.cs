@@ -14,8 +14,7 @@ namespace Inno.Scripting.Compiler;
 
 internal static class ScriptTypeAnalyzer
 {
-    private const string C_STABLE_TYPE_ID_ATTRIBUTE =
-        "Inno.Extensibility.Types.StableTypeIDAttribute";
+    private const string C_STABLE_TYPE_ID_ATTRIBUTE = "Inno.Extensibility.Types.StableTypeIDAttribute";
 
     internal static ScriptTypeAnalysisResult Analyze(
         CSharpCompilation compilation,
@@ -57,9 +56,9 @@ internal static class ScriptTypeAnalyzer
             }
         }
 
-        var diagnostics = new List<ScriptDiagnostic>();
-        var manifestEntries = new List<ScriptTypeManifestEntry>();
-        var mappings = new List<ScriptTypeMapping>();
+        List<ScriptDiagnostic> diagnostics = [];
+        List<ScriptTypeManifestEntry> manifestEntries = [];
+        List<ScriptTypeMapping> mappings = [];
         Dictionary<Guid, int> implicitTypesBySource = discovered.Values
             .Where(static type => GetExplicitStableTypeID(type.symbol) is null)
             .SelectMany(static type => type.declarations.Select(declaration => (declaration.source.persistentID, type)))

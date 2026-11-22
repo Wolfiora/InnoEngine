@@ -410,8 +410,9 @@ internal sealed class EditorHost : ShellHost
         var shaderCompiler = new ShaderCompiler(
             m_authoringAdapters.renderingAuthoring.CreateShaderCompilerToolchain(adapterSelection.rendering)
         );
-        ITextureTargetCompiler textureCompiler =
-            m_authoringAdapters.renderingAuthoring.CreateTextureTargetCompiler(adapterSelection.rendering);
+        ITextureTargetCompiler textureCompiler = m_authoringAdapters.renderingAuthoring.CreateTextureTargetCompiler(
+            adapterSelection.rendering
+        );
         DiagnosticReporter renderDiagnostics = m_resources.Acquire(
             () => engineHost.diagnostics.CreateReporter(new DiagnosticSource("inno.editor.rendering", "Rendering")),
             static sink => sink.Dispose()

@@ -50,8 +50,10 @@ public sealed class AssetBrowserState
         EditorInteractions interactions,
         AssetPipeline assets
     ) {
-        m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-        m_assets = assets ?? throw new ArgumentNullException(nameof(assets));
+        ArgumentNullException.ThrowIfNull(interactions);
+        ArgumentNullException.ThrowIfNull(assets);
+        m_interactions = interactions;
+        m_assets = assets;
     }
 
     /// <summary>

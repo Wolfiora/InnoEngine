@@ -16,8 +16,10 @@ internal sealed class SceneStateDiagnosticTracker
         SceneWorld world,
         TypeCatalog types
     ) {
-        m_world = world ?? throw new ArgumentNullException(nameof(world));
-        m_types = types ?? throw new ArgumentNullException(nameof(types));
+        ArgumentNullException.ThrowIfNull(world);
+        ArgumentNullException.ThrowIfNull(types);
+        m_world = world;
+        m_types = types;
     }
 
     internal void Reconcile(bool force = false)

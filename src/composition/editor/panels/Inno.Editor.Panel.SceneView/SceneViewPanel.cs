@@ -65,12 +65,18 @@ internal sealed class SceneViewPanel : EditorPanel
         EditorPlayModeLoop playModeLoop,
         EditorSettings settings
     ) {
-        m_rendering = rendering ?? throw new ArgumentNullException(nameof(rendering));
-        m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-        m_sceneEdits = sceneEdits ?? throw new ArgumentNullException(nameof(sceneEdits));
-        m_scenePresentation = scenePresentation ?? throw new ArgumentNullException(nameof(scenePresentation));
-        m_playModeLoop = playModeLoop ?? throw new ArgumentNullException(nameof(playModeLoop));
-        m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        ArgumentNullException.ThrowIfNull(rendering);
+        ArgumentNullException.ThrowIfNull(interactions);
+        ArgumentNullException.ThrowIfNull(sceneEdits);
+        ArgumentNullException.ThrowIfNull(scenePresentation);
+        ArgumentNullException.ThrowIfNull(playModeLoop);
+        ArgumentNullException.ThrowIfNull(settings);
+        m_rendering = rendering;
+        m_interactions = interactions;
+        m_sceneEdits = sceneEdits;
+        m_scenePresentation = scenePresentation;
+        m_playModeLoop = playModeLoop;
+        m_settings = settings;
     }
 
     /// <summary>
@@ -320,7 +326,7 @@ internal sealed class SceneViewPanel : EditorPanel
         }
 
         float iconSize = 24f * EditorUI.current.widgets.style.zoom;
-        var displayIcons = new List<(Vector2 center, EditorGizmoIcon icon)>();
+        List<(Vector2 center, EditorGizmoIcon icon)> displayIcons = [];
         foreach (EditorGizmoIcon icon in frame.icons)
         {
             if (!TryProject(icon.position, out Vector2 center))
@@ -752,7 +758,7 @@ internal sealed class SceneViewPanel : EditorPanel
 
     private Transform[] SelectedTransforms()
     {
-        var selected = new List<EngineObject>();
+        List<EngineObject> selected = [];
         m_interactions.selection.CopyTargets(selected);
         Transform[] transforms = selected.Select(value => value switch
         {

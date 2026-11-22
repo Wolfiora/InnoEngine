@@ -167,7 +167,7 @@ public static class DocumentationCommand
                 _ => options.GetValueOrDefault("--page")
             };
             result = await snapshot.QueryAsync(
-                new(
+                new DocumentationRequest(
                     operation,
                     value,
                     options.GetValueOrDefault("--project"),

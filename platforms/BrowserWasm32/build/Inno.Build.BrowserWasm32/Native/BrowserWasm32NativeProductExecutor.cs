@@ -76,7 +76,9 @@ public sealed class BrowserWasm32NativeProductExecutor : INativeProductExecutor
         ).ConfigureAwait(false);
         try
         {
-            context = context.WithBindings(generations).WithComponentOptions(componentDescriptor, new(NativeLibraryKind.Static));
+            context = context
+                .WithBindings(generations)
+                .WithComponentOptions(componentDescriptor, new NativeComponentBuildOptions(NativeLibraryKind.Static));
             string owner = componentDescriptor.GetToolchainRoot(context.engineRoot);
             string[] inputs = plan.steps
                 .SelectMany(step => step.component.staticBuild!.inputPaths

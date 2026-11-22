@@ -231,7 +231,7 @@ internal sealed class EditorActionRouter(
             return false;
         }
         var context = new EditorActionContext(editor, interactions, area, target);
-        var candidates = new List<ShortcutCandidate>();
+        List<ShortcutCandidate> candidates = [];
         for (int pass = 0; pass < 2; pass++)
         {
             string[]? actionIDs = pass == 0 ? exact : global;
@@ -309,7 +309,7 @@ internal sealed class EditorActionRouter(
         EditorActionContext context,
         IReadOnlySet<string> placed
     ) {
-        var result = new List<EditorMenuItem>();
+        List<EditorMenuItem> result = [];
         foreach (string id in index.Keys)
         {
             if (placed.Contains(id))

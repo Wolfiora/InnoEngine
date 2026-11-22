@@ -230,7 +230,7 @@ public static class BackendPrebuiltArchive
         Stream output,
         string digest,
         long length,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         var buffer = new byte[81_920];
@@ -238,7 +238,7 @@ public static class BackendPrebuiltArchive
         int read;
         while ((read = input.Read(buffer)) > 0)
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             if ((copied += read) > length)
             {
                 throw new InvalidDataException("Backend payload exceeds its declared length.");

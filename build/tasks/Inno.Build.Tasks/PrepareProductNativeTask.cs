@@ -240,9 +240,9 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
     private static FileLease AcquirePreparation(
         IBuildEngine4 engine,
         string path,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
-        Task<FileLease> pending = FileLease.AcquireAsync(path, Timeout.InfiniteTimeSpan, cancellation).AsTask();
+        Task<FileLease> pending = FileLease.AcquireAsync(path, Timeout.InfiniteTimeSpan, cancellationToken).AsTask();
         if (pending.IsCompleted)
         {
             return pending.GetAwaiter().GetResult();

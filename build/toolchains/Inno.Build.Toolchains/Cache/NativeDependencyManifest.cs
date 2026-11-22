@@ -73,10 +73,10 @@ public static partial class NativeDependencyManifest
         {
             await VerifySourcesAsync(engineRoot, aggregate[0].sources, cancellationToken).ConfigureAwait(false);
             RequireDigest(aggregate[0].sha256);
-            return[new(aggregate[0].asset, aggregate[0].sha256)];
+            return[new NativeDependencyAsset(aggregate[0].asset, aggregate[0].sha256)];
         }
 
-        var assets = new List<NativeDependencyAsset>();
+        List<NativeDependencyAsset> assets = [];
         var sources = new Dictionary<string, string>(StringComparer.Ordinal);
         var selectedComponents = new Dictionary<string, DependencyAsset>(StringComparer.Ordinal);
         foreach (ProductNativeBuildStep step in plan.steps)
@@ -107,7 +107,7 @@ public static partial class NativeDependencyManifest
             }
             selectedComponents.Add(step.id, selected);
             RequireDigest(selected.sha256);
-            assets.Add(new(selected.asset, selected.sha256));
+            assets.Add(new NativeDependencyAsset(selected.asset, selected.sha256));
             foreach (KeyValuePair<string, string> pair in selected.sources)
             {
                 if (sources.TryGetValue(pair.Key, out string? previous) && previous != pair.Value)
@@ -189,7 +189,7 @@ public static partial class NativeDependencyManifest
             root,
             cancellationToken
         ).ConfigureAwait(false)).Trim();
-        var assets = new List<DependencyAsset>();
+        List<DependencyAsset> assets = [];
         for (int index = 0; index < products.Count; index++)
         {
             ProductNativeBuildStep step = plan.steps[index];
@@ -208,7 +208,7 @@ public static partial class NativeDependencyManifest
                 .Select(static input => input.logicalPath["engine/".Length..])
                 .Append(step.component.nativeProject)
                 .Append(step.component.toolchainProject)
-                .Concat(step.component.bindingDefinition is string definition ? [definition] : Array.Empty<string>())
+                .Concat(step.component.bindingDefinition is string definition ? [definition] : [])
                 .Distinct(StringComparer.Ordinal)
                 .ToArray();
             if (step.component.bindingDefinition is not null)
@@ -282,7 +282,7 @@ public static partial class NativeDependencyManifest
             using FileStream payload = File.OpenRead(archive);
             string digest = Convert.ToHexStringLower(await SHA256.HashDataAsync(payload, cancellationToken).ConfigureAwait(false));
             assets.Add(
-                new(
+                new DependencyAsset(
                     plan.productID,
                     step.id,
                     product.targetID,
@@ -429,9 +429,9 @@ public static partial class NativeDependencyManifest
         }
 
         await VerifySourcesAsync().ConfigureAwait(false);
-        var products = new List<NativeBuildProduct>();
+        List<NativeBuildProduct> products = [];
         var bindings = new Dictionary<string, NativeBindingGenerationDescriptor>(StringComparer.Ordinal);
-        var reading = new List<IDisposable>();
+        List<IDisposable> reading = [];
         try
         {
             foreach (ProductNativeBuildStep step in plan.steps)
@@ -554,7 +554,7 @@ public static partial class NativeDependencyManifest
                         target,
                         cancellationToken
                     );
-                    products.Add(new(step.id, target, asset.fingerprint, directory, generation, asset.extension, lease));
+                    products.Add(new NativeBuildProduct(step.id, target, asset.fingerprint, directory, generation, asset.extension, lease));
                 }
                 catch
                 {

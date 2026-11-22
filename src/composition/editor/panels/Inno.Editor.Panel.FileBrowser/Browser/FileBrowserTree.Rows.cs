@@ -59,7 +59,7 @@ internal sealed partial class FileBrowserTree
         ) {
             return;
         }
-        var rows = new List<BrowserTreeRow>();
+        List<BrowserTreeRow> rows = [];
         var pending = new Stack<(string path, string label, bool root, int depth)>();
         if (m_assets.browser.root == AssetBrowserRoot.Assets)
         {
@@ -72,7 +72,7 @@ internal sealed partial class FileBrowserTree
             {
                 widgets.SetTreeNodeOpen(C_ROOT_ID, true);
             }
-            rows.Add(new(string.Empty, "Plugins", C_ROOT_ID, 0, true, true, false, null));
+            rows.Add(new BrowserTreeRow(string.Empty, "Plugins", C_ROOT_ID, 0, true, true, false, null));
             if (widgets.IsTreeNodeOpen(C_ROOT_ID))
             {
                 AssetSourceMount[] mounts = pipeline.sourceMounts.Where(mount => m_assets.edits.IsPluginSource(mount.id))
@@ -103,7 +103,7 @@ internal sealed partial class FileBrowserTree
             RuntimeIdentity? identity = next.root ? null : entry!.identity.runtimeIdentity
                 ?? throw new InvalidOperationException("A visible asset tree entry requires a registered identity.");
             rows.Add(
-                new(
+                new BrowserTreeRow(
                     next.path,
                     next.label,
                     id,

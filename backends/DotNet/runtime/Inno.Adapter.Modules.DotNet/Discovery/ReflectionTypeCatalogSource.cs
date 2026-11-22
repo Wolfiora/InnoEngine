@@ -24,7 +24,7 @@ public sealed class ReflectionTypeCatalogSource : ITypeCatalogSource
     public TypeCatalogMetadata GetMetadata(Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
-        var ancestors = new List<Type>();
+        List<Type> ancestors = [];
         for (Type? current = type.BaseType; current is not null && current != typeof(object); current = current.BaseType)
         {
             ancestors.Add(current);

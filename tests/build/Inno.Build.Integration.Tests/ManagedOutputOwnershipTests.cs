@@ -22,7 +22,7 @@ public sealed class ManagedOutputOwnershipTests
         string fixture = PathBoundary.Resolve(owner, Guid.NewGuid().ToString("N"));
         string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
                       ?? ToolchainEnvironment.ResolveExecutable("dotnet");
-        var outputs = new List<Dictionary<string, string>>();
+        List<Dictionary<string, string>> outputs = [];
         Directory.CreateDirectory(fixture);
         try
         {
@@ -44,14 +44,14 @@ public sealed class ManagedOutputOwnershipTests
                     </Project>
                     """);
                 await File.WriteAllTextAsync(Path.Combine(checkoutRoot, "Shared.cs"), "public sealed class Shared { }");
-                var properties = new List<string>
-                {
+                List<string> properties =
+                [
                     "-p:Configuration=Debug",
                     "-p:InnoNativeTarget=test-target",
                     "-p:InnoToolTarget=test-host",
                     "-p:ArtifactsPath=" + Path.Combine(checkoutRoot, "outputs"),
                     "-p:InnoProductBuildProperties=" + productProperties
-                };
+                ];
                 Dictionary<string, string> evaluated = await EvaluateAsync(host, project, properties);
                 await RunAsync(host, checkoutRoot, ["build", project, "--disable-build-servers", "-m:1", "-nr:false", .. properties]);
                 Assert.True(File.Exists(evaluated["TargetPath"]));
@@ -100,7 +100,7 @@ public sealed class ManagedOutputOwnershipTests
             await File.WriteAllTextAsync(Path.Combine(fixture, "Shared.cs"), "public sealed class Shared { }");
             string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
                           ?? ToolchainEnvironment.ResolveExecutable("dotnet");
-            var common = new List<string> { $"-p:Configuration={configuration}" };
+            List<string> common = [$"-p:Configuration={configuration}"];
             if (artifacts)
             {
                 common.Add($"-p:ArtifactsPath={Path.Combine(fixture, "outputs")}");

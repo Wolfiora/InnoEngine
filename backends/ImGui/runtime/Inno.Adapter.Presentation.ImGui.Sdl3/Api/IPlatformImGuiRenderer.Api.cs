@@ -18,10 +18,7 @@ public readonly record struct ImGuiTextureHandle
     /// </param>
     public ImGuiTextureHandle(ulong value)
     {
-        if (value == 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(value));
-        }
+        ArgumentOutOfRangeException.ThrowIfZero(value);
 
         this.value = value;
     }

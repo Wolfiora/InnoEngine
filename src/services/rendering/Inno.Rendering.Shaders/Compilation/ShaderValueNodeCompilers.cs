@@ -28,7 +28,10 @@ public sealed class ShaderExtractNodeCompiler : IShaderNodeCompiler
         ShaderSourceType type = ShaderSourceType.Atomic(context.Read("type", "float4"));
         var builder = new ShaderIrBuilder();
         ShaderIrValue member = builder.Extract(builder.Input("input", type), context.Read("index", 0));
-        return [new("input", type, GraphPortDirection.Input), new("value", member.type, GraphPortDirection.Output)];
+        return [
+            new ShaderNodePort("input", type, GraphPortDirection.Input),
+            new ShaderNodePort("value", member.type, GraphPortDirection.Output)
+        ];
     }
 
     /// <summary>
@@ -75,16 +78,16 @@ public sealed class ShaderSampleNodeCompiler : IShaderNodeCompiler
             "sampled-texture2d-array" or "sampled-texture3d" or "sampled-texture-cube" => "float3",
             _ => throw new InvalidOperationException("Unknown sampled texture type.")
         };
-        var ports = new List<ShaderNodePort>
-        {
-            new("texture", ShaderSourceType.Atomic(type), GraphPortDirection.Input),
-            new("coordinate", ShaderSourceType.Atomic(coordinate), GraphPortDirection.Input)
-        };
+        List<ShaderNodePort> ports =
+        [
+            new ShaderNodePort("texture", ShaderSourceType.Atomic(type), GraphPortDirection.Input),
+            new ShaderNodePort("coordinate", ShaderSourceType.Atomic(coordinate), GraphPortDirection.Input)
+        ];
         if (context.Read("explicitLevel", false))
         {
-            ports.Add(new("level", ShaderSourceType.Atomic("float"), GraphPortDirection.Input));
+            ports.Add(new ShaderNodePort("level", ShaderSourceType.Atomic("float"), GraphPortDirection.Input));
         }
-        ports.Add(new("value", ShaderSourceType.Atomic("float4"), GraphPortDirection.Output));
+        ports.Add(new ShaderNodePort("value", ShaderSourceType.Atomic("float4"), GraphPortDirection.Output));
         return ports;
     }
 

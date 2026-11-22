@@ -26,7 +26,8 @@ public sealed class RenderExtensionStateContext
     /// </remarks>
     public RenderExtensionStateContext(AssetObject owner)
     {
-        m_owner = owner ?? throw new ArgumentNullException(nameof(owner));
+        ArgumentNullException.ThrowIfNull(owner);
+        m_owner = owner;
     }
 
     /// <summary>

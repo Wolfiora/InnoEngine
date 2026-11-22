@@ -41,7 +41,6 @@ using Inno.Testing.Build;
 
 using GuiSession = Inno.Editor.ImGui.EditorUISession;
 using NativeGui = Inno.Native.ImGui.ImGui;
-using NativeImGui = Inno.Native.ImGui.ImGui;
 using UIRuntime = Inno.Editor.ImGui.ImGuiEditorRuntime;
 
 namespace Inno.Editor.Exporting.Native.Tests;
@@ -77,13 +76,13 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
         Assert.True(runtime.interactions.For("editor/main-menu").Execute("export/game"));
         EditorModalExtension modal = Assert.Single(runtime.modals.Where(static item => item.id == "export.game"));
         EditorModalExtension progress = Assert.Single(runtime.modals.Where(static item => item.id == "export.game.progress"));
-        ImGuiNativeContext* imgui = NativeImGui.Raw.CreateContext(null);
+        ImGuiNativeContext* imgui = NativeGui.Raw.CreateContext(null);
         try
         {
-            NativeImGui.Raw.GetIO()->IniFilename = null;
+            NativeGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new GuiSession();
             using IDisposable uiScope = uiSession.Enter();
-            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            ImGuiIO* io = NativeGui.Raw.GetIO();
             io->DisplaySize = new ImVec2C { X = 1200f, Y = 900f };
             io->DeltaTime = 1f / 60f;
             io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
@@ -94,21 +93,21 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
             {
                 if (frame == 2)
                 {
-                    NativeImGui.Raw.AddMousePosEvent(io, exportCenter.X, exportCenter.Y);
-                    NativeImGui.Raw.AddMouseButtonEvent(io, 0, 1);
+                    NativeGui.Raw.AddMousePosEvent(io, exportCenter.X, exportCenter.Y);
+                    NativeGui.Raw.AddMouseButtonEvent(io, 0, 1);
                 }
                 if (frame == 3)
                 {
-                    NativeImGui.Raw.AddMouseButtonEvent(io, 0, 0);
+                    NativeGui.Raw.AddMouseButtonEvent(io, 0, 0);
                 }
-                NativeImGui.NewFrame();
-                NativeImGui.SetNextWindowPos(new Vector2(20f), (int)ImGuiCond.Always);
-                NativeImGui.SetNextWindowSize(new Vector2(1000f, 800f), (int)ImGuiCond.Always);
-                _ = NativeImGui.Raw.Begin((sbyte*)title.pointer, null, (int)ImGuiWindowFlags.NoSavedSettings);
+                NativeGui.NewFrame();
+                NativeGui.SetNextWindowPos(new Vector2(20f), (int)ImGuiCond.Always);
+                NativeGui.SetNextWindowSize(new Vector2(1000f, 800f), (int)ImGuiCond.Always);
+                _ = NativeGui.Raw.Begin((sbyte*)title.pointer, null, (int)ImGuiWindowFlags.NoSavedSettings);
                 Assert.True(modal.Draw(context));
-                exportCenter = (NativeImGui.GetItemRectMin() + NativeImGui.GetItemRectMax()) * 0.5f;
-                NativeImGui.End();
-                NativeImGui.Render();
+                exportCenter = (NativeGui.GetItemRectMin() + NativeGui.GetItemRectMax()) * 0.5f;
+                NativeGui.End();
+                NativeGui.Render();
             }
             Assert.True(provisioner.started);
             Assert.True(progress.TryGetPresentation(out EditorModalExtension.Presentation presentation));
@@ -148,7 +147,7 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
         finally
         {
             provisioner.cleanup.TrySetResult();
-            NativeImGui.Raw.DestroyContext(imgui);
+            NativeGui.Raw.DestroyContext(imgui);
         }
     }
 

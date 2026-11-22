@@ -35,15 +35,15 @@ internal sealed class ManagedInputEvaluation : IDisposable
 
     internal IReadOnlyDictionary<string, string> properties { get; }
 
-    internal void Complete(CancellationToken cancellation)
-        => m_cache?.Record(m_directory, m_directory + ".lock", [], null, m_targetID, cancellation);
+    internal void Complete(CancellationToken cancellationToken)
+        => m_cache?.Record(m_directory, m_directory + ".lock", [], null, m_targetID, cancellationToken);
 
     internal static async ValueTask<ManagedInputEvaluation> OpenAsync(
         NativeBuildContext context,
         DotNetSdkDescriptor sdk,
         string project,
         IReadOnlyDictionary<string, string> properties,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         // An explicitly supplied SDK layout remains the caller's owned concurrency boundary.
         if (properties.Keys.Any(static name => name.Equals("ArtifactsPath", StringComparison.OrdinalIgnoreCase)))
@@ -69,18 +69,18 @@ internal sealed class ManagedInputEvaluation : IDisposable
         string root = Path.Combine(context.engineRoot, "artifacts", "managed", "evaluations");
         string directory = Path.Combine(root, identity);
         var cache = new BuildCachePublisher(root, BuildCacheArtifactRole.ReusableWorkspace);
-        BuildCacheOwnerCatalog.Register(context.engineRoot, root, "managed-evaluations", cache.role, cancellation);
-        using FileLease activity = await cache.AcquireUseAsync(cancellation).ConfigureAwait(false);
+        BuildCacheOwnerCatalog.Register(context.engineRoot, root, "managed-evaluations", cache.role, cancellationToken);
+        using FileLease activity = await cache.AcquireUseAsync(cancellationToken).ConfigureAwait(false);
         CoordinatedFileLease ownership = await CoordinatedFileLease.AcquireAsync(
             Path.Combine(root, "owner.lock"),
             directory + ".lock",
             Timeout.InfiniteTimeSpan,
-            cancellationToken: cancellation
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
         try
         {
             string? target = properties.TryGetValue("InnoNativeTarget", out string? selected) ? selected : context.toolchain?.targetID;
-            cache.BeginWorkingDirectory(directory, directory + ".lock", target, cancellation);
+            cache.BeginWorkingDirectory(directory, directory + ".lock", target, cancellationToken);
             Dictionary<string, string> isolated = properties.ToDictionary(
                 static pair => pair.Key,
                 static pair => pair.Value,

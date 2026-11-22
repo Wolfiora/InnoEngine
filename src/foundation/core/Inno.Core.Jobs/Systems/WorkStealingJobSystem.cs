@@ -784,13 +784,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
         }
     }
 
-    private void ThrowIfDisposed()
-    {
-        if (m_disposed)
-        {
-            throw new ObjectDisposedException(nameof(WorkStealingJobSystem));
-        }
-    }
+    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(m_disposed, this);
 
     private sealed class ParallelForRangeState
     {

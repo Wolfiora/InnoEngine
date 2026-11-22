@@ -258,8 +258,11 @@ public sealed partial class SceneSerializationTests : IDisposable
     [Fact]
     public void SceneUnloadReleasesCyclicSceneObjectGraphForGarbageCollection()
     {
-        (WeakReference<GameScene> scene, WeakReference<GameObject> gameObject, WeakReference<GameComponent> component) =
-            CreateAndUnloadCyclicGraph();
+        (
+            WeakReference<GameScene> scene,
+            WeakReference<GameObject> gameObject,
+            WeakReference<GameComponent> component
+        ) = CreateAndUnloadCyclicGraph();
 
         for (int i = 0; i < 8; i++)
         {

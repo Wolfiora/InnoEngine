@@ -23,7 +23,7 @@ internal static class BgfxSourceLexer
 {
     internal static List<BgfxSourceToken> Tokenize(ShaderSourceFile source)
     {
-        var tokens = new List<BgfxSourceToken>();
+        List<BgfxSourceToken> tokens = [];
         string text = source.text;
         int line = 1;
         int column = 1;
@@ -48,7 +48,7 @@ internal static class BgfxSourceLexer
             {
                 if (current == '\n')
                 {
-                    tokens.Add(new("\n", new(source.assetPath, line, column)));
+                    tokens.Add(new BgfxSourceToken("\n", new ShaderSourcePosition(source.assetPath, line, column)));
                 }
                 Advance();
                 continue;
@@ -78,7 +78,7 @@ internal static class BgfxSourceLexer
                     }
                     if (text[offset] == '\n')
                     {
-                        tokens.Add(new("\n", new(source.assetPath, line, column)));
+                        tokens.Add(new BgfxSourceToken("\n", new ShaderSourcePosition(source.assetPath, line, column)));
                     }
                     Advance();
                 }
@@ -152,7 +152,7 @@ internal static class BgfxSourceLexer
                     }
                 }
             }
-            tokens.Add(new(text[start..offset], position));
+            tokens.Add(new BgfxSourceToken(text[start..offset], position));
         }
         return tokens;
 

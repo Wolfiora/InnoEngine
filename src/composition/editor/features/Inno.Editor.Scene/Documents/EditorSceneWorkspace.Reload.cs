@@ -30,11 +30,7 @@ internal sealed partial class EditorSceneWorkspace
         ArgumentNullException.ThrowIfNull(context);
         if (m_playModeSession is not null)
         {
-            return new WorkspaceReloadTransaction(
-                this,
-                Array.Empty<ReloadDocumentState>(),
-                preserveDocumentBaselines: true
-            );
+            return new WorkspaceReloadTransaction(this, [], preserveDocumentBaselines: true);
         }
         ApplyPendingSourceChanges();
         var documents = new List<ReloadDocumentState>(m_documents.Count);

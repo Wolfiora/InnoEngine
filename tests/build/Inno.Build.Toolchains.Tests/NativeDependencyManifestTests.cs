@@ -318,7 +318,7 @@ public sealed class NativeDependencyManifestTests : IDisposable
         var plan = new ProductNativeBuildPlan("fixture", [new ProductNativeBuildStep(
             "fixture",
             m_component,
-            new(NativeLibraryKind.Static),
+            new NativeComponentBuildOptions(NativeLibraryKind.Static),
             [],
             ProduceAsync,
             Recipe,
@@ -368,7 +368,7 @@ public sealed class NativeDependencyManifestTests : IDisposable
     private Task<NativeBuildProduct> ProduceAsync(
         NativeBuildContext context,
         IReadOnlyDictionary<string, NativeBuildProduct> dependencies,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) => NativeArtifactPublisher.PublishAsync(
         context,
         Recipe(context),
@@ -381,7 +381,7 @@ public sealed class NativeDependencyManifestTests : IDisposable
             m_productions++;
             return File.WriteAllTextAsync(Path.Combine(output, "output.data"), "payload", token);
         },
-        cancellation,
+        cancellationToken,
         describeOutputs: static (
             _,
             output

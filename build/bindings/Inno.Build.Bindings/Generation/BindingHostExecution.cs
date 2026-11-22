@@ -20,8 +20,8 @@ internal static class BindingHostExecution
         string engineRoot,
         string nativeOutput,
         string managedOutput,
-        CancellationToken cancellation
-    ) => GenerateAsync(request, profile, engineRoot, nativeOutput, managedOutput, cancellation).GetAwaiter().GetResult();
+        CancellationToken cancellationToken
+    ) => GenerateAsync(request, profile, engineRoot, nativeOutput, managedOutput, cancellationToken).GetAwaiter().GetResult();
 
     private static async Task GenerateAsync(
         GenerationRequest request,
@@ -29,11 +29,11 @@ internal static class BindingHostExecution
         string engineRoot,
         string nativeOutput,
         string managedOutput,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
-        await using BindingHost host = BindingHostFactory.CreateBuilder(profile, cancellation).Build();
+        await using BindingHost host = BindingHostFactory.CreateBuilder(profile, cancellationToken).Build();
         await using HostServices services = BindingHostFactory.CreateHostServices(engineRoot);
-        GenerationResult result = await host.GenerateAsync(request, cancellation).ConfigureAwait(false);
+        GenerationResult result = await host.GenerateAsync(request, cancellationToken).ConfigureAwait(false);
         foreach (BindingDiagnostic diagnostic in result.diagnostics)
         {
             Console.WriteLine($"BGCS {diagnostic.severity} {diagnostic.code}: {diagnostic.message}");
@@ -64,7 +64,7 @@ internal static class BindingHostExecution
             result.outputRoot,
             request.configuration.library.id,
             services.paths,
-            cancellation
+            cancellationToken
         );
         ArtifactDescriptor[] managed = artifacts
             .Where(static artifact => artifact.relativePath.EndsWith("/managed/Bindings.cs", StringComparison.Ordinal))
@@ -77,7 +77,7 @@ internal static class BindingHostExecution
             result.outputRoot,
             request.configuration.library.id,
             services.paths,
-            cancellation
+            cancellationToken
         ).ToArray();
         if (manifests.Length != 1)
         {
@@ -100,13 +100,13 @@ internal static class BindingHostExecution
         Directory.CreateDirectory(nativeOutput);
         foreach (ArtifactDescriptor artifact in selectedArtifacts.Append(managed[0]))
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             string destination = artifact == managed[0]
                                  ? Path.Combine(managedOutput, "Bindings.cs")
                                  : Path.Combine(nativeOutput, artifact.relativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
             File.Copy(Path.Combine(result.outputRoot, artifact.relativePath), destination, overwrite: false);
         }
-        BindingNativeCompilation.Write(manifest, result, request, engineRoot, nativeOutput, cancellation);
+        BindingNativeCompilation.Write(manifest, result, request, engineRoot, nativeOutput, cancellationToken);
     }
 }

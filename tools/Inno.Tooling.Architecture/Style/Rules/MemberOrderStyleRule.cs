@@ -53,7 +53,7 @@ internal sealed class MemberOrderStyleRule : StyleRule
 
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
     {
-        var edits = new List<StyleEdit>();
+        List<StyleEdit> edits = [];
         int fixedEnd = -1;
         foreach (TypeDeclarationSyntax type in source.root.DescendantNodes().OfType<TypeDeclarationSyntax>())
         {
@@ -63,7 +63,7 @@ internal sealed class MemberOrderStyleRule : StyleRule
             if (ordered is null || !IsMovable(source, type)) continue;
             int start = type.Members[0].FullSpan.Start;
             int end = type.Members[^1].FullSpan.End;
-            edits.Add(new(start, end, Compose(source, type, ordered)));
+            edits.Add(new StyleEdit(start, end, Compose(source, type, ordered)));
             fixedEnd = end;
         }
 
@@ -166,7 +166,7 @@ internal sealed class MemberOrderStyleRule : StyleRule
                 continue;
             }
 
-            var overloads = new List<MemberDeclarationSyntax> { member };
+            List<MemberDeclarationSyntax> overloads = [member];
             for (int next = index + 1; next < grouped.Length && keys[grouped[next]] == keys[member]; next++)
             {
                 if (OverloadName(grouped[next]) == name && taken.Add(grouped[next])) overloads.Add(grouped[next]);

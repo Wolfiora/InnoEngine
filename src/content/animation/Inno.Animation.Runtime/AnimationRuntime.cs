@@ -41,8 +41,10 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         IAnimationBindingSink bindings,
         int maxPlaybacks = 16_384
     ) {
-        m_events = events ?? throw new ArgumentNullException(nameof(events));
-        m_bindings = bindings ?? throw new ArgumentNullException(nameof(bindings));
+        ArgumentNullException.ThrowIfNull(events);
+        ArgumentNullException.ThrowIfNull(bindings);
+        m_events = events;
+        m_bindings = bindings;
         m_runtimeGeneration = m_handles.generation;
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxPlaybacks);
         m_maxPlaybacks = maxPlaybacks;

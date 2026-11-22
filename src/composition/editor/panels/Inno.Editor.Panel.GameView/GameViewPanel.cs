@@ -52,13 +52,20 @@ internal sealed class GameViewPanel : EditorPanel
         EditorSettings editorSettings,
         ProjectSettingsStore projectSettings
     ) {
-        m_rendering = rendering ?? throw new ArgumentNullException(nameof(rendering));
-        m_scenePresentation = scenePresentation ?? throw new ArgumentNullException(nameof(scenePresentation));
-        m_playMode = playMode ?? throw new ArgumentNullException(nameof(playMode));
-        m_playModeLoop = playModeLoop ?? throw new ArgumentNullException(nameof(playModeLoop));
-        m_inputCapture = inputCapture ?? throw new ArgumentNullException(nameof(inputCapture));
-        m_editorSettings = editorSettings ?? throw new ArgumentNullException(nameof(editorSettings));
-        m_projectSettings = projectSettings ?? throw new ArgumentNullException(nameof(projectSettings));
+        ArgumentNullException.ThrowIfNull(rendering);
+        ArgumentNullException.ThrowIfNull(scenePresentation);
+        ArgumentNullException.ThrowIfNull(playMode);
+        ArgumentNullException.ThrowIfNull(playModeLoop);
+        ArgumentNullException.ThrowIfNull(inputCapture);
+        ArgumentNullException.ThrowIfNull(editorSettings);
+        ArgumentNullException.ThrowIfNull(projectSettings);
+        m_rendering = rendering;
+        m_scenePresentation = scenePresentation;
+        m_playMode = playMode;
+        m_playModeLoop = playModeLoop;
+        m_inputCapture = inputCapture;
+        m_editorSettings = editorSettings;
+        m_projectSettings = projectSettings;
     }
 
     /// <summary>

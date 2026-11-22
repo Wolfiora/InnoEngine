@@ -62,10 +62,10 @@ internal sealed class RenderReadbackOwner(
     internal ValueTask<RenderTextureReadbackResult> ReadAsync(
         PersistentTextureHandle texture,
         int mipLevel,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
-        cancellation.ThrowIfCancellationRequested();
+        cancellationToken.ThrowIfCancellationRequested();
         if (!device.capabilities.Supports(GraphicsCapability.TextureReadback))
         {
             throw new NotSupportedException("The active backend does not support texture readback.");
@@ -75,7 +75,7 @@ internal sealed class RenderReadbackOwner(
             m_rejected++;
             throw new InvalidOperationException($"Readback capacity {capacity} has been reached.");
         }
-        var pending = new PendingReadback(cancellation);
+        var pending = new PendingReadback(cancellationToken);
         RenderTextureReadbackHandle handle = device.BeginTextureReadback(texture, mipLevel);
         m_pending.Add(handle, pending);
         m_peak = Math.Max(m_peak, m_pending.Count);
@@ -136,11 +136,11 @@ internal sealed class RenderReadbackOwner(
         }
     }
 
-    private sealed class PendingReadback(CancellationToken cancellation)
+    private sealed class PendingReadback(CancellationToken cancellationToken)
     {
         internal Exception? failure { get; set; }
         internal RetirementBarrier? retirement { get; set; }
-        internal CancellationToken cancellation { get; } = cancellation;
+        internal CancellationToken cancellation { get; } = cancellationToken;
 
         internal TaskCompletionSource<RenderTextureReadbackResult> completion { get; } = new(
             TaskCreationOptions.RunContinuationsAsynchronously

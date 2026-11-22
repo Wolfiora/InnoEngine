@@ -30,10 +30,10 @@ internal static class NativeBindingGenerationIdentity
         GenerationRequest request,
         BindingGenerationConfiguration definition,
         NativeBuildContext context,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         using HostServices services = BindingHostFactory.CreateHostServices(context.engineRoot);
-        BindingHostBuilder builder = BindingHostFactory.CreateBuilder(definition.profile, cancellation);
+        BindingHostBuilder builder = BindingHostFactory.CreateBuilder(definition.profile, cancellationToken);
         foreach (string plugin in request.configuration.extensions.plugins)
         {
             builder.AddPluginManifest(plugin, services.paths);
@@ -67,13 +67,13 @@ internal static class NativeBindingGenerationIdentity
                 parseMacros = source.parseMacros,
                 parseComments = source.parseComments,
                 parseSystemIncludes = source.includeSystemDeclarations
-            }, cancellation).GetAwaiter().GetResult();
+            }, cancellationToken).GetAwaiter().GetResult();
             if (!analysis.success || analysis.snapshot is null)
             {
                 throw new InvalidDataException("BGCS input analysis failed: " + analysis.GetDiagnosticSummary());
             }
-            var declarations = new List<string>
-            {
+            List<string> declarations =
+            [
                 SerializeIdentity(config),
                 SerializeIdentity(analysis.target),
                 SerializeIdentity(analysis.snapshot),
@@ -83,7 +83,7 @@ internal static class NativeBindingGenerationIdentity
                 definition.component.nativeProject,
                 definition.request.targetID,
                 definition.request.outputMode.ToString()
-            };
+            ];
             IEnumerable<NativeBuildInput> profileInputs = definition.profile.inputPaths.Select(
                 path => NativeBuildInput.FromPath(context.engineRoot, Path.GetFullPath(path, context.engineRoot))
             );
@@ -126,7 +126,7 @@ internal static class NativeBindingGenerationIdentity
                 throw new DirectoryNotFoundException("The restored BGCS SDK worker content is missing: " + resources);
             }
             inputs.Add(new NativeBuildInput("binding-worker-assets", resources));
-            return NativeBuildFingerprint.Create(context, declarations, inputs, cancellation);
+            return NativeBuildFingerprint.Create(context, declarations, inputs, cancellationToken);
         }
         finally
         {

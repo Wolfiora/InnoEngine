@@ -58,5 +58,5 @@ public sealed record AssemblyModuleInfo(
     /// <summary>
     /// Gets stable module dependencies used by this active generation.
     /// </summary>
-    public IReadOnlyList<string> upstreamModuleNames { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> upstreamModuleNames { get; init; } = [];
 }

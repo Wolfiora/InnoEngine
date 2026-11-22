@@ -141,7 +141,7 @@ public sealed class ResidencyRetirementTests
     [Fact]
     public void RetentionScopePreservesLifoDependenciesAndEarlierFailuresAcrossPending()
     {
-        var order = new List<string>();
+        List<string> order = [];
         int pendingAttempts = 0;
         var scope = new RetentionScope();
         scope.Retain(new ReleaseStep(() => order.Add("dependency")));

@@ -19,13 +19,16 @@ public sealed class InspectorAttributeDrawContext
         string label,
         bool isReadOnly
     ) {
-        this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
-        this.member = member ?? throw new ArgumentNullException(nameof(member));
+        ArgumentNullException.ThrowIfNull(owner);
+        ArgumentNullException.ThrowIfNull(member);
+        ArgumentNullException.ThrowIfNull(label);
+        this.owner = owner;
+        this.member = member;
         this.property = property;
         this.path = string.IsNullOrWhiteSpace(path)
                     ? throw new ArgumentException("The property path is required.", nameof(path))
                     : path;
-        this.label = label ?? throw new ArgumentNullException(nameof(label));
+        this.label = label;
         this.isReadOnly = isReadOnly;
     }
 

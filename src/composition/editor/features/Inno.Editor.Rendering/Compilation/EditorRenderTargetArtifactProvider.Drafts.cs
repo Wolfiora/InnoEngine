@@ -112,7 +112,7 @@ public sealed partial class EditorRenderTargetArtifactProvider
                     entry.cancellation = null;
                     entry.semanticHash = string.Empty;
                     entry.latestSucceeded = false;
-                    entry.sourceDiagnostics = [new("SHADER_PREVIEW_CAPTURE", DiagnosticSeverity.Error, failure.Message)];
+                    entry.sourceDiagnostics = [new ShaderDiagnostic("SHADER_PREVIEW_CAPTURE", DiagnosticSeverity.Error, failure.Message)];
                 }
             }
             if (entry.pending is { IsCompleted: true } pending)
@@ -124,9 +124,9 @@ public sealed partial class EditorRenderTargetArtifactProvider
                 entry.pending = null;
                 entry.cancellation?.Dispose();
                 entry.cancellation = null;
-                ShaderCompilationResult result = pending.IsCompletedSuccessfully ? pending.Result : new(
+                ShaderCompilationResult result = pending.IsCompletedSuccessfully ? pending.Result : new ShaderCompilationResult(
                     null,
-                    [new(
+                    [new ShaderDiagnostic(
                         "SHADER_PREVIEW_COMPILE",
                         DiagnosticSeverity.Error,
                         pending.Exception?.GetBaseException().Message ?? "Preview compilation cancelled."

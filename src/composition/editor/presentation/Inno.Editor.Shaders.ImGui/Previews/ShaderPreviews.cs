@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
@@ -10,6 +11,7 @@ using Inno.Editor.Shaders;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
+using Inno.Rendering.Runtime;
 
 using EditorUI = Inno.Editor.ImGui.EditorUISession;
 using ImGuiApi = Inno.Editor.ImGui.ImGui;
@@ -144,7 +146,7 @@ public sealed class ShaderPreviews : EditorModule
 
             int pixels = Math.Clamp((int)MathF.Ceiling(logicalSize * ImGuiApi.GetWindowDpiScale()), 1, 2048);
             var context = new ShaderPreviewContext(
-                new(state.viewportID),
+                new RenderPersistentResourceID(state.viewportID),
                 material,
                 artifact,
                 definition,
@@ -154,14 +156,14 @@ public sealed class ShaderPreviews : EditorModule
             );
             EditorViewportLayer layer = m_registry.providers[contracts[0]].CreateLayer(context);
             if (m_previews.TryRender(
-                new(state.viewportID, pixels, pixels, RenderTextureFormat.RGBA8, [layer]),
+                new EditorViewportComposition(state.viewportID, pixels, pixels, RenderTextureFormat.RGBA8, [layer]),
                 out EditorPreviewHandle handle
             )) {
-                m_previews.Draw(handle, new(logicalSize, logicalSize));
+                m_previews.Draw(handle, new Vector2(logicalSize, logicalSize));
             }
             else
             {
-                ImGuiApi.Dummy(new(logicalSize, logicalSize));
+                ImGuiApi.Dummy(new Vector2(logicalSize, logicalSize));
             }
             EditorUI.current.widgets.Hint(
                 compilation.usingLastGood ? "Draft preview · last-good candidate · Scene/Game unchanged" : "Isolated preview · Scene/Game unchanged"

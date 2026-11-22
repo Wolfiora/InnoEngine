@@ -71,7 +71,8 @@ public sealed class AssetIconAttribute : Attribute
         bool useForChildren = false,
         int priority = 0
     ) {
-        this.assetType = assetType ?? throw new ArgumentNullException(nameof(assetType));
+        ArgumentNullException.ThrowIfNull(assetType);
+        this.assetType = assetType;
         this.icon = ValidateIcon(icon);
         this.useForChildren = useForChildren;
         this.priority = priority;

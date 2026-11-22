@@ -47,7 +47,7 @@ public sealed class EditorMenuItem
         this.order = order;
         this.separatorBefore = separatorBefore;
         this.status = status;
-        this.children = children ?? Array.Empty<EditorMenuItem>();
+        this.children = children ?? [];
         this.argument = argument;
     }
 

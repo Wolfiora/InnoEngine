@@ -22,7 +22,7 @@ internal static partial class ValidationPlanner
         string configuration,
         string artifacts,
         bool full,
-        CancellationToken cancellation,
+        CancellationToken cancellationToken,
         bool extended = false,
         string? documentationCache = null,
         string? documentationSnapshot = null,
@@ -62,7 +62,7 @@ internal static partial class ValidationPlanner
         Stopwatch elapsed = Stopwatch.StartNew();
         var timings = new Dictionary<string, double>(StringComparer.Ordinal);
         double previousStage = 0;
-        Dictionary<string, string> inputs = await ValidationInputs.CaptureAsync(root, cancellation).ConfigureAwait(false);
+        Dictionary<string, string> inputs = await ValidationInputs.CaptureAsync(root, cancellationToken).ConfigureAwait(false);
         string commit = (await GitAsync("rev-parse", "HEAD").ConfigureAwait(false)).Trim();
         string mergeBase = (await GitAsync("merge-base", baseline, commit).ConfigureAwait(false)).Trim();
         var changes = new HashSet<string>(
@@ -89,7 +89,7 @@ internal static partial class ValidationPlanner
                 "HEAD"
             ).ConfigureAwait(false)).Split('\0', StringSplitOptions.RemoveEmptyEntries)
         );
-        changes.UnionWith(await ValidationInputs.FindContentChangesAsync(root, commit, inputs, cancellation).ConfigureAwait(false));
+        changes.UnionWith(await ValidationInputs.FindContentChangesAsync(root, commit, inputs, cancellationToken).ConfigureAwait(false));
         changes.UnionWith(
             (await GitAsync(
                 "ls-files",
@@ -124,7 +124,7 @@ internal static partial class ValidationPlanner
         ValidationEnvironment.ToolSnapshot toolSnapshot = await ValidationEnvironment.CaptureToolsAsync(
             root,
             dotnet,
-            cancellation
+            cancellationToken
         ).ConfigureAwait(false);
         DotNetSdkDescriptor sdk = toolSnapshot.sdk;
         RecordStage("sdk-environment");
@@ -133,7 +133,7 @@ internal static partial class ValidationPlanner
             sdk,
             paths.Select(path => Path.Combine(root, path)).ToArray(),
             properties,
-            cancellation
+            cancellationToken
         ).ConfigureAwait(false);
         RecordStage("sdk-capture");
         using JsonDocument graph = JsonDocument.Parse(captured);
@@ -158,10 +158,10 @@ internal static partial class ValidationPlanner
             documentationCache,
             documentationSnapshot,
             byPath,
-            cancellation,
+            cancellationToken,
             documentationBaseline
         ).ConfigureAwait(false);
-        var diagnostics = new List<string>();
+        List<string> diagnostics = [];
         foreach (string change in changes)
         {
             ValidationProject[] owners = projects.Where(project => (
@@ -465,7 +465,7 @@ internal static partial class ValidationPlanner
             {
                 return new(
                     null,
-                    new(
+                    new ValidationPreparation(
                         "Blocked",
                         "NativeSources",
                         root,
@@ -527,11 +527,11 @@ internal static partial class ValidationPlanner
                 sdk,
                 paths.Select(path => Path.Combine(root, path)).ToArray(),
                 evaluationProperties,
-                cancellation
+                cancellationToken
             ).ConfigureAwait(false);
             using JsonDocument nativeGraph = JsonDocument.Parse(nativeCapture);
             RequireCompilerInputs(nativeGraph.RootElement);
-            contexts.Add("native", new(nativeProperties, nativeGraph.RootElement.Clone()));
+            contexts.Add("native", new ValidationContext(nativeProperties, nativeGraph.RootElement.Clone()));
             nativeProjects = nativeGraph.RootElement.EnumerateArray()
                 .Select(snapshot => ValidationProject.Read(root, snapshot))
                 .ToDictionary(static project => project.path, StringComparer.Ordinal);
@@ -585,9 +585,9 @@ internal static partial class ValidationPlanner
                                     ));
         inputSets.Add("tooling", toolingInputs);
         inputSets.Add("native-sources", submoduleInputs);
-        var checks = new List<ValidationCheck>
-        {
-            new(
+        List<ValidationCheck> checks =
+        [
+            new ValidationCheck(
                 "instructions",
                 "instructions",
                 "AGENTS.md",
@@ -598,7 +598,7 @@ internal static partial class ValidationPlanner
                 true,
                 null
             ),
-            new(
+            new ValidationCheck(
                 "architecture",
                 "architecture",
                 "tools/Inno.Tooling.Architecture",
@@ -620,12 +620,12 @@ internal static partial class ValidationPlanner
                 true,
                 null
             )
-        };
+        ];
         if (changes.Any(static path => path.StartsWith(".agents/", StringComparison.Ordinal) || path is "AGENTS.md" or "CONTRIBUTING.md")
             || full
         ) {
             checks.Add(
-                new(
+                new ValidationCheck(
                     "agent-documents",
                     "agent-documents",
                     ".agents",
@@ -647,7 +647,7 @@ internal static partial class ValidationPlanner
         if (documentation is not null)
         {
             checks.Add(
-                new(
+                new ValidationCheck(
                     "documentation",
                     "documentation",
                     "InnoEngine.Docs",
@@ -660,7 +660,7 @@ internal static partial class ValidationPlanner
                         .ToArray(),
                     true,
                     null,
-                    documentation: new([], [], documentation.catalog.contentIdentity, configuration, null)
+                    documentation: new ValidationDocumentationCheck([], [], documentation.catalog.contentIdentity, configuration, null)
                 )
             );
         }
@@ -673,7 +673,7 @@ internal static partial class ValidationPlanner
             || path.StartsWith("tools/Inno.Tooling.Validation/", StringComparison.Ordinal)
         ))) {
             checks.Add(
-                new(
+                new ValidationCheck(
                     "ci-contracts",
                     gateOnly ? "gate-contracts" : "ci-contracts",
                     "tests/ci",
@@ -747,7 +747,7 @@ internal static partial class ValidationPlanner
             if (compile)
             {
                 checks.Add(
-                    new(
+                    new ValidationCheck(
                         "build:" + project.path,
                         "build",
                         project.path,
@@ -766,7 +766,7 @@ internal static partial class ValidationPlanner
             if (project.test)
             {
                 checks.Add(
-                    new(
+                    new ValidationCheck(
                         "test:" + project.path,
                         "test",
                         project.path,
@@ -822,7 +822,7 @@ internal static partial class ValidationPlanner
                 .Order(StringComparer.Ordinal)
                 .ToArray();
             checks.Add(
-                new(
+                new ValidationCheck(
                     "compiled-api:" + group.Key,
                     "api",
                     "tools/Inno.Tooling.Architecture",
@@ -852,7 +852,7 @@ internal static partial class ValidationPlanner
         if (editorBuild is not null)
         {
             checks.Add(
-                new(
+                new ValidationCheck(
                     "editor-products",
                     "products",
                     editorBuild.owner,
@@ -879,7 +879,7 @@ internal static partial class ValidationPlanner
         if (editorBuild is not null && (extended || profile == ValidationProfile.Performance))
         {
             checks.Add(
-                new(
+                new ValidationCheck(
                     "native-hot-builds",
                     "hot-builds",
                     editorBuild.owner,
@@ -905,7 +905,7 @@ internal static partial class ValidationPlanner
         {
             checks.Insert(
                 0,
-                new(
+                new ValidationCheck(
                     "cold-inputs",
                     "cold-inputs",
                     "build",
@@ -942,11 +942,11 @@ internal static partial class ValidationPlanner
                         sdk,
                         paths.Select(path => Path.Combine(root, path)).ToArray(),
                         releaseInputsProperties,
-                        cancellation
+                        cancellationToken
                     ).ConfigureAwait(false);
                     using JsonDocument backendGraph = JsonDocument.Parse(backendCapture);
                     RequireCompilerInputs(backendGraph.RootElement);
-                    contexts.Add("backend-release", new(releaseInputsProperties, backendGraph.RootElement.Clone()));
+                    contexts.Add("backend-release", new ValidationContext(releaseInputsProperties, backendGraph.RootElement.Clone()));
                 }
                 var releaseProperties = new Dictionary<string, string>(contexts["native"].properties)
                 {
@@ -963,11 +963,11 @@ internal static partial class ValidationPlanner
                     sdk,
                     paths.Select(path => Path.Combine(root, path)).ToArray(),
                     evaluationProperties,
-                    cancellation
+                    cancellationToken
                 ).ConfigureAwait(false);
                 using JsonDocument releaseGraph = JsonDocument.Parse(releaseCapture);
                 RequireCompilerInputs(releaseGraph.RootElement);
-                contexts.Add(releaseContext, new(releaseProperties, releaseGraph.RootElement.Clone()));
+                contexts.Add(releaseContext, new ValidationContext(releaseProperties, releaseGraph.RootElement.Clone()));
                 releaseProjects = releaseGraph.RootElement.EnumerateArray()
                     .Select(snapshot => ValidationProject.Read(root, snapshot))
                     .ToDictionary(static project => project.path, StringComparer.Ordinal);
@@ -987,7 +987,7 @@ internal static partial class ValidationPlanner
                 );
             }
             var releaseInputs = new HashSet<string>(StringComparer.Ordinal) { "@tooling", "@native-sources" };
-            var releaseBuilds = new List<string>();
+            List<string> releaseBuilds = [];
             string[] releaseRoots = [editorBuild.owner, C_BUILD_ENTRY];
             foreach (string owner in releaseRoots)
             {
@@ -997,7 +997,7 @@ internal static partial class ValidationPlanner
                 if (releaseContext != "native")
                 {
                     checks.Add(
-                        new(
+                        new ValidationCheck(
                             id,
                             "build",
                             owner,
@@ -1019,7 +1019,7 @@ internal static partial class ValidationPlanner
             if (releaseContext != "native")
             {
                 checks.Add(
-                    new(
+                    new ValidationCheck(
                         "compiled-api:release",
                         "api",
                         "tools/Inno.Tooling.Architecture",
@@ -1041,7 +1041,7 @@ internal static partial class ValidationPlanner
                     )
                 );
                 checks.Add(
-                    new(
+                    new ValidationCheck(
                         "editor-release-products",
                         "products",
                         editorBuild.owner,
@@ -1060,7 +1060,7 @@ internal static partial class ValidationPlanner
                 );
             }
             checks.Add(
-                new(
+                new ValidationCheck(
                     "support-pack",
                     "support-pack",
                     C_BUILD_ENTRY,
@@ -1097,7 +1097,7 @@ internal static partial class ValidationPlanner
             string playerOwner = Path.GetRelativePath(root, players[0].GetProperty("Path").GetString()!).Replace('\\', '/');
             VisitRelease(playerOwner);
             checks.Add(
-                new(
+                new ValidationCheck(
                     "native-aot-restore",
                     "restore-aot",
                     playerOwner,
@@ -1115,7 +1115,7 @@ internal static partial class ValidationPlanner
             );
             // Restore-only inputs still invalidate the bundle, but only built roots provide compiled output instances.
             checks.Add(
-                new(
+                new ValidationCheck(
                     "release-bundle",
                     "release-bundle",
                     editorBuild.owner,
@@ -1154,7 +1154,7 @@ internal static partial class ValidationPlanner
         string environmentIdentity = await ValidationEnvironment.CaptureAsync(
             root,
             sdk.hostPath,
-            cancellation,
+            cancellationToken,
             contexts.Values,
             toolSnapshot
         ).ConfigureAwait(false);
@@ -1170,11 +1170,11 @@ internal static partial class ValidationPlanner
         checks = checks.Select(check => check with
         {
             prerequisites = check.prerequisites
-                .Concat(check.kind == "build" ? ["instructions", "architecture"] : Array.Empty<string>())
+                .Concat(check.kind == "build" ? ["instructions", "architecture"] : [])
                 .Concat(
                     extended && check.context is not (null or "managed") && check.kind != "cold-inputs"
                     ? ["cold-inputs"]
-                    : Array.Empty<string>()
+                    : []
                 )
                 .Distinct(StringComparer.Ordinal)
                 .ToArray()
@@ -1246,7 +1246,7 @@ internal static partial class ValidationPlanner
             }
         }
         return new(
-            new(
+            new ValidationPlan(
                 root,
                 mergeBase,
                 commit,
@@ -1342,7 +1342,7 @@ internal static partial class ValidationPlanner
                     {
                         string targetProperty = property == "InnoTestNativeProduct" ? "InnoTestNativeTarget" : "InnoProductTarget";
                         string declaredTarget = declared.GetProperty(targetProperty).GetString() ?? string.Empty;
-                        yield return new(
+                        yield return new ValidationNativeRequest(
                             declaredTarget.Length == 0 ? context.properties["InnoNativeTarget"] : declaredTarget,
                             context.properties["Configuration"],
                             product
@@ -1354,7 +1354,11 @@ internal static partial class ValidationPlanner
                 if (!productOwned && declared.GetProperty("BindGenGeneratedBindings").GetString() == "true"
                     && declared.GetProperty("InnoBindingProductId").GetString() is { Length: > 0 } bindingProduct
                 ) {
-                    yield return new(context.properties["InnoNativeTarget"], context.properties["Configuration"], bindingProduct);
+                    yield return new ValidationNativeRequest(
+                        context.properties["InnoNativeTarget"],
+                        context.properties["Configuration"],
+                        bindingProduct
+                    );
                 }
                 JsonElement items = variant.GetProperty("Items");
                 foreach (JsonElement dependency in items.GetProperty("InnoNativeDependency").EnumerateArray())
@@ -1369,7 +1373,7 @@ internal static partial class ValidationPlanner
                             "A native build dependency must declare product, target and configuration: " + owner
                         );
                     }
-                    yield return new(dependencyTarget, dependencyConfiguration, product);
+                    yield return new ValidationNativeRequest(dependencyTarget, dependencyConfiguration, product);
                 }
                 foreach (string reference in node.references)
                 {
@@ -1384,7 +1388,7 @@ internal static partial class ValidationPlanner
             foreach (KeyValuePair<DocumentationPageInfo, string> excluded in exampleExclusions)
             {
                 checks.Add(
-                    new(
+                    new ValidationCheck(
                         "documentation-examples:excluded:" + excluded.Key.id,
                         "documentation-examples",
                         "InnoEngine.Docs",
@@ -1395,7 +1399,7 @@ internal static partial class ValidationPlanner
                         false,
                         excluded.Value,
                         layer: "contract",
-                        documentation: new(
+                        documentation: new ValidationDocumentationCheck(
                             [],
                             [excluded.Key.id],
                             ValidationDocumentation.PageIdentity([excluded.Key]),
@@ -1459,7 +1463,7 @@ internal static partial class ValidationPlanner
                     ))
                 );
                 checks.Add(
-                    new(
+                    new ValidationCheck(
                         "documentation-api:"
                         + group.Key.context
                         + ":"
@@ -1479,7 +1483,7 @@ internal static partial class ValidationPlanner
                         group.Key.context,
                         "contract",
                         paths,
-                        new(references, [], identity, configuration, group.Key.target)
+                        new ValidationDocumentationCheck(references, [], identity, configuration, group.Key.target)
                     )
                 );
             }
@@ -1487,7 +1491,7 @@ internal static partial class ValidationPlanner
             {
                 ValidationCheck? prepared = builds.SingleOrDefault(check => check.owner == owner);
                 checks.Add(
-                    new(
+                    new ValidationCheck(
                         "documentation-api-missing:" + owner,
                         "documentation-missing",
                         owner,
@@ -1500,7 +1504,7 @@ internal static partial class ValidationPlanner
                         prepared?.context,
                         "contract",
                         prepared is null ? null : [owner],
-                        prepared is null ? null : new(
+                        prepared is null ? null : new ValidationDocumentationCheck(
                             [],
                             [],
                             string.Empty,
@@ -1545,7 +1549,7 @@ internal static partial class ValidationPlanner
                     ))
                 );
                 checks.Add(
-                    new(
+                    new ValidationCheck(
                         "documentation-api:source:" + (group.Key ?? "default"),
                         "documentation-api",
                         "InnoEngine.Docs",
@@ -1561,7 +1565,7 @@ internal static partial class ValidationPlanner
                         "managed",
                         "contract",
                         paths,
-                        new(references, [], identity, configuration, group.Key)
+                        new ValidationDocumentationCheck(references, [], identity, configuration, group.Key)
                     )
                 );
             }
@@ -1586,7 +1590,7 @@ internal static partial class ValidationPlanner
                 string[] pages = group.Select(static page => page.id).Order(StringComparer.Ordinal).ToArray();
                 string[] scriptReferences = ValidationDocumentation.ExampleReferences(selected, group.ToArray());
                 checks.Add(
-                    new(
+                    new ValidationCheck(
                         "documentation-examples:" + group.Key,
                         "documentation-examples",
                         "InnoEngine.Docs",
@@ -1603,7 +1607,7 @@ internal static partial class ValidationPlanner
                         group.Key,
                         "contract",
                         paths,
-                        new(
+                        new ValidationDocumentationCheck(
                             scriptReferences,
                             pages,
                             ValidationDocumentation.ExampleIdentity(selected, group.ToArray(), scriptReferences),
@@ -1615,7 +1619,7 @@ internal static partial class ValidationPlanner
             }
         }
 
-        Task<string> GitAsync(params string[] arguments) => ValidationProcess.RunAsync("git", arguments, root, null, cancellation);
+        Task<string> GitAsync(params string[] arguments) => ValidationProcess.RunAsync("git", arguments, root, null, cancellationToken);
 
         string[] CapturedInputs(IEnumerable<string> declared)
         {

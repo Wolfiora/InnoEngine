@@ -112,7 +112,7 @@ public sealed class RuntimeSessionTests : IDisposable
     public void RuntimeSubsystemsFollowDependenciesAndReleaseInReverseOrder()
     {
         using EngineHost host = CreateHost("Features");
-        var events = new List<string>();
+        List<string> events = [];
         var first = new ProbeFeatureFactory("tests.first", [], events);
         var second = new ProbeFeatureFactory("tests.second", [new RuntimeSubsystemID("tests.first")], events);
         RuntimeSessionOptions baseline = CreateOptions("features", RuntimeSessionKind.Play);

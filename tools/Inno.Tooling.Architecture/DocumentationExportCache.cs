@@ -171,7 +171,7 @@ internal sealed class DocumentationExportCache : IDisposable
         {
             throw new InvalidDataException("The API extractor has no embedded input identity.");
         }
-        var identities = new List<string>();
+        List<string> identities = [];
         foreach (string source in sources)
         {
             using Stream stream = assembly.GetManifestResourceStream(source)

@@ -23,9 +23,9 @@ public sealed class BgfxCompositionProgramProviderTests
                              : [GraphicsApi.direct3D11, GraphicsApi.direct3D12, GraphicsApi.vulkan, GraphicsApi.openGL];
         var layout = new RenderVertexLayout(
             [
-                new(RenderVertexSemantic.Position, RenderVertexFormat.Float2),
-                new(RenderVertexSemantic.TextureCoordinate0, RenderVertexFormat.Float2),
-                new(RenderVertexSemantic.Color0, RenderVertexFormat.UInt8Normalized4)
+                new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float2),
+                new RenderVertexAttribute(RenderVertexSemantic.TextureCoordinate0, RenderVertexFormat.Float2),
+                new RenderVertexAttribute(RenderVertexSemantic.Color0, RenderVertexFormat.UInt8Normalized4)
             ]
         );
 

@@ -139,7 +139,7 @@ public static class ShaderGraphBindings
                 continue;
             }
             string stageID = ShaderGraphDocument.Read(node, "stage", string.Empty, serialization, context);
-            GraphNodeRecord? output = string.IsNullOrWhiteSpace(stageID) ? null : candidate.FindNode(new(stageID));
+            GraphNodeRecord? output = string.IsNullOrWhiteSpace(stageID) ? null : candidate.FindNode(new GraphNodeID(stageID));
             ShaderStage stage = output is null
                 ? ShaderStage.None
                 : ShaderGraphDocument.Read(output, "settings", new ShaderGraphStageSettings(), serialization, context).stage;
@@ -267,7 +267,7 @@ public static class ShaderGraphBindings
                     continue;
                 }
                 string stageID = ShaderGraphDocument.Read(input, "stage", string.Empty, serialization, context);
-                GraphNodeRecord? output = string.IsNullOrWhiteSpace(stageID) ? null : candidate.FindNode(new(stageID));
+                GraphNodeRecord? output = string.IsNullOrWhiteSpace(stageID) ? null : candidate.FindNode(new GraphNodeID(stageID));
                 if (output is not null)
                 {
                     stages |= ShaderGraphDocument.Read(output, "settings", new ShaderGraphStageSettings(), serialization, context).stage;
@@ -275,7 +275,7 @@ public static class ShaderGraphBindings
             }
             MaterialValue defaultValue = source?.type == type ? source.Value.defaultValue : default;
             var declaration = new ShaderPropertyDefinition(
-                new(settings.id),
+                new ShaderPropertyID(settings.id),
                 source?.displayName ?? settings.id,
                 type,
                 stages,

@@ -39,7 +39,7 @@ public sealed class SerializationCaptureKeyBuilder
     ) {
         m_operation = operation;
         m_previous = previous;
-        Add(new(C_GUARD, default, 0, operation.converters.captureIdentity, null));
+        Add(new SerializationCaptureKeyPart(C_GUARD, default, 0, operation.converters.captureIdentity, null));
     }
 
     internal SerializationCaptureKeyBuilder(
@@ -54,8 +54,8 @@ public sealed class SerializationCaptureKeyBuilder
             m_unavailable = true;
             return;
         }
-        Add(new(C_GUARD, identity, 0, operation.GetMetadata(rootType).captureIdentity, null));
-        AddIdentity(new(source, identity));
+        Add(new SerializationCaptureKeyPart(C_GUARD, identity, 0, operation.GetMetadata(rootType).captureIdentity, null));
+        AddIdentity(new SerializationCaptureIdentity(source, identity));
     }
 
     /// <summary>
@@ -116,8 +116,8 @@ public sealed class SerializationCaptureKeyBuilder
         {
             return Decline();
         }
-        Add(new(C_OWNER, identity, revision.Value, default, null));
-        AddIdentity(new(snapshot, identity));
+        Add(new SerializationCaptureKeyPart(C_OWNER, identity, revision.Value, default, null));
+        AddIdentity(new SerializationCaptureIdentity(snapshot, identity));
         return true;
     }
 
@@ -170,8 +170,8 @@ public sealed class SerializationCaptureKeyBuilder
         {
             return Decline();
         }
-        Add(new(C_OWNER, identity, revision.Value, metadata.captureIdentity, null));
-        AddIdentity(new(snapshot, identity));
+        Add(new SerializationCaptureKeyPart(C_OWNER, identity, revision.Value, metadata.captureIdentity, null));
+        AddIdentity(new SerializationCaptureIdentity(snapshot, identity));
         return true;
     }
 
@@ -184,7 +184,7 @@ public sealed class SerializationCaptureKeyBuilder
     /// <exception cref="InvalidOperationException">
     /// The callback has retired or is accessed from another thread.
     /// </exception>
-    public void AddValue(ulong value) => Add(new(C_VALUE, default, value, default, null));
+    public void AddValue(ulong value) => Add(new SerializationCaptureKeyPart(C_VALUE, default, value, default, null));
 
     /// <summary>
     /// Adds an exact neutral identifier without hashing or allocating text.
@@ -195,7 +195,7 @@ public sealed class SerializationCaptureKeyBuilder
     /// <exception cref="InvalidOperationException">
     /// The callback has retired or is accessed from another thread.
     /// </exception>
-    public void AddValue(Guid value) => Add(new(C_GUID, default, 0, value, null));
+    public void AddValue(Guid value) => Add(new SerializationCaptureKeyPart(C_GUID, default, 0, value, null));
 
     /// <summary>
     /// Adds exact ordinal text, preserving the distinction between null and empty.
@@ -206,7 +206,7 @@ public sealed class SerializationCaptureKeyBuilder
     /// <exception cref="InvalidOperationException">
     /// The callback has retired or is accessed from another thread.
     /// </exception>
-    public void AddText(string? value) => Add(new(C_TEXT, default, 0, default, value));
+    public void AddText(string? value) => Add(new SerializationCaptureKeyPart(C_TEXT, default, 0, default, value));
 
     internal SerializationCaptureAttempt Complete()
     {
@@ -217,7 +217,9 @@ public sealed class SerializationCaptureKeyBuilder
         }
         SerializationCaptureKey key = m_parts is null && m_previous is not null && m_previous.parts.Length == m_count
                                       ? m_previous
-                                      : new(m_parts is not null ? m_parts.ToArray() : m_previous!.parts.AsSpan(0, m_count).ToArray());
+                                      : new SerializationCaptureKey(
+                                          m_parts is not null ? m_parts.ToArray() : m_previous!.parts.AsSpan(0, m_count).ToArray()
+                                      );
         ReadOnlySpan<SerializationCaptureIdentity> identities = m_identities.AsSpan(0, m_identityCount);
         foreach (SerializationCaptureIdentity identity in identities)
         {

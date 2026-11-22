@@ -23,7 +23,7 @@ namespace Inno.Rendering.Assets.Authoring.Tests;
 public sealed class ShaderCompilerTests : IDisposable
 {
     private readonly ModuleHost m_modules = new(
-        new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderCompilerTests).Assembly)}
+        new ModuleHostOptions() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderCompilerTests).Assembly)}
     );
 
     private readonly TypeCatalog m_types;
@@ -42,18 +42,28 @@ public sealed class ShaderCompilerTests : IDisposable
         => Assert.Throws<ArgumentException>(() => new ShaderStageToolResult(
             [1],
             [],
-            [new("TEST_ERROR", DiagnosticSeverity.Error, "The adapter rejected its binary.", new("test", 1, 1))]
+            [new ShaderSourceDiagnostic(
+                "TEST_ERROR",
+                DiagnosticSeverity.Error,
+                "The adapter rejected its binary.",
+                new ShaderSourcePosition("test", 1, 1)
+            )]
         ));
 
     [Fact]
     public void ToolResultsCopyAdapterOwnedBytesBindingsAndDiagnostics()
     {
         byte[] bytes = [1, 2, 3];
-        ShaderSourceDiagnostic[] diagnostics = [new("TEST", DiagnosticSeverity.Warning, "A warning", new("test", 1, 1))];
-        ShaderStageBinding[] bindings = [new("color", "native_color", 0)];
+        ShaderSourceDiagnostic[] diagnostics = [new ShaderSourceDiagnostic(
+            "TEST",
+            DiagnosticSeverity.Warning,
+            "A warning",
+            new ShaderSourcePosition("test", 1, 1)
+        )];
+        ShaderStageBinding[] bindings = [new ShaderStageBinding("color", "native_color", 0)];
         var result = new ShaderStageToolResult(bytes, bindings, diagnostics);
         bytes[0] = 9;
-        diagnostics[0] = new("CHANGED", DiagnosticSeverity.Error, "Mutated input", new("test", 1, 1));
+        diagnostics[0] = new("CHANGED", DiagnosticSeverity.Error, "Mutated input", new ShaderSourcePosition("test", 1, 1));
         bindings[0] = new("other", "other", 1);
         Assert.Equal(1, result.bytes.Span[0]);
         Assert.Equal("TEST", Assert.Single(result.diagnostics).code);
@@ -64,7 +74,7 @@ public sealed class ShaderCompilerTests : IDisposable
     public async Task CompileAsyncUsesGraphLoweringAndTypedStages()
     {
         var toolchain = new FakeToolchain();
-        ShaderCompilationResult result = await CompileAsync(new(toolchain), Template());
+        ShaderCompilationResult result = await CompileAsync(new ShaderCompiler(toolchain), Template());
         Assert.True(result.succeeded, Diagnostics(result));
         Assert.Equal(2, toolchain.requests.Count);
         Assert.Equal("color", Assert.Single(result.artifact!.shaderInterface.bindings).id.value);
@@ -73,7 +83,7 @@ public sealed class ShaderCompilerTests : IDisposable
     [Fact]
     public async Task AdapterFailureRetainsOriginalSourceLocationAndNoPartialProgram()
     {
-        ShaderCompilationResult result = await CompileAsync(new(new FakeToolchain { reportError = true }), Template());
+        ShaderCompilationResult result = await CompileAsync(new ShaderCompiler(new FakeToolchain { reportError = true }), Template());
         Assert.False(result.succeeded);
         Assert.Null(result.artifact);
         ShaderDiagnostic error = Assert.Single(result.diagnostics.Where(static value => value.severity == DiagnosticSeverity.Error));
@@ -90,7 +100,7 @@ public sealed class ShaderCompilerTests : IDisposable
         GraphDocument alternate = graph.Clone();
         foreach (GraphNodeRecord original in alternate.nodes)
         {
-            var node = new GraphNodeRecord(new("alternate." + original.id.value), original.definitionID);
+            var node = new GraphNodeRecord(new GraphNodeID("alternate." + original.id.value), original.definitionID);
             foreach ((string key, GraphSerializedValue value) in original.values)
             {
                 node.SetValue(key, value.Clone());
@@ -122,16 +132,20 @@ public sealed class ShaderCompilerTests : IDisposable
         foreach (GraphEdgeRecord edge in alternate.edges)
         {
             graph.AddEdge(
-                new(
-                    new("alternate." + edge.id.value),
-                    new(new("alternate." + edge.output.nodeID.value), edge.output.portID),
-                    new(new("alternate." + edge.input.nodeID.value), edge.input.portID)
+                new GraphEdgeRecord(
+                    new GraphEdgeID("alternate." + edge.id.value),
+                    new GraphEndpoint(new GraphNodeID("alternate." + edge.output.nodeID.value), edge.output.portID),
+                    new GraphEndpoint(new GraphNodeID("alternate." + edge.input.nodeID.value), edge.input.portID)
                 )
             );
         }
         definition.passes =
         [
-            new("Clustered", ShaderProgramKind.Raster, requiredFeatures: GraphicsCapability.Compute | GraphicsCapability.StorageBuffer),
+            new ShaderPassDefinition(
+                "Clustered",
+                ShaderProgramKind.Raster,
+                requiredFeatures: GraphicsCapability.Compute | GraphicsCapability.StorageBuffer
+            ),
             definition.passes[0]
         ];
         graph.SetMetadata(
@@ -141,12 +155,12 @@ public sealed class ShaderCompilerTests : IDisposable
         graph = ShaderGraphPrograms.Bind(
             graph,
             "Clustered",
-            [new("alternate.vertex"), new("alternate.fragment")],
+            [new GraphNodeID("alternate.vertex"), new GraphNodeID("alternate.fragment")],
             m_serialization,
             SerializationContext.empty
         );
         var toolchain = new FakeToolchain();
-        ShaderCompilationResult result = await CompileAsync(new(toolchain), graph);
+        ShaderCompilationResult result = await CompileAsync(new ShaderCompiler(toolchain), graph);
         Assert.True(result.succeeded, Diagnostics(result));
         Assert.Equal("Main", Assert.Single(result.artifact!.passes).definition.name);
         Assert.Equal(2, toolchain.requests.Count);
@@ -161,8 +175,8 @@ public sealed class ShaderCompilerTests : IDisposable
     {
         Guid shaderID = Guid.NewGuid();
         var store = new ShaderLastGoodStore();
-        ShaderCompilationResult success = await CompileAsync(new(new FakeToolchain()), Template());
-        ShaderCompilationResult failure = await CompileAsync(new(new FakeToolchain { reportError = true }), Template());
+        ShaderCompilationResult success = await CompileAsync(new ShaderCompiler(new FakeToolchain()), Template());
+        ShaderCompilationResult failure = await CompileAsync(new ShaderCompiler(new FakeToolchain { reportError = true }), Template());
         ShaderArtifactSelection first = store.Select(shaderID, success.artifact!.targetKey, RenderShaderVariant.empty, success);
         ShaderArtifactSelection second = store.Select(shaderID, success.artifact.targetKey, RenderShaderVariant.empty, failure);
         Assert.True(first.candidateSucceeded);
@@ -199,7 +213,7 @@ public sealed class ShaderCompilerTests : IDisposable
         var capabilities = new GraphicsCapabilities(
             GraphicsApi.metal,
             GraphicsCapability.None,
-            new(256, 8, 8192, 16),
+            new GraphicsLimits(256, 8, 8192, 16),
             formats,
             formats,
             formats,
@@ -243,7 +257,12 @@ public sealed class ShaderCompilerTests : IDisposable
                 ? new ShaderStageToolResult(
                     [],
                     [],
-                    [new("TEST_ERROR", DiagnosticSeverity.Error, "Opaque compiler failure", new("Shaders/function.ishadersource", 2, 3))]
+                    [new ShaderSourceDiagnostic(
+                        "TEST_ERROR",
+                        DiagnosticSeverity.Error,
+                        "Opaque compiler failure",
+                        new ShaderSourcePosition("Shaders/function.ishadersource", 2, 3)
+                    )]
                 )
                 : new ShaderStageToolResult(
                     [1, 2, 3],

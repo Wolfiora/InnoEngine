@@ -11,7 +11,7 @@ public sealed class RenderGraphValidationTests
     public void ValidationIsFrozenAndReusedUntilAnyPassDeclarationChanges()
     {
         RenderGraphBuilder graph = CreateGraph();
-        RasterPassBuilder pass = graph.AddRasterPass("Visible", new("visible"), 0, Execute);
+        RasterPassBuilder pass = graph.AddRasterPass("Visible", new RenderPhaseID("visible"), 0, Execute);
         RenderGraphValidationResult culled = graph.Validate();
         Assert.True(culled.isValid);
         Assert.Equal(1, culled.culledPassCount);
@@ -29,16 +29,16 @@ public sealed class RenderGraphValidationTests
         Assert.Equal(visible.scheduledPassCount, compiled.graph!.passes.Count);
         Assert.Equal(visible.diagnostics, compiled.diagnostics);
         Assert.Throws<InvalidOperationException>(() => graph.Compile());
-        Assert.Throws<InvalidOperationException>(() => pass.Before(new("late")));
+        Assert.Throws<InvalidOperationException>(() => pass.Before(new RenderPhaseID("late")));
     }
 
     [Fact]
     public void LaterPhaseDeclarationInvalidatesCachedScheduleAndDetectsCycle()
     {
         RenderGraphBuilder graph = CreateGraph();
-        graph.AddRasterPass("First", new("first"), 0, Execute).HasSideEffect().After(new("second"));
+        graph.AddRasterPass("First", new RenderPhaseID("first"), 0, Execute).HasSideEffect().After(new RenderPhaseID("second"));
         Assert.True(graph.Validate().isValid);
-        graph.AddRasterPass("Second", new("second"), 0, Execute).HasSideEffect().After(new("first"));
+        graph.AddRasterPass("Second", new RenderPhaseID("second"), 0, Execute).HasSideEffect().After(new RenderPhaseID("first"));
 
         RenderGraphValidationResult invalid = graph.Validate();
         Assert.False(invalid.isValid);
@@ -52,8 +52,8 @@ public sealed class RenderGraphValidationTests
     public void ValidationAndCompilationApplyTheSameViewLimit()
     {
         RenderGraphBuilder graph = CreateGraph(1);
-        graph.AddRasterPass("First", new("first"), 0, Execute).HasSideEffect();
-        graph.AddRasterPass("Second", new("second"), 0, Execute).HasSideEffect();
+        graph.AddRasterPass("First", new RenderPhaseID("first"), 0, Execute).HasSideEffect();
+        graph.AddRasterPass("Second", new RenderPhaseID("second"), 0, Execute).HasSideEffect();
         RenderGraphValidationResult validation = graph.Validate();
         Assert.False(validation.isValid);
         Assert.Contains(validation.diagnostics, static item => item.code == "RENDER_GRAPH_VIEW_LIMIT");
@@ -65,7 +65,7 @@ public sealed class RenderGraphValidationTests
     {
         RenderGraphBuilder graph = CreateGraph();
         int calls = 0;
-        graph.AddRasterPass("Visible", new("visible"), 0, (
+        graph.AddRasterPass("Visible", new RenderPhaseID("visible"), 0, (
             payload,
             context
         ) => calls++).HasSideEffect();

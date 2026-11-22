@@ -603,7 +603,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
             return loaded;
         }
 
-        var created = new List<RuntimeAssetRecord>();
+        List<RuntimeAssetRecord> created = [];
         try
         {
             PrepareShells(record, created);

@@ -105,7 +105,7 @@ internal static partial class MeshSourceParser
 
         GltfJson.RequireKind(bufferArray, JsonValueKind.Array, "$gltf.buffers");
         string directory = GetProjectDirectory(sourcePath);
-        var buffers = new List<byte[]>();
+        List<byte[]> buffers = [];
         int index = 0;
         foreach (JsonElement buffer in bufferArray.EnumerateArray())
         {
@@ -178,7 +178,7 @@ internal static partial class MeshSourceParser
         }
 
         GltfJson.RequireKind(viewArray, JsonValueKind.Array, "$gltf.bufferViews");
-        var result = new List<BufferView>();
+        List<BufferView> result = [];
         int index = 0;
         foreach (JsonElement view in viewArray.EnumerateArray())
         {
@@ -220,7 +220,7 @@ internal static partial class MeshSourceParser
         }
 
         GltfJson.RequireKind(accessorArray, JsonValueKind.Array, "$gltf.accessors");
-        var result = new List<Accessor>();
+        List<Accessor> result = [];
         int index = 0;
         foreach (JsonElement accessor in accessorArray.EnumerateArray())
         {
@@ -270,9 +270,9 @@ internal static partial class MeshSourceParser
         }
 
         GltfJson.RequireKind(meshes, JsonValueKind.Array, "$gltf.meshes");
-        var vertices = new List<MutableVertex>();
-        var indices = new List<uint>();
-        var sections = new List<GeometrySection>();
+        List<MutableVertex> vertices = [];
+        List<uint> indices = [];
+        List<GeometrySection> sections = [];
         foreach (JsonElement mesh in meshes.EnumerateArray())
         {
             JsonElement primitives = mesh.GetProperty("primitives");

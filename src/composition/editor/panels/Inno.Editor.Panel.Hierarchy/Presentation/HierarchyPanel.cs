@@ -51,10 +51,14 @@ internal sealed partial class HierarchyPanel : EditorPanel
         SceneEdits edits,
         EditorSettings settings
     ) {
-        m_workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
-        m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-        m_edits = edits ?? throw new ArgumentNullException(nameof(edits));
-        m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        ArgumentNullException.ThrowIfNull(workspace);
+        ArgumentNullException.ThrowIfNull(interactions);
+        ArgumentNullException.ThrowIfNull(edits);
+        ArgumentNullException.ThrowIfNull(settings);
+        m_workspace = workspace;
+        m_interactions = interactions;
+        m_edits = edits;
+        m_settings = settings;
         m_selection = new HierarchySelection(workspace, interactions, m_settings);
     }
 

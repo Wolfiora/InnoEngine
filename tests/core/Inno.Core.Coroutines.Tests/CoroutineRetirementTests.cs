@@ -17,7 +17,7 @@ public sealed class CoroutineRetirementTests
     {
         using var scheduler = new CoroutineScheduler();
         var owner = new object();
-        var disposed = new List<string>();
+        List<string> disposed = [];
         IEnumerator child = new Probe(() => true, () => null, () => disposed.Add("child"));
         IEnumerator root = new Probe(() => true, () => child, () => disposed.Add("root"));
         CoroutineHandle handle = scheduler.StartCoroutine(owner, root);
@@ -51,7 +51,7 @@ public sealed class CoroutineRetirementTests
     public void NormalCompletionDisposesChildBeforeResumingParent()
     {
         using var scheduler = new CoroutineScheduler();
-        var order = new List<string>();
+        List<string> order = [];
         var child = new Probe(() => false, () => null, () => order.Add("child"));
         scheduler.StartCoroutine(Root());
         scheduler.Tick(0);
@@ -138,8 +138,8 @@ public sealed class CoroutineRetirementTests
     public void CleanupFailuresDoNotPreventParentOrOtherCoroutineCleanup(bool dispose)
     {
         using var scheduler = new CoroutineScheduler();
-        Exception[] failures = new[] { new Exception("child"), new Exception("parent"), new Exception("other") };
-        var cleaned = new List<int>();
+        Exception[] failures = [new Exception("child"), new Exception("parent"), new Exception("other")];
+        List<int> cleaned = [];
         var child = new Probe(() => true, () => null, () => Fail(0));
         scheduler.StartCoroutine(new Probe(() => true, () => child, () => Fail(1)));
         scheduler.StartCoroutine(new Probe(() => true, () => null, () => Fail(2)));

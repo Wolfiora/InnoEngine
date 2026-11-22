@@ -38,7 +38,8 @@ public sealed class ShaderGraphTemplateRegistry : IDisposable
     /// </param>
     public ShaderGraphTemplateRegistry(TypeCatalog types)
     {
-        m_types = types ?? throw new ArgumentNullException(nameof(types));
+        ArgumentNullException.ThrowIfNull(types);
+        m_types = types;
         m_registry = new(types);
     }
 

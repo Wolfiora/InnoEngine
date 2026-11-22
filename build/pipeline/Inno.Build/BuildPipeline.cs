@@ -81,7 +81,8 @@ public sealed class BuildPipeline
         ArgumentNullException.ThrowIfNull(plugins);
         ArgumentNullException.ThrowIfNull(settings);
         ArgumentNullException.ThrowIfNull(serialization);
-        m_generations = generations ?? throw new ArgumentNullException(nameof(generations));
+        ArgumentNullException.ThrowIfNull(generations);
+        m_generations = generations;
         ArgumentNullException.ThrowIfNull(compiler);
         ArgumentException.ThrowIfNullOrWhiteSpace(supportPackRoot);
         ArgumentNullException.ThrowIfNull(gameTargets);

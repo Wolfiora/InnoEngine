@@ -94,7 +94,7 @@ public sealed partial class AssetLoader
         {
             return;
         }
-        var dependencies = new List<AssetObject>();
+        List<AssetObject> dependencies = [];
         foreach (AssetDependency dependency in GetDirectDependencies(record.meta))
         {
             AssetRecord? dependencyRecord = FindDependencyRecordLocked(dependency);
@@ -207,7 +207,7 @@ public sealed partial class AssetLoader
     ) {
         if (!m_recordsByID.TryGetValue(persistentID, out AssetRecord? record))
         {
-            return Array.Empty<AssetDependency>();
+            return [];
         }
         IEnumerable<Guid> ids = recursive
                                 ? m_runtimeGraph.GetDependencies(persistentID, recursive: true)
@@ -225,7 +225,7 @@ public sealed partial class AssetLoader
     private AssetReferenceInfo GetReferenceInfoLocked(AssetObject asset)
     {
         Guid id = asset.identity.persistentID;
-        var locations = new List<AssetReferenceLocation>();
+        List<AssetReferenceLocation> locations = [];
         foreach (Guid dependentID in m_runtimeGraph.GetDependents(id))
         {
             if (!m_recordsByID.TryGetValue(dependentID, out AssetRecord? dependent))

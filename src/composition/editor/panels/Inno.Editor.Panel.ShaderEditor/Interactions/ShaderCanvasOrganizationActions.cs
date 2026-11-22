@@ -89,7 +89,7 @@ internal sealed class InsertShaderReroute(ShaderEditorDocuments documents) : Sha
         GraphDocument graph = controller.document.Clone();
         GraphEdgeRecord edge = graph.edges.Single(value => value.id == draft.selectedEdge);
         ShaderNodePort source = draft.ports[edge.output.nodeID].Single(value => value.id == edge.output.portID.value);
-        var node = new GraphNodeRecord(new(Guid.NewGuid().ToString("N")), "inno.shader.reroute")
+        var node = new GraphNodeRecord(new GraphNodeID(Guid.NewGuid().ToString("N")), "inno.shader.reroute")
         {
             position = draft.menuPosition
         };
@@ -107,8 +107,20 @@ internal sealed class InsertShaderReroute(ShaderEditorDocuments documents) : Sha
         node.SetValue("stage", ShaderGraphDocument.Encode(stage, documents.serialization, documents.context));
         graph.AddNode(node);
         graph.RemoveEdge(edge.id);
-        graph.AddEdge(new(new(Guid.NewGuid().ToString("N")), edge.output, new(node.id, new("input"))));
-        graph.AddEdge(new(new(Guid.NewGuid().ToString("N")), new(node.id, new("value")), edge.input));
+        graph.AddEdge(
+            new GraphEdgeRecord(
+                new GraphEdgeID(Guid.NewGuid().ToString("N")),
+                edge.output,
+                new GraphEndpoint(node.id, new GraphPortID("input"))
+            )
+        );
+        graph.AddEdge(
+            new GraphEdgeRecord(
+                new GraphEdgeID(Guid.NewGuid().ToString("N")),
+                new GraphEndpoint(node.id, new GraphPortID("value")),
+                edge.input
+            )
+        );
         controller.ReplaceDocument(graph, "Insert Shader Reroute");
         draft.selectedEdge = null;
         draft.canvas.SelectNodes([node.id]);
@@ -135,7 +147,7 @@ internal sealed class GroupShaderNodes(ShaderEditorDocuments documents) : Shader
         groups =
         [
             ..groups,
-            new()
+            new ShaderCanvasGroup()
             {
                 id = Guid.NewGuid().ToString("N"),
                 title = "Group " + (groups.Length + 1),
@@ -176,7 +188,7 @@ internal sealed class UngroupShaderNodes(ShaderEditorDocuments documents) : Shad
                 group => (
                     draft.selectedGroupID.Length != 0
                     ? group.id != draft.selectedGroupID
-                    : !group.nodes.All(id => draft.canvas.selectedNodes.Contains(new(id)))
+                    : !group.nodes.All(id => draft.canvas.selectedNodes.Contains(new GraphNodeID(id)))
                 )
             )
             .ToArray();
@@ -351,16 +363,16 @@ internal sealed class CollapseShaderSubgraph(
             edge => selected.Contains(edge.output.nodeID) && selected.Contains(edge.input.nodeID)
         )) {
             child.AddEdge(
-                new(
-                    new("body/" + edge.id.value),
-                    new(remap[edge.output.nodeID], edge.output.portID),
-                    new(remap[edge.input.nodeID], edge.input.portID)
+                new GraphEdgeRecord(
+                    new GraphEdgeID("body/" + edge.id.value),
+                    new GraphEndpoint(remap[edge.output.nodeID], edge.output.portID),
+                    new GraphEndpoint(remap[edge.input.nodeID], edge.input.portID)
                 )
             );
         }
         if (inputs.Length != 0)
         {
-            var boundary = new GraphNodeRecord(new("function-inputs"), ShaderGraphNodes.C_INPUT_DEFINITION_ID)
+            var boundary = new GraphNodeRecord(new GraphNodeID("function-inputs"), ShaderGraphNodes.C_INPUT_DEFINITION_ID)
             {
                 position = new(20, 80)
             };
@@ -374,10 +386,10 @@ internal sealed class CollapseShaderSubgraph(
                 foreach (GraphEdgeRecord edge in inputGroups[index])
                 {
                     child.AddEdge(
-                        new(
-                            new("input/" + edge.id.value),
-                            new(boundary.id, new(inputs[index].id)),
-                            new(remap[edge.input.nodeID], edge.input.portID)
+                        new GraphEdgeRecord(
+                            new GraphEdgeID("input/" + edge.id.value),
+                            new GraphEndpoint(boundary.id, new GraphPortID(inputs[index].id)),
+                            new GraphEndpoint(remap[edge.input.nodeID], edge.input.portID)
                         )
                     );
                 }
@@ -386,7 +398,7 @@ internal sealed class CollapseShaderSubgraph(
 
         if (outputs.Length != 0)
         {
-            var boundary = new GraphNodeRecord(new("function-outputs"), ShaderGraphNodes.C_OUTPUT_DEFINITION_ID)
+            var boundary = new GraphNodeRecord(new GraphNodeID("function-outputs"), ShaderGraphNodes.C_OUTPUT_DEFINITION_ID)
             {
                 position = new(nodes.Max(static node => node.position.x) - minX + 600, 80)
             };
@@ -402,10 +414,10 @@ internal sealed class CollapseShaderSubgraph(
             for (int index = 0; index < outputGroups.Length; index++)
             {
                 child.AddEdge(
-                    new(
-                        new("output/" + index),
-                        new(remap[outputGroups[index].Key.nodeID], outputGroups[index].Key.portID),
-                        new(boundary.id, new(outputs[index].id))
+                    new GraphEdgeRecord(
+                        new GraphEdgeID("output/" + index),
+                        new GraphEndpoint(remap[outputGroups[index].Key.nodeID], outputGroups[index].Key.portID),
+                        new GraphEndpoint(boundary.id, new GraphPortID(outputs[index].id))
                     )
                 );
             }
@@ -421,7 +433,7 @@ internal sealed class CollapseShaderSubgraph(
         {
             candidate.RemoveNode(id);
         }
-        var call = new GraphNodeRecord(new(Guid.NewGuid().ToString("N")), ShaderGraphNodes.C_CALL_DEFINITION_ID)
+        var call = new GraphNodeRecord(new GraphNodeID(Guid.NewGuid().ToString("N")), ShaderGraphNodes.C_CALL_DEFINITION_ID)
         {
             position = new(nodes.Average(static node => node.position.x), nodes.Average(static node => node.position.y))
         };
@@ -435,18 +447,30 @@ internal sealed class CollapseShaderSubgraph(
         candidate.AddNode(call);
         for (int index = 0; index < inputGroups.Length; index++)
         {
-            candidate.AddEdge(new(new(Guid.NewGuid().ToString("N")), inputGroups[index].Key, new(call.id, new(inputs[index].id))));
+            candidate.AddEdge(
+                new GraphEdgeRecord(
+                    new GraphEdgeID(Guid.NewGuid().ToString("N")),
+                    inputGroups[index].Key,
+                    new GraphEndpoint(call.id, new GraphPortID(inputs[index].id))
+                )
+            );
         }
         for (int index = 0; index < outputGroups.Length; index++)
         {
             foreach (GraphEdgeRecord edge in outputGroups[index])
             {
-                candidate.AddEdge(new(new(Guid.NewGuid().ToString("N")), new(call.id, new(outputs[index].id)), edge.input));
+                candidate.AddEdge(
+                    new GraphEdgeRecord(
+                        new GraphEdgeID(Guid.NewGuid().ToString("N")),
+                        new GraphEndpoint(call.id, new GraphPortID(outputs[index].id)),
+                        edge.input
+                    )
+                );
             }
         }
         ShaderCanvasGroup[] groups = GroupShaderNodes.Read(documents, candidate).Select(group =>
         {
-            group.nodes = group.nodes.Where(id => !selected.Contains(new(id))).ToArray();
+            group.nodes = group.nodes.Where(id => !selected.Contains(new GraphNodeID(id))).ToArray();
             return group;
         }).Where(static group => group.nodes.Length != 0).ToArray();
         candidate.SetMetadata(GroupShaderNodes.C_GROUPS, ShaderGraphDocument.Encode(groups, documents.serialization, documents.context));
@@ -490,7 +514,7 @@ internal sealed class CollapseShaderSubgraph(
         ShaderCanvasGroup? group = GroupShaderNodes.Read(
             documents,
             documents.Controller(draft).document
-        ).FirstOrDefault(value => value.nodes.Length == selected.Count && value.nodes.All(id => selected.Contains(new(id))));
+        ).FirstOrDefault(value => value.nodes.Length == selected.Count && value.nodes.All(id => selected.Contains(new GraphNodeID(id))));
         return group is ShaderCanvasGroup exact && !string.IsNullOrWhiteSpace(exact.title) ? exact.title : "Shader Node";
     }
 

@@ -26,7 +26,8 @@ internal sealed class SceneProjectSettingsModule : EditorModule
         RuntimeSession runtimeSession,
         DiagnosticHub diagnostics
     ) {
-        m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        ArgumentNullException.ThrowIfNull(settings);
+        m_settings = settings;
         ArgumentNullException.ThrowIfNull(runtimeSession);
         ArgumentNullException.ThrowIfNull(diagnostics);
         m_layerDiagnostics = new GameLayerDiagnosticPublisher(runtimeSession.scenes, diagnostics);

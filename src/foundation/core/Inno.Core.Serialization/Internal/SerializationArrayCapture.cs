@@ -23,7 +23,7 @@ internal struct SerializationArrayCapture(ArraySerializationNode? previous)
         }
         if (m_values is null && !ReferenceEquals(next, value))
         {
-            m_values = previous is null ? [] : new(previous.values);
+            m_values = previous is null ? [] : new List<SerializationNode>(previous.values);
         }
         if (m_values is not null)
         {
@@ -49,7 +49,7 @@ internal struct SerializationArrayCapture(ArraySerializationNode? previous)
         {
             return previous;
         }
-        m_values ??= previous is null ? [] : new(previous.values);
+        m_values ??= previous is null ? [] : new List<SerializationNode>(previous.values);
         if (m_values.Count > m_count)
         {
             m_values.RemoveRange(m_count, m_values.Count - m_count);

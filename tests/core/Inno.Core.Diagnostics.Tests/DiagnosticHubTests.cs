@@ -75,7 +75,7 @@ public sealed class DiagnosticHubTests : IDisposable
         Diagnostics.Set(C_COMPILATION_DIAGNOSTICS, Diagnostic.Error("A", "First"));
         Diagnostics.Set(C_RELOAD_DIAGNOSTICS, Diagnostic.Warning("B", "Second"));
 
-        Diagnostics.Set(C_COMPILATION_DIAGNOSTICS, Array.Empty<Diagnostic>());
+        Diagnostics.Set(C_COMPILATION_DIAGNOSTICS, []);
 
         DiagnosticReport remaining = Assert.Single(sink.reports);
         Assert.Equal(C_RELOAD_DIAGNOSTICS, remaining.source.displayName);

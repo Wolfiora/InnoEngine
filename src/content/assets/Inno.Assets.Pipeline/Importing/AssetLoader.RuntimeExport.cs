@@ -156,9 +156,12 @@ public sealed partial class AssetLoader
         var projectedKeys = new Dictionary<string, AssetArtifactKey>(StringComparer.Ordinal);
         foreach (string key in keys)
         {
-            projectedKeys.Add(key, m_artifacts.ExportRuntime(new(key), destinationArtifacts, serialization, cancellationToken));
+            projectedKeys.Add(
+                key,
+                m_artifacts.ExportRuntime(new AssetArtifactKey(key), destinationArtifacts, serialization, cancellationToken)
+            );
         }
-        var deployed = new List<AssetMeta>();
+        List<AssetMeta> deployed = [];
         foreach (AssetRecord record in exported)
         {
             byte[] bytes = serialization is null ? m_serialization.Serialize(record.meta) : serialization.Serialize(record.meta);

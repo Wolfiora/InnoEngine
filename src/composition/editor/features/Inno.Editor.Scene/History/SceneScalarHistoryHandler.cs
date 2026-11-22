@@ -15,7 +15,8 @@ internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
 
     internal SceneScalarHistoryHandler(EditorSceneWorkspace workspace)
     {
-        m_workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+        ArgumentNullException.ThrowIfNull(workspace);
+        m_workspace = workspace;
     }
 
     /// <summary>

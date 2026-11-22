@@ -74,8 +74,8 @@ public sealed class BgfxTextureTargetCompiler : ITextureTargetCompiler
                 await source.CopyToAsync(inputFile, cancellationToken).ConfigureAwait(false);
             }
             string outputPath = Path.Combine(temporaryDirectory, "texture.ktx");
-            var arguments = new List<string>
-            {
+            List<string> arguments =
+            [
                 "-f",
                 Path.GetFullPath(sourcePath),
                 "-o",
@@ -84,7 +84,7 @@ public sealed class BgfxTextureTargetCompiler : ITextureTargetCompiler
                 "RGBA8",
                 "--mips",
                 "--validate"
-            };
+            ];
             if (colorSpace == TextureColorSpace.Linear)
             {
                 arguments.Add("--linear");

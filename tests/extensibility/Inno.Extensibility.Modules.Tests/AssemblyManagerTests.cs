@@ -21,8 +21,7 @@ public sealed class ModuleHostTests : IDisposable
 {
     private static readonly AsyncLocal<object?> ASYNC_ROOT = new();
 
-    private static readonly Guid RELOADABLE_TYPE_ID =
-        Guid.Parse("44a4cda2-a03e-4918-8db2-f37048a9e4f1");
+    private static readonly Guid RELOADABLE_TYPE_ID = Guid.Parse("44a4cda2-a03e-4918-8db2-f37048a9e4f1");
 
     private static object? s_retained;
 
@@ -257,7 +256,7 @@ public sealed class ModuleHostTests : IDisposable
     public void RetainingOnlyTypeRefDoesNotPreventPreviousContextUnload()
     {
         AssemblyModuleHandle handle = LoadVersion("V1");
-        var retained = new List<TypeRef> { new(RELOADABLE_TYPE_ID) };
+        List<TypeRef> retained = [new TypeRef(RELOADABLE_TYPE_ID)];
 
         IAssemblyUnloadProbe monitor = CompleteReload(handle);
         ForceCollection();

@@ -19,7 +19,7 @@ internal sealed record ProductCleanPlan(
         string project,
         CancellationToken cancellationToken
     ) {
-        var projects = new List<string> { project };
+        List<string> projects = [project];
         foreach (BuildPlatformContribution platform in context.distribution.platforms)
         {
             if (platform.descriptor.id == context.target && platform.editorProject is not null)
@@ -27,7 +27,7 @@ internal sealed record ProductCleanPlan(
                 projects.Add(Path.GetFullPath(platform.editorProject, context.root));
             }
         }
-        var directories = new List<string>();
+        List<string> directories = [];
         foreach (string selected in projects)
         {
             string result = await ToolchainEnvironment.CaptureOutputAsync(

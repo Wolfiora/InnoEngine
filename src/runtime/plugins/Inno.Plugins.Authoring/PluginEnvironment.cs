@@ -84,12 +84,13 @@ public sealed class PluginEnvironment : IDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(pluginRoot);
         ArgumentException.ThrowIfNullOrWhiteSpace(libraryRoot);
         ArgumentNullException.ThrowIfNull(initialScan);
+        ArgumentNullException.ThrowIfNull(generations);
         if (!assets.isInitialized)
         {
             throw new InvalidOperationException("PluginEnvironment requires AssetPipeline to be initialized first.");
         }
         m_assets = assets;
-        m_generations = generations ?? throw new ArgumentNullException(nameof(generations));
+        m_generations = generations;
         m_settings = settings;
         lock (m_sync)
         {
@@ -738,7 +739,7 @@ public sealed class PluginEnvironment : IDisposable
         }
         catch (Exception candidateFailure)
         {
-            var rollbackFailures = new List<Exception> { candidateFailure };
+            List<Exception> rollbackFailures = [candidateFailure];
             TryInitialRollback(() => m_assets.ReplaceSourceMounts([project]), "asset mount rollback", rollbackFailures);
             var empty = new PluginScanResult([], []);
             TryInitialRollback(() => m_catalog.Activate(empty), "Plugin catalog rollback", rollbackFailures);

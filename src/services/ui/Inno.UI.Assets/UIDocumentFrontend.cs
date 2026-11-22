@@ -246,7 +246,7 @@ public sealed class UIDocumentFrontendRegistry : TypeRegistry<UIDocumentFrontend
     /// </returns>
     protected override UIDocumentFrontendCatalog Build(TypeCacheSnapshot types)
     {
-        var providers = new List<IUIDocumentFrontend>();
+        List<IUIDocumentFrontend> providers = [];
         foreach (Type type in types.GetTypesImplementing<IUIDocumentFrontend>()
             .Select(reference => reference.Resolve(types))
             .OrderBy(static type => type.FullName, StringComparer.Ordinal)

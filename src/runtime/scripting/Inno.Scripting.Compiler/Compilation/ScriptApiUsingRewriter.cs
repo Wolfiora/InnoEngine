@@ -13,8 +13,7 @@ internal sealed class ScriptApiUsingRewriter : CSharpSyntaxRewriter
     private readonly IReadOnlyDictionary<string, ScriptApiTypeMapping[]> m_typeMappings;
     private readonly IReadOnlyDictionary<string, string> m_qualifiedTypeMappings;
 
-    private IReadOnlyDictionary<string, string> m_activeSimpleTypeMappings =
-        new Dictionary<string, string>(StringComparer.Ordinal);
+    private IReadOnlyDictionary<string, string> m_activeSimpleTypeMappings = new Dictionary<string, string>(StringComparer.Ordinal);
 
     internal ScriptApiUsingRewriter(
         IReadOnlyList<ScriptApiNamespaceMapping> mappings,

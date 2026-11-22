@@ -50,7 +50,7 @@ public sealed partial class ShaderIrBuilder
             ShaderIrBlock second = BuildRegion(whenFalse);
             ValidateOutputs(first.outputs, second.outputs);
             IReadOnlyDictionary<string, ShaderIrValue> outputs = MergeValues(first.outputs);
-            m_instructions.Add(new(ShaderIrOperation.Branch, [condition], outputs.Values, regions: [first, second]));
+            m_instructions.Add(new ShaderIrInstruction(ShaderIrOperation.Branch, [condition], outputs.Values, regions: [first, second]));
             return outputs;
         }
         catch
@@ -117,7 +117,14 @@ public sealed partial class ShaderIrBuilder
             });
             ValidateOutputs(initial, region.outputs);
             IReadOnlyDictionary<string, ShaderIrValue> outputs = MergeValues(initial);
-            m_instructions.Add(new(ShaderIrOperation.Loop, new[] { iterations }.Concat(initial.Values), outputs.Values, regions: [region]));
+            m_instructions.Add(
+                new ShaderIrInstruction(
+                    ShaderIrOperation.Loop,
+                    new[] { iterations }.Concat(initial.Values),
+                    outputs.Values,
+                    regions: [region]
+                )
+            );
             return outputs;
         }
         catch
@@ -147,7 +154,7 @@ public sealed partial class ShaderIrBuilder
         ShaderSourceType type
     ) {
         ShaderIrValue output = NewValue(type);
-        m_instructions.Add(new(ShaderIrOperation.RegionInput, [], [output], inputName: name));
+        m_instructions.Add(new ShaderIrInstruction(ShaderIrOperation.RegionInput, [], [output], inputName: name));
         return output;
     }
 

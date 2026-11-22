@@ -21,7 +21,7 @@ public sealed class RegistryRetirementTests
             new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(RegistryRetirementTests).Assembly)}
         );
         using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
-        var calls = new List<string>();
+        List<string> calls = [];
         int pendingAttempts = 0;
         var first = new Resource(() => calls.Add("first"));
         var second = new Resource(() =>

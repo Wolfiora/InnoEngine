@@ -82,8 +82,8 @@ public static class StandardBuildCaches
         {
             throw new ArgumentException("Cache registration requires an absolute checkout.", nameof(engineRoot));
         }
-        var owners = new List<BuildCacheOwnerDescriptor>
-        {
+        List<BuildCacheOwnerDescriptor> owners =
+        [
             Describe(
                 new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "native"), BuildCacheArtifactRole.ImmutableArtifact),
                 "native"
@@ -173,7 +173,7 @@ public static class StandardBuildCaches
                 ),
                 "task-workspaces"
             )
-        };
+        ];
         NativeComponentDescriptor[] workspaceComponents = components.ToArray();
         foreach (string project in workspaceComponents
             .Select(static component => component.toolchainProject)

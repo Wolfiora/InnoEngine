@@ -99,7 +99,7 @@ internal sealed partial class EditorSceneWorkspace
         }
         m_nextRestoreAttemptTimestamp = now + Stopwatch.Frequency / 4;
 
-        var candidates = new List<(GameScene scene, string path, Guid assetID, byte[] hash)>();
+        List<(GameScene scene, string path, Guid assetID, byte[] hash)> candidates = [];
         bool waitingForSourceIndex = false;
         try
         {
@@ -130,9 +130,8 @@ internal sealed partial class EditorSceneWorkspace
         {
             DisposeRestoreCandidates(candidates);
             m_waitingTypeCatalogVersion = typeCatalogVersion;
-            string message =
-                $"{exception.elementKind} stable type id '{exception.stableTypeID}' "
-                + "is not present in the active type catalog.";
+            string message = $"{exception.elementKind} stable type id '{exception.stableTypeID}' "
+                             + "is not present in the active type catalog.";
             if (m_diagnostics.PublishRestoreFailure("SCENE-TYPE", message))
             {
                 m_log.Write(

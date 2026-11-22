@@ -16,7 +16,7 @@ internal static class ValidationDocumentation
         string? cache,
         string? identity,
         IReadOnlyDictionary<string, ValidationProject> projects,
-        CancellationToken cancellation,
+        CancellationToken cancellationToken,
         string? baseline = null
     ) {
         if ((cache is null) != (identity is null))
@@ -34,12 +34,12 @@ internal static class ValidationDocumentation
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(
             cache,
             identity,
-            cancellationToken: cancellation
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
-        DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync(cancellation).ConfigureAwait(false);
+        DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync(cancellationToken).ConfigureAwait(false);
         DocumentationReferenceInfo inventory = catalog.references.Single(reference => reference.model == "project-inventory");
         using JsonDocument source = JsonDocument.Parse(
-            await snapshot.ReadReferenceAsync(inventory.path, cancellation).ConfigureAwait(false)
+            await snapshot.ReadReferenceAsync(inventory.path, cancellationToken).ConfigureAwait(false)
         );
         var owners = new Dictionary<string, Owner>(StringComparer.Ordinal);
         foreach (JsonElement owner in source.RootElement.EnumerateArray())
@@ -55,7 +55,7 @@ internal static class ValidationDocumentation
             {
                 throw new InvalidDataException("Native reference exclusion crosses its declared backend owner: " + path);
             }
-            if (!owners.TryAdd(name, new(path, actual.test, native)))
+            if (!owners.TryAdd(name, new Owner(path, actual.test, native)))
             {
                 throw new InvalidDataException("Duplicate documentation project identity: " + name);
             }
@@ -68,9 +68,9 @@ internal static class ValidationDocumentation
             using DocumentationSnapshot previous = await DocumentationStore.OpenAsync(
                 cache,
                 baseline,
-                cancellationToken: cancellation
+                cancellationToken: cancellationToken
             ).ConfigureAwait(false);
-            DocumentationCatalogReport prior = await previous.ExportCatalogAsync(cancellation).ConfigureAwait(false);
+            DocumentationCatalogReport prior = await previous.ExportCatalogAsync(cancellationToken).ConfigureAwait(false);
             Dictionary<string, DocumentationPageInfo> pages = prior.pages.ToDictionary(static page => page.id, StringComparer.Ordinal);
             var changedPaths = new HashSet<string>(StringComparer.Ordinal);
             foreach (DocumentationPageInfo page in catalog.pages)
@@ -122,7 +122,7 @@ internal static class ValidationDocumentation
             }
         }
         return new(
-            new(Path.GetFullPath(cache), snapshot.identity, snapshot.sourceTree, baseline),
+            new ValidationDocumentationBinding(Path.GetFullPath(cache), snapshot.identity, snapshot.sourceTree, baseline),
             catalog,
             owners,
             sourceIdentities,
@@ -140,7 +140,7 @@ internal static class ValidationDocumentation
             ))
             ) {
                 using JsonDocument facts = JsonDocument.Parse(
-                    await reader.ReadReferenceAsync(reference.path, cancellation).ConfigureAwait(false)
+                    await reader.ReadReferenceAsync(reference.path, cancellationToken).ConfigureAwait(false)
                 );
                 foreach (JsonElement project in facts.RootElement.GetProperty("projects").EnumerateArray())
                 {
@@ -149,7 +149,7 @@ internal static class ValidationDocumentation
                     // source comparator, including its JSON whitespace normalization.
                     if (!identities.TryAdd(
                         key,
-                        new(
+                        new SourceFacts(
                             Convert.ToHexStringLower(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(project))),
                             project.GetProperty("symbols").GetArrayLength() == 0
                         )
@@ -183,13 +183,13 @@ internal static class ValidationDocumentation
     internal static async Task<DocumentationCatalogReport> ReadCatalogAsync(
         ValidationPlan plan,
         DocumentationSnapshot snapshot,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         if (plan.documentation is not { } binding || snapshot.identity != binding.snapshot || snapshot.sourceTree != binding.sourceTree)
         {
             throw new InvalidDataException("Documentation inputs differ from the frozen validation binding.");
         }
-        DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync(cancellation).ConfigureAwait(false);
+        DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync(cancellationToken).ConfigureAwait(false);
         // A retained receipt still requires intact inputs, including the inventory that establishes project ownership.
         foreach (string reference in plan.checks.SelectMany(static check => check.documentation?.references ?? [])
             .Concat(
@@ -199,7 +199,7 @@ internal static class ValidationDocumentation
             )
             .Distinct(StringComparer.Ordinal)
         ) {
-            _ = await snapshot.ReadReferenceAsync(reference, cancellation).ConfigureAwait(false);
+            _ = await snapshot.ReadReferenceAsync(reference, cancellationToken).ConfigureAwait(false);
         }
         return catalog;
     }
@@ -235,7 +235,7 @@ internal static class ValidationDocumentation
             }
             else
             {
-                inputs.Add(new(reference.path, reference.identity));
+                inputs.Add(new KeyValuePair<string, string>(reference.path, reference.identity));
             }
         }
         return ValidationInputs.Identity(inputs);

@@ -17,9 +17,9 @@ internal static class ValidationEnvironment
     internal static async Task<ToolSnapshot> CaptureToolsAsync(
         string root,
         string dotnet,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
-        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveDirectoryAsync(dotnet, root, cancellation).ConfigureAwait(false);
+        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveDirectoryAsync(dotnet, root, cancellationToken).ConfigureAwait(false);
         var inputs = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["os"] = RuntimeInformation.OSDescription,
@@ -57,7 +57,7 @@ internal static class ValidationEnvironment
         pending.Enqueue(typeof(ValidationCommand).Assembly);
         while (pending.TryDequeue(out Assembly? assembly))
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             if (!examined.Add(assembly))
             {
                 continue;
@@ -89,17 +89,17 @@ internal static class ValidationEnvironment
         {
             files.Add(automation);
         }
-        return new(sdk, inputs, CaptureContents(root, sdk.hostPath, files, cancellation));
+        return new(sdk, inputs, CaptureContents(root, sdk.hostPath, files, cancellationToken));
     }
 
     internal static async Task<string> CaptureAsync(
         string root,
         string dotnet,
-        CancellationToken cancellation,
+        CancellationToken cancellationToken,
         IEnumerable<ValidationContext>? contexts = null,
         ToolSnapshot? tools = null
     ) {
-        tools ??= await CaptureToolsAsync(root, dotnet, cancellation).ConfigureAwait(false);
+        tools ??= await CaptureToolsAsync(root, dotnet, cancellationToken).ConfigureAwait(false);
         var inputs = new Dictionary<string, string>(tools.inputs, StringComparer.Ordinal);
         foreach (KeyValuePair<string, string> content in tools.contents)
         {
@@ -110,7 +110,7 @@ internal static class ValidationEnvironment
         );
         var examined = new HashSet<string>(files.Comparer);
         ValidationContext[] selectedContexts = contexts?.ToArray() ?? [];
-        string[] packageOwners = ValidationDependencyInputs.RestoredPackageDirectories(selectedContexts, cancellation);
+        string[] packageOwners = ValidationDependencyInputs.RestoredPackageDirectories(selectedContexts, cancellationToken);
         foreach (ValidationContext context in selectedContexts)
         {
         foreach (JsonElement snapshot in context.sdkGraph.EnumerateArray())
@@ -138,7 +138,7 @@ internal static class ValidationEnvironment
         }
         }
         }
-        foreach (KeyValuePair<string, string> content in CaptureContents(root, dotnet, files, cancellation))
+        foreach (KeyValuePair<string, string> content in CaptureContents(root, dotnet, files, cancellationToken))
         {
             inputs.Add("external-content:" + content.Key, content.Value);
         }
@@ -191,9 +191,9 @@ internal static class ValidationEnvironment
         string root,
         string dotnet,
         IEnumerable<string> files,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
-        var roots = new List<string>();
+        List<string> roots = [];
         foreach (string path in files
             .Select(Path.GetFullPath)
             .OrderBy(static path => path.Length)
@@ -209,14 +209,14 @@ internal static class ValidationEnvironment
         Parallel.For(
             0,
             roots.Count,
-            new ParallelOptions { MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4), CancellationToken = cancellation },
+            new ParallelOptions { MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4), CancellationToken = cancellationToken },
             index => identities[index] = NativeBuildFingerprint.Create(
                 [],
                 [new NativeBuildInput(
                     "validation/" + ValidationPlanTransport.Logical(root, dotnet, roots[index]).Replace('\\', '/').TrimStart('/'),
                     roots[index]
                 )],
-                cancellation
+                cancellationToken
             )
         );
         var contents = new Dictionary<string, string>(StringComparer.Ordinal);

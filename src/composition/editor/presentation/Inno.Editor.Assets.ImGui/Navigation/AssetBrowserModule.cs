@@ -46,8 +46,10 @@ public sealed class AssetBrowserModule : EditorModule, IInspectionIconProvider<A
         EditorSettings settings,
         TypeCatalog types
     ) {
-        this.edits = edits ?? throw new ArgumentNullException(nameof(edits));
-        m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        ArgumentNullException.ThrowIfNull(edits);
+        ArgumentNullException.ThrowIfNull(settings);
+        this.edits = edits;
+        m_settings = settings;
         m_icons = new AssetIconRegistry(settings, types);
         this.browser = new AssetBrowserState(interactions, edits.pipeline);
     }

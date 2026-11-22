@@ -159,7 +159,7 @@ public sealed class BuildCachePublisherTests : IDisposable
     }
 
     private BuildCacheCleanupPlan Plan()
-        => BuildCacheCleanupPlan.Create(m_root, StandardBuildCaches.CreateOwners(m_root, []), new(0, 0), retireAll: true);
+        => BuildCacheCleanupPlan.Create(m_root, StandardBuildCaches.CreateOwners(m_root, []), new BuildCachePolicy(0, 0), retireAll: true);
 
     private string Create(
         string owner,

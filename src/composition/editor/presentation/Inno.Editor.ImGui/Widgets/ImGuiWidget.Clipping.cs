@@ -49,10 +49,7 @@ public sealed unsafe partial class ImGuiWidget
     ) {
         m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(drawRange);
-        if (itemCount < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(itemCount));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(itemCount);
         if (!float.IsFinite(itemHeight) || (itemHeight <= 0f && itemHeight != -1f))
         {
             throw new ArgumentOutOfRangeException(nameof(itemHeight));

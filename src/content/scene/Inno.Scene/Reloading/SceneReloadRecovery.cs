@@ -12,7 +12,7 @@ internal sealed class SceneReloadRecovery : ISceneReloadStateTransfer
 {
     private readonly ReferenceRecoveryTransaction m_recovery;
     private SceneReloadStateTransfer? m_transfer;
-    private IReadOnlyList<SceneReloadDiagnostic> m_diagnostics = Array.Empty<SceneReloadDiagnostic>();
+    private IReadOnlyList<SceneReloadDiagnostic> m_diagnostics = [];
 
     internal SceneReloadRecovery(
         SceneReloadStateTransfer transfer,
@@ -31,7 +31,7 @@ internal sealed class SceneReloadRecovery : ISceneReloadStateTransfer
         );
     }
 
-    IReadOnlyList<object> ISceneReloadStateTransfer.retiredObjects => m_transfer?.retiredObjects ?? Array.Empty<object>();
+    IReadOnlyList<object> ISceneReloadStateTransfer.retiredObjects => m_transfer?.retiredObjects ?? [];
     IReadOnlyList<SceneReloadDiagnostic> ISceneReloadStateTransfer.diagnostics => m_diagnostics;
     IReadOnlyList<ReferenceRecoveryChange> ISceneReloadStateTransfer.recoveryChanges => m_recovery.changes;
 

@@ -26,20 +26,20 @@ internal static class StorageNodePorts
     ) {
         ShaderSourceType type = Resource(context);
         ShaderStorageType storage = type.storage ?? throw new ArgumentException("A storage node requires a storage resource descriptor.");
-        var ports = new List<ShaderNodePort>
-        {
-            new("resource", type, GraphPortDirection.Input),
-            new("coordinate", Coordinate(storage), GraphPortDirection.Input),
-            new("after", ShaderSourceType.Atomic("bool"), GraphPortDirection.Input, false),
-            new("then", ShaderSourceType.Atomic("bool"), GraphPortDirection.Output)
-        };
+        List<ShaderNodePort> ports =
+        [
+            new ShaderNodePort("resource", type, GraphPortDirection.Input),
+            new ShaderNodePort("coordinate", Coordinate(storage), GraphPortDirection.Input),
+            new ShaderNodePort("after", ShaderSourceType.Atomic("bool"), GraphPortDirection.Input, false),
+            new ShaderNodePort("then", ShaderSourceType.Atomic("bool"), GraphPortDirection.Output)
+        ];
         if (write)
         {
-            ports.Add(new("value", storage.valueType, GraphPortDirection.Input));
+            ports.Add(new ShaderNodePort("value", storage.valueType, GraphPortDirection.Input));
         }
         if (!write || atomic)
         {
-            ports.Add(new(atomic ? "previous" : "value", storage.valueType, GraphPortDirection.Output));
+            ports.Add(new ShaderNodePort(atomic ? "previous" : "value", storage.valueType, GraphPortDirection.Output));
         }
         return ports;
     }
@@ -167,9 +167,9 @@ public string definitionID => "inno.shader.discard";
     /// </returns>
 public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext context)
     => [
-        new("condition", ShaderSourceType.Atomic("bool"), GraphPortDirection.Input),
-        new("after", ShaderSourceType.Atomic("bool"), GraphPortDirection.Input, false),
-        new("then", ShaderSourceType.Atomic("bool"), GraphPortDirection.Output)
+        new ShaderNodePort("condition", ShaderSourceType.Atomic("bool"), GraphPortDirection.Input),
+        new ShaderNodePort("after", ShaderSourceType.Atomic("bool"), GraphPortDirection.Input, false),
+        new ShaderNodePort("then", ShaderSourceType.Atomic("bool"), GraphPortDirection.Output)
     ];
 
     /// <summary>

@@ -27,7 +27,8 @@ internal sealed class AssetSelectionInspectionDrawer : InspectionDrawer<AssetFil
     /// </exception>
     internal AssetSelectionInspectionDrawer(AssetBrowserModule assets)
     {
-        m_assets = assets ?? throw new ArgumentNullException(nameof(assets));
+        ArgumentNullException.ThrowIfNull(assets);
+        m_assets = assets;
     }
 
     /// <summary>

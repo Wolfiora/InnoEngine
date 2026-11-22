@@ -38,8 +38,8 @@ public sealed class TestRepositoryInputsTests
                 </Project>
                 """);
             string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
-            var arguments = new List<string>
-            {
+            List<string> arguments =
+            [
                 "msbuild",
                 project,
                 "-nologo",
@@ -48,7 +48,7 @@ public sealed class TestRepositoryInputsTests
                 "-getProperty:ArtifactsPath",
                 "-getItem:AssemblyAttribute",
                 "-p:UseArtifactsOutput=" + useArtifacts.ToString().ToLowerInvariant()
-            };
+            ];
             if (explicitOwner)
             {
                 arguments.Add("-p:ArtifactsPath=" + Path.Combine(root, "independent"));

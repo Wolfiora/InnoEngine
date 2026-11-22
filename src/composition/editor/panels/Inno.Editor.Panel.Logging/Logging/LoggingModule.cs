@@ -21,7 +21,8 @@ internal sealed class LoggingModule : EditorModule, IEditorConsole
         IEditorPlayMode playMode,
         EditorSettings settings
     ) {
-        m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        ArgumentNullException.ThrowIfNull(settings);
+        m_settings = settings;
         m_console = new EditorConsole(logRouter, diagnosticHub, playMode);
     }
 

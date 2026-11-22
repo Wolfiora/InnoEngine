@@ -7,14 +7,26 @@ namespace Inno.Core.Serialization;
 /// </summary>
 public sealed class SerializedProperty
 {
-    #region Backing Delegates
-
     private readonly Func<object?> m_getter;
     private readonly Action<object?> m_setter;
 
-    #endregion
-
-    #region Public State
+    internal SerializedProperty(
+        string name,
+        Type propertyType,
+        Func<object?> getter,
+        Action<object?> setter,
+        PropertyVisibility visibility,
+        bool canRead,
+        bool canWrite
+    ) {
+        this.name = name;
+        this.propertyType = propertyType;
+        this.visibility = visibility;
+        this.canRead = canRead;
+        this.canWrite = canWrite;
+        m_getter = getter;
+        m_setter = setter;
+    }
 
     /// <summary>
     /// Gets the display and serialization key name.
@@ -40,32 +52,6 @@ public sealed class SerializedProperty
     /// Gets whether runtime callers may write this property.
     /// </summary>
     public bool canWrite { get; }
-
-    #endregion
-
-    #region Construction
-
-    internal SerializedProperty(
-        string name,
-        Type propertyType,
-        Func<object?> getter,
-        Action<object?> setter,
-        PropertyVisibility visibility,
-        bool canRead,
-        bool canWrite
-    ) {
-        this.name = name;
-        this.propertyType = propertyType;
-        this.visibility = visibility;
-        this.canRead = canRead;
-        this.canWrite = canWrite;
-        m_getter = getter;
-        m_setter = setter;
-    }
-
-    #endregion
-
-    #region Public API
 
     /// <summary>
     /// Gets the current value.
@@ -102,6 +88,4 @@ public sealed class SerializedProperty
         }
         m_setter(value);
     }
-
-    #endregion
 }

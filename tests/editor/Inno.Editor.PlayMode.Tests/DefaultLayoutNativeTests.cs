@@ -33,7 +33,7 @@ public sealed unsafe class DefaultLayoutNativeTests
     ) {
         using var host = new NativePanelHost(typeof(DefaultLayoutNativeTests).Assembly);
         using var modules = new ModuleHost(
-            new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(DefaultLayoutNativeTests).Assembly) }
+            new ModuleHostOptions() { catalogSource = new DotNetAssemblyCatalogSource(typeof(DefaultLayoutNativeTests).Assembly) }
         );
         using var types = new TypeCatalog(modules, new EmptyTypeSource());
         using var logs = new LogRouter();
@@ -44,7 +44,7 @@ public sealed unsafe class DefaultLayoutNativeTests
         using var runtime = new ImGuiEditorRuntime(context, types, logs, []);
         ImGuiIO* io = NativeGui.Raw.GetIO();
         io->ConfigFlags |= (int)ImGuiConfigFlags.DockingEnable;
-        io->DisplaySize = Unsafe.BitCast<Vector2, ImVec2C>(new(1600f, 900f));
+        io->DisplaySize = Unsafe.BitCast<Vector2, ImVec2C>(new Vector2(1600f, 900f));
         byte[] layout = Encoding.UTF8.GetBytes(
             File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "DefaultEditorLayout.ini")) + '\0'
         );
@@ -59,7 +59,7 @@ public sealed unsafe class DefaultLayoutNativeTests
         {
             if (frame == 6)
             {
-                io->DisplaySize = Unsafe.BitCast<Vector2, ImVec2C>(new(width, height));
+                io->DisplaySize = Unsafe.BitCast<Vector2, ImVec2C>(new Vector2(width, height));
             }
             host.Frame(() =>
             {

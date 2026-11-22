@@ -22,7 +22,7 @@ internal static class BindingNativeCompilation
         GenerationRequest request,
         string engineRoot,
         string nativeOutput,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         Dictionary<string, NativeInputRootBinding> bindings = result.nativeInputRoots
             .Where(binding => binding.targetId == manifest.targetId)
@@ -47,7 +47,7 @@ internal static class BindingNativeCompilation
             if (!files.Any(file => file.rootId == "generated" && file.relativePath == artifact.relativePath))
             {
                 files.Add(
-                    new(
+                    new NativeBindingSourceFile(
                         "generated",
                         artifact.relativePath,
                         new FileInfo(Path.Combine(nativeOutput, artifact.relativePath)).Length,
@@ -101,7 +101,7 @@ internal static class BindingNativeCompilation
         };
         File.WriteAllBytes(Path.Combine(nativeOutput, "compilation.json"), JsonSerializer.SerializeToUtf8Bytes(compilation));
         NativeBindingCompilation verified = NativeBindingCompilation.Load(nativeOutput);
-        verified.VerifyInputs(id => verified.ResolveRoot(engineRoot, nativeOutput, id), cancellation);
+        verified.VerifyInputs(id => verified.ResolveRoot(engineRoot, nativeOutput, id), cancellationToken);
     }
 
     private static int ParseStandard(

@@ -15,10 +15,7 @@ public readonly record struct PresentationTextureHandle
     /// </param>
     public PresentationTextureHandle(ulong value)
     {
-        if (value == 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(value));
-        }
+        ArgumentOutOfRangeException.ThrowIfZero(value);
         this.value = value;
     }
 

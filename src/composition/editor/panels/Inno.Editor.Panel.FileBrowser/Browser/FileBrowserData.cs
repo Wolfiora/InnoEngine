@@ -35,8 +35,8 @@ internal readonly record struct FileBrowserDisplayEntry(
 internal sealed class FileBrowserData(AssetBrowserModule assets)
 {
     private ViewInput? m_input;
-    private IReadOnlyList<FileBrowserDisplayEntry> m_entries = Array.Empty<FileBrowserDisplayEntry>();
-    internal IReadOnlyList<RuntimeIdentity> visibleSelection { get; private set; } = Array.Empty<RuntimeIdentity>();
+    private IReadOnlyList<FileBrowserDisplayEntry> m_entries = [];
+    internal IReadOnlyList<RuntimeIdentity> visibleSelection { get; private set; } = [];
 
     internal IReadOnlyList<FileBrowserDisplayEntry> CollectVisibleEntries(
         FileBrowserEntryTypeFilter typeFilter,

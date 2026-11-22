@@ -72,7 +72,11 @@ public sealed partial class ShaderCompiler
             if (!keywords.TryGetValue(id, out ShaderKeywordDefinition keyword) || !keyword.options.Contains(value, StringComparer.Ordinal))
             {
                 diagnostics.Add(
-                    new("SHADER_VARIANT_INVALID", DiagnosticSeverity.Error, $"Shader variant selects undeclared option '{id}={value}'.")
+                    new ShaderDiagnostic(
+                        "SHADER_VARIANT_INVALID",
+                        DiagnosticSeverity.Error,
+                        $"Shader variant selects undeclared option '{id}={value}'."
+                    )
                 );
             }
         }
@@ -195,7 +199,11 @@ public sealed partial class ShaderCompiler
             if (!definition.keywords.Any(keyword => keyword.id == id && keyword.options.Contains(value, StringComparer.Ordinal)))
             {
                 diagnostics.Add(
-                    new("SHADER_VARIANT_INVALID", DiagnosticSeverity.Error, $"Shader variant selects undeclared option '{id}={value}'.")
+                    new ShaderDiagnostic(
+                        "SHADER_VARIANT_INVALID",
+                        DiagnosticSeverity.Error,
+                        $"Shader variant selects undeclared option '{id}={value}'."
+                    )
                 );
             }
         }
@@ -276,7 +284,7 @@ public sealed partial class ShaderCompiler
             renderState: value.renderState,
             metadata: value.metadata
         )).ToDictionary(static value => value.name, StringComparer.Ordinal);
-        var compiledPasses = new List<CompiledShaderPass>();
+        List<CompiledShaderPass> compiledPasses = [];
         var allBindings = new Dictionary<string, ShaderInterfaceBinding>(StringComparer.Ordinal);
         foreach (ShaderGraphPass pass in program.passes)
         {
@@ -289,7 +297,7 @@ public sealed partial class ShaderCompiler
             {
                 continue;
             }
-            var binaries = new List<ShaderStageArtifact>();
+            List<ShaderStageArtifact> binaries = [];
             var bindings = new Dictionary<string, ShaderInterfaceBinding>(StringComparer.Ordinal);
             foreach (ShaderIrStage stage in pass.stages)
             {
@@ -312,14 +320,16 @@ public sealed partial class ShaderCompiler
                 {
                     return new(null, diagnostics);
                 }
-                binaries.Add(new(stage.stage, result.bytes.Span, new ShaderSourceLocation(shaderName, pass.name, stage.stage)));
+                binaries.Add(
+                    new ShaderStageArtifact(stage.stage, result.bytes.Span, new ShaderSourceLocation(shaderName, pass.name, stage.stage))
+                );
                 foreach (ShaderStageBinding generated in result.bindings)
                 {
                     ShaderPropertyDefinition[] matches = properties.Where(value => value.id.value == generated.id).ToArray();
                     if (matches.Length != 1)
                     {
                         diagnostics.Add(
-                            new(
+                            new ShaderDiagnostic(
                                 "SHADER_GRAPH_BINDING",
                                 DiagnosticSeverity.Error,
                                 $"Generated binding '{generated.id}' requires exactly one declared shader property."
@@ -332,7 +342,7 @@ public sealed partial class ShaderCompiler
                     if ((property.stages & stage.stage) == 0 || !Matches(property, input))
                     {
                         diagnostics.Add(
-                            new(
+                            new ShaderDiagnostic(
                                 "SHADER_GRAPH_BINDING_TYPE",
                                 DiagnosticSeverity.Error,
                                 $"Property '{generated.id}' does not match the {stage.stage} graph binding's type, access or visibility."
@@ -354,12 +364,12 @@ public sealed partial class ShaderCompiler
                     Merge(allBindings, binding);
                 }
             }
-            compiledPasses.Add(new(passDefinition, binaries, new(bindings.Values.ToArray())));
+            compiledPasses.Add(new CompiledShaderPass(passDefinition, binaries, new ShaderInterface(bindings.Values.ToArray())));
         }
         if (compiledPasses.Count == 0)
         {
             diagnostics.Add(
-                new(
+                new ShaderDiagnostic(
                     "SHADER_NO_SUPPORTED_PASS",
                     DiagnosticSeverity.Error,
                     $"Shader '{shaderName}' has no pass supported by '{target.key}'."
@@ -370,7 +380,17 @@ public sealed partial class ShaderCompiler
         {
             return new(null, diagnostics);
         }
-        return new(new(shaderName, target.key, variant, new(allBindings.Values.ToArray()), compiledPasses, definitionData), diagnostics);
+        return new(
+            new CompiledShaderArtifact(
+                shaderName,
+                target.key,
+                variant,
+                new ShaderInterface(allBindings.Values.ToArray()),
+                compiledPasses,
+                definitionData
+            ),
+            diagnostics
+        );
     }
 
     private static bool Matches(

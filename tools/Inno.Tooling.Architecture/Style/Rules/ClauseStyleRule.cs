@@ -56,7 +56,7 @@ internal sealed class ClauseStyleRule : StyleRule
                 string expected = "\n" + new string(' ', declaration + StyleLayout.C_INDENT);
                 if (!follows && source.content[previous.Span.End..first.SpanStart] != expected)
                 {
-                    yield return (new(
+                    yield return (new StyleEdit(
                         previous.Span.End,
                         first.SpanStart,
                         expected
@@ -72,7 +72,7 @@ internal sealed class ClauseStyleRule : StyleRule
                 if (!StyleLayout.IsBlank(source.content, before.Span.End, keyword.SpanStart)) continue;
                 string expected = "\n" + new string(' ', source.Column(first.SpanStart));
                 if (source.content[before.Span.End..keyword.SpanStart] == expected) continue;
-                yield return (new(
+                yield return (new StyleEdit(
                     before.Span.End,
                     keyword.SpanStart,
                     expected
@@ -89,7 +89,11 @@ internal sealed class ClauseStyleRule : StyleRule
             if (StyleLayout.ClosesMultiLineHeader(source, previous)) continue;
             int joined = source.Column(previous.Span.End) + 1 + source.Line(bases.ColonToken.SpanStart).End - bases.ColonToken.SpanStart;
             if (joined > StyleLayout.C_HARD_WIDTH) continue;
-            yield return (new(previous.Span.End, bases.ColonToken.SpanStart, " "), "Keep the base list on the line of the type name.");
+            yield return (new StyleEdit(
+                previous.Span.End,
+                bases.ColonToken.SpanStart,
+                " "
+            ), "Keep the base list on the line of the type name.");
         }
     }
 }

@@ -62,7 +62,8 @@ public sealed unsafe partial class PlatformImGuiContext
         IPlatformImGuiRenderer? renderer,
         Action<PlatformImGuiContext> releaseRegistration
     ) {
-        m_releaseRegistration = releaseRegistration ?? throw new ArgumentNullException(nameof(releaseRegistration));
+        ArgumentNullException.ThrowIfNull(releaseRegistration);
+        m_releaseRegistration = releaseRegistration;
         bool enableViewports = (contextFlags & ImGuiContextFlags.EnableViewports) != 0;
         bool enableDocking = (contextFlags & ImGuiContextFlags.EnableDocking) != 0;
         m_enableSmoothResize = (contextFlags & ImGuiContextFlags.EnableSmoothResize) != 0;
@@ -661,10 +662,7 @@ public sealed unsafe partial class PlatformImGuiContext
         float deltaTimeSeconds,
         Action? prepareFrame
     ) {
-        if (m_disposed)
-        {
-            throw new ObjectDisposedException(nameof(PlatformImGuiContext));
-        }
+        ObjectDisposedException.ThrowIf(m_disposed, this);
 
         ImGuiNative.Raw.SetCurrentContext(m_context);
         m_viewports?.ProcessRetirements();
@@ -697,10 +695,7 @@ public sealed unsafe partial class PlatformImGuiContext
 
     private nint EndFrame()
     {
-        if (m_disposed)
-        {
-            throw new ObjectDisposedException(nameof(PlatformImGuiContext));
-        }
+        ObjectDisposedException.ThrowIf(m_disposed, this);
 
         ImGuiIO* io = ImGuiNative.Raw.GetIO();
 
@@ -1108,13 +1103,13 @@ public sealed unsafe partial class PlatformImGuiContext
 
     private static List<string> ResolveAssetDirectories(string relativePath)
     {
-        var directories = new List<string>();
+        List<string> directories = [];
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        string[] candidates = new[]
-        {
+        string[] candidates =
+        [
             Path.Combine(AppContext.BaseDirectory, relativePath),
             Path.Combine(Path.GetDirectoryName(typeof(PlatformImGuiContext).Assembly.Location) ?? string.Empty, relativePath)
-        };
+        ];
 
         foreach (string candidate in candidates)
         {

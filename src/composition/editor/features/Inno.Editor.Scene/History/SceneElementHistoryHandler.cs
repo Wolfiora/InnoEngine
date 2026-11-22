@@ -14,7 +14,8 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
 
     internal SceneElementHistoryHandler(EditorSceneWorkspace workspace)
     {
-        m_workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+        ArgumentNullException.ThrowIfNull(workspace);
+        m_workspace = workspace;
     }
 
     /// <summary>
@@ -160,8 +161,7 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                 }
                 if (restored)
                 {
-                    SceneReferenceRestoreResult referenceResult =
-                        SceneReferenceIndex.RestoreIncoming(data.incomingReferences, m_workspace);
+                    SceneReferenceRestoreResult referenceResult = SceneReferenceIndex.RestoreIncoming(data.incomingReferences, m_workspace);
                     if (!referenceResult.succeeded)
                     {
                         SceneHistoryCompensationResult cleanup = SceneHistoryCompensation.Remove(
@@ -184,8 +184,10 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                         m_workspace.assets
                     );
                     int rollbackIndex = GetIndex(data, scene, current);
-                    SceneReferenceRollbackState[] rollbackReferences =
-                        SceneReferenceIndex.CaptureCurrent(data.incomingReferences, m_workspace);
+                    SceneReferenceRollbackState[] rollbackReferences = SceneReferenceIndex.CaptureCurrent(
+                        data.incomingReferences,
+                        m_workspace
+                    );
                     try
                     {
                         if (state.Length > 0)
@@ -198,8 +200,10 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                             );
                         }
                         SetIndex(data, scene, current, index);
-                        SceneReferenceRestoreResult referenceResult =
-                            SceneReferenceIndex.RestoreIncoming(data.incomingReferences, m_workspace);
+                        SceneReferenceRestoreResult referenceResult = SceneReferenceIndex.RestoreIncoming(
+                            data.incomingReferences,
+                            m_workspace
+                        );
                         if (!referenceResult.succeeded)
                         {
                             return RollbackExisting(
@@ -235,8 +239,7 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                     m_workspace.assets
                 );
                 int rollbackIndex = GetIndex(data, scene, current);
-                SceneReferenceRollbackState[] rollbackReferences =
-                    SceneReferenceIndex.CaptureCurrent(data.incomingReferences, m_workspace);
+                SceneReferenceRollbackState[] rollbackReferences = SceneReferenceIndex.CaptureCurrent(data.incomingReferences, m_workspace);
                 try
                 {
                     if (!Remove(data, scene, current))
@@ -254,8 +257,7 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                     try
                     {
                         EngineObject restored = Restore(data, scene, rollbackIndex, rollbackState);
-                            SceneReferenceRestoreResult references =
-                            SceneReferenceIndex.RestoreCurrent(rollbackReferences, m_workspace);
+                            SceneReferenceRestoreResult references = SceneReferenceIndex.RestoreCurrent(rollbackReferences, m_workspace);
                         if (!references.succeeded)
                         {
                             throw new InvalidOperationException(references.message);
@@ -318,7 +320,7 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
         IReadOnlyList<SceneReferenceRollbackState> rollbackReferences,
         string failure
     ) {
-        var failures = new List<string>();
+        List<string> failures = [];
         try
         {
             SceneElementSerialization.RestoreState(

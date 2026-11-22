@@ -66,9 +66,8 @@ public sealed partial class AssetLoader
     {
         m_importCancellation.ThrowIfCancellationRequested();
         LoadCatalogLocked();
-        bool registriesChanged =
-            m_importerRegistryVersion != m_importers.snapshotVersion
-            || m_buildProcessorRegistryVersion != m_buildProcessors.snapshotVersion;
+        bool registriesChanged = m_importerRegistryVersion != m_importers.snapshotVersion
+                                 || m_buildProcessorRegistryVersion != m_buildProcessors.snapshotVersion;
         bool releasedRetiredAssets = ReleaseRetiredCanonicalAssetsLocked();
         if (m_runtimeArtifactsOnly)
         {

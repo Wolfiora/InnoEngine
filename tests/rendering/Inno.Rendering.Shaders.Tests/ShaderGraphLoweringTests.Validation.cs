@@ -43,7 +43,7 @@ public sealed partial class ShaderGraphLoweringTests
             [second.id] = Source("void Shade() {}", "second.ishadersource")
         };
         ShaderGraphLoweringResult result = Catalog().Lower(
-            new(graph, new Dictionary<string, GraphEndpoint>(), "metal", modules),
+            new ShaderGraphLoweringRequest(graph, new Dictionary<string, GraphEndpoint>(), "metal", modules),
             m_serialization,
             SerializationContext.empty
         );
@@ -88,7 +88,7 @@ public sealed partial class ShaderGraphLoweringTests
     public void DuplicateProvidersAndCanceledRequestsAreRejectedWithoutPartialResults()
     {
         Assert.Throws<ArgumentException>(() => Catalog(new DoubleCompiler(), new DoubleCompiler()));
-        var request = new ShaderGraphLoweringRequest(new(), new Dictionary<string, GraphEndpoint>(), "metal");
+        var request = new ShaderGraphLoweringRequest(new GraphDocument(), new Dictionary<string, GraphEndpoint>(), "metal");
         Assert.ThrowsAny<OperationCanceledException>(
             () => Catalog().Lower(request, m_serialization, SerializationContext.empty, new CancellationToken(true))
         );

@@ -82,7 +82,7 @@ public static class StandardNativeComponents
         List<ProductNativeBuildStep> steps = CreatePlayerSteps(RequireProfile(profile), options, layout);
         steps.Add(CreateShaderToolsStep(profile, options, layout));
         steps.Add(
-            new(
+            new ProductNativeBuildStep(
                 "cimgui",
                 ImGuiToolchain.componentDescriptor,
                 options("cimgui"),
@@ -100,7 +100,7 @@ public static class StandardNativeComponents
             )
         );
         steps.Add(
-            new(
+            new ProductNativeBuildStep(
                 "cimguizmo",
                 ImGuizmoToolchain.componentDescriptor,
                 options("cimguizmo"),
@@ -184,7 +184,7 @@ public static class StandardNativeComponents
         Func<string, NativeComponentBuildOptions> options,
         Func<string, string, string, string?> layout
     ) => [
-        new(
+        new ProductNativeBuildStep(
             "bgfx",
             BgfxNativeBuild.componentDescriptor,
             options("bgfx"),
@@ -200,7 +200,7 @@ public static class StandardNativeComponents
                 target
             ) => layout("bgfx", relative, target)
         ),
-        new(
+        new ProductNativeBuildStep(
             "sdl3",
             Sdl3Toolchain.componentDescriptor,
             options("sdl3"),
@@ -216,7 +216,7 @@ public static class StandardNativeComponents
                 target
             ) => layout("sdl3", relative, target)
         ),
-        new(
+        new ProductNativeBuildStep(
             "miniaudio",
             MiniAudioToolchain.componentDescriptor,
             options("miniaudio"),
@@ -232,7 +232,7 @@ public static class StandardNativeComponents
                 target
             ) => layout("miniaudio", relative, target)
         ),
-        new(
+        new ProductNativeBuildStep(
             "text",
             TextToolchain.componentDescriptor,
             options("text"),
@@ -248,7 +248,7 @@ public static class StandardNativeComponents
                 target
             ) => layout("text", relative, target)
         ),
-        new(
+        new ProductNativeBuildStep(
             "ui",
             UIToolchain.componentDescriptor,
             options("ui"),

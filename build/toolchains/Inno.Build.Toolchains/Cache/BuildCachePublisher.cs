@@ -291,7 +291,7 @@ public sealed class BuildCachePublisher
         }
         AtomicFile.WriteAllBytes(
             record,
-            WriteEntry(new(relative, Path.GetRelativePath(m_root, leasePath).Replace('\\', '/'), DateTime.UtcNow, [], 0, targetID))
+            WriteEntry(new Entry(relative, Path.GetRelativePath(m_root, leasePath).Replace('\\', '/'), DateTime.UtcNow, [], 0, targetID))
         );
         Directory.CreateDirectory(directory);
     }
@@ -385,13 +385,13 @@ public sealed class BuildCachePublisher
         );
     }
 
-    private void RetireMetadata(CancellationToken cancellation)
+    private void RetireMetadata(CancellationToken cancellationToken)
     {
         if (!Directory.Exists(m_root))
         {
             return;
         }
-        HashSet<string> currents = ReadRoots(cancellation).ToHashSet(BuildCacheInventory.PATH_COMPARER);
+        HashSet<string> currents = ReadRoots(cancellationToken).ToHashSet(BuildCacheInventory.PATH_COMPARER);
         foreach (string pointer in m_role == BuildCacheArtifactRole.ImmutableArtifact
                                    ? Directory.EnumerateFiles(m_root, "*.current")
                                    : []
@@ -404,7 +404,7 @@ public sealed class BuildCachePublisher
         }
         foreach (string record in Directory.EnumerateFiles(m_root, "*.cache.json").Order(StringComparer.Ordinal))
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             Entry entry = ReadEntry(PathBoundary.RequireUnlinkedPath(m_root, record));
             if (Path.GetFileName(record) != Key(entry.directory) + ".cache.json")
             {
@@ -417,14 +417,14 @@ public sealed class BuildCachePublisher
                 continue;
             }
             PathBoundary.RequireUnlinkedPath(m_root, leaf);
-            using (FileLease.AcquireAsync(leaf, TimeSpan.Zero, cancellation).AsTask().GetAwaiter().GetResult()) { }
+            using (FileLease.AcquireAsync(leaf, TimeSpan.Zero, cancellationToken).AsTask().GetAwaiter().GetResult()) { }
             File.Delete(leaf);
             // Keep explicit retirement authority until unlinking the leaf succeeds.
             File.Delete(record);
         }
         foreach (string record in Directory.EnumerateFiles(m_root, "*.metadata.json").Order(StringComparer.Ordinal))
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             Index index = JsonSerializer.Deserialize<Index>(File.ReadAllBytes(PathBoundary.RequireUnlinkedPath(m_root, record)))
                           ?? throw new InvalidDataException("Cache index ownership is incomplete.");
             if (index.dependencies is null
@@ -446,10 +446,10 @@ public sealed class BuildCachePublisher
             File.Delete(path);
             File.Delete(record);
         }
-        ProcessOwnedDirectory.RetireMetadataUnderOwnership(m_root, cancellation);
+        ProcessOwnedDirectory.RetireMetadataUnderOwnership(m_root, cancellationToken);
     }
 
-    private IReadOnlyList<BuildCacheArtifactDescriptor> ReadArtifacts(CancellationToken cancellation)
+    private IReadOnlyList<BuildCacheArtifactDescriptor> ReadArtifacts(CancellationToken cancellationToken)
     {
         List<BuildCacheArtifactDescriptor> result = [];
         if (!Directory.Exists(m_root))
@@ -458,7 +458,7 @@ public sealed class BuildCachePublisher
         }
         foreach (string path in Directory.EnumerateFiles(m_root, "*.cache.json").Order(StringComparer.Ordinal))
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             PathBoundary.RequireUnlinkedPath(m_root, path);
             Entry entry = ReadEntry(path);
             string directory = PathBoundary.Resolve(m_root, entry.directory);
@@ -476,11 +476,13 @@ public sealed class BuildCachePublisher
             long bytes = m_role == BuildCacheArtifactRole.ImmutableArtifact
                          || m_role == BuildCacheArtifactRole.ReusableWorkspace && entry.bytes > 0
                          ? entry.bytes
-                         : m_inventoryProgress?.Measure(directory, path, lease, m_role, cancellation)
-                           ?? BuildCacheFileInventory.Measure(directory, m_role, cancellation);
-            result.Add(new(directory, lease, entry.targetID, bytes, entry.lastUseUtc, entry.dependencies, m_role));
+                         : m_inventoryProgress?.Measure(directory, path, lease, m_role, cancellationToken)
+                           ?? BuildCacheFileInventory.Measure(directory, m_role, cancellationToken);
+            result.Add(
+                new BuildCacheArtifactDescriptor(directory, lease, entry.targetID, bytes, entry.lastUseUtc, entry.dependencies, m_role)
+            );
         }
-        foreach (ProcessOwnedDirectoryDescriptor working in ProcessOwnedDirectory.ReadClaims(m_root, cancellation))
+        foreach (ProcessOwnedDirectoryDescriptor working in ProcessOwnedDirectory.ReadClaims(m_root, cancellationToken))
         {
             if (result.Any(entry => BuildCacheInventory.PATH_COMPARER.Equals(entry.directory, working.directory)))
             {
@@ -493,11 +495,15 @@ public sealed class BuildCachePublisher
                              metadata,
                              working.leasePath,
                              BuildCacheArtifactRole.ProcessWorkingDirectory,
-                             cancellation
+                             cancellationToken
                          )
-                         : BuildCacheFileInventory.Measure(working.directory, BuildCacheArtifactRole.ProcessWorkingDirectory, cancellation);
+                         : BuildCacheFileInventory.Measure(
+                             working.directory,
+                             BuildCacheArtifactRole.ProcessWorkingDirectory,
+                             cancellationToken
+                         );
             result.Add(
-                new(
+                new BuildCacheArtifactDescriptor(
                     working.directory,
                     working.leasePath,
                     null,
@@ -511,7 +517,7 @@ public sealed class BuildCachePublisher
         return result;
     }
 
-    private IReadOnlyList<string> ReadRoots(CancellationToken cancellation)
+    private IReadOnlyList<string> ReadRoots(CancellationToken cancellationToken)
     {
         List<string> result = [];
         if (!Directory.Exists(m_root))
@@ -522,13 +528,13 @@ public sealed class BuildCachePublisher
                                 ? Directory.EnumerateFiles(m_root, "*.current").Order(StringComparer.Ordinal)
                                 : Enumerable.Empty<string>()
         ) {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             PathBoundary.RequireUnlinkedPath(m_root, path);
             result.Add(PathBoundary.Resolve(m_root, File.ReadAllText(path)));
         }
         foreach (string path in Directory.EnumerateFiles(m_root, "*.cache.json").Order(StringComparer.Ordinal))
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             PathBoundary.RequireUnlinkedPath(m_root, path);
             Entry entry = ReadEntry(path);
             string directory = PathBoundary.Resolve(m_root, entry.directory);
@@ -540,7 +546,7 @@ public sealed class BuildCachePublisher
                 result.Add(directory);
             }
         }
-        foreach (ProcessOwnedDirectoryDescriptor working in ProcessOwnedDirectory.ReadClaims(m_root, cancellation))
+        foreach (ProcessOwnedDirectoryDescriptor working in ProcessOwnedDirectory.ReadClaims(m_root, cancellationToken))
         {
             if (working.ownerState != ProcessOwnerState.Exited)
             {

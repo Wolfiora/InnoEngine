@@ -16,7 +16,7 @@ public sealed class EditorMenuModel
     /// </param>
     public EditorMenuModel(IReadOnlyList<EditorMenuItem>? items)
     {
-        this.items = items ?? Array.Empty<EditorMenuItem>();
+        this.items = items ?? [];
     }
 
     /// <summary>

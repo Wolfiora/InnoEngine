@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Numerics;
 using Inno.Core.Graphs;
 using Inno.Editor.ImGui;
 using Inno.Editor.Inspection;
@@ -18,7 +19,7 @@ internal sealed partial class ShaderEditorCanvas
 {
     private bool StoragePopup(ref ShaderGraphType type)
     {
-        EditorImGui.SetNextWindowSize(new(490, 390), (ImGuiCond.Appearing));
+        EditorImGui.SetNextWindowSize(new Vector2(490, 390), (ImGuiCond.Appearing));
         if (!EditorImGui.BeginPopup("##storage"))
         {
             return false;
@@ -33,7 +34,7 @@ internal sealed partial class ShaderEditorCanvas
             {
                 type.isImage = image;
                 type.isStorage = true;
-                type.storageElement = image ? null : new()
+                type.storageElement = image ? null : new ShaderGraphType()
                 {
                     id = "float4"
                 };

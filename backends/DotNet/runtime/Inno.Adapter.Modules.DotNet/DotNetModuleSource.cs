@@ -33,7 +33,7 @@ public sealed class DotNetModuleSource : IModuleSource
     /// <summary>
     /// Gets or sets additional managed assemblies loaded into the same context.
     /// </summary>
-    public IReadOnlyList<string> preloadAssemblyPaths { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> preloadAssemblyPaths { get; init; } = [];
 
     /// <summary>
     /// Gets stable module names whose exported assemblies may satisfy this module's managed dependencies.
@@ -42,7 +42,7 @@ public sealed class DotNetModuleSource : IModuleSource
     /// Dependencies are explicit for every module. An empty collection declares that the module has no
     /// upstream module dependencies; the host never infers dependencies from process-wide active state.
     /// </remarks>
-    public IReadOnlyList<string> upstreamModuleNames { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> upstreamModuleNames { get; init; } = [];
 
     /// <summary>
     /// Gets or sets whether the module load context supports cooperative unloading.
@@ -66,8 +66,9 @@ public sealed class DotNetModuleSource : IModuleSource
     /// This is used when one plugin generation contains both runtime and editor-only assemblies.
     /// Names not present in the map use <see cref="scope"/>.
     /// </remarks>
-    public IReadOnlyDictionary<string, AssemblyScope> assemblyScopes { get; init; } =
-        new Dictionary<string, AssemblyScope>(StringComparer.OrdinalIgnoreCase);
+    public IReadOnlyDictionary<string, AssemblyScope> assemblyScopes { get; init; } = new Dictionary<string, AssemblyScope>(
+        StringComparer.OrdinalIgnoreCase
+    );
 
     /// <inheritdoc/>
     public IReadOnlyList<string> GetAssemblyNames()

@@ -18,18 +18,18 @@ internal static class NativeDependenciesCommand
     internal static async Task RunAsync(
         BuildCommandContext request,
         BuildCommandLine options,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         string operation = options.Read("operation", "produce");
         if (operation == "import-cache")
         {
-            await NativeArtifactTransfer.ImportAsync(request.root, options.Require("input"), cancellation).ConfigureAwait(false);
+            await NativeArtifactTransfer.ImportAsync(request.root, options.Require("input"), cancellationToken).ConfigureAwait(false);
             return;
         }
 
         if (operation == "export-cache")
         {
-            await NativeArtifactTransfer.ExportAsync(request.root, options.Require("output"), cancellation).ConfigureAwait(false);
+            await NativeArtifactTransfer.ExportAsync(request.root, options.Require("output"), cancellationToken).ConfigureAwait(false);
             return;
         }
 
@@ -72,7 +72,7 @@ internal static class NativeDependenciesCommand
             ).WithBindingGenerator(generator);
             bindingContext = bindingContext.WithToolchain(
                 await request.distribution.ResolveNativeToolchain(request.target.value)
-                    .ResolveAsync(bindingContext, request.composition.host, request.target.value, cancellation)
+                    .ResolveAsync(bindingContext, request.composition.host, request.target.value, cancellationToken)
                     .ConfigureAwait(false)
             );
             // Verify the exact target publications being released, with their product linkage/options.
@@ -91,7 +91,7 @@ internal static class NativeDependenciesCommand
             using NativeBindingGenerationResult verified = await generator.GenerateAsync(
                 bindingContext,
                 bindingRequest,
-                cancellation
+                cancellationToken
             ).ConfigureAwait(false);
             Console.WriteLine(
                 $"Verified target binding publications: {steps.Length}; native processes: {bindingContext.statistics.nativeProcesses}."
@@ -110,7 +110,7 @@ internal static class NativeDependenciesCommand
                     request.target.value,
                     request.configuration.ToLowerInvariant(),
                     product.plan,
-                    cancellation
+                    cancellationToken
                 ).ConfigureAwait(false);
                 byte[] result = operation == "select"
                                 ? JsonSerializer.SerializeToUtf8Bytes(assets)
@@ -145,19 +145,19 @@ internal static class NativeDependenciesCommand
         context = context.WithToolchain(
             await request.distribution
                 .ResolveNativeToolchain(request.target.value)
-                .ResolveAsync(context, request.composition.host, request.target.value, cancellation)
+                .ResolveAsync(context, request.composition.host, request.target.value, cancellationToken)
                 .ConfigureAwait(false)
         );
         Report("toolchain");
         StandardBuildCaches.CreateOwners(request.root, product.plan.steps.Select(static step => step.component).ToArray());
-        string identity = await ProductNativePreparation.FreezeAsync(context, product.plan, cancellation).ConfigureAwait(false);
+        string identity = await ProductNativePreparation.FreezeAsync(context, product.plan, cancellationToken).ConfigureAwait(false);
         Report("input-capture");
-        using ProductNativeBuildResult products = await product.BuildAsync(context, cancellation).ConfigureAwait(false);
+        using ProductNativeBuildResult products = await product.BuildAsync(context, cancellationToken).ConfigureAwait(false);
         Report("production");
         if (identity != await ProductNativePreparation.FreezeAsync(
             context.BeginInputVerification("dependency-export"),
             product.plan,
-            cancellation
+            cancellationToken
         ).ConfigureAwait(false)
         ) {
             throw new InvalidOperationException("Native producer inputs changed before export.");
@@ -168,13 +168,13 @@ internal static class NativeDependenciesCommand
             product.plan,
             products,
             options.Require("output"),
-            cancellation
+            cancellationToken
         ).ConfigureAwait(false);
         Report("export");
         if (identity != await ProductNativePreparation.FreezeAsync(
             context.BeginInputVerification("dependency-export-complete"),
             product.plan,
-            cancellation
+            cancellationToken
         ).ConfigureAwait(false)
         ) {
             throw new InvalidOperationException("Native producer inputs changed during export.");

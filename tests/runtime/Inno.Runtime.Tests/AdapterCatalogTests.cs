@@ -29,7 +29,7 @@ public sealed class AdapterCatalogTests
         Assert.Throws<ArgumentException>(() => new PresentationBackendCatalog([first, first]));
         Assert.Throws<ArgumentException>(() => new PresentationBackendCatalog([null!]));
         Assert.Throws<ArgumentException>(() => new TestPresentationProvider(default));
-        var providers = new List<PresentationBackendProvider> { first };
+        List<PresentationBackendProvider> providers = [first];
         var catalog = new PresentationBackendCatalog(providers);
         providers.Clear();
         providers.Add(second);
@@ -100,7 +100,7 @@ public sealed class AdapterCatalogTests
     {
         var first = new TestStorageProvider(new StorageBackendID("test.storage.first"));
         var second = new TestStorageProvider(new StorageBackendID("test.storage.second"));
-        var providers = new List<StorageBackendProvider> { first };
+        List<StorageBackendProvider> providers = [first];
         var catalog = new StorageBackendCatalog(providers);
         providers.Clear();
         providers.Add(second);

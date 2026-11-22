@@ -26,7 +26,7 @@ public sealed class SceneFacadeTests : IDisposable
         SceneManager.LoadSceneAdditive(scene);
         SceneManager.LoadSceneAdditive(destination);
         Transform destinationRoot = destination.CreateObject("Existing").transform;
-        var roots = new List<Transform>();
+        List<Transform> roots = [];
         for (int index = 0; index < 64; index++)
         {
             roots.Add(scene.CreateObject("Root " + index).transform);
