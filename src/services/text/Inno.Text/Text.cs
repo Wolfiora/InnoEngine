@@ -91,7 +91,7 @@ public static class Text
     /// <param name="faceIndex">
     /// The zero-based collection face index.
     /// </param>
-    /// <param name="glyphId">
+    /// <param name="glyphID">
     /// The font-specific glyph identifier.
     /// </param>
     /// <param name="fontSize">
@@ -103,7 +103,7 @@ public static class Text
     public static GlyphBitmap Rasterize(
         FontAsset font,
         int faceIndex,
-        uint glyphId,
+        uint glyphID,
         float fontSize
-    ) => TextExecutionContext.current.Rasterize(font, faceIndex, glyphId, fontSize);
+    ) => TextExecutionContext.current.Rasterize(font, faceIndex, glyphID, fontSize);
 }

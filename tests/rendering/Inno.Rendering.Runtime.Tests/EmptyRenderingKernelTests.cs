@@ -44,8 +44,8 @@ public sealed class EmptyRenderingKernelTests
                 new RenderOutputLayer("model-b", [])
             ]
         );
-        Assert.Equal("canvas", Assert.Single(route.layers[0].sourceIds));
-        Assert.Empty(route.layers[1].sourceIds);
+        Assert.Equal("canvas", Assert.Single(route.layers[0].sourceIDs));
+        Assert.Empty(route.layers[1].sourceIDs);
     }
 
     [Theory]
@@ -63,12 +63,12 @@ public sealed class EmptyRenderingKernelTests
     [Fact]
     public void OpenShaderProtocolsRemainBackendNeutral()
     {
-        Type[] publicTypes = typeof(ShaderContractId).Assembly.GetExportedTypes();
+        Type[] publicTypes = typeof(ShaderContractID).Assembly.GetExportedTypes();
         Assert.DoesNotContain(publicTypes, static type => (
             type.FullName?.Contains("Bgfx", StringComparison.OrdinalIgnoreCase) == true
         ));
-        Assert.Contains(publicTypes, static type => type == typeof(ShaderContractId));
-        Assert.Contains(publicTypes, static type => type == typeof(ShaderPassRoleId));
+        Assert.Contains(publicTypes, static type => type == typeof(ShaderContractID));
+        Assert.Contains(publicTypes, static type => type == typeof(ShaderPassRoleID));
     }
 }
 
@@ -182,10 +182,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             long revision = frame;
             ResourceProbePipeline.action = resources =>
             {
-                _ = resources.AcquireBuffer(new RenderPersistentResourceId("owned"), revision, descriptor, new byte[16], "owned");
+                _ = resources.AcquireBuffer(new RenderPersistentResourceID("owned"), revision, descriptor, new byte[16], "owned");
                 try
                 {
-                    resources.AcquireBuffer(new RenderPersistentResourceId("overflow"), revision, descriptor, new byte[16], "overflow");
+                    resources.AcquireBuffer(new RenderPersistentResourceID("overflow"), revision, descriptor, new byte[16], "overflow");
                 }
                 catch (InvalidOperationException)
                 {
@@ -798,7 +798,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         IRenderDevice device = TestDeviceProxy.Create(out TestDeviceProxy proxy);
         var diagnostics = new TestDiagnosticSink();
         proxy.capabilities = new GraphicsCapabilities(
-            GraphicsApi.Metal,
+            GraphicsApi.metal,
             GraphicsCapability.None,
             new GraphicsLimits(64, 4, 4096, 8),
             Enum.GetValues<RenderTextureFormat>(),
@@ -1246,8 +1246,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     [Fact]
     public void PendingShaderCompilationDoesNotPublishAnUnavailableArtifactError()
     {
-        var contract = new ShaderContractId("tests.pending.contract");
-        var role = new ShaderPassRoleId("draw");
+        var contract = new ShaderContractID("tests.pending.contract");
+        var role = new ShaderPassRoleID("draw");
         var pass = new ShaderPassDefinition("draw", ShaderProgramKind.Raster);
         var shader = new ShaderAsset();
         Assert.True(m_identities.Register(shader));
@@ -1258,7 +1258,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                 [],
                 [pass],
                 [new ShaderTechniqueDefinition(
-                    new ShaderTechniqueId("default"),
+                    new ShaderTechniqueID("default"),
                     contract,
                     [new ShaderTechniquePass(role, pass.name)]
                 )]
@@ -1461,7 +1461,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         object payload = Activator.CreateInstance(payloadType)
                          ?? throw new InvalidOperationException("The collectible frame payload could not be created.");
         var data = new RenderFrameData();
-        data.Set(new RenderDataChannelId("tests.runtime.collectible-payload"), payload);
+        data.Set(new RenderDataChannelID("tests.runtime.collectible-payload"), payload);
         runtime.Submit(
             new RenderRequest(
                 "Collectible Pending Request",
@@ -1505,7 +1505,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         public override void Build(RenderPipelineContext context)
         {
             action?.Invoke(context.resourceService);
-            context.graph.AddRasterPass("Resources", new RenderPhaseId("tests.resources"), 0, static (
+            context.graph.AddRasterPass("Resources", new RenderPhaseID("tests.resources"), 0, static (
                 _,
                 _
             ) => {}).HasSideEffect();
@@ -1665,7 +1665,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             context.graph
                 .AddRasterPass(
                     "Visible",
-                    new RenderPhaseId("tests.statistics.visible"),
+                    new RenderPhaseID("tests.statistics.visible"),
                     0,
                     static (
                         _,
@@ -1675,7 +1675,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                 .HasSideEffect();
             context.graph.AddRasterPass(
                 "Culled",
-                new RenderPhaseId("tests.statistics.culled"),
+                new RenderPhaseID("tests.statistics.culled"),
                 0,
                 static (
                     _,
@@ -1695,7 +1695,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             viewports.Add(context.request.viewport);
             RasterPassBuilder pass = context.graph.AddRasterPass(
                 "Scene Color",
-                new RenderPhaseId("tests.runtime.composition-layer"),
+                new RenderPhaseID("tests.runtime.composition-layer"),
                 0,
                 static (
                     _,
@@ -1730,7 +1730,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             => context.graph
                 .AddRasterPass(
                     "Visible",
-                    new RenderPhaseId("tests.runtime.visible"),
+                    new RenderPhaseID("tests.runtime.visible"),
                     0,
                     static (
                         _,
@@ -1751,7 +1751,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             context.graph
                 .AddRasterPass(
                     "Presentation",
-                    new RenderPhaseId("tests.runtime.presentation"),
+                    new RenderPhaseID("tests.runtime.presentation"),
                     0,
                     static (
                         _,
@@ -1776,7 +1776,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             context.graph
                 .AddRasterPass(
                     "Rolled Back",
-                    new RenderPhaseId("tests.runtime.rolled-back"),
+                    new RenderPhaseID("tests.runtime.rolled-back"),
                     0,
                     static (
                         _,
@@ -1838,7 +1838,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             context.graph
                 .AddRasterPass(
                     "Submit While Prewarming",
-                    new RenderPhaseId("tests.runtime.prewarm"),
+                    new RenderPhaseID("tests.runtime.prewarm"),
                     0,
                     static (
                         _,
@@ -1869,7 +1869,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             context.graph
                 .AddRasterPass(
                     "Submit While Compiling",
-                    new RenderPhaseId("tests.runtime.pending-shader"),
+                    new RenderPhaseID("tests.runtime.pending-shader"),
                     0,
                     static (
                         _,
@@ -1880,8 +1880,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         }
 
         internal static MaterialAsset? material { get; set; }
-        internal static ShaderContractId contract { get; set; }
-        internal static ShaderPassRoleId role { get; set; }
+        internal static ShaderContractID contract { get; set; }
+        internal static ShaderPassRoleID role { get; set; }
         internal static bool resolved { get; private set; }
 
         internal static void Reset()
@@ -1908,7 +1908,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             context.graph
                 .AddRasterPass(
                     "Readback Submission",
-                    new RenderPhaseId("tests.runtime.readback"),
+                    new RenderPhaseID("tests.runtime.readback"),
                     0,
                     static (
                         _,
@@ -1996,7 +1996,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             graph
                 .AddRasterPass(
                     "Overlay",
-                    new RenderPhaseId("tests.runtime.overlay"),
+                    new RenderPhaseID("tests.runtime.overlay"),
                     0,
                     static (
                         _,
@@ -2013,11 +2013,11 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
         public void Resolve(
             string code,
-            string? semanticId = null,
-            Guid? objectId = null
+            string? semanticID = null,
+            Guid? objectID = null
         ) => items.RemoveAll(diagnostic => (
             string.Equals(diagnostic.code, code, StringComparison.Ordinal)
-            && string.Equals(diagnostic.semanticId, semanticId, StringComparison.Ordinal) && diagnostic.objectId == objectId
+            && string.Equals(diagnostic.semanticID, semanticID, StringComparison.Ordinal) && diagnostic.objectID == objectID
         ));
 
         public void Replace(IEnumerable<Diagnostic> diagnostics)
@@ -2032,7 +2032,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     private sealed class TestDeviceProxy : RenderDevice, IRenderDevice
     {
         private static readonly GraphicsCapabilities CAPABILITIES = new(
-            GraphicsApi.Noop,
+            GraphicsApi.noop,
             GraphicsCapability.None,
             new GraphicsLimits(64, 4, 4096, 8),
             Enum.GetValues<RenderTextureFormat>(),
@@ -2256,7 +2256,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         internal RecordingRenderDevice(bool supportsReadback = false)
         {
             this.capabilities = new GraphicsCapabilities(
-                GraphicsApi.Noop,
+                GraphicsApi.noop,
                 supportsReadback ? GraphicsCapability.TextureReadback : GraphicsCapability.None,
                 new GraphicsLimits(64, 4, 4096, 8),
                 Enum.GetValues<RenderTextureFormat>(),
@@ -2532,7 +2532,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                 [1],
                 [1],
                 [new RenderShaderBindingDescriptor(
-                    new RenderBindingId("s_tex"),
+                    new RenderBindingID("s_tex"),
                     RenderShaderBindingKind.Texture,
                     0,
                     nativeName: "s_tex"

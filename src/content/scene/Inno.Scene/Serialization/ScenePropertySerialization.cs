@@ -199,7 +199,7 @@ public static class ScenePropertySerialization
     {
         if (target.isDestroyed)
         {
-            throw new InvalidOperationException($"Destroyed scene object '{target.identity.persistentId}' cannot be serialized.");
+            throw new InvalidOperationException($"Destroyed scene object '{target.identity.persistentID}' cannot be serialized.");
         }
         return target switch
         {
@@ -208,7 +208,7 @@ public static class ScenePropertySerialization
             GameComponent component when !component.isDestroyed => component.gameObject.scene,
             GameSystem system when system.ownerScene is { isLoaded: true } owner => owner,
             _ => throw new InvalidOperationException(
-                $"Scene object '{target.identity.persistentId}' is not owned by a loaded scene."
+                $"Scene object '{target.identity.persistentID}' is not owned by a loaded scene."
             )
         };
     }

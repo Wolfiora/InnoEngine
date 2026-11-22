@@ -41,7 +41,7 @@ public abstract class AssetImporter
     /// <summary>
     /// Gets the stable importer implementation identifier.
     /// </summary>
-    public string importerId
+    public string importerID
         => m_importerID
            ?? throw new InvalidOperationException(
                $"Asset importer '{GetType().FullName}' has not been bound to discovery metadata."

@@ -10,7 +10,7 @@ public interface IAssetArtifactLookup
     /// <summary>
     /// Retains one verified output so cache collection cannot remove an active generation.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The persistent asset identity.
     /// </param>
     /// <param name="outputName">
@@ -23,14 +23,14 @@ public interface IAssetArtifactLookup
     /// The requested output is unavailable or invalid.
     /// </exception>
     ArtifactLease AcquireArtifact(
-        Guid persistentId,
+        Guid persistentID,
         string outputName
     );
 
     /// <summary>
     /// Tries to resolve one named immutable artifact output by persistent asset identity.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// Persistent identity of the artifact owner.
     /// </param>
     /// <param name="outputName">
@@ -43,7 +43,7 @@ public interface IAssetArtifactLookup
     /// <see langword="true"/> when the artifact output exists and passes integrity validation.
     /// </returns>
     bool TryGetArtifact(
-        Guid persistentId,
+        Guid persistentID,
         string outputName,
         out AssetArtifactInfo? artifact
     );

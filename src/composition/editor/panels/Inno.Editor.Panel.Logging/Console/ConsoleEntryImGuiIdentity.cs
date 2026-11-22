@@ -1,10 +1,10 @@
-using Ui = Inno.Editor.ImGui.ImGui;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Logging;
 
 internal static class ConsoleEntryImGuiIdentity
 {
-    internal static void Push(string identity) => Ui.PushId(identity);
+    internal static void Push(string identity) => Gui.PushID(identity);
 
-    internal static void Pop() => Ui.PopId();
+    internal static void Pop() => Gui.PopID();
 }

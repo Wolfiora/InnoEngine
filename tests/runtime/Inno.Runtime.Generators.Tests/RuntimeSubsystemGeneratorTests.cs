@@ -50,7 +50,7 @@ public sealed class RuntimeSubsystemGeneratorTests
     }
 
     [Fact]
-    public void DuplicateStableIdsFailDuringCompilation()
+    public void DuplicateStableIDsFailDuringCompilation()
     {
         (_, GeneratorDriverRunResult result) = Generate(
             C_CATALOG + """

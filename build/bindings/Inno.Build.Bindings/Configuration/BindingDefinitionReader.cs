@@ -56,9 +56,9 @@ internal static class BindingDefinitionReader
         {
             throw new InvalidDataException("A binding definition requires its common binding configuration.");
         }
-        if (request.targetId != profile.targetId)
+        if (request.targetID != profile.targetID)
         {
-            throw new NotSupportedException($"The selected binding profile does not serve '{request.targetId}'.");
+            throw new NotSupportedException($"The selected binding profile does not serve '{request.targetID}'.");
         }
         return new(component, definition, Resolve(hostConfig), request, profile);
         string Resolve(string path)

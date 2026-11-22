@@ -122,7 +122,7 @@ public sealed class ConditionalInspectionTests : IDisposable
         Directory.Delete(m_root, true);
     }
 
-    [StableTypeId("eeeb7c59-2af3-4cc3-81d2-c853feef3874")]
+    [StableTypeID("eeeb7c59-2af3-4cc3-81d2-c853feef3874")]
     public sealed class AvailabilityTarget : ISerializable
     {
         public bool visible { get; set; }

@@ -90,12 +90,12 @@ public sealed class ShaderCompilerTests : IDisposable
         GraphDocument alternate = graph.Clone();
         foreach (GraphNodeRecord original in alternate.nodes)
         {
-            var node = new GraphNodeRecord(new("alternate." + original.id.value), original.definitionId);
+            var node = new GraphNodeRecord(new("alternate." + original.id.value), original.definitionID);
             foreach ((string key, GraphSerializedValue value) in original.values)
             {
                 node.SetValue(key, value.Clone());
             }
-            if (node.definitionId == ShaderGraphDocument.outputDefinitionId)
+            if (node.definitionID == ShaderGraphDocument.C_OUTPUT_DEFINITION_ID)
             {
                 ShaderGraphStageSettings settings = ShaderGraphDocument.Read<ShaderGraphStageSettings>(
                     node,
@@ -124,8 +124,8 @@ public sealed class ShaderCompilerTests : IDisposable
             graph.AddEdge(
                 new(
                     new("alternate." + edge.id.value),
-                    new(new("alternate." + edge.output.nodeId.value), edge.output.portId),
-                    new(new("alternate." + edge.input.nodeId.value), edge.input.portId)
+                    new(new("alternate." + edge.output.nodeID.value), edge.output.portID),
+                    new(new("alternate." + edge.input.nodeID.value), edge.input.portID)
                 )
             );
         }
@@ -135,7 +135,7 @@ public sealed class ShaderCompilerTests : IDisposable
             definition.passes[0]
         ];
         graph.SetMetadata(
-            ShaderGraphDocument.definitionKey,
+            ShaderGraphDocument.C_DEFINITION_KEY,
             ShaderGraphDocument.Encode(m_serialization.Serialize(definition), m_serialization, SerializationContext.empty)
         );
         graph = ShaderGraphPrograms.Bind(
@@ -191,13 +191,13 @@ public sealed class ShaderCompilerTests : IDisposable
         ShaderGraphProgramResult program = new ShaderGraphProgramCompiler(m_nodes).Lower(
             graph,
             "tests.fake",
-            new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis>(),
+            new Dictionary<GraphNodeID, ShaderSourceModuleAnalysis>(),
             m_serialization,
             SerializationContext.empty
         );
         RenderTextureFormat[] formats = Enum.GetValues<RenderTextureFormat>();
         var capabilities = new GraphicsCapabilities(
-            GraphicsApi.Metal,
+            GraphicsApi.metal,
             GraphicsCapability.None,
             new(256, 8, 8192, 16),
             formats,
@@ -222,7 +222,7 @@ public sealed class ShaderCompilerTests : IDisposable
 
     private sealed class FakeToolchain : IShaderCompilerToolchain
     {
-        public string implementationId => "tests.fake";
+        public string implementationID => "tests.fake";
 
         public IReadOnlyList<string> supportedSourceLanguages => [];
 

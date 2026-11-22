@@ -38,11 +38,11 @@ public sealed partial class EditorRuntimeTests
     {
         var target = new MenuStateTarget { visible = false };
         EditorInteraction interaction = m_runtime.interactions.For("tests/shared-menu", target);
-        Assert.Equal("tests.menu-fallback", Assert.Single(interaction.BuildMenu().items).actionId);
+        Assert.Equal("tests.menu-fallback", Assert.Single(interaction.BuildMenu().items).actionID);
         target.visible = true;
-        Assert.Equal("tests.menu-conditional", Assert.Single(interaction.BuildMenu().items).actionId);
+        Assert.Equal("tests.menu-conditional", Assert.Single(interaction.BuildMenu().items).actionID);
         target.visible = false;
-        Assert.Equal("tests.menu-fallback", Assert.Single(interaction.BuildMenu().items).actionId);
+        Assert.Equal("tests.menu-fallback", Assert.Single(interaction.BuildMenu().items).actionID);
         GC.KeepAlive(target);
     }
 

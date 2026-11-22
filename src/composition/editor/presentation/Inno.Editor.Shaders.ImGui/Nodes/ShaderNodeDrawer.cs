@@ -17,7 +17,7 @@ public sealed class ShaderNodeDrawerAttribute : Attribute
     /// <summary>
     /// Associates the drawer with one stable node definition.
     /// </summary>
-    /// <param name="definitionId">
+    /// <param name="definitionID">
     /// The compiler-independent graph node identity.
     /// </param>
     /// <param name="displayName">
@@ -33,14 +33,14 @@ public sealed class ShaderNodeDrawerAttribute : Attribute
     /// Whether the contributed creation group is preceded by a separator at its own level.
     /// </param>
     public ShaderNodeDrawerAttribute(
-        string definitionId,
+        string definitionID,
         string displayName = "",
         string createPath = "",
         int createOrder = 0,
         bool separatorBefore = false
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(definitionId);
-        this.definitionId = definitionId;
+        ArgumentException.ThrowIfNullOrWhiteSpace(definitionID);
+        this.definitionID = definitionID;
         this.displayName = displayName ?? throw new ArgumentNullException(nameof(displayName));
         this.createPath = createPath ?? throw new ArgumentNullException(nameof(createPath));
         this.createOrder = createOrder;
@@ -50,7 +50,7 @@ public sealed class ShaderNodeDrawerAttribute : Attribute
     /// <summary>
     /// Gets the stable node identity handled by this drawer.
     /// </summary>
-    public string definitionId { get; }
+    public string definitionID { get; }
 
     /// <summary>
     /// Gets the optional presentation-only name; it does not participate in Shader compilation or identity.
@@ -202,7 +202,7 @@ public sealed class ShaderNodeDrawContext
     /// <summary>
     /// Gets the stable node identity for Editor widget IDs.
     /// </summary>
-    public GraphNodeId nodeId => m_node.id;
+    public GraphNodeID nodeID => m_node.id;
 
     /// <summary>
     /// Reads a detached property value; missing values use the node's declared default.

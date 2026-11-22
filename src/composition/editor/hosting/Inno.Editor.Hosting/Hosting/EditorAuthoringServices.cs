@@ -93,7 +93,7 @@ internal sealed class EditorAuthoringServices : IDisposable
             PluginScanResult pluginScan = pluginSources.Scan();
             AssetPipelineOptions defaultOptions = AssetPipelineOptions.Create(assetRoot, libraryRoot);
             AssetSourceMount projectMount = defaultOptions.sourceMounts!.Single(
-                static mount => mount.id == AssetSourceId.project
+                static mount => mount.id == AssetSourceID.project
             );
             assets = new AssetPipeline(
                 engineHost.modules,
@@ -113,10 +113,10 @@ internal sealed class EditorAuthoringServices : IDisposable
             }
             );
             settings = new ProjectSettingsStore(
-                new FileByteDocumentStore(Path.GetFullPath(Path.Combine(projectRoot, SettingsFileNames.project))),
+                new FileByteDocumentStore(Path.GetFullPath(Path.Combine(projectRoot, SettingsFileNames.C_PROJECT))),
                 engineHost.types,
                 engineHost.serialization,
-                ProjectId.FromName(new DirectoryInfo(projectRoot).Name),
+                ProjectID.FromName(new DirectoryInfo(projectRoot).Name),
                 AssetSerializationContext.Create(assets)
             );
             plugins = new PluginEnvironment(

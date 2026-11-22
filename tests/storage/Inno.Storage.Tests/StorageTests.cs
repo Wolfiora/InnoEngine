@@ -172,7 +172,7 @@ public sealed class StorageTests
             var options = new RuntimeSessionOptions
             {
                 kind = RuntimeSessionKind.Play,
-                applicationId = "tests.storage",
+                applicationID = "tests.storage",
                 createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(root, "tests.storage"), "Logs")),
                 jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
                 createSubsystems = owner =>
@@ -205,8 +205,8 @@ public sealed class StorageTests
     private sealed class StorageProbeFactory : IRuntimeSubsystemFactory
     {
         public RuntimeSubsystemDescriptor descriptor { get; } = new(
-            new RuntimeSubsystemId("tests.storage.probe"),
-            dependencies: [new RuntimeSubsystemId("inno.runtime.storage")]
+            new RuntimeSubsystemID("tests.storage.probe"),
+            dependencies: [new RuntimeSubsystemID("inno.runtime.storage")]
         );
 
         public IRuntimeSubsystem Create(RuntimeSubsystemContext context) => new StorageProbe();

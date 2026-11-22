@@ -9,8 +9,8 @@ namespace Inno.Editor.Workbench;
 /// <param name="zoom">
 /// The zoom used to initialize this instance.
 /// </param>
-[EditorAction(GlobalInteractionIds.C_ZOOM_IN)]
-[EditorMenu(GlobalInteractionIds.C_MAIN_MENU_AREA, "View/Zoom In", order: 100)]
+[EditorAction(GlobalInteractionIDs.C_ZOOM_IN)]
+[EditorMenu(GlobalInteractionIDs.C_MAIN_MENU_AREA, "View/Zoom In", order: 100)]
 [EditorShortcut(KeyCode.Plus, primary: true)]
 internal sealed class ZoomInEditorAction(EditorZoomModule zoom) : EditorAction
 {
@@ -41,8 +41,8 @@ internal sealed class ZoomInEditorAction(EditorZoomModule zoom) : EditorAction
 /// <param name="zoom">
 /// The zoom used to initialize this instance.
 /// </param>
-[EditorAction(GlobalInteractionIds.C_ZOOM_OUT)]
-[EditorMenu(GlobalInteractionIds.C_MAIN_MENU_AREA, "View/Zoom Out", order: 110)]
+[EditorAction(GlobalInteractionIDs.C_ZOOM_OUT)]
+[EditorMenu(GlobalInteractionIDs.C_MAIN_MENU_AREA, "View/Zoom Out", order: 110)]
 [EditorShortcut(KeyCode.Minus, primary: true)]
 internal sealed class ZoomOutEditorAction(EditorZoomModule zoom) : EditorAction
 {
@@ -73,8 +73,8 @@ internal sealed class ZoomOutEditorAction(EditorZoomModule zoom) : EditorAction
 /// <param name="zoom">
 /// The zoom used to initialize this instance.
 /// </param>
-[EditorAction(GlobalInteractionIds.C_ZOOM_RESET)]
-[EditorMenu(GlobalInteractionIds.C_MAIN_MENU_AREA, "View/Actual Size", order: 120)]
+[EditorAction(GlobalInteractionIDs.C_ZOOM_RESET)]
+[EditorMenu(GlobalInteractionIDs.C_MAIN_MENU_AREA, "View/Actual Size", order: 120)]
 [EditorShortcut(KeyCode.D0, primary: true)]
 internal sealed class ActualSizeEditorAction(EditorZoomModule zoom) : EditorAction
 {

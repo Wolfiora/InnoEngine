@@ -9,7 +9,7 @@ using Inno.Editor.Shaders;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 
@@ -119,7 +119,7 @@ internal sealed class ShaderSelectionDrawer(IInspectionIconProvider<AssetFileEnt
         ShaderInspectionSelection target
     ) => context.interactions.TryGetModule<ShaderEditorDocuments>(out ShaderEditorDocuments? documents)
          && documents is not null
-         && documents.assets.TryGetInfo(target.assetId, out AssetInfo? info)
+         && documents.assets.TryGetInfo(target.assetID, out AssetInfo? info)
          && info is not null
          && documents.assets.TryGetFileSystemEntry(
              info.assetPath,
@@ -144,7 +144,7 @@ internal sealed class ShaderSelectionDrawer(IInspectionIconProvider<AssetFileEnt
     ) {
         if (context.interactions.TryGetModule<ShaderEditorDocuments>(out ShaderEditorDocuments? documents)
             && documents is not null
-            && documents.assets.TryGetInfo(target.assetId, out AssetInfo? info)
+            && documents.assets.TryGetInfo(target.assetID, out AssetInfo? info)
             && info is not null
         ) {
             return (Path.GetFileName(info.assetPath.localPath), null);
@@ -167,7 +167,7 @@ internal sealed class ShaderSelectionDrawer(IInspectionIconProvider<AssetFileEnt
     ) {
         if (!context.interactions.TryGetModule<ShaderEditorDocuments>(out ShaderEditorDocuments? documents)
             || documents is null
-            || !documents.assets.TryGetInfo(target.assetId, out AssetInfo? info)
+            || !documents.assets.TryGetInfo(target.assetID, out AssetInfo? info)
             || info is null
             || !documents.assets.TryGetFileSystemEntry(info.assetPath, out AssetFileEntry entry)
         ) {
@@ -211,7 +211,7 @@ internal sealed class ShaderSelectionDrawer(IInspectionIconProvider<AssetFileEnt
         {
             return;
         }
-        if (!documents.assets.TryGetInfo(target.assetId, out AssetInfo? info)
+        if (!documents.assets.TryGetInfo(target.assetID, out AssetInfo? info)
             || info is null
             || !documents.assets.TryGetFileSystemEntry(info.assetPath, out AssetFileEntry entry)
         ) {

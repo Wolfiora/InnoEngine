@@ -17,7 +17,7 @@ internal static class BindingInputPlanning
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(request);
         cancellation.ThrowIfCancellationRequested();
-        var declarations = new List<string> { "binding-source-inputs", request.targetId, request.outputMode.ToString() };
+        var declarations = new List<string> { "binding-source-inputs", request.targetID, request.outputMode.ToString() };
         foreach (NativeComponentDescriptor component in request.components)
         {
             BindingGenerationConfiguration definition = BindingDefinitionReader.Read(context, component, request, profile);

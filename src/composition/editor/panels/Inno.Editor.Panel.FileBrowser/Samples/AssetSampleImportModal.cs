@@ -25,7 +25,7 @@ internal sealed class AssetSampleImportModal(AssetSampleImportModule imports) : 
         Vector2 availableContentSize
     ) {
         AssetSampleImportProgress snapshot = imports.progress;
-        m_operation = snapshot.operationId;
+        m_operation = snapshot.operationID;
         m_content = new(
             snapshot.status,
             snapshot.fraction,
@@ -33,14 +33,14 @@ internal sealed class AssetSampleImportModal(AssetSampleImportModule imports) : 
             actionEnabled: !snapshot.cancellationRequested,
             cancelOnEscape: true
         );
-        m_layout = EditorUiSession.current.widgets.MeasureDialog(m_content, availableContentSize);
+        m_layout = EditorUISession.current.widgets.MeasureDialog(m_content, availableContentSize);
         return m_layout.size;
     }
 
     /// <inheritdoc/>
     protected override void OnDraw(EditorContext context)
     {
-        if (EditorUiSession.current.widgets.DrawDialog(m_content, m_layout))
+        if (EditorUISession.current.widgets.DrawDialog(m_content, m_layout))
         {
             imports.Cancel(m_operation);
         }

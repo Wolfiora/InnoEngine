@@ -5,8 +5,8 @@ using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Interactions;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using UiDrawing = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using GuiDrawing = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Hierarchy;
 
@@ -45,7 +45,7 @@ internal sealed class HierarchyDropVisual
             case EditorDropVisual.Highlight:
             {
                 Vector2 highlightMin = result.contentMin;
-                highlightMin.X = MathF.Max(result.min.X, highlightMin.X - UiDrawing.GetLayout().itemInnerSpacing.X);
+                highlightMin.X = MathF.Max(result.min.X, highlightMin.X - GuiDrawing.GetLayout().itemInnerSpacing.X);
                 EditorUI.current.widgets.DropTargetHighlight(highlightMin, result.max);
                 break;
             }

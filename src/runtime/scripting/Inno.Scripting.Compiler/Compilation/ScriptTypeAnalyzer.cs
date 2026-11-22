@@ -15,7 +15,7 @@ namespace Inno.Scripting.Compiler;
 internal static class ScriptTypeAnalyzer
 {
     private const string C_STABLE_TYPE_ID_ATTRIBUTE =
-        "Inno.Extensibility.Types.StableTypeIdAttribute";
+        "Inno.Extensibility.Types.StableTypeIDAttribute";
 
     internal static ScriptTypeAnalysisResult Analyze(
         CSharpCompilation compilation,
@@ -85,7 +85,7 @@ internal static class ScriptTypeAnalyzer
                         CreateDiagnostic(
                             "INNO2000",
                             EngineSeverity.Error,
-                            $"Type '{typeName}' has invalid StableTypeId '{explicitIDValue}'.",
+                            $"Type '{typeName}' has invalid StableTypeID '{explicitIDValue}'.",
                             declaration
                         )
                     );
@@ -118,7 +118,7 @@ internal static class ScriptTypeAnalyzer
                         "INNO2003",
                         EngineSeverity.Error,
                         $"Partial type '{typeName}' has more than one source file matching its type name. "
-                        + "Keep one canonical source or add an explicit StableTypeId.",
+                        + "Keep one canonical source or add an explicit StableTypeID.",
                         matchingDeclarations[0]
                     )
                 );
@@ -151,7 +151,7 @@ internal static class ScriptTypeAnalyzer
                             "INNO2001",
                             EngineSeverity.Error,
                             $"Attachable type '{typeName}' has no unambiguous canonical script source. "
-                            + "Move it to a matching file or add an explicit StableTypeId.",
+                            + "Move it to a matching file or add an explicit StableTypeID.",
                             declaration
                         )
                     );
@@ -182,7 +182,7 @@ internal static class ScriptTypeAnalyzer
                     EngineSeverity.Error,
                     $"Script source '{entry.sourcePath}' owns more than one attachable type identity: "
                     + string.Join(", ", conflicting.Select(static value => value.typeName))
-                    + ". Keep one canonical type or add explicit StableTypeId attributes.",
+                    + ". Keep one canonical type or add explicit StableTypeID attributes.",
                     entry.sourcePath,
                     entry.line,
                     entry.column

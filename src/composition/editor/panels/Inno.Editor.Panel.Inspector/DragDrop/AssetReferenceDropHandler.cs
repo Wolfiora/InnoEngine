@@ -5,7 +5,7 @@ using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Panel.Inspector;
 
-[EditorDrop(InspectorInteractionIds.C_ASSET_REFERENCE_AREA, priority: 100)]
+[EditorDrop(InspectorInteractionIDs.C_ASSET_REFERENCE_AREA, priority: 100)]
 internal sealed class AssetReferenceDropHandler(AssetPipeline assets) : EditorDrop<AssetFileEntry, AssetReferenceDropTarget>
 {
     /// <summary>
@@ -19,7 +19,7 @@ internal sealed class AssetReferenceDropHandler(AssetPipeline assets) : EditorDr
     /// </returns>
     protected override EditorDropStatus Query(EditorDropContext<AssetFileEntry, AssetReferenceDropTarget> context)
     {
-        if (!assets.TryGetPersistentId(context.source.assetPath, out Guid persistentID)
+        if (!assets.TryGetPersistentID(context.source.assetPath, out Guid persistentID)
             || persistentID == Guid.Empty
             || !assets.TryGetAssetType(context.source.assetPath, out Type? assetType)
             || assetType is null
@@ -45,7 +45,7 @@ internal sealed class AssetReferenceDropHandler(AssetPipeline assets) : EditorDr
         {
             return EditorDropResult.rejected;
         }
-        if (!assets.TryGetPersistentId(context.source.assetPath, out Guid persistentID))
+        if (!assets.TryGetPersistentID(context.source.assetPath, out Guid persistentID))
         {
             return EditorDropResult.rejected;
         }

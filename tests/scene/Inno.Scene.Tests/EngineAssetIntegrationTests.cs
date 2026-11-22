@@ -70,7 +70,7 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
 
         Assert.True(m_assets.Save(AssetPath.Project("Scenes/sample.iscene"), captured));
         SceneAsset byPath = m_assets.Load<SceneAsset>(AssetPath.Project("Scenes/sample.iscene"));
-        SceneAsset byID = m_assets.Load<SceneAsset>(byPath.identity.persistentId);
+        SceneAsset byID = m_assets.Load<SceneAsset>(byPath.identity.persistentID);
         GameScene first = byPath.Instantiate(m_fixture.serialization, m_assets);
         GameScene second = byPath.Instantiate(m_fixture.serialization, m_assets);
 
@@ -78,10 +78,10 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
         Assert.Same(byPath, byID);
         Assert.Equal("sample", first.name);
         Assert.Equal("Object", Assert.Single(first.GetObjects()).name);
-        Assert.NotEqual(first.identity.persistentId, second.identity.persistentId);
+        Assert.NotEqual(first.identity.persistentID, second.identity.persistentID);
         Assert.NotEqual(
-            Assert.Single(first.GetObjects()).identity.persistentId,
-            Assert.Single(second.GetObjects()).identity.persistentId
+            Assert.Single(first.GetObjects()).identity.persistentID,
+            Assert.Single(second.GetObjects()).identity.persistentID
         );
 
         DestroyScene(source);
@@ -108,9 +108,9 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
         Assert.Same(captured, prefab);
         Assert.True(first.isPartOfPrefabInstance);
         Assert.True(first.prefabInstance!.isRoot);
-        Assert.Equal(prefab.identity.persistentId, first.prefabInstance.sourceAssetId);
-        Assert.Equal(first.prefabInstance.sourceObjectId, second.prefabInstance!.sourceObjectId);
-        Assert.NotEqual(first.identity.persistentId, second.identity.persistentId);
+        Assert.Equal(prefab.identity.persistentID, first.prefabInstance.sourceAssetID);
+        Assert.Equal(first.prefabInstance.sourceObjectID, second.prefabInstance!.sourceObjectID);
+        Assert.NotEqual(first.identity.persistentID, second.identity.persistentID);
         Assert.Same(
             Assert.Single(first.transform.children).gameObject,
             first.GetComponent<EngineObjectReferenceComponent>().targetObject
@@ -182,7 +182,7 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
             .GetComponent<EngineAssetReferenceComponent>()
             .asset!;
 
-        Assert.Equal(text.identity.persistentId, dependency.persistentId);
+        Assert.Equal(text.identity.persistentID, dependency.persistentID);
         Assert.Equal("Text/shared.txt", dependency.lastKnownPath);
         Assert.Same(text, restored);
 
@@ -311,14 +311,14 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
         source.CreateObject("Object");
         SceneAsset asset = SceneAsset.Capture(source, m_fixture.serialization, m_assets);
         Assert.True(m_assets.Save(AssetPath.Project("Scenes/old.iscene"), asset));
-        Guid id = asset.identity.persistentId;
+        Guid id = asset.identity.persistentID;
         string oldPath = Path.Combine(m_root, "Assets", "Scenes", "old.iscene");
         string newPath = Path.Combine(m_root, "Assets", "Scenes", "renamed.iscene");
 
         File.Move(oldPath, newPath);
         m_assets.Rescan();
 
-        Assert.Equal(id, asset.identity.persistentId);
+        Assert.Equal(id, asset.identity.persistentID);
         Assert.Equal("Scenes/renamed.iscene", asset.assetPath.ToString());
         Assert.Same(asset, m_assets.Load<SceneAsset>(id));
         GameScene instance = asset.Instantiate(m_fixture.serialization, m_assets);
@@ -336,7 +336,7 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
         sourceScene.CreateObject("Child").transform.SetParent(root.transform);
         PrefabAsset asset = PrefabAsset.Capture(root, m_fixture.serialization, m_assets);
         Assert.True(m_assets.Save(AssetPath.Project("Prefabs/old.iprefab"), asset));
-        Guid id = asset.identity.persistentId;
+        Guid id = asset.identity.persistentID;
         string oldPath = Path.Combine(m_root, "Assets", "Prefabs", "old.iprefab");
         string newPath = Path.Combine(m_root, "Assets", "Prefabs", "renamed.iprefab");
 
@@ -345,7 +345,7 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
         var targetScene = new GameScene("Target");
         GameObject instance = asset.Instantiate(targetScene, m_fixture.serialization, m_assets);
 
-        Assert.Equal(id, asset.identity.persistentId);
+        Assert.Equal(id, asset.identity.persistentID);
         Assert.Equal("Prefabs/renamed.iprefab", asset.assetPath.ToString());
         Assert.Equal("renamed", instance.name);
         Assert.Equal("Child", Assert.Single(instance.transform.children).gameObject.name);

@@ -74,7 +74,7 @@ public sealed class AssetImportContext
         this.absolutePath = absolutePath ?? throw new ArgumentNullException(nameof(absolutePath));
         this.sourceBytes = sourceBytes;
         this.sourceHash = sourceHash ?? throw new ArgumentNullException(nameof(sourceHash));
-        this.persistentId = persistentID;
+        this.persistentID = persistentID;
         this.types = types ?? throw new ArgumentNullException(nameof(types));
         this.serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
         this.references = references ?? throw new ArgumentNullException(nameof(references));
@@ -113,7 +113,7 @@ public sealed class AssetImportContext
     /// <summary>
     /// Gets the persistent identity assigned to the source asset.
     /// </summary>
-    public Guid persistentId { get; }
+    public Guid persistentID { get; }
 
     /// <summary>
     /// Gets the type catalog bound to the active import generation.
@@ -152,7 +152,7 @@ public sealed class AssetImportContext
     /// <summary>
     /// Acquires an immutable dependency output and records its invalidation dependency automatically.
     /// </summary>
-    /// <param name="assetId">
+    /// <param name="assetID">
     /// Persistent dependency identity.
     /// </param>
     /// <param name="outputName">
@@ -162,11 +162,11 @@ public sealed class AssetImportContext
     /// A caller-owned lease that must be disposed after reading.
     /// </returns>
     public ArtifactLease AcquireArtifact(
-        Guid assetId,
+        Guid assetID,
         string outputName
     ) {
-        DependsOnArtifact(assetId);
-        return m_artifacts.AcquireArtifact(assetId, outputName);
+        DependsOnArtifact(assetID);
+        return m_artifacts.AcquireArtifact(assetID, outputName);
     }
 
     /// <summary>
@@ -288,17 +288,17 @@ public sealed class AssetImportContext
     /// <summary>
     /// Declares an imported artifact that invalidates this imported asset.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The persistent identity of the artifact owner.
     /// </param>
-    public void DependsOnArtifact(Guid persistentId)
+    public void DependsOnArtifact(Guid persistentID)
     {
-        if (persistentId == Guid.Empty)
+        if (persistentID == Guid.Empty)
         {
-            throw new ArgumentException("An artifact dependency identity is required.", nameof(persistentId));
+            throw new ArgumentException("An artifact dependency identity is required.", nameof(persistentID));
         }
         m_importDependencies.Add(
-            new AssetImportDependency(AssetImportDependencyKind.Artifact, persistentId.ToString("D"), string.Empty)
+            new AssetImportDependency(AssetImportDependencyKind.Artifact, persistentID.ToString("D"), string.Empty)
         );
     }
 

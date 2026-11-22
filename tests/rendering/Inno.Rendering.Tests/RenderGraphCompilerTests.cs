@@ -9,11 +9,11 @@ namespace Inno.Rendering.Tests;
 
 public sealed class RenderGraphCompilerTests
 {
-    private static readonly RenderPhaseId GEOMETRY = new("tests.geometry");
-    private static readonly RenderPhaseId PROCESS = new("tests.process");
-    private static readonly RenderPhaseId TRANSPARENT = new("tests.transparent");
-    private static readonly RenderPhaseId POST = new("tests.post");
-    private static readonly RenderPhaseId FINAL = new("tests.final");
+    private static readonly RenderPhaseID GEOMETRY = new("tests.geometry");
+    private static readonly RenderPhaseID PROCESS = new("tests.process");
+    private static readonly RenderPhaseID TRANSPARENT = new("tests.transparent");
+    private static readonly RenderPhaseID POST = new("tests.post");
+    private static readonly RenderPhaseID FINAL = new("tests.final");
 
     [Fact]
     public void NameScopesIsolateRepeatedProducerNamesInsideOneFrameGraph()
@@ -250,8 +250,8 @@ public sealed class RenderGraphCompilerTests
     [Fact]
     public void Compile_WithPhaseCycle_FailsClearly()
     {
-        var left = new RenderPhaseId("tests.left");
-        var right = new RenderPhaseId("tests.right");
+        var left = new RenderPhaseID("tests.left");
+        var right = new RenderPhaseID("tests.right");
         RenderGraphBuilder graph = CreateGraph();
         RenderPassBuilder leftPass = graph.AddRasterPass("Left", left, 0, static (
             _,
@@ -694,7 +694,7 @@ public sealed class RenderGraphCompilerTests
         IReadOnlyList<RenderTextureFormat>? storageReadFormats = null,
         IReadOnlyList<RenderTextureFormat>? storageWriteFormats = null
     ) => new(
-        GraphicsApi.Noop,
+        GraphicsApi.noop,
         features
         ?? (GraphicsCapability.Compute
             | GraphicsCapability.StorageBuffer
@@ -768,41 +768,41 @@ public sealed class RenderGraphCompilerTests
         public override void BindComputePipeline(ComputePipelineHandle pipeline) {}
 
         public override void BindTexture(
-            RenderBindingId binding,
+            RenderBindingID binding,
             RenderTextureHandle texture,
             RenderSamplerState sampler
         ) {}
 
         public override void BindTexture(
-            RenderBindingId binding,
+            RenderBindingID binding,
             PersistentTextureHandle texture,
             RenderSamplerState sampler
         ) {}
 
         public override void BindStorageTexture(
-            RenderBindingId binding,
+            RenderBindingID binding,
             RenderTextureHandle texture,
             int mipLevel = 0
         ) {}
 
         public override void BindStorageTexture(
-            RenderBindingId binding,
+            RenderBindingID binding,
             PersistentTextureHandle texture,
             int mipLevel = 0
         ) {}
 
         public override void BindBuffer(
-            RenderBindingId binding,
+            RenderBindingID binding,
             RenderBufferHandle buffer
         ) {}
 
         public override void BindBuffer(
-            RenderBindingId binding,
+            RenderBindingID binding,
             PersistentBufferHandle buffer
         ) {}
 
         public override void SetUniform(
-            RenderBindingId binding,
+            RenderBindingID binding,
             ReadOnlySpan<byte> value
         ) {}
 

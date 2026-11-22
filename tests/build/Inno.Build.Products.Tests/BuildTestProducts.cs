@@ -19,7 +19,7 @@ internal static class BuildTestProducts
                 "explicit-sdk",
                 Path.GetTempPath(),
                 new BuildHostDescriptor("Windows", "x64"),
-                new BuildTargetId("windows-x64")
+                new BuildTargetID("windows-x64")
             )
         ).build;
 

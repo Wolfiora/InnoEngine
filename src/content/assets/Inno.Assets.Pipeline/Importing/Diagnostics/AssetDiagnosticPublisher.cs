@@ -45,7 +45,7 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
     internal void SynchronizeImports(IReadOnlyList<AssetMeta> entries)
     {
         ArgumentNullException.ThrowIfNull(entries);
-        var currentIds = new HashSet<Guid>();
+        var currentIDs = new HashSet<Guid>();
         for (int i = 0; i < entries.Count; i++)
         {
             AssetMeta entry = entries[i];
@@ -65,7 +65,7 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
                 continue;
             }
 
-            currentIds.Add(entry.persistentId);
+            currentIDs.Add(entry.persistentId);
             string state = CreateState(entry, diagnostics);
             if (m_importStates.TryGetValue(entry.persistentId, out string? previous)
                 && string.Equals(previous, state, StringComparison.Ordinal)
@@ -78,7 +78,7 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
         }
 
         Guid[] resolved = m_importStates.Keys
-            .Where(id => !currentIds.Contains(id))
+            .Where(id => !currentIDs.Contains(id))
             .ToArray();
         for (int i = 0; i < resolved.Length; i++)
         {
@@ -257,7 +257,7 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
                 issue.message,
                 issue.severity,
                 index.ToString(CultureInfo.InvariantCulture),
-                issue.objectId,
+                issue.objectID,
                 issue.location
             ))
         );

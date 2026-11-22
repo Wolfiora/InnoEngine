@@ -12,7 +12,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Supplies one request and frame-scoped services to a render pipeline.
 /// </summary>
-[StableTypeId("fe6c1616-212d-521e-b4ab-9e61a72b9c45")]
+[StableTypeID("fe6c1616-212d-521e-b4ab-9e61a72b9c45")]
 public sealed class RenderPipelineContext
 {
     /// <summary>

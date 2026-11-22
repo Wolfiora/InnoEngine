@@ -11,7 +11,7 @@ using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Interactions;
 using Inno.Scripting.Api;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 
 namespace Inno.Editor.Inspection;
 

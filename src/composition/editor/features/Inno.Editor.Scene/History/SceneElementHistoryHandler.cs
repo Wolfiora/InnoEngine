@@ -62,8 +62,8 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                 TypeRef typeRef = data.type;
                 bool typeMatches = current switch
                 {
-                    MissingGameComponent missing => missing.missingType.stableId == typeRef.stableId,
-                    MissingGameSystem missing => missing.missingType.stableId == typeRef.stableId,
+                    MissingGameComponent missing => missing.missingType.stableID == typeRef.stableID,
+                    MissingGameSystem missing => missing.missingType.stableID == typeRef.stableID,
                     _ => m_workspace.types.TryResolve(typeRef, out Type? resolvedType) && current.GetType() == resolvedType
                 };
                 bool kindMatches = data.elementKind switch
@@ -75,7 +75,7 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                 return typeMatches && kindMatches
                        ? EditorHistoryAvailability.Available()
                        : EditorHistoryAvailability.Unavailable(
-                           $"Scene element '{data.elementID}' no longer matches stable type '{data.type.stableId}'."
+                           $"Scene element '{data.elementID}' no longer matches stable type '{data.type.stableID}'."
                        );
             }
             if (data.elementKind == SceneElementKind.Component

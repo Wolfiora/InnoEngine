@@ -203,35 +203,35 @@ internal static class BgfxCapabilityMapper
     /// </returns>
     public static bgfx.RendererType ToNativeRenderer(GraphicsApi backend)
     {
-        if (backend == GraphicsApi.Noop)
+        if (backend == GraphicsApi.noop)
         {
             return bgfx.RendererType.Noop;
         }
-        if (backend == GraphicsApi.Direct3D11)
+        if (backend == GraphicsApi.direct3D11)
         {
             return bgfx.RendererType.Direct3d11;
         }
-        if (backend == GraphicsApi.Direct3D12)
+        if (backend == GraphicsApi.direct3D12)
         {
             return bgfx.RendererType.Direct3d12;
         }
-        if (backend == GraphicsApi.Metal)
+        if (backend == GraphicsApi.metal)
         {
             return bgfx.RendererType.Metal;
         }
-        if (backend == GraphicsApi.Vulkan)
+        if (backend == GraphicsApi.vulkan)
         {
             return bgfx.RendererType.Vulkan;
         }
-        if (backend == GraphicsApi.OpenGL)
+        if (backend == GraphicsApi.openGL)
         {
             return bgfx.RendererType.OpenGL;
         }
-        if (backend == GraphicsApi.OpenGLES)
+        if (backend == GraphicsApi.openGLES)
         {
             return bgfx.RendererType.OpenGLES;
         }
-        if (backend == GraphicsApi.WebGPU)
+        if (backend == GraphicsApi.webGPU)
         {
             return bgfx.RendererType.WebGPU;
         }
@@ -250,14 +250,14 @@ internal static class BgfxCapabilityMapper
     public static GraphicsApi ToGraphicsApi(bgfx.RendererType backend)
         => backend switch
     {
-        bgfx.RendererType.Noop => GraphicsApi.Noop,
-        bgfx.RendererType.Direct3d11 => GraphicsApi.Direct3D11,
-        bgfx.RendererType.Direct3d12 => GraphicsApi.Direct3D12,
-        bgfx.RendererType.Metal => GraphicsApi.Metal,
-        bgfx.RendererType.Vulkan => GraphicsApi.Vulkan,
-        bgfx.RendererType.OpenGL => GraphicsApi.OpenGL,
-        bgfx.RendererType.OpenGLES => GraphicsApi.OpenGLES,
-        bgfx.RendererType.WebGPU => GraphicsApi.WebGPU,
+        bgfx.RendererType.Noop => GraphicsApi.noop,
+        bgfx.RendererType.Direct3d11 => GraphicsApi.direct3D11,
+        bgfx.RendererType.Direct3d12 => GraphicsApi.direct3D12,
+        bgfx.RendererType.Metal => GraphicsApi.metal,
+        bgfx.RendererType.Vulkan => GraphicsApi.vulkan,
+        bgfx.RendererType.OpenGL => GraphicsApi.openGL,
+        bgfx.RendererType.OpenGLES => GraphicsApi.openGLES,
+        bgfx.RendererType.WebGPU => GraphicsApi.webGPU,
         _ => throw new NotSupportedException($"BGFX renderer '{backend}' has no public Rendering.Core mapping.")
     };
 

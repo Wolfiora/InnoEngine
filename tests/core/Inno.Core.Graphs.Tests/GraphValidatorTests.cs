@@ -84,7 +84,7 @@ public sealed class GraphValidatorTests : IDisposable
     public void Validate_WithMissingNodeDefinition_PreservesDocumentAsWarning()
     {
         var document = new GraphDocument();
-        var node = new GraphNodeRecord(new GraphNodeId("missing"), "plugin.removed");
+        var node = new GraphNodeRecord(new GraphNodeID("missing"), "plugin.removed");
         document.AddNode(node);
 
         GraphValidationResult result = GraphValidator.Validate(document, new Resolver(m_serialization));
@@ -116,7 +116,7 @@ public sealed class GraphValidatorTests : IDisposable
     {
         GraphDocument document = CreateConnectedDocument("float", "float");
 
-        Assert.True(document.RemoveNode(new GraphNodeId("source")));
+        Assert.True(document.RemoveNode(new GraphNodeID("source")));
 
         Assert.Single(document.nodes);
         Assert.Empty(document.edges);
@@ -140,7 +140,7 @@ public sealed class GraphValidatorTests : IDisposable
         string inputType,
         string outputType
     ) {
-        var node = new GraphNodeRecord(new GraphNodeId(id), $"node.{id}");
+        var node = new GraphNodeRecord(new GraphNodeID(id), $"node.{id}");
         node.SetValue("inputType", GraphSerializedValue.From(inputType, m_serialization));
         node.SetValue("outputType", GraphSerializedValue.From(outputType, m_serialization));
         return node;
@@ -148,27 +148,27 @@ public sealed class GraphValidatorTests : IDisposable
 
     private static GraphEdgeRecord CreateEdge(
         string id,
-        GraphNodeId source,
-        GraphNodeId destination
+        GraphNodeID source,
+        GraphNodeID destination
     ) => new(
-        new GraphEdgeId(id),
-        new GraphEndpoint(source, new GraphPortId("out")),
-        new GraphEndpoint(destination, new GraphPortId("in"))
+        new GraphEdgeID(id),
+        new GraphEndpoint(source, new GraphPortID("out")),
+        new GraphEndpoint(destination, new GraphPortID("in"))
     );
 
     private sealed class Resolver(SerializationRegistry serialization) : IGraphNodeDefinitionResolver
     {
         public bool TryResolve(
-            string definitionId,
+            string definitionID,
             out GraphNodeDefinition? definition
         ) {
-            if (!definitionId.StartsWith("node.", StringComparison.Ordinal))
+            if (!definitionID.StartsWith("node.", StringComparison.Ordinal))
             {
                 definition = null;
                 return false;
             }
 
-            definition = new Definition(definitionId, serialization);
+            definition = new Definition(definitionID, serialization);
             return true;
         }
     }
@@ -189,8 +189,8 @@ public sealed class GraphValidatorTests : IDisposable
 
             return
             [
-                new GraphPortDefinition(new GraphPortId("in"), "In", inputType, GraphPortDirection.Input),
-                new GraphPortDefinition(new GraphPortId("out"), "Out", outputType, GraphPortDirection.Output)
+                new GraphPortDefinition(new GraphPortID("in"), "In", inputType, GraphPortDirection.Input),
+                new GraphPortDefinition(new GraphPortID("out"), "Out", outputType, GraphPortDirection.Output)
             ];
         }
     }
@@ -198,8 +198,8 @@ public sealed class GraphValidatorTests : IDisposable
     private sealed class Conversion : IGraphTypeConversion
     {
         public bool CanConvert(
-            string sourceTypeId,
-            string destinationTypeId
-        ) => sourceTypeId == "float" && destinationTypeId == "vector3";
+            string sourceTypeID,
+            string destinationTypeID
+        ) => sourceTypeID == "float" && destinationTypeID == "vector3";
     }
 }

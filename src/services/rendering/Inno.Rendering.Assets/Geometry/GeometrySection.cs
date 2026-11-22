@@ -10,7 +10,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Identifies a contiguous triangle-index range.
 /// </summary>
-[StableTypeId("5da29d2a-b38b-5d50-b8ee-10e00503c0c5")]
+[StableTypeID("5da29d2a-b38b-5d50-b8ee-10e00503c0c5")]
 public readonly record struct GeometrySection
 {
     /// <summary>

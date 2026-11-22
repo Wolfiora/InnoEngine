@@ -34,42 +34,42 @@ public readonly record struct GraphicsApi : IComparable<GraphicsApi>
     /// <summary>
     /// Headless validation backend.
     /// </summary>
-    public static GraphicsApi Noop { get; } = new("Noop");
+    public static GraphicsApi noop { get; } = new("Noop");
 
     /// <summary>
     /// Direct3D 11 renderer.
     /// </summary>
-    public static GraphicsApi Direct3D11 { get; } = new("Direct3D11");
+    public static GraphicsApi direct3D11 { get; } = new("Direct3D11");
 
     /// <summary>
     /// Direct3D 12 renderer.
     /// </summary>
-    public static GraphicsApi Direct3D12 { get; } = new("Direct3D12");
+    public static GraphicsApi direct3D12 { get; } = new("Direct3D12");
 
     /// <summary>
     /// Apple Metal renderer.
     /// </summary>
-    public static GraphicsApi Metal { get; } = new("Metal");
+    public static GraphicsApi metal { get; } = new("Metal");
 
     /// <summary>
     /// Khronos Vulkan renderer.
     /// </summary>
-    public static GraphicsApi Vulkan { get; } = new("Vulkan");
+    public static GraphicsApi vulkan { get; } = new("Vulkan");
 
     /// <summary>
     /// Desktop OpenGL renderer.
     /// </summary>
-    public static GraphicsApi OpenGL { get; } = new("OpenGL");
+    public static GraphicsApi openGL { get; } = new("OpenGL");
 
     /// <summary>
     /// OpenGL ES renderer.
     /// </summary>
-    public static GraphicsApi OpenGLES { get; } = new("OpenGLES");
+    public static GraphicsApi openGLES { get; } = new("OpenGLES");
 
     /// <summary>
     /// WebGPU renderer.
     /// </summary>
-    public static GraphicsApi WebGPU { get; } = new("WebGPU");
+    public static GraphicsApi webGPU { get; } = new("WebGPU");
 
     /// <summary>
     /// Gets the stable backend identity used by target artifacts and provider selection.

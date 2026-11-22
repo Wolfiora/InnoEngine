@@ -113,7 +113,7 @@ internal sealed class SceneDocumentHistoryHandler : EditorHistoryHandler
         EditorSceneWorkspace.SceneDocumentSnapshot? original = existed
                                                                ? m_workspace.CaptureDocumentSnapshot(current!)
                                                                : null;
-        Guid? originalActive = m_workspace.activeScene?.identity.persistentId;
+        Guid? originalActive = m_workspace.activeScene?.identity.persistentID;
         DocumentMutation mutation = DocumentMutation.None;
 
         try

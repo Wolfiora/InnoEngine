@@ -2,8 +2,8 @@ using System;
 using System.Globalization;
 using Inno.Editor.ImGui;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
 
@@ -38,13 +38,13 @@ internal sealed class NumericPropertyDrawer : IPropertyDrawer
             int value = rawValue is int current ? current : 0;
             bool changed = context.minimum is double minimum
                            && context.maximum is double maximum
-                           ? Ui.SliderInt(
+                           ? Gui.SliderInt(
                                $"##{context.path}",
                                ref value,
                                (int)Math.Clamp(Math.Ceiling(minimum), int.MinValue, int.MaxValue),
                                (int)Math.Clamp(Math.Floor(maximum), int.MinValue, int.MaxValue)
                            )
-                           : Ui.DragInt($"##{context.path}", ref value, 1f, 0, 0, "%d", 0);
+                           : Gui.DragInt($"##{context.path}", ref value, 1f, 0, 0, "%d", 0);
             if (changed)
             {
                 context.SetValue(value);
@@ -75,7 +75,7 @@ internal sealed class NumericPropertyDrawer : IPropertyDrawer
 
         _ = context.TryGetTextState(C_TEXT_STATE, out string? text);
         text ??= Convert.ToString(rawValue, CultureInfo.InvariantCulture) ?? "0";
-        if (Ui.InputText($"##{context.path}", ref text, C_BUFFER_SIZE, ImGuiInputTextFlags.EnterReturnsTrue))
+        if (Gui.InputText($"##{context.path}", ref text, C_BUFFER_SIZE, ImGuiInputTextFlags.EnterReturnsTrue))
         {
             if (TryConvert(text, type, out object? converted))
             {

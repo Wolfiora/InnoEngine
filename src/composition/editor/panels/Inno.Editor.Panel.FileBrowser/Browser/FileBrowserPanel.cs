@@ -26,7 +26,7 @@ internal sealed partial class FileBrowserPanel : EditorPanel
     private const int C_GRID_LABEL_LINE_COUNT = 2;
     private const float C_GRID_ICON_HORIZONTAL_OPTICAL_OFFSET = -1f;
     private readonly AssetBrowserModule m_assets;
-    private readonly EditorUiSession m_ui;
+    private readonly EditorUISession m_ui;
     private readonly FileBrowserData m_data;
     private readonly FileBrowserNavigation m_navigation;
     private readonly FileBrowserDragDrop m_dragDrop;
@@ -54,7 +54,7 @@ internal sealed partial class FileBrowserPanel : EditorPanel
     /// </summary>
     internal FileBrowserPanel(
         AssetBrowserModule assets,
-        EditorUiSession ui
+        EditorUISession ui
     ) {
         m_assets = assets;
         m_ui = ui ?? throw new ArgumentNullException(nameof(ui));

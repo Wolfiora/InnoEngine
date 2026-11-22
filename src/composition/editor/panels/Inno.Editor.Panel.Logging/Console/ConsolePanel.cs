@@ -9,8 +9,8 @@ using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Interactions;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Logging;
 
@@ -100,7 +100,7 @@ internal sealed partial class ConsolePanel : EditorPanel
     /// </param>
     protected override void OnDraw(EditorContext context)
     {
-        Ui.BeginChild(
+        Gui.BeginChild(
             "ConsoleChild",
             Vector2.Zero,
             (ImGuiChildFlags.None),
@@ -109,12 +109,12 @@ internal sealed partial class ConsolePanel : EditorPanel
         try
         {
             DrawToolbar();
-            Ui.Separator();
+            Gui.Separator();
             DrawConsoleRegion();
         }
         finally
         {
-            Ui.EndChild();
+            Gui.EndChild();
         }
     }
 
@@ -128,21 +128,21 @@ internal sealed partial class ConsolePanel : EditorPanel
         {
             m_requestScrollToBottom = false;
         }
-        bool collapseChanged = Ui.Checkbox("Collapse", ref m_collapse);
+        bool collapseChanged = Gui.Checkbox("Collapse", ref m_collapse);
         if (collapseChanged)
         {
             m_requestScrollToBottom = true;
         }
 
-        Ui.SameLine(0f, -1f);
+        Gui.SameLine(0f, -1f);
         bool filterChanged = DrawFilterCombo();
         if (filterChanged)
         {
             m_requestScrollToBottom = true;
         }
 
-        Ui.SameLine(0f, -1f);
-        if (Ui.Button("Clear"))
+        Gui.SameLine(0f, -1f);
+        if (Gui.Button("Clear"))
         {
             m_console.Clear();
             m_openEntries.Clear();
@@ -163,7 +163,7 @@ internal sealed partial class ConsolePanel : EditorPanel
         {
             LogLevel level = m_levels[i];
             bool selected = m_filterLevels.Contains(level);
-            if (!Ui.Checkbox(level.ToString(), ref selected))
+            if (!Gui.Checkbox(level.ToString(), ref selected))
             {
                 continue;
             }
@@ -188,7 +188,7 @@ internal sealed partial class ConsolePanel : EditorPanel
 #region Console Region
     private void DrawConsoleRegion()
     {
-        Ui.BeginChild("ConsoleRegion", Vector2.Zero, 0, 0);
+        Gui.BeginChild("ConsoleRegion", Vector2.Zero, 0, 0);
         try
         {
             EditorConsoleSnapshot snapshot = m_console.Capture();
@@ -204,14 +204,14 @@ internal sealed partial class ConsolePanel : EditorPanel
                 {
                     ClearFocus();
                 }
-                else if (m_interactions.focusedArea == LoggingInteractionIds.C_ENTRY_AREA)
+                else if (m_interactions.focusedArea == LoggingInteractionIDs.C_ENTRY_AREA)
                 {
                     FocusRow(m_view.rows[focused], select: false);
                 }
             }
             bool hasNewEntries = m_lastRevision >= 0 && snapshot.revision != m_lastRevision;
             m_lastRevision = snapshot.revision;
-            bool scrollAtBottom = Ui.GetScrollY() >= Ui.GetScrollMaxY() - consoleStyle.autoScrollTolerance;
+            bool scrollAtBottom = Gui.GetScrollY() >= Gui.GetScrollMaxY() - consoleStyle.autoScrollTolerance;
             bool shouldScrollToBottom = m_requestScrollToBottom || (hasNewEntries && scrollAtBottom);
             HandleKeyboardNavigation();
             if (m_keyboardHandled)
@@ -222,13 +222,13 @@ internal sealed partial class ConsolePanel : EditorPanel
             DrawEntryContextMenu();
             if (shouldScrollToBottom && !m_keyboardHandled)
             {
-                Ui.SetScrollHereY(1f);
+                Gui.SetScrollHereY(1f);
                 m_requestScrollToBottom = false;
             }
         }
         finally
         {
-            Ui.EndChild();
+            Gui.EndChild();
         }
     }
 
@@ -241,9 +241,9 @@ internal sealed partial class ConsolePanel : EditorPanel
         m_focusedCopyTarget = null;
         m_contextKey = null;
         m_requestContextMenu = false;
-        if (m_interactions.focusedArea == LoggingInteractionIds.C_ENTRY_AREA)
+        if (m_interactions.focusedArea == LoggingInteractionIDs.C_ENTRY_AREA)
         {
-            m_interactions.For(LoggingInteractionIds.C_ENTRY_AREA).Focus();
+            m_interactions.For(LoggingInteractionIDs.C_ENTRY_AREA).Focus();
         }
     }
 
@@ -286,11 +286,11 @@ internal sealed partial class ConsolePanel : EditorPanel
         Vector4 cardBorder = row.key == m_selectedKey
                              ? EditorPalette.contentAccent
                              : open ? ConsoleStyle.GetExpandedBorder(levelColor) : m_content.GetCollapsedBorderColor();
-        Ui.PushStyleColor((ImGuiCol.FrameBg), cardBg);
-        Ui.PushStyleColor((ImGuiCol.Border), cardBorder);
-        Ui.PushStyleVar((ImGuiStyleVar.FrameRounding), Ui.GetLayout().frameRounding);
-        Ui.PushStyleVar((ImGuiStyleVar.FrameBorderSize), EditorUI.current.widgets.style.borderSize);
-        Ui.PushStyleVar((ImGuiStyleVar.FramePadding), EditorUI.current.widgets.style.framePadding);
+        Gui.PushStyleColor((ImGuiCol.FrameBg), cardBg);
+        Gui.PushStyleColor((ImGuiCol.Border), cardBorder);
+        Gui.PushStyleVar((ImGuiStyleVar.FrameRounding), Gui.GetLayout().frameRounding);
+        Gui.PushStyleVar((ImGuiStyleVar.FrameBorderSize), EditorUI.current.widgets.style.borderSize);
+        Gui.PushStyleVar((ImGuiStyleVar.FramePadding), EditorUI.current.widgets.style.framePadding);
         try
         {
             ImGuiChildFlags childFlags = ImGuiChildFlags.FrameStyle | (open ? ImGuiChildFlags.AutoResizeY : ImGuiChildFlags.None);
@@ -301,8 +301,8 @@ internal sealed partial class ConsolePanel : EditorPanel
             ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoScrollbar
                                            | ImGuiWindowFlags.NoScrollWithMouse
                                            | ImGuiWindowFlags.NoSavedSettings;
-            float height = open ? 0f : Ui.GetFrameHeight() + Ui.GetLayout().framePadding.Y * 2f;
-            bool visible = Ui.BeginChild(AcquireCardWindow(row.key), new Vector2(0f, height), childFlags, windowFlags);
+            float height = open ? 0f : Gui.GetFrameHeight() + Gui.GetLayout().framePadding.Y * 2f;
+            bool visible = Gui.BeginChild(AcquireCardWindow(row.key), new Vector2(0f, height), childFlags, windowFlags);
             try
             {
                 if (visible)
@@ -328,14 +328,14 @@ internal sealed partial class ConsolePanel : EditorPanel
             }
             finally
             {
-                Ui.EndChild();
+                Gui.EndChild();
             }
-            float measuredHeight = Ui.GetItemMaximum().Y - Ui.GetItemMinimum().Y;
-            if (Ui.IsItemClicked(ImGuiMouseButton.Left) || Ui.IsItemClicked(ImGuiMouseButton.Right))
+            float measuredHeight = Gui.GetItemMaximum().Y - Gui.GetItemMinimum().Y;
+            if (Gui.IsItemClicked(ImGuiMouseButton.Left) || Gui.IsItemClicked(ImGuiMouseButton.Right))
             {
                 FocusRow(row, select: true);
             }
-            if (Ui.IsItemHovered() && Ui.IsMouseReleased(ImGuiMouseButton.Right))
+            if (Gui.IsItemHovered() && Gui.IsMouseReleased(ImGuiMouseButton.Right))
             {
                 m_contextKey = row.key;
                 m_requestContextMenu = true;
@@ -344,8 +344,8 @@ internal sealed partial class ConsolePanel : EditorPanel
         }
         finally
         {
-            Ui.PopStyleVar(3);
-            Ui.PopStyleColor(2);
+            Gui.PopStyleVar(3);
+            Gui.PopStyleColor(2);
         }
     }
 
@@ -353,30 +353,30 @@ internal sealed partial class ConsolePanel : EditorPanel
         IReadOnlyList<EditorConsoleOccurrence> occurrences,
         Vector4 cardBackground
     ) {
-        Ui.PushStyleColor(ImGuiCol.Separator, ConsoleStyle.GetSeparator(cardBackground));
+        Gui.PushStyleColor(ImGuiCol.Separator, ConsoleStyle.GetSeparator(cardBackground));
         try
         {
-            Ui.Separator();
+            Gui.Separator();
             for (int i = 0; i < occurrences.Count; i++)
             {
                 if (i > 0)
                 {
-                    Ui.Separator();
+                    Gui.Separator();
                 }
-                Ui.PushId(unchecked((int)occurrences[i].sequence));
+                Gui.PushID(unchecked((int)occurrences[i].sequence));
                 try
                 {
                     DrawDetail(occurrences[i]);
                 }
                 finally
                 {
-                    Ui.PopId();
+                    Gui.PopID();
                 }
             }
         }
         finally
         {
-            Ui.PopStyleColor();
+            Gui.PopStyleColor();
         }
     }
 
@@ -392,16 +392,16 @@ internal sealed partial class ConsolePanel : EditorPanel
         out bool toggled
     ) {
         toggled = false;
-        EditorUiLayout style = Ui.GetLayout();
+        EditorUILayout style = Gui.GetLayout();
         string content = isOpen ? entry.displayMessage : m_content.GetFirstLine(entry.displayMessage);
         string repeatText = repeatCount > 1 ? $" (x{repeatCount})" : string.Empty;
         string prefix = $"{levelIcon} [{entry.level}] ";
         string toggleText = isOpen ? "▼" : "▶";
-        float toggleW = Ui.MeasureText(toggleText).X + consoleStyle.disclosurePadding.X * 2f;
-        float prefixW = Ui.MeasureText(prefix).X + toggleW + style.itemInnerSpacing.X;
-        float suffixW = Ui.MeasureText(repeatText).X;
+        float toggleW = Gui.MeasureText(toggleText).X + consoleStyle.disclosurePadding.X * 2f;
+        float prefixW = Gui.MeasureText(prefix).X + toggleW + style.itemInnerSpacing.X;
+        float suffixW = Gui.MeasureText(repeatText).X;
         float suffixColW = MathF.Max(1f, suffixW);
-        float tableOuterW = MathF.Max(1f, Ui.GetContentRegionAvailable().X);
+        float tableOuterW = MathF.Max(1f, Gui.GetContentRegionAvailable().X);
         float contentW = MathF.Max(1f, tableOuterW - prefixW - suffixColW);
         if (!isOpen)
         {
@@ -414,62 +414,62 @@ internal sealed partial class ConsolePanel : EditorPanel
                                 | ImGuiTableFlags.NoPadOuterX
                                 | ImGuiTableFlags.NoPadInnerX
                                 | ImGuiTableFlags.NoSavedSettings;
-        if (Ui.BeginTable("##HeaderTable", 3, flags, tableOuterSize))
+        if (Gui.BeginTable("##HeaderTable", 3, flags, tableOuterSize))
         {
             try
             {
-                Ui.TableSetupColumn("##prefix", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), prefixW);
-                Ui.TableSetupColumn("##content", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), contentW);
-                Ui.TableSetupColumn("##suffix", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), suffixColW);
-                Ui.TableNextRow();
+                Gui.TableSetupColumn("##prefix", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), prefixW);
+                Gui.TableSetupColumn("##content", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), contentW);
+                Gui.TableSetupColumn("##suffix", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), suffixColW);
+                Gui.TableNextRow();
                 if (isOpen)
                 {
-                    uint headerBgU32 = Ui.ToPackedColor(headerBgColor);
-                    Ui.TableSetBgColor((ImGuiTableBgTarget.RowBg0), headerBgU32);
+                    uint headerBgU32 = Gui.ToPackedColor(headerBgColor);
+                    Gui.TableSetBgColor((ImGuiTableBgTarget.RowBg0), headerBgU32);
                 }
 
-                _ = Ui.TableSetColumnIndex(0);
-                Ui.PushStyleVar((ImGuiStyleVar.FramePadding), consoleStyle.disclosurePadding);
-                Ui.PushStyleVar((ImGuiStyleVar.FrameBorderSize), 0f);
-                Ui.PushStyleColor((ImGuiCol.Button), ConsoleStyle.toggle);
-                Ui.PushStyleColor((ImGuiCol.ButtonHovered), ConsoleStyle.toggleHovered);
-                Ui.PushStyleColor((ImGuiCol.ButtonActive), ConsoleStyle.toggleActive);
+                _ = Gui.TableSetColumnIndex(0);
+                Gui.PushStyleVar((ImGuiStyleVar.FramePadding), consoleStyle.disclosurePadding);
+                Gui.PushStyleVar((ImGuiStyleVar.FrameBorderSize), 0f);
+                Gui.PushStyleColor((ImGuiCol.Button), ConsoleStyle.toggle);
+                Gui.PushStyleColor((ImGuiCol.ButtonHovered), ConsoleStyle.toggleHovered);
+                Gui.PushStyleColor((ImGuiCol.ButtonActive), ConsoleStyle.toggleActive);
                 try
                 {
-                    if (Ui.SmallButton($"{toggleText}##HeaderToggle") && !m_keyboardHandled)
+                    if (Gui.SmallButton($"{toggleText}##HeaderToggle") && !m_keyboardHandled)
                     {
                         toggled = true;
                     }
                 }
                 finally
                 {
-                    Ui.PopStyleColor(3);
-                    Ui.PopStyleVar(2);
+                    Gui.PopStyleColor(3);
+                    Gui.PopStyleVar(2);
                 }
-                Ui.SameLine(0f, -1f);
+                Gui.SameLine(0f, -1f);
                 EditorUI.current.widgets.ColoredText(levelColor, prefix);
-                _ = Ui.TableSetColumnIndex(1);
+                _ = Gui.TableSetColumnIndex(1);
                 if (isOpen)
                 {
                     EditorUI.current.widgets.WrappedText(content);
                 }
                 else
                 {
-                    Ui.Text(content);
+                    Gui.Text(content);
                 }
 
-                _ = Ui.TableSetColumnIndex(2);
+                _ = Gui.TableSetColumnIndex(2);
                 if (!string.IsNullOrEmpty(repeatText))
                 {
-                    float remainW = Ui.GetContentRegionAvailable().X;
+                    float remainW = Gui.GetContentRegionAvailable().X;
                     float suffixOffsetX = MathF.Max(0f, remainW - suffixW);
-                    Ui.SetCursorPosX(Ui.GetCursorPosX() + suffixOffsetX);
-                    Ui.Text(repeatText);
+                    Gui.SetCursorPosX(Gui.GetCursorPosX() + suffixOffsetX);
+                    Gui.Text(repeatText);
                 }
             }
             finally
             {
-                Ui.EndTable();
+                Gui.EndTable();
             }
         }
     }
@@ -486,20 +486,20 @@ internal sealed partial class ConsolePanel : EditorPanel
         string fileText = string.IsNullOrWhiteSpace(entry.file) ? "-" : entry.file;
         string fileWithLineText = entry.line > 0 ? entry.column > 0 ? $"{fileText}:{entry.line}:{entry.column}" : $"{fileText}:{entry.line}" : fileText;
         // These cards may be culled between frames; do not rely on a previous frame's auto-fit width.
-        float labelWidth = Ui.MeasureText("Session:").X;
-        float availableWidth = Ui.GetContentRegionAvailable().X;
-        if (availableWidth < labelWidth + Ui.MeasureText("Diagnostic").X + Ui.GetLayout().cellPadding.X * 4)
+        float labelWidth = Gui.MeasureText("Session:").X;
+        float availableWidth = Gui.GetContentRegionAvailable().X;
+        if (availableWidth < labelWidth + Gui.MeasureText("Diagnostic").X + Gui.GetLayout().cellPadding.X * 4)
         {
             DrawStackedField("Kind:", entry.kind.ToString());
             DrawStackedField("File:", fileWithLineText);
             DrawStackedField("Source:", sourceText);
-            if (entry.sessionId.isAssigned)
+            if (entry.sessionID.isAssigned)
             {
-                DrawStackedField("Session:", entry.sessionId.ToString());
+                DrawStackedField("Session:", entry.sessionID.ToString());
             }
             DrawStackedField("Time:", timeText);
         }
-        else if (Ui.BeginTable(
+        else if (Gui.BeginTable(
             "##ConsoleEntryDetails",
             2,
             (ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings),
@@ -507,26 +507,26 @@ internal sealed partial class ConsolePanel : EditorPanel
         )) {
             try
             {
-                Ui.TableSetupColumn("##label", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), labelWidth);
-                Ui.TableSetupColumn("##value", (ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize), 1f);
+                Gui.TableSetupColumn("##label", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), labelWidth);
+                Gui.TableSetupColumn("##value", (ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize), 1f);
                 DrawDetailFieldRow("Kind:", entry.kind.ToString());
                 DrawDetailFieldRow("File:", fileWithLineText);
                 DrawDetailFieldRow("Source:", sourceText);
-                if (entry.sessionId.isAssigned)
+                if (entry.sessionID.isAssigned)
                 {
-                    DrawDetailFieldRow("Session:", entry.sessionId.ToString());
+                    DrawDetailFieldRow("Session:", entry.sessionID.ToString());
                 }
                 DrawDetailFieldRow("Time:", timeText);
             }
             finally
             {
-                Ui.EndTable();
+                Gui.EndTable();
             }
         }
 
         if (!string.IsNullOrWhiteSpace(entry.stackTrace))
         {
-            Ui.Separator();
+            Gui.Separator();
             EditorUI.current.widgets.WrappedText(entry.stackTrace);
         }
     }
@@ -534,7 +534,7 @@ internal sealed partial class ConsolePanel : EditorPanel
     private void HandleKeyboardNavigation()
     {
         int current = m_view.FindIndex(m_focusedKey);
-        int pageSize = Math.Max(1, (int)(Ui.GetContentRegionAvailable().Y / Math.Max(1f, Ui.GetFrameHeight())));
+        int pageSize = Math.Max(1, (int)(Gui.GetContentRegionAvailable().Y / Math.Max(1f, Gui.GetFrameHeight())));
         ListNavigationResult navigation = EditorUI.current.widgets.NavigateList(m_interactions, m_view.rows.Count, current, pageSize);
         m_keyboardHandled = navigation.activate || navigation.selectionRequested || navigation.focusChanged;
         m_scrollFocusedRow = navigation.focusChanged || navigation.activate;
@@ -564,7 +564,7 @@ internal sealed partial class ConsolePanel : EditorPanel
         }
         // The view owns this neutral boxed payload while Core keeps only a weak action target.
         m_focusedCopyTarget = row.copyTarget;
-        m_interactions.For(LoggingInteractionIds.C_ENTRY_AREA, m_focusedCopyTarget).Focus();
+        m_interactions.For(LoggingInteractionIDs.C_ENTRY_AREA, m_focusedCopyTarget).Focus();
     }
 
     private void DrawEntryContextMenu()
@@ -577,15 +577,15 @@ internal sealed partial class ConsolePanel : EditorPanel
         int index = m_view.FindIndex(m_contextKey);
         if (index < 0)
         {
-            if (Ui.BeginPopup(C_POPUP_ID))
+            if (Gui.BeginPopup(C_POPUP_ID))
             {
                 try
                 {
-                    Ui.CloseCurrentPopup();
+                    Gui.CloseCurrentPopup();
                 }
                 finally
                 {
-                    Ui.EndPopup();
+                    Gui.EndPopup();
                 }
             }
             m_contextKey = null;
@@ -594,12 +594,12 @@ internal sealed partial class ConsolePanel : EditorPanel
         }
         if (m_requestContextMenu)
         {
-            Ui.OpenPopup(C_POPUP_ID);
+            Gui.OpenPopup(C_POPUP_ID);
             m_requestContextMenu = false;
         }
         if (!EditorUI.current.menus.ContextMenu(
             C_POPUP_ID,
-            m_interactions.For(LoggingInteractionIds.C_ENTRY_AREA, m_view.rows[index].copyTarget)
+            m_interactions.For(LoggingInteractionIDs.C_ENTRY_AREA, m_view.rows[index].copyTarget)
         )) {
             m_contextKey = null;
         }
@@ -611,26 +611,26 @@ internal sealed partial class ConsolePanel : EditorPanel
         {
             return;
         }
-        var activeIds = new HashSet<string>(StringComparer.Ordinal);
+        var activeIDs = new HashSet<string>(StringComparer.Ordinal);
         for (int i = 0; i < snapshot.groups.Count; i++)
         {
-            activeIds.Add($"group/{snapshot.groups[i].identity}");
+            activeIDs.Add($"group/{snapshot.groups[i].identity}");
         }
         for (int i = 0; i < snapshot.occurrences.Count; i++)
         {
-            activeIds.Add($"occurrence/{snapshot.occurrences[i].sequence}");
+            activeIDs.Add($"occurrence/{snapshot.occurrences[i].sequence}");
         }
-        m_openEntries.RemoveWhere(id => !activeIds.Contains(id));
+        m_openEntries.RemoveWhere(id => !activeIDs.Contains(id));
     }
 
     private static void DrawDetailFieldRow(
         string label,
         string value
     ) {
-        Ui.TableNextRow();
-        _ = Ui.TableSetColumnIndex(0);
+        Gui.TableNextRow();
+        _ = Gui.TableSetColumnIndex(0);
         EditorUI.current.widgets.ColoredText(EditorPalette.textDisabled, label);
-        _ = Ui.TableSetColumnIndex(1);
+        _ = Gui.TableSetColumnIndex(1);
         EditorUI.current.widgets.WrappedText(value);
     }
 

@@ -13,8 +13,8 @@ using Inno.Editor.ImGui.ImGuiWidget;
 
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
 
@@ -24,17 +24,17 @@ internal sealed partial class FileBrowserPanel
         EditorContext context,
         IReadOnlyList<FileBrowserDisplayEntry> entries
     ) {
-        bool entriesVisible = Ui.BeginChild("##EntriesScroll", Vector2.Zero, ImGuiChildFlags.None);
+        bool entriesVisible = Gui.BeginChild("##EntriesScroll", Vector2.Zero, ImGuiChildFlags.None);
         try
         {
             if (entriesVisible)
             {
-                if (Ui.IsWindowFocused())
+                if (Gui.IsWindowFocused())
                 {
                     m_rename.MarkInteraction(FileBrowserPresentation.List);
                 }
-                float rowHeight = Ui.GetTextLineHeight() + Ui.GetLayout().cellPadding.Y * 2f + currentBrowserStyle.listRowSpacing;
-                HandleEntryKeyboardNavigation(Math.Max(1, (int)(Ui.GetContentRegionAvailable().Y / rowHeight)));
+                float rowHeight = Gui.GetTextLineHeight() + Gui.GetLayout().cellPadding.Y * 2f + currentBrowserStyle.listRowSpacing;
+                HandleEntryKeyboardNavigation(Math.Max(1, (int)(Gui.GetContentRegionAvailable().Y / rowHeight)));
                 DrawEntriesTable(context, entries, m_assets.browser.currentDirectory);
                 HandleBackgroundSelection(context);
                 m_contextMenu.DrawBackground(context, "##asset_list_background_context", FileBrowserPresentation.List);
@@ -42,7 +42,7 @@ internal sealed partial class FileBrowserPanel
         }
         finally
         {
-            Ui.EndChild();
+            Gui.EndChild();
         }
     }
 
@@ -55,40 +55,40 @@ internal sealed partial class FileBrowserPanel
                                 | ImGuiTableFlags.NoPadOuterX
                                 | ImGuiTableFlags.SizingStretchProp
                                 | ImGuiTableFlags.NoSavedSettings;
-        EditorUiLayout style = Ui.GetLayout();
-        Vector2 tableOrigin = Ui.GetCursorScreenPosition();
-        Vector2 tableSize = Ui.GetContentRegionAvailable();
-        Ui.PushStyleVar(ImGuiStyleVar.CellPadding, new Vector2(style.windowPadding.X, style.cellPadding.Y));
+        EditorUILayout style = Gui.GetLayout();
+        Vector2 tableOrigin = Gui.GetCursorScreenPosition();
+        Vector2 tableSize = Gui.GetContentRegionAvailable();
+        Gui.PushStyleVar(ImGuiStyleVar.CellPadding, new Vector2(style.windowPadding.X, style.cellPadding.Y));
         try
         {
-            bool tableStarted = Ui.BeginTable("##FileBrowserEntries", 3, flags, new Vector2(0f, 0f));
+            bool tableStarted = Gui.BeginTable("##FileBrowserEntries", 3, flags, new Vector2(0f, 0f));
             if (!tableStarted)
             {
-                Ui.Dummy(Vector2.Zero);
+                Gui.Dummy(Vector2.Zero);
                 return;
             }
 
             try
             {
-                Ui.TableSetupColumn(
+                Gui.TableSetupColumn(
                     "Name",
                     (ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize),
                     m_listNameSeparatorPosition
                 );
-                Ui.TableSetupColumn(
+                Gui.TableSetupColumn(
                     "Type",
                     (ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize),
                     m_listTypeSeparatorPosition - m_listNameSeparatorPosition
                 );
-                Ui.TableSetupColumn(
+                Gui.TableSetupColumn(
                     "Source",
                     (ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize),
                     1f - m_listTypeSeparatorPosition
                 );
                 DrawHeaderRow();
-                uint rowBg = Ui.ToPackedColor(EditorPalette.collectionRow);
-                uint rowAltBg = Ui.ToPackedColor(EditorPalette.collectionRowAlternate);
-                float entryRowHeight = Ui.GetTextLineHeight() + style.cellPadding.Y * 2f + currentBrowserStyle.listRowSpacing;
+                uint rowBg = Gui.ToPackedColor(EditorPalette.collectionRow);
+                uint rowAltBg = Gui.ToPackedColor(EditorPalette.collectionRowAlternate);
+                float entryRowHeight = Gui.GetTextLineHeight() + style.cellPadding.Y * 2f + currentBrowserStyle.listRowSpacing;
                 Span<int> preserved = stackalloc int[3];
                 int preservedCount = CollectPreservedEntryRows(entries, preserved);
                 m_ui.widgets.ClippedRows(
@@ -104,12 +104,12 @@ internal sealed partial class FileBrowserPanel
                     for (int index = start; index < end; index++)
                     {
                         FileBrowserDisplayEntry item = state.entries[index];
-                        Ui.TableNextRow(ImGuiTableRowFlags.None, state.entryRowHeight);
+                        Gui.TableNextRow(ImGuiTableRowFlags.None, state.entryRowHeight);
                         if (!state.panel.m_data.TryResolve(item, out AssetFileEntry? entry))
                         {
                             continue;
                         }
-                        Ui.TableSetBgColor(ImGuiTableBgTarget.RowBg0, index % 2 == 0 ? state.rowBg : state.rowAltBg);
+                        Gui.TableSetBgColor(ImGuiTableBgTarget.RowBg0, index % 2 == 0 ? state.rowBg : state.rowAltBg);
                         state.panel.DrawNameCell(state.context, item, entry);
                         DrawTextCell(item.isPluginRoot ? "IPLUGIN" : GetTypeText(entry), EditorPalette.contentText);
                         DrawTextCell(item.isPluginRoot ? "~" : GetSourceText(entry, state.currentDirectory), EditorPalette.contentText);
@@ -120,22 +120,22 @@ internal sealed partial class FileBrowserPanel
             }
             finally
             {
-                Ui.EndTable();
+                Gui.EndTable();
             }
 
-            Vector2 tableEnd = Ui.GetCursorScreenPosition();
+            Vector2 tableEnd = Gui.GetCursorScreenPosition();
             float tableHeight = MathF.Max(1f, tableEnd.Y - tableOrigin.Y);
             var interactionSize = new Vector2(tableSize.X, tableHeight);
             ListColumnSeparatorState separators = HandleListColumnSeparators(tableOrigin, interactionSize);
             DrawListColumnSeparators(tableOrigin, tableSize.X, tableHeight, separators);
-            Ui.SetCursorScreenPosition(tableEnd);
+            Gui.SetCursorScreenPosition(tableEnd);
             // Commit the restored layout cursor so overlay separator hit targets cannot implicitly
             // extend the scrolling child when UI scaling changes their physical bounds.
-            Ui.Dummy(Vector2.Zero);
+            Gui.Dummy(Vector2.Zero);
         }
         finally
         {
-            Ui.PopStyleVar();
+            Gui.PopStyleVar();
         }
     }
 
@@ -151,34 +151,34 @@ internal sealed partial class FileBrowserPanel
         bool typeHovered;
         bool typeActive;
         float nameX = origin.X + width * m_listNameSeparatorPosition;
-        Ui.SetCursorScreenPosition(new Vector2(nameX - hitWidth * 0.5f, origin.Y));
-        Ui.SetNextItemAllowOverlap();
-        _ = Ui.InvisibleButton("##AssetListNameSeparator", new Vector2(hitWidth, height));
-        nameHovered = Ui.IsItemHovered();
-        nameActive = Ui.IsItemActive();
+        Gui.SetCursorScreenPosition(new Vector2(nameX - hitWidth * 0.5f, origin.Y));
+        Gui.SetNextItemAllowOverlap();
+        _ = Gui.InvisibleButton("##AssetListNameSeparator", new Vector2(hitWidth, height));
+        nameHovered = Gui.IsItemHovered();
+        nameActive = Gui.IsItemActive();
         if (nameHovered || nameActive)
         {
-            Ui.SetMouseCursor(ImGuiMouseCursor.ResizeEw);
+            Gui.SetMouseCursor(ImGuiMouseCursor.ResizeEw);
         }
         if (nameActive)
         {
-            float requested = (Ui.GetMousePos().X - origin.X) / width;
+            float requested = (Gui.GetMousePos().X - origin.X) / width;
             SetListColumnSeparators(requested, m_listTypeSeparatorPosition);
         }
 
         float typeX = origin.X + width * m_listTypeSeparatorPosition;
-        Ui.SetCursorScreenPosition(new Vector2(typeX - hitWidth * 0.5f, origin.Y));
-        Ui.SetNextItemAllowOverlap();
-        _ = Ui.InvisibleButton("##AssetListTypeSeparator", new Vector2(hitWidth, height));
-        typeHovered = Ui.IsItemHovered();
-        typeActive = Ui.IsItemActive();
+        Gui.SetCursorScreenPosition(new Vector2(typeX - hitWidth * 0.5f, origin.Y));
+        Gui.SetNextItemAllowOverlap();
+        _ = Gui.InvisibleButton("##AssetListTypeSeparator", new Vector2(hitWidth, height));
+        typeHovered = Gui.IsItemHovered();
+        typeActive = Gui.IsItemActive();
         if (typeHovered || typeActive)
         {
-            Ui.SetMouseCursor(ImGuiMouseCursor.ResizeEw);
+            Gui.SetMouseCursor(ImGuiMouseCursor.ResizeEw);
         }
         if (typeActive)
         {
-            float requested = (Ui.GetMousePos().X - origin.X) / width;
+            float requested = (Gui.GetMousePos().X - origin.X) / width;
             SetListColumnSeparators(m_listNameSeparatorPosition, requested);
         }
 
@@ -210,34 +210,34 @@ internal sealed partial class FileBrowserPanel
         FileBrowserDisplayEntry item,
         AssetFileEntry entry
     ) {
-        _ = Ui.TableSetColumnIndex(0);
+        _ = Gui.TableSetColumnIndex(0);
         string icon = m_assets.GetIcon(entry);
         string name = item.isPluginRoot ? item.displayName : entry.nameWithoutExtension;
         bool selected = m_assets.browser.IsSelected(context, entry);
         bool editing = m_rename.IsEditing(context, entry.assetPath.ToString(), FileBrowserPresentation.List);
-        (float minimumX, float maximumX, float rowMinimum, float rowMaximum) table = Ui.GetTableBounds();
+        (float minimumX, float maximumX, float rowMinimum, float rowMaximum) table = Gui.GetTableBounds();
         float rowMinimumY = table.rowMinimum;
         float rowMaximumY = table.rowMaximum;
         InsetListCellContent();
-        Ui.PushStyleColor(ImGuiCol.Header, EditorPalette.transparent);
-        Ui.PushStyleColor(ImGuiCol.HeaderHovered, EditorPalette.transparent);
-        Ui.PushStyleColor(ImGuiCol.HeaderActive, EditorPalette.transparent);
+        Gui.PushStyleColor(ImGuiCol.Header, EditorPalette.transparent);
+        Gui.PushStyleColor(ImGuiCol.HeaderHovered, EditorPalette.transparent);
+        Gui.PushStyleColor(ImGuiCol.HeaderActive, EditorPalette.transparent);
         try
         {
-            Vector2 iconTextPos = Ui.GetCursorScreenPosition();
+            Vector2 iconTextPos = Gui.GetCursorScreenPosition();
             ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags.SpanAllColumns
                                                    | ImGuiSelectableFlags.AllowDoubleClick
                                                    | ImGuiSelectableFlags.AllowOverlap;
             RequestEntryKeyboardFocus(entry);
-            bool activated = Ui.Selectable($"##entry_{entry.assetPath.ToString()}", selected, selectableFlags);
-            bool itemHovered = Ui.IsItemHovered();
-            bool doubleClicked = itemHovered && Ui.IsMouseDoubleClicked(ImGuiMouseButton.Left);
+            bool activated = Gui.Selectable($"##entry_{entry.assetPath.ToString()}", selected, selectableFlags);
+            bool itemHovered = Gui.IsItemHovered();
+            bool doubleClicked = itemHovered && Gui.IsMouseDoubleClicked(ImGuiMouseButton.Left);
             if (activated && !m_keyboardHandled)
             {
                 HandleEntryActivation(context, entry, FileBrowserPresentation.List, doubleClicked);
             }
 
-            bool itemActive = Ui.IsItemActive();
+            bool itemActive = Gui.IsItemActive();
             if (!editing)
             {
                 m_contextMenu.DrawEntry(
@@ -251,7 +251,7 @@ internal sealed partial class FileBrowserPanel
             if (selected || itemHovered)
             {
                 Vector4 highlight = itemActive ? EditorPalette.GetHovered(EditorPalette.contentAccent) : EditorPalette.contentAccent;
-                Ui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, Ui.ToPackedColor(highlight));
+                Gui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, Gui.ToPackedColor(highlight));
             }
 
             if (!editing)
@@ -263,19 +263,19 @@ internal sealed partial class FileBrowserPanel
                 }
             }
 
-            Ui.SameLine(iconTextPos.X - Ui.GetWindowPos().X, 0f);
+            Gui.SameLine(iconTextPos.X - Gui.GetWindowPos().X, 0f);
             if (editing)
             {
                 EditorUI.current.widgets.IconText(icon, string.Empty, false);
-                Ui.SameLine(0f, 0f);
-                Vector2 renameCursor = Ui.GetCursorScreenPosition();
-                Ui.SetCursorScreenPosition(new Vector2(renameCursor.X, rowMinimumY));
+                Gui.SameLine(0f, 0f);
+                Vector2 renameCursor = Gui.GetCursorScreenPosition();
+                Gui.SetCursorScreenPosition(new Vector2(renameCursor.X, rowMinimumY));
                 m_rename.Draw(
                     context,
                     $"list_{entry.assetPath.ToString()}",
                     entry.assetPath.ToString(),
                     FileBrowserPresentation.List,
-                    Ui.GetContentRegionAvailable().X,
+                    Gui.GetContentRegionAvailable().X,
                     MathF.Max(1f, rowMaximumY - rowMinimumY)
                 );
             }
@@ -286,7 +286,7 @@ internal sealed partial class FileBrowserPanel
         }
         finally
         {
-            Ui.PopStyleColor(3);
+            Gui.PopStyleColor(3);
         }
     }
 
@@ -298,37 +298,37 @@ internal sealed partial class FileBrowserPanel
         bool active
     ) {
         Vector4 color = active ? EditorPalette.contentAccent : hovered ? EditorPalette.contentBorder : EditorPalette.contentBorderSoft;
-        Ui.DrawLine(new Vector2(x, top), new Vector2(x, bottom), Ui.ToPackedColor(color), EditorUI.current.widgets.style.borderSize);
+        Gui.DrawLine(new Vector2(x, top), new Vector2(x, bottom), Gui.ToPackedColor(color), EditorUI.current.widgets.style.borderSize);
     }
 
     private static void DrawHeaderRow()
     {
-        Ui.TableNextRow();
-        Ui.TableSetBgColor(ImGuiTableBgTarget.RowBg0, Ui.ToPackedColor(EditorPalette.collectionHeader));
-        Ui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, Ui.ToPackedColor(EditorPalette.collectionHeader));
-        _ = Ui.TableSetColumnIndex(0);
+        Gui.TableNextRow();
+        Gui.TableSetBgColor(ImGuiTableBgTarget.RowBg0, Gui.ToPackedColor(EditorPalette.collectionHeader));
+        Gui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, Gui.ToPackedColor(EditorPalette.collectionHeader));
+        _ = Gui.TableSetColumnIndex(0);
         InsetListCellContent();
-        Ui.Text("Name");
-        _ = Ui.TableSetColumnIndex(1);
+        Gui.Text("Name");
+        _ = Gui.TableSetColumnIndex(1);
         InsetListCellContent();
-        Ui.Text("Type");
-        _ = Ui.TableSetColumnIndex(2);
+        Gui.Text("Type");
+        _ = Gui.TableSetColumnIndex(2);
         InsetListCellContent();
-        Ui.Text("Source");
+        Gui.Text("Source");
     }
 
     private static void DrawTextCell(
         string text,
         Vector4 color
     ) {
-        Ui.TableNextColumn();
+        Gui.TableNextColumn();
         InsetListCellContent();
-        Ui.PushStyleColor(ImGuiCol.Text, color);
-        Ui.Text(text);
-        Ui.PopStyleColor();
+        Gui.PushStyleColor(ImGuiCol.Text, color);
+        Gui.Text(text);
+        Gui.PopStyleColor();
     }
 
-    private static void InsetListCellContent() => Ui.SetCursorPosX(Ui.GetCursorPosX() + currentBrowserStyle.listContentHorizontalPadding);
+    private static void InsetListCellContent() => Gui.SetCursorPosX(Gui.GetCursorPosX() + currentBrowserStyle.listContentHorizontalPadding);
 
     private readonly record struct ListColumnSeparatorState(
         bool nameHovered,

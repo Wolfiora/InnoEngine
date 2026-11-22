@@ -7,7 +7,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Reports read-only statistics for the most recently completed render frame.
 /// </summary>
-[StableTypeId("f3924117-1829-5885-9f93-9010066fed48")]
+[StableTypeID("f3924117-1829-5885-9f93-9010066fed48")]
 public sealed class RenderFrameStatistics
 {
     /// <summary>

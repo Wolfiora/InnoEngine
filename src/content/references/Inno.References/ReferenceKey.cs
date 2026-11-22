@@ -10,7 +10,7 @@ public readonly struct ReferenceKey : IEquatable<ReferenceKey>
     /// <summary>
     /// Creates a key for one reference slot.
     /// </summary>
-    /// <param name="ownerPersistentId">
+    /// <param name="ownerPersistentID">
     /// The persistent identity of the object that owns the slot.
     /// </param>
     /// <param name="path">
@@ -20,25 +20,25 @@ public readonly struct ReferenceKey : IEquatable<ReferenceKey>
     /// Thrown when the owner identity or path is empty.
     /// </exception>
     public ReferenceKey(
-        Guid ownerPersistentId,
+        Guid ownerPersistentID,
         string path
     ) {
-        if (ownerPersistentId == Guid.Empty)
+        if (ownerPersistentID == Guid.Empty)
         {
-            throw new ArgumentException("A reference key requires a non-empty owner identity.", nameof(ownerPersistentId));
+            throw new ArgumentException("A reference key requires a non-empty owner identity.", nameof(ownerPersistentID));
         }
         if (string.IsNullOrWhiteSpace(path))
         {
             throw new ArgumentException("A reference key requires a non-empty stable path.", nameof(path));
         }
-        this.ownerPersistentId = ownerPersistentId;
+        this.ownerPersistentID = ownerPersistentID;
         this.path = path;
     }
 
     /// <summary>
     /// Gets the persistent identity of the object that owns this reference slot.
     /// </summary>
-    public Guid ownerPersistentId { get; }
+    public Guid ownerPersistentID { get; }
 
     /// <summary>
     /// Gets the stable property or structural path inside the owner.
@@ -55,7 +55,7 @@ public readonly struct ReferenceKey : IEquatable<ReferenceKey>
     /// <see langword="true"/> when the owner identity and path are equal; otherwise, <see langword="false"/>.
     /// </returns>
     public bool Equals(ReferenceKey other)
-        => ownerPersistentId == other.ownerPersistentId && string.Equals(path, other.path, StringComparison.Ordinal);
+        => ownerPersistentID == other.ownerPersistentID && string.Equals(path, other.path, StringComparison.Ordinal);
 
     /// <summary>
     /// Determines whether an object identifies the same owner slot.
@@ -74,7 +74,7 @@ public readonly struct ReferenceKey : IEquatable<ReferenceKey>
     /// <returns>
     /// A hash code consistent with reference-key equality.
     /// </returns>
-    public override int GetHashCode() => HashCode.Combine(ownerPersistentId, StringComparer.Ordinal.GetHashCode(path ?? string.Empty));
+    public override int GetHashCode() => HashCode.Combine(ownerPersistentID, StringComparer.Ordinal.GetHashCode(path ?? string.Empty));
 
     /// <summary>
     /// Formats this slot identity for diagnostics.
@@ -82,7 +82,7 @@ public readonly struct ReferenceKey : IEquatable<ReferenceKey>
     /// <returns>
     /// The owner identity followed by the stable slot path.
     /// </returns>
-    public override string ToString() => $"{ownerPersistentId:D}:{path}";
+    public override string ToString() => $"{ownerPersistentID:D}:{path}";
 
     /// <summary>
     /// Determines whether two reference keys are equal.

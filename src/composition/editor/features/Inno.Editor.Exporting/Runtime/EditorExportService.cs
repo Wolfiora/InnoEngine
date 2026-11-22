@@ -68,17 +68,17 @@ public sealed class EditorExportService : EditorModule
     /// <summary>
     /// Gets the targets registered by the active Build distribution.
     /// </summary>
-    public IReadOnlyList<BuildTargetId> availableGameTargets => m_buildPipeline.availableGameTargets;
+    public IReadOnlyList<BuildTargetID> availableGameTargets => m_buildPipeline.availableGameTargets;
 
     /// <summary>
     /// Cancels the observed export only while that operation still owns this service.
     /// </summary>
-    /// <param name="operationId">
+    /// <param name="operationID">
     /// The operation observed by the caller.
     /// </param>
-    public void Cancel(long operationId)
+    public void Cancel(long operationID)
     {
-        if (operationId == m_operation)
+        if (operationID == m_operation)
         {
             CancelCurrent();
         }
@@ -93,7 +93,7 @@ public sealed class EditorExportService : EditorModule
     /// <returns>
     /// The registered deployment choices; no host fallback is introduced.
     /// </returns>
-    public IReadOnlyList<ManagedDeploymentId> GetManagedDeployments(BuildTargetId target) => m_buildPipeline.GetManagedDeployments(target);
+    public IReadOnlyList<ManagedDeploymentID> GetManagedDeployments(BuildTargetID target) => m_buildPipeline.GetManagedDeployments(target);
 
     /// <summary>
     /// Gets a registered target label or a diagnostic for an unavailable target.
@@ -104,7 +104,7 @@ public sealed class EditorExportService : EditorModule
     /// <returns>
     /// A presentation label; never used as a routing identity.
     /// </returns>
-    public string GetGameTargetDisplayName(BuildTargetId target)
+    public string GetGameTargetDisplayName(BuildTargetID target)
         => m_buildPipeline.TryGetGameTargetDisplayName(
             target,
             out string displayName

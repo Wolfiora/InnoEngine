@@ -18,7 +18,7 @@ public abstract class RenderingAuthoringBackendProvider
     /// <exception cref="ArgumentException">
     /// The identity is unassigned.
     /// </exception>
-    protected RenderingAuthoringBackendProvider(RenderingBackendId id)
+    protected RenderingAuthoringBackendProvider(RenderingBackendID id)
     {
         if (!id.isValid)
         {
@@ -30,7 +30,7 @@ public abstract class RenderingAuthoringBackendProvider
     /// <summary>
     /// Gets the stable runtime implementation identity served by these tools.
     /// </summary>
-    public RenderingBackendId id { get; }
+    public RenderingBackendID id { get; }
 
     /// <summary>
     /// Creates the shader toolchain for this implementation.

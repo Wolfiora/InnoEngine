@@ -50,38 +50,38 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
         EngineObject[] engineObjects = entries
             .SelectMany(static entry => entry.components.Cast<EngineObject>().Prepend(entry.gameObject))
             .ToArray();
-        var sourceIds = new Dictionary<EngineObject, Guid>(ReferenceEqualityComparer.Instance);
+        var sourceIDs = new Dictionary<EngineObject, Guid>(ReferenceEqualityComparer.Instance);
         PrefabConnectionRecord? existingConnection = value.prefabConnection;
-        var mappedIds = new Dictionary<Guid, Guid>();
+        var mappedIDs = new Dictionary<Guid, Guid>();
         if (existingConnection is not null)
         {
             foreach ((Guid sourceID, Guid runtimeID) in existingConnection.objectIdentities)
             {
-                mappedIds[runtimeID] = sourceID;
+                mappedIDs[runtimeID] = sourceID;
             }
             foreach ((Guid sourceID, Guid runtimeID) in existingConnection.componentIdentities)
             {
-                mappedIds[runtimeID] = sourceID;
+                mappedIDs[runtimeID] = sourceID;
             }
         }
         for (int i = 0; i < engineObjects.Length; i++)
         {
-            sourceIds.Add(
+            sourceIDs.Add(
                 engineObjects[i],
-                mappedIds.TryGetValue(engineObjects[i].identity.persistentId, out Guid mappedID)
+                mappedIDs.TryGetValue(engineObjects[i].identity.persistentID, out Guid mappedID)
                 ? mappedID
                 : Guid.NewGuid()
             );
         }
 
-        var references = new SceneGraphReferenceMap(value.scene, sourceIds, value);
-        writer.Write(C_SOURCE_ROOT_ID_KEY, sourceIds[value]);
+        var references = new SceneGraphReferenceMap(value.scene, sourceIDs, value);
+        writer.Write(C_SOURCE_ROOT_ID_KEY, sourceIDs[value]);
         using (references.Enter())
         {
             SceneGraphSerialization.WriteObjects(
                 writer,
                 entries,
-                sourceIds,
+                sourceIDs,
                 included.Contains,
                 preserveRootSiblingOrder: false
             );
@@ -124,7 +124,7 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
             RestoredSceneGraph restored = SceneGraphSerialization.RestoreObjects(
                 scene,
                 reader.ReadObjectArray(SceneGraphSerialization.C_OBJECTS_KEY),
-                preservePersistentIds: false,
+                preservePersistentIDs: false,
                 references,
                 SceneGraphSerialization.ReadMissingReferenceAliases(reader),
                 reader.context
@@ -188,7 +188,7 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
                     }
                     gameObject.SetPrefabInstanceDirect(
                         new PrefabInstanceInfo(
-                            sourceAsset.identity.persistentId,
+                            sourceAsset.identity.persistentID,
                             sourceObjectID,
                             root,
                             ReferenceEquals(gameObject, root),

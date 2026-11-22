@@ -12,7 +12,7 @@ using Inno.Rendering.Assets;
 namespace Inno.Rendering.Assets.Authoring;
 
 [AssetImporter("inno.rendering.pipeline")]
-[StableTypeId("6753d2fb-9773-518d-9673-beae57f6daa7")]
+[StableTypeID("6753d2fb-9773-518d-9673-beae57f6daa7")]
 internal sealed class RenderPipelineAssetImporter : AssetImporter<RenderPipelineAsset>
 {
     /// <summary>

@@ -1,7 +1,7 @@
 using System;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
 
@@ -30,12 +30,12 @@ internal sealed class NullablePropertyDrawer : IPropertyDrawer
 
         if (!hasValue)
         {
-            Ui.SameLine(0f, -1f);
-            Ui.Text("Null");
+            Gui.SameLine(0f, -1f);
+            Gui.Text("Null");
             return;
         }
 
-        Ui.SameLine(0f, -1f);
+        Gui.SameLine(0f, -1f);
         context.DrawInlineChild("Value", underlyingType, context.GetValue, value => context.SetValue(value));
     }
 }

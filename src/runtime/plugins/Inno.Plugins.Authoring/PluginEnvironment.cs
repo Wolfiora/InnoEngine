@@ -188,12 +188,12 @@ public sealed class PluginEnvironment : IDisposable
     /// Occurs after a validated Plugin generation is staged for script compilation but before it becomes active.
     /// </summary>
     [ScriptingApiIgnore]
-    public event Action? ActivationCandidateChanged;
+    public event Action? activationCandidateChanged;
 
     /// <summary>
     /// Occurs after discovery diagnostics or the active Plugin generation changes.
     /// </summary>
-    public event Action? Changed
+    public event Action? changed
     {
         add => m_catalog.changed += value;
         remove => m_catalog.changed -= value;
@@ -259,7 +259,7 @@ public sealed class PluginEnvironment : IDisposable
         }
 
         PluginScanResult previous = CreateActiveScanSnapshot();
-        AssetSourceMount project = m_assets.sourceMounts.Single(static mount => mount.id == AssetSourceId.project);
+        AssetSourceMount project = m_assets.sourceMounts.Single(static mount => mount.id == AssetSourceID.project);
         AssetSourceMountTransaction assets;
         try
         {
@@ -386,7 +386,7 @@ public sealed class PluginEnvironment : IDisposable
     /// </returns>
     [ScriptingApiIgnore]
     public bool TryGetCompilationPlugin(
-        AssetSourceId source,
+        AssetSourceID source,
         out PluginCandidate? plugin
     ) {
         plugin = compilationPlugins.FirstOrDefault(candidate => candidate.sourceMount.id == source);
@@ -406,7 +406,7 @@ public sealed class PluginEnvironment : IDisposable
     /// <see langword="true"/> when an active Plugin owns the source.
     /// </returns>
     public bool TryGet(
-        AssetSourceId source,
+        AssetSourceID source,
         out PluginCandidate? plugin
     ) => m_catalog.TryGet(source, out plugin);
 
@@ -532,7 +532,7 @@ public sealed class PluginEnvironment : IDisposable
             m_lastReconciliationTimestamp = 0;
             m_refreshRequested = false;
             m_reconciliation = null;
-            ActivationCandidateChanged = null;
+            activationCandidateChanged = null;
         }
         try
         {
@@ -683,7 +683,7 @@ public sealed class PluginEnvironment : IDisposable
 
     private void InvokeCandidateObservers()
     {
-        Action? handlers = ActivationCandidateChanged;
+        Action? handlers = activationCandidateChanged;
         if (handlers is null)
         {
             return;
@@ -723,7 +723,7 @@ public sealed class PluginEnvironment : IDisposable
 
     private PluginScanResult ActivateInitialCandidate(PluginScanResult initialScan)
     {
-        AssetSourceMount project = m_assets.sourceMounts.Single(static mount => mount.id == AssetSourceId.project);
+        AssetSourceMount project = m_assets.sourceMounts.Single(static mount => mount.id == AssetSourceID.project);
         try
         {
             m_assets.ReplaceSourceMounts([project, .. PluginSourceService.GetActivatableMounts(initialScan)]);

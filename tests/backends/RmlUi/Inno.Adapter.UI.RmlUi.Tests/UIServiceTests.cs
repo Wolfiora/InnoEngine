@@ -64,20 +64,20 @@ public sealed class UIServiceTests : IDisposable
         File.WriteAllText(Path.Combine(m_assets, "Hud.rml"), C_MARKUP);
         using AssetLoader loader = CreateLoader();
 
-        UiDocumentAsset document = Assert.IsType<UiDocumentAsset>(
-            loader.Load(AssetPath.Project("Hud.rml"), typeof(UiDocumentAsset))
+        UIDocumentAsset document = Assert.IsType<UIDocumentAsset>(
+            loader.Load(AssetPath.Project("Hud.rml"), typeof(UIDocumentAsset))
         );
 
-        Assert.Equal(C_MARKUP, Assert.IsType<UiDocumentSource>(document.source).text);
+        Assert.Equal(C_MARKUP, Assert.IsType<UIDocumentSource>(document.source).text);
         Assert.Equal(RmlUiIdentifiers.documentLanguage, document.source.language);
-        Assert.Equal(RmlUiIdentifiers.backend.value, document.implementationId);
+        Assert.Equal(RmlUiIdentifiers.backend.value, document.implementationID);
     }
 
     [Fact]
     public void RmlFrontendScopesFontFamiliesAndHonorsNone()
     {
         var frontend = new RmlUiDocumentFrontend();
-        UiDocumentAnalysis first = frontend.Analyze(
+        UIDocumentAnalysis first = frontend.Analyze(
             new("Hud.rml", """
             <rml><head><style>
             @font-face { font-family: Interface; src: url(Lato.ttf); font-weight: 400; }
@@ -86,7 +86,7 @@ public sealed class UIServiceTests : IDisposable
             </style></head><body/></rml>
             """)
         );
-        UiDocumentAnalysis second = frontend.Analyze(
+        UIDocumentAnalysis second = frontend.Analyze(
             new("Other.rml", """
             <rml><head><style>
             @font-face { font-family: Interface; src: url(Lato.ttf); font-weight: 400; }
@@ -96,7 +96,7 @@ public sealed class UIServiceTests : IDisposable
         );
         Assert.True(first.succeeded);
         Assert.True(second.succeeded);
-        UiDocumentFontDeclaration face = Assert.Single(first.fonts);
+        UIDocumentFontDeclaration face = Assert.Single(first.fonts);
         Assert.Equal("Lato.ttf", face.assetPath);
         Assert.Contains("font-family: " + face.family, first.text);
         Assert.DoesNotContain("@font-face", first.text);
@@ -109,8 +109,8 @@ public sealed class UIServiceTests : IDisposable
     {
         using var backend = new RmlUiBackend();
         backend.RegisterFont(new(File.ReadAllBytes(FontPath()), 0, "Declared", TextFontStyle.Normal, 400));
-        UiContextHandle context = backend.CreateContext(new UiContextOptions("missing-font", 320, 180));
-        UiDocumentHandle document = backend.LoadDocument(
+        UIContextHandle context = backend.CreateContext(new UIContextOptions("missing-font", 320, 180));
+        UIDocumentHandle document = backend.LoadDocument(
             context,
             Rml("""
             <rml><head><style>body { margin: 0; font-family: __inno_ui_undeclared; font-size: 24px; }</style></head>
@@ -126,8 +126,8 @@ public sealed class UIServiceTests : IDisposable
     public void ElementHitTestIgnoresBlankCanvasAndPointerEventsNone()
     {
         using var backend = new RmlUiBackend();
-        UiContextHandle context = backend.CreateContext(new UiContextOptions("hit-test", 320, 180));
-        UiDocumentHandle document = backend.LoadDocument(
+        UIContextHandle context = backend.CreateContext(new UIContextOptions("hit-test", 320, 180));
+        UIDocumentHandle document = backend.LoadDocument(
             context,
             Rml("""
             <rml><head><style>
@@ -150,7 +150,7 @@ public sealed class UIServiceTests : IDisposable
         using var backend = new RmlUiBackend();
         var frontend = new RmlUiDocumentFrontend();
         byte[] font = File.ReadAllBytes(FontPath());
-        UiContextHandle context = backend.CreateContext(new UiContextOptions("font-switch", 320, 180));
+        UIContextHandle context = backend.CreateContext(new UIContextOptions("font-switch", 320, 180));
         foreach ((string family, bool visible) in new[]
                  {
                      ("A", true),
@@ -162,18 +162,18 @@ public sealed class UIServiceTests : IDisposable
             string face = family == "none"
                           ? string.Empty
                           : $"@font-face {{ font-family: {family}; src: url(Lato.ttf); font-weight: 400; }}";
-            UiDocumentAnalysis analysis = frontend.Analyze(
+            UIDocumentAnalysis analysis = frontend.Analyze(
                 new(
                     "FontSwitch.rml",
                     $"<rml><head><style>{face}body {{ margin: 0; font-family: {family}; font-size: 24px; }}</style></head><body>Visible text</body></rml>"
                 )
             );
             Assert.True(analysis.succeeded);
-            foreach (UiDocumentFontDeclaration declaration in analysis.fonts)
+            foreach (UIDocumentFontDeclaration declaration in analysis.fonts)
             {
                 backend.RegisterFont(new(font, 0, declaration.family, declaration.style, declaration.weight));
             }
-            UiDocumentHandle document = backend.LoadDocument(context, Rml(analysis.text!));
+            UIDocumentHandle document = backend.LoadDocument(context, Rml(analysis.text!));
             backend.ShowDocument(context, document);
             backend.Update(context, EmptyInput());
             Assert.Equal(visible, backend.Render(context).commands.Count > 0);
@@ -195,8 +195,8 @@ public sealed class UIServiceTests : IDisposable
                 700
             )
         );
-        UiContextHandle context = backend.CreateContext(new UiContextOptions("weight-selection", 640, 240));
-        UiDocumentHandle document = backend.LoadDocument(
+        UIContextHandle context = backend.CreateContext(new UIContextOptions("weight-selection", 640, 240));
+        UIDocumentHandle document = backend.LoadDocument(
             context,
             Rml("""
             <rml><head><style>
@@ -211,7 +211,7 @@ public sealed class UIServiceTests : IDisposable
         );
         backend.ShowDocument(context, document);
         backend.Update(context, EmptyInput());
-        UiRenderFrame frame = backend.Render(context);
+        UIRenderFrame frame = backend.Render(context);
         Assert.True(
             frame.commands.Where(command => command.texture.isValid)
                 .Select(command => command.texture)
@@ -233,17 +233,17 @@ public sealed class UIServiceTests : IDisposable
             </style></head><body>HUD</body></rml>
             """);
         using AssetLoader loader = CreateLoader();
-        UiDocumentAsset document = Assert.IsType<UiDocumentAsset>(
-            loader.Load(AssetPath.Project("Hud.rml"), typeof(UiDocumentAsset))
+        UIDocumentAsset document = Assert.IsType<UIDocumentAsset>(
+            loader.Load(AssetPath.Project("Hud.rml"), typeof(UIDocumentAsset))
         );
         var artifacts = new RetainingArtifactLookup(loader);
-        using var runtime = new UiRuntime(new RmlUiBackend(), artifacts);
+        using var runtime = new UIRuntime(new RmlUiBackend(), artifacts);
         runtime.Attach();
-        UiContextHandle context = runtime.CreateContext(new UiContextOptions("font-retirement", 320, 180));
-        UiDocumentHandle loaded = runtime.LoadDocument(context, document);
+        UIContextHandle context = runtime.CreateContext(new UIContextOptions("font-retirement", 320, 180));
+        UIDocumentHandle loaded = runtime.LoadDocument(context, document);
         runtime.ShowDocument(context, loaded);
-        UiContextHandle second = runtime.CreateContext(new UiContextOptions("font-retirement-second", 320, 180));
-        UiDocumentHandle secondDocument = runtime.LoadDocument(second, document);
+        UIContextHandle second = runtime.CreateContext(new UIContextOptions("font-retirement-second", 320, 180));
+        UIDocumentHandle secondDocument = runtime.LoadDocument(second, document);
         runtime.ShowDocument(second, secondDocument);
         Assert.Single(artifacts.retainedKeys);
         runtime.DestroyContext(context);
@@ -257,8 +257,8 @@ public sealed class UIServiceTests : IDisposable
     {
         using var backend = new RmlUiBackend();
         backend.RegisterFont(new(File.ReadAllBytes(FontPath()), 0, "Lato", TextFontStyle.Normal, 400));
-        UiContextHandle context = backend.CreateContext(new UiContextOptions("test", 640, 360));
-        UiDocumentHandle document = backend.LoadDocument(
+        UIContextHandle context = backend.CreateContext(new UIContextOptions("test", 640, 360));
+        UIDocumentHandle document = backend.LoadDocument(
             context,
             Rml("""
             <rml>
@@ -278,20 +278,20 @@ public sealed class UIServiceTests : IDisposable
         Assert.True(backend.SetClass(context, document, "action", "active", true));
         Assert.True(backend.SetAttribute(context, document, "action", "data-state", "ready"));
         backend.Update(context, EmptyInput());
-        UiRenderFrame frame = backend.Render(context);
+        UIRenderFrame frame = backend.Render(context);
 
         Assert.NotEmpty(frame.meshUpdates);
         Assert.NotEmpty(frame.commands);
         Assert.NotEmpty(frame.textureUpdates);
         backend.Update(context, EmptyInput());
-        UiRenderFrame unchanged = backend.Render(context);
+        UIRenderFrame unchanged = backend.Render(context);
         Assert.Empty(unchanged.meshUpdates);
         Assert.Empty(unchanged.textureUpdates);
         Assert.NotEmpty(unchanged.commands);
 
         backend.Update(
             context,
-            new UiInputSnapshot(
+            new UIInputSnapshot(
                 new Vector2(20f, 20f),
                 default,
                 KeyModifier.None,
@@ -303,7 +303,7 @@ public sealed class UIServiceTests : IDisposable
             )
         );
         Assert.Contains(backend.DrainEvents(context), value => (
-            value.type == UiEventType.Click && value.targetId == "action"
+            value.type == UIEventType.Click && value.targetID == "action"
         ));
 
         backend.CloseDocument(context, document);
@@ -328,8 +328,8 @@ public sealed class UIServiceTests : IDisposable
         backend.RegisterFont(new(File.ReadAllBytes(FontPath()), 0, "RetirementFont", TextFontStyle.Normal, 400));
         for (int index = 0; index < 8; index++)
         {
-            UiContextHandle context = backend.CreateContext(new UiContextOptions($"retire-{index}", 320, 180));
-            UiDocumentHandle document = backend.LoadDocument(
+            UIContextHandle context = backend.CreateContext(new UIContextOptions($"retire-{index}", 320, 180));
+            UIDocumentHandle document = backend.LoadDocument(
                 context,
                 Rml("""
                 <rml><head><style>
@@ -349,17 +349,17 @@ public sealed class UIServiceTests : IDisposable
     [Fact]
     public void NativeHandlesCannotAliasAfterContextOrBackendRetirement()
     {
-        UiContextHandle retired;
-        UiDocumentHandle retiredDocument;
+        UIContextHandle retired;
+        UIDocumentHandle retiredDocument;
         using (var first = new RmlUiBackend())
         {
-            retired = first.CreateContext(new UiContextOptions("first", 128, 128));
+            retired = first.CreateContext(new UIContextOptions("first", 128, 128));
             retiredDocument = first.LoadDocument(retired, Rml("<rml><head/><body><div>First</div></body></rml>"));
         }
 
         using var second = new RmlUiBackend();
-        UiContextHandle current = second.CreateContext(new UiContextOptions("second", 128, 128));
-        UiDocumentHandle currentDocument = second.LoadDocument(
+        UIContextHandle current = second.CreateContext(new UIContextOptions("second", 128, 128));
+        UIDocumentHandle currentDocument = second.LoadDocument(
             current,
             Rml("<rml><head/><body><div>Second</div></body></rml>")
         );
@@ -386,9 +386,9 @@ public sealed class UIServiceTests : IDisposable
     private AssetLoader CreateLoader()
         => new(m_types, m_serialization, m_identities, m_diagnostics, m_logs, m_assets, m_library);
 
-    private static UiInputSnapshot EmptyInput() => new(default, default, KeyModifier.None, [], [], [], [], []);
+    private static UIInputSnapshot EmptyInput() => new(default, default, KeyModifier.None, [], [], [], [], []);
 
-    private static UiDocumentSource Rml(string text) => new(RmlUiIdentifiers.documentLanguage, text);
+    private static UIDocumentSource Rml(string text) => new(RmlUiIdentifiers.documentLanguage, text);
 
     private static string FontPath() => Path.Combine(AppContext.BaseDirectory, "TestData", "LatoLatin-Regular.ttf");
 
@@ -397,10 +397,10 @@ public sealed class UIServiceTests : IDisposable
         private readonly ArtifactRetention m_retention = new();
 
         public ArtifactLease AcquireArtifact(
-            Guid persistentId,
+            Guid persistentID,
             string outputName
         ) {
-            ArtifactLease source = loader.AcquireArtifact(persistentId, outputName);
+            ArtifactLease source = loader.AcquireArtifact(persistentID, outputName);
             try
             {
                 ArtifactLease retained = m_retention.Retain(source.info, source.OpenRead);
@@ -418,10 +418,10 @@ public sealed class UIServiceTests : IDisposable
         }
 
         public bool TryGetArtifact(
-            Guid persistentId,
+            Guid persistentID,
             string outputName,
             out AssetArtifactInfo? artifact
-        ) => loader.TryGetArtifact(persistentId, outputName, out artifact);
+        ) => loader.TryGetArtifact(persistentID, outputName, out artifact);
 
         internal IReadOnlyList<AssetArtifactKey> retainedKeys => m_retention.GetRetainedKeys();
     }

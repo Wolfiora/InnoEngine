@@ -26,9 +26,9 @@ public sealed class AnimationRuntimeFactory : IRuntimeSubsystemFactory
     /// Gets ordering metadata that evaluates animation after scene simulation.
     /// </summary>
     public RuntimeSubsystemDescriptor descriptor { get; } = new(
-        new RuntimeSubsystemId("inno.runtime.animation"),
+        new RuntimeSubsystemID("inno.runtime.animation"),
         order: 400,
-        dependencies: [new RuntimeSubsystemId("inno.runtime.scene")]
+        dependencies: [new RuntimeSubsystemID("inno.runtime.scene")]
     );
 
     /// <summary>

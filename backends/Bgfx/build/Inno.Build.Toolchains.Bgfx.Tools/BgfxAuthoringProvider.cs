@@ -25,7 +25,7 @@ public sealed class BgfxAuthoringProvider : RenderingAuthoringBackendProvider
     public BgfxAuthoringProvider(
         BgfxShaderTargetProfile target,
         ToolRunner? tools = null
-    ) : base(RenderingBackendId.bgfx)
+    ) : base(RenderingBackendID.bgfx)
     {
         ArgumentNullException.ThrowIfNull(target);
         m_target = target;

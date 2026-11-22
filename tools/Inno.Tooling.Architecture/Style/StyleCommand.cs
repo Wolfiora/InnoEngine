@@ -30,7 +30,7 @@ public static class StyleCommand
         }
 
         string root = Path.GetFullPath(arguments[1]);
-        var ruleIds = new List<string>();
+        var ruleIDs = new List<string>();
         string? pathsFrom = null;
         string? report = null;
         for (int index = 2; index < arguments.Length; index += 2)
@@ -44,7 +44,7 @@ public static class StyleCommand
             switch (arguments[index])
             {
                 case "--rule":
-                    ruleIds.Add(value);
+                    ruleIDs.Add(value);
                     break;
                 case "--paths-from":
                     pathsFrom = value;
@@ -63,7 +63,7 @@ public static class StyleCommand
                              .Where(static line => line.Length > 0)
                              .Select(line => Path.Combine(root, line))
                              .ToArray();
-        StyleReport result = StyleEngine.Run(root, paths, ruleIds, fix: arguments[0] == "fix");
+        StyleReport result = StyleEngine.Run(root, paths, ruleIDs, fix: arguments[0] == "fix");
         if (report is not null)
         {
             IEnumerable<string> lines = result.findings

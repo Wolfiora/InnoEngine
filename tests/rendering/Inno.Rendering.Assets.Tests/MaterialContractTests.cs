@@ -8,7 +8,7 @@ public sealed class MaterialContractTests
     public void FrameOverridesContainOnlyLogicalValuesAndCanBeCleared()
     {
         var block = new MaterialPropertyBlock();
-        var id = new ShaderPropertyId("amount");
+        var id = new ShaderPropertyID("amount");
         block.Set(id, MaterialValue.FromFloat(0.5f));
         Assert.True(block.TryGet(id, out MaterialValue value));
         Assert.Equal(MaterialValueKind.Float, value.kind);

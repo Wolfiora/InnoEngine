@@ -52,7 +52,7 @@ internal static class SceneRestoreCompensation
         {
             GameObject gameObject = created[i];
             if (!ReferenceEquals(
-                IdentityAllocator.current.Get<GameObject>(gameObject.identity.persistentId),
+                IdentityAllocator.current.Get<GameObject>(gameObject.identity.persistentID),
                 gameObject
             )) {
                 continue;

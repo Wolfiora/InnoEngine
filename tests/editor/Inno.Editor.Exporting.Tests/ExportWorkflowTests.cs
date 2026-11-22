@@ -14,7 +14,7 @@ public sealed class ExportWorkflowTests : BuildPipelineFixture
     [Fact]
     public void ExportPresentationKeepsUnknownProgressAndRejectsStaleCancellation()
     {
-        BuildSettings defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", new BuildTargetId("macos-arm64"));
+        BuildSettings defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", new BuildTargetID("macos-arm64"));
         var settings = new BuildSettingsStore(
             Path.Combine(m_projectRoot, "Settings.Build.inno"),
             m_engine.serialization,
@@ -32,15 +32,15 @@ public sealed class ExportWorkflowTests : BuildPipelineFixture
         Assert.True(runtime.interactions.TryGetModule<EditorExportService>(out EditorExportService? exports));
         exports!.StartGame(new GameBuildRequest
         {
-            profile = CreateProfile(new BuildTargetId("macos-arm64")),
+            profile = CreateProfile(new BuildTargetID("macos-arm64")),
             outputDirectory = Path.Combine(m_root, "ProgressOutput")
         });
         EditorExportProgress observed = exports.progress;
         Assert.Null(observed.fraction);
         Assert.True(observed.isBusy);
-        exports.Cancel(observed.operationId - 1);
+        exports.Cancel(observed.operationID - 1);
         Assert.False(exports.progress.cancellationRequested);
-        exports.Cancel(observed.operationId);
+        exports.Cancel(observed.operationID);
         Assert.True(exports.progress.cancellationRequested);
         Assert.False(observed.cancellationRequested);
         exports.Stop(context);

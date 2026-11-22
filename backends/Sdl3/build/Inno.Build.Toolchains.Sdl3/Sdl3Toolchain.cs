@@ -128,7 +128,7 @@ public static class Sdl3Toolchain
             context,
             componentDescriptor,
             "sdl3",
-            selection.targetId,
+            selection.targetID,
             [Path.Combine(context.engineRoot, "extern", "SDL")],
             ARGUMENTS,
             [Path.Combine(implementation, "Sdl3Toolchain.cs")]

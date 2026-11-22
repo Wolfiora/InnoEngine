@@ -8,13 +8,13 @@ public interface IReferenceResolver
     /// <summary>
     /// Gets the unique reference kind implemented by this resolver.
     /// </summary>
-    ReferenceKindId kindId { get; }
+    ReferenceKindID kindID { get; }
 
     /// <summary>
     /// Resolves a descriptor without mutating its owner or the authoritative catalog.
     /// </summary>
     /// <param name="descriptor">
-    /// The descriptor whose <see cref="ReferenceDescriptor.kindId"/> matches this resolver.
+    /// The descriptor whose <see cref="ReferenceDescriptor.kindID"/> matches this resolver.
     /// </param>
     /// <returns>
     /// A complete resolution result that preserves the supplied descriptor.

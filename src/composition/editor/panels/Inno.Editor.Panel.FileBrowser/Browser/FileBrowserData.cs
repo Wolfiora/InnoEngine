@@ -126,7 +126,7 @@ internal sealed class FileBrowserData(AssetBrowserModule assets)
 
     internal IReadOnlyList<AssetFileEntry> GetVisibleChildren(string relativePath)
     {
-        AssetSourceId source = AssetPath.Parse(relativePath).source;
+        AssetSourceID source = AssetPath.Parse(relativePath).source;
         IReadOnlyList<AssetFileEntry> children = assets.edits.pipeline.GetFileSystemChildren(AssetPath.Parse(relativePath));
         if (children.Count == 0)
         {

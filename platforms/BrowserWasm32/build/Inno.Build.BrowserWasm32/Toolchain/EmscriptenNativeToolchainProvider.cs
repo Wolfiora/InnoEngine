@@ -33,15 +33,15 @@ public sealed class EmscriptenNativeToolchainProvider : INativeToolchainProvider
     public async ValueTask<NativeToolchainSelection> ResolveAsync(
         NativeBuildContext context,
         BuildHostDescriptor host,
-        string targetId,
+        string targetID,
         CancellationToken cancellationToken
     ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(host);
         cancellationToken.ThrowIfCancellationRequested();
-        if (targetId != BrowserWasm32BuildModule.target.id.value || host.system is not ("Windows" or "MacOS"))
+        if (targetID != BrowserWasm32BuildModule.target.id.value || host.system is not ("Windows" or "MacOS"))
         {
-            throw new PlatformNotSupportedException($"Emscripten cannot build '{targetId}' on {host.system}/{host.architecture}.");
+            throw new PlatformNotSupportedException($"Emscripten cannot build '{targetID}' on {host.system}/{host.architecture}.");
         }
         string project = Path.Combine(
             context.engineRoot,
@@ -74,7 +74,7 @@ public sealed class EmscriptenNativeToolchainProvider : INativeToolchainProvider
         };
         string toolchain = Path.Combine(sdk["EMSCRIPTEN"], "cmake", "Modules", "Platform", "Emscripten.cmake");
         return NativeToolchainPreparation.Freeze(
-            targetId,
+            targetID,
             host,
             tools,
             environment,

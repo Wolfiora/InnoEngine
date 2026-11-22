@@ -47,7 +47,7 @@ public static class SceneElementSerialization
         var state = new SceneElementState();
         if (target is MissingGameComponent component)
         {
-            state.typeId = component.missingType.stableId;
+            state.typeId = component.missingType.stableID;
             state.typeName = component.missingTypeName;
             state.properties = component.CaptureSerializedState();
             state.SetDependencies(component.dependencies);
@@ -55,7 +55,7 @@ public static class SceneElementSerialization
         }
         else if (target is MissingGameSystem system)
         {
-            state.typeId = system.missingType.stableId;
+            state.typeId = system.missingType.stableID;
             state.typeName = system.missingTypeName;
             state.properties = system.CaptureSerializedState();
             state.SetDependencies(system.dependencies);
@@ -67,7 +67,7 @@ public static class SceneElementSerialization
             {
                 throw new ArgumentException("Element state requires a component or system.", nameof(target));
             }
-            state.typeId = scene.typeCatalog.GetTypeRef(target.GetType()).stableId;
+            state.typeId = scene.typeCatalog.GetTypeRef(target.GetType()).stableID;
             state.typeName = target.GetType().FullName ?? target.GetType().Name;
             var dependencies = new AssetDependencyCollection();
             using (ScenePropertySerialization.CreateReferences(scene).Enter())
@@ -114,9 +114,9 @@ public static class SceneElementSerialization
         GameScene scene = ScenePropertySerialization.ResolveScene(target);
         Guid logicalType = target switch
         {
-            MissingGameComponent missing => missing.missingType.stableId,
-            MissingGameSystem missing => missing.missingType.stableId,
-            _ => scene.typeCatalog.GetTypeRef(target.GetType()).stableId
+            MissingGameComponent missing => missing.missingType.stableID,
+            MissingGameSystem missing => missing.missingType.stableID,
+            _ => scene.typeCatalog.GetTypeRef(target.GetType()).stableID
         };
         RequireType(state, logicalType);
         if (target is MissingGameComponent component)
@@ -153,7 +153,7 @@ public static class SceneElementSerialization
     /// <param name="type">
     /// The reload-safe identity of the current component implementation.
     /// </param>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The component instance identity to preserve.
     /// </param>
     /// <param name="componentIndex">
@@ -184,7 +184,7 @@ public static class SceneElementSerialization
     public static GameComponent RestoreComponent(
         GameObject owner,
         TypeRef type,
-        Guid persistentId,
+        Guid persistentID,
         int componentIndex,
         ReadOnlySpan<byte> stateData,
         SerializationRegistry serialization,
@@ -194,7 +194,7 @@ public static class SceneElementSerialization
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
         SceneElementState state = ReadState(stateData, serialization, assets);
-        RequireType(state, type.stableId);
+        RequireType(state, type.stableID);
         Type? componentType = ResolveType<GameComponent>(owner.scene.typeCatalog, type, "component");
         GameComponent component = componentType is null
                                   ? owner.scene.AddMissingComponent(
@@ -202,10 +202,10 @@ public static class SceneElementSerialization
                                       new TypeRef(state.typeId),
                                       state.typeName,
                                       state.properties,
-                                      persistentId,
+                                      persistentID,
                                       state.GetDependencies()
                                   )
-                                  : owner.scene.AddComponent(owner, componentType, persistentId, invokeReset: false);
+                                  : owner.scene.AddComponent(owner, componentType, persistentID, invokeReset: false);
         try
         {
             owner.SetComponentIndex(component, componentIndex);
@@ -228,7 +228,7 @@ public static class SceneElementSerialization
     /// <param name="type">
     /// The reload-safe identity of the current system implementation.
     /// </param>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The system instance identity to preserve.
     /// </param>
     /// <param name="systemIndex">
@@ -259,7 +259,7 @@ public static class SceneElementSerialization
     public static GameSystem RestoreSystem(
         GameScene scene,
         TypeRef type,
-        Guid persistentId,
+        Guid persistentID,
         int systemIndex,
         ReadOnlySpan<byte> stateData,
         SerializationRegistry serialization,
@@ -269,11 +269,11 @@ public static class SceneElementSerialization
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
         SceneElementState state = ReadState(stateData, serialization, assets);
-        RequireType(state, type.stableId);
+        RequireType(state, type.stableID);
         Type? systemType = ResolveType<GameSystem>(scene.typeCatalog, type, "system");
         GameSystem system = systemType is null
-            ? scene.AddMissingSystem(new TypeRef(state.typeId), state.typeName, state.properties, persistentId, state.GetDependencies())
-            : scene.AddSystem(systemType, persistentId, invokeReset: false);
+            ? scene.AddMissingSystem(new TypeRef(state.typeId), state.typeName, state.properties, persistentID, state.GetDependencies())
+            : scene.AddSystem(systemType, persistentID, invokeReset: false);
         try
         {
             scene.SetSystemIndex(system, systemIndex);
@@ -293,7 +293,7 @@ public static class SceneElementSerialization
         Func<bool> remove,
         string kind
     ) {
-        Guid persistentID = element.identity.persistentId;
+        Guid persistentID = element.identity.persistentID;
         Exception? cleanupFailure = null;
         bool reportedRemoved = false;
         if (!element.isDestroyed)
@@ -383,7 +383,7 @@ public static class SceneElementSerialization
         if (!typeof(TElement).IsAssignableFrom(type) || type.IsAbstract)
         {
             throw new InvalidDataException(
-                $"Stable type id '{typeRef.stableId}' resolves to invalid scene {kind} '{type.FullName}'."
+                $"Stable type id '{typeRef.stableID}' resolves to invalid scene {kind} '{type.FullName}'."
             );
         }
         return type;

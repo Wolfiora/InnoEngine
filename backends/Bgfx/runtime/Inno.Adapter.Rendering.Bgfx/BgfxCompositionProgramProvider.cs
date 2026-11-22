@@ -11,7 +11,7 @@ namespace Inno.Adapter.Rendering.Bgfx;
 /// </summary>
 public sealed class BgfxCompositionProgramProvider : IRenderLayerCompositionProgramProvider
 {
-    private static readonly RenderBindingId TEXTURE = new("s_tex");
+    private static readonly RenderBindingID TEXTURE = new("s_tex");
 
     /// <summary>
     /// Loads the BGFX target program matching the active device renderer.

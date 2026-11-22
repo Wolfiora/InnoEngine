@@ -12,7 +12,7 @@ public sealed class ShaderExtractNodeCompiler : IShaderNodeCompiler
     /// <summary>
     /// Gets the definition id text used by the current instance.
     /// </summary>
-    public string definitionId => "inno.shader.extract";
+    public string definitionID => "inno.shader.extract";
 
     /// <summary>
     /// Gets a ports required by the implemented contract.
@@ -55,7 +55,7 @@ public sealed class ShaderSampleNodeCompiler : IShaderNodeCompiler
     /// <summary>
     /// Gets the definition id text used by the current instance.
     /// </summary>
-    public string definitionId => "inno.shader.sample";
+    public string definitionID => "inno.shader.sample";
 
     /// <summary>
     /// Gets a ports required by the implemented contract.

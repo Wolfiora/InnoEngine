@@ -8,7 +8,7 @@ internal sealed class SceneRuntimeSubsystemFactory(
     RuntimeSessionKind kind
 ) : IRuntimeSubsystemFactory
 {
-    internal static readonly RuntimeSubsystemId SUBSYSTEM_ID = new("inno.runtime.scene");
+    internal static readonly RuntimeSubsystemID SUBSYSTEM_ID = new("inno.runtime.scene");
 
     /// <summary>
     /// Gets the stable descriptor for the built-in scene simulation subsystem.

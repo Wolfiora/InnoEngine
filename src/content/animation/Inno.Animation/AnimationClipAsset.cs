@@ -59,7 +59,7 @@ public sealed class AnimationTrack : ISerializable
     /// <summary>
     /// Creates one validated animation track.
     /// </summary>
-    /// <param name="bindingId">
+    /// <param name="bindingID">
     /// Stable target binding identifier.
     /// </param>
     /// <param name="interpolation">
@@ -69,13 +69,13 @@ public sealed class AnimationTrack : ISerializable
     /// Keyframes ordered by non-decreasing clip-local time.
     /// </param>
     public AnimationTrack(
-        string bindingId,
+        string bindingID,
         AnimationInterpolation interpolation,
         IEnumerable<AnimationKeyframe> keyframes
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(bindingId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(bindingID);
         ArgumentNullException.ThrowIfNull(keyframes);
-        this.bindingId = bindingId;
+        this.bindingId = bindingID;
         this.interpolation = interpolation;
         this.keyframes = keyframes.ToArray();
         Validate(float.PositiveInfinity);
@@ -151,7 +151,7 @@ public sealed class AnimationEventMarker : ISerializable
 /// <summary>
 /// Represents one imported backend-neutral collection of tracks and event markers.
 /// </summary>
-[StableTypeId("da0df43b-f6e4-4c84-b45f-d58aa4030e6f")]
+[StableTypeID("da0df43b-f6e4-4c84-b45f-d58aa4030e6f")]
 public sealed class AnimationClipAsset : AssetObject
 {
     /// <summary>

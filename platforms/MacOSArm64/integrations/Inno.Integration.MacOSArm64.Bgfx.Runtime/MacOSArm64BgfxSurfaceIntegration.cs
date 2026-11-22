@@ -40,7 +40,7 @@ public sealed class MacOSArm64BgfxSurfaceIntegration : IBgfxSurfaceIntegration
         {
             throw new ArgumentOutOfRangeException(nameof(role));
         }
-        if (handles.handleKind != PlatformNativeHandleId.cocoa)
+        if (handles.handleKind != PlatformNativeHandleID.cocoa)
         {
             throw new NotSupportedException("The MacOS BGFX integration requires its explicit cocoa surface ABI.");
         }

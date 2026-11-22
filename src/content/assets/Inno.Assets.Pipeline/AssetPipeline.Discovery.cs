@@ -58,16 +58,16 @@ public sealed partial class AssetPipeline
     /// <param name="path">
     /// The isolated source path.
     /// </param>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The resolved persistent identity.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when catalog metadata exists.
     /// </returns>
-    public bool TryGetPersistentId(
+    public bool TryGetPersistentID(
         AssetPath path,
-        out Guid persistentId
-    ) => GetLoader().TryGetPersistentId(path, out persistentId);
+        out Guid persistentID
+    ) => GetLoader().TryGetPersistentID(path, out persistentID);
 
     /// <summary>
     /// Tries to get a catalog snapshot by source-relative path.
@@ -89,7 +89,7 @@ public sealed partial class AssetPipeline
     /// <summary>
     /// Tries to get a catalog snapshot by persistent identity.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The persistent asset identity.
     /// </param>
     /// <param name="info">
@@ -99,9 +99,9 @@ public sealed partial class AssetPipeline
     /// <see langword="true"/> when the identity is cataloged.
     /// </returns>
     public bool TryGetInfo(
-        Guid persistentId,
+        Guid persistentID,
         out AssetInfo? info
-    ) => GetLoader().TryGetInfo(persistentId, out info);
+    ) => GetLoader().TryGetInfo(persistentID, out info);
 
     private sealed class AssetCatalogParticipant(AssetPipeline owner) : IAssemblyCatalogParticipant
     {

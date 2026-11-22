@@ -21,7 +21,7 @@ public abstract class TextBackendProvider
     /// <exception cref="ArgumentException">
     /// The identity is unassigned.
     /// </exception>
-    protected TextBackendProvider(TextBackendId id)
+    protected TextBackendProvider(TextBackendID id)
     {
         if (!id.isValid)
         {
@@ -33,7 +33,7 @@ public abstract class TextBackendProvider
     /// <summary>
     /// Gets this registration's immutable implementation identity.
     /// </summary>
-    public TextBackendId id { get; }
+    public TextBackendID id { get; }
 
     /// <summary>
     /// Creates a caller-owned text service using this implementation.

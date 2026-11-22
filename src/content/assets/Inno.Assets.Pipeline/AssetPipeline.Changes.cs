@@ -110,7 +110,7 @@ public sealed partial class AssetPipeline
         {
             return;
         }
-        Dictionary<string, Guid> previousIds = CapturePreviousIds(loader, changes);
+        Dictionary<string, Guid> previousIDs = CapturePreviousIDs(loader, changes);
         try
         {
             if (requiresFullRescan)
@@ -147,8 +147,8 @@ public sealed partial class AssetPipeline
                 m_diagnostics.PublishSourceDatabaseFailure(exception, recoveryException);
             }
         }
-        AssetChange[] committed = CreateCommittedChanges(loader, changes, previousIds, requiresFullRescan);
-        InvokeObservers(Changed, new AssetChangeSet(Interlocked.Increment(ref m_revision), committed));
+        AssetChange[] committed = CreateCommittedChanges(loader, changes, previousIDs, requiresFullRescan);
+        InvokeObservers(changed, new AssetChangeSet(Interlocked.Increment(ref m_revision), committed));
     }
 
     private void DrainPendingChanges(AssetFileSystem fileSystem)
@@ -180,7 +180,7 @@ public sealed partial class AssetPipeline
             .ToArray();
     }
 
-    private void OnAssetReloaded(AssetObject asset) => InvokeObservers(AssetReloaded, asset);
+    private void OnAssetReloaded(AssetObject asset) => InvokeObservers(assetReloaded, asset);
 
     private void InvokeObservers(Action? handlers)
     {
@@ -230,7 +230,7 @@ public sealed partial class AssetPipeline
                : throw new InvalidOperationException("AssetPipeline is not initialized.");
     }
 
-    private Dictionary<string, Guid> CapturePreviousIds(
+    private Dictionary<string, Guid> CapturePreviousIDs(
         AssetLoader loader,
         IReadOnlyList<AssetChangedEvent> changes
     ) {
@@ -241,7 +241,7 @@ public sealed partial class AssetPipeline
             string path = string.IsNullOrWhiteSpace(change.oldRelativePath)
                           ? change.relativePath
                           : change.oldRelativePath;
-            if (loader.TryGetPersistentId(AssetPath.Parse(path), out Guid id))
+            if (loader.TryGetPersistentID(AssetPath.Parse(path), out Guid id))
             {
                 result[path] = id;
             }
@@ -252,7 +252,7 @@ public sealed partial class AssetPipeline
     private AssetChange[] CreateCommittedChanges(
         AssetLoader loader,
         IReadOnlyList<AssetChangedEvent> changes,
-        IReadOnlyDictionary<string, Guid> previousIds,
+        IReadOnlyDictionary<string, Guid> previousIDs,
         bool requiresFullRescan
     ) {
         if (requiresFullRescan && changes.Count == 0)
@@ -267,10 +267,10 @@ public sealed partial class AssetPipeline
             bool moved = change.changeType.HasFlag(WatcherChangeTypes.Renamed);
             bool deleted = change.changeType.HasFlag(WatcherChangeTypes.Deleted);
             Guid id = Guid.Empty;
-            if (!loader.TryGetPersistentId(AssetPath.Parse(change.relativePath), out id))
+            if (!loader.TryGetPersistentID(AssetPath.Parse(change.relativePath), out id))
             {
                 string previousPath = moved ? change.oldRelativePath : change.relativePath;
-                _ = previousIds.TryGetValue(previousPath, out id);
+                _ = previousIDs.TryGetValue(previousPath, out id);
             }
             AssetChangeKind kind = moved
                                    ? AssetChangeKind.Moved
@@ -296,5 +296,5 @@ public sealed partial class AssetPipeline
     }
 
     private void PublishMutation(AssetChange change)
-        => InvokeObservers(Changed, new AssetChangeSet(Interlocked.Increment(ref m_revision), [change]));
+        => InvokeObservers(changed, new AssetChangeSet(Interlocked.Increment(ref m_revision), [change]));
 }

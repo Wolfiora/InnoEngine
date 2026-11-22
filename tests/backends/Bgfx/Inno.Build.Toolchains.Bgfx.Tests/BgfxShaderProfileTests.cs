@@ -20,13 +20,13 @@ public sealed class BgfxShaderProfileTests
 
         Assert.Same(profile, configuration.Resolve(api));
         Assert.Contains("fixture-console", target.profileKey, StringComparison.Ordinal);
-        Assert.Throws<NotSupportedException>(() => configuration.Resolve(GraphicsApi.Metal));
+        Assert.Throws<NotSupportedException>(() => configuration.Resolve(GraphicsApi.metal));
     }
 
     [Fact]
     public void DialectDefinesAndCapabilitiesAllParticipateInIdentity()
     {
-        GraphicsCapabilities capabilities = BgfxTargetCapabilities.Create(GraphicsApi.Vulkan);
+        GraphicsCapabilities capabilities = BgfxTargetCapabilities.Create(GraphicsApi.vulkan);
         string[] defines = ["TEST=1"];
         var original = new BgfxShaderCompilerProfile(capabilities, "fixture-sdk", "spirv", "spirv", "spirv", defines);
         defines[0] = "TEST=2";
@@ -52,7 +52,7 @@ public sealed class BgfxShaderProfileTests
             ).key
         );
         var reduced = new GraphicsCapabilities(
-            GraphicsApi.Vulkan,
+            GraphicsApi.vulkan,
             capabilities.features,
             new GraphicsLimits(16, 4, 1024, 8),
             [],
@@ -72,7 +72,7 @@ public sealed class BgfxShaderProfileTests
     public void InvalidAndDuplicateProfilesFailBeforeCreatingACompiler()
     {
         var profile = new BgfxShaderCompilerProfile(
-            BgfxTargetCapabilities.Create(GraphicsApi.Metal),
+            BgfxTargetCapabilities.Create(GraphicsApi.metal),
             "osx",
             "metal",
             "metal",

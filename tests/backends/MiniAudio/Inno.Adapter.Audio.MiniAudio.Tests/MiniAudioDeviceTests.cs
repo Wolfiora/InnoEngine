@@ -24,7 +24,7 @@ public sealed class MiniAudioDeviceTests
             });
             IAudioDevice backend = device;
             var descriptor = new AudioClipDescriptor(
-                AudioCodecId.wav,
+                AudioCodecID.wav,
                 AudioClipLoadMode.Decode,
                 1,
                 48_000,
@@ -34,9 +34,9 @@ public sealed class MiniAudioDeviceTests
             var source = new EncodedAudioTestSource(File.ReadAllBytes(path));
             AudioClipHandle clip = backend.CreateClip(descriptor, source);
             WaitForClip(backend, clip);
-            AudioBusHandle master = backend.CreateBus(AudioBusId.master);
+            AudioBusHandle master = backend.CreateBus(AudioBusID.master);
             Assert.False(backend.CreateClip(descriptor, source).isValid);
-            Assert.False(backend.CreateBus(new AudioBusId("extra"), master).isValid);
+            Assert.False(backend.CreateBus(new AudioBusID("extra"), master).isValid);
             for (int iteration = 0; iteration < 32; iteration++)
             {
                 AudioDeviceVoiceHandle voice = backend.Play(clip, master, new AudioPlayOptions(loop: true));
@@ -62,10 +62,10 @@ public sealed class MiniAudioDeviceTests
         {
             using var device = new MiniAudioDevice(new MiniAudioDeviceOptions { noDevice = true });
             IAudioDevice backend = device;
-            AudioBusHandle master = backend.CreateBus(AudioBusId.master);
+            AudioBusHandle master = backend.CreateBus(AudioBusID.master);
             AudioClipHandle clip = backend.CreateClip(
                 new AudioClipDescriptor(
-                    AudioCodecId.wav,
+                    AudioCodecID.wav,
                     AudioClipLoadMode.Decode,
                     1,
                     48_000,
@@ -117,10 +117,10 @@ public sealed class MiniAudioDeviceTests
                 listenerCount = 2
             });
             IAudioDevice backend = device;
-            AudioBusHandle master = backend.CreateBus(AudioBusId.master);
+            AudioBusHandle master = backend.CreateBus(AudioBusID.master);
             AudioClipHandle clip = backend.CreateClip(
                 new AudioClipDescriptor(
-                    AudioCodecId.wav,
+                    AudioCodecID.wav,
                     AudioClipLoadMode.Decode,
                     1,
                     48_000,
@@ -179,16 +179,16 @@ public sealed class MiniAudioDeviceTests
         {
             using var device = new MiniAudioDevice(new MiniAudioDeviceOptions { noDevice = true });
             IAudioDevice backend = device;
-            AudioBusHandle master = backend.CreateBus(AudioBusId.master);
-            AudioBusHandle effects = backend.CreateBus(new AudioBusId("test.effects"), master);
-            foreach (AudioProcessorId processorID in StandardProcessors())
+            AudioBusHandle master = backend.CreateBus(AudioBusID.master);
+            AudioBusHandle effects = backend.CreateBus(new AudioBusID("test.effects"), master);
+            foreach (AudioProcessorID processorID in StandardProcessors())
             {
                 Assert.True(backend.AddBusProcessor(effects, CreateProcessor(processorID)));
             }
 
             AudioClipHandle clip = backend.CreateClip(
                 new AudioClipDescriptor(
-                    AudioCodecId.wav,
+                    AudioCodecID.wav,
                     AudioClipLoadMode.Stream,
                     1,
                     48_000,
@@ -236,11 +236,11 @@ public sealed class MiniAudioDeviceTests
         {
             using var device = new MiniAudioDevice(new MiniAudioDeviceOptions { noDevice = true });
             IAudioDevice backend = device;
-            AudioBusHandle oldMaster = backend.CreateBus(AudioBusId.master);
-            AudioBusHandle oldMusic = backend.CreateBus(new AudioBusId("test.music"), oldMaster);
+            AudioBusHandle oldMaster = backend.CreateBus(AudioBusID.master);
+            AudioBusHandle oldMusic = backend.CreateBus(new AudioBusID("test.music"), oldMaster);
             AudioClipHandle clip = backend.CreateClip(
                 new AudioClipDescriptor(
-                    AudioCodecId.wav,
+                    AudioCodecID.wav,
                     AudioClipLoadMode.Decode,
                     1,
                     48_000,
@@ -252,8 +252,8 @@ public sealed class MiniAudioDeviceTests
             WaitForClip(backend, clip);
             AudioDeviceVoiceHandle voice = backend.Play(clip, oldMusic, new AudioPlayOptions(loop: true), null);
 
-            AudioBusHandle newMaster = backend.CreateBus(AudioBusId.master);
-            AudioBusHandle newMusic = backend.CreateBus(new AudioBusId("test.music"), newMaster);
+            AudioBusHandle newMaster = backend.CreateBus(AudioBusID.master);
+            AudioBusHandle newMusic = backend.CreateBus(new AudioBusID("test.music"), newMaster);
 
             Assert.True(newMaster.isValid);
             Assert.True(newMusic.isValid);
@@ -289,37 +289,37 @@ public sealed class MiniAudioDeviceTests
         ), TimeSpan.FromSeconds(5))
     );
 
-    private static IEnumerable<AudioProcessorId> StandardProcessors()
+    private static IEnumerable<AudioProcessorID> StandardProcessors()
     {
-        yield return AudioProcessorId.lowPass;
-        yield return AudioProcessorId.highPass;
-        yield return AudioProcessorId.bandPass;
-        yield return AudioProcessorId.notch;
-        yield return AudioProcessorId.peak;
-        yield return AudioProcessorId.lowShelf;
-        yield return AudioProcessorId.highShelf;
-        yield return AudioProcessorId.delay;
+        yield return AudioProcessorID.lowPass;
+        yield return AudioProcessorID.highPass;
+        yield return AudioProcessorID.bandPass;
+        yield return AudioProcessorID.notch;
+        yield return AudioProcessorID.peak;
+        yield return AudioProcessorID.lowShelf;
+        yield return AudioProcessorID.highShelf;
+        yield return AudioProcessorID.delay;
     }
 
-    private static AudioProcessorConfiguration CreateProcessor(AudioProcessorId id)
+    private static AudioProcessorConfiguration CreateProcessor(AudioProcessorID id)
     {
-        if (id == AudioProcessorId.delay)
+        if (id == AudioProcessorID.delay)
         {
             return new AudioProcessorConfiguration(
                 id,
                 [
-                    new AudioProcessorParameter(AudioParameterId.delayMilliseconds, 5f),
-                    new AudioProcessorParameter(AudioParameterId.decay, 0.2f)
+                    new AudioProcessorParameter(AudioParameterID.delayMilliseconds, 5f),
+                    new AudioProcessorParameter(AudioParameterID.decay, 0.2f)
                 ]
             );
         }
         return new AudioProcessorConfiguration(
             id,
             [
-                new AudioProcessorParameter(AudioParameterId.frequency, 1000f),
-                new AudioProcessorParameter(AudioParameterId.quality, 0.707f),
-                new AudioProcessorParameter(AudioParameterId.gainDecibels, 2f),
-                new AudioProcessorParameter(AudioParameterId.shelfSlope, 1f)
+                new AudioProcessorParameter(AudioParameterID.frequency, 1000f),
+                new AudioProcessorParameter(AudioParameterID.quality, 0.707f),
+                new AudioProcessorParameter(AudioParameterID.gainDecibels, 2f),
+                new AudioProcessorParameter(AudioParameterID.shelfSlope, 1f)
             ]
         );
     }

@@ -56,9 +56,9 @@ internal sealed class SettingsPanelServices
 
     private sealed class FixtureTarget : IGameBuildTarget, IGameContentCompiler
     {
-        public BuildTargetId id => new("tests-ui-settings");
-        public BuildTargetId target => id;
-        public ManagedDeploymentId defaultManagedDeployment => new("tests-ui-managed");
+        public BuildTargetID id => new("tests-ui-settings");
+        public BuildTargetID target => id;
+        public ManagedDeploymentID defaultManagedDeployment => new("tests-ui-managed");
         public string runtimeIdentifier => "tests-ui-rid";
         public string displayName => "Settings fixture";
 
@@ -77,7 +77,7 @@ internal sealed class SettingsPanelServices
 
     private sealed class FixtureDeployment : IManagedDeploymentCompiler
     {
-        public ManagedDeploymentId id => new("tests-ui-managed");
+        public ManagedDeploymentID id => new("tests-ui-managed");
         public ManagedDeploymentCapabilities capabilities => new(["tests-ui-rid"], true, false, false);
 
         public ValueTask<ManagedDeploymentResult> CompileAsync(

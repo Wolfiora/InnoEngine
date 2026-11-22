@@ -10,17 +10,17 @@ using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 
-[StableTypeId("b5677cc4-c195-5f52-a52f-5efecec8314e")]
+[StableTypeID("b5677cc4-c195-5f52-a52f-5efecec8314e")]
 internal enum RenderMaterialBindingKind
 {
     Uniform,
     Texture
 }
 
-[StableTypeId("702a1ec9-219b-5d44-b322-1a433e7e41b5")]
+[StableTypeID("702a1ec9-219b-5d44-b322-1a433e7e41b5")]
 internal sealed record RenderMaterialBinding(
     RenderMaterialBindingKind kind,
-    RenderBindingId id,
+    RenderBindingID id,
     byte[]? uniformData,
     PersistentTextureHandle texture,
     RenderSamplerState sampler
@@ -33,12 +33,12 @@ internal sealed record RenderMaterialBinding(
 /// The instance is scoped to the active render device generation. Pipeline-owned graph textures and
 /// buffers remain explicit and are bound by the caller after this material state is applied.
 /// </remarks>
-[StableTypeId("b1566a8a-dd0a-5dca-8f43-6bb12aa86973")]
+[StableTypeID("b1566a8a-dd0a-5dca-8f43-6bb12aa86973")]
 public sealed class RenderMaterialPass
 {
     private readonly ShaderPassDefinition m_definition;
-    private readonly IReadOnlyDictionary<RenderBindingId, RenderShaderBindingKind> m_declaredBindings;
-    private readonly IReadOnlySet<RenderBindingId> m_activeBindings;
+    private readonly IReadOnlyDictionary<RenderBindingID, RenderShaderBindingKind> m_declaredBindings;
+    private readonly IReadOnlySet<RenderBindingID> m_activeBindings;
     private readonly IReadOnlyList<RenderMaterialBinding> m_bindings;
 
     internal RenderMaterialPass(
@@ -55,11 +55,11 @@ public sealed class RenderMaterialPass
         this.graphicsPipeline = graphicsPipeline;
         this.computePipeline = computePipeline;
         m_declaredBindings = declaredBindings.ToDictionary(
-            static property => new RenderBindingId(property.id.value),
+            static property => new RenderBindingID(property.id.value),
             static property => ToRenderBindingKind(property.bindingKind)
         );
         m_activeBindings = activeInterface.bindings
-            .Select(static binding => new RenderBindingId(binding.id.value))
+            .Select(static binding => new RenderBindingID(binding.id.value))
             .ToHashSet();
         m_bindings = Array.AsReadOnly(
             bindings.Select(static binding => binding with
@@ -111,7 +111,7 @@ public sealed class RenderMaterialPass
     /// The binding is not declared by the shader, or its declared kind differs from <paramref name="kind"/>.
     /// </exception>
     public bool UsesBinding(
-        RenderBindingId binding,
+        RenderBindingID binding,
         RenderShaderBindingKind kind
     ) {
         if (!binding.isValid)

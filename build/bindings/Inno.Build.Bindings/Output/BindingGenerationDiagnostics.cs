@@ -42,9 +42,9 @@ internal static class BindingGenerationDiagnostics
             .AsTask()
             .GetAwaiter()
             .GetResult();
-        cache.BeginWorkingDirectory(workspace, workspace + ".lock", definition.request.targetId, cancellation);
+        cache.BeginWorkingDirectory(workspace, workspace + ".lock", definition.request.targetID, cancellation);
         BindingHostExecution.Generate(selected, definition.profile, context.engineRoot, nativeOutput, managedOutput, cancellation);
-        cache.Record(workspace, workspace + ".lock", [], null, definition.request.targetId, cancellation);
+        cache.Record(workspace, workspace + ".lock", [], null, definition.request.targetID, cancellation);
     }
 
     internal static void RequireEqual(

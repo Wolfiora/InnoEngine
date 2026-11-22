@@ -119,7 +119,7 @@ internal sealed class AudioClipCache : IDisposable
     {
         ArgumentNullException.ThrowIfNull(clip);
         ClipCacheEntry? retiring = m_clips.Values.FirstOrDefault(entry => (
-            entry.key.persistentID == clip.identity.persistentId && entry.isRetiring
+            entry.key.persistentID == clip.identity.persistentID && entry.isRetiring
         ));
         if (retiring is not null)
         {
@@ -128,7 +128,7 @@ internal sealed class AudioClipCache : IDisposable
         }
         ClipCacheEntry? entry = m_clips
             .Where(pair => (
-                pair.Key.persistentID == clip.identity.persistentId
+                pair.Key.persistentID == clip.identity.persistentID
                 && pair.Value.preloadReferences > pair.Value.pendingPreloadReferences
             ))
             .Select(static pair => pair.Value)

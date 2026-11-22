@@ -217,14 +217,14 @@ public sealed class JobSystemBehaviorTests
         jobs.BeginFrame();
 
         int mainThread = Environment.CurrentManagedThreadId;
-        var threadIds = new List<int>();
-        jobs.EnqueueMainThread(() => threadIds.Add(Environment.CurrentManagedThreadId));
-        jobs.EnqueueMainThread(() => threadIds.Add(Environment.CurrentManagedThreadId));
+        var threadIDs = new List<int>();
+        jobs.EnqueueMainThread(() => threadIDs.Add(Environment.CurrentManagedThreadId));
+        jobs.EnqueueMainThread(() => threadIDs.Add(Environment.CurrentManagedThreadId));
         jobs.DrainMainThreadQueue();
         jobs.EndFrame();
 
-        Assert.Equal(2, threadIds.Count);
-        Assert.All(threadIds, id => Assert.Equal(mainThread, id));
+        Assert.Equal(2, threadIDs.Count);
+        Assert.All(threadIDs, id => Assert.Equal(mainThread, id));
     }
 
     [Fact]
@@ -306,13 +306,13 @@ public sealed class JobSystemBehaviorTests
         using JobScheduler jobs = CreateWorkStealing(workerCount: 4);
         jobs.BeginFrame();
 
-        var threadIds = new ConcurrentDictionary<int, byte>();
+        var threadIDs = new ConcurrentDictionary<int, byte>();
         var handles = new JobHandle[256];
         for (int i = 0; i < handles.Length; i++)
         {
             handles[i] = jobs.Schedule(() =>
             {
-                threadIds.TryAdd(Environment.CurrentManagedThreadId, 0);
+                threadIDs.TryAdd(Environment.CurrentManagedThreadId, 0);
                 Thread.Sleep(1);
             });
         }
@@ -320,7 +320,7 @@ public sealed class JobSystemBehaviorTests
         jobs.CompleteAll(handles);
         jobs.EndFrame();
 
-        Assert.True(threadIds.Count >= 2);
+        Assert.True(threadIDs.Count >= 2);
     }
 
     [Fact]

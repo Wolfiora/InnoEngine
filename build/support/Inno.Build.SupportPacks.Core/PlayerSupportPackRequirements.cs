@@ -37,7 +37,7 @@ public sealed class PlayerSupportPackRequirements
     /// A required collection is null.
     /// </exception>
     public PlayerSupportPackRequirements(
-        BuildTargetId target,
+        BuildTargetID target,
         IReadOnlyList<string> requiredFiles,
         string nativeRoot,
         IReadOnlyList<string> nativeDirectories,
@@ -87,7 +87,7 @@ public sealed class PlayerSupportPackRequirements
     /// <summary>
     /// Gets the explicitly selected target.
     /// </summary>
-    public BuildTargetId target { get; }
+    public BuildTargetID target { get; }
 
     /// <summary>
     /// Gets the immutable required Pack-relative input paths.

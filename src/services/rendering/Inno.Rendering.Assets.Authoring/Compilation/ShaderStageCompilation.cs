@@ -19,7 +19,7 @@ namespace Inno.Rendering.Assets.Authoring;
 /// <param name="target">
 /// Exact toolchain profile and capability snapshot.
 /// </param>
-[StableTypeId("8a37ee08-a048-52fc-bbf4-bbc47fe425d4")]
+[StableTypeID("8a37ee08-a048-52fc-bbf4-bbc47fe425d4")]
 public sealed record ShaderStageToolRequest(
     ShaderIrStage stage,
     ShaderCompileTarget target
@@ -37,7 +37,7 @@ public sealed record ShaderStageToolRequest(
 /// <param name="location">
 /// Assigned texture slot; uniform locations are resolved by the runtime.
 /// </param>
-[StableTypeId("00dff34d-f800-51e6-8a37-0141761958c8")]
+[StableTypeID("00dff34d-f800-51e6-8a37-0141761958c8")]
 public sealed record ShaderStageBinding(
     string id,
     string nativeName,
@@ -47,7 +47,7 @@ public sealed record ShaderStageBinding(
 /// <summary>
 /// Returns a frozen typed-stage compilation candidate; failure never carries a usable artifact.
 /// </summary>
-[StableTypeId("cf544248-8a38-5999-b8aa-bbdcf94fa6e8")]
+[StableTypeID("cf544248-8a38-5999-b8aa-bbdcf94fa6e8")]
 public sealed class ShaderStageToolResult
 {
     private readonly byte[] m_bytes;

@@ -152,7 +152,7 @@ public sealed class CSharp14ScriptingTests
             using InnoEngine.Scene;
             using InnoEngine.Serialization;
 
-            [StableTypeId("bf92a310-7446-4a19-81f3-0a02bd32f087")]
+            [StableTypeID("bf92a310-7446-4a19-81f3-0a02bd32f087")]
             public sealed class LanguageProbe : GameBehavior
             {
                 [SerializableProperty]

@@ -136,7 +136,7 @@ public static class ImGuiToolchain
             context,
             componentDescriptor,
             "cimgui",
-            selection.targetId,
+            selection.targetID,
             [
                 upstream,
                 Path.Combine(source, "CMakeLists.txt"),

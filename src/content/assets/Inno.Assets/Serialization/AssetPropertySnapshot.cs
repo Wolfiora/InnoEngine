@@ -14,7 +14,7 @@ public sealed class AssetPropertySnapshot
     /// <summary>
     /// Freezes a complete owner-produced property value.
     /// </summary>
-    /// <param name="stableTypeId">
+    /// <param name="stableTypeID">
     /// Persistent identity of the exact serialized settings type.
     /// </param>
     /// <param name="data">
@@ -24,16 +24,16 @@ public sealed class AssetPropertySnapshot
     /// Direct dependencies collected during the same serialization operation.
     /// </param>
     public AssetPropertySnapshot(
-        Guid stableTypeId,
+        Guid stableTypeID,
         ReadOnlySpan<byte> data,
         IEnumerable<AssetDependency> dependencies
     ) {
-        if (stableTypeId == Guid.Empty)
+        if (stableTypeID == Guid.Empty)
         {
-            throw new ArgumentException("A property snapshot requires a stable type identity.", nameof(stableTypeId));
+            throw new ArgumentException("A property snapshot requires a stable type identity.", nameof(stableTypeID));
         }
         ArgumentNullException.ThrowIfNull(dependencies);
-        this.stableTypeId = stableTypeId;
+        this.stableTypeID = stableTypeID;
         m_data = data.ToArray();
         this.dependencies = Array.AsReadOnly(dependencies.ToArray());
     }
@@ -41,7 +41,7 @@ public sealed class AssetPropertySnapshot
     /// <summary>
     /// Gets the persistent settings type identity.
     /// </summary>
-    public Guid stableTypeId { get; }
+    public Guid stableTypeID { get; }
 
     /// <summary>
     /// Gets the frozen native property bytes.

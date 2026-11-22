@@ -13,7 +13,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Describes one indexed range in resolved backend-neutral geometry.
 /// </summary>
-[StableTypeId("fc4ae91b-3a0b-59d3-b65e-4c0c3533d715")]
+[StableTypeID("fc4ae91b-3a0b-59d3-b65e-4c0c3533d715")]
 public readonly record struct RenderGeometrySection
 {
     /// <summary>

@@ -8,7 +8,7 @@ namespace Inno.Scene.Layers;
 /// <summary>
 /// Converts a logical layer identity through its stable string value.
 /// </summary>
-internal sealed class GameLayerIDConverter : SerializationConverter<GameLayerId>
+internal sealed class GameLayerIDConverter : SerializationConverter<GameLayerID>
 {
     /// <summary>
     /// Writes the complete value through the configured serialization contract.
@@ -21,7 +21,7 @@ internal sealed class GameLayerIDConverter : SerializationConverter<GameLayerId>
     /// </param>
     public override void Write(
         SerializationWriter writer,
-        GameLayerId value
+        GameLayerID value
     ) {
         ArgumentNullException.ThrowIfNull(writer);
         writer.Write("value", value.value);
@@ -36,9 +36,9 @@ internal sealed class GameLayerIDConverter : SerializationConverter<GameLayerId>
     /// <returns>
     /// The validated game layer id that represents the completed operation.
     /// </returns>
-    public override GameLayerId Read(SerializationReader reader)
+    public override GameLayerID Read(SerializationReader reader)
     {
         ArgumentNullException.ThrowIfNull(reader);
-        return new GameLayerId(reader.Read<string>("value"));
+        return new GameLayerID(reader.Read<string>("value"));
     }
 }

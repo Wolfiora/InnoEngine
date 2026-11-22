@@ -79,14 +79,14 @@ internal sealed class GameTagSettingsComposer : ProjectSettingComposer<GameTagCa
                 if (!contribution.context.CanOverride(owner))
                 {
                     throw new InvalidOperationException(
-                        $"GameTag contribution '{contribution.context.contributorId}' cannot remove tag '{tag}' "
+                        $"GameTag contribution '{contribution.context.contributorID}' cannot remove tag '{tag}' "
                         + $"owned by '{owner}'."
                     );
                 }
                 if (!target.Remove(tag))
                 {
                     throw new InvalidOperationException(
-                        $"GameTag contribution '{contribution.context.contributorId}' cannot remove built-in tag '{tag}'."
+                        $"GameTag contribution '{contribution.context.contributorID}' cannot remove built-in tag '{tag}'."
                     );
                 }
                 owners.Remove(tag);
@@ -98,7 +98,7 @@ internal sealed class GameTagSettingsComposer : ProjectSettingComposer<GameTagCa
                     continue;
                 }
                 _ = target.Add(tag);
-                owners.Add(tag, contribution.context.contributorId);
+                owners.Add(tag, contribution.context.contributorID);
             }
         }
     }

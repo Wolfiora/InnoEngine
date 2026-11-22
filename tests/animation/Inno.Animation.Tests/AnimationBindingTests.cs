@@ -31,29 +31,29 @@ public sealed class AnimationBindingTests
             owner.Register(destination);
             var target = new AnimationTarget(destination.identity);
             bindings.Apply(
-                [new AnimationSample(target, new AnimationBindingId("test.scalar"), new AnimationValue(AnimationValueKind.Scalar, 3f))]
+                [new AnimationSample(target, new AnimationBindingID("test.scalar"), new AnimationValue(AnimationValueKind.Scalar, 3f))]
             );
             Assert.Equal(3f, destination.value);
             Assert.Empty(reporter.issues);
             bindings.Apply(
-                [new AnimationSample(target, new AnimationBindingId("test.missing"), new AnimationValue(AnimationValueKind.Scalar, 3f))]
+                [new AnimationSample(target, new AnimationBindingID("test.missing"), new AnimationValue(AnimationValueKind.Scalar, 3f))]
             );
             Assert.Equal("animation.binding.unavailable", Assert.Single(reporter.issues).code);
             bindings.Apply(
-                [new AnimationSample(target, new AnimationBindingId("test.scalar"), new AnimationValue(AnimationValueKind.Scalar, 4f))]
+                [new AnimationSample(target, new AnimationBindingID("test.scalar"), new AnimationValue(AnimationValueKind.Scalar, 4f))]
             );
             Assert.Empty(reporter.issues);
             types.Rebuild();
             bindings.Apply(
-                [new AnimationSample(target, new AnimationBindingId("test.scalar"), new AnimationValue(AnimationValueKind.Scalar, 5f))]
+                [new AnimationSample(target, new AnimationBindingID("test.scalar"), new AnimationValue(AnimationValueKind.Scalar, 5f))]
             );
             Assert.Equal(5f, destination.value);
             owner.Unregister(destination);
             bindings.Apply(
-                [new AnimationSample(target, new AnimationBindingId("test.scalar"), new AnimationValue(AnimationValueKind.Scalar, 6f))]
+                [new AnimationSample(target, new AnimationBindingID("test.scalar"), new AnimationValue(AnimationValueKind.Scalar, 6f))]
             );
             Assert.Single(reporter.issues);
-            bindings.Apply([new AnimationSample(AnimationTarget.samplingOnly, new AnimationBindingId("test.missing"), default)]);
+            bindings.Apply([new AnimationSample(AnimationTarget.samplingOnly, new AnimationBindingID("test.missing"), default)]);
             Assert.Empty(reporter.issues);
         }
         finally
@@ -95,8 +95,8 @@ public sealed class AnimationBindingTests
 
         public void Resolve(
             string code,
-            string? semanticId = null,
-            Guid? objectId = null
+            string? semanticID = null,
+            Guid? objectID = null
         ) => issues = [];
 
         public void Replace(IEnumerable<Diagnostic> diagnostics) => issues = diagnostics.ToArray();

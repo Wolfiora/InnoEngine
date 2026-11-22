@@ -7,8 +7,8 @@ using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Panel.FileBrowser;
 
-[EditorAction(FileBrowserInteractionIds.C_IMPORT_SAMPLE, FileBrowserInteractionIds.C_AREA)]
-[EditorMenu(FileBrowserInteractionIds.C_AREA, "Import Sample", order: 120)]
+[EditorAction(FileBrowserInteractionIDs.C_IMPORT_SAMPLE, FileBrowserInteractionIDs.C_AREA)]
+[EditorMenu(FileBrowserInteractionIDs.C_AREA, "Import Sample", order: 120)]
 internal sealed class ImportAssetSampleCommand(
     AssetBrowserModule assets,
     AssetSampleImportModule imports

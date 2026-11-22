@@ -95,7 +95,7 @@ public sealed class RenderShaderBindingDescriptor
     /// Adapter-generated reflected symbol, or null when the logical ID is also the symbol.
     /// </param>
     public RenderShaderBindingDescriptor(
-        RenderBindingId id,
+        RenderBindingID id,
         RenderShaderBindingKind kind,
         int slot = 0,
         RenderUniformType uniformType = RenderUniformType.Vector4,
@@ -135,7 +135,7 @@ public sealed class RenderShaderBindingDescriptor
     /// <summary>
     /// Gets the stable manifest binding name.
     /// </summary>
-    public RenderBindingId id { get; }
+    public RenderBindingID id { get; }
 
     /// <summary>
     /// Gets the binding domain.

@@ -27,9 +27,9 @@ internal static class ShaderGraphAutoLayout
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(describePorts);
         GraphDocument graph = source.Clone();
-        var placed = new HashSet<GraphNodeId>();
+        var placed = new HashSet<GraphNodeID>();
         float laneY = 70f;
-        GraphNodeRecord[] outputs = graph.nodes.Where(static node => node.definitionId == ShaderGraphDocument.outputDefinitionId)
+        GraphNodeRecord[] outputs = graph.nodes.Where(static node => node.definitionID == ShaderGraphDocument.C_OUTPUT_DEFINITION_ID)
             .OrderBy(node => ShaderGraphDocument.Read(node, "settings", new ShaderGraphStageSettings(), serialization, context).stage)
             .ThenBy(static node => node.id.value, StringComparer.Ordinal)
             .ToArray();
@@ -37,15 +37,15 @@ internal static class ShaderGraphAutoLayout
         {
             outputs = graph.nodes
                 .Where(static node => (
-                    node.definitionId == ShaderGraphNodes.outputDefinitionId
-                    || node.definitionId.EndsWith("-output", StringComparison.Ordinal)
+                    node.definitionID == ShaderGraphNodes.C_OUTPUT_DEFINITION_ID
+                    || node.definitionID.EndsWith("-output", StringComparison.Ordinal)
                 ))
                 .OrderBy(static node => node.id.value, StringComparer.Ordinal)
                 .ToArray();
         }
         foreach (GraphNodeRecord output in outputs)
         {
-            GraphNodeRecord[] members = output.definitionId == ShaderGraphDocument.outputDefinitionId
+            GraphNodeRecord[] members = output.definitionID == ShaderGraphDocument.C_OUTPUT_DEFINITION_ID
                                         ? graph.nodes.Where(node => (
                                             node.id == output.id
                                             || ShaderGraphDocument.Read(
@@ -75,16 +75,16 @@ internal static class ShaderGraphAutoLayout
             GraphNodeRecord[] members,
             ref float y
         ) {
-            HashSet<GraphNodeId> memberIds = members.Select(static node => node.id).ToHashSet();
-            var distance = new Dictionary<GraphNodeId, int> { [output.id] = 0 };
-            var queue = new Queue<GraphNodeId>();
+            HashSet<GraphNodeID> memberIDs = members.Select(static node => node.id).ToHashSet();
+            var distance = new Dictionary<GraphNodeID, int> { [output.id] = 0 };
+            var queue = new Queue<GraphNodeID>();
             queue.Enqueue(output.id);
             while (queue.Count != 0)
             {
-                GraphNodeId current = queue.Dequeue();
-                foreach (GraphNodeId predecessor in graph.edges
-                    .Where(edge => edge.input.nodeId == current && memberIds.Contains(edge.output.nodeId))
-                    .Select(static edge => edge.output.nodeId)
+                GraphNodeID current = queue.Dequeue();
+                foreach (GraphNodeID predecessor in graph.edges
+                    .Where(edge => edge.input.nodeID == current && memberIDs.Contains(edge.output.nodeID))
+                    .Select(static edge => edge.output.nodeID)
                     .Distinct()
                 ) {
                     int next = distance[current] + 1;
@@ -143,7 +143,7 @@ internal static class ShaderGraphAutoLayout
                 {
                     return;
                 }
-                Dictionary<GraphNodeId, int> oldOrder = nodes.Select(static (
+                Dictionary<GraphNodeID, int> oldOrder = nodes.Select(static (
                     node,
                     index
                 ) => (node.id, index)).ToDictionary();
@@ -166,14 +166,14 @@ internal static class ShaderGraphAutoLayout
                 GraphNodeRecord node,
                 bool towardOutput
             ) {
-                IEnumerable<(GraphNodeId neighbor, GraphPortId port)> endpoints = towardOutput
-                    ? graph.edges.Where(edge => edge.output.nodeId == node.id && distance.ContainsKey(edge.input.nodeId))
-                        .Select(static edge => (edge.input.nodeId, edge.input.portId))
-                    : graph.edges.Where(edge => edge.input.nodeId == node.id && distance.ContainsKey(edge.output.nodeId))
-                        .Select(static edge => (edge.output.nodeId, edge.output.portId));
+                IEnumerable<(GraphNodeID neighbor, GraphPortID port)> endpoints = towardOutput
+                    ? graph.edges.Where(edge => edge.output.nodeID == node.id && distance.ContainsKey(edge.input.nodeID))
+                        .Select(static edge => (edge.input.nodeID, edge.input.portID))
+                    : graph.edges.Where(edge => edge.input.nodeID == node.id && distance.ContainsKey(edge.output.nodeID))
+                        .Select(static edge => (edge.output.nodeID, edge.output.portID));
                 double total = 0;
                 int count = 0;
-                foreach ((GraphNodeId neighborID, GraphPortId port) in endpoints)
+                foreach ((GraphNodeID neighborID, GraphPortID port) in endpoints)
                 {
                     if (!distance.TryGetValue(neighborID, out int neighborRank)
                         || !ranks.TryGetValue(neighborRank, out List<GraphNodeRecord>? neighbors)

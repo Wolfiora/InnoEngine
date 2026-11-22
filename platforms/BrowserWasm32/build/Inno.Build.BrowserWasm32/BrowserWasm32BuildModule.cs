@@ -14,7 +14,7 @@ public static class BrowserWasm32BuildModule
     /// Gets the explicit implemented product target, independent of the tool execution host.
     /// </summary>
     public static PlatformTargetDescriptor target { get; } = new(
-        new BuildTargetId("browser-wasm"),
+        new BuildTargetID("browser-wasm"),
         "Browser",
         "wasm32",
         "emscripten-wasm32",
@@ -55,7 +55,7 @@ public static class BrowserWasm32BuildModule
             new EmscriptenNativeToolchainProvider(context.dotnetHost),
             nativeProducts: [nativePlan],
             bindingGenerator: bindingGenerator,
-            managedDeployments: [ManagedDeploymentId.monoWasm, ManagedDeploymentId.monoWasmAot]
+            managedDeployments: [ManagedDeploymentID.monoWasm, ManagedDeploymentID.monoWasmAot]
         );
     }
 }

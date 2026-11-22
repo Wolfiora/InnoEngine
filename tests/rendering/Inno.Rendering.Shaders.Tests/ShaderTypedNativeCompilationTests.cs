@@ -322,7 +322,7 @@ public sealed class ShaderTypedNativeCompilationTests
 
     private static GraphicsCapabilities Capabilities(GraphicsCapability features)
         => new(
-            GraphicsApi.Metal,
+            GraphicsApi.metal,
             features,
             new GraphicsLimits(256, 8, 8192, 16),
             Enum.GetValues<RenderTextureFormat>(),

@@ -30,21 +30,21 @@ public sealed class AudioContractTests
     public void MixerBuilder_ProducesParentBeforeChildGraphWithMasterBus()
     {
         var builder = new AudioMixerBuilder();
-        var music = new AudioBusId("game.audio.bus.music");
-        var ambience = new AudioBusId("game.audio.bus.ambience");
+        var music = new AudioBusID("game.audio.bus.music");
+        var ambience = new AudioBusID("game.audio.bus.ambience");
         builder.AddBus(ambience, music);
-        builder.AddBus(music, AudioBusId.master);
+        builder.AddBus(music, AudioBusID.master);
         builder.AddProcessor(
             music,
             new AudioProcessorConfiguration(
-                AudioProcessorId.lowPass,
-                [new AudioProcessorParameter(new AudioParameterId("frequency"), 12000f)]
+                AudioProcessorID.lowPass,
+                [new AudioProcessorParameter(new AudioParameterID("frequency"), 12000f)]
             )
         );
 
         AudioMixer mixer = builder.Build();
 
-        Assert.Equal([AudioBusId.master, music, ambience], Enumerable.Select(mixer.buses, static bus => bus.id));
+        Assert.Equal([AudioBusID.master, music, ambience], Enumerable.Select(mixer.buses, static bus => bus.id));
         Assert.Single(mixer.buses[1].processors);
     }
 
@@ -52,12 +52,12 @@ public sealed class AudioContractTests
     public void MixerBuilder_RejectsMissingParentsAndCycles()
     {
         var missingParent = new AudioMixerBuilder();
-        missingParent.AddBus(new AudioBusId("game.audio.bus.music"), new AudioBusId("missing"));
+        missingParent.AddBus(new AudioBusID("game.audio.bus.music"), new AudioBusID("missing"));
         Assert.Throws<InvalidOperationException>(missingParent.Build);
 
         var cycle = new AudioMixerBuilder();
-        var first = new AudioBusId("game.audio.bus.first");
-        var second = new AudioBusId("game.audio.bus.second");
+        var first = new AudioBusID("game.audio.bus.first");
+        var second = new AudioBusID("game.audio.bus.second");
         cycle.AddBus(first, second);
         cycle.AddBus(second, first);
         Assert.Throws<InvalidOperationException>(cycle.Build);
@@ -66,7 +66,7 @@ public sealed class AudioContractTests
     [Fact]
     public void MetadataCodec_RoundTripsCompactRuntimeHeader()
     {
-        var expected = new AudioClipMetadata(AudioCodecId.flac, 2, 48_000, 96_000, 123_456);
+        var expected = new AudioClipMetadata(AudioCodecID.flac, 2, 48_000, 96_000, 123_456);
 
         byte[] payload = AudioClipMetadataCodec.Encode(expected);
         AudioClipMetadata actual = AudioClipMetadataCodec.Decode(payload);
@@ -145,17 +145,17 @@ public sealed class AudioContractTests
         }
 
         public bool SetBusVolume(
-            AudioBusId bus,
+            AudioBusID bus,
             float volume
         ) => bus.isValid && volume >= 0f;
 
         public bool SetBusMuted(
-            AudioBusId bus,
+            AudioBusID bus,
             bool muted
         ) => bus.isValid;
 
         public bool SetBusPaused(
-            AudioBusId bus,
+            AudioBusID bus,
             bool paused
         ) => bus.isValid;
 

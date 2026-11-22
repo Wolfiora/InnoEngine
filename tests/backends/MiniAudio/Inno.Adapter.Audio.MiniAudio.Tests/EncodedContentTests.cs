@@ -36,7 +36,7 @@ public sealed class EncodedContentTests
             Assert.Equal(1, source.opens);
             Assert.Equal(1, source.closures);
             Assert.True(backend.DestroyClip(first));
-            AudioBusHandle master = backend.CreateBus(AudioBusId.master);
+            AudioBusHandle master = backend.CreateBus(AudioBusID.master);
             AudioDeviceVoiceHandle voice = backend.Play(second, master, new AudioPlayOptions(loop: true));
             Assert.True(voice.isValid);
             Assert.True(backend.Stop(voice));
@@ -88,7 +88,7 @@ public sealed class EncodedContentTests
     private static AudioClipDescriptor Describe(
         IAudioClipSource source,
         AudioClipLoadMode mode
-    ) => new(AudioCodecId.wav, mode, 1, 48_000, 4800, source.length);
+    ) => new(AudioCodecID.wav, mode, 1, 48_000, 4800, source.length);
 
     private static void WaitForReady(
         IAudioDevice backend,

@@ -43,7 +43,7 @@ public static unsafe class ImGuiFont
     /// </returns>
     public static bool IsAvailable(ImGuiFontStyle style)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return HostFont.IsAvailable((HostStyle)style);
     }
 
@@ -58,7 +58,7 @@ public static unsafe class ImGuiFont
     /// </returns>
     public static ImGuiFontScope PushStyle(ImGuiFontStyle style)
     {
-        EditorUiSession session = EditorUiSession.current;
+        EditorUISession session = EditorUISession.current;
         session.EnsureDrawing();
         HostScope scope = HostFont.PushStyle((HostStyle)style);
         return new ImGuiFontScope(session, scope, NativeImGui.GetFrameCount(), NativeImGui.Raw.GetCurrentContext()->FontStack.Size);
@@ -70,13 +70,13 @@ public static unsafe class ImGuiFont
 /// </summary>
 public unsafe ref struct ImGuiFontScope : IDisposable
 {
-    private EditorUiSession? m_session;
+    private EditorUISession? m_session;
     private HostScope m_scope;
     private readonly int m_frame;
     private readonly int m_depth;
 
     internal ImGuiFontScope(
-        EditorUiSession session,
+        EditorUISession session,
         HostScope scope,
         int frame,
         int depth

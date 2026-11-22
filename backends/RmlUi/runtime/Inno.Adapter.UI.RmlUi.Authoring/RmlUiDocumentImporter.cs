@@ -11,7 +11,7 @@ namespace Inno.Adapter.UI.RmlUi.Authoring;
 /// Maps the conventional .rml extension to explicit RML and RmlUi identities.
 /// </summary>
 [AssetImporter("inno.ui.rml-document")]
-public sealed class RmlUiDocumentImporter : AssetImporter<UiDocumentAsset>
+public sealed class RmlUiDocumentImporter : AssetImporter<UIDocumentAsset>
 {
     /// <summary>
     /// Gets the normalized source extensions accepted by this importer.
@@ -35,9 +35,9 @@ public sealed class RmlUiDocumentImporter : AssetImporter<UiDocumentAsset>
     /// </returns>
     protected override ValueTask ImportAsync(
         AssetImportContext context,
-        AssetImportWriter<UiDocumentAsset> output,
+        AssetImportWriter<UIDocumentAsset> output,
         CancellationToken cancellationToken
-    ) => UiDocumentImportPipeline.ImportAsync(
+    ) => UIDocumentImportPipeline.ImportAsync(
         context,
         output,
         RmlUiIdentifiers.documentLanguage,

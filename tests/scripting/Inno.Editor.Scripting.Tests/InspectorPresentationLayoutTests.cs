@@ -6,12 +6,12 @@ using Xunit;
 using Inno.Editor.ImGui;
 using Inno.Native.ImGui;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
+using GuiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 using NativeVector4 = Inno.Native.ImGui.ImVec4C;
-using UiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
 
 namespace Inno.Editor.Scripting.Tests;
 
@@ -162,7 +162,7 @@ public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
             NativeImGui.SetNextWindowPos(new Vector2(30, 30));
             NativeImGui.SetNextWindowSize(new Vector2(320, 180));
             using NativeStringLease nativeTestText4 = Utf8Codec.EncodeNullTerminated("Opaque surface", allowsNull: false);
-            NativeImGui.Raw.Begin((sbyte*)nativeTestText4.pointer, null, (int)(UiWindowFlags.NoCollapse));
+            NativeImGui.Raw.Begin((sbyte*)nativeTestText4.pointer, null, (int)(GuiWindowFlags.NoCollapse));
             NativeImGui.End();
             NativeImGui.Render();
         }

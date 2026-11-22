@@ -34,8 +34,8 @@ public static class BgfxTargetCapabilities
             formats,
             formats,
             formats,
-            originBottomLeft: backend == GraphicsApi.OpenGL || backend == GraphicsApi.OpenGLES,
-            homogeneousDepth: backend == GraphicsApi.OpenGL || backend == GraphicsApi.OpenGLES,
+            originBottomLeft: backend == GraphicsApi.openGL || backend == GraphicsApi.openGLES,
+            homogeneousDepth: backend == GraphicsApi.openGL || backend == GraphicsApi.openGLES,
             formats,
             formats,
             formats

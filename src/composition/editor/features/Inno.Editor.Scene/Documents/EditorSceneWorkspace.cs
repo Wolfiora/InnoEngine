@@ -138,16 +138,16 @@ internal sealed partial class EditorSceneWorkspace :
         }
         if (m_playModeSession is PlayModeLease playModeSession)
         {
-            if (!playModeSession.TryGetSnapshot(scene.identity.persistentId, out SceneDocumentSnapshot snapshot))
+            if (!playModeSession.TryGetSnapshot(scene.identity.persistentID, out SceneDocumentSnapshot snapshot))
             {
                 return true;
             }
             return string.IsNullOrEmpty(snapshot.sourcePath)
-                   || AssetPath.Parse(snapshot.sourcePath).source == AssetSourceId.project;
+                   || AssetPath.Parse(snapshot.sourcePath).source == AssetSourceID.project;
         }
-        return !m_documents.TryGetValue(scene.identity.persistentId, out SceneDocument? document)
+        return !m_documents.TryGetValue(scene.identity.persistentID, out SceneDocument? document)
                || string.IsNullOrEmpty(document.sourcePath)
-               || AssetPath.Parse(document.sourcePath).source == AssetSourceId.project;
+               || AssetPath.Parse(document.sourcePath).source == AssetSourceID.project;
     }
 
     /// <summary>
@@ -207,7 +207,7 @@ internal sealed partial class EditorSceneWorkspace :
         {
             return;
         }
-        m_assets.Changed += OnAssetDatabaseChanged;
+        m_assets.changed += OnAssetDatabaseChanged;
         m_reloadIntegration = SceneReloadIntegration.Acquire(m_runtimeSession, m_serialization, m_assets, m_reloads);
         m_reloadRegistration = m_reloads.Register(this);
         m_isAttached = true;
@@ -249,7 +249,7 @@ internal sealed partial class EditorSceneWorkspace :
         }
         finally
         {
-            m_assets.Changed -= OnAssetDatabaseChanged;
+            m_assets.changed -= OnAssetDatabaseChanged;
             m_reloadRegistration?.Dispose();
             m_reloadRegistration = null;
             m_runtimeSession.scenes.UnloadAllScenes();
@@ -298,7 +298,7 @@ internal sealed partial class EditorSceneWorkspace :
         GameScene scene = world.LoadNewSceneAdditive(name);
         if (canPersist)
         {
-            m_documents.Add(scene.identity.persistentId, new SceneDocument(scene, string.Empty, Guid.Empty, []));
+            m_documents.Add(scene.identity.persistentID, new SceneDocument(scene, string.Empty, Guid.Empty, []));
         }
         return scene;
     }
@@ -319,7 +319,7 @@ internal sealed partial class EditorSceneWorkspace :
             {
                 continue;
             }
-            Guid sceneID = document.scene.identity.persistentId;
+            Guid sceneID = document.scene.identity.persistentID;
             synchronizedScenes.Add(sceneID);
             try
             {
@@ -355,7 +355,7 @@ internal sealed partial class EditorSceneWorkspace :
             return false;
         }
         using IDisposable scope = EnterPresentationScope();
-        Guid sceneID = scene.identity.persistentId;
+        Guid sceneID = scene.identity.persistentID;
         bool closed = world.UnloadScene(scene);
         if (closed && canPersist)
         {

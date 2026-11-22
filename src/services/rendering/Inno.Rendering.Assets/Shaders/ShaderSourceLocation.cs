@@ -10,7 +10,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Maps a shader diagnostic back to an asset, pass, stage, and source position.
 /// </summary>
-[StableTypeId("ab6474ed-51d0-570c-b15d-c477b5e9fecc")]
+[StableTypeID("ab6474ed-51d0-570c-b15d-c477b5e9fecc")]
 public readonly record struct ShaderSourceLocation
 {
     /// <summary>

@@ -29,7 +29,7 @@ public sealed class EditorViewportToolContext
     /// <summary>
     /// Gets the captured pointer identity, or <see langword="null"/>.
     /// </summary>
-    public int? capturedPointerId => m_capturedPointerID;
+    public int? capturedPointerID => m_capturedPointerID;
 
     /// <summary>
     /// Gets whether a history transaction is active for the current gesture.
@@ -39,16 +39,16 @@ public sealed class EditorViewportToolContext
     /// <summary>
     /// Captures one pointer until explicit release or cancellation.
     /// </summary>
-    /// <param name="pointerId">
+    /// <param name="pointerID">
     /// Platform pointer identity.
     /// </param>
-    public void CapturePointer(int pointerId)
+    public void CapturePointer(int pointerID)
     {
-        if (m_capturedPointerID.HasValue && m_capturedPointerID.Value != pointerId)
+        if (m_capturedPointerID.HasValue && m_capturedPointerID.Value != pointerID)
         {
             throw new InvalidOperationException("A viewport tool cannot capture two pointers concurrently.");
         }
-        m_capturedPointerID = pointerId;
+        m_capturedPointerID = pointerID;
     }
 
     /// <summary>

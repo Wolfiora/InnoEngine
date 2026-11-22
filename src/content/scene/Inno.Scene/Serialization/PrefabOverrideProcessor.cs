@@ -256,22 +256,22 @@ internal static class PrefabOverrideProcessor
         {
             return;
         }
-        HashSet<Guid> mappedObjectIds = connection.objectIdentities.Values.ToHashSet();
-        HashSet<Guid> mappedComponentIds = connection.componentIdentities.Values.ToHashSet();
+        HashSet<Guid> mappedObjectIDs = connection.objectIdentities.Values.ToHashSet();
+        HashSet<Guid> mappedComponentIDs = connection.componentIdentities.Values.ToHashSet();
         var stack = new Stack<GameObject>();
         stack.Push(root);
         while (stack.Count != 0)
         {
             GameObject gameObject = stack.Pop();
-            if (!mappedObjectIds.Contains(gameObject.identity.persistentId))
+            if (!mappedObjectIDs.Contains(gameObject.identity.persistentID))
             {
-                overrides.MarkObjectAdded(gameObject.identity.persistentId);
+                overrides.MarkObjectAdded(gameObject.identity.persistentID);
             }
             foreach (GameComponent component in gameObject.GetComponents())
             {
-                if (!mappedComponentIds.Contains(component.identity.persistentId))
+                if (!mappedComponentIDs.Contains(component.identity.persistentID))
                 {
-                    overrides.MarkComponentAdded(component.identity.persistentId);
+                    overrides.MarkComponentAdded(component.identity.persistentID);
                 }
             }
             foreach (Transform child in gameObject.transform.children)
@@ -344,15 +344,15 @@ internal static class PrefabOverrideProcessor
         GameScene scene,
         GameObject instanceRoot
     ) {
-        Guid[] removedSourceIds = connection.objectIdentities.Keys
+        Guid[] removedSourceIDs = connection.objectIdentities.Keys
             .Where(sourceID => (
                 connection.overrides.IsObjectRemoved(sourceID)
                 || !sourceConnection.objectIdentities.ContainsKey(sourceID)
             ))
             .ToArray();
-        for (int i = 0; i < removedSourceIds.Length; i++)
+        for (int i = 0; i < removedSourceIDs.Length; i++)
         {
-            Guid sourceID = removedSourceIds[i];
+            Guid sourceID = removedSourceIDs[i];
             if (!connection.objectIdentities.TryGetValue(sourceID, out Guid runtimeID))
             {
                 continue;
@@ -365,7 +365,7 @@ internal static class PrefabOverrideProcessor
 
             GameObject[] addedChildren = target.transform.children
                 .Select(static child => child.gameObject)
-                .Where(child => !connection.objectIdentities.Values.Contains(child.identity.persistentId))
+                .Where(child => !connection.objectIdentities.Values.Contains(child.identity.persistentID))
                 .ToArray();
             for (int childIndex = 0; childIndex < addedChildren.Length; childIndex++)
             {
@@ -401,7 +401,7 @@ internal static class PrefabOverrideProcessor
             connection.MapObject(sourceID, target);
 
             Guid sourceTransformID = sourceConnection.componentIdentities.Single(
-                pair => pair.Value == sourceObject.transform.identity.persistentId
+                pair => pair.Value == sourceObject.transform.identity.persistentID
             ).Key;
             connection.MapComponent(sourceTransformID, target.transform);
         }
@@ -412,15 +412,15 @@ internal static class PrefabOverrideProcessor
         PrefabConnectionRecord sourceConnection,
         GameScene scene
     ) {
-        Guid[] removedSourceIds = connection.componentIdentities.Keys
+        Guid[] removedSourceIDs = connection.componentIdentities.Keys
             .Where(sourceID => (
                 connection.overrides.IsComponentRemoved(sourceID)
                 || !sourceConnection.componentIdentities.ContainsKey(sourceID)
             ))
             .ToArray();
-        for (int i = 0; i < removedSourceIds.Length; i++)
+        for (int i = 0; i < removedSourceIDs.Length; i++)
         {
-            Guid sourceID = removedSourceIds[i];
+            Guid sourceID = removedSourceIDs[i];
             if (!connection.componentIdentities.TryGetValue(sourceID, out Guid runtimeID))
             {
                 continue;
@@ -450,7 +450,7 @@ internal static class PrefabOverrideProcessor
             GameComponent sourceComponent = sourceScene.FindComponent(sourceRuntimeID)
                 ?? throw new InvalidOperationException($"Prefab source component '{sourceID}' disappeared during reconciliation.");
             Guid sourceOwnerID = sourceConnection.objectIdentities.Single(
-                pair => pair.Value == sourceComponent.gameObject.identity.persistentId
+                pair => pair.Value == sourceComponent.gameObject.identity.persistentID
             ).Key;
             if (!connection.objectIdentities.TryGetValue(sourceOwnerID, out Guid targetOwnerID))
             {
@@ -588,7 +588,7 @@ internal static class PrefabOverrideProcessor
             }
             gameObject.SetPrefabInstanceDirect(
                 new PrefabInstanceInfo(
-                    connection.sourceAsset.identity.persistentId,
+                    connection.sourceAsset.identity.persistentID,
                     sourceID,
                     instanceRoot,
                     ReferenceEquals(gameObject, instanceRoot),
@@ -613,7 +613,7 @@ internal static class PrefabOverrideProcessor
         var ids = new Dictionary<EngineObject, Guid>(ReferenceEqualityComparer.Instance);
         for (int objectIndex = 0; objectIndex < allObjects.Length; objectIndex++)
         {
-            ids.Add(allObjects[objectIndex], allObjects[objectIndex].identity.persistentId);
+            ids.Add(allObjects[objectIndex], allObjects[objectIndex].identity.persistentID);
         }
         foreach ((Guid sourceID, Guid runtimeID) in connection.objectIdentities)
         {
@@ -667,7 +667,7 @@ internal static class PrefabOverrideProcessor
         {
             return Guid.Empty;
         }
-        Guid parentRuntimeID = parent.gameObject.identity.persistentId;
+        Guid parentRuntimeID = parent.gameObject.identity.persistentID;
         foreach ((Guid sourceID, Guid runtimeID) in connection.objectIdentities)
         {
             if (runtimeID == parentRuntimeID)
@@ -700,7 +700,7 @@ internal static class PrefabOverrideProcessor
                 }
                 PrefabConnectionRecord connection = sourceRoot.prefabConnection
                     ?? throw new InvalidOperationException(
-                        $"Prefab source asset '{sourceAsset.identity.persistentId}' did not create a source mapping."
+                        $"Prefab source asset '{sourceAsset.identity.persistentID}' did not create a source mapping."
                     );
                 return (sourceScene, sourceRoot, connection);
             }

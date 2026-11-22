@@ -181,13 +181,13 @@ public sealed partial class SerializationBehaviorTests : IDisposable
         {
             SerializationReader type = reader.ReadObject("type");
             Assert.True(type.Contains("stableId"));
-            Assert.False(type.Contains("runtimeId"));
+            Assert.False(type.Contains("runtimeID"));
             Assert.False(type.Contains("isValid"));
             return reader.Read<TypeRef>("type");
         });
 
         Assert.Equal(active, restored);
-        Assert.Equal(0, restored.runtimeId);
+        Assert.Equal(0, restored.runtimeID);
         Assert.Equal(active.Resolve(m_types), restored.Resolve(m_types));
     }
 

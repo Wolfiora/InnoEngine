@@ -41,7 +41,7 @@ public sealed class DiagnosticReporter : IDiagnosticReporter, IDisposable
         lock (m_sync)
         {
             DiagnosticHub hub = GetHub();
-            var key = new IssueKey(diagnostic.code, diagnostic.semanticId, diagnostic.objectId);
+            var key = new IssueKey(diagnostic.code, diagnostic.semanticID, diagnostic.objectID);
             if (m_issues.TryGetValue(key, out Diagnostic? current)
                 && current.severity == diagnostic.severity
                 && string.Equals(current.message, diagnostic.message, StringComparison.Ordinal)
@@ -60,10 +60,10 @@ public sealed class DiagnosticReporter : IDiagnosticReporter, IDisposable
     /// <param name="code">
     /// The stable issue code.
     /// </param>
-    /// <param name="semanticId">
+    /// <param name="semanticID">
     /// The optional protocol identifier used at publication.
     /// </param>
-    /// <param name="objectId">
+    /// <param name="objectID">
     /// The optional persistent object identity used at publication.
     /// </param>
     /// <exception cref="ObjectDisposedException">
@@ -71,14 +71,14 @@ public sealed class DiagnosticReporter : IDiagnosticReporter, IDisposable
     /// </exception>
     public void Resolve(
         string code,
-        string? semanticId = null,
-        Guid? objectId = null
+        string? semanticID = null,
+        Guid? objectID = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(code);
         lock (m_sync)
         {
             DiagnosticHub hub = GetHub();
-            if (!m_issues.Remove(new(code, semanticId, objectId)))
+            if (!m_issues.Remove(new(code, semanticID, objectID)))
             {
                 return;
             }
@@ -105,7 +105,7 @@ public sealed class DiagnosticReporter : IDiagnosticReporter, IDisposable
         foreach (Diagnostic diagnostic in diagnostics)
         {
             ArgumentNullException.ThrowIfNull(diagnostic);
-            if (!candidate.TryAdd(new(diagnostic.code, diagnostic.semanticId, diagnostic.objectId), diagnostic))
+            if (!candidate.TryAdd(new(diagnostic.code, diagnostic.semanticID, diagnostic.objectID), diagnostic))
             {
                 throw new ArgumentException("A complete diagnostic report contains duplicate issue identities.", nameof(diagnostics));
             }
@@ -141,8 +141,8 @@ public sealed class DiagnosticReporter : IDiagnosticReporter, IDisposable
     private Diagnostic[] Ordered()
         => m_issues.Values
             .OrderBy(static issue => issue.code, StringComparer.Ordinal)
-            .ThenBy(static issue => issue.semanticId, StringComparer.Ordinal)
-            .ThenBy(static issue => issue.objectId)
+            .ThenBy(static issue => issue.semanticID, StringComparer.Ordinal)
+            .ThenBy(static issue => issue.objectID)
             .ToArray();
 
     private readonly record struct IssueKey(

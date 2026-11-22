@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Represents the runtime contract imported from a shader graph.
 /// </summary>
-[StableTypeId("e6672287-145f-4f51-8380-a6aeaf57a801")]
+[StableTypeID("e6672287-145f-4f51-8380-a6aeaf57a801")]
 public sealed class ShaderAsset : AssetObject
 {
     private ShaderDefinitionSnapshot? m_definition;

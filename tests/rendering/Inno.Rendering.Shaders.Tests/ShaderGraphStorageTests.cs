@@ -37,7 +37,7 @@ public sealed partial class ShaderGraphProgramTests
         var compiler = new ShaderCompiler(new BgfxShadercToolchain(MacOSArm64BgfxShaderProfiles.target));
         RenderTextureFormat[] formats = Enum.GetValues<RenderTextureFormat>();
         var caps = new GraphicsCapabilities(
-            GraphicsApi.Metal,
+            GraphicsApi.metal,
             GraphicsCapability.Compute | GraphicsCapability.StorageBuffer,
             new(256, 8, 8192, 16),
             formats,
@@ -84,7 +84,7 @@ public sealed partial class ShaderGraphProgramTests
             m_serialization,
             SerializationContext.empty
         );
-        GraphNodeRecord stage = Node("compute", ShaderGraphDocument.outputDefinitionId);
+        GraphNodeRecord stage = Node("compute", ShaderGraphDocument.C_OUTPUT_DEFINITION_ID);
         Set(stage, "settings", new ShaderGraphStageSettings { stage = ShaderStage.Compute });
         var resourceType = new ShaderGraphType
         {

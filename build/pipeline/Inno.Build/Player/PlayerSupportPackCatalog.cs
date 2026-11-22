@@ -36,7 +36,7 @@ public sealed class PlayerSupportPackCatalog
     ];
 
     private readonly string m_root;
-    private readonly ConcurrentDictionary<BuildTargetId, SemaphoreSlim> m_provisionGates = new();
+    private readonly ConcurrentDictionary<BuildTargetID, SemaphoreSlim> m_provisionGates = new();
 
     /// <summary>
     /// Creates a catalog rooted at the directory containing target-specific Player Support Packs.
@@ -84,7 +84,7 @@ public sealed class PlayerSupportPackCatalog
     /// Validation or selection was canceled.
     /// </exception>
     public async ValueTask<PlayerSupportPackLease> SelectAsync(
-        BuildTargetId target,
+        BuildTargetID target,
         string fingerprint,
         IPlayerSupportPackValidator validator,
         Func<CancellationToken, ValueTask> verifyInputs,
@@ -153,7 +153,7 @@ public sealed class PlayerSupportPackCatalog
     /// Exclusive repair or retirement retains the artifact for more than thirty seconds.
     /// </exception>
     public PlayerSupportPackLease Acquire(
-        BuildTargetId target,
+        BuildTargetID target,
         IPlayerSupportPackValidator validator,
         CancellationToken cancellationToken = default
     ) {
@@ -210,7 +210,7 @@ public sealed class PlayerSupportPackCatalog
     /// Cancellation occurred before the current index was committed.
     /// </exception>
     public async ValueTask<PlayerSupportPackLease> PublishAsync(
-        BuildTargetId target,
+        BuildTargetID target,
         string stagingDirectory,
         IPlayerSupportPackValidator validator,
         CancellationToken cancellationToken = default,
@@ -291,7 +291,7 @@ public sealed class PlayerSupportPackCatalog
     }
 
     internal async ValueTask<PlayerSupportPackLease> ResolveOrProvisionAsync(
-        BuildTargetId target,
+        BuildTargetID target,
         IPlayerSupportPackValidator validator,
         IPlayerSupportPackProvisioner? provisioner,
         CancellationToken cancellationToken
@@ -344,7 +344,7 @@ public sealed class PlayerSupportPackCatalog
     private static PlayerSupportPackLease AcquireArtifact(
         string directory,
         string fingerprint,
-        BuildTargetId target,
+        BuildTargetID target,
         IPlayerSupportPackValidator validator,
         CancellationToken cancellationToken
     ) {
@@ -382,7 +382,7 @@ public sealed class PlayerSupportPackCatalog
 
     private static void ValidateDirectory(
         string directory,
-        BuildTargetId target,
+        BuildTargetID target,
         IPlayerSupportPackValidator validator
     ) {
         if (!Directory.Exists(directory))

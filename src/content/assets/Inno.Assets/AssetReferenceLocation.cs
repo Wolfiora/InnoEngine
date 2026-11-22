@@ -13,7 +13,7 @@ public sealed class AssetReferenceLocation
     /// <param name="kind">
     /// The category of reference owner.
     /// </param>
-    /// <param name="ownerId">
+    /// <param name="ownerID">
     /// The owner's persistent identity.
     /// </param>
     /// <param name="ownerName">
@@ -24,12 +24,12 @@ public sealed class AssetReferenceLocation
     /// </param>
     public AssetReferenceLocation(
         AssetReferenceKind kind,
-        Guid ownerId,
+        Guid ownerID,
         string ownerName,
         string propertyPath
     ) {
         this.kind = kind;
-        this.ownerId = ownerId;
+        this.ownerID = ownerID;
         this.ownerName = ownerName ?? string.Empty;
         this.propertyPath = propertyPath ?? string.Empty;
     }
@@ -42,7 +42,7 @@ public sealed class AssetReferenceLocation
     /// <summary>
     /// Gets the persistent identity of the known owner, when available.
     /// </summary>
-    public Guid ownerId { get; }
+    public Guid ownerID { get; }
 
     /// <summary>
     /// Gets the display name of the known owner.

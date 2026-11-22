@@ -48,7 +48,7 @@ public sealed class BuildProfile : ISerializable
     /// <summary>
     /// Gets or sets the platform target.
     /// </summary>
-    public BuildTargetId target
+    public BuildTargetID target
     {
         get => new(m_targetId);
         set => m_targetId = value.value;
@@ -57,9 +57,9 @@ public sealed class BuildProfile : ISerializable
     /// <summary>
     /// Gets or sets an explicit managed publisher; null uses the platform composition's default.
     /// </summary>
-    public ManagedDeploymentId? managedDeployment
+    public ManagedDeploymentID? managedDeployment
     {
-        get => m_managedDeploymentId.Length == 0 ? null : new ManagedDeploymentId(m_managedDeploymentId);
+        get => m_managedDeploymentId.Length == 0 ? null : new ManagedDeploymentID(m_managedDeploymentId);
         set => m_managedDeploymentId = value?.value ?? string.Empty;
     }
 
@@ -127,7 +127,7 @@ public sealed class BuildProfile : ISerializable
         }
         try
         {
-            _ = new BuildTargetId(m_targetId);
+            _ = new BuildTargetID(m_targetId);
         }
         catch (ArgumentException exception)
         {
@@ -141,7 +141,7 @@ public sealed class BuildProfile : ISerializable
         {
             try
             {
-                _ = new ManagedDeploymentId(m_managedDeploymentId);
+                _ = new ManagedDeploymentID(m_managedDeploymentId);
             }
             catch (ArgumentException exception)
             {

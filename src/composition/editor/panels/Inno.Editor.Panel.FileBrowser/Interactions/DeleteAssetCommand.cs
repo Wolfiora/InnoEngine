@@ -7,9 +7,9 @@ using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Panel.FileBrowser;
 
-[EditorAction(FileBrowserInteractionIds.C_DELETE, priority: 100)]
-[EditorMenu(FileBrowserInteractionIds.C_AREA, "Delete", order: 200)]
-[EditorShortcut(FileBrowserInteractionIds.C_AREA, KeyCode.Delete)]
+[EditorAction(FileBrowserInteractionIDs.C_DELETE, priority: 100)]
+[EditorMenu(FileBrowserInteractionIDs.C_AREA, "Delete", order: 200)]
+[EditorShortcut(FileBrowserInteractionIDs.C_AREA, KeyCode.Delete)]
 internal sealed class DeleteAssetCommand(AssetBrowserModule assets) : EditorAction<AssetFileEntry>
 {
     /// <summary>

@@ -41,9 +41,9 @@ public sealed class GameContentCompilerBindingTests
         Assert.Equal(1, second.calls);
     }
 
-    private sealed class FixtureCompiler(BuildTargetId target) : IGameContentCompiler
+    private sealed class FixtureCompiler(BuildTargetID target) : IGameContentCompiler
     {
-        public BuildTargetId target { get; } = target;
+        public BuildTargetID target { get; } = target;
 
         public ValueTask CompileAsync(
             GameBuildContentContext context,
@@ -59,8 +59,8 @@ public sealed class GameContentCompilerBindingTests
 
     private sealed class FixturePackager : IGameBuildTarget
     {
-        public BuildTargetId id => new("fixture-platform");
-        public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.coreClr;
+        public BuildTargetID id => new("fixture-platform");
+        public ManagedDeploymentID defaultManagedDeployment => ManagedDeploymentID.coreClr;
         public string runtimeIdentifier => "fixture-rid";
         public string displayName => "Fixture";
 

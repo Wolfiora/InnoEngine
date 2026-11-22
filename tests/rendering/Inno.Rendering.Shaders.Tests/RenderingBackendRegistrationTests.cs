@@ -13,33 +13,33 @@ public sealed class RenderingBackendRegistrationTests
     [Fact]
     public void RuntimeAndAuthoringRegistrationsAreOpenAndPairedBeforeDeviceCreation()
     {
-        var id = new RenderingBackendId("tests.independent-renderer");
+        var id = new RenderingBackendID("tests.independent-renderer");
         var provider = new RuntimeProvider(id);
         var runtime = new RenderingBackendCatalog([provider]);
         var authoring = new RenderingAuthoringBackendCatalog(runtime, [new AuthoringProvider(id)]);
         Assert.Equal(id, Assert.Single(runtime.supportedBackends));
         Assert.Equal(id, Assert.Single(authoring.supportedBackends));
         Assert.False(provider.wasCreated);
-        Assert.Throws<NotSupportedException>(() => runtime.CreateDevice(RenderingBackendId.bgfx, new RenderingBackendOptions()));
+        Assert.Throws<NotSupportedException>(() => runtime.CreateDevice(RenderingBackendID.bgfx, new RenderingBackendOptions()));
         Assert.False(provider.wasCreated);
     }
 
     [Fact]
     public void DuplicateUnassignedAndUnpairedRegistrationsFail()
     {
-        var id = new RenderingBackendId("tests.renderer");
+        var id = new RenderingBackendID("tests.renderer");
         Assert.Throws<ArgumentException>(() => new RenderingBackendCatalog([new RuntimeProvider(id), new RuntimeProvider(id)]));
         Assert.Throws<ArgumentException>(() => new RenderingBackendCatalog([new RuntimeProvider(default)]));
         var runtime = new RenderingBackendCatalog([new RuntimeProvider(id)]);
         Assert.Throws<ArgumentException>(() => new RenderingAuthoringBackendCatalog(runtime, []));
         Assert.Throws<ArgumentException>(
-            () => new RenderingAuthoringBackendCatalog(runtime, [new AuthoringProvider(RenderingBackendId.bgfx)])
+            () => new RenderingAuthoringBackendCatalog(runtime, [new AuthoringProvider(RenderingBackendID.bgfx)])
         );
-        Assert.Throws<ArgumentException>(() => new RenderingBackendId("invalid id"));
-        Assert.False(default(RenderingBackendId).isValid);
+        Assert.Throws<ArgumentException>(() => new RenderingBackendID("invalid id"));
+        Assert.False(default(RenderingBackendID).isValid);
     }
 
-    private sealed class RuntimeProvider(RenderingBackendId id) : RenderingBackendProvider(id)
+    private sealed class RuntimeProvider(RenderingBackendID id) : RenderingBackendProvider(id)
     {
         public bool wasCreated { get; private set; }
 
@@ -53,7 +53,7 @@ public sealed class RenderingBackendRegistrationTests
             => throw new InvalidOperationException("These registration tests do not create composition programs.");
     }
 
-    private sealed class AuthoringProvider(RenderingBackendId id) : RenderingAuthoringBackendProvider(id)
+    private sealed class AuthoringProvider(RenderingBackendID id) : RenderingAuthoringBackendProvider(id)
     {
         public override IShaderCompilerToolchain CreateShaderCompilerToolchain()
             => new BgfxShadercToolchain(WindowsX64BgfxShaderProfiles.target);

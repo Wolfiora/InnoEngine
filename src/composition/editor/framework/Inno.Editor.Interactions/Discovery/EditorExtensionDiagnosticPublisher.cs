@@ -40,11 +40,11 @@ internal sealed class EditorExtensionDiagnosticPublisher : IDisposable
         m_panelFailures.Remove(panelID);
     }
 
-    internal void RetainPanels(IReadOnlySet<string> panelIds)
+    internal void RetainPanels(IReadOnlySet<string> panelIDs)
     {
-        ArgumentNullException.ThrowIfNull(panelIds);
+        ArgumentNullException.ThrowIfNull(panelIDs);
         string[] removed = m_panelFailures.Keys
-            .Where(id => !panelIds.Contains(id))
+            .Where(id => !panelIDs.Contains(id))
             .ToArray();
         for (int i = 0; i < removed.Length; i++)
         {

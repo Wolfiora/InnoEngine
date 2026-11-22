@@ -31,7 +31,7 @@ public sealed partial class PlayerWithoutFileSystemTests
         using RuntimeSession first = host.CreateSession(new RuntimeSessionOptions
         {
             kind = RuntimeSessionKind.Player,
-            applicationId = "memory.first",
+            applicationID = "memory.first",
             contentStore = content,
             jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
             createLogSink = _ => firstLog
@@ -39,7 +39,7 @@ public sealed partial class PlayerWithoutFileSystemTests
         using RuntimeSession second = host.CreateSession(new RuntimeSessionOptions
         {
             kind = RuntimeSessionKind.Player,
-            applicationId = "memory.second",
+            applicationID = "memory.second",
             contentStore = content,
             jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
             createLogSink = _ => secondLog
@@ -72,7 +72,7 @@ public sealed partial class PlayerWithoutFileSystemTests
         Assert.Throws<InvalidOperationException>(() => host.CreateSession(new RuntimeSessionOptions
         {
             kind = RuntimeSessionKind.Play,
-            applicationId = "memory.invalid",
+            applicationID = "memory.invalid",
             jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
             createLogSink = _ => null!
         }));
@@ -80,7 +80,7 @@ public sealed partial class PlayerWithoutFileSystemTests
         using RuntimeSession valid = host.CreateSession(new RuntimeSessionOptions
         {
             kind = RuntimeSessionKind.Play,
-            applicationId = "memory.valid",
+            applicationID = "memory.valid",
             jobExecutionMode = RuntimeJobExecutionMode.SingleThread
         });
         valid.Tick(0.01f);

@@ -23,8 +23,8 @@ internal sealed record SceneObjectStructureSnapshot(
 /// </summary>
 internal sealed class SceneStructureSnapshot
 {
-    private Dictionary<EngineObject, Guid>? m_sourceIds;
-    private IReadOnlyDictionary<EngineObject, Guid>? m_frozenSourceIds;
+    private Dictionary<EngineObject, Guid>? m_sourceIDs;
+    private IReadOnlyDictionary<EngineObject, Guid>? m_frozenSourceIDs;
 
     internal SceneStructureSnapshot(IReadOnlyList<SceneObjectStructureSnapshot> objects)
     {
@@ -33,11 +33,11 @@ internal sealed class SceneStructureSnapshot
 
     internal IReadOnlyList<SceneObjectStructureSnapshot> objects { get; }
 
-    internal IReadOnlyDictionary<EngineObject, Guid> CaptureObjectSourceIds()
+    internal IReadOnlyDictionary<EngineObject, Guid> CaptureObjectSourceIDs()
     {
-        if (m_sourceIds is not null && HasCurrentIdentities(m_sourceIds))
+        if (m_sourceIDs is not null && HasCurrentIdentities(m_sourceIDs))
         {
-            return m_frozenSourceIds!;
+            return m_frozenSourceIDs!;
         }
 
         int count = objects.Count;
@@ -45,29 +45,29 @@ internal sealed class SceneStructureSnapshot
         {
             count = checked(count + entry.components.Count);
         }
-        var sourceIds = new Dictionary<EngineObject, Guid>(count, ReferenceEqualityComparer.Instance);
+        var sourceIDs = new Dictionary<EngineObject, Guid>(count, ReferenceEqualityComparer.Instance);
         foreach (SceneObjectStructureSnapshot entry in objects)
         {
-            sourceIds.Add(entry.gameObject, entry.gameObject.identity.persistentId);
+            sourceIDs.Add(entry.gameObject, entry.gameObject.identity.persistentID);
             for (int index = 0; index < entry.components.Count; index++)
             {
                 GameComponent component = entry.components[index];
-                sourceIds.Add(component, component.identity.persistentId);
+                sourceIDs.Add(component, component.identity.persistentID);
             }
         }
         // Replace the projection so an already borrowed graph write keeps its original identities.
-        var frozen = new ReadOnlyDictionary<EngineObject, Guid>(sourceIds);
-        m_sourceIds = sourceIds;
-        m_frozenSourceIds = frozen;
+        var frozen = new ReadOnlyDictionary<EngineObject, Guid>(sourceIDs);
+        m_sourceIDs = sourceIDs;
+        m_frozenSourceIDs = frozen;
         return frozen;
     }
 
-    private static bool HasCurrentIdentities(Dictionary<EngineObject, Guid> sourceIds)
+    private static bool HasCurrentIdentities(Dictionary<EngineObject, Guid> sourceIDs)
     {
         // Core registry rebinding can replace an identity without changing the structural snapshot.
-        foreach ((EngineObject value, Guid persistentID) in sourceIds)
+        foreach ((EngineObject value, Guid persistentID) in sourceIDs)
         {
-            if (value.identity.persistentId != persistentID)
+            if (value.identity.persistentID != persistentID)
             {
                 return false;
             }

@@ -97,7 +97,7 @@ internal static class BgfxBuildSession
             if (candidates.Length != 1)
             {
                 throw new FileNotFoundException(
-                    $"Expected one '{name}' tool for {context.RequireToolchain().targetId}/{configuration}; found {candidates.Length}."
+                    $"Expected one '{name}' tool for {context.RequireToolchain().targetID}/{configuration}; found {candidates.Length}."
                 );
             }
             string destination = Path.Combine(output, name + extension);

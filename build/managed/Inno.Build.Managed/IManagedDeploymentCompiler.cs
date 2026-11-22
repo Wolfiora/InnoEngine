@@ -11,7 +11,7 @@ public interface IManagedDeploymentCompiler
     /// <summary>
     /// Gets the open stable implementation identity.
     /// </summary>
-    ManagedDeploymentId id { get; }
+    ManagedDeploymentID id { get; }
 
     /// <summary>
     /// Gets the provider's actual target and execution capabilities.

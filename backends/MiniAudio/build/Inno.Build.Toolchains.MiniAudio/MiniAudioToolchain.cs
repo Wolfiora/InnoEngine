@@ -129,7 +129,7 @@ public static class MiniAudioToolchain
             context,
             componentDescriptor,
             "miniaudio",
-            selection.targetId,
+            selection.targetID,
             [Path.Combine(context.engineRoot, "extern", "miniaudio"), Path.Combine(implementation, "CMakeLists.txt")],
             ARGUMENTS,
             [Path.Combine(implementation, "MiniAudioToolchain.cs")]

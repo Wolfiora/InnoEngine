@@ -12,7 +12,7 @@ using Inno.Editor.Shaders;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 using ImGuiApi = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Shaders.ImGui;
@@ -26,7 +26,7 @@ internal sealed class MaterialSelectionDrawer(
     /// <summary>
     /// Gets the icon glyph used to represent this item in the editor.
     /// </summary>
-    public override string icon => ImGuiIcon.File;
+    public override string icon => ImGuiIcon.C_FILE;
 
     /// <summary>
     /// Retrieves the current icon from authoritative state.
@@ -44,7 +44,7 @@ internal sealed class MaterialSelectionDrawer(
         InspectionDrawContext context,
         EditorSelectionSnapshot target
     ) {
-        Guid id = GetAssetIds(target).FirstOrDefault();
+        Guid id = GetAssetIDs(target).FirstOrDefault();
         return id != Guid.Empty
                && context.interactions.TryGetModule<MaterialDocuments>(out MaterialDocuments? documents)
                && documents is not null
@@ -71,7 +71,7 @@ internal sealed class MaterialSelectionDrawer(
     protected override (string name, Action<string>? setter) BindName(
         InspectionDrawContext context,
         EditorSelectionSnapshot target
-    ) => (GetAssetIds(target).Count + " Assets", null);
+    ) => (GetAssetIDs(target).Count + " Assets", null);
 
     /// <summary>
     /// Renders the header presentation for the current editor frame.
@@ -96,21 +96,21 @@ internal sealed class MaterialSelectionDrawer(
         {
             if (ImGuiApi.Button("Save Selected"))
             {
-                EditorUiSession.current.widgets.CommitEdits();
+                EditorUISession.current.widgets.CommitEdits();
                 foreach (AssetDraftDocuments<MaterialAsset>.Draft draft in drafts)
                 {
-                    _ = context.interactions.documents.Save(draft.documentId);
+                    _ = context.interactions.documents.Save(draft.documentID);
                 }
             }
 
             ImGuiApi.SameLine(0f, -1f);
             if (ImGuiApi.Button("Revert Selected"))
             {
-                EditorUiSession.current.widgets.CommitEdits();
+                EditorUISession.current.widgets.CommitEdits();
                 using EditorHistoryTransaction transaction = context.interactions.history.BeginTransaction("Revert Materials");
                 foreach (AssetDraftDocuments<MaterialAsset>.Draft draft in drafts)
                 {
-                    _ = context.interactions.documents.Revert(draft.documentId);
+                    _ = context.interactions.documents.Revert(draft.documentID);
                 }
                 transaction.Commit();
             }
@@ -143,7 +143,7 @@ internal sealed class MaterialSelectionDrawer(
         MaterialDocuments owner = documents!;
         Dictionary<Guid, MaterialAsset> materials = drafts.ToDictionary(value => value.id, value => owner.Read(value.id));
         bool readOnly = drafts.Any(value => value.readOnly);
-        ImGuiApi.PushId("materials." + string.Join(".", GetAssetIds(target)));
+        ImGuiApi.PushID("materials." + string.Join(".", GetAssetIDs(target)));
         ImGuiApi.BeginDisabled(readOnly);
         try
         {
@@ -164,7 +164,7 @@ internal sealed class MaterialSelectionDrawer(
             );
             if (selectionOpen)
             {
-                if (materials.Values.Any(value => value.shader?.identity.persistentId != first.shader?.identity.persistentId))
+                if (materials.Values.Any(value => value.shader?.identity.persistentID != first.shader?.identity.persistentID))
                 {
                     EditorUI.current.widgets.Hint("Shader · Mixed values");
                 }
@@ -196,7 +196,7 @@ internal sealed class MaterialSelectionDrawer(
                 return;
             }
 
-            ShaderTechniqueId[] commonTechniques = firstDefinition.techniques
+            ShaderTechniqueID[] commonTechniques = firstDefinition.techniques
                 .Select(value => value.id)
                 .Where(
                     id => materials.Values.All(
@@ -219,7 +219,7 @@ internal sealed class MaterialSelectionDrawer(
                         {
                             SetTechnique(default);
                         }
-                        foreach (ShaderTechniqueId technique in commonTechniques)
+                        foreach (ShaderTechniqueID technique in commonTechniques)
                         {
                             if (ImGuiApi.Selectable(technique.value, !mixedTechnique && first.techniqueId == technique))
                             {
@@ -381,7 +381,7 @@ internal sealed class MaterialSelectionDrawer(
                     continue;
                 }
                 bool mixed = values.Skip(1).Any(value => !value.Equals(values[0]));
-                ImGuiApi.PushId(property.id.value);
+                ImGuiApi.PushID(property.id.value);
                 try
                 {
                     if (mixed)
@@ -419,7 +419,7 @@ internal sealed class MaterialSelectionDrawer(
                 }
                 finally
                 {
-                    ImGuiApi.PopId();
+                    ImGuiApi.PopID();
                 }
             }
 
@@ -434,7 +434,7 @@ internal sealed class MaterialSelectionDrawer(
                 owner.ReplaceMany(materials);
             }
 
-            void SetTechnique(ShaderTechniqueId technique)
+            void SetTechnique(ShaderTechniqueID technique)
             {
                 foreach (MaterialAsset material in materials.Values)
                 {
@@ -446,15 +446,15 @@ internal sealed class MaterialSelectionDrawer(
         finally
         {
             ImGuiApi.EndDisabled();
-            ImGuiApi.PopId();
+            ImGuiApi.PopID();
         }
     }
 
     /// <inheritdoc/>
     protected override bool CanInspect(EditorSelectionSnapshot target)
-        => target.identities.Count > 1 && GetAssetIds(target).Count == target.identities.Count;
+        => target.identities.Count > 1 && GetAssetIDs(target).Count == target.identities.Count;
 
-    private IReadOnlyList<Guid> GetAssetIds(EditorSelectionSnapshot target)
+    private IReadOnlyList<Guid> GetAssetIDs(EditorSelectionSnapshot target)
     {
         if (!interactions.TryGetModule<MaterialDocuments>(out MaterialDocuments? materials) || materials is null)
         {
@@ -477,7 +477,7 @@ internal sealed class MaterialSelectionDrawer(
             ) {
                 return Array.Empty<Guid>();
             }
-            ids.Add(info.persistentId);
+            ids.Add(info.persistentID);
         }
 
         return ids;
@@ -494,7 +494,7 @@ internal sealed class MaterialSelectionDrawer(
         {
             return false;
         }
-        foreach (Guid id in GetAssetIds(target))
+        foreach (Guid id in GetAssetIDs(target))
         {
             if (!documents.assets.TryGetInfo(id, out AssetInfo? info)
                 || info is null

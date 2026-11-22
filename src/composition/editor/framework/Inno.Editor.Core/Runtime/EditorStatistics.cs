@@ -7,7 +7,7 @@ namespace Inno.Editor.Core;
 /// <summary>
 /// Identifies one editor statistic across panels, modules, and reloadable extensions.
 /// </summary>
-public readonly record struct EditorStatisticId
+public readonly record struct EditorStatisticID
 {
     /// <summary>
     /// Creates a globally stable statistic identifier.
@@ -18,7 +18,7 @@ public readonly record struct EditorStatisticId
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="value"/> is empty.
     /// </exception>
-    public EditorStatisticId(string value)
+    public EditorStatisticID(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         this.value = value.Trim();
@@ -46,7 +46,7 @@ public readonly record struct EditorStatisticId
 /// <summary>
 /// Identifies one visual group in the editor statistics presentation.
 /// </summary>
-public readonly record struct EditorStatisticGroupId
+public readonly record struct EditorStatisticGroupID
 {
     /// <summary>
     /// Creates a globally stable statistic-group identifier.
@@ -57,7 +57,7 @@ public readonly record struct EditorStatisticGroupId
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="value"/> is empty.
     /// </exception>
-    public EditorStatisticGroupId(string value)
+    public EditorStatisticGroupID(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         this.value = value.Trim();
@@ -93,7 +93,7 @@ public sealed class EditorStatistic
     /// <param name="id">
     /// Globally stable statistic identity used for replacement within a frame.
     /// </param>
-    /// <param name="groupId">
+    /// <param name="groupID">
     /// Stable visual group identity.
     /// </param>
     /// <param name="groupName">
@@ -115,8 +115,8 @@ public sealed class EditorStatistic
     /// Thrown when an identifier, group name, label, or value is empty.
     /// </exception>
     public EditorStatistic(
-        EditorStatisticId id,
-        EditorStatisticGroupId groupId,
+        EditorStatisticID id,
+        EditorStatisticGroupID groupID,
         string groupName,
         string label,
         string value,
@@ -127,15 +127,15 @@ public sealed class EditorStatistic
         {
             throw new ArgumentException("A statistic ID is required.", nameof(id));
         }
-        if (!groupId.isValid)
+        if (!groupID.isValid)
         {
-            throw new ArgumentException("A statistic group ID is required.", nameof(groupId));
+            throw new ArgumentException("A statistic group ID is required.", nameof(groupID));
         }
         ArgumentException.ThrowIfNullOrWhiteSpace(groupName);
         ArgumentException.ThrowIfNullOrWhiteSpace(label);
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         this.id = id;
-        this.groupId = groupId;
+        this.groupID = groupID;
         this.groupName = groupName.Trim();
         this.label = label.Trim();
         this.value = value.Trim();
@@ -146,12 +146,12 @@ public sealed class EditorStatistic
     /// <summary>
     /// Gets the globally stable statistic identity.
     /// </summary>
-    public EditorStatisticId id { get; }
+    public EditorStatisticID id { get; }
 
     /// <summary>
     /// Gets the stable visual group identity.
     /// </summary>
-    public EditorStatisticGroupId groupId { get; }
+    public EditorStatisticGroupID groupID { get; }
 
     /// <summary>
     /// Gets the user-facing group heading.
@@ -189,8 +189,8 @@ public sealed class EditorStatistic
 public sealed class EditorStatistics
 {
     private readonly object m_sync = new();
-    private Dictionary<EditorStatisticId, EditorStatistic> m_current = [];
-    private Dictionary<EditorStatisticId, EditorStatistic> m_completed = [];
+    private Dictionary<EditorStatisticID, EditorStatistic> m_current = [];
+    private Dictionary<EditorStatisticID, EditorStatistic> m_completed = [];
     private IReadOnlyList<EditorStatistic>? m_snapshot;
     private bool m_snapshotDirty = true;
 
@@ -251,8 +251,8 @@ public sealed class EditorStatistics
             {
                 return m_snapshot;
             }
-            var merged = new Dictionary<EditorStatisticId, EditorStatistic>(m_completed);
-            foreach ((EditorStatisticId id, EditorStatistic statistic) in m_current)
+            var merged = new Dictionary<EditorStatisticID, EditorStatistic>(m_completed);
+            foreach ((EditorStatisticID id, EditorStatistic statistic) in m_current)
             {
                 merged[id] = statistic;
             }
@@ -273,7 +273,7 @@ public sealed class EditorStatistics
     {
         lock (m_sync)
         {
-            foreach (EditorStatisticId id in m_completed.Keys)
+            foreach (EditorStatisticID id in m_completed.Keys)
             {
                 if (m_current.ContainsKey(id))
                 {
@@ -291,7 +291,7 @@ public sealed class EditorStatistics
         EditorStatistic first,
         EditorStatistic second
     ) => ReferenceEquals(first, second)
-         || first.groupId == second.groupId
+         || first.groupID == second.groupID
             && first.groupOrder == second.groupOrder
             && first.order == second.order
             && string.Equals(first.groupName, second.groupName, StringComparison.Ordinal)

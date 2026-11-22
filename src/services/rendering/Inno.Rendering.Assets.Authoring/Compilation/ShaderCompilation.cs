@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets.Authoring;
 /// <summary>
 /// Selects one renderer profile and compilation policy.
 /// </summary>
-[StableTypeId("29e9c0f0-cb34-5b98-a6d6-356f744f3049")]
+[StableTypeID("29e9c0f0-cb34-5b98-a6d6-356f744f3049")]
 public sealed class ShaderCompileTarget
 {
     /// <summary>
@@ -74,7 +74,7 @@ public sealed class ShaderCompileTarget
 /// <summary>
 /// Stores one immutable target stage binary.
 /// </summary>
-[StableTypeId("7de46626-7dd7-5112-b098-ef3eb53a0cda")]
+[StableTypeID("7de46626-7dd7-5112-b098-ef3eb53a0cda")]
 public sealed class ShaderStageArtifact
 {
     private readonly byte[] m_bytes;
@@ -125,7 +125,7 @@ public sealed class ShaderStageArtifact
 /// <summary>
 /// Stores all compiled stages and state for one shader pass.
 /// </summary>
-[StableTypeId("6a66aac0-d44d-5d90-a801-d92605a92c91")]
+[StableTypeID("6a66aac0-d44d-5d90-a801-d92605a92c91")]
 public sealed class CompiledShaderPass
 {
     private readonly ShaderPassDefinition m_definition;
@@ -182,7 +182,7 @@ public sealed class CompiledShaderPass
 /// <summary>
 /// Contains an immutable target shader artifact and expected reflected interface.
 /// </summary>
-[StableTypeId("25e556fe-a071-58b2-8e70-0e41bd434d83")]
+[StableTypeID("25e556fe-a071-58b2-8e70-0e41bd434d83")]
 public sealed class CompiledShaderArtifact
 {
     private readonly byte[] m_definitionData;
@@ -316,7 +316,7 @@ public sealed class CompiledShaderArtifact
 /// <summary>
 /// Returns a candidate artifact and structured diagnostics without mutating active state.
 /// </summary>
-[StableTypeId("72b304de-8a2b-5c08-b899-b4aef05be149")]
+[StableTypeID("72b304de-8a2b-5c08-b899-b4aef05be149")]
 public sealed class ShaderCompilationResult
 {
     /// <summary>
@@ -358,13 +358,13 @@ public sealed class ShaderCompilationResult
 /// <summary>
 /// Defines a backend-owned target compiler used by the common Shader IR pipeline.
 /// </summary>
-[StableTypeId("00437bae-b212-505f-8017-d59fd29fb005")]
+[StableTypeID("00437bae-b212-505f-8017-d59fd29fb005")]
 public interface IShaderCompilerToolchain
 {
     /// <summary>
     /// Gets the stable source implementation identity paired with this rendering adapter.
     /// </summary>
-    string implementationId { get; }
+    string implementationID { get; }
 
     /// <summary>
     /// Gets the explicit source-language identities accepted by this adapter's typed IR generator.
@@ -413,7 +413,7 @@ public interface IShaderCompilerToolchain
 /// <summary>
 /// Compiles validated Shader IR through one target toolchain.
 /// </summary>
-[StableTypeId("85c9086c-63d5-51e6-82ec-548ad39702e2")]
+[StableTypeID("85c9086c-63d5-51e6-82ec-548ad39702e2")]
 public sealed partial class ShaderCompiler
 {
     private readonly IShaderCompilerToolchain m_toolchain;

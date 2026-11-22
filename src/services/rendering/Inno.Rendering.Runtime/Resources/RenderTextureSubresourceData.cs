@@ -13,7 +13,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Stores one complete texture mip and addressable layer, slice, or cubemap-face upload.
 /// </summary>
-[StableTypeId("22ed6418-30e6-511e-8af3-5d830d3b0ce5")]
+[StableTypeID("22ed6418-30e6-511e-8af3-5d830d3b0ce5")]
 public sealed class RenderTextureSubresourceData
 {
     private readonly byte[] m_data;

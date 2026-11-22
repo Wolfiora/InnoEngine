@@ -27,7 +27,7 @@ public sealed class EditorRenderingModule : EditorModule
     private readonly Dictionary<string, EditorViewportNavigationState> m_navigationStates = new(StringComparer.Ordinal);
     private readonly Dictionary<string, ContentReadScope> m_contentScopes = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> m_compositionErrors = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, string> m_controllerIds = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> m_controllerIDs = new(StringComparer.Ordinal);
 
     private readonly Dictionary<string, EditorViewportManipulationSpace> m_manipulationSpaces =
         new(StringComparer.Ordinal);
@@ -70,7 +70,7 @@ public sealed class EditorRenderingModule : EditorModule
     /// <summary>
     /// Collects Editor-only icons and bounds for the current Scene viewport.
     /// </summary>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// The Scene viewport identity.
     /// </param>
     /// <param name="pixelWidth">
@@ -84,13 +84,13 @@ public sealed class EditorRenderingModule : EditorModule
     /// </returns>
     [ScriptingApiIgnore]
     public EditorGizmoFrame CollectGizmos(
-        string viewportId,
+        string viewportID,
         int pixelWidth,
         int pixelHeight
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(viewportID);
         var frame = new EditorGizmoFrame();
-        if (!m_contentScopes.TryGetValue(viewportId, out ContentReadScope? content))
+        if (!m_contentScopes.TryGetValue(viewportID, out ContentReadScope? content))
         {
             return frame;
         }
@@ -113,81 +113,81 @@ public sealed class EditorRenderingModule : EditorModule
     /// <returns>
     /// <see langword="true"/> when at least one contributor is registered.
     /// </returns>
-    public bool HasContributors(EditorViewportKindId kind) => kind.isValid && m_contributors.contributors.byKind.ContainsKey(kind);
+    public bool HasContributors(EditorViewportKindID kind) => kind.isValid && m_contributors.contributors.byKind.ContainsKey(kind);
 
     /// <summary>
     /// Supplies viewport-local input captured by the output panel for this frame.
     /// </summary>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// Stable output identity.
     /// </param>
     /// <param name="input">
     /// Physical-pixel input snapshot.
     /// </param>
     public void SetOutputInput(
-        string viewportId,
+        string viewportID,
         RenderOutputInput input
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
-        m_outputInputs[viewportId] = input ?? throw new ArgumentNullException(nameof(input));
+        ArgumentException.ThrowIfNullOrWhiteSpace(viewportID);
+        m_outputInputs[viewportID] = input ?? throw new ArgumentNullException(nameof(input));
     }
 
     /// <summary>
     /// Sets the exact model contributor order for an output with several applicable models.
     /// </summary>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// Stable output identity.
     /// </param>
     /// <param name="route">
     /// Explicit contributor route, or null for single-model selection.
     /// </param>
     public void SetOutputRoute(
-        string viewportId,
+        string viewportID,
         RenderOutputRoute? route
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(viewportID);
         if (route is null)
         {
-            m_outputRoutes.Remove(viewportId);
+            m_outputRoutes.Remove(viewportID);
         }
         else
         {
-            m_outputRoutes[viewportId] = route;
+            m_outputRoutes[viewportID] = route;
         }
     }
 
     /// <summary>
     /// Gets the most recent isolated contribution or composition failure for one stable viewport.
     /// </summary>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// Stable panel viewport identity.
     /// </param>
     /// <returns>
     /// The failure message, or null when no current failure exists.
     /// </returns>
-    public string? GetCompositionError(string viewportId)
+    public string? GetCompositionError(string viewportID)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
-        return m_compositionErrors.GetValueOrDefault(viewportId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(viewportID);
+        return m_compositionErrors.GetValueOrDefault(viewportID);
     }
 
     /// <summary>
     /// Gets the host-owned neutral navigation state for one stable Editor viewport.
     /// </summary>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// Stable panel viewport identity.
     /// </param>
     /// <returns>
     /// The reusable navigation state owned by the Editor host.
     /// </returns>
     [ScriptingApiIgnore]
-    public EditorViewportNavigationState GetNavigationState(string viewportId)
+    public EditorViewportNavigationState GetNavigationState(string viewportID)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
-        if (!m_navigationStates.TryGetValue(viewportId, out EditorViewportNavigationState? state))
+        ArgumentException.ThrowIfNullOrWhiteSpace(viewportID);
+        if (!m_navigationStates.TryGetValue(viewportID, out EditorViewportNavigationState? state))
         {
             state = new EditorViewportNavigationState();
-            m_navigationStates.Add(viewportId, state);
+            m_navigationStates.Add(viewportID, state);
         }
         return state;
     }
@@ -195,7 +195,7 @@ public sealed class EditorRenderingModule : EditorModule
     /// <summary>
     /// Sets the explicit ordered host content visible to one Editor viewport.
     /// </summary>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// Stable panel viewport identity.
     /// </param>
     /// <param name="content">
@@ -203,16 +203,16 @@ public sealed class EditorRenderingModule : EditorModule
     /// </param>
     [ScriptingApiIgnore]
     public void SetContentScope(
-        string viewportId,
+        string viewportID,
         ContentReadScope content
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(viewportID);
         ArgumentNullException.ThrowIfNull(content);
-        if (m_contentScopes.Remove(viewportId, out ContentReadScope? previous))
+        if (m_contentScopes.Remove(viewportID, out ContentReadScope? previous))
         {
             previous.Dispose();
         }
-        m_contentScopes[viewportId] = content ?? throw new ArgumentNullException(nameof(content));
+        m_contentScopes[viewportID] = content ?? throw new ArgumentNullException(nameof(content));
     }
 
     /// <summary>
@@ -221,7 +221,7 @@ public sealed class EditorRenderingModule : EditorModule
     /// <param name="kind">
     /// Open viewport purpose.
     /// </param>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// Stable panel viewport identity.
     /// </param>
     /// <param name="pixelWidth">
@@ -237,14 +237,14 @@ public sealed class EditorRenderingModule : EditorModule
     /// True when a contributor returned a usable navigation profile and became the controller.
     /// </returns>
     public bool TryConfigureNavigation(
-        EditorViewportKindId kind,
-        string viewportId,
+        EditorViewportKindID kind,
+        string viewportID,
         int pixelWidth,
         int pixelHeight,
         out EditorViewportNavigationProfile profile
     ) {
         profile = EditorViewportNavigationProfile.disabled;
-        if (!TryCreateContext(kind, viewportId, pixelWidth, pixelHeight, out EditorViewportContext? context))
+        if (!TryCreateContext(kind, viewportID, pixelWidth, pixelHeight, out EditorViewportContext? context))
         {
             return false;
         }
@@ -263,8 +263,8 @@ public sealed class EditorRenderingModule : EditorModule
                     continue;
                 }
                 profile = candidate;
-                m_controllerIds[viewportId] = registration.attribute.id;
-                SetCompositionFailures(viewportId, failures);
+                m_controllerIDs[viewportID] = registration.attribute.id;
+                SetCompositionFailures(viewportID, failures);
                 return true;
             }
             catch (Exception exception)
@@ -274,15 +274,15 @@ public sealed class EditorRenderingModule : EditorModule
                 );
             }
         }
-        m_controllerIds.Remove(viewportId);
-        SetCompositionFailures(viewportId, failures);
+        m_controllerIDs.Remove(viewportID);
+        SetCompositionFailures(viewportID, failures);
         return false;
     }
 
     /// <summary>
     /// Sets presentation preferences supplied to every contributor for one Editor viewport.
     /// </summary>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// Stable panel viewport identity.
     /// </param>
     /// <param name="presentation">
@@ -290,17 +290,17 @@ public sealed class EditorRenderingModule : EditorModule
     /// </param>
     [ScriptingApiIgnore]
     public void SetPresentation(
-        string viewportId,
+        string viewportID,
         EditorViewportPresentation presentation
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
-        m_presentations[viewportId] = presentation;
+        ArgumentException.ThrowIfNullOrWhiteSpace(viewportID);
+        m_presentations[viewportID] = presentation;
     }
 
     /// <summary>
     /// Tries to get the manipulation space from the selected controller's latest contribution.
     /// </summary>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// Stable panel viewport identity.
     /// </param>
     /// <param name="space">
@@ -311,11 +311,11 @@ public sealed class EditorRenderingModule : EditorModule
     /// </returns>
     [ScriptingApiIgnore]
     public bool TryGetManipulationSpace(
-        string viewportId,
+        string viewportID,
         out EditorViewportManipulationSpace space
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
-        return m_manipulationSpaces.TryGetValue(viewportId, out space);
+        ArgumentException.ThrowIfNullOrWhiteSpace(viewportID);
+        return m_manipulationSpaces.TryGetValue(viewportID, out space);
     }
 
     /// <summary>
@@ -324,7 +324,7 @@ public sealed class EditorRenderingModule : EditorModule
     /// <param name="kind">
     /// Open viewport purpose.
     /// </param>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// Stable panel viewport identity.
     /// </param>
     /// <param name="pixelWidth">
@@ -334,21 +334,21 @@ public sealed class EditorRenderingModule : EditorModule
     /// Current target height.
     /// </param>
     public void DrawControllerToolbar(
-        EditorViewportKindId kind,
-        string viewportId,
+        EditorViewportKindID kind,
+        string viewportID,
         int pixelWidth,
         int pixelHeight
     ) {
-        if (!TryCreateContext(kind, viewportId, pixelWidth, pixelHeight, out EditorViewportContext? context))
+        if (!TryCreateContext(kind, viewportID, pixelWidth, pixelHeight, out EditorViewportContext? context))
         {
             return;
         }
         var failures = new List<string>();
         EditorViewportContributorRegistry.Registration[] contributors = GetApplicableContributors(context!, failures);
-        EditorViewportContributorRegistry.Registration? registration = SelectController(viewportId, contributors);
+        EditorViewportContributorRegistry.Registration? registration = SelectController(viewportID, contributors);
         if (registration is null)
         {
-            SetCompositionFailures(viewportId, failures);
+            SetCompositionFailures(viewportID, failures);
             return;
         }
         try
@@ -359,7 +359,7 @@ public sealed class EditorRenderingModule : EditorModule
         {
             failures.Add($"Viewport contributor '{registration.attribute.id}' toolbar failed: {exception.Message}");
         }
-        SetCompositionFailures(viewportId, failures);
+        SetCompositionFailures(viewportID, failures);
     }
 
     /// <summary>
@@ -368,7 +368,7 @@ public sealed class EditorRenderingModule : EditorModule
     /// <param name="kind">
     /// Open viewport purpose.
     /// </param>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// Stable panel viewport identity.
     /// </param>
     /// <param name="pixelWidth">
@@ -384,14 +384,14 @@ public sealed class EditorRenderingModule : EditorModule
     /// <see langword="true"/> when at least one model contribution was accepted.
     /// </returns>
     public bool TrySubmit(
-        EditorViewportKindId kind,
-        string viewportId,
+        EditorViewportKindID kind,
+        string viewportID,
         int pixelWidth,
         int pixelHeight,
         out EditorViewportOutput output
     ) {
         output = default;
-        if (!TryCreateContext(kind, viewportId, pixelWidth, pixelHeight, out EditorViewportContext? context))
+        if (!TryCreateContext(kind, viewportID, pixelWidth, pixelHeight, out EditorViewportContext? context))
         {
             return false;
         }
@@ -399,31 +399,31 @@ public sealed class EditorRenderingModule : EditorModule
         EditorViewportContributorRegistry.Registration[] contributors = GetApplicableContributors(context!, failures);
         if (contributors.Length == 0)
         {
-            PublishViewportStatistics(kind, viewportId, pixelWidth, pixelHeight, "Unavailable", contributorIds: "None");
-            m_host.Release(viewportId);
-            m_controllerIds.Remove(viewportId);
-            m_manipulationSpaces.Remove(viewportId);
+            PublishViewportStatistics(kind, viewportID, pixelWidth, pixelHeight, "Unavailable", contributorIDs: "None");
+            m_host.Release(viewportID);
+            m_controllerIDs.Remove(viewportID);
+            m_manipulationSpaces.Remove(viewportID);
             failures.Add("No rendering-model contributor accepts the current viewport content.");
-            SetCompositionFailures(viewportId, failures);
+            SetCompositionFailures(viewportID, failures);
             return false;
         }
 
         RenderOutputRoute? route = null;
         if (contributors.Length > 1)
         {
-            if (!m_outputRoutes.TryGetValue(viewportId, out route)
+            if (!m_outputRoutes.TryGetValue(viewportID, out route)
                 || route.layers.Count != contributors.Length
-                || route.layers.Any(layer => contributors.All(entry => entry.attribute.id != layer.modelId))
+                || route.layers.Any(layer => contributors.All(entry => entry.attribute.id != layer.modelID))
             ) {
                 failures.Add(
                     "Multiple rendering models accept this output; configure a RenderOutputRoute naming every contributor exactly once: "
                     + string.Join(", ", contributors.Select(static entry => entry.attribute.id))
                 );
-                HandleViewportFailure(kind, viewportId, pixelWidth, pixelHeight, contributors, failures);
+                HandleViewportFailure(kind, viewportID, pixelWidth, pixelHeight, contributors, failures);
                 return false;
             }
             contributors = route.layers
-                .Select(layer => contributors.Single(entry => entry.attribute.id == layer.modelId))
+                .Select(layer => contributors.Single(entry => entry.attribute.id == layer.modelID))
                 .ToArray();
         }
         var accepted = new List<AcceptedContribution>(contributors.Length);
@@ -457,12 +457,12 @@ public sealed class EditorRenderingModule : EditorModule
         }
         if (accepted.Count == 0)
         {
-            HandleViewportFailure(kind, viewportId, pixelWidth, pixelHeight, contributors, failures);
+            HandleViewportFailure(kind, viewportID, pixelWidth, pixelHeight, contributors, failures);
             return false;
         }
         if (accepted.Count != contributors.Length)
         {
-            HandleViewportFailure(kind, viewportId, pixelWidth, pixelHeight, contributors, failures);
+            HandleViewportFailure(kind, viewportID, pixelWidth, pixelHeight, contributors, failures);
             return false;
         }
 
@@ -470,7 +470,7 @@ public sealed class EditorRenderingModule : EditorModule
         {
             output = m_host.Submit(
                 new EditorViewportComposition(
-                    viewportId,
+                    viewportID,
                     pixelWidth,
                     pixelHeight,
                     targetFormat!.Value,
@@ -485,34 +485,34 @@ public sealed class EditorRenderingModule : EditorModule
                     ))
                 )
             );
-            EditorViewportContributorRegistry.Registration? controller = SelectController(viewportId, contributors);
+            EditorViewportContributorRegistry.Registration? controller = SelectController(viewportID, contributors);
             EditorViewportContribution? controllerContribution = controller is null
                 ? null
                 : accepted.FirstOrDefault(value => ReferenceEquals(value.registration, controller))?.contribution;
             if (controllerContribution?.manipulationSpace is EditorViewportManipulationSpace manipulationSpace)
             {
-                m_manipulationSpaces[viewportId] = manipulationSpace;
+                m_manipulationSpaces[viewportID] = manipulationSpace;
             }
             else
             {
-                m_manipulationSpaces.Remove(viewportId);
+                m_manipulationSpaces.Remove(viewportID);
             }
             PublishViewportStatistics(
                 kind,
-                viewportId,
+                viewportID,
                 pixelWidth,
                 pixelHeight,
                 output.isReady ? "Ready" : "Preparing",
                 string.Join(", ", accepted.Select(static value => value.registration.attribute.id)),
                 accepted
             );
-            SetCompositionFailures(viewportId, failures);
+            SetCompositionFailures(viewportID, failures);
             return true;
         }
         catch (Exception exception)
         {
             failures.Add($"Viewport composition failed: {exception.Message}");
-            HandleViewportFailure(kind, viewportId, pixelWidth, pixelHeight, contributors, failures);
+            HandleViewportFailure(kind, viewportID, pixelWidth, pixelHeight, contributors, failures);
             return false;
         }
     }
@@ -523,7 +523,7 @@ public sealed class EditorRenderingModule : EditorModule
     /// <param name="kind">
     /// Open viewport purpose.
     /// </param>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// Stable panel viewport identity.
     /// </param>
     /// <param name="pixelWidth">
@@ -542,24 +542,24 @@ public sealed class EditorRenderingModule : EditorModule
     /// Platform-independent pointer button index.
     /// </param>
     public void HandlePointer(
-        EditorViewportKindId kind,
-        string viewportId,
+        EditorViewportKindID kind,
+        string viewportID,
         int pixelWidth,
         int pixelHeight,
         float x,
         float y,
         int button
     ) {
-        if (!TryCreateContext(kind, viewportId, pixelWidth, pixelHeight, out EditorViewportContext? context))
+        if (!TryCreateContext(kind, viewportID, pixelWidth, pixelHeight, out EditorViewportContext? context))
         {
             return;
         }
         var failures = new List<string>();
         EditorViewportContributorRegistry.Registration[] contributors = GetApplicableContributors(context!, failures);
-        EditorViewportContributorRegistry.Registration? registration = SelectController(viewportId, contributors);
+        EditorViewportContributorRegistry.Registration? registration = SelectController(viewportID, contributors);
         if (registration is null)
         {
-            SetCompositionFailures(viewportId, failures);
+            SetCompositionFailures(viewportID, failures);
             return;
         }
         try
@@ -572,7 +572,7 @@ public sealed class EditorRenderingModule : EditorModule
                 $"Viewport contributor '{registration.attribute.id}' pointer handler failed: {exception.Message}"
             );
         }
-        SetCompositionFailures(viewportId, failures);
+        SetCompositionFailures(viewportID, failures);
     }
 
     /// <summary>
@@ -592,21 +592,21 @@ public sealed class EditorRenderingModule : EditorModule
     /// <summary>
     /// Stops retaining one viewport target.
     /// </summary>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// Stable viewport identity.
     /// </param>
-    public void Release(string viewportId)
+    public void Release(string viewportID)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
-        m_outputInputs.Remove(viewportId);
-        m_outputRoutes.Remove(viewportId);
-        m_manipulationSpaces.Remove(viewportId);
-        if (m_contentScopes.Remove(viewportId, out ContentReadScope? content))
+        ArgumentException.ThrowIfNullOrWhiteSpace(viewportID);
+        m_outputInputs.Remove(viewportID);
+        m_outputRoutes.Remove(viewportID);
+        m_manipulationSpaces.Remove(viewportID);
+        if (m_contentScopes.Remove(viewportID, out ContentReadScope? content))
         {
             content.Dispose();
         }
-        m_controllerIds.Remove(viewportId);
-        m_host.Release(viewportId);
+        m_controllerIDs.Remove(viewportID);
+        m_host.Release(viewportID);
     }
 
     /// <summary>
@@ -634,7 +634,7 @@ public sealed class EditorRenderingModule : EditorModule
         {
             return;
         }
-        var groupID = new EditorStatisticGroupId("inno.rendering.frame");
+        var groupID = new EditorStatisticGroupID("inno.rendering.frame");
         context.statistics.Publish(new EditorStatistic[]
         {
             CreateStatistic("frame", "Frame", statistics.frameIndex.ToString(), 0),
@@ -673,7 +673,7 @@ public sealed class EditorRenderingModule : EditorModule
             string value,
             int order
         ) => new(
-            new EditorStatisticId($"inno.rendering.frame.{id}"),
+            new EditorStatisticID($"inno.rendering.frame.{id}"),
             groupID,
             "Rendering",
             label,
@@ -697,7 +697,7 @@ public sealed class EditorRenderingModule : EditorModule
         m_navigationStates.Clear();
         ClearContentScopes();
         m_compositionErrors.Clear();
-        m_controllerIds.Clear();
+        m_controllerIDs.Clear();
         m_manipulationSpaces.Clear();
         m_presentations.Clear();
         m_outputInputs.Clear();
@@ -714,7 +714,7 @@ public sealed class EditorRenderingModule : EditorModule
         m_navigationStates.Clear();
         ClearContentScopes();
         m_compositionErrors.Clear();
-        m_controllerIds.Clear();
+        m_controllerIDs.Clear();
         m_manipulationSpaces.Clear();
         m_presentations.Clear();
         m_outputInputs.Clear();
@@ -732,7 +732,7 @@ public sealed class EditorRenderingModule : EditorModule
     }
 
     private bool TryCreateContext(
-        EditorViewportKindId kind,
+        EditorViewportKindID kind,
         string viewportID,
         int pixelWidth,
         int pixelHeight,
@@ -764,12 +764,12 @@ public sealed class EditorRenderingModule : EditorModule
     }
 
     private void PublishViewportStatistics(
-        EditorViewportKindId kind,
+        EditorViewportKindID kind,
         string viewportID,
         int pixelWidth,
         int pixelHeight,
         string state,
-        string contributorIds,
+        string contributorIDs,
         IReadOnlyList<AcceptedContribution>? contributions = null
     ) {
         if (m_context is null)
@@ -777,12 +777,12 @@ public sealed class EditorRenderingModule : EditorModule
             return;
         }
         string groupKey = $"inno.rendering.viewport.{viewportID}";
-        var groupID = new EditorStatisticGroupId(groupKey);
+        var groupID = new EditorStatisticGroupID(groupKey);
         string groupName = GetDisplayName(viewportID);
         var statistics = new List<EditorStatistic>
         {
             CreateStatistic("kind", "Kind", kind.value, 0),
-            CreateStatistic("contributors", "Contributors", contributorIds, 10),
+            CreateStatistic("contributors", "Contributors", contributorIDs, 10),
             CreateStatistic("state", "State", state, 20),
             CreateStatistic("resolution", "Resolution", $"{pixelWidth} x {pixelHeight}", 30)
         };
@@ -822,7 +822,7 @@ public sealed class EditorRenderingModule : EditorModule
             string value,
             int order
         ) => new(
-            new EditorStatisticId($"{groupKey}.{id}"),
+            new EditorStatisticID($"{groupKey}.{id}"),
             groupID,
             groupName,
             label,
@@ -868,7 +868,7 @@ public sealed class EditorRenderingModule : EditorModule
         string viewportID,
         IReadOnlyList<EditorViewportContributorRegistry.Registration> contributors
     ) {
-        if (m_controllerIds.TryGetValue(viewportID, out string? controllerID))
+        if (m_controllerIDs.TryGetValue(viewportID, out string? controllerID))
         {
             EditorViewportContributorRegistry.Registration? selected = contributors.FirstOrDefault(
                 contributor => string.Equals(contributor.attribute.id, controllerID, StringComparison.Ordinal)
@@ -886,7 +886,7 @@ public sealed class EditorRenderingModule : EditorModule
     }
 
     private void HandleViewportFailure(
-        EditorViewportKindId kind,
+        EditorViewportKindID kind,
         string viewportID,
         int pixelWidth,
         int pixelHeight,
@@ -902,7 +902,7 @@ public sealed class EditorRenderingModule : EditorModule
             string.Join(", ", contributors.Select(static contributor => contributor.attribute.id))
         );
         m_host.Release(viewportID);
-        m_controllerIds.Remove(viewportID);
+        m_controllerIDs.Remove(viewportID);
         m_manipulationSpaces.Remove(viewportID);
         SetCompositionFailures(viewportID, failures);
     }

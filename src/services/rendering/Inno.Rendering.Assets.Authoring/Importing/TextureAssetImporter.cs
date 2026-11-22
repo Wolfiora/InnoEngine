@@ -13,7 +13,7 @@ using Inno.Rendering.Assets;
 namespace Inno.Rendering.Assets.Authoring;
 
 [AssetImporter("inno.rendering.texture")]
-[StableTypeId("30731d81-b1e7-54f9-8637-9410a8724647")]
+[StableTypeID("30731d81-b1e7-54f9-8637-9410a8724647")]
 internal sealed partial class TextureAssetImporter : AssetImporter<TextureAsset>
 {
     /// <summary>

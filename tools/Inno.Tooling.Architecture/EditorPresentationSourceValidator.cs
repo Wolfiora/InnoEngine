@@ -49,9 +49,9 @@ internal static class EditorPresentationSourceValidator
                 continue;
             }
             ExpressionStatementSyntax[] statements = block.Statements.OfType<ExpressionStatementSyntax>().ToArray();
-            foreach (ExpressionStatementSyntax push in statements.Where(statement => IsFacadeCall(statement, "PushId", facadeAliases)))
+            foreach (ExpressionStatementSyntax push in statements.Where(statement => IsFacadeCall(statement, "PushID", facadeAliases)))
             {
-                if (statements.Any(statement => statement.SpanStart > push.SpanStart && IsFacadeCall(statement, "PopId", facadeAliases)))
+                if (statements.Any(statement => statement.SpanStart > push.SpanStart && IsFacadeCall(statement, "PopID", facadeAliases)))
                 {
                     Report(relativePath, tree, push, "presentation loop ID scopes require local try/finally cleanup", failures);
                 }

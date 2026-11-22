@@ -14,7 +14,7 @@ namespace Inno.Build.SupportPacks;
 /// </summary>
 public sealed class PlayerSupportPackPublisher
 {
-    private readonly IReadOnlyDictionary<BuildTargetId, IPlayerSupportPackSource> m_sources;
+    private readonly IReadOnlyDictionary<BuildTargetID, IPlayerSupportPackSource> m_sources;
 
     /// <summary>
     /// Freezes the platform sources used by this publisher.
@@ -28,7 +28,7 @@ public sealed class PlayerSupportPackPublisher
     public PlayerSupportPackPublisher(IEnumerable<IPlayerSupportPackSource> sources)
     {
         ArgumentNullException.ThrowIfNull(sources);
-        var registered = new Dictionary<BuildTargetId, IPlayerSupportPackSource>();
+        var registered = new Dictionary<BuildTargetID, IPlayerSupportPackSource>();
         foreach (IPlayerSupportPackSource source in sources)
         {
             if (source is null || string.IsNullOrWhiteSpace(source.target.value)
@@ -86,7 +86,7 @@ public sealed class PlayerSupportPackPublisher
     public async ValueTask<PlayerSupportPackPublication> PublishAsync(
         string engineRoot,
         string outputRoot,
-        BuildTargetId target,
+        BuildTargetID target,
         string dotnetHost,
         CancellationToken cancellationToken = default,
         string? nativeDependencies = null

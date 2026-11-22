@@ -23,7 +23,7 @@ internal sealed class IdentityRegistry
 
     private readonly Dictionary<Guid, int> m_slotByPersistent = [];
 
-    internal IdentityRegistry(IdentityDomainId domainID)
+    internal IdentityRegistry(IdentityDomainID domainID)
     {
         this.domainID = domainID;
     }
@@ -69,7 +69,7 @@ internal sealed class IdentityRegistry
         try
         {
             Identity identity = obj.identity;
-            Guid resolvedPersistentID = persistentID.GetValueOrDefault(identity.persistentId);
+            Guid resolvedPersistentID = persistentID.GetValueOrDefault(identity.persistentID);
             if (resolvedPersistentID == Guid.Empty)
             {
                 resolvedPersistentID = Guid.NewGuid();
@@ -306,14 +306,14 @@ internal sealed class IdentityRegistry
         return result;
     }
 
-    internal IdentityDomainId domainID { get; }
+    internal IdentityDomainID domainID { get; }
 
     internal bool TryGetRuntimeID(
         in Identity identity,
         out int runtimeID
     ) {
         runtimeID = 0;
-        if (identity.persistentId == Guid.Empty || identity.rawRuntimeID == 0)
+        if (identity.persistentID == Guid.Empty || identity.rawRuntimeID == 0)
         {
             return false;
         }
@@ -331,7 +331,7 @@ internal sealed class IdentityRegistry
                 return false;
             }
 
-            if (entry!.persistentID != identity.persistentId)
+            if (entry!.persistentID != identity.persistentID)
             {
                 return false;
             }

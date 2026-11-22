@@ -68,7 +68,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         ScriptCompilationResult result = runtimeDeployment ? m_fixture.CompileRuntimeDeployment() : m_fixture.Compile();
         Assert.True(result.success, FormatDiagnostics(result));
         AssetPath path = InvokePublicPathProbe(Path.Combine(result.outputDirectory!, "Inno.GameScripts.dll"));
-        Assert.Equal(AssetSourceId.project, path.source);
+        Assert.Equal(AssetSourceID.project, path.source);
         Assert.Equal("Materials/Default.imaterial", path.localPath);
     }
 
@@ -110,7 +110,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             result.runtimeAssemblyPaths.Where(static path => Path.GetFileName(path).StartsWith("Inno.Plugin.", StringComparison.Ordinal))
         );
         AssetPath path = InvokePublicPathProbe(assemblyPath);
-        Assert.Equal(new AssetSourceId("tests.local-path"), path.source);
+        Assert.Equal(new AssetSourceID("tests.local-path"), path.source);
         Assert.Equal("Materials/Default.imaterial", path.localPath);
     }
 
@@ -247,11 +247,11 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             public sealed class NullablePreviewProbe
             {
                 public bool Resolve(ShaderPreviewContext preview, IRenderResourceService resources)
-                    => resources.TryResolveMaterialArtifact(preview.resourceId, preview.artifact, preview.material,
-                        new ShaderContractId("test.surface"), new ShaderPassRoleId("test.color"),
+                    => resources.TryResolveMaterialArtifact(preview.resourceID, preview.artifact, preview.material,
+                        new ShaderContractID("test.surface"), new ShaderPassRoleID("test.color"),
                         ShaderProgramKind.Raster, null, null, preview.diagnostics, out _);
                 public void TypedCallback(RenderGraphBuilder graph)
-                    => graph.AddRasterPass("typed", new RenderPhaseId("test"), "payload",
+                    => graph.AddRasterPass("typed", new RenderPhaseID("test"), "payload",
                         static (value, context) => Consume(value));
                 private static void Consume(string value) { _ = value.Length; }
             }
@@ -294,13 +294,13 @@ public sealed partial class ScriptingPipelineTests : IDisposable
                     return new("tests.preview", null, frame, 0);
                 }
                 public static bool Resolve(IRenderResourceService resources, ShaderPreviewContext context)
-                    => resources.TryResolveMaterialArtifact(context.resourceId, context.artifact, context.material,
+                    => resources.TryResolveMaterialArtifact(context.resourceID, context.artifact, context.material,
                         new("tests.preview"), new("draw"), ShaderProgramKind.Raster, null, null, context.diagnostics, out _);
             }
 
             public sealed class ShaderNodeProbe : IShaderNodeCompiler
             {
-                public string definitionId => "tests.shader-node-probe";
+                public string definitionID => "tests.shader-node-probe";
                 public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext context)
                     => [new("value", ShaderSourceType.Atomic("float"), GraphPortDirection.Output)];
                 public IReadOnlyDictionary<string, ShaderIrValue> Lower(ShaderNodeLoweringContext context)
@@ -760,8 +760,8 @@ public sealed partial class ScriptingPipelineTests : IDisposable
     public void InstalledPluginSampleImportsAsAnImmediatelyCompilableWritableCopy()
     {
         using var fixture = new ScriptingFixture(WriteSamplePlugin);
-        var source = new AssetPath(new AssetSourceId("tests.samples"), "~Starter");
-        var sourceFile = new AssetPath(new AssetSourceId("tests.samples"), "~Starter/StarterBehavior.cs");
+        var source = new AssetPath(new AssetSourceID("tests.samples"), "~Starter");
+        var sourceFile = new AssetPath(new AssetSourceID("tests.samples"), "~Starter/StarterBehavior.cs");
         Assert.True(fixture.assets.TryGetFileSystemEntry(source, out AssetFileEntry sample));
         Assert.True(sample.isReadOnly);
         Assert.True(sample.isSample);
@@ -770,7 +770,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         Assert.True(sampleContent.isReadOnly);
         Assert.True(sampleContent.isSampleContent);
         Assert.True(fixture.assets.TryGetInfo(sourceFile, out AssetInfo? templateInfo));
-        Guid sourcePersistentID = Assert.IsType<AssetInfo>(templateInfo).persistentId;
+        Guid sourcePersistentID = Assert.IsType<AssetInfo>(templateInfo).persistentID;
         ScriptCompilationResult authoring = fixture.Compile();
         Assert.True(authoring.success, FormatDiagnostics(authoring));
         Assert.Contains(authoring.compiledAssemblyNames, name => name.EndsWith(".Samples", StringComparison.Ordinal));
@@ -804,7 +804,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             StringComparison.OrdinalIgnoreCase
         );
         Assert.True(fixture.assets.TryGetInfo(AssetPath.Project("~Starter/StarterBehavior.cs"), out AssetInfo? importedInfo));
-        Assert.NotEqual(sourcePersistentID, Assert.IsType<AssetInfo>(importedInfo).persistentId);
+        Assert.NotEqual(sourcePersistentID, Assert.IsType<AssetInfo>(importedInfo).persistentID);
         Assert.True(fixture.assets.TryGetFileSystemEntry(imported, out AssetFileEntry importedDirectory));
         Assert.False(importedDirectory.isReadOnly);
         Assert.False(importedDirectory.isSample);
@@ -823,7 +823,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             root,
             serialization
         ) => WriteSamplePlugin(root, serialization, "public sealed class BrokenSample { this is invalid; }"));
-        var source = new AssetPath(new AssetSourceId("tests.samples"), "~Starter");
+        var source = new AssetPath(new AssetSourceID("tests.samples"), "~Starter");
         using AssetSampleImportTransaction import = PrepareSample(fixture, source);
         import.BeginValidation(async (
             sources,
@@ -849,13 +849,13 @@ public sealed partial class ScriptingPipelineTests : IDisposable
     [Fact]
     public void SampleImportPreservesEveryLeadingTildeAndRejectsDestinationCollisions()
     {
-        var source = new AssetPath(new AssetSourceId("tests.samples"), "Samples/~~~Starter");
+        var source = new AssetPath(new AssetSourceID("tests.samples"), "Samples/~~~Starter");
         Assert.Equal("~~~Starter", AssetSample.GetImportName(source));
         Assert.True(AssetSample.IsRuntimeExcluded(AssetPath.Project("~~~Starter/File.cs"), false));
         Assert.False(AssetSample.Contains(AssetPath.Project("~~~Starter/File.cs"), false));
         using var fixture = new ScriptingFixture(WriteSamplePlugin);
         fixture.assets.CreateDirectory(AssetPath.Project("~Starter"));
-        Assert.Throws<IOException>(() => fixture.assets.PrepareSampleImport(new AssetPath(new AssetSourceId("tests.samples"), "~Starter")));
+        Assert.Throws<IOException>(() => fixture.assets.PrepareSampleImport(new AssetPath(new AssetSourceID("tests.samples"), "~Starter")));
         fixture.host.modules.generations.EnsureReady("retry after rejected import");
     }
 
@@ -864,8 +864,8 @@ public sealed partial class ScriptingPipelineTests : IDisposable
     {
         using var fixture = new ScriptingFixture(WriteSamplePlugin);
         int notifications = 0;
-        fixture.assets.Changed += _ => notifications++;
-        using AssetSampleImportTransaction import = PrepareSample(fixture, new AssetPath(new AssetSourceId("tests.samples"), "~Starter"));
+        fixture.assets.changed += _ => notifications++;
+        using AssetSampleImportTransaction import = PrepareSample(fixture, new AssetPath(new AssetSourceID("tests.samples"), "~Starter"));
         long revision = fixture.assets.revision;
         Assert.False(fixture.assets.TryGetFileSystemEntry(import.target, out _));
         var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -898,8 +898,8 @@ public sealed partial class ScriptingPipelineTests : IDisposable
     {
         using var fixture = new ScriptingFixture(WriteSamplePlugin);
         int notifications = 0;
-        fixture.assets.Changed += _ => notifications++;
-        using AssetSampleImportTransaction import = PrepareSample(fixture, new AssetPath(new AssetSourceId("tests.samples"), "~Starter"));
+        fixture.assets.changed += _ => notifications++;
+        using AssetSampleImportTransaction import = PrepareSample(fixture, new AssetPath(new AssetSourceID("tests.samples"), "~Starter"));
         var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         import.BeginValidation((
             _,
@@ -924,8 +924,8 @@ public sealed partial class ScriptingPipelineTests : IDisposable
     {
         using var fixture = new ScriptingFixture(WriteSamplePlugin);
         int notifications = 0;
-        fixture.assets.Changed += _ => notifications++;
-        using AssetSampleImportTransaction import = PrepareSample(fixture, new AssetPath(new AssetSourceId("tests.samples"), "~Starter"));
+        fixture.assets.changed += _ => notifications++;
+        using AssetSampleImportTransaction import = PrepareSample(fixture, new AssetPath(new AssetSourceID("tests.samples"), "~Starter"));
         import.BeginValidation((
             _,
             _
@@ -943,7 +943,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
     {
         using var fixture = new ScriptingFixture(WriteSamplePlugin);
         using AssetSampleImportTransaction import = fixture.assets.PrepareSampleImport(
-            new AssetPath(new AssetSourceId("tests.samples"), "~Starter")
+            new AssetPath(new AssetSourceID("tests.samples"), "~Starter")
         );
         import.Cancel();
         Assert.True(
@@ -973,7 +973,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         using ScriptReloadHost reload = fixture.CreateReloadHost(autoCompile: true);
         reload.Start();
         using AssetSampleImportTransaction import = fixture.assets.PrepareSampleImport(
-            new AssetPath(new AssetSourceId("tests.samples"), "~Starter")
+            new AssetPath(new AssetSourceID("tests.samples"), "~Starter")
         );
         Assert.False(reload.TryCompilePending(out Task<ScriptCompilationResult>? pending));
         Assert.Null(pending);
@@ -1008,7 +1008,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         IEditorScriptCompilation scripting = Assert.IsAssignableFrom<IEditorScriptCompilation>(ScriptingCompilationProbe.compilation);
         WaitForInitialScriptCompilation(fixture, runtime, scripting);
         Assert.True(
-            fixture.assets.TryGetFileSystemEntry(new AssetPath(new AssetSourceId("tests.samples"), "~Starter"), out AssetFileEntry sample)
+            fixture.assets.TryGetFileSystemEntry(new AssetPath(new AssetSourceID("tests.samples"), "~Starter"), out AssetFileEntry sample)
         );
         Assert.True(runtime.interactions.For("panel/asset.file-browser", sample).Execute("file-browser/import-sample"));
         EditorModalExtension modal = runtime.modals.Single(value => value.id == "asset-sample-import.progress");
@@ -1046,7 +1046,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         {
             Assert.True(
                 fixture.assets.TryGetFileSystemEntry(
-                    new AssetPath(new AssetSourceId("tests.samples"), "~Starter"),
+                    new AssetPath(new AssetSourceID("tests.samples"), "~Starter"),
                     out AssetFileEntry sample
                 )
             );
@@ -1128,7 +1128,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
                 )
             );
         });
-        using AssetSampleImportTransaction import = PrepareSample(fixture, new AssetPath(new AssetSourceId("tests.samples"), "~Starter"));
+        using AssetSampleImportTransaction import = PrepareSample(fixture, new AssetPath(new AssetSourceID("tests.samples"), "~Starter"));
         import.BeginValidation((
             sources,
             _
@@ -1141,7 +1141,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             SampleIdentitySettings settings = fixture.host.serialization.Deserialize<SampleIdentitySettings>(
                 metadata.importerSettingsBytes
             );
-            Assert.Equal(info!.persistentId, settings.referenceId);
+            Assert.Equal(info!.persistentID, settings.referenceId);
             Assert.NotEqual(sourceID, settings.referenceId);
             return ValueTask.CompletedTask;
         });
@@ -1176,7 +1176,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         using var control = new ControlledSampleAssetImporter.Control();
         ControlledSampleAssetImporter.current = control;
         AssetSampleImportTransaction import = fixture.assets.PrepareSampleImport(
-            new AssetPath(new AssetSourceId("tests.samples"), "~Starter")
+            new AssetPath(new AssetSourceID("tests.samples"), "~Starter")
         );
         try
         {
@@ -1215,7 +1215,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
     public void SampleCompilerReferencePreparationRunsOnWorker()
     {
         using var fixture = new ScriptingFixture(WriteSamplePlugin);
-        using AssetSampleImportTransaction import = PrepareSample(fixture, new AssetPath(new AssetSourceId("tests.samples"), "~Starter"));
+        using AssetSampleImportTransaction import = PrepareSample(fixture, new AssetPath(new AssetSourceID("tests.samples"), "~Starter"));
         using var progress = new CompilationGate();
         try
         {
@@ -1267,7 +1267,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             fileWatcherFlushDelayMs: 3000
         );
         AssetSampleImportTransaction import = fixture.assets.PrepareSampleImport(
-            new AssetPath(new AssetSourceId("tests.samples"), "~Starter")
+            new AssetPath(new AssetSourceID("tests.samples"), "~Starter")
         );
         try
         {
@@ -1348,10 +1348,10 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         Assert.True(result.success, FormatDiagnostics(result));
         Assert.True(m_fixture.assets.TryGetInfo(AssetPath.Project("Scripts/Tracked.cs"), out AssetInfo? info));
         Assert.NotNull(info);
-        Assert.Equal("inno.editor.csharp-script", info.importerId);
-        Assert.True(m_fixture.assets.TryGetArtifact(info.persistentId, "source", out AssetArtifactInfo? source));
+        Assert.Equal("inno.editor.csharp-script", info.importerID);
+        Assert.True(m_fixture.assets.TryGetArtifact(info.persistentID, "source", out AssetArtifactInfo? source));
         Assert.NotNull(source);
-        using (ArtifactLease encoded = m_fixture.assets.AcquireArtifact(info.persistentId, "source"))
+        using (ArtifactLease encoded = m_fixture.assets.AcquireArtifact(info.persistentID, "source"))
         {
             Assert.NotEmpty(encoded.ReadAllBytes());
         }
@@ -1489,7 +1489,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             using InnoEngine.Serialization;
             using UnavailabilityPlugin;
 
-            [StableTypeId("69e8df54-51f2-40fd-9b47-c4ebdf18052e")]
+            [StableTypeID("69e8df54-51f2-40fd-9b47-c4ebdf18052e")]
             public sealed class DependentBehavior : GameBehavior
             {
                 [SerializableProperty]
@@ -1544,8 +1544,8 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             MissingGameComponent missingScript = Assert.IsType<MissingGameComponent>(
                 state.scriptOwner.GetComponents().Single(component => component is not Transform)
             );
-            Assert.Equal(state.pluginComponentID, missingPlugin.identity.persistentId);
-            Assert.Equal(state.scriptComponentID, missingScript.identity.persistentId);
+            Assert.Equal(state.pluginComponentID, missingPlugin.identity.persistentID);
+            Assert.Equal(state.scriptComponentID, missingScript.identity.persistentID);
             Assert.Equal("UnavailabilityPlugin.PluginBehavior", missingPlugin.missingTypeName);
             Assert.Equal("DependentBehavior", missingScript.missingTypeName);
             CompleteUnloadVerification(reload);
@@ -1581,7 +1581,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             new FileByteDocumentStore(Path.GetFullPath(Path.Combine(fixture.projectRoot, "DetachedSettings.inno"))),
             fixture.host.types,
             fixture.host.serialization,
-            new ProjectId("tests.detached.settings"),
+            new ProjectID("tests.detached.settings"),
             AssetSerializationContext.Create(fixture.assets)
         );
         WeakReference previousType = CaptureCachedSettingType(detachedSettings);
@@ -1597,7 +1597,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
                 using InnoEngine.Reflection;
                 using InnoEngine.Serialization;
                 using InnoEngine.Settings;
-                [StableTypeId("109af64a-a07e-4f84-8b86-7b06a0bce526")]
+                [StableTypeID("109af64a-a07e-4f84-8b86-7b06a0bce526")]
                 [ProjectSettingDefinition("tests.detached.setting")]
                 public sealed class DetachedSetting : ISerializable
                 {
@@ -1645,7 +1645,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         MissingGameComponent missing = Assert.IsType<MissingGameComponent>(
             expectation.owner.GetComponents().Single(component => component is not Transform)
         );
-        Assert.Equal(expectation.componentID, missing.identity.persistentId);
+        Assert.Equal(expectation.componentID, missing.identity.persistentID);
         Assert.Equal("UnavailabilityPlugin.PluginBehavior", missing.missingTypeName);
     }
 
@@ -1667,7 +1667,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             new RuntimeSessionOptions
             {
                 kind = RuntimeSessionKind.Play,
-                applicationId = "tests.scripting.play-reload",
+                applicationID = "tests.scripting.play-reload",
                 createLogSink = _ => new FileLogSink(
                     Path.Combine(Path.Combine(fixture.projectRoot, "Persistent", "tests.scripting.play-reload"), "Logs")
                 ),
@@ -1731,7 +1731,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             using InnoEngine.Assets;
             using InnoEngine.Reflection;
 
-            [StableTypeId("527df6c8-1373-48c9-9230-805a85590544")]
+            [StableTypeID("527df6c8-1373-48c9-9230-805a85590544")]
             public sealed class ShutdownAsset : AssetObject
             {
             }
@@ -1763,7 +1763,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         Assert.Empty(fixture.host.modules.modules);
         Assert.True(fixture.assets.TryGetInfo(persistentID, out AssetInfo? preserved));
         Assert.Equal(AssetImportStatus.Imported, preserved!.status);
-        Assert.Equal(stableTypeID, preserved.stableAssetTypeId);
+        Assert.Equal(stableTypeID, preserved.stableAssetTypeID);
         AssetObject missing = ((IAssetReferenceResolver)fixture.assets).Resolve(
             persistentID,
             stableTypeID,
@@ -1772,7 +1772,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             "$test"
         );
         Assert.True(missing.isMissing);
-        Assert.Equal(persistentID, missing.identity.persistentId);
+        Assert.Equal(persistentID, missing.identity.persistentID);
     }
 
     [Fact]
@@ -1793,7 +1793,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             new RuntimeSessionOptions
             {
                 kind = RuntimeSessionKind.Play,
-                applicationId = "tests.content-soak",
+                applicationID = "tests.content-soak",
                 createLogSink = _ => new FileLogSink(
                     Path.Combine(Path.Combine(fixture.projectRoot, "Persistent", "tests.content-soak"), "Logs")
                 ),
@@ -1972,7 +1972,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         IScriptCompilationTicket second = scripting.RequestCompilation();
         Assert.Equal(ScriptCompilationTicketState.Superseded, first.state);
         Assert.True(first.isCompleted);
-        Assert.True(second.requestId > first.requestId);
+        Assert.True(second.requestID > first.requestID);
         Assert.Same(second, scripting.currentTicket);
         Assert.Equal(ScriptCompilationTicketState.Queued, second.state);
     }
@@ -2027,8 +2027,8 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         GameComponent recoveredScript = state.scriptOwner.GetComponents().Single(component => component is not Transform);
         Assert.IsNotType<MissingGameComponent>(recoveredPlugin);
         Assert.IsNotType<MissingGameComponent>(recoveredScript);
-        Assert.Equal(state.pluginComponentID, recoveredPlugin.identity.persistentId);
-        Assert.Equal(state.scriptComponentID, recoveredScript.identity.persistentId);
+        Assert.Equal(state.pluginComponentID, recoveredPlugin.identity.persistentID);
+        Assert.Equal(state.scriptComponentID, recoveredScript.identity.persistentID);
         Assert.Equal(47, recoveredPlugin.GetType().GetProperty("retained")!.GetValue(recoveredPlugin));
         Assert.Equal(73, recoveredScript.GetType().GetProperty("retained")!.GetValue(recoveredScript));
     }
@@ -2036,13 +2036,13 @@ public sealed partial class ScriptingPipelineTests : IDisposable
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static WeakReference CaptureCachedSettingType(ProjectSettingsStore settings)
     {
-        Assert.True(settings.TryClone(new ProjectSettingId("tests.detached.setting"), out ISerializable? value));
+        Assert.True(settings.TryClone(new ProjectSettingID("tests.detached.setting"), out ISerializable? value));
         Assert.NotNull(value);
         return new WeakReference(value.GetType());
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static (Guid persistentId, Guid stableTypeId) LoadScriptAssetAndUnloadScripts(ScriptingFixture fixture)
+    private static (Guid persistentID, Guid stableTypeID) LoadScriptAssetAndUnloadScripts(ScriptingFixture fixture)
     {
         using ScriptReloadHost reload = fixture.CreateReloadHost(new EditorReloadCoordinator());
         reload.Start();
@@ -2051,10 +2051,10 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         Assert.True(reload.ApplyPendingReload());
         Type assetType = fixture.ResolveActiveType("ShutdownAsset");
         AssetObject loaded = fixture.assets.Load(AssetPath.Project("Content/value.shutdownasset"), assetType);
-        Assert.True(fixture.assets.TryGetInfo(loaded.identity.persistentId, out AssetInfo? imported));
+        Assert.True(fixture.assets.TryGetInfo(loaded.identity.persistentID, out AssetInfo? imported));
         Assert.Equal(AssetImportStatus.Imported, imported!.status);
-        Guid persistentID = loaded.identity.persistentId;
-        Guid stableTypeID = imported.stableAssetTypeId;
+        Guid persistentID = loaded.identity.persistentID;
+        Guid stableTypeID = imported.stableAssetTypeID;
         reload.Dispose();
         return (persistentID, stableTypeID);
     }
@@ -2167,8 +2167,8 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         return new AvailabilitySceneState(
             pluginOwner,
             scriptOwner,
-            pluginComponent.identity.persistentId,
-            scriptComponent.identity.persistentId
+            pluginComponent.identity.persistentID,
+            scriptComponent.identity.persistentID
         );
     }
 
@@ -2192,7 +2192,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         GameObject owner = scene.CreateObject("Plugin Owner");
         Type pluginType = fixture.ResolveActiveType("PluginBehavior");
         GameComponent component = owner.AddComponent(pluginType);
-        Guid componentID = component.identity.persistentId;
+        Guid componentID = component.identity.persistentID;
         string installedPlugin = Path.Combine(fixture.projectRoot, "Plugins", "unavailability.iplugin");
         string detachedPlugin = Path.Combine(fixture.projectRoot, "UnavailabilityPlugin.detached");
         File.Move(installedPlugin, detachedPlugin);
@@ -2258,7 +2258,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
 
             namespace UnavailabilityPlugin;
 
-            [StableTypeId("a7b5f773-184f-4bd1-bf93-e4b1088d9d68")]
+            [StableTypeID("a7b5f773-184f-4bd1-bf93-e4b1088d9d68")]
             public sealed class PluginBehavior : GameBehavior
             {
                 [SerializableProperty]
@@ -2290,7 +2290,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         SerializationRegistry serialization
     ) {
         const string C_SOURCE = "using InnoEngine.Reflection; using InnoEngine.Scene; "
-                                + "[StableTypeId(\"ce3b52c6-2a07-42ea-b632-a307a0ef7407\")] "
+                                + "[StableTypeID(\"ce3b52c6-2a07-42ea-b632-a307a0ef7407\")] "
                                 + "public sealed class StarterBehavior : GameBehavior { }";
         WriteSamplePlugin(projectRoot, serialization, C_SOURCE);
     }
@@ -2547,13 +2547,13 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         public EditorScriptCompilationState state => EditorScriptCompilationState.Ready;
         public ScriptCompilationResult? lastCompilation => null;
 
-        public void CancelCompilation(long operationId) {}
+        public void CancelCompilation(long operationID) {}
 
         public IScriptCompilationTicket RequestCompilation() => m_ticket;
 
         private sealed class ReadyCompilationTicket : IScriptCompilationTicket
         {
-            public long requestId => 1;
+            public long requestID => 1;
             public ScriptCompilationTicketState state => ScriptCompilationTicketState.Succeeded;
             public string status => "The test compilation ticket succeeded.";
             public ScriptCompilationResult? result => null;
@@ -2634,7 +2634,7 @@ internal sealed class ScriptingFixture : IDisposable
             new FileByteDocumentStore(Path.GetFullPath(Path.Combine(projectRoot, "Settings.Project.inno"))),
             host.types,
             host.serialization,
-            new ProjectId("tests.scripting"),
+            new ProjectID("tests.scripting"),
             AssetSerializationContext.Create(assets)
         );
         m_plugins = new PluginEnvironment(assets, m_settings, host.serialization, pluginRoot, libraryRoot, scan, host.modules.generations);
@@ -2827,7 +2827,7 @@ internal sealed class ScriptingFixture : IDisposable
             new RuntimeSessionOptions
             {
                 kind = RuntimeSessionKind.Edit,
-                applicationId = "tests.editor",
+                applicationID = "tests.editor",
                 createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(projectRoot, "Persistent", "tests.editor"), "Logs")),
                 referenceResolvers = [assets]
             }

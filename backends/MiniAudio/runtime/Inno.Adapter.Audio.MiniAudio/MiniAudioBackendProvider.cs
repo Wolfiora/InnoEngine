@@ -12,7 +12,7 @@ public sealed class MiniAudioBackendProvider : AudioBackendProvider
     /// Creates an explicitly composed registration for the bundled implementation.
     /// </summary>
     public MiniAudioBackendProvider()
-        : base(AudioBackendId.miniAudio) {}
+        : base(AudioBackendID.miniAudio) {}
 
     /// <inheritdoc/>
     public override IAudioDevice CreateDevice(AudioBackendOptions options)

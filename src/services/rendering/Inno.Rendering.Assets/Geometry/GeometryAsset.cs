@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Represents imported geometry without prescribing scene or draw semantics.
 /// </summary>
-[StableTypeId("f214637e-0a54-438d-8a72-9d892bd29a56")]
+[StableTypeID("f214637e-0a54-438d-8a72-9d892bd29a56")]
 public sealed class GeometryAsset : AssetObject
 {
     internal GeometryAsset() {}

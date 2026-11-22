@@ -99,10 +99,10 @@ public interface IEditorPreviewService
     /// <summary>
     /// Releases an offscreen preview, including one which has not produced its first handle.
     /// </summary>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// The same consumer-qualified identity submitted in the composition.
     /// </param>
-    void ReleaseRendered(string viewportId);
+    void ReleaseRendered(string viewportID);
 
     /// <summary>
     /// Tries to resolve a standalone texture preview without blocking target compilation.

@@ -117,7 +117,7 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
                 message = $"Long-running compilation ({m_manager.compilationElapsed.TotalSeconds:F1}s). {message}";
             }
             return new(
-                current?.operationId ?? 0,
+                current?.operationID ?? 0,
                 current?.fraction ?? 0f,
                 message,
                 current?.cancellationRequested ?? false,
@@ -167,15 +167,15 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
         return ticket;
     }
 
-    /// <param name="operationId">
+    /// <param name="operationID">
     /// The observed request identity; stale actions are ignored.
     /// </param>
     /// <inheritdoc/>
-    public void CancelCompilation(long operationId)
+    public void CancelCompilation(long operationID)
     {
-        if (m_manager?.progress.operationId == operationId)
+        if (m_manager?.progress.operationID == operationID)
         {
-            m_manager.CancelCompilation(operationId);
+            m_manager.CancelCompilation(operationID);
         }
     }
 

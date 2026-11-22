@@ -12,7 +12,7 @@ public sealed class EventInputBackendProvider : InputBackendProvider
     /// Creates an explicitly composed registration for the bundled implementation.
     /// </summary>
     public EventInputBackendProvider()
-        : base(InputBackendId.events) {}
+        : base(InputBackendID.events) {}
 
     /// <inheritdoc/>
     public override IInputEventSource CreateEventSource(
@@ -20,6 +20,6 @@ public sealed class EventInputBackendProvider : InputBackendProvider
         bool acceptAllWindows
     ) {
         ArgumentNullException.ThrowIfNull(window);
-        return new EventInputSource(acceptAllWindows ? 0 : window.windowId);
+        return new EventInputSource(acceptAllWindows ? 0 : window.windowID);
     }
 }

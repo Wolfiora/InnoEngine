@@ -23,7 +23,7 @@ public sealed class ArchitectureVerificationCommandTests
             File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), "Microsoft Visual Studio Solution File, Format Version 12.00");
             Console.SetOut(output);
             Console.SetError(output);
-            int result = await BuildApplication.Run(
+            int result = await BuildApplication.RunAsync(
                 ["verify-native", "--engine-root", root, "--target", "browser-wasm"],
                 CancellationToken.None
             );
@@ -57,7 +57,7 @@ public sealed class ArchitectureVerificationCommandTests
             File.WriteAllText(Path.Combine(root, "src", "services", "audio", "Probe.cs"), "global using System;");
             Console.SetOut(output);
             Console.SetError(output);
-            int result = await BuildApplication.Run(["verify", root], CancellationToken.None);
+            int result = await BuildApplication.RunAsync(["verify", root], CancellationToken.None);
             Assert.Equal(1, result);
             Assert.Contains("global using", output.ToString(), StringComparison.Ordinal);
             Assert.DoesNotContain("INNO-TASK", output.ToString(), StringComparison.Ordinal);

@@ -67,7 +67,7 @@ public sealed class EditorViewportToolSession : IDisposable
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         EditorViewportTool? current = m_tool;
-        if (current is null || !m_context.Accepts(pointer.pointerId))
+        if (current is null || !m_context.Accepts(pointer.pointerID))
         {
             return false;
         }

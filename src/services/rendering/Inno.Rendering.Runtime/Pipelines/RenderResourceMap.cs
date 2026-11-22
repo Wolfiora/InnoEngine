@@ -12,11 +12,11 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Stores open semantic graph resources for one pipeline request.
 /// </summary>
-[StableTypeId("f48ab8a3-a1f2-513a-9e4b-396be0f084a8")]
+[StableTypeID("f48ab8a3-a1f2-513a-9e4b-396be0f084a8")]
 public sealed class RenderResourceMap
 {
-    private readonly Dictionary<RenderResourceId, RenderTextureHandle> m_textures = [];
-    private readonly Dictionary<RenderResourceId, RenderBufferHandle> m_buffers = [];
+    private readonly Dictionary<RenderResourceID, RenderTextureHandle> m_textures = [];
+    private readonly Dictionary<RenderResourceID, RenderBufferHandle> m_buffers = [];
 
     /// <summary>
     /// Publishes a texture under a pipeline-defined semantic identifier.
@@ -28,7 +28,7 @@ public sealed class RenderResourceMap
     /// Valid current-graph texture.
     /// </param>
     public void PublishTexture(
-        RenderResourceId id,
+        RenderResourceID id,
         RenderTextureHandle texture
     ) {
         if (!id.isValid)
@@ -52,7 +52,7 @@ public sealed class RenderResourceMap
     /// Valid current-graph buffer.
     /// </param>
     public void PublishBuffer(
-        RenderResourceId id,
+        RenderResourceID id,
         RenderBufferHandle buffer
     ) {
         if (!id.isValid)
@@ -79,7 +79,7 @@ public sealed class RenderResourceMap
     /// <see langword="true"/> when the texture has been published.
     /// </returns>
     public bool TryGetTexture(
-        RenderResourceId id,
+        RenderResourceID id,
         out RenderTextureHandle texture
     ) => m_textures.TryGetValue(id, out texture);
 
@@ -96,7 +96,7 @@ public sealed class RenderResourceMap
     /// <see langword="true"/> when the buffer has been published.
     /// </returns>
     public bool TryGetBuffer(
-        RenderResourceId id,
+        RenderResourceID id,
         out RenderBufferHandle buffer
     ) => m_buffers.TryGetValue(id, out buffer);
 }

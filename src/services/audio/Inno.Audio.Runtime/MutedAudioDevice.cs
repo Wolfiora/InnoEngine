@@ -232,7 +232,7 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
     }
 
     AudioBusHandle IAudioDevice.CreateBus(
-        AudioBusId id,
+        AudioBusID id,
         AudioBusHandle parent
     ) {
         EnsureActive();
@@ -454,10 +454,10 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
     private void EnsureActive() => ObjectDisposedException.ThrowIf(m_disposed, this);
 
     private sealed class BusRecord(
-        AudioBusId id,
+        AudioBusID id,
         ulong parent
     ) {
-        internal AudioBusId id { get; } = id;
+        internal AudioBusID id { get; } = id;
         internal ulong parent { get; } = parent;
         internal float volume { get; set; } = 1f;
         internal bool muted { get; set; }

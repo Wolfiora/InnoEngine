@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Settings;
 
@@ -111,7 +111,7 @@ internal sealed class SettingsTree
         }
         TreeNodeResult result = EditorUI.current.widgets.TreeNode(
             $"settings_tree_{page.path}",
-            _ => Ui.Text(page.label),
+            _ => Gui.Text(page.label),
             new TreeNodeOptions
             {
                 selected = string.Equals(page.path, selectedPath, StringComparison.Ordinal),
@@ -135,7 +135,7 @@ internal sealed class SettingsTree
             }
         }
 
-        Ui.TreePop();
+        Gui.TreePop();
     }
 
     private static bool IsRevealed(

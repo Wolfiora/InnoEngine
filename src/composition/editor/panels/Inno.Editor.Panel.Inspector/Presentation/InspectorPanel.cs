@@ -10,8 +10,8 @@ using Inno.Editor.PlayMode;
 using Inno.Editor.Scene;
 using Inno.Scene;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
 
@@ -84,7 +84,7 @@ internal sealed class InspectorPanel : EditorPanel
     /// </param>
     protected override void OnDraw(EditorContext context)
     {
-        bool visible = Ui.BeginChild("##InspectorScrollRegion", Vector2.Zero, (ImGuiChildFlags.None), (ImGuiWindowFlags.NoSavedSettings));
+        bool visible = Gui.BeginChild("##InspectorScrollRegion", Vector2.Zero, (ImGuiChildFlags.None), (ImGuiWindowFlags.NoSavedSettings));
         try
         {
             if (visible)
@@ -94,7 +94,7 @@ internal sealed class InspectorPanel : EditorPanel
         }
         finally
         {
-            Ui.EndChild();
+            Gui.EndChild();
         }
     }
 
@@ -127,14 +127,14 @@ internal sealed class InspectorPanel : EditorPanel
         try
         {
             m_targetHeader.Draw(drawer, drawContext, readOnlyScene, notice);
-            Ui.BeginDisabled(readOnlyScene);
+            Gui.BeginDisabled(readOnlyScene);
             try
             {
                 EditorUI.current.widgets.SectionLayout(() => drawer.Draw(drawContext));
             }
             finally
             {
-                Ui.EndDisabled();
+                Gui.EndDisabled();
             }
 
             m_failureState = string.Empty;

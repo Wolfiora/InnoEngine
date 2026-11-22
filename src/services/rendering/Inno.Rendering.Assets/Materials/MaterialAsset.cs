@@ -12,7 +12,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Represents material state keyed by stable shader property identifiers.
 /// </summary>
-[StableTypeId("56f1fdc7-dad9-464a-848f-fcae4c33ecf2")]
+[StableTypeID("56f1fdc7-dad9-464a-848f-fcae4c33ecf2")]
 public sealed class MaterialAsset : AssetObject
 {
     [SerializableProperty(PropertyVisibility.Hide)]
@@ -34,7 +34,7 @@ public sealed class MaterialAsset : AssetObject
     /// Gets or sets an optional explicitly selected technique.
     /// </summary>
     [SerializableProperty]
-    public ShaderTechniqueId techniqueId { get; set; }
+    public ShaderTechniqueID techniqueId { get; set; }
 
     /// <summary>
     /// Gets persistent material values in stable insertion order.
@@ -61,7 +61,7 @@ public sealed class MaterialAsset : AssetObject
     /// Neutral material value.
     /// </param>
     public void Set(
-        ShaderPropertyId id,
+        ShaderPropertyID id,
         MaterialValue value
     ) {
         if (!id.isValid)
@@ -89,7 +89,7 @@ public sealed class MaterialAsset : AssetObject
     {
         ArgumentNullException.ThrowIfNull(properties);
         MaterialPropertyEntry[] candidate = properties.ToArray();
-        var ids = new HashSet<ShaderPropertyId>();
+        var ids = new HashSet<ShaderPropertyID>();
         foreach (MaterialPropertyEntry property in candidate)
         {
             if (!property.id.isValid)
@@ -119,7 +119,7 @@ public sealed class MaterialAsset : AssetObject
     /// <see langword="true"/> when the property exists.
     /// </returns>
     public bool TryGet(
-        ShaderPropertyId id,
+        ShaderPropertyID id,
         out MaterialValue value
     ) {
         int index = Array.FindIndex(m_properties, candidate => candidate.id == id);

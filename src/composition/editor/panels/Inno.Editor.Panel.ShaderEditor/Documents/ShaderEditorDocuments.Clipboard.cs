@@ -31,10 +31,10 @@ internal sealed partial class ShaderEditorDocuments
         GraphDocument destination = Controller(draft).document;
         GraphDocument fragment = GraphDocumentCodec.Decode(data.graph, serialization);
         HashSet<ShaderStage> existingStages = destination.nodes
-            .Where(static node => node.definitionId == ShaderGraphDocument.outputDefinitionId)
+            .Where(static node => node.definitionID == ShaderGraphDocument.C_OUTPUT_DEFINITION_ID)
             .Select(node => ShaderGraphDocument.Read(node, "settings", new ShaderGraphStageSettings(), serialization, context).stage)
             .ToHashSet();
-        return !fragment.nodes.Where(static node => node.definitionId == ShaderGraphDocument.outputDefinitionId)
+        return !fragment.nodes.Where(static node => node.definitionID == ShaderGraphDocument.C_OUTPUT_DEFINITION_ID)
             .Select(node => ShaderGraphDocument.Read(node, "settings", new ShaderGraphStageSettings(), serialization, context).stage)
             .Any(existingStages.Contains);
     }

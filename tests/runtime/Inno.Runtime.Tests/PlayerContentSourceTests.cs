@@ -254,7 +254,7 @@ public sealed class PlayerContentSourceTests
         public IRenderingBackendFactory rendering => throw Rejected();
         public IAudioBackendFactory audio => throw Rejected();
         public ITextBackendFactory text => throw Rejected();
-        public IUiBackendFactory ui => throw Rejected();
+        public IUIBackendFactory ui => throw Rejected();
 
         private static InvalidOperationException Rejected()
             => new("An adapter cannot be selected before deployment metadata is validated.");

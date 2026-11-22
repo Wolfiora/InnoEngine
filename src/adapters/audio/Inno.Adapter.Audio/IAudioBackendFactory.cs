@@ -11,7 +11,7 @@ public interface IAudioBackendFactory
     /// <summary>
     /// Gets the exact registrations available in this composition snapshot.
     /// </summary>
-    IReadOnlyList<AudioBackendId> supportedBackends { get; }
+    IReadOnlyList<AudioBackendID> supportedBackends { get; }
 
     /// <summary>
     /// Creates a new audio device for one runtime audio generation.
@@ -29,7 +29,7 @@ public interface IAudioBackendFactory
     /// Thrown when the catalog does not contain the selected backend.
     /// </exception>
     IAudioDevice CreateDevice(
-        AudioBackendId backend,
+        AudioBackendID backend,
         AudioBackendOptions options = default
     );
 }

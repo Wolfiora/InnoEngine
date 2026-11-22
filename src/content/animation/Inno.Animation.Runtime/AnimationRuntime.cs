@@ -296,7 +296,7 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
             throw new ArgumentOutOfRangeException(nameof(unscaledDeltaTime));
         }
 
-        var samples = new Dictionary<(AnimationTarget target, AnimationBindingId binding), BlendAccumulator>();
+        var samples = new Dictionary<(AnimationTarget target, AnimationBindingID binding), BlendAccumulator>();
         for (int slot = 0; slot < m_playbacks.Count; slot++)
         {
             Playback? playback = m_playbacks[slot];
@@ -323,7 +323,7 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         }
 
         AnimationSample[] output = samples
-            .OrderBy(static pair => pair.Key.target.persistentId)
+            .OrderBy(static pair => pair.Key.target.persistentID)
             .ThenBy(static pair => pair.Key.binding.value, StringComparer.Ordinal)
             .Select(static pair => new AnimationSample(pair.Key.target, pair.Key.binding, pair.Value.Complete()))
             .ToArray();
@@ -451,7 +451,7 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
 
     private static void Sample(
         Playback playback,
-        IDictionary<(AnimationTarget target, AnimationBindingId binding), BlendAccumulator> samples
+        IDictionary<(AnimationTarget target, AnimationBindingID binding), BlendAccumulator> samples
     ) {
         if (playback.options.weight <= 0f)
         {
@@ -460,8 +460,8 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         for (int index = 0; index < playback.clip.tracks.Length; index++)
         {
             AnimationTrack track = playback.clip.tracks[index];
-            var binding = new AnimationBindingId(track.bindingId);
-            (AnimationTarget target, AnimationBindingId binding) destination = (playback.target, binding);
+            var binding = new AnimationBindingID(track.bindingId);
+            (AnimationTarget target, AnimationBindingID binding) destination = (playback.target, binding);
             AnimationValue value = SampleTrack(track, playback.time);
             if (!samples.TryGetValue(destination, out BlendAccumulator accumulator)
                 || playback.options.layer > accumulator.layer

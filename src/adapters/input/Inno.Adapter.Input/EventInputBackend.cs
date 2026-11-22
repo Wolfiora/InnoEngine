@@ -34,11 +34,11 @@ public sealed class EventInputBackend : IInputBackend
     /// <summary>
     /// Creates an event-backed input adapter for one platform window.
     /// </summary>
-    /// <param name="windowId">
+    /// <param name="windowID">
     /// The translated event window identifier, or zero to accept input from every window.
     /// </param>
-    public EventInputBackend(uint windowId)
-        : this(windowId, null) {}
+    public EventInputBackend(uint windowID)
+        : this(windowID, null) {}
 
     internal EventInputBackend(
         uint windowID,
@@ -214,10 +214,10 @@ public sealed class EventInputBackend : IInputBackend
     private bool Accepts(Event evnt)
         => m_windowID == 0 || evnt switch
         {
-            KeyEvent key => key.windowId == m_windowID,
-            TextInputEvent text => text.windowId == m_windowID,
-            MouseEvent mouse => mouse.windowId == m_windowID,
-            WindowEvent window => window.windowId == m_windowID,
+            KeyEvent key => key.windowID == m_windowID,
+            TextInputEvent text => text.windowID == m_windowID,
+            MouseEvent mouse => mouse.windowID == m_windowID,
+            WindowEvent window => window.windowID == m_windowID,
             ApplicationSuspensionChangedEvent => true,
             _ => false
         };

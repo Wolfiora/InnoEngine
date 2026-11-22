@@ -12,7 +12,7 @@ using Inno.Editor.Interactions;
 using Inno.Extensibility.Types;
 using Inno.Native.ImGui;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 using NativeFocusedFlags = Inno.Native.ImGui.ImGuiFocusedFlags;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
@@ -25,7 +25,7 @@ public sealed unsafe class ImGuiEditorRuntime : EditorRuntime
 {
     private readonly Stopwatch m_timer = Stopwatch.StartNew();
     private readonly EditorInteractionRuntime m_runtime;
-    private readonly EditorUiSession m_ui = new();
+    private readonly EditorUISession m_ui = new();
     private readonly EditorModalHost m_modals = new();
     private readonly HashSet<string> m_openOwners = new(StringComparer.Ordinal);
     private readonly HashSet<string> m_currentOwners = new(StringComparer.Ordinal);
@@ -174,7 +174,7 @@ public sealed unsafe class ImGuiEditorRuntime : EditorRuntime
             // The main menu must reserve the viewport work area before the dockspace snapshots it.
             // Reversing this order makes the dockspace overlap the bottom of the menu and clip the
             // first docked tab bar row.
-            EditorUI.current.menus.MainMenu(interactions.For(ImGuiInteractionIds.C_MAIN_MENU_AREA));
+            EditorUI.current.menus.MainMenu(interactions.For(ImGuiInteractionIDs.C_MAIN_MENU_AREA));
             DrawDockSpace();
             DrawPanels(m_runtime.panels);
         }

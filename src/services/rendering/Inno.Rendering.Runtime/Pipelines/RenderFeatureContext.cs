@@ -12,7 +12,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Supplies one configured feature with frame-scoped graph services.
 /// </summary>
-[StableTypeId("00810cb8-162a-5a95-9a30-1a01992ac501")]
+[StableTypeID("00810cb8-162a-5a95-9a30-1a01992ac501")]
 public sealed class RenderFeatureContext
 {
     /// <summary>

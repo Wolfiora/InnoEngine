@@ -67,7 +67,7 @@ public sealed class AudioScriptingApiTests
                 new FileByteDocumentStore(Path.GetFullPath(Path.Combine(projectRoot, "Settings.Project.inno"))),
                 host.types,
                 host.serialization,
-                new ProjectId("tests.audio.scripting"),
+                new ProjectID("tests.audio.scripting"),
                 AssetSerializationContext.Create(assets)
             );
             using var plugins = new PluginEnvironment(
@@ -108,7 +108,7 @@ public sealed class AudioScriptingApiTests
                         AudioMixerBuilder builder,
                         SerializedAudioExtensionState state)
                     {
-                        builder.AddBus(new AudioBusId("tests.audio.bus"), AudioBusId.master);
+                        builder.AddBus(new AudioBusID("tests.audio.bus"), AudioBusID.master);
                     }
                 }
 

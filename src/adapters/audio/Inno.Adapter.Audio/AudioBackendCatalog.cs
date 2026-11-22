@@ -10,7 +10,7 @@ namespace Inno.Adapter.Audio;
 /// </summary>
 public sealed class AudioBackendCatalog : IAudioBackendFactory
 {
-    private readonly Dictionary<AudioBackendId, AudioBackendProvider> m_providers = [];
+    private readonly Dictionary<AudioBackendID, AudioBackendProvider> m_providers = [];
 
     /// <summary>
     /// Validates and captures a complete provider set without creating any service.
@@ -34,18 +34,18 @@ public sealed class AudioBackendCatalog : IAudioBackendFactory
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
             }
         }
-        this.supportedBackends = new ReadOnlyCollection<AudioBackendId>([.. m_providers.Keys]);
+        this.supportedBackends = new ReadOnlyCollection<AudioBackendID>([.. m_providers.Keys]);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<AudioBackendId> supportedBackends { get; }
+    public IReadOnlyList<AudioBackendID> supportedBackends { get; }
 
     /// <exception cref="InvalidOperationException">
     /// The selected provider returned no service.
     /// </exception>
     /// <inheritdoc/>
     public IAudioDevice CreateDevice(
-        AudioBackendId backend,
+        AudioBackendID backend,
         AudioBackendOptions options
     ) {
         if (!m_providers.TryGetValue(backend, out AudioBackendProvider? provider))

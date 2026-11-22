@@ -75,14 +75,14 @@ public sealed unsafe class FontCoverageTests
                     ImFontGlyph* icon = NativeImGui.Raw.FindGlyphNoFallback(baked, 0xF0E2);
                     Assert.True(icon is not null);
                     Assert.InRange(icon->SourceIdx, 1u, 2u);
-                    ImFontGlyph* logo = NativeImGui.Raw.FindGlyphNoFallback(baked, ImGuiIcon.Inno[0]);
+                    ImFontGlyph* logo = NativeImGui.Raw.FindGlyphNoFallback(baked, ImGuiIcon.C_INNO[0]);
                     Assert.True(logo is not null);
-                    Assert.Equal((uint)ImGuiIcon.Inno[0], logo->Codepoint);
+                    Assert.Equal((uint)ImGuiIcon.C_INNO[0], logo->Codepoint);
                     Assert.Equal(3u, logo->SourceIdx);
                     Assert.True(logo->AdvanceX > 0 && logo->X1 > logo->X0 && logo->Y1 > logo->Y0);
                     Assert.Equal(4, font->Sources.Size);
                     Assert.True(NativeImGui.Raw.FindGlyphNoFallback(baked, 0x6F22) is null);
-                    NativeImGui.TextUnformatted(ImGuiIcon.Inno + " English / undo");
+                    NativeImGui.TextUnformatted(ImGuiIcon.C_INNO + " English / undo");
                 }
             }
             finally
@@ -225,7 +225,7 @@ public sealed unsafe class FontCoverageTests
             Assert.Equal(new FileInfo(fontPath).Length, font->Sources.Data[0]->FontDataSize);
             Assert.Equal(24f, font->Sources.Data[0]->SizePixels);
             Assert.True(NativeImGui.Raw.FindGlyphNoFallback(baked, 'A') is not null);
-            Assert.True(NativeImGui.Raw.FindGlyphNoFallback(baked, ImGuiIcon.Inno[0]) is not null);
+            Assert.True(NativeImGui.Raw.FindGlyphNoFallback(baked, ImGuiIcon.C_INNO[0]) is not null);
             Assert.True(NativeImGui.Raw.FindGlyphNoFallback(baked, 0x6F22) is null);
         });
         Assert.Throws<InvalidOperationException>(() => context.RegisterFontStyle(BackendFontStyle.Regular, fontPath));

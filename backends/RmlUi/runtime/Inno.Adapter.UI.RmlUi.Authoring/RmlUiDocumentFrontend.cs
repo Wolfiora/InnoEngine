@@ -14,7 +14,7 @@ namespace Inno.Adapter.UI.RmlUi.Authoring;
 /// <summary>
 /// Validates RML source for the bundled RmlUi runtime adapter.
 /// </summary>
-public sealed class RmlUiDocumentFrontend : IUiDocumentFrontend
+public sealed class RmlUiDocumentFrontend : IUIDocumentFrontend
 {
     private static readonly Regex FONT_FACE = new(
         @"@font-face\s*\{(?<body>[^{}]*)\}",
@@ -59,7 +59,7 @@ public sealed class RmlUiDocumentFrontend : IUiDocumentFrontend
     /// <summary>
     /// Gets the RML source language identifier accepted by this frontend.
     /// </summary>
-    public UiDocumentLanguageId languageId => RmlUiIdentifiers.documentLanguage;
+    public UIDocumentLanguageID languageID => RmlUiIdentifiers.documentLanguage;
 
     /// <summary>
     /// Analyzes source text and returns validated output with diagnostics.
@@ -70,7 +70,7 @@ public sealed class RmlUiDocumentFrontend : IUiDocumentFrontend
     /// <returns>
     /// The validated ui document analysis that represents the completed operation.
     /// </returns>
-    public UiDocumentAnalysis Analyze(UiDocumentSourceFile source)
+    public UIDocumentAnalysis Analyze(UIDocumentSourceFile source)
     {
         ArgumentNullException.ThrowIfNull(source);
         if (string.IsNullOrWhiteSpace(source.text))
@@ -81,8 +81,8 @@ public sealed class RmlUiDocumentFrontend : IUiDocumentFrontend
         {
             return new(null, [new("RML_ROOT_MISSING", "The RML document has no root rml element.", 1, 1)]);
         }
-        var diagnostics = new List<UiDocumentDiagnostic>();
-        var fonts = new List<UiDocumentFontDeclaration>();
+        var diagnostics = new List<UIDocumentDiagnostic>();
+        var fonts = new List<UIDocumentFontDeclaration>();
         var families = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         AssetPath documentPath = AssetPath.Parse(source.assetPath);
         string expanded;
@@ -177,7 +177,7 @@ public sealed class RmlUiDocumentFrontend : IUiDocumentFrontend
     }
 
     private static string ExpandStyles(
-        UiDocumentSourceFile source,
+        UIDocumentSourceFile source,
         AssetPath documentPath,
         HashSet<AssetPath> active
     ) => LINK.Replace(source.text, match =>

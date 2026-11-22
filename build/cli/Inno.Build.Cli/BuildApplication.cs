@@ -28,7 +28,7 @@ public static partial class BuildApplication
     /// <exception cref="ArgumentNullException">
     /// The argument array is absent.
     /// </exception>
-    public static async Task<int> Run(
+    public static async Task<int> RunAsync(
         string[] arguments,
         CancellationToken cancellationToken
     ) {

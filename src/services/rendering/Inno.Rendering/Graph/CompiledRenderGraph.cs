@@ -240,7 +240,7 @@ public sealed class CompiledRenderPass
 
     internal CompiledRenderPass(
         string name,
-        RenderPhaseId phase,
+        RenderPhaseID phase,
         RenderPassKind kind,
         int viewIndex,
         IReadOnlyList<CompiledRenderAttachment> attachments,
@@ -272,7 +272,7 @@ public sealed class CompiledRenderPass
     /// <summary>
     /// Gets the open render phase identifier.
     /// </summary>
-    public RenderPhaseId phase { get; }
+    public RenderPhaseID phase { get; }
 
     /// <summary>
     /// Gets the pass command domain.

@@ -15,7 +15,7 @@ public sealed class BgfxShaderSourceFrontend : IShaderSourceFrontend
     /// <summary>
     /// Gets the language id text used by the current instance.
     /// </summary>
-    public string languageId => "inno.shader-language.bgfx-sc";
+    public string languageID => "inno.shader-language.bgfx-sc";
 
     /// <summary>
     /// Analyzes source text and returns validated output with diagnostics.

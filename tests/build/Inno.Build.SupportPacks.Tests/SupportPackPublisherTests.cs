@@ -13,7 +13,7 @@ namespace Inno.Build.SupportPacks.Tests;
 
 public sealed class SupportPackPublisherTests : IDisposable
 {
-    private static readonly BuildTargetId TARGET = new("tests-target");
+    private static readonly BuildTargetID TARGET = new("tests-target");
 
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoPackTransactionTests", Guid.NewGuid().ToString("N"));
 
@@ -324,7 +324,7 @@ public sealed class SupportPackPublisherTests : IDisposable
         TaskCompletionSource release
     ) : IPlayerSupportPackSource
     {
-        public BuildTargetId target => TARGET;
+        public BuildTargetID target => TARGET;
 
         public ValueTask<PlayerSupportPackPlan> CreatePlanAsync(
             PlayerSupportPackPlanningContext context,
@@ -359,7 +359,7 @@ public sealed class SupportPackPublisherTests : IDisposable
         Func<PlayerSupportPackPlanningContext, CancellationToken, ValueTask<PlayerSupportPackPlan>> createPlan
     ) : IPlayerSupportPackSource
     {
-        public BuildTargetId target => TARGET;
+        public BuildTargetID target => TARGET;
 
         public ValueTask<PlayerSupportPackPlan> CreatePlanAsync(
             PlayerSupportPackPlanningContext context,
@@ -369,7 +369,7 @@ public sealed class SupportPackPublisherTests : IDisposable
         public void Validate(string directory) => new TestSource(null).Validate(directory);
     }
 
-    private sealed class ForeignPlan(BuildTargetId? target = null) : PlayerSupportPackPlan(
+    private sealed class ForeignPlan(BuildTargetID? target = null) : PlayerSupportPackPlan(
         target ?? new("foreign-target"),
         InputIdentity("foreign")
     )
@@ -388,7 +388,7 @@ public sealed class SupportPackPublisherTests : IDisposable
         string payload = "candidate"
     ) : IPlayerSupportPackSource
     {
-        public BuildTargetId target => TARGET;
+        public BuildTargetID target => TARGET;
 
         public ValueTask<PlayerSupportPackPlan> CreatePlanAsync(
             PlayerSupportPackPlanningContext context,

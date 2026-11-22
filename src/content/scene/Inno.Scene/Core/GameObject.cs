@@ -16,7 +16,7 @@ public sealed class GameObject : EngineObject, ISerializable
     /// <summary>
     /// Defines the tag assigned to newly created game objects.
     /// </summary>
-    public const string defaultTag = "Untagged";
+    public const string C_DEFAULT_TAG = "Untagged";
 
     private ulong? m_serializationRevision = 0;
     private GameScene? m_scene;
@@ -25,7 +25,7 @@ public sealed class GameObject : EngineObject, ISerializable
     private PrefabInstanceInfo? m_prefabInstance;
     private PrefabConnectionRecord? m_prefabConnection;
     private string m_name;
-    private string m_tag = defaultTag;
+    private string m_tag = C_DEFAULT_TAG;
     private GameLayer m_layer = GameLayer.defaultLayer;
     private bool m_activeSelf = true;
     private bool m_activeInHierarchy = true;

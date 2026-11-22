@@ -66,7 +66,7 @@ public sealed class CSharpSampleSourceRewriter : IAssetSampleSourceRewriter
                     || !Guid.TryParse(literal.Token.ValueText, out Guid oldID)
                 ) {
                     throw new InvalidDataException(
-                        $"Sample C# source '{relative}' has a StableTypeId that cannot be cloned safely."
+                        $"Sample C# source '{relative}' has a StableTypeID that cannot be cloned safely."
                     );
                 }
                 Guid newID = context.identityMap.TryGetValue(oldID, out Guid mapped)
@@ -86,5 +86,5 @@ public sealed class CSharpSampleSourceRewriter : IAssetSampleSourceRewriter
         }
     }
 
-    private static bool IsStableTypeID(string name) => name.Split('.').Last() is "StableTypeId" or "StableTypeIdAttribute";
+    private static bool IsStableTypeID(string name) => name.Split('.').Last() is "StableTypeID" or "StableTypeIDAttribute";
 }

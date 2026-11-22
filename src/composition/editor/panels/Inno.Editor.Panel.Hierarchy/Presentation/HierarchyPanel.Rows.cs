@@ -6,8 +6,8 @@ using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Scene;
 using Inno.Scene.Components;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Hierarchy;
 
@@ -22,21 +22,21 @@ internal sealed partial class HierarchyPanel
         ImGuiWidget widgets = EditorUI.current.widgets;
         foreach (GameScene scene in scenes)
         {
-            if (m_initializedSceneIds.Add(scene.identity.persistentId))
+            if (m_initializedSceneIDs.Add(scene.identity.persistentID))
             {
-                widgets.SetTreeNodeOpen("scene_" + scene.identity.persistentId.ToString("N"), true);
+                widgets.SetTreeNodeOpen("scene_" + scene.identity.persistentID.ToString("N"), true);
             }
         }
-        foreach (Guid id in m_forceOpenSceneIds)
+        foreach (Guid id in m_forceOpenSceneIDs)
         {
             widgets.SetTreeNodeOpen("scene_" + id.ToString("N"), true);
         }
-        foreach (Guid id in m_forceOpenIds)
+        foreach (Guid id in m_forceOpenIDs)
         {
             widgets.SetTreeNodeOpen("hierarchy_" + id.ToString("N"), true);
         }
-        m_forceOpenSceneIds.Clear();
-        m_forceOpenIds.Clear();
+        m_forceOpenSceneIDs.Clear();
+        m_forceOpenIDs.Clear();
 
         bool changed = m_expansionRevision != widgets.treeExpansionRevision || m_sceneInputs.Count != scenes.Count;
         for (int index = 0; !changed && index < scenes.Count; index++)
@@ -57,7 +57,7 @@ internal sealed partial class HierarchyPanel
             RuntimeIdentity sceneID = RequireIdentity(scene);
             inputs.Add((sceneID, scene.hierarchyRevision));
             rows.Add(new(sceneID, 0));
-            if (!widgets.IsTreeNodeOpen("scene_" + scene.identity.persistentId.ToString("N")))
+            if (!widgets.IsTreeNodeOpen("scene_" + scene.identity.persistentID.ToString("N")))
             {
                 continue;
             }
@@ -78,7 +78,7 @@ internal sealed partial class HierarchyPanel
                     throw new InvalidOperationException("A hierarchy view encountered a duplicate object identity.");
                 }
                 rows.Add(new(identity, next.depth));
-                if (!widgets.IsTreeNodeOpen("hierarchy_" + next.target.identity.persistentId.ToString("N")))
+                if (!widgets.IsTreeNodeOpen("hierarchy_" + next.target.identity.persistentID.ToString("N")))
                 {
                     continue;
                 }
@@ -137,12 +137,12 @@ internal sealed partial class HierarchyPanel
                     }
                     else
                     {
-                        Ui.Dummy(new(1f, Ui.GetFrameHeight()));
+                        Gui.Dummy(new(1f, Gui.GetFrameHeight()));
                     }
                 }
                 else
                 {
-                    Ui.Dummy(new(1f, Ui.GetFrameHeight()));
+                    Gui.Dummy(new(1f, Gui.GetFrameHeight()));
                 }
             }
         }, preserved[..count]);

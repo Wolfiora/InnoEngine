@@ -23,7 +23,7 @@ public sealed partial class AssetPipeline
     /// <summary>
     /// Tries to resolve a named artifact output.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The artifact owner identity.
     /// </param>
     /// <param name="outputName">
@@ -36,15 +36,15 @@ public sealed partial class AssetPipeline
     /// <see langword="true"/> when the output exists.
     /// </returns>
     public bool TryGetArtifact(
-        Guid persistentId,
+        Guid persistentID,
         string outputName,
         out AssetArtifactInfo? artifact
-    ) => GetLoader().TryGetArtifact(persistentId, outputName, out artifact);
+    ) => GetLoader().TryGetArtifact(persistentID, outputName, out artifact);
 
     /// <summary>
     /// Acquires one verified authoring artifact generation for an explicit lifetime.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// Persistent identity of the artifact owner.
     /// </param>
     /// <param name="outputName">
@@ -57,9 +57,9 @@ public sealed partial class AssetPipeline
     /// Thrown when the requested artifact is unavailable.
     /// </exception>
     public ArtifactLease AcquireArtifact(
-        Guid persistentId,
+        Guid persistentID,
         string outputName
-    ) => GetLoader().AcquireArtifact(persistentId, outputName);
+    ) => GetLoader().AcquireArtifact(persistentID, outputName);
 
     /// <summary>
     /// Runs an aggregate asset build using the processor registered for a definition.

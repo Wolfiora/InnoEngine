@@ -21,7 +21,7 @@ public static partial class ImGui
     /// </returns>
     public static bool TableSetColumnIndex(int index)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.TableSetColumnIndex(index);
     }
 
@@ -42,7 +42,7 @@ public static partial class ImGui
         uint color,
         int column = -1
     ) {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.TableSetBgColor((int)target, color, column);
     }
 }

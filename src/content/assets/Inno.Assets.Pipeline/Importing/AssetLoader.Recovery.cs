@@ -79,7 +79,7 @@ public sealed partial class AssetLoader
                     continue;
                 }
                 SerializedMissingState state = change.missingState;
-                m_preservedMissingStates.Add(state.descriptor.targetPersistentId, state);
+                m_preservedMissingStates.Add(state.descriptor.targetPersistentID, state);
             }
         });
 
@@ -131,7 +131,7 @@ public sealed partial class AssetLoader
                         }
                         else
                         {
-                            m_identities.Register(asset, asset.identity.persistentId);
+                            m_identities.Register(asset, asset.identity.persistentID);
                         }
                     }
                     catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)

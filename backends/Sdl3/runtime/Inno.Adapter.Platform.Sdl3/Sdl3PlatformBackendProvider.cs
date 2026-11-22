@@ -20,7 +20,7 @@ public sealed class Sdl3PlatformBackendProvider : PlatformBackendProvider
     /// Host integration is absent.
     /// </exception>
     public Sdl3PlatformBackendProvider(ISdl3HostIntegration hostIntegration)
-        : base(PlatformBackendId.sdl3)
+        : base(PlatformBackendID.sdl3)
     {
         ArgumentNullException.ThrowIfNull(hostIntegration);
         m_hostIntegration = hostIntegration;

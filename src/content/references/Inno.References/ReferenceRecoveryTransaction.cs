@@ -56,7 +56,7 @@ public sealed class ReferenceRecoveryTransaction : IGenerationChange
         foreach (SerializedMissingState state in m_states)
         {
             ArgumentNullException.ThrowIfNull(state);
-            if (state.key.ownerPersistentId == Guid.Empty || string.IsNullOrWhiteSpace(state.key.path)
+            if (state.key.ownerPersistentID == Guid.Empty || string.IsNullOrWhiteSpace(state.key.path)
                 || !keys.Add(state.key)
             ) {
                 throw new ArgumentException($"Invalid or duplicate recovery slot '{state.key}'.", nameof(missingStates));

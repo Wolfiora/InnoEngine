@@ -46,7 +46,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
     /// <param name="interactions">
     /// Shared documents and History services.
     /// </param>
-    /// <param name="providerId">
+    /// <param name="providerID">
     /// Stable unique document provider identifier.
     /// </param>
     /// <param name="historyKind">
@@ -62,7 +62,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
         AssetPipeline assets,
         SerializationRegistry serialization,
         EditorInteractions interactions,
-        string providerId,
+        string providerID,
         string historyKind,
         string extension,
         string label
@@ -70,22 +70,22 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
         ArgumentNullException.ThrowIfNull(assets);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(interactions);
-        ArgumentException.ThrowIfNullOrWhiteSpace(providerId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(providerID);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyKind);
         ArgumentException.ThrowIfNullOrWhiteSpace(label);
         if (string.IsNullOrWhiteSpace(extension) || !extension.StartsWith('.') || extension.IndexOfAny(['/', '\\']) >= 0)
         {
             throw new ArgumentException("A native file extension is required.", nameof(extension));
         }
-        if (providerId is "." or ".." || providerId.IndexOfAny(['/', '\\', ':']) >= 0)
+        if (providerID is "." or ".." || providerID.IndexOfAny(['/', '\\', ':']) >= 0)
         {
-            throw new ArgumentException("The provider identifier must be a safe single directory name.", nameof(providerId));
+            throw new ArgumentException("The provider identifier must be a safe single directory name.", nameof(providerID));
         }
         m_assets = assets;
         m_interactions = interactions;
         m_serialization = serialization;
         m_sources = m_assets.CreateSourceStore();
-        m_providerID = providerId;
+        m_providerID = providerID;
         m_historyKind = historyKind;
         m_extension = extension;
         m_label = label;
@@ -94,13 +94,13 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
     /// <summary>
     /// Gets host-owned neutral presentation state for an open document.
     /// </summary>
-    /// <param name="assetId">
+    /// <param name="assetID">
     /// Persistent source identity.
     /// </param>
     /// <returns>
     /// Read-only presentation state; it contains no live asset or extension objects.
     /// </returns>
-    public Draft GetDraft(Guid assetId) => m_drafts[assetId];
+    public Draft GetDraft(Guid assetID) => m_drafts[assetID];
 
     /// <summary>
     /// Opens a native asset source in the shared document service without revealing a second Inspector.
@@ -121,25 +121,25 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
         {
             throw new IOException("The asset identity is unavailable.");
         }
-        m_interactions.documents.Open(path.ToString(), info.persistentId);
-        return info.persistentId;
+        m_interactions.documents.Open(path.ToString(), info.persistentID);
+        return info.persistentID;
     }
 
     /// <summary>
     /// Reads a detached current-generation value; callers must never mutate its referenced canonical assets.
     /// </summary>
-    /// <param name="assetId">
+    /// <param name="assetID">
     /// Open asset identity.
     /// </param>
     /// <returns>
     /// A detached editable asset whose changes have not been published.
     /// </returns>
-    public TAsset Read(Guid assetId) => m_sources.Decode<TAsset>(m_drafts[assetId].bytes);
+    public TAsset Read(Guid assetID) => m_sources.Decode<TAsset>(m_drafts[assetID].bytes);
 
     /// <summary>
     /// Updates the open draft through shared History without saving or publishing a runtime asset.
     /// </summary>
-    /// <param name="assetId">
+    /// <param name="assetID">
     /// Open asset identity.
     /// </param>
     /// <param name="candidate">
@@ -149,11 +149,11 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
     /// The current gesture key, or null for an independent discrete edit.
     /// </param>
     public void Replace(
-        Guid assetId,
+        Guid assetID,
         TAsset candidate,
         string? mergeKey = null
     ) {
-        Draft draft = m_drafts[assetId];
+        Draft draft = m_drafts[assetID];
         if (draft.readOnly)
         {
             throw new InvalidOperationException("Copy this installed asset to the project before editing.");
@@ -401,7 +401,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
 
     private void Changed(Draft draft)
     {
-        m_interactions.documents.SetDirty(draft.documentId, draft.isDirty);
+        m_interactions.documents.SetDirty(draft.documentID, draft.isDirty);
         try
         {
             if (!draft.isDirty)
@@ -474,24 +474,24 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
             throw new IOException("Asset source is missing. Draft and history are retained.");
         }
         draft.path = info.assetPath;
-        m_interactions.documents.UpdateAssetPath(draft.documentId, draft.path.ToString());
+        m_interactions.documents.UpdateAssetPath(draft.documentID, draft.path.ToString());
     }
 
     private void Open(EditorDocumentContext document)
     {
-        if (m_drafts.ContainsKey(document.assetId))
+        if (m_drafts.ContainsKey(document.assetID))
         {
             return;
         }
         AssetPath path = AssetPath.Parse(document.assetPath);
-        if (m_assets.TryGetInfo(document.assetId, out AssetInfo? info) && info is not null)
+        if (m_assets.TryGetInfo(document.assetID, out AssetInfo? info) && info is not null)
         {
             path = info.assetPath;
         }
-        Recovery? recovery = File.Exists(RecoveryPath(document.assetId))
-                             ? m_serialization.Deserialize<Recovery>(File.ReadAllBytes(RecoveryPath(document.assetId)))
+        Recovery? recovery = File.Exists(RecoveryPath(document.assetID))
+                             ? m_serialization.Deserialize<Recovery>(File.ReadAllBytes(RecoveryPath(document.assetID)))
                              : null;
-        if (recovery is not null && recovery.assetId != document.assetId)
+        if (recovery is not null && recovery.assetId != document.assetID)
         {
             throw new InvalidDataException("Asset recovery identity does not match its document.");
         }
@@ -505,8 +505,8 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
         }
 
         var draft = new Draft(
-            document.assetId,
-            document.documentId,
+            document.assetID,
+            document.documentID,
             path,
             recovery?.bytes ?? source!.bytes,
             recovery?.baseline ?? source!.bytes,
@@ -520,7 +520,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
         m_drafts.Add(draft.id, draft);
         if (draft.isDirty)
         {
-            m_interactions.documents.SetDirty(draft.documentId);
+            m_interactions.documents.SetDirty(draft.documentID);
         }
     }
 
@@ -604,7 +604,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
         /// <returns>
         /// <see langword="true"/> when the documented condition is satisfied; otherwise, <see langword="false"/>.
         /// </returns>
-        public override bool Save(EditorDocumentContext context) => owner.Save(owner.m_drafts[context.assetId]);
+        public override bool Save(EditorDocumentContext context) => owner.Save(owner.m_drafts[context.assetID]);
 
         /// <summary>
         /// Restores the draft from the latest imported asset state.
@@ -615,7 +615,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
         /// <returns>
         /// <see langword="true"/> when the documented condition is satisfied; otherwise, <see langword="false"/>.
         /// </returns>
-        public override bool Revert(EditorDocumentContext context) => owner.Revert(owner.m_drafts[context.assetId]);
+        public override bool Revert(EditorDocumentContext context) => owner.Revert(owner.m_drafts[context.assetID]);
 
         /// <summary>
         /// Closes the active resource and releases its operation-scoped state.
@@ -625,8 +625,8 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
         /// </param>
         public override void Close(EditorDocumentContext context)
         {
-            owner.DeleteRecovery(context.assetId);
-            owner.m_drafts.Remove(context.assetId);
+            owner.DeleteRecovery(context.assetID);
+            owner.m_drafts.Remove(context.assetID);
         }
     }
 
@@ -649,7 +649,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
             bool readOnly
         ) {
             this.id = id;
-            this.documentId = documentID;
+            this.documentID = documentID;
             this.path = path;
             this.bytes = bytes;
             this.baseline = baseline;
@@ -665,7 +665,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
         /// <summary>
         /// Gets the shared document identity used for Save/Revert and close confirmation.
         /// </summary>
-        public Guid documentId { get; }
+        public Guid documentID { get; }
 
         /// <summary>
         /// Gets the current resolved source path.

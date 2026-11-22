@@ -44,7 +44,7 @@ public sealed class EditorGameInputCapture
     /// <summary>
     /// Reports the Game View image in coordinates local to its platform window.
     /// </summary>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// The presentation viewport containing the Game View.
     /// </param>
     /// <param name="origin">
@@ -63,14 +63,14 @@ public sealed class EditorGameInputCapture
     /// <see langword="true"/> when the Game View and its platform window both own focus.
     /// </returns>
     public bool Report(
-        uint viewportId,
+        uint viewportID,
         Vector2 origin,
         Vector2 size,
         bool focused,
         bool hovered
     ) {
         m_reported = true;
-        m_targetWindowID = m_resolveWindow(viewportId) ?? 0;
+        m_targetWindowID = m_resolveWindow(viewportID) ?? 0;
         m_origin = origin;
         m_size = size;
         m_focused = focused && m_targetWindowID != 0;
@@ -127,7 +127,7 @@ public sealed class EditorGameInputCapture
     public Event? Route(Event evnt)
     {
         ArgumentNullException.ThrowIfNull(evnt);
-        if (evnt is MouseMovedEvent observed && observed.windowId == m_targetWindowID)
+        if (evnt is MouseMovedEvent observed && observed.windowID == m_targetWindowID)
         {
             UpdatePointerBounds(observed);
         }
@@ -143,18 +143,18 @@ public sealed class EditorGameInputCapture
             return null;
         }
         if (evnt is WindowFocusChangedEvent { isFocused: false } lostFocus
-            && (lostFocus.windowId == m_deliveredWindowID || lostFocus.windowId == m_targetWindowID)
+            && (lostFocus.windowID == m_deliveredWindowID || lostFocus.windowID == m_targetWindowID)
         ) {
             bool needsReset = m_deliveredWindowID != 0;
             ReleaseCapture();
             return needsReset ? lostFocus : null;
         }
         if (evnt is WindowCloseEvent closed
-            && (closed.windowId == m_deliveredWindowID || closed.windowId == m_targetWindowID)
+            && (closed.windowID == m_deliveredWindowID || closed.windowID == m_targetWindowID)
         ) {
             bool needsReset = m_deliveredWindowID != 0;
             ReleaseCapture();
-            return needsReset ? new WindowFocusChangedEvent(closed.windowId, false) : null;
+            return needsReset ? new WindowFocusChangedEvent(closed.windowID, false) : null;
         }
         if (!m_focused || m_targetWindowID == 0)
         {
@@ -163,12 +163,12 @@ public sealed class EditorGameInputCapture
 
         Event? routed = evnt switch
         {
-            KeyEvent key when key.windowId == m_targetWindowID => key,
-            TextInputEvent text when text.windowId == m_targetWindowID => text,
-            MouseMovedEvent moved when moved.windowId == m_targetWindowID => RouteMove(moved),
-            MouseButtonPressedEvent pressed when pressed.windowId == m_targetWindowID => RoutePress(pressed),
-            MouseButtonReleasedEvent released when released.windowId == m_targetWindowID => RouteRelease(released),
-            MouseScrolledEvent scrolled when scrolled.windowId == m_targetWindowID && m_pointerInside => scrolled,
+            KeyEvent key when key.windowID == m_targetWindowID => key,
+            TextInputEvent text when text.windowID == m_targetWindowID => text,
+            MouseMovedEvent moved when moved.windowID == m_targetWindowID => RouteMove(moved),
+            MouseButtonPressedEvent pressed when pressed.windowID == m_targetWindowID => RoutePress(pressed),
+            MouseButtonReleasedEvent released when released.windowID == m_targetWindowID => RouteRelease(released),
+            MouseScrolledEvent scrolled when scrolled.windowID == m_targetWindowID && m_pointerInside => scrolled,
             _ => null
         };
         if (routed is not null)
@@ -219,8 +219,8 @@ public sealed class EditorGameInputCapture
         uint windowID
     ) => evnt switch
     {
-        KeyReleasedEvent key => key.windowId == windowID,
-        MouseButtonReleasedEvent button => button.windowId == windowID,
+        KeyReleasedEvent key => key.windowID == windowID,
+        MouseButtonReleasedEvent button => button.windowID == windowID,
         _ => IsWindowExit(evnt, windowID)
     };
 
@@ -229,8 +229,8 @@ public sealed class EditorGameInputCapture
         uint windowID
     ) => evnt switch
     {
-        WindowFocusChangedEvent { isFocused: false } focus => focus.windowId == windowID,
-        WindowCloseEvent close => close.windowId == windowID,
+        WindowFocusChangedEvent { isFocused: false } focus => focus.windowID == windowID,
+        WindowCloseEvent close => close.windowID == windowID,
         _ => false
     };
 }

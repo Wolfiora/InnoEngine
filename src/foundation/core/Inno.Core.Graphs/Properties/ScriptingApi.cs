@@ -4,9 +4,9 @@ using Inno.Scripting.Api;
 
 [assembly: ScriptingApiNamespace("InnoEngine.Graphs", "Inno.Core.Graphs", ScriptingApiScope.Runtime)]
 
-[assembly: ScriptingApiExport(typeof(GraphNodeId), ScriptingApiScope.Runtime)]
-[assembly: ScriptingApiExport(typeof(GraphEdgeId), ScriptingApiScope.Runtime)]
-[assembly: ScriptingApiExport(typeof(GraphPortId), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(GraphNodeID), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(GraphEdgeID), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(GraphPortID), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(GraphPosition), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(GraphSerializedValue), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(GraphNodeRecord), ScriptingApiScope.Runtime)]

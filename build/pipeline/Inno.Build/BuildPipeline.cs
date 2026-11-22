@@ -20,8 +20,8 @@ namespace Inno.Build;
 /// </summary>
 public sealed class BuildPipeline
 {
-    private readonly IReadOnlyList<BuildTargetId> m_availableGameTargets;
-    private readonly IReadOnlyDictionary<BuildTargetId, GameBuildTargetBinding> m_gameTargets;
+    private readonly IReadOnlyList<BuildTargetID> m_availableGameTargets;
+    private readonly IReadOnlyDictionary<BuildTargetID, GameBuildTargetBinding> m_gameTargets;
     private readonly GameBuildPipeline m_game;
     private readonly PluginPackageBuilder m_plugins;
     private readonly PlayerSupportPackCatalog m_supportPacks;
@@ -51,7 +51,7 @@ public sealed class BuildPipeline
     /// The project compiler used to produce a fresh runtime-only assembly generation for each game build.
     /// </param>
     /// <param name="supportPackRoot">
-    /// The directory containing one child directory per <see cref="BuildTargetId"/>.
+    /// The directory containing one child directory per <see cref="BuildTargetID"/>.
     /// </param>
     /// <param name="gameTargets">
     /// The complete set of replaceable platform package implementations available to this host.
@@ -104,7 +104,7 @@ public sealed class BuildPipeline
         {
             throw new ArgumentException("Every game build target requires a display name.", nameof(gameTargets));
         }
-        IGrouping<BuildTargetId, GameBuildTargetBinding>? duplicate = targets
+        IGrouping<BuildTargetID, GameBuildTargetBinding>? duplicate = targets
             .GroupBy(static value => value.packager.id)
             .FirstOrDefault(static group => group.Count() > 1);
         if (duplicate is not null)
@@ -136,7 +136,7 @@ public sealed class BuildPipeline
     /// <summary>
     /// Gets an immutable view of every registered build target in stable identity order.
     /// </summary>
-    public IReadOnlyList<BuildTargetId> availableGameTargets => m_availableGameTargets;
+    public IReadOnlyList<BuildTargetID> availableGameTargets => m_availableGameTargets;
 
     /// <summary>
     /// Gets the managed deployment choices supported by a registered publication platform.
@@ -150,7 +150,7 @@ public sealed class BuildPipeline
     /// <exception cref="ArgumentException">
     /// The publication target is not registered in this build composition.
     /// </exception>
-    public IReadOnlyList<ManagedDeploymentId> GetManagedDeployments(BuildTargetId target)
+    public IReadOnlyList<ManagedDeploymentID> GetManagedDeployments(BuildTargetID target)
         => m_gameTargets.TryGetValue(target, out GameBuildTargetBinding? gameTarget)
            ? m_managedDeployments.GetSupportedDeployments(gameTarget.packager.runtimeIdentifier)
            : throw new ArgumentException($"Game target '{target}' is not registered.", nameof(target));
@@ -168,7 +168,7 @@ public sealed class BuildPipeline
     /// <see langword="true"/> when the target is registered; otherwise, <see langword="false"/>.
     /// </returns>
     public bool TryGetGameTargetDisplayName(
-        BuildTargetId target,
+        BuildTargetID target,
         out string displayName
     ) {
         if (m_gameTargets.TryGetValue(target, out GameBuildTargetBinding? gameTarget))
@@ -210,8 +210,8 @@ public sealed class BuildPipeline
     /// An installed or newly published Pack fails deployment validation.
     /// </exception>
     public async ValueTask<PlayerSupportPackLease> EnsurePlayerSupportPackAsync(
-        BuildTargetId target,
-        ManagedDeploymentId? deployment,
+        BuildTargetID target,
+        ManagedDeploymentID? deployment,
         CancellationToken cancellationToken = default
     ) {
         if (!m_gameTargets.TryGetValue(target, out GameBuildTargetBinding? binding))

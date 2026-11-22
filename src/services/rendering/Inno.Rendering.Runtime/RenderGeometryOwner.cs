@@ -76,7 +76,7 @@ internal sealed class RenderGeometryOwner : RenderResourceProvider, IDisposable
         Drain();
         ArgumentNullException.ThrowIfNull(asset);
         geometry = null;
-        Guid id = asset.identity.persistentId;
+        Guid id = asset.identity.persistentID;
         string source = asset.assetPath.ToString();
         if (id == Guid.Empty)
         {

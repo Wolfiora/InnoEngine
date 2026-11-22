@@ -43,7 +43,7 @@ public sealed class BuildCacheOwnerCatalogTests : IDisposable
         Assert.Empty(BuildCacheOwnerCatalog.ReadOwners(m_root));
         Assert.Equal(
             0,
-            await BuildMaintenanceApplication.Run(
+            await BuildMaintenanceApplication.RunAsync(
                 ["clean", "--scope", "cache", "--engine-root", m_root, "--dry-run"],
                 CancellationToken.None
             )
@@ -51,14 +51,14 @@ public sealed class BuildCacheOwnerCatalogTests : IDisposable
         Assert.False(Directory.Exists(Path.Combine(m_root, "artifacts", "native")));
         Assert.Equal(
             1,
-            await BuildMaintenanceApplication.Run(
+            await BuildMaintenanceApplication.RunAsync(
                 ["clean", "--scope", "cache", "--scope", "cache", "--engine-root", m_root],
                 CancellationToken.None
             )
         );
         using var canceled = new CancellationTokenSource();
         canceled.Cancel();
-        Assert.Equal(2, await BuildMaintenanceApplication.Run(["clean"], canceled.Token));
+        Assert.Equal(2, await BuildMaintenanceApplication.RunAsync(["clean"], canceled.Token));
     }
 
     [Fact]

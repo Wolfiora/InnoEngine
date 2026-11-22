@@ -13,7 +13,7 @@ namespace Inno.Scene;
 /// The scene serializer and script reload pipeline create this placeholder automatically. It remains disabled
 /// and does not retain the unavailable managed <see cref="Type"/> or its collectible assembly load context.
 /// </remarks>
-[StableTypeId("99342f4e-fb2e-49f9-a6a4-3f4e59d23457")]
+[StableTypeID("99342f4e-fb2e-49f9-a6a4-3f4e59d23457")]
 [AllowMultipleSystem]
 public sealed class MissingGameSystem : GameSystem
 {
@@ -29,13 +29,13 @@ public sealed class MissingGameSystem : GameSystem
         ReadOnlySpan<byte> serializedState,
         IReadOnlyList<AssetDependency>? dependencies = null
     ) {
-        if (missingType.stableId == Guid.Empty)
+        if (missingType.stableID == Guid.Empty)
         {
             throw new ArgumentException("The missing system type identity cannot be empty.", nameof(missingType));
         }
         this.missingType = missingType;
         this.missingTypeName = string.IsNullOrWhiteSpace(missingTypeName)
-                               ? missingType.stableId.ToString("D")
+                               ? missingType.stableID.ToString("D")
                                : missingTypeName;
         m_serializedState = serializedState.ToArray();
         m_dependencies = dependencies?.ToArray() ?? [];

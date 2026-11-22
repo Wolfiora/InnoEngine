@@ -14,7 +14,7 @@ namespace Inno.Rendering.Runtime;
 /// The boundary lets a runtime resource service create generation-scoped values while their mutable
 /// representation remains private to the Rendering assembly.
 /// </remarks>
-[StableTypeId("c06ff3f1-8280-52cc-a57a-8d864eb358c6")]
+[StableTypeID("c06ff3f1-8280-52cc-a57a-8d864eb358c6")]
 public abstract class RenderResourceProvider
 {
     /// <summary>
@@ -30,7 +30,7 @@ public abstract class RenderResourceProvider
     /// A binding token accepted by the material-pass construction helpers.
     /// </returns>
     protected static MaterialBinding CreateUniformBinding(
-        RenderBindingId id,
+        RenderBindingID id,
         ReadOnlySpan<byte> data
     ) => new(new RenderMaterialBinding(RenderMaterialBindingKind.Uniform, id, data.ToArray(), default, default));
 
@@ -50,7 +50,7 @@ public abstract class RenderResourceProvider
     /// A binding token accepted by the material-pass construction helpers.
     /// </returns>
     protected static MaterialBinding CreateTextureBinding(
-        RenderBindingId id,
+        RenderBindingID id,
         PersistentTextureHandle texture,
         RenderSamplerState sampler
     ) => new(new RenderMaterialBinding(RenderMaterialBindingKind.Texture, id, null, texture, sampler));

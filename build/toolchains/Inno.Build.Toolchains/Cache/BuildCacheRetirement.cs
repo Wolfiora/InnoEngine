@@ -111,7 +111,7 @@ internal static class BuildCacheRetirement
                 BuildCacheArtifactDescriptor original = proposed[path];
                 if (protectedPaths.Contains(path) || !artifactLeases.ContainsKey(path)
                     || original.bytes != current.artifact.bytes || original.lastUseUtc != current.artifact.lastUseUtc
-                    || original.targetId != current.artifact.targetId || original.role != current.artifact.role
+                    || original.targetID != current.artifact.targetID || original.role != current.artifact.role
                     || !BuildCacheInventory.PATH_COMPARER.Equals(original.leasePath, current.artifact.leasePath)
                     || !original.dependencies.SequenceEqual(current.artifact.dependencies, BuildCacheInventory.PATH_COMPARER)
                 ) {

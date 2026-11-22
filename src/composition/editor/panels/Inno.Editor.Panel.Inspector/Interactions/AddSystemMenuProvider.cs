@@ -7,7 +7,7 @@ using Inno.Scene;
 
 namespace Inno.Editor.Panel.Inspector;
 
-[EditorMenuSource(InspectorInteractionIds.C_SYSTEM_AREA)]
+[EditorMenuSource(InspectorInteractionIDs.C_SYSTEM_AREA)]
 internal sealed class AddSystemMenuProvider(TypeCatalog types) : EditorMenuSource
 {
     /// <summary>
@@ -35,7 +35,7 @@ internal sealed class AddSystemMenuProvider(TypeCatalog types) : EditorMenuSourc
             {
                 continue;
             }
-            builder.Add(type.Name, InspectorInteractionIds.C_ADD_SYSTEM, argument: typeRef);
+            builder.Add(type.Name, InspectorInteractionIDs.C_ADD_SYSTEM, argument: typeRef);
         }
     }
 

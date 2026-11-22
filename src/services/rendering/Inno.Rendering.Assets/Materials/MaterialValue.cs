@@ -12,7 +12,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Identifies the neutral value stored by a material property.
 /// </summary>
-[StableTypeId("a9af9e77-9a97-5f66-82a0-d720ac5604dc")]
+[StableTypeID("a9af9e77-9a97-5f66-82a0-d720ac5604dc")]
 public enum MaterialValueKind
 {
     /// <summary>
@@ -40,7 +40,7 @@ public enum MaterialValueKind
 /// <summary>
 /// Stores one native-serializable material value without a GPU binding.
 /// </summary>
-[StableTypeId("dc64bc3e-f26f-55e0-bffe-99e98bd95b4f")]
+[StableTypeID("dc64bc3e-f26f-55e0-bffe-99e98bd95b4f")]
 public struct MaterialValue
 {
     private MaterialValue(

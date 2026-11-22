@@ -71,7 +71,7 @@ public sealed partial class EditorRenderTargetArtifactProvider
                                     $"Shader function '{id}' has no current successful import. Preview cannot hide its source error with an old bundle."
                                 );
                             }
-                            using ArtifactLease lease = m_assets.AcquireArtifact(id, ShaderSourceBundle.outputName);
+                            using ArtifactLease lease = m_assets.AcquireArtifact(id, ShaderSourceBundle.C_OUTPUT_NAME);
                             return lease.ReadAllBytes();
                         },
                         m_lifetime.Token,

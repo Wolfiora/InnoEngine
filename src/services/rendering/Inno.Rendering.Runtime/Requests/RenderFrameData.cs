@@ -13,7 +13,7 @@ namespace Inno.Rendering.Runtime;
 /// Values may use reloadable plugin types because a snapshot is retained only until the owning
 /// render frame completes. Persistent configuration must use stable identifiers and serialized bytes.
 /// </remarks>
-[StableTypeId("08a1cd24-757d-5026-a05d-a72ab9fd2b2b")]
+[StableTypeID("08a1cd24-757d-5026-a05d-a72ab9fd2b2b")]
 public sealed class RenderFrameData
 {
     private readonly Dictionary<FrameDataKey, object> m_values = [];
@@ -40,7 +40,7 @@ public sealed class RenderFrameData
     /// Thrown after the data has entered a request.
     /// </exception>
     public void Set<TValue>(
-        RenderDataChannelId channel,
+        RenderDataChannelID channel,
         TValue value
     ) where TValue : notnull
     {
@@ -72,7 +72,7 @@ public sealed class RenderFrameData
     /// <see langword="true"/> when the channel contains the exact requested type.
     /// </returns>
     public bool TryGet<TValue>(
-        RenderDataChannelId channel,
+        RenderDataChannelID channel,
         out TValue? value
     ) {
         if (channel.isValid
@@ -114,7 +114,7 @@ public sealed class RenderFrameData
     }
 
     private readonly record struct FrameDataKey(
-        RenderDataChannelId channel,
+        RenderDataChannelID channel,
         Type type
     );
 }

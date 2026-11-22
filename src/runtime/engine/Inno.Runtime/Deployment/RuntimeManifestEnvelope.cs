@@ -72,7 +72,7 @@ public static class RuntimeManifestEnvelope
     /// <exception cref="InvalidDataException">
     /// Thrown when the envelope is truncated, malformed, or contains an invalid application identity.
     /// </exception>
-    public static string ReadApplicationId(ReadOnlySpan<byte> data)
+    public static string ReadApplicationID(ReadOnlySpan<byte> data)
     {
         Parse(data, out string applicationID, out _, out _);
         ValidateApplicationID(applicationID);

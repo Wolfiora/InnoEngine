@@ -5,9 +5,9 @@ using Inno.Scene;
 
 namespace Inno.Editor.Panel.Hierarchy;
 
-[EditorAction(HierarchyInteractionIds.C_UNLOAD_SCENE, priority: 100)]
-[EditorMenu(HierarchyInteractionIds.C_AREA, "Unload", order: 400, separatorBefore: true)]
-[EditorShortcut(HierarchyInteractionIds.C_AREA, KeyCode.Delete)]
+[EditorAction(HierarchyInteractionIDs.C_UNLOAD_SCENE, priority: 100)]
+[EditorMenu(HierarchyInteractionIDs.C_AREA, "Unload", order: 400, separatorBefore: true)]
+[EditorShortcut(HierarchyInteractionIDs.C_AREA, KeyCode.Delete)]
 internal sealed class UnloadSceneCommand(SceneEdits edits) : EditorAction<GameScene>
 {
     /// <summary>

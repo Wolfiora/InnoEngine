@@ -120,7 +120,7 @@ public sealed class SceneFacadeTests : IDisposable
 
         Assert.True(gameObject.isRuntimeValid);
         Assert.Equal("Cube", gameObject.name);
-        Assert.Equal(GameObject.defaultTag, gameObject.tag);
+        Assert.Equal(GameObject.C_DEFAULT_TAG, gameObject.tag);
         Assert.True(gameObject.activeSelf);
         Assert.True(gameObject.HasComponent<Transform>());
         Assert.Single(scene.GetObjects());
@@ -190,10 +190,10 @@ public sealed class SceneFacadeTests : IDisposable
         GameObject b = scene.CreateObject("B");
 
         Guid[] ids = [.. scene.GetObjects()
-            .Select(static o => o.identity.persistentId)
+            .Select(static o => o.identity.persistentID)
             .OrderBy(static id => id)];
 
-        Assert.Equal(new[] { a.identity.persistentId, b.identity.persistentId }.OrderBy(static id => id), ids);
+        Assert.Equal(new[] { a.identity.persistentID, b.identity.persistentID }.OrderBy(static id => id), ids);
     }
 
     [Fact]

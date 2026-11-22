@@ -16,12 +16,12 @@ internal static class SceneReferenceIndex
     ) {
         ArgumentNullException.ThrowIfNull(root);
         ArgumentNullException.ThrowIfNull(workspace);
-        var subtreeIds = new HashSet<Guid>();
-        CollectSubtreeIds(root, subtreeIds);
+        var subtreeIDs = new HashSet<Guid>();
+        CollectSubtreeIDs(root, subtreeIDs);
         var result = new List<SceneIncomingReferenceState>();
         foreach (EngineObject owner in EnumerateSceneObjects(root.scene))
         {
-            if (subtreeIds.Contains(owner.identity.persistentId) || owner is not ISerializable serializable)
+            if (subtreeIDs.Contains(owner.identity.persistentID) || owner is not ISerializable serializable)
             {
                 continue;
             }
@@ -30,13 +30,13 @@ internal static class SceneReferenceIndex
             {
                 SerializedProperty property = properties[i];
                 if (!property.canRead
-                    || !ContainsReference(property.GetValue(), subtreeIds, new HashSet<object>(ReferenceEqualityComparer.Instance))
+                    || !ContainsReference(property.GetValue(), subtreeIDs, new HashSet<object>(ReferenceEqualityComparer.Instance))
                 ) {
                     continue;
                 }
                 result.Add(
                     new SceneIncomingReferenceState(
-                        owner.identity.persistentId,
+                        owner.identity.persistentID,
                         property.name,
                         ScenePropertySerialization.CaptureProperty(
                             owner,
@@ -58,8 +58,8 @@ internal static class SceneReferenceIndex
     ) {
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(scene);
-        var targetIds = new HashSet<Guid> { target.identity.persistentId };
-        return CaptureIncoming(scene, targetIds, workspace);
+        var targetIDs = new HashSet<Guid> { target.identity.persistentID };
+        return CaptureIncoming(scene, targetIDs, workspace);
     }
 
     internal static SceneReferenceRestoreResult RestoreIncoming(
@@ -184,7 +184,7 @@ internal static class SceneReferenceIndex
         try
         {
             return new SceneReferenceRollbackState(
-                owner.identity.persistentId,
+                owner.identity.persistentID,
                 propertyName,
                 ScenePropertySerialization.CaptureProperty(
                     owner,
@@ -199,7 +199,7 @@ internal static class SceneReferenceIndex
         {
             SerializedProperty property = ResolveProperty(owner, propertyName, workspace.serialization);
             return new SceneReferenceRollbackState(
-                owner.identity.persistentId,
+                owner.identity.persistentID,
                 propertyName,
                 data: null,
                 property.GetValue()
@@ -214,7 +214,7 @@ internal static class SceneReferenceIndex
     ) {
         if (owner is not ISerializable serializable)
         {
-            throw new InvalidOperationException($"Incoming reference owner '{owner.identity.persistentId}' is not serializable.");
+            throw new InvalidOperationException($"Incoming reference owner '{owner.identity.persistentID}' is not serializable.");
         }
         IReadOnlyList<SerializedProperty> properties = serialization.GetProperties(serializable);
         for (int i = 0; i < properties.Count; i++)
@@ -225,7 +225,7 @@ internal static class SceneReferenceIndex
             }
         }
         throw new InvalidOperationException(
-            $"Incoming property '{propertyName}' on '{owner.identity.persistentId}' is unavailable."
+            $"Incoming property '{propertyName}' on '{owner.identity.persistentID}' is unavailable."
         );
     }
 
@@ -234,7 +234,7 @@ internal static class SceneReferenceIndex
 
     private static bool ContainsReference(
         object? value,
-        IReadOnlySet<Guid> targetIds,
+        IReadOnlySet<Guid> targetIDs,
         ISet<object> visited
     ) {
         if (value is null)
@@ -243,7 +243,7 @@ internal static class SceneReferenceIndex
         }
         if (value is EngineObject engineObject)
         {
-            return !engineObject.isDestroyed && targetIds.Contains(engineObject.identity.persistentId);
+            return !engineObject.isDestroyed && targetIDs.Contains(engineObject.identity.persistentID);
         }
         Type type = value.GetType();
         if (type.IsPrimitive || type.IsEnum || value is string or Type or Delegate or decimal or DateTime or Guid)
@@ -258,7 +258,7 @@ internal static class SceneReferenceIndex
         {
             foreach (object? item in enumerable)
             {
-                if (ContainsReference(item, targetIds, visited))
+                if (ContainsReference(item, targetIDs, visited))
                 {
                     return true;
                 }
@@ -282,7 +282,7 @@ internal static class SceneReferenceIndex
                 {
                     continue;
                 }
-                if (ContainsReference(fieldValue, targetIds, visited))
+                if (ContainsReference(fieldValue, targetIDs, visited))
                 {
                     return true;
                 }
@@ -293,13 +293,13 @@ internal static class SceneReferenceIndex
 
     private static SceneIncomingReferenceState[] CaptureIncoming(
         GameScene scene,
-        IReadOnlySet<Guid> targetIds,
+        IReadOnlySet<Guid> targetIDs,
         EditorSceneWorkspace workspace
     ) {
         var result = new List<SceneIncomingReferenceState>();
         foreach (EngineObject owner in EnumerateSceneObjects(scene))
         {
-            if (targetIds.Contains(owner.identity.persistentId) || owner is not ISerializable serializable)
+            if (targetIDs.Contains(owner.identity.persistentID) || owner is not ISerializable serializable)
             {
                 continue;
             }
@@ -308,13 +308,13 @@ internal static class SceneReferenceIndex
             {
                 SerializedProperty property = properties[i];
                 if (!property.canRead
-                    || !ContainsReference(property.GetValue(), targetIds, new HashSet<object>(ReferenceEqualityComparer.Instance))
+                    || !ContainsReference(property.GetValue(), targetIDs, new HashSet<object>(ReferenceEqualityComparer.Instance))
                 ) {
                     continue;
                 }
                 result.Add(
                     new SceneIncomingReferenceState(
-                        owner.identity.persistentId,
+                        owner.identity.persistentID,
                         property.name,
                         ScenePropertySerialization.CaptureProperty(
                             owner,
@@ -348,20 +348,20 @@ internal static class SceneReferenceIndex
         }
     }
 
-    private static void CollectSubtreeIds(
+    private static void CollectSubtreeIDs(
         GameObject gameObject,
         ISet<Guid> result
     ) {
-        _ = result.Add(gameObject.identity.persistentId);
+        _ = result.Add(gameObject.identity.persistentID);
         IReadOnlyList<GameComponent> components = gameObject.GetComponents();
         for (int i = 0; i < components.Count; i++)
         {
-            _ = result.Add(components[i].identity.persistentId);
+            _ = result.Add(components[i].identity.persistentID);
         }
         IReadOnlyList<Transform> children = gameObject.transform.children;
         for (int i = 0; i < children.Count; i++)
         {
-            CollectSubtreeIds(children[i].gameObject, result);
+            CollectSubtreeIDs(children[i].gameObject, result);
         }
     }
 }

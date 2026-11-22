@@ -78,12 +78,12 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
                     }
                 }
                 if (parent is not null
-                    && parent.scene.identity.persistentId != placement.sceneID
-                    && (!destinationScenes.TryGetValue(parent.identity.persistentId, out Guid parentDestination)
+                    && parent.scene.identity.persistentID != placement.sceneID
+                    && (!destinationScenes.TryGetValue(parent.identity.persistentID, out Guid parentDestination)
                         || parentDestination != placement.sceneID)
                 ) {
                     return EditorHistoryAvailability.Unavailable(
-                        $"Parent GameObject '{parent.identity.persistentId}' does not belong to destination scene '{placement.sceneID}'."
+                        $"Parent GameObject '{parent.identity.persistentID}' does not belong to destination scene '{placement.sceneID}'."
                     );
                 }
             }
@@ -164,9 +164,9 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
             GameObject gameObject = m_workspace.Find<GameObject>(placement.objectID)
                                     ?? throw new InvalidOperationException($"GameObject '{placement.objectID}' is no longer available.");
             return new SceneObjectPlacement(
-                gameObject.scene.identity.persistentId,
+                gameObject.scene.identity.persistentID,
                 placement.objectID,
-                gameObject.transform.parent?.gameObject.identity.persistentId,
+                gameObject.transform.parent?.gameObject.identity.persistentID,
                 gameObject.transform.siblingIndex
             );
         }).ToArray();

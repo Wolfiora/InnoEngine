@@ -58,10 +58,10 @@ public interface IEditorScriptCompilation
     /// <summary>
     /// Requests cancellation while retaining ownership until compilation and retirement finish.
     /// </summary>
-    /// <param name="operationId">
+    /// <param name="operationID">
     /// The request observed by the presentation; stale requests have no effect.
     /// </param>
-    void CancelCompilation(long operationId);
+    void CancelCompilation(long operationID);
 
     /// <summary>
     /// Queues a fresh cache-aware compilation for a build or simulation workflow.

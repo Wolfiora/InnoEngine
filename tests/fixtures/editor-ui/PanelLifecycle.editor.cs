@@ -7,7 +7,7 @@ using InnoEditor.Core;
 using InnoEditor.Interactions;
 using InnoEditor.Scene;
 
-namespace EditorUiAcceptance;
+namespace EditorUIAcceptance;
 
 /// <summary>
 /// Exercises the normal product panel protocol from an ordinary source Editor extension.

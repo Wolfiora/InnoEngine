@@ -104,12 +104,12 @@ public sealed class AssetSampleImportModule : EditorModule
     /// <summary>
     /// Cancels only the import observed by the presentation.
     /// </summary>
-    /// <param name="operationId">
+    /// <param name="operationID">
     /// The current import identity captured by the caller.
     /// </param>
-    public void Cancel(long operationId)
+    public void Cancel(long operationID)
     {
-        if (progress.operationId == operationId)
+        if (progress.operationID == operationID)
         {
             CancelCurrent();
         }
@@ -146,7 +146,7 @@ public sealed class AssetSampleImportModule : EditorModule
                 SetProgress(0.2f, "Validating sample scripts...");
                 string physicalSource = Path.Combine(m_assets.pipeline.assetRoot, import.target.localPath);
                 string targetPath = import.target.ToString();
-                long operation = progress.operationId;
+                long operation = progress.operationID;
                 import.BeginValidation(async (
                     sources,
                     cancellationToken
@@ -303,7 +303,7 @@ public sealed class AssetSampleImportModule : EditorModule
         {
             if (!m_acceptProgress
                 || m_progress.cancellationRequested
-                || (operationID is long expected && expected != m_progress.operationId)
+                || (operationID is long expected && expected != m_progress.operationID)
             ) {
                 return;
             }

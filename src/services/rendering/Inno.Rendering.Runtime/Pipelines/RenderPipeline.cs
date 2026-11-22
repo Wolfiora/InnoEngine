@@ -12,7 +12,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Builds frame-local passes without prescribing a rendering model.
 /// </summary>
-[StableTypeId("f3736feb-4238-54b6-9fe9-c40ffb095134")]
+[StableTypeID("f3736feb-4238-54b6-9fe9-c40ffb095134")]
 public abstract class RenderPipeline : IDisposable
 {
     private bool m_disposed;

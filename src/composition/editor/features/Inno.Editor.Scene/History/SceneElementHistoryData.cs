@@ -27,7 +27,7 @@ internal sealed record SceneElementHistoryData(
         writer.Write(sceneID.ToByteArray());
         writer.Write(ownerID.ToByteArray());
         writer.Write(elementID.ToByteArray());
-        writer.Write(type.stableId.ToByteArray());
+        writer.Write(type.stableID.ToByteArray());
         writer.Write(beforeIndex);
         writer.Write(afterIndex);
         writer.Write(existsBefore);

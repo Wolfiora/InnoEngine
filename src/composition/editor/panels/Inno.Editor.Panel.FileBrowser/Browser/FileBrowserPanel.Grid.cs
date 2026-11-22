@@ -13,8 +13,8 @@ using Inno.Editor.ImGui.ImGuiWidget;
 
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
 
@@ -24,20 +24,20 @@ internal sealed partial class FileBrowserPanel
         EditorContext context,
         IReadOnlyList<FileBrowserDisplayEntry> entries
     ) {
-        EditorUiLayout style = Ui.GetLayout();
-        float sliderHeight = Ui.GetFrameHeight() + style.windowPadding.Y * 2f + style.itemSpacing.Y;
-        bool entriesVisible = Ui.BeginChild("##EntriesScroll", new Vector2(0f, -sliderHeight), ImGuiChildFlags.None);
+        EditorUILayout style = Gui.GetLayout();
+        float sliderHeight = Gui.GetFrameHeight() + style.windowPadding.Y * 2f + style.itemSpacing.Y;
+        bool entriesVisible = Gui.BeginChild("##EntriesScroll", new Vector2(0f, -sliderHeight), ImGuiChildFlags.None);
         try
         {
             if (entriesVisible)
             {
-                if (Ui.IsWindowFocused())
+                if (Gui.IsWindowFocused())
                 {
                     m_rename.MarkInteraction(FileBrowserPresentation.Grid);
                 }
                 float cellSize = GetGridCellSize();
-                int columns = Math.Max(1, (int)(Ui.GetContentRegionAvailable().X / cellSize));
-                int rows = Math.Max(1, (int)(Ui.GetContentRegionAvailable().Y / cellSize));
+                int columns = Math.Max(1, (int)(Gui.GetContentRegionAvailable().X / cellSize));
+                int rows = Math.Max(1, (int)(Gui.GetContentRegionAvailable().Y / cellSize));
                 HandleEntryKeyboardNavigation(columns * rows);
                 DrawGrid(context, entries);
                 HandleBackgroundSelection(context);
@@ -46,7 +46,7 @@ internal sealed partial class FileBrowserPanel
         }
         finally
         {
-            Ui.EndChild();
+            Gui.EndChild();
         }
 
         DrawGridScaleSlider();
@@ -54,7 +54,7 @@ internal sealed partial class FileBrowserPanel
 
     private void HandleBackgroundSelection(EditorContext context)
     {
-        if (!Ui.IsWindowHovered() || Ui.IsAnyItemHovered() || !Ui.IsMouseReleased(ImGuiMouseButton.Left))
+        if (!Gui.IsWindowHovered() || Gui.IsAnyItemHovered() || !Gui.IsMouseReleased(ImGuiMouseButton.Left))
         {
             return;
         }
@@ -66,14 +66,14 @@ internal sealed partial class FileBrowserPanel
     {
         m_gridScale = Math.Clamp(m_gridScale, currentBrowserStyle.gridMinimumScale, currentBrowserStyle.gridMaximumScale);
         DrawFooterTopSplitter();
-        Vector2 cursor = Ui.GetCursorPosition();
-        float labelOffsetY = MathF.Max(0f, (Ui.GetFrameHeight() - Ui.GetTextLineHeight()) * 0.5f);
-        Ui.SetCursorPosY(cursor.Y + labelOffsetY);
-        Ui.Text("Scale");
-        Ui.SameLine(0f, -1f);
-        Ui.SetCursorPosY(cursor.Y);
-        Ui.SetNextItemWidth(-1f);
-        _ = Ui.SliderFloat("##GridScale", ref m_gridScale, currentBrowserStyle.gridMinimumScale, currentBrowserStyle.gridMaximumScale);
+        Vector2 cursor = Gui.GetCursorPosition();
+        float labelOffsetY = MathF.Max(0f, (Gui.GetFrameHeight() - Gui.GetTextLineHeight()) * 0.5f);
+        Gui.SetCursorPosY(cursor.Y + labelOffsetY);
+        Gui.Text("Scale");
+        Gui.SameLine(0f, -1f);
+        Gui.SetCursorPosY(cursor.Y);
+        Gui.SetNextItemWidth(-1f);
+        _ = Gui.SliderFloat("##GridScale", ref m_gridScale, currentBrowserStyle.gridMinimumScale, currentBrowserStyle.gridMaximumScale);
         m_gridScale = Math.Clamp(m_gridScale, currentBrowserStyle.gridMinimumScale, currentBrowserStyle.gridMaximumScale);
     }
 
@@ -82,9 +82,9 @@ internal sealed partial class FileBrowserPanel
         IReadOnlyList<FileBrowserDisplayEntry> entries
     ) {
         float cellSize = GetGridCellSize();
-        float available = MathF.Max(cellSize, Ui.GetContentRegionAvailable().X);
+        float available = MathF.Max(cellSize, Gui.GetContentRegionAvailable().X);
         int columns = Math.Max(1, (int)(available / cellSize));
-        bool tableStarted = Ui.BeginTable(
+        bool tableStarted = Gui.BeginTable(
             "##FileBrowserGrid",
             columns,
             (ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoPadOuterX | ImGuiTableFlags.NoSavedSettings),
@@ -108,7 +108,7 @@ internal sealed partial class FileBrowserPanel
             {
                 for (int row = start; row < end; row++)
                 {
-                    Ui.TableNextRow();
+                    Gui.TableNextRow();
                     for (int column = 0; column < state.columns; column++)
                     {
                         int index = row * state.columns + column;
@@ -116,7 +116,7 @@ internal sealed partial class FileBrowserPanel
                         {
                             break;
                         }
-                        _ = Ui.TableSetColumnIndex(column);
+                        _ = Gui.TableSetColumnIndex(column);
                         state.panel.DrawGridItem(state.context, state.entries[index]);
                     }
                 }
@@ -124,7 +124,7 @@ internal sealed partial class FileBrowserPanel
         }
         finally
         {
-            Ui.EndTable();
+            Gui.EndTable();
         }
     }
 
@@ -135,7 +135,7 @@ internal sealed partial class FileBrowserPanel
         float cellSize = GetGridCellSize();
         if (!m_data.TryResolve(item, out AssetFileEntry? entry))
         {
-            Ui.Dummy(new(cellSize, cellSize));
+            Gui.Dummy(new(cellSize, cellSize));
             return;
         }
         string icon = m_assets.GetIcon(entry);
@@ -143,10 +143,10 @@ internal sealed partial class FileBrowserPanel
         bool selected = m_assets.browser.IsSelected(context, entry);
         bool editing = m_rename.IsEditing(context, entry.assetPath.ToString(), FileBrowserPresentation.Grid);
         var itemSize = new Vector2(cellSize - currentBrowserStyle.gridCellPadding, cellSize - currentBrowserStyle.gridCellPadding);
-        Ui.PushId(entry.assetPath.ToString());
-        Ui.PushStyleColor(ImGuiCol.Header, EditorPalette.transparent);
-        Ui.PushStyleColor(ImGuiCol.HeaderHovered, EditorPalette.transparent);
-        Ui.PushStyleColor(ImGuiCol.HeaderActive, EditorPalette.transparent);
+        Gui.PushID(entry.assetPath.ToString());
+        Gui.PushStyleColor(ImGuiCol.Header, EditorPalette.transparent);
+        Gui.PushStyleColor(ImGuiCol.HeaderHovered, EditorPalette.transparent);
+        Gui.PushStyleColor(ImGuiCol.HeaderActive, EditorPalette.transparent);
         try
         {
             ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags.AllowDoubleClick;
@@ -155,13 +155,13 @@ internal sealed partial class FileBrowserPanel
                 selectableFlags |= ImGuiSelectableFlags.AllowOverlap;
             }
             RequestEntryKeyboardFocus(entry);
-            bool activated = Ui.Selectable("##GridItem", selected, selectableFlags, itemSize);
-            bool itemHovered = Ui.IsItemHovered();
-            bool itemActive = Ui.IsItemActive();
-            Vector2 itemMin = Ui.GetItemMinimum();
-            Vector2 itemMax = Ui.GetItemMaximum();
-            Vector2 layoutCursor = Ui.GetCursorScreenPosition();
-            bool doubleClicked = itemHovered && Ui.IsMouseDoubleClicked(ImGuiMouseButton.Left);
+            bool activated = Gui.Selectable("##GridItem", selected, selectableFlags, itemSize);
+            bool itemHovered = Gui.IsItemHovered();
+            bool itemActive = Gui.IsItemActive();
+            Vector2 itemMin = Gui.GetItemMinimum();
+            Vector2 itemMax = Gui.GetItemMaximum();
+            Vector2 layoutCursor = Gui.GetCursorScreenPosition();
+            bool doubleClicked = itemHovered && Gui.IsMouseDoubleClicked(ImGuiMouseButton.Left);
             if (activated && !m_keyboardHandled)
             {
                 HandleEntryActivation(context, entry, FileBrowserPresentation.Grid, doubleClicked);
@@ -181,12 +181,12 @@ internal sealed partial class FileBrowserPanel
             if (editing)
             {
                 float width = MathF.Max(1f, itemMax.X - itemMin.X - currentBrowserStyle.gridLabelHorizontalPadding);
-                float lineHeight = Ui.GetTextLineHeight();
+                float lineHeight = Gui.GetTextLineHeight();
                 float lineAdvance = MathF.Max(1f, lineHeight + currentBrowserStyle.gridLabelLineSpacing);
                 float labelAreaHeight = lineHeight + lineAdvance * (C_GRID_LABEL_LINE_COUNT - 1);
                 float labelAreaTop = itemMax.Y - currentBrowserStyle.gridLabelBottomPadding - labelAreaHeight;
                 float y = labelAreaTop + (labelAreaHeight - lineHeight) * 0.5f;
-                Ui.SetCursorScreenPosition(new Vector2(itemMin.X + currentBrowserStyle.gridLabelHorizontalPadding * 0.5f, y));
+                Gui.SetCursorScreenPosition(new Vector2(itemMin.X + currentBrowserStyle.gridLabelHorizontalPadding * 0.5f, y));
                 m_rename.Draw(
                     context,
                     $"grid_{entry.assetPath.ToString()}",
@@ -195,20 +195,20 @@ internal sealed partial class FileBrowserPanel
                     width,
                     lineHeight
                 );
-                Ui.SetCursorScreenPosition(layoutCursor);
-                Ui.Dummy(Vector2.Zero);
+                Gui.SetCursorScreenPosition(layoutCursor);
+                Gui.Dummy(Vector2.Zero);
             }
         }
         finally
         {
-            Ui.PopStyleColor(3);
-            Ui.PopId();
+            Gui.PopStyleColor(3);
+            Gui.PopID();
         }
     }
 
     private float GetGridCellSize()
     {
-        float fontSize = Ui.GetFontSize();
+        float fontSize = Gui.GetFontSize();
         return MathF.Max(
             currentBrowserStyle.gridMinimumCellSize,
             fontSize * (m_gridScale + currentBrowserStyle.gridScaleBias) + currentBrowserStyle.gridFixedCellPadding
@@ -236,9 +236,9 @@ internal sealed partial class FileBrowserPanel
         {
             bg = EditorPalette.GetHovered(bg);
         }
-        uint bgColor = Ui.ToPackedColor(bg);
-        Ui.DrawFilledRectangle(min, max, bgColor, currentBrowserStyle.frameRounding);
-        float fontSize = Ui.GetFontSize();
+        uint bgColor = Gui.ToPackedColor(bg);
+        Gui.DrawFilledRectangle(min, max, bgColor, currentBrowserStyle.frameRounding);
+        float fontSize = Gui.GetFontSize();
         float iconFontSize = fontSize * scale;
         Vector4 iconBounds = EditorUI.current.widgets.GetGlyphVisualBounds(iconFontSize, icon);
         var iconSize = new Vector2(iconBounds.Z - iconBounds.X, iconBounds.W - iconBounds.Y);
@@ -247,7 +247,7 @@ internal sealed partial class FileBrowserPanel
             MathF.Max(1f, size.X - currentBrowserStyle.gridLabelHorizontalPadding),
             C_GRID_LABEL_LINE_COUNT
         );
-        float lineHeight = Ui.GetTextLineHeight();
+        float lineHeight = Gui.GetTextLineHeight();
         float lineAdvance = MathF.Max(1f, lineHeight + currentBrowserStyle.gridLabelLineSpacing);
         float labelAreaHeight = lineHeight + lineAdvance * (C_GRID_LABEL_LINE_COUNT - 1);
         float labelAreaTop = max.Y - currentBrowserStyle.gridLabelBottomPadding - labelAreaHeight;
@@ -270,16 +270,16 @@ internal sealed partial class FileBrowserPanel
             horizontalCenter + C_GRID_ICON_HORIZONTAL_OPTICAL_OFFSET * EditorUI.current.widgets.style.zoom,
             iconAreaTop + maximumIconHeight * 0.5f
         );
-        uint textColor = Ui.ToPackedColor(EditorPalette.contentText);
-        Ui.PushClipRect(min, max, true);
+        uint textColor = Gui.ToPackedColor(EditorPalette.contentText);
+        Gui.PushClipRect(min, max, true);
         EditorUI.current.widgets.AddGlyphCentered(iconFontSize, icon, iconAreaCenter, textColor);
         for (int i = 0; drawName && i < nameLines.Length; i++)
         {
-            Vector2 lineSize = Ui.MeasureText(nameLines[i]);
+            Vector2 lineSize = Gui.MeasureText(nameLines[i]);
             var linePosition = new Vector2(horizontalCenter - lineSize.X * 0.5f, labelY + lineAdvance * i);
-            Ui.DrawText(linePosition, textColor, nameLines[i]);
+            Gui.DrawText(linePosition, textColor, nameLines[i]);
         }
 
-        Ui.PopClipRect();
+        Gui.PopClipRect();
     }
 }

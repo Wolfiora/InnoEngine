@@ -3,7 +3,7 @@ namespace Inno.Editor.Assets;
 /// <summary>
 /// Contains one atomically captured sample import status.
 /// </summary>
-/// <param name="operationId">
+/// <param name="operationID">
 /// The import identity within its owner.
 /// </param>
 /// <param name="fraction">
@@ -16,7 +16,7 @@ namespace Inno.Editor.Assets;
 /// Whether cancellation is draining owned work.
 /// </param>
 public readonly record struct AssetSampleImportProgress(
-    long operationId,
+    long operationID,
     float fraction,
     string status,
     bool cancellationRequested

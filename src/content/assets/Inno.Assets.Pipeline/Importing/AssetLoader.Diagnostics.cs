@@ -123,7 +123,7 @@ public sealed partial class AssetLoader
         bool repeatedFailure = record.meta.importStatus == (int)AssetImportStatus.Failed
                                && string.Equals(record.meta.sourceHash, sourceHash, StringComparison.Ordinal)
                                && string.Equals(record.meta.importerSettingsHash, settingsHash, StringComparison.Ordinal)
-                               && record.importerGeneration == m_importers.GetGeneration(importer.importerId)
+                               && record.importerGeneration == m_importers.GetGeneration(importer.importerID)
                                && string.Equals(
                                    record.meta.importerImplementationFingerprint,
                                    GetImporterImplementationFingerprint(importer),
@@ -137,18 +137,18 @@ public sealed partial class AssetLoader
         record.meta.relativePath = relativePath;
         record.meta.persistentId = persistentID;
         record.meta.sourceHash = sourceHash;
-        record.meta.importerId = importer.importerId;
+        record.meta.importerId = importer.importerID;
         record.meta.importerImplementationFingerprint = GetImporterImplementationFingerprint(importer);
         record.meta.importerSettingsHash = settingsHash;
         record.meta.importDependencies = dependencies;
-        record.importerGeneration = m_importers.GetGeneration(importer.importerId);
+        record.importerGeneration = m_importers.GetGeneration(importer.importerID);
         ApplySourceStamp(record.meta, sourceStamp);
         record.meta.deploymentScope = (int)importer.deploymentScope;
         if (record.meta.stableAssetTypeId == Guid.Empty
             && m_types.TryGetTypeRef(importer.targetAssetType, out TypeRef importerTypeRef)
         ) {
-            record.meta.stableAssetTypeId = importerTypeRef.stableId;
-            record.stableTypeID = importerTypeRef.stableId;
+            record.meta.stableAssetTypeId = importerTypeRef.stableID;
+            record.stableTypeID = importerTypeRef.stableID;
         }
         AssetImportExtensionUnavailableException? unavailable = exception as AssetImportExtensionUnavailableException;
         bool extensionUnavailable = unavailable is not null;
@@ -172,7 +172,7 @@ public sealed partial class AssetLoader
             AssetSourceFileStamp.TryCapture(GetSourcePath(relativePath), out AssetSourceFileStamp pendingSourceStamp);
             AssetSourceFileStamp.TryCapture(GetMetaPath(relativePath), out AssetSourceFileStamp metadataStamp);
             m_unavailableImports[relativePath] = (m_types.current.version, pendingSourceStamp, metadataStamp,
-                unavailable!.extensionKind, unavailable.extensionId);
+                unavailable!.extensionKind, unavailable.extensionID);
         }
         else
         {

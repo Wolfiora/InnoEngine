@@ -9,8 +9,8 @@ using Inno.Editor.Scene;
 using Inno.Scene;
 using Inno.Scene.Components;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
 
@@ -37,8 +37,8 @@ internal sealed class InspectorCardControls
         ArgumentNullException.ThrowIfNull(edits);
         ArgumentNullException.ThrowIfNull(component);
         ArgumentNullException.ThrowIfNull(requestRemove);
-        Guid componentID = component.identity.persistentId;
-        if (EditorUI.current.widgets.ClickableText($"reset_Component_{componentID:N}", ImGuiIcon.ArrowRotateLeft, "Reset Component"))
+        Guid componentID = component.identity.persistentID;
+        if (EditorUI.current.widgets.ClickableText($"reset_Component_{componentID:N}", ImGuiIcon.C_ARROW_ROTATE_LEFT, "Reset Component"))
         {
             TryEdit(() => edits.ResetComponent(component), "Component reset");
         }
@@ -47,8 +47,8 @@ internal sealed class InspectorCardControls
         {
             return;
         }
-        Ui.SameLine(0f, 0f);
-        if (EditorUI.current.widgets.ClickableText($"remove_Component_{componentID:N}", ImGuiIcon.Xmark, "Remove Component"))
+        Gui.SameLine(0f, 0f);
+        if (EditorUI.current.widgets.ClickableText($"remove_Component_{componentID:N}", ImGuiIcon.C_XMARK, "Remove Component"))
         {
             requestRemove();
         }
@@ -64,14 +64,14 @@ internal sealed class InspectorCardControls
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentNullException.ThrowIfNull(system);
         ArgumentNullException.ThrowIfNull(requestRemove);
-        Guid systemID = system.identity.persistentId;
-        if (EditorUI.current.widgets.ClickableText($"reset_System_{systemID:N}", ImGuiIcon.ArrowRotateLeft, "Reset System"))
+        Guid systemID = system.identity.persistentID;
+        if (EditorUI.current.widgets.ClickableText($"reset_System_{systemID:N}", ImGuiIcon.C_ARROW_ROTATE_LEFT, "Reset System"))
         {
             TryEdit(() => edits.ResetSystem(system), "System reset");
         }
 
-        Ui.SameLine(0f, 0f);
-        if (EditorUI.current.widgets.ClickableText($"remove_System_{systemID:N}", ImGuiIcon.Xmark, "Remove System"))
+        Gui.SameLine(0f, 0f);
+        if (EditorUI.current.widgets.ClickableText($"remove_System_{systemID:N}", ImGuiIcon.C_XMARK, "Remove System"))
         {
             requestRemove();
         }
@@ -128,7 +128,7 @@ internal sealed class InspectorCardControls
         ArgumentNullException.ThrowIfNull(target);
         DrawDropTarget(
             C_COMPONENT_PAYLOAD,
-            $"component_{target.identity.persistentId:N}",
+            $"component_{target.identity.persistentID:N}",
             interactions,
             cardMinimum,
             cardMaximum,
@@ -167,7 +167,7 @@ internal sealed class InspectorCardControls
         ArgumentNullException.ThrowIfNull(target);
         DrawDropTarget(
             C_SYSTEM_PAYLOAD,
-            $"system_{target.identity.persistentId:N}",
+            $"system_{target.identity.persistentID:N}",
             interactions,
             cardMinimum,
             cardMaximum,
@@ -201,12 +201,12 @@ internal sealed class InspectorCardControls
         Action<IdentityObject, bool> move,
         string operation
     ) {
-        if (!Ui.HasDragPayload(payloadType) || cardMaximum.X <= cardMinimum.X || cardMaximum.Y <= cardMinimum.Y)
+        if (!Gui.HasDragPayload(payloadType) || cardMaximum.X <= cardMinimum.X || cardMaximum.Y <= cardMinimum.Y)
         {
             return;
         }
 
-        uint targetID = Ui.GetControlId($"##inspector_card_drop_{id}");
+        uint targetID = Gui.GetControlID($"##inspector_card_drop_{id}");
         bool delivered = EditorUI.current.widgets.DragDropTarget(
             payloadType,
             cardMinimum,
@@ -225,7 +225,7 @@ internal sealed class InspectorCardControls
             return;
         }
 
-        bool insertAfter = Ui.GetMousePos().Y >= (cardMinimum.Y + cardMaximum.Y) * 0.5f;
+        bool insertAfter = Gui.GetMousePos().Y >= (cardMinimum.Y + cardMaximum.Y) * 0.5f;
         float markerY = insertAfter ? cardMaximum.Y : cardMinimum.Y;
         if (isPreviewing)
         {
@@ -255,29 +255,29 @@ internal sealed class InspectorCardControls
         string title,
         bool dimmed
     ) {
-        Vector2 origin = Ui.GetCursorScreenPosition();
+        Vector2 origin = Gui.GetCursorScreenPosition();
         Vector2 padding = EditorUI.current.widgets.style.cardHeaderPadding;
-        Vector2 gripSize = Ui.MeasureText(ImGuiIcon.GripVertical);
-        Vector2 titleSize = Ui.MeasureText(title);
+        Vector2 gripSize = Gui.MeasureText(ImGuiIcon.C_GRIP_VERTICAL);
+        Vector2 titleSize = Gui.MeasureText(title);
         var size = new Vector2(
             padding.X * 2f + gripSize.X + EditorUI.current.widgets.style.headerControlSpacing + titleSize.X,
             MathF.Max(gripSize.Y, titleSize.Y) + padding.Y * 2f
         );
-        Ui.DrawFilledRectangle(
+        Gui.DrawFilledRectangle(
             origin,
             origin + size,
-            Ui.ToPackedColor(EditorPalette.cardHeader),
+            Gui.ToPackedColor(EditorPalette.cardHeader),
             EditorUI.current.widgets.style.frameRounding
         );
-        uint color = Ui.ToPackedColor(dimmed ? EditorPalette.cardDisabledText : EditorPalette.text);
+        uint color = Gui.ToPackedColor(dimmed ? EditorPalette.cardDisabledText : EditorPalette.text);
         Vector2 textOrigin = origin + padding;
-        Ui.DrawText(textOrigin, color, ImGuiIcon.GripVertical);
-        Ui.DrawText(
+        Gui.DrawText(textOrigin, color, ImGuiIcon.C_GRIP_VERTICAL);
+        Gui.DrawText(
             new Vector2(textOrigin.X + gripSize.X + EditorUI.current.widgets.style.headerControlSpacing, textOrigin.Y),
             color,
             title
         );
-        Ui.Dummy(size);
+        Gui.Dummy(size);
     }
 
     private static bool IsOwnedBy(

@@ -26,9 +26,9 @@ public sealed class AudioRuntimeFactory : IRuntimeSubsystemFactory
     /// Gets stable ordering metadata that updates audio after scene simulation.
     /// </summary>
     public RuntimeSubsystemDescriptor descriptor { get; } = new(
-        new RuntimeSubsystemId("inno.runtime.audio"),
+        new RuntimeSubsystemID("inno.runtime.audio"),
         order: 500,
-        dependencies: [new RuntimeSubsystemId("inno.runtime.scene")]
+        dependencies: [new RuntimeSubsystemID("inno.runtime.scene")]
     );
 
     /// <summary>

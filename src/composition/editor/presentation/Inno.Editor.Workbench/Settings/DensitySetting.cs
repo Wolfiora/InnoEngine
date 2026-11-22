@@ -1,8 +1,8 @@
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Settings;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Workbench;
 
@@ -34,18 +34,18 @@ internal sealed class DensitySetting : EditorSetting
     {
         bool compact = setting.GetAsBoolean("compact", false);
         string preview = compact ? "Compact" : "Comfortable";
-        Ui.SetNextItemWidth(-1f);
+        Gui.SetNextItemWidth(-1f);
         if (!EditorUI.current.widgets.BeginBoundedCombo("##editor_density", preview))
         {
             return;
         }
         try
         {
-            if (Ui.Selectable("Comfortable", !compact))
+            if (Gui.Selectable("Comfortable", !compact))
             {
                 setting.SetAsBoolean("compact", false);
             }
-            if (Ui.Selectable("Compact", compact))
+            if (Gui.Selectable("Compact", compact))
             {
                 setting.SetAsBoolean("compact", true);
             }

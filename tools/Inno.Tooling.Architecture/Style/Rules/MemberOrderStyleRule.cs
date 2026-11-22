@@ -78,16 +78,16 @@ internal sealed class MemberOrderStyleRule : StyleRule
         bool isLayoutBound = type is StructDeclarationSyntax
                              || type is RecordDeclarationSyntax record && record.ClassOrStructKeyword.IsKind(SyntaxKind.StructKeyword)
                              || HasAttribute(type.AttributeLists, "StructLayout");
-        var keys = new Dictionary<MemberDeclarationSyntax, (int Group, int Kind, int Detail)>();
+        var keys = new Dictionary<MemberDeclarationSyntax, (int group, int kind, int detail)>();
         foreach (MemberDeclarationSyntax member in type.Members)
         {
             keys[member] = Key(member, type, isLayoutBound);
         }
 
         MemberDeclarationSyntax[] grouped = type.Members
-            .OrderBy(member => keys[member].Group)
-            .ThenBy(member => keys[member].Kind)
-            .ThenBy(member => keys[member].Detail)
+            .OrderBy(member => keys[member].group)
+            .ThenBy(member => keys[member].kind)
+            .ThenBy(member => keys[member].detail)
             .ToArray();
         MemberDeclarationSyntax[] ordered = Cluster(grouped, keys);
         if (ordered.SequenceEqual(type.Members)) return null;
@@ -99,7 +99,7 @@ internal sealed class MemberOrderStyleRule : StyleRule
         return ordered;
     }
 
-    private static (int Group, int Kind, int Detail) Key(
+    private static (int group, int kind, int detail) Key(
         MemberDeclarationSyntax member,
         TypeDeclarationSyntax type,
         bool isLayoutBound
@@ -151,7 +151,7 @@ internal sealed class MemberOrderStyleRule : StyleRule
     // Brings overloads next to the first of them and orders them by parameter count.
     private static MemberDeclarationSyntax[] Cluster(
         MemberDeclarationSyntax[] grouped,
-        Dictionary<MemberDeclarationSyntax, (int Group, int Kind, int Detail)> keys
+        Dictionary<MemberDeclarationSyntax, (int group, int kind, int detail)> keys
     ) {
         var result = new List<MemberDeclarationSyntax>(grouped.Length);
         var taken = new HashSet<MemberDeclarationSyntax>();

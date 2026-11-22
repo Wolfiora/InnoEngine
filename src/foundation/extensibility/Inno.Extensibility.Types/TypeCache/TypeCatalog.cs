@@ -248,14 +248,14 @@ public sealed class TypeCatalog : IDisposable
     /// </exception>
     public Type Resolve(TypeRef typeRef)
     {
-        if (typeRef.stableId != Guid.Empty && TryResolve(typeRef, out Type? type))
+        if (typeRef.stableID != Guid.Empty && TryResolve(typeRef, out Type? type))
         {
             return type!;
         }
         throw new InvalidOperationException(
-            typeRef.stableId == Guid.Empty
+            typeRef.stableID == Guid.Empty
             ? "An empty type reference cannot be resolved."
-            : $"Type reference '{typeRef.stableId:D}' is not available in the active type cache."
+            : $"Type reference '{typeRef.stableID:D}' is not available in the active type cache."
         );
     }
 

@@ -119,7 +119,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
                 optimize: false,
                 debugInformation: true
             );
-            var key = new ShaderKey(shader.identity.persistentId, target.key, variant.value);
+            var key = new ShaderKey(shader.identity.persistentID, target.key, variant.value);
             if (!m_shaders.TryGetValue(key, out ShaderEntry? entry))
             {
                 entry = new ShaderEntry();
@@ -188,7 +188,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
         {
             _ = GetShaderArtifact(shader, variant, capabilities, out _);
             ShaderCompileTarget target = m_shaderCompiler.CreateTarget(capabilities, optimize: false, debugInformation: true);
-            ShaderEntry entry = m_shaders[new(shader.identity.persistentId, target.key, variant.value)];
+            ShaderEntry entry = m_shaders[new(shader.identity.persistentID, target.key, variant.value)];
             return new(
                 entry.pending is not null
                 ? EditorShaderCompilationState.Compiling
@@ -224,14 +224,14 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
         RenderTextureArtifactReference texture,
         out ReadOnlyMemory<byte> artifact
     ) {
-        if (texture.assetId == Guid.Empty || string.IsNullOrWhiteSpace(texture.slot.id))
+        if (texture.assetID == Guid.Empty || string.IsNullOrWhiteSpace(texture.slot.id))
         {
             throw new ArgumentException("A valid texture artifact reference is required.", nameof(texture));
         }
         lock (m_sync)
         {
             EnsureActive();
-            var key = new TextureKey(texture.assetId, texture.slot.id, texture.slot.colorSpace);
+            var key = new TextureKey(texture.assetID, texture.slot.id, texture.slot.colorSpace);
             if (!m_textures.TryGetValue(key, out TextureEntry? entry))
             {
                 entry = new TextureEntry();
@@ -411,7 +411,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
             CancellationToken token = entry.cancellation.Token;
             entry.pending = RunOwnedAsync(async token =>
             {
-                using ArtifactLease lease = m_assets.AcquireArtifact(texture.assetId, texture.slot.sourceOutputName);
+                using ArtifactLease lease = m_assets.AcquireArtifact(texture.assetID, texture.slot.sourceOutputName);
                 return await Task.Run(
                     async () =>
                     {
@@ -474,7 +474,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
                        : RenderTargetArtifactStatus.Ready;
     }
 
-    private AssetSourceMount GetMount(AssetSourceId source)
+    private AssetSourceMount GetMount(AssetSourceID source)
         => m_assets.sourceMounts.FirstOrDefault(mount => mount.id == source)
            ?? throw new InvalidOperationException($"Asset source mount '{source}' is not active.");
 
@@ -517,7 +517,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
         foreach (Diagnostic diagnostic in diagnostics)
         {
             m_diagnostics.Publish(diagnostic);
-            active.Add(new DiagnosticIdentity(diagnostic.code, diagnostic.semanticId));
+            active.Add(new DiagnosticIdentity(diagnostic.code, diagnostic.semanticID));
         }
     }
 

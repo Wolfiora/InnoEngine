@@ -37,7 +37,7 @@ public sealed class ShaderInterfaceBinding
     /// Explicit resource slot, or null when the caller assigns an ordered layout.
     /// </param>
     public ShaderInterfaceBinding(
-        ShaderPropertyId id,
+        ShaderPropertyID id,
         ShaderPropertyType type,
         ShaderStage stages,
         int arrayCount = 1,
@@ -73,7 +73,7 @@ public sealed class ShaderInterfaceBinding
     /// <summary>
     /// Gets the stable property ID.
     /// </summary>
-    public ShaderPropertyId id { get; }
+    public ShaderPropertyID id { get; }
 
     /// <summary>
     /// Gets the expected value or resource type.

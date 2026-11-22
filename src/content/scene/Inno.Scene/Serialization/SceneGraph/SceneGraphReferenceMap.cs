@@ -14,28 +14,28 @@ internal sealed class SceneGraphReferenceMap : SceneReferenceScope
 
     internal SceneGraphReferenceMap(
         GameScene scene,
-        IReadOnlyDictionary<EngineObject, Guid>? sourceIds = null,
+        IReadOnlyDictionary<EngineObject, Guid>? sourceIDs = null,
         GameObject? captureRoot = null
     ) : base(scene, captureRoot)
     {
         // Capture callers own the complete map and keep it fixed for this synchronous scope.
-        m_sourceIDByObject = sourceIds;
+        m_sourceIDByObject = sourceIDs;
     }
 
     /// <inheritdoc/>
     protected override bool TryGetSourceID(
         EngineObject engineObject,
-        out Guid sourceId
+        out Guid sourceID
     ) {
-        sourceId = default;
-        return m_sourceIDByObject is not null && m_sourceIDByObject.TryGetValue(engineObject, out sourceId);
+        sourceID = default;
+        return m_sourceIDByObject is not null && m_sourceIDByObject.TryGetValue(engineObject, out sourceID);
     }
 
     /// <inheritdoc/>
     protected override bool TryResolve(
-        Guid sourceId,
+        Guid sourceID,
         out EngineObject? engineObject
-    ) => m_objectBySourceID.TryGetValue(sourceId, out engineObject);
+    ) => m_objectBySourceID.TryGetValue(sourceID, out engineObject);
 
     internal void Register(
         Guid sourceID,
@@ -53,7 +53,7 @@ internal sealed class SceneGraphReferenceMap : SceneReferenceScope
         var aliases = new Dictionary<Guid, Guid>();
         foreach ((Guid sourceID, EngineObject engineObject) in m_objectBySourceID)
         {
-            Guid persistentID = engineObject.identity.persistentId;
+            Guid persistentID = engineObject.identity.persistentID;
             if (sourceID != persistentID)
             {
                 aliases.Add(sourceID, persistentID);

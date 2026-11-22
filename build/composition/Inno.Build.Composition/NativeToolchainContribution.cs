@@ -46,7 +46,7 @@ public sealed class NativeToolchainContribution
             throw new ArgumentException("Native product contributions cannot be null.", nameof(nativeProducts));
         }
         this.nativeProducts = new ReadOnlyDictionary<string, NativeProductContribution>(
-            nativeProducts.ToDictionary(static product => product.plan.productId, StringComparer.Ordinal)
+            nativeProducts.ToDictionary(static product => product.plan.productID, StringComparer.Ordinal)
         );
     }
 

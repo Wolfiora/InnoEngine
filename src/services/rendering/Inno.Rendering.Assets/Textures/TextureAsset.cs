@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Represents imported texture content without owning a GPU handle.
 /// </summary>
-[StableTypeId("e174b6eb-f79a-470f-a460-84f88ab49d0e")]
+[StableTypeID("e174b6eb-f79a-470f-a460-84f88ab49d0e")]
 public sealed class TextureAsset : AssetObject, IRenderTextureArtifactSource
 {
     private static readonly RenderTextureArtifactSlot[] LINEAR_TEXTURE_ARTIFACTS =
@@ -103,7 +103,7 @@ public sealed class TextureAsset : AssetObject, IRenderTextureArtifactSource
     /// </exception>
     public RenderTextureArtifactReference GetTextureArtifactReference()
     {
-        Guid id = identity.persistentId;
+        Guid id = identity.persistentID;
         if (id == Guid.Empty)
         {
             throw new InvalidOperationException("Texture must have a persistent asset identity.");

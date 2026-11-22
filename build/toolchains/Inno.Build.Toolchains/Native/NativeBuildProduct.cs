@@ -22,7 +22,7 @@ public sealed class NativeBuildProduct : IDisposable
         BuildArtifactReadLease readLease
     ) {
         this.component = component;
-        this.targetId = targetID;
+        this.targetID = targetID;
         this.fingerprint = fingerprint;
         this.directory = directory;
         this.bindingGeneration = bindingGeneration;
@@ -48,7 +48,7 @@ public sealed class NativeBuildProduct : IDisposable
     /// <summary>
     /// Gets the target ABI selected for this build.
     /// </summary>
-    public string targetId { get; }
+    public string targetID { get; }
 
     /// <summary>
     /// Gets the content fingerprint covering sources, tool executables and toolchain declarations.

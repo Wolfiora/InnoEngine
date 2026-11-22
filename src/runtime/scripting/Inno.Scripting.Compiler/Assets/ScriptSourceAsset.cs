@@ -7,7 +7,7 @@ namespace Inno.Scripting.Compiler;
 /// <summary>
 /// Describes an imported C# source snapshot and its parse diagnostics.
 /// </summary>
-[StableTypeId("10de711f-c33e-4ae2-a2e3-df285a86e976")]
+[StableTypeID("10de711f-c33e-4ae2-a2e3-df285a86e976")]
 public sealed class ScriptSourceAsset : AssetObject
 {
     /// <summary>

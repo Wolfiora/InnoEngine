@@ -31,7 +31,7 @@ public sealed class GraphCanvasPresentationTests
     {
         var state = new GraphCanvasState();
         var view = new GraphCanvasView(state, Vector2.Zero, new(800f, 600f));
-        var id = new GraphNodeId("workflow.output");
+        var id = new GraphNodeID("workflow.output");
         var port = new GraphCanvasPort(
             new(id, new("next")),
             GraphPortDirection.Output,

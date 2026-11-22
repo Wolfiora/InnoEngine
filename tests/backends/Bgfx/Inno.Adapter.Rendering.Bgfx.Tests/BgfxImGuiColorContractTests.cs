@@ -28,7 +28,7 @@ public sealed class BgfxImGuiColorContractTests
     [Fact]
     public void DistributedImGuiGraphLoadsTextureAndOutputTransferBindings()
     {
-        GraphicsApi api = OperatingSystem.IsMacOS() ? GraphicsApi.Metal : GraphicsApi.Direct3D11;
+        GraphicsApi api = OperatingSystem.IsMacOS() ? GraphicsApi.metal : GraphicsApi.direct3D11;
         GraphicsPipelineDescriptor pipeline = BgfxImGuiShaderArtifacts.Load(api);
 
         Assert.False(pipeline.vertexShader.IsEmpty);

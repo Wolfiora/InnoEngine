@@ -53,7 +53,7 @@ public sealed class EditorApplicationTests
     [Fact]
     public async Task UnregisteredDefaultTargetIsRejectedBeforeProductOwnershipBegins()
     {
-        EditorLaunchOptions options = CreateOptions(target: new BuildTargetId("fixture-unregistered"));
+        EditorLaunchOptions options = CreateOptions(target: new BuildTargetID("fixture-unregistered"));
 
         await Assert.ThrowsAsync<ArgumentException>(() => EditorApplication.RunAsync(options));
         Assert.False(Directory.Exists(options.projectDirectory));
@@ -81,7 +81,7 @@ public sealed class EditorApplicationTests
 
     private static EditorLaunchOptions CreateOptions(
         AdapterSelection? selection = null,
-        BuildTargetId? target = null,
+        BuildTargetID? target = null,
         int? frameLimit = null,
         bool keyboard = true
     ) {
@@ -90,7 +90,7 @@ public sealed class EditorApplicationTests
             "dotnet",
             AppContext.BaseDirectory,
             new BuildHostDescriptor("Windows", "x64"),
-            new BuildTargetId("windows-x64")
+            new BuildTargetID("windows-x64")
         );
         StandardBuildDistribution standard = StandardBuildDistribution.Create(build);
         var adapters = new DefaultAuthoringAdapterCatalog(
@@ -104,7 +104,7 @@ public sealed class EditorApplicationTests
                 ),
                 storage = new StorageBackendCatalog([new FileSystemStorageBackendProvider(Path.Combine(project, "Data"))])
             },
-            [new BgfxAuthoringProvider(standard.ResolveShaderTarget(new BuildTargetId("windows-x64")))],
+            [new BgfxAuthoringProvider(standard.ResolveShaderTarget(new BuildTargetID("windows-x64")))],
             [new ImGuiPresentationProvider(new ImGuiInteractionOptions(false, 1))]
         );
         return new EditorLaunchOptions
@@ -112,11 +112,11 @@ public sealed class EditorApplicationTests
             projectDirectory = project,
             keyboard = keyboard ? new EditorKeyboardPolicy(KeyModifier.Control, "Super") : null!,
             adapterCatalog = adapters,
-            shell = new ShellOptions { adapters = selection ?? StandardAdapterSelection.Create(StorageBackendId.fileSystem) },
-            presentation = PresentationBackendId.imGui,
+            shell = new ShellOptions { adapters = selection ?? StandardAdapterSelection.Create(StorageBackendID.fileSystem) },
+            presentation = PresentationBackendID.imGui,
             frameDriver = new PollingShellFrameDriver(),
             distribution = standard.build,
-            defaultBuildTarget = target ?? new BuildTargetId("windows-x64"),
+            defaultBuildTarget = target ?? new BuildTargetID("windows-x64"),
             buildContext = build,
             supportPackRoot = Path.Combine(project, "SupportPacks"),
             createEngineHost = () => throw new InvalidOperationException("Preflight must not acquire an engine."),

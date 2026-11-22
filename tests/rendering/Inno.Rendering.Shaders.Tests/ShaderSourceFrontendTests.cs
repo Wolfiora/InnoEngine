@@ -218,7 +218,7 @@ public sealed class ShaderSourceFrontendTests
     public void LanguageCatalogAcceptsAnIndependentFrontendAndRejectsConflicts()
     {
         var catalog = new ShaderSourceFrontendCatalog([new BgfxShaderSourceFrontend(), new IndependentFrontend()]);
-        Assert.Equal(2, catalog.languageIds.Count);
+        Assert.Equal(2, catalog.languageIDs.Count);
         var request = new ShaderSourceRequest(new("custom.ishadersource", "custom"), "custom", new Includes([]));
         Assert.True(catalog.Analyze("tests.language", request).succeeded);
         Assert.Throws<NotSupportedException>(() => catalog.Analyze("missing.language", request));
@@ -243,7 +243,7 @@ public sealed class ShaderSourceFrontendTests
 
     private sealed class IndependentFrontend : IShaderSourceFrontend
     {
-        public string languageId => "tests.language";
+        public string languageID => "tests.language";
 
         public ShaderSourceAnalysis Analyze(ShaderSourceRequest request)
             => new(new(request.entryPoint, ShaderSourceType.Atomic("float"), [], new(request.source.assetPath, 1, 1)), [], []);

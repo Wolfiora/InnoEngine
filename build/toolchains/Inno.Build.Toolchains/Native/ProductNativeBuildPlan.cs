@@ -18,7 +18,7 @@ public sealed class ProductNativeBuildPlan
     /// <summary>
     /// Validates the complete ordered component graph before tools or staging can start.
     /// </summary>
-    /// <param name="productId">
+    /// <param name="productID">
     /// The product identity whose native closure is selected.
     /// </param>
     /// <param name="steps">
@@ -34,11 +34,11 @@ public sealed class ProductNativeBuildPlan
     /// The step collection is null.
     /// </exception>
     public ProductNativeBuildPlan(
-        string productId,
+        string productID,
         IReadOnlyList<ProductNativeBuildStep> steps,
         NativeDeploymentMetadataFactory? deploymentMetadata = null
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(productId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(productID);
         ArgumentNullException.ThrowIfNull(steps);
         var completed = new HashSet<string>(StringComparer.Ordinal);
         if (steps.Count == 0)
@@ -52,7 +52,7 @@ public sealed class ProductNativeBuildPlan
                 throw new ArgumentException("Native steps must be unique and ordered after every dependency.", nameof(steps));
             }
         }
-        this.productId = productId;
+        this.productID = productID;
         m_steps = steps.ToArray();
         this.steps = Array.AsReadOnly(m_steps);
         this.deploymentMetadata = deploymentMetadata;
@@ -61,7 +61,7 @@ public sealed class ProductNativeBuildPlan
     /// <summary>
     /// Gets the explicit product identity.
     /// </summary>
-    public string productId { get; }
+    public string productID { get; }
 
     /// <summary>
     /// Gets the frozen dependency-ordered component closure.
@@ -114,13 +114,13 @@ public sealed class ProductNativeBuildPlan
                     selected,
                     step.component,
                     step.id,
-                    tools.targetId,
+                    tools.targetID,
                     definition.inputPaths.Append(definition.cmakeFile).Select(path => Path.GetFullPath(path, context.engineRoot)),
                     definition.logicalOutputs.Select(static archive => "archive=" + archive).Prepend("static=" + definition.cmakeFile),
                     [Path.GetFullPath(definition.cmakeFile, context.engineRoot)]
                 );
             }
-            if (recipe is null || recipe.component != step.id || recipe.targetId != tools.targetId
+            if (recipe is null || recipe.component != step.id || recipe.targetID != tools.targetID
                 || recipe.owner.nativeProject != step.component.nativeProject
                 || recipe.owner.toolchainProject != step.component.toolchainProject
             ) {
@@ -162,7 +162,7 @@ public sealed class ProductNativeBuildPlan
             foreach (string file in product.files)
             {
                 string relative = Path.GetRelativePath(Path.Combine(product.directory, "Outputs"), file);
-                string? output = step.deploymentPath(relative, product.targetId);
+                string? output = step.deploymentPath(relative, product.targetID);
                 if (output is null)
                 {
                     continue;

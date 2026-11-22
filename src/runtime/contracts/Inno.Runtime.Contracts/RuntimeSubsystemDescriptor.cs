@@ -34,12 +34,12 @@ public sealed class RuntimeSubsystemDescriptor
     /// Thrown when <paramref name="id"/> is invalid or a dependency is invalid, duplicated, or self-referential.
     /// </exception>
     public RuntimeSubsystemDescriptor(
-        RuntimeSubsystemId id,
+        RuntimeSubsystemID id,
         int order = 0,
-        IReadOnlyList<RuntimeSubsystemId>? dependencies = null,
+        IReadOnlyList<RuntimeSubsystemID>? dependencies = null,
         RuntimeSubsystemLifetime lifetime = RuntimeSubsystemLifetime.Session,
         RuntimeSubsystemRequirement requirement = RuntimeSubsystemRequirement.Required,
-        IReadOnlyList<RuntimeCapabilityId>? requiredCapabilities = null
+        IReadOnlyList<RuntimeCapabilityID>? requiredCapabilities = null
     ) {
         if (!id.isValid)
         {
@@ -53,12 +53,12 @@ public sealed class RuntimeSubsystemDescriptor
         {
             throw new ArgumentOutOfRangeException(nameof(requirement));
         }
-        RuntimeCapabilityId[] capabilities = requiredCapabilities?.ToArray() ?? [];
+        RuntimeCapabilityID[] capabilities = requiredCapabilities?.ToArray() ?? [];
         if (capabilities.Any(static capability => !capability.isValid) || capabilities.Distinct().Count() != capabilities.Length)
         {
             throw new ArgumentException("Required capabilities must be valid and unique.", nameof(requiredCapabilities));
         }
-        RuntimeSubsystemId[] dependencySnapshot = dependencies?.ToArray() ?? [];
+        RuntimeSubsystemID[] dependencySnapshot = dependencies?.ToArray() ?? [];
         if (dependencySnapshot.Any(static dependency => !dependency.isValid))
         {
             throw new ArgumentException("Runtime subsystem dependencies must be valid.", nameof(dependencies));
@@ -82,7 +82,7 @@ public sealed class RuntimeSubsystemDescriptor
     /// <summary>
     /// Gets the unique subsystem protocol identifier.
     /// </summary>
-    public RuntimeSubsystemId id { get; }
+    public RuntimeSubsystemID id { get; }
 
     /// <summary>
     /// Gets the exclusive owner scope required by this subsystem.
@@ -97,7 +97,7 @@ public sealed class RuntimeSubsystemDescriptor
     /// <summary>
     /// Gets the immutable required-subsystem identifiers.
     /// </summary>
-    public IReadOnlyList<RuntimeSubsystemId> dependencies { get; }
+    public IReadOnlyList<RuntimeSubsystemID> dependencies { get; }
 
     /// <summary>
     /// Gets whether this subsystem must start for its owner to become available.
@@ -107,5 +107,5 @@ public sealed class RuntimeSubsystemDescriptor
     /// <summary>
     /// Gets the immutable capability prerequisites checked before allocating subsystem resources.
     /// </summary>
-    public IReadOnlyList<RuntimeCapabilityId> requiredCapabilities { get; }
+    public IReadOnlyList<RuntimeCapabilityID> requiredCapabilities { get; }
 }

@@ -426,7 +426,7 @@ public sealed unsafe class DynamicTestModal(DynamicModalState state) : EditorMod
     ) {
         state.preparations++;
         if (state.rejectPreparation) throw new InvalidOperationException("Rejected modal measurement.");
-        EditorUiSession.current.widgets.style.SetZoom(state.zoom);
+        EditorUISession.current.widgets.style.SetZoom(state.zoom);
         state.content = new(
             state.message,
             state.showProgress ? 0.5f : null,
@@ -436,7 +436,7 @@ public sealed unsafe class DynamicTestModal(DynamicModalState state) : EditorMod
             details: state.details,
             cancelOnEscape: true
         );
-        state.layout = EditorUiSession.current.widgets.MeasureDialog(state.content, availableContentSize);
+        state.layout = EditorUISession.current.widgets.MeasureDialog(state.content, availableContentSize);
         return state.layout.size;
     }
 
@@ -445,7 +445,7 @@ public sealed unsafe class DynamicTestModal(DynamicModalState state) : EditorMod
         state.draws++;
         state.windowSize = NativeGui.GetWindowSize();
         state.windowMax = NativeGui.GetWindowPos() + state.windowSize;
-        if (EditorUiSession.current.widgets.DrawDialog(state.content, state.layout))
+        if (EditorUISession.current.widgets.DrawDialog(state.content, state.layout))
         {
             state.actions++;
             state.canceled = true;

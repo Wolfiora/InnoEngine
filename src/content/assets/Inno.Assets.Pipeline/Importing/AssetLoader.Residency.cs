@@ -58,7 +58,7 @@ public sealed partial class AssetLoader
     /// <summary>
     /// Tries to resolve a named output from the current artifact bundle.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The stable persistent identity used for lookup.
     /// </param>
     /// <param name="outputName">
@@ -71,13 +71,13 @@ public sealed partial class AssetLoader
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool TryGetArtifact(
-        Guid persistentId,
+        Guid persistentID,
         string outputName,
         out AssetArtifactInfo? artifact
     ) {
         AssetArtifactInfo? result = Execute(() =>
         {
-            if (!m_recordsByID.TryGetValue(persistentId, out AssetRecord? record))
+            if (!m_recordsByID.TryGetValue(persistentID, out AssetRecord? record))
             {
                 return null;
             }
@@ -96,7 +96,7 @@ public sealed partial class AssetLoader
     /// <summary>
     /// Acquires an immutable output while excluding concurrent artifact collection.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The source asset's persistent identity.
     /// </param>
     /// <param name="outputName">
@@ -109,13 +109,13 @@ public sealed partial class AssetLoader
     /// No current output can be resolved.
     /// </exception>
     public ArtifactLease AcquireArtifact(
-        Guid persistentId,
+        Guid persistentID,
         string outputName
     ) => Execute(() =>
     {
-        if (!TryGetArtifact(persistentId, outputName, out AssetArtifactInfo? artifact) || artifact is null)
+        if (!TryGetArtifact(persistentID, outputName, out AssetArtifactInfo? artifact) || artifact is null)
         {
-            throw new InvalidOperationException($"Asset '{persistentId:D}' has no output '{outputName}'.");
+            throw new InvalidOperationException($"Asset '{persistentID:D}' has no output '{outputName}'.");
         }
         return m_artifactRetention.Retain(artifact, m_artifacts.CreateReadFactory(artifact));
     });

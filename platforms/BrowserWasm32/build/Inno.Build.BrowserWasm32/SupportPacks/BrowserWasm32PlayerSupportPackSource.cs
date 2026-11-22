@@ -17,7 +17,7 @@ namespace Inno.Build.BrowserWasm32;
 public sealed class BrowserWasm32PlayerSupportPackSource : IPlayerSupportPackSource
 {
     private readonly BuildHostDescriptor m_host;
-    private readonly BuildTargetId m_toolsTarget;
+    private readonly BuildTargetID m_toolsTarget;
     private readonly NativeProductContribution m_nativeProduct;
     private readonly INativeBindingGenerator m_bindingGenerator;
     private readonly IPlayerSupportPackValidator m_validator;
@@ -48,7 +48,7 @@ public sealed class BrowserWasm32PlayerSupportPackSource : IPlayerSupportPackSou
     /// </exception>
     public BrowserWasm32PlayerSupportPackSource(
         BuildHostDescriptor host,
-        BuildTargetId toolsTarget,
+        BuildTargetID toolsTarget,
         NativeProductContribution nativePlan,
         INativeBindingGenerator bindingGenerator,
         IPlayerSupportPackValidator supportPackValidator
@@ -65,7 +65,7 @@ public sealed class BrowserWasm32PlayerSupportPackSource : IPlayerSupportPackSou
     }
 
     /// <inheritdoc/>
-    public BuildTargetId target => BrowserWasm32BuildModule.target.id;
+    public BuildTargetID target => BrowserWasm32BuildModule.target.id;
 
     /// <inheritdoc/>
     public async ValueTask<PlayerSupportPackPlan> CreatePlanAsync(

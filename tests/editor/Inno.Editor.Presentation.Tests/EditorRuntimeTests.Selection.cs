@@ -22,7 +22,7 @@ public sealed partial class EditorRuntimeTests
         m_runtime.interactions.SetSelection(first);
         EditorSelectionSnapshot original = m_runtime.interactions.selection.Capture();
         RuntimeIdentity firstID = first.identity.runtimeIdentity!.Value;
-        var missing = new RuntimeIdentity(firstID.domainId, int.MaxValue);
+        var missing = new RuntimeIdentity(firstID.domainID, int.MaxValue);
         Assert.Throws<InvalidOperationException>(() => m_runtime.interactions.SelectRange(
             [firstID, missing, last.identity.runtimeIdentity!.Value],
             last

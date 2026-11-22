@@ -9,7 +9,7 @@ namespace Inno.References.Tests;
 
 public sealed class ReferenceCatalogTests
 {
-    private static readonly ReferenceKindId KIND = new("asset");
+    private static readonly ReferenceKindID KIND = new("asset");
 
     [Fact]
     public void Resolve_PreservesUnassignedAndMissingIntent()
@@ -41,7 +41,7 @@ public sealed class ReferenceCatalogTests
         var allocator = new IdentityAllocator();
         var target = new Target();
         Assert.True(allocator.Register(target));
-        var descriptor = new ReferenceDescriptor(KIND, target.identity.persistentId);
+        var descriptor = new ReferenceDescriptor(KIND, target.identity.persistentID);
         ReferenceCatalog catalog = ReferenceCatalog.Create(1, [new FixedResolver(KIND, target.identity.runtimeIdentity)]);
         var events = new List<string>();
         var first = new RecordingParticipant("first", events);
@@ -67,7 +67,7 @@ public sealed class ReferenceCatalogTests
         var allocator = new IdentityAllocator();
         var target = new Target();
         allocator.Register(target);
-        var descriptor = new ReferenceDescriptor(KIND, target.identity.persistentId);
+        var descriptor = new ReferenceDescriptor(KIND, target.identity.persistentID);
         ReferenceCatalog catalog = ReferenceCatalog.Create(1, [new FixedResolver(KIND, target.identity.runtimeIdentity)]);
         var events = new List<string>();
         var state = new SerializedMissingState(new ReferenceKey(Guid.NewGuid(), "asset"), descriptor, [1]);
@@ -107,11 +107,11 @@ public sealed class ReferenceCatalogTests
     private sealed class Target : IdentityObject;
 
     private sealed class FixedResolver(
-        ReferenceKindId kindID,
+        ReferenceKindID kindID,
         RuntimeIdentity? runtimeIdentity
     ) : IReferenceResolver
     {
-        public ReferenceKindId kindId { get; } = kindID;
+        public ReferenceKindID kindID { get; } = kindID;
 
         public ReferenceResolution Resolve(ReferenceDescriptor descriptor)
             => runtimeIdentity.HasValue

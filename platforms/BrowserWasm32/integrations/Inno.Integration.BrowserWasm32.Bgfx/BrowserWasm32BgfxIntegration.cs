@@ -49,6 +49,6 @@ public static class BrowserWasm32BgfxIntegration
             assets,
             serialization,
             types
-        ) => new BgfxGameContentCompiler(assets, serialization, types, shaderProfile, [GraphicsApi.OpenGLES], tools);
+        ) => new BgfxGameContentCompiler(assets, serialization, types, shaderProfile, [GraphicsApi.openGLES], tools);
     }
 }

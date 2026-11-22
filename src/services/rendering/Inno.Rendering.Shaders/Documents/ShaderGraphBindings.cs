@@ -18,7 +18,7 @@ public static class ShaderGraphBindings
     /// <param name="graph">
     /// Current shader graph, never mutated by this operation.
     /// </param>
-    /// <param name="nodeIds">
+    /// <param name="nodeIDs">
     /// Explicitly selected node identities. Deleting an output also deletes its stage contents.
     /// </param>
     /// <param name="serialization">
@@ -35,23 +35,23 @@ public static class ShaderGraphBindings
     /// </exception>
     public static GraphDocument RemoveNodes(
         GraphDocument graph,
-        IEnumerable<GraphNodeId> nodeIds,
+        IEnumerable<GraphNodeID> nodeIDs,
         SerializationRegistry serialization,
         SerializationContext context
     ) {
         ArgumentNullException.ThrowIfNull(graph);
-        ArgumentNullException.ThrowIfNull(nodeIds);
-        HashSet<GraphNodeId> removed = [.. nodeIds];
-        foreach (GraphNodeId id in removed)
+        ArgumentNullException.ThrowIfNull(nodeIDs);
+        HashSet<GraphNodeID> removed = [.. nodeIDs];
+        foreach (GraphNodeID id in removed)
         {
             if (graph.FindNode(id) is null)
             {
-                throw new ArgumentException("A selected shader node is missing.", nameof(nodeIds));
+                throw new ArgumentException("A selected shader node is missing.", nameof(nodeIDs));
             }
         }
         GraphDocument candidate = graph.Clone();
         HashSet<string> stages = graph.nodes
-            .Where(node => removed.Contains(node.id) && node.definitionId == ShaderGraphDocument.outputDefinitionId)
+            .Where(node => removed.Contains(node.id) && node.definitionID == ShaderGraphDocument.C_OUTPUT_DEFINITION_ID)
             .Select(static node => node.id.value)
             .ToHashSet(StringComparer.Ordinal);
         foreach (GraphNodeRecord node in graph.nodes)
@@ -62,7 +62,7 @@ public static class ShaderGraphBindings
             }
         }
 
-        ShaderGraphPassProgram[] programs = graph.metadata.ContainsKey(ShaderGraphPrograms.bindingsKey)
+        ShaderGraphPassProgram[] programs = graph.metadata.ContainsKey(ShaderGraphPrograms.C_BINDINGS_KEY)
                                             ? ShaderGraphPrograms.Read(graph, serialization, context)
                                             : [];
         HashSet<string> affectedPasses = programs.Where(program => program.stages.Any(stages.Contains))
@@ -89,7 +89,7 @@ public static class ShaderGraphBindings
         }
         HashSet<string> affectedBindings = [];
         foreach (GraphNodeRecord node in graph.nodes.Where(
-            node => removed.Contains(node.id) && node.definitionId == "inno.shader.stage-input"
+            node => removed.Contains(node.id) && node.definitionID == "inno.shader.stage-input"
         )) {
             ShaderGraphInputSettings input = ShaderGraphDocument.Read(
                 node,
@@ -104,11 +104,11 @@ public static class ShaderGraphBindings
             }
             affectedBindings.Add(ShaderGraphDocument.Read(node, "bindingIdentity", string.Empty, serialization, context));
         }
-        foreach (GraphNodeId id in removed)
+        foreach (GraphNodeID id in removed)
         {
             candidate.RemoveNode(id);
         }
-        if (!candidate.metadata.ContainsKey(ShaderGraphDocument.definitionKey))
+        if (!candidate.metadata.ContainsKey(ShaderGraphDocument.C_DEFINITION_KEY))
         {
             return candidate;
         }
@@ -122,7 +122,7 @@ public static class ShaderGraphBindings
             definition.techniques[i] = technique;
         }
         var remainingBindings = new Dictionary<string, ShaderStage>(StringComparer.Ordinal);
-        foreach (GraphNodeRecord node in candidate.nodes.Where(static node => node.definitionId == "inno.shader.stage-input"))
+        foreach (GraphNodeRecord node in candidate.nodes.Where(static node => node.definitionID == "inno.shader.stage-input"))
         {
             ShaderGraphInputSettings input = ShaderGraphDocument.Read(
                 node,
@@ -157,7 +157,7 @@ public static class ShaderGraphBindings
             })
             .ToArray();
         candidate.SetMetadata(
-            ShaderGraphDocument.definitionKey,
+            ShaderGraphDocument.C_DEFINITION_KEY,
             ShaderGraphDocument.Encode(serialization.Serialize(definition, context), serialization, context)
         );
         return candidate;
@@ -169,7 +169,7 @@ public static class ShaderGraphBindings
     /// <param name="graph">
     /// Current shader graph, never mutated by this operation.
     /// </param>
-    /// <param name="nodeId">
+    /// <param name="nodeID">
     /// Stage input node identity.
     /// </param>
     /// <param name="settings">
@@ -189,7 +189,7 @@ public static class ShaderGraphBindings
     /// </exception>
     public static GraphDocument ChangeInput(
         GraphDocument graph,
-        GraphNodeId nodeId,
+        GraphNodeID nodeID,
         ShaderGraphInputSettings settings,
         SerializationRegistry serialization,
         SerializationContext context
@@ -197,11 +197,11 @@ public static class ShaderGraphBindings
         ArgumentNullException.ThrowIfNull(graph);
         ArgumentNullException.ThrowIfNull(settings);
         GraphDocument candidate = graph.Clone();
-        GraphNodeRecord node = candidate.FindNode(nodeId)
-                               ?? throw new ArgumentException("The stage input node is missing.", nameof(nodeId));
-        if (node.definitionId != "inno.shader.stage-input")
+        GraphNodeRecord node = candidate.FindNode(nodeID)
+                               ?? throw new ArgumentException("The stage input node is missing.", nameof(nodeID));
+        if (node.definitionID != "inno.shader.stage-input")
         {
-            throw new ArgumentException("The node is not a stage input.", nameof(nodeId));
+            throw new ArgumentException("The node is not a stage input.", nameof(nodeID));
         }
         ShaderGraphInputSettings previous = ShaderGraphDocument.Read(
             node,
@@ -227,7 +227,7 @@ public static class ShaderGraphBindings
             node.SetValue("bindingIdentity", ShaderGraphDocument.Encode(previous.id, serialization, context));
         }
         if (IsBinding(previous) && (!IsBinding(settings) || !string.IsNullOrWhiteSpace(settings.id) && previous.id != settings.id)
-            && !candidate.nodes.Where(value => value.id != nodeId && value.definitionId == "inno.shader.stage-input")
+            && !candidate.nodes.Where(value => value.id != nodeID && value.definitionID == "inno.shader.stage-input")
                 .Select(value => ShaderGraphDocument.Read(value, "settings", new ShaderGraphInputSettings(), serialization, context))
                 .Any(value => IsBinding(value) && value.id == previous.id)
         ) {
@@ -253,7 +253,7 @@ public static class ShaderGraphBindings
                 _ => ShaderPropertyBindingKind.Uniform
             };
             ShaderStage stages = ShaderStage.None;
-            foreach (GraphNodeRecord input in candidate.nodes.Where(static value => value.definitionId == "inno.shader.stage-input"))
+            foreach (GraphNodeRecord input in candidate.nodes.Where(static value => value.definitionID == "inno.shader.stage-input"))
             {
                 ShaderGraphInputSettings value = ShaderGraphDocument.Read(
                     input,
@@ -299,7 +299,7 @@ public static class ShaderGraphBindings
         }
         definition.properties = properties.ToArray();
         candidate.SetMetadata(
-            ShaderGraphDocument.definitionKey,
+            ShaderGraphDocument.C_DEFINITION_KEY,
             ShaderGraphDocument.Encode(serialization.Serialize(definition, context), serialization, context)
         );
         return candidate;

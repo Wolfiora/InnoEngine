@@ -69,7 +69,7 @@ public sealed class PublishSupportPackTask : BuildTask, ICancelableTask
         }
         try
         {
-            BuildCompositionContext execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(ToolTarget));
+            BuildCompositionContext execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetID(ToolTarget));
             var context = new BuildCompositionContext(
                 ToolchainEnvironment.ResolveExecutable(DotnetHost),
                 AppContext.BaseDirectory,
@@ -77,7 +77,7 @@ public sealed class PublishSupportPackTask : BuildTask, ICancelableTask
                 execution.toolsTarget
             );
             using PlayerSupportPackPublication installed = StandardBuildDistribution.Create(context).build.supportPacks
-                .PublishAsync(EngineRoot, OutputRoot, new BuildTargetId(Target), DotnetHost, cancellation.Token)
+                .PublishAsync(EngineRoot, OutputRoot, new BuildTargetID(Target), DotnetHost, cancellation.Token)
                 .AsTask()
                 .GetAwaiter()
                 .GetResult();

@@ -53,13 +53,13 @@ public sealed class BgfxSurfaceRetirementTests
         });
         Assert.Throws<ArgumentException>(() => new BgfxDevice(new BgfxDeviceOptions
         {
-            preferredBackend = OperatingSystem.IsWindows() ? GraphicsApi.Direct3D11 : GraphicsApi.Metal,
+            preferredBackend = OperatingSystem.IsWindows() ? GraphicsApi.direct3D11 : GraphicsApi.metal,
             window = window,
             surfaceIntegration = new InvalidIntegration()
         }));
         using var device = new BgfxDevice(new BgfxDeviceOptions
         {
-            preferredBackend = OperatingSystem.IsWindows() ? GraphicsApi.Direct3D11 : GraphicsApi.Metal,
+            preferredBackend = OperatingSystem.IsWindows() ? GraphicsApi.direct3D11 : GraphicsApi.metal,
             window = window,
             surfaceIntegration = new FixtureIntegration()
         });
@@ -87,7 +87,7 @@ public sealed class BgfxSurfaceRetirementTests
         var integration = new FixtureIntegration();
         using var device = new BgfxDevice(new BgfxDeviceOptions
         {
-            preferredBackend = OperatingSystem.IsWindows() ? GraphicsApi.Direct3D11 : GraphicsApi.Metal,
+            preferredBackend = OperatingSystem.IsWindows() ? GraphicsApi.direct3D11 : GraphicsApi.metal,
             window = primary,
             surfaceIntegration = integration,
             forceSingleThreaded = inline,
@@ -97,7 +97,7 @@ public sealed class BgfxSurfaceRetirementTests
         var handles = new PlatformNativeHandles(
             native.windowHandle,
             native.displayHandle,
-            new PlatformNativeHandleId("fixture.custom-surface")
+            new PlatformNativeHandleID("fixture.custom-surface")
         );
         RenderSurfaceHandle surface = device.CreateWindowSurface(handles, 100, 90, "Custom surface");
         device.ResizeWindowSurface(surface, 110, 95);

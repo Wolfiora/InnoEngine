@@ -6,7 +6,7 @@ using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui;
@@ -51,7 +51,7 @@ internal static unsafe class EditorModalRenderer
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
         ArgumentNullException.ThrowIfNull(modal);
         ArgumentNullException.ThrowIfNull(context);
-        EditorUiSession session = EditorUI.current;
+        EditorUISession session = EditorUI.current;
         // The runtime established this session; revalidate below after invoking extension preparation.
         string popupID = $"{title}##{id}";
         ImGuiViewport* viewport = NativeImGui.Raw.GetMainViewport();

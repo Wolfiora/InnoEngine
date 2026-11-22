@@ -10,18 +10,18 @@ namespace Inno.Editor.Shaders;
 /// <summary>
 /// Associates a reloadable preview implementation with one open Shader contract.
 /// </summary>
-/// <param name="contractId">
+/// <param name="contractID">
 /// Non-empty domain-owned contract identity.
 /// </param>
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
-public sealed class ShaderPreviewProviderAttribute(string contractId) : Attribute
+public sealed class ShaderPreviewProviderAttribute(string contractID) : Attribute
 {
     /// <summary>
     /// Gets the non-empty Shader contract consumed by this preview.
     /// </summary>
-    public string contractId { get; } = string.IsNullOrWhiteSpace(contractId)
-                                        ? throw new ArgumentException("A preview contract is required.", nameof(contractId))
-                                        : contractId;
+    public string contractID { get; } = string.IsNullOrWhiteSpace(contractID)
+                                        ? throw new ArgumentException("A preview contract is required.", nameof(contractID))
+                                        : contractID;
 }
 
 /// <summary>
@@ -49,7 +49,7 @@ public sealed class ShaderPreviewContext
     /// <summary>
     /// Creates a preview invocation from host-owned detached inputs.
     /// </summary>
-    /// <param name="resourceId">
+    /// <param name="resourceID">
     /// Isolated material publication and viewport resource identity.
     /// </param>
     /// <param name="material">
@@ -71,7 +71,7 @@ public sealed class ShaderPreviewContext
     /// Positive target height.
     /// </param>
     public ShaderPreviewContext(
-        RenderPersistentResourceId resourceId,
+        RenderPersistentResourceID resourceID,
         MaterialAsset material,
         RenderShaderArtifact artifact,
         ShaderDefinition definition,
@@ -79,9 +79,9 @@ public sealed class ShaderPreviewContext
         int pixelWidth,
         int pixelHeight
     ) {
-        if (!resourceId.isValid)
+        if (!resourceID.isValid)
         {
-            throw new ArgumentException("A resource identity is required.", nameof(resourceId));
+            throw new ArgumentException("A resource identity is required.", nameof(resourceID));
         }
         ArgumentNullException.ThrowIfNull(material);
         ArgumentNullException.ThrowIfNull(artifact);
@@ -89,7 +89,7 @@ public sealed class ShaderPreviewContext
         ArgumentNullException.ThrowIfNull(diagnostics);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelWidth);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelHeight);
-        this.resourceId = resourceId;
+        this.resourceID = resourceID;
         this.material = material;
         this.artifact = artifact;
         this.definition = definition;
@@ -101,7 +101,7 @@ public sealed class ShaderPreviewContext
     /// <summary>
     /// Gets the publication scope released by the host when this preview closes.
     /// </summary>
-    public RenderPersistentResourceId resourceId { get; }
+    public RenderPersistentResourceID resourceID { get; }
 
     /// <summary>
     /// Gets the invocation-local Material values.

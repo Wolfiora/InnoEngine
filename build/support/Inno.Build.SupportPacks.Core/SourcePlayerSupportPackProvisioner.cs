@@ -80,7 +80,7 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
     /// An operation that completes after the target Pack has been installed and verified.
     /// </returns>
     public async ValueTask ProvisionAsync(
-        BuildTargetId target,
+        BuildTargetID target,
         string supportPackRoot,
         CancellationToken cancellationToken = default
     ) {

@@ -49,7 +49,7 @@ internal sealed class ControlledSampleAssetImporter : AssetImporter<TextAsset>
         CancellationToken cancellationToken
     ) {
         Control? control = CURRENT.Value;
-        if (control is not null && context.assetPath.source == AssetSourceId.project)
+        if (control is not null && context.assetPath.source == AssetSourceID.project)
         {
             control.workerThread = Environment.CurrentManagedThreadId;
             control.started.Set();

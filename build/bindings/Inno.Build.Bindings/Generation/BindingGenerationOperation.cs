@@ -259,8 +259,8 @@ internal sealed class BindingGenerationOperation : IDisposable
                     generation.artifactDirectory,
                     generation.artifactDirectory + ".read.lock",
                     [],
-                    definition.component.id + "/" + m_request.targetId,
-                    m_request.targetId,
+                    definition.component.id + "/" + m_request.targetID,
+                    m_request.targetID,
                     cancellation
                 );
             }

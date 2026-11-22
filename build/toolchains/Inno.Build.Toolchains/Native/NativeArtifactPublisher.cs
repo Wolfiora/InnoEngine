@@ -68,7 +68,7 @@ public static class NativeArtifactPublisher
             recipe = recipe.WithBindingGeneration(context.engineRoot, bindingGeneration);
         }
         string component = recipe.component;
-        string targetID = recipe.targetId;
+        string targetID = recipe.targetID;
         NativeInputSnapshot snapshot = context.inputState.CaptureInitial(recipe.inputs, cancellationToken);
         string fingerprint = NativeBuildFingerprint.Create(recipe.declarations, snapshot);
         string workspaceIdentity = NativeWorkspaceIdentity.Create(context, recipe, snapshot);

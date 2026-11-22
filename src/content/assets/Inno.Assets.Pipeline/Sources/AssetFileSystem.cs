@@ -25,7 +25,7 @@ public sealed class AssetFileSystem : IDisposable
     private readonly Lock m_sync = new();
     private readonly AssetWatcher m_watcher;
     private readonly AssetSourcePolicy m_sourcePolicy;
-    private readonly IReadOnlyDictionary<AssetSourceId, AssetSourceMount> m_mounts;
+    private readonly IReadOnlyDictionary<AssetSourceID, AssetSourceMount> m_mounts;
     private readonly Func<AssetPath, Guid?>? m_persistentIdentityResolver;
     private bool m_identitiesActive;
     private bool m_disposed;
@@ -51,7 +51,7 @@ public sealed class AssetFileSystem : IDisposable
         int flushDelayMs = 80,
         AssetSourcePolicy? sourcePolicy = null
     ) : this(
-        [new AssetSourceMount(AssetSourceId.project, assetRoot, isReadOnly: false)],
+        [new AssetSourceMount(AssetSourceID.project, assetRoot, isReadOnly: false)],
         autoStart,
         flushDelayMs,
         sourcePolicy,
@@ -113,12 +113,12 @@ public sealed class AssetFileSystem : IDisposable
         {
             throw new ArgumentException("At least one asset source mount is required.", nameof(mounts));
         }
-        Dictionary<AssetSourceId, AssetSourceMount> byID = mounts.ToDictionary(static mount => mount.id);
+        Dictionary<AssetSourceID, AssetSourceMount> byID = mounts.ToDictionary(static mount => mount.id);
         if (byID.Count != mounts.Count)
         {
             throw new ArgumentException("Asset source mount IDs must be unique.", nameof(mounts));
         }
-        if (!byID.TryGetValue(AssetSourceId.project, out AssetSourceMount? project)
+        if (!byID.TryGetValue(AssetSourceID.project, out AssetSourceMount? project)
             || project.isReadOnly && requireWritableProject
         ) {
             throw new ArgumentException(
@@ -216,7 +216,7 @@ public sealed class AssetFileSystem : IDisposable
         {
             List<SourceEntry> candidate = CollectEntries();
             AssetFileEntry[] previous = m_entries.All().ToArray();
-            Dictionary<Guid, AssetFileEntry> existing = previous.ToDictionary(static entry => entry.identity.persistentId);
+            Dictionary<Guid, AssetFileEntry> existing = previous.ToDictionary(static entry => entry.identity.persistentID);
             var prepared = new List<(SourceEntry source, AssetFileEntry entry)>(candidate.Count);
             var registered = new List<AssetFileEntry>();
             try
@@ -465,7 +465,7 @@ public sealed class AssetFileSystem : IDisposable
             {
                 foreach (AssetFileEntry entry in m_entries.All())
                 {
-                    if (!m_identities.Register(entry, entry.identity.persistentId))
+                    if (!m_identities.Register(entry, entry.identity.persistentID))
                     {
                         throw new InvalidOperationException(
                             $"Asset source entry '{entry.assetPath}' was already registered."
@@ -661,7 +661,7 @@ public sealed class AssetFileSystem : IDisposable
     ) => NormalizeLocalPath(Path.Combine(NormalizeLocalPath(a), NormalizeLocalPath(b)));
 
     private static string NormalizeLocalPath(string relativePath)
-        => new AssetPath(AssetSourceId.project, relativePath ?? string.Empty).localPath;
+        => new AssetPath(AssetSourceID.project, relativePath ?? string.Empty).localPath;
 
     private readonly record struct SourceEntry(
         AssetPath path,

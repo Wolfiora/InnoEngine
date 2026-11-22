@@ -39,7 +39,7 @@ internal sealed class EditorViewportContributorRegistry : TypeRegistry<EditorVie
         {
             throw new InvalidOperationException($"Editor viewport contributor ID '{duplicateID}' is duplicated.");
         }
-        IReadOnlyDictionary<EditorViewportKindId, Registration[]> byKind = registrations
+        IReadOnlyDictionary<EditorViewportKindID, Registration[]> byKind = registrations
             .GroupBy(static registration => registration.attribute.kind)
             .ToDictionary(static group => group.Key, static group => group.ToArray());
         return new Snapshot(types.version, registrations, byKind);
@@ -63,7 +63,7 @@ internal sealed class EditorViewportContributorRegistry : TypeRegistry<EditorVie
     internal sealed record Snapshot(
         long revision,
         Registration[] registrations,
-        IReadOnlyDictionary<EditorViewportKindId, Registration[]> byKind
+        IReadOnlyDictionary<EditorViewportKindID, Registration[]> byKind
     );
 
     internal sealed record Registration(

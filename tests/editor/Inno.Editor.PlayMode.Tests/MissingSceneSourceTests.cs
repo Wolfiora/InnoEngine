@@ -23,7 +23,7 @@ public sealed class MissingSceneSourceTests
         string physical = Path.Combine(host.projectRoot, "Assets", path);
         byte[] source = File.ReadAllBytes(physical);
         byte[] metadata = File.ReadAllBytes(physical + ".imeta");
-        Guid id = host.assets.Load<SceneAsset>(AssetPath.Project(path)).identity.persistentId;
+        Guid id = host.assets.Load<SceneAsset>(AssetPath.Project(path)).identity.persistentID;
         if (edited)
         {
             value.name = "Unsaved edit";
@@ -44,7 +44,7 @@ public sealed class MissingSceneSourceTests
         Thread.Sleep(120);
         Assert.True(host.workspace.TryGetSourcePath(scene, out string recovered));
         Assert.Equal(path, recovered);
-        Assert.Equal(id, host.assets.Load<SceneAsset>(AssetPath.Project(path)).identity.persistentId);
+        Assert.Equal(id, host.assets.Load<SceneAsset>(AssetPath.Project(path)).identity.persistentID);
         Assert.Equal(edited, host.workspace.IsDirty(scene));
         host.assets.Move(AssetPath.Project(path), AssetPath.Project("Recovered.iscene"));
         Assert.True(host.workspace.TryGetSourcePath(scene, out string renamed));
@@ -54,7 +54,7 @@ public sealed class MissingSceneSourceTests
         GameScene reopened = host.workspace.Open("Recovered.iscene");
         Assert.Equal(edited ? "Unsaved edit" : "Retained object", Assert.Single(reopened.GetObjects()).name);
         Assert.False(host.workspace.IsDirty(reopened));
-        Assert.Equal(id, host.assets.Load<SceneAsset>(AssetPath.Project("Recovered.iscene")).identity.persistentId);
+        Assert.Equal(id, host.assets.Load<SceneAsset>(AssetPath.Project("Recovered.iscene")).identity.persistentID);
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public sealed class MissingSceneSourceTests
         GameObject value = scene.CreateObject("Retained object");
         string original = host.workspace.Save(scene, string.Empty);
         string physical = Path.Combine(host.projectRoot, "Assets", original);
-        Guid originalID = host.assets.Load<SceneAsset>(AssetPath.Project(original)).identity.persistentId;
+        Guid originalID = host.assets.Load<SceneAsset>(AssetPath.Project(original)).identity.persistentID;
         File.Delete(physical);
         host.assets.Rescan();
         Assert.True(host.workspace.IsDirty(scene));
@@ -77,7 +77,7 @@ public sealed class MissingSceneSourceTests
         Assert.False(File.Exists(physical));
         Assert.True(host.workspace.TryGetSourcePath(scene, out string assigned));
         Assert.Equal(replacement, assigned);
-        Assert.NotEqual(originalID, host.assets.Load<SceneAsset>(AssetPath.Project(replacement)).identity.persistentId);
+        Assert.NotEqual(originalID, host.assets.Load<SceneAsset>(AssetPath.Project(replacement)).identity.persistentID);
         Assert.False(host.workspace.IsDirty(scene));
         Assert.True(host.edits.CloseScene(scene));
         GameScene reopened = host.workspace.Open(replacement);

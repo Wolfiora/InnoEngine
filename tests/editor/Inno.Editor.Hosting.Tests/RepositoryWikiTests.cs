@@ -50,8 +50,8 @@ public sealed class RepositoryWikiTests
             }).ToArray();
             Assert.Contains("InnoEngine.Animation.Animation", types);
             Assert.Contains("InnoEngine.Animation.AnimationClipAsset", types);
-            Assert.Contains("InnoEngine.UI.UiVertex", types);
-            Assert.Contains("InnoEngine.Rendering.RenderPersistentResourceId", types);
+            Assert.Contains("InnoEngine.UI.UIVertex", types);
+            Assert.Contains("InnoEngine.Rendering.RenderPersistentResourceID", types);
         }
         finally
         {
@@ -130,7 +130,7 @@ public sealed class RepositoryWikiTests
             new FileByteDocumentStore(Path.Combine(project, "Settings.Project.inno")),
             host.types,
             host.serialization,
-            new ProjectId("wiki.contract.validation"),
+            new ProjectID("wiki.contract.validation"),
             AssetSerializationContext.Create(assets)
         );
         using var plugins = new PluginEnvironment(

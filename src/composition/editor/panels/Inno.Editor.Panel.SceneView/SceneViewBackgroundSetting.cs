@@ -2,7 +2,7 @@ using System.Numerics;
 using Inno.Editor.ImGui;
 using Inno.Editor.Settings;
 
-using Ui = Inno.Editor.ImGui.ImGui;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.SceneView;
 
@@ -10,7 +10,7 @@ namespace Inno.Editor.Panel.SceneView;
 internal sealed class SceneViewBackgroundSetting : EditorSetting
 {
     internal const string C_PATH = "Editor/Appearance/Viewports/Scene Background";
-    private static readonly float[] DEFAULT = [0.11f, 0.12f, 0.14f, EditorPalette.opacityOpaque];
+    private static readonly float[] DEFAULT = [0.11f, 0.12f, 0.14f, EditorPalette.C_OPACITY_OPAQUE];
 
     /// <summary>
     /// Gets a new value initialized to this setting's canonical default state.
@@ -36,8 +36,8 @@ internal sealed class SceneViewBackgroundSetting : EditorSetting
     protected override void OnDraw(EditorSettingObject setting)
     {
         Vector4 value = ReadVector(setting);
-        Ui.SetNextItemWidth(-1f);
-        if (Ui.ColorEditLinear4("##scene_view_background", ref value))
+        Gui.SetNextItemWidth(-1f);
+        if (Gui.ColorEditLinear4("##scene_view_background", ref value))
         {
             setting.SetAsSingleArray("value", [value.X, value.Y, value.Z, value.W]);
         }

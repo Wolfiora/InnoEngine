@@ -26,7 +26,7 @@ public static class StandardNativeDeployment
     /// A validator that rejects foreign or incomplete deployment metadata.
     /// </returns>
     public static IPlayerSupportPackValidator CreateValidator(
-        BuildTargetId target,
+        BuildTargetID target,
         string extension
     ) => new DeploymentValidator(target, extension);
 
@@ -46,7 +46,7 @@ public static class StandardNativeDeployment
         IReadOnlyList<NativeBuildProduct> products,
         IReadOnlyDictionary<string, string> payloads
     ) {
-        string target = products.Select(static product => product.targetId).Distinct(StringComparer.Ordinal).Single();
+        string target = products.Select(static product => product.targetID).Distinct(StringComparer.Ordinal).Single();
         var libraries = new Dictionary<string, string>(StringComparer.Ordinal);
         var files = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach ((string relative, string source) in payloads.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
@@ -93,7 +93,7 @@ public static class StandardNativeDeployment
     }
 
     private sealed class DeploymentValidator(
-        BuildTargetId target,
+        BuildTargetID target,
         string extension
     ) : IPlayerSupportPackValidator
     {

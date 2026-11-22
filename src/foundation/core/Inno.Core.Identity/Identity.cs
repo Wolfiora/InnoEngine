@@ -10,7 +10,7 @@ public struct Identity
     /// <summary>
     /// Gets the stable identifier preserved by serialization and runtime reconstruction.
     /// </summary>
-    public Guid persistentId { get; private set; }
+    public Guid persistentID { get; private set; }
 
     /// <summary>
     /// Gets the identifier assigned by the currently bound runtime registry.
@@ -18,7 +18,7 @@ public struct Identity
     /// <remarks>
     /// The value is <see langword="null"/> while this identity is not bound to a live registry.
     /// </remarks>
-    public int? runtimeId
+    public int? runtimeID
     {
         get
         {
@@ -57,12 +57,12 @@ public struct Identity
     /// <summary>
     /// Creates an unbound identity with the supplied persistent identifier.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The stable identifier to preserve across serialization boundaries.
     /// </param>
-    public Identity(Guid persistentId)
+    public Identity(Guid persistentID)
     {
-        this.persistentId = persistentId;
+        this.persistentID = persistentID;
         m_runtimeID = 0;
         m_registryRef = null;
     }
@@ -71,9 +71,9 @@ public struct Identity
         IdentityRegistry registry,
         int runtimeID
     ) {
-        if (persistentId == Guid.Empty)
+        if (persistentID == Guid.Empty)
         {
-            persistentId = Guid.NewGuid();
+            persistentID = Guid.NewGuid();
         }
 
         m_runtimeID = runtimeID;

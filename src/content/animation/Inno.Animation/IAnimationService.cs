@@ -129,7 +129,7 @@ public sealed class AnimationMarkerEvent : Event
     /// <param name="playback">
     /// Playback that crossed the marker.
     /// </param>
-    /// <param name="eventId">
+    /// <param name="eventID">
     /// Stable marker protocol identifier.
     /// </param>
     /// <param name="payload">
@@ -137,16 +137,16 @@ public sealed class AnimationMarkerEvent : Event
     /// </param>
     public AnimationMarkerEvent(
         AnimationPlaybackHandle playback,
-        string eventId,
+        string eventID,
         ReadOnlyMemory<byte> payload
     ) {
         if (!playback.isValid)
         {
             throw new ArgumentException("A valid animation playback handle is required.", nameof(playback));
         }
-        ArgumentException.ThrowIfNullOrWhiteSpace(eventId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(eventID);
         this.playback = playback;
-        this.eventId = eventId;
+        this.eventID = eventID;
         this.payload = payload.ToArray();
     }
 
@@ -158,7 +158,7 @@ public sealed class AnimationMarkerEvent : Event
     /// <summary>
     /// Gets the stable marker protocol identifier.
     /// </summary>
-    public string eventId { get; }
+    public string eventID { get; }
 
     /// <summary>
     /// Gets an immutable copy of the marker payload.

@@ -234,10 +234,10 @@ public sealed class AssetFileSystemTests
             Directory.CreateDirectory(plugin);
             File.WriteAllText(Path.Combine(project, "same.txt"), "project");
             File.WriteAllText(Path.Combine(plugin, "same.txt"), "plugin");
-            var pluginID = new AssetSourceId("tests.mount");
+            var pluginID = new AssetSourceID("tests.mount");
             using var fileSystem = new AssetFileSystem(
                 [
-                    new AssetSourceMount(AssetSourceId.project, project, isReadOnly: false),
+                    new AssetSourceMount(AssetSourceID.project, project, isReadOnly: false),
                     new AssetSourceMount(pluginID, plugin, isReadOnly: true)
                 ],
                 autoStart: false
@@ -253,11 +253,11 @@ public sealed class AssetFileSystemTests
             Assert.Equal("tests.mount", pluginRoot.name);
             Assert.False(projectEntry.isReadOnly);
             Assert.True(pluginEntry.isReadOnly);
-            Assert.Equal(AssetSourceId.project, projectEntry.source);
+            Assert.Equal(AssetSourceID.project, projectEntry.source);
             Assert.Equal(pluginID, pluginEntry.source);
             Assert.Contains(
                 fileSystem.GetChildren(AssetPath.Project(string.Empty)),
-                entry => entry.source == AssetSourceId.project
+                entry => entry.source == AssetSourceID.project
             );
             Assert.Contains(
                 fileSystem.GetChildren(AssetPath.Project(string.Empty)),

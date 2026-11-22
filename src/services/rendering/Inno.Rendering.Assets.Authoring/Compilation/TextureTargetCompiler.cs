@@ -11,7 +11,7 @@ namespace Inno.Rendering.Assets.Authoring;
 /// <summary>
 /// Converts supported artist texture sources into a validated portable runtime container.
 /// </summary>
-[StableTypeId("01400c3b-21c2-5193-ae8f-3cf3665f4261")]
+[StableTypeID("01400c3b-21c2-5193-ae8f-3cf3665f4261")]
 public interface ITextureTargetCompiler
 {
     /// <summary>

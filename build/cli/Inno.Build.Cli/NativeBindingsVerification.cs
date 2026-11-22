@@ -38,7 +38,7 @@ internal static partial class NativeBindingsVerification
             string repositoryRoot = options.engineRoot;
             BuildCompositionContext execution = StandardBuildEnvironment.Capture(
                 AppContext.BaseDirectory,
-                new BuildTargetId(options.target),
+                new BuildTargetID(options.target),
                 options.dotnet
             );
             BuildDistribution distribution = StandardBuildDistribution.Create(execution).build;

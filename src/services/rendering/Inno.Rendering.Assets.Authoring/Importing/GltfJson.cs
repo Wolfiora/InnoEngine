@@ -5,7 +5,7 @@ using Inno.Rendering;
 
 namespace Inno.Rendering.Assets.Authoring;
 
-[StableTypeId("d5d5c69c-6d36-541f-bdd6-305af58d8e18")]
+[StableTypeID("d5d5c69c-6d36-541f-bdd6-305af58d8e18")]
 internal static class GltfJson
 {
     internal static JsonElement RequireObject(

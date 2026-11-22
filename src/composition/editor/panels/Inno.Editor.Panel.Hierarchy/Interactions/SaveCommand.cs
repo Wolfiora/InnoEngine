@@ -8,8 +8,8 @@ using Inno.Scene;
 
 namespace Inno.Editor.Panel.Hierarchy;
 
-[EditorAction(HierarchyInteractionIds.C_SAVE)]
-[EditorMenu(HierarchyInteractionIds.C_MAIN_MENU_AREA, "File/Save", order: 100)]
+[EditorAction(HierarchyInteractionIDs.C_SAVE)]
+[EditorMenu(HierarchyInteractionIDs.C_MAIN_MENU_AREA, "File/Save", order: 100)]
 [EditorShortcut(KeyCode.S, primary: true)]
 internal sealed class SaveCommand(
     IEditorSceneWorkspace workspace,

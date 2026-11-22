@@ -11,7 +11,7 @@ public sealed class ShaderRerouteNodeCompiler : IShaderNodeCompiler
     /// <summary>
     /// Gets the definition id text used by the current instance.
     /// </summary>
-    public string definitionId => "inno.shader.reroute";
+    public string definitionID => "inno.shader.reroute";
 
     /// <summary>
     /// Gets a ports required by the implemented contract.

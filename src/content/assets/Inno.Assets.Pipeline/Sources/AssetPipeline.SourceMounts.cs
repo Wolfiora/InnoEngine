@@ -81,12 +81,12 @@ public sealed partial class AssetPipeline
                 transaction.candidateLoader,
                 transaction.candidateFileSystem
             );
-            transaction.candidateLoader.AssetReloaded += OnAssetReloaded;
+            transaction.candidateLoader.assetReloaded += OnAssetReloaded;
             m_loader = transaction.candidateLoader;
             m_fileSystem = transaction.candidateFileSystem;
             sourceMounts = transaction.sourceMounts;
             AssetSourceMount project = transaction.sourceMounts.Single(
-                static mount => mount.id == AssetSourceId.project
+                static mount => mount.id == AssetSourceID.project
             );
             assetRoot = project.rootPath;
             m_options = m_options with { assetRoot = assetRoot, sourceMounts = transaction.sourceMounts };
@@ -126,7 +126,7 @@ public sealed partial class AssetPipeline
             transaction.retirement.Own(transaction.catalogCandidate);
             if (transaction.previousLoader is not null)
             {
-                transaction.previousLoader.AssetReloaded -= OnAssetReloaded;
+                transaction.previousLoader.assetReloaded -= OnAssetReloaded;
                 transaction.retirement.Own(transaction.previousLoader);
             }
             if (transaction.previousFileSystem is not null)
@@ -134,7 +134,7 @@ public sealed partial class AssetPipeline
                 transaction.retirement.Own(transaction.previousFileSystem);
             }
             RetireSourceMounts(transaction);
-            changed = SourceMountsChanged;
+            changed = sourceMountsChanged;
         }
         InvokeObservers(changed);
     }
@@ -154,7 +154,7 @@ public sealed partial class AssetPipeline
             EnsurePendingSourceMountTransaction(transaction);
             if (transaction.isActivated)
             {
-                transaction.candidateLoader.AssetReloaded -= OnAssetReloaded;
+                transaction.candidateLoader.assetReloaded -= OnAssetReloaded;
                 SwitchSourceIdentities(
                     transaction.candidateLoader,
                     transaction.candidateFileSystem,
@@ -166,7 +166,7 @@ public sealed partial class AssetPipeline
                 sourceMounts = transaction.previousMounts ?? [];
                 m_options = transaction.previousOptions;
                 AssetSourceMount? project = sourceMounts.SingleOrDefault(
-                    static mount => mount.id == AssetSourceId.project
+                    static mount => mount.id == AssetSourceID.project
                 );
                 assetRoot = project?.rootPath ?? string.Empty;
                 m_revision++;
@@ -195,7 +195,7 @@ public sealed partial class AssetPipeline
                 throw new InvalidOperationException("Another source-mount candidate is already pending.");
             }
             AssetSourceMount[] snapshot = mounts.ToArray();
-            AssetSourceMount projectMount = snapshot.SingleOrDefault(static mount => mount.id == AssetSourceId.project)
+            AssetSourceMount projectMount = snapshot.SingleOrDefault(static mount => mount.id == AssetSourceID.project)
                                             ?? throw new ArgumentException("A project asset source mount is required.", nameof(mounts));
             if (projectMount.isReadOnly)
             {
@@ -244,7 +244,7 @@ public sealed partial class AssetPipeline
                 m_options.sourcePolicy,
                 requireWritableProject: true,
                 m_identities,
-                persistentIdentityResolver: path => loader.TryGetPersistentId(path, out Guid id) ? id : null,
+                persistentIdentityResolver: path => loader.TryGetPersistentID(path, out Guid id) ? id : null,
                 activateIdentities: false
             );
             loader.Rescan(cancellationToken);

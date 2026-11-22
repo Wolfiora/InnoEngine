@@ -16,8 +16,8 @@ public sealed class GraphCanvasPointerTests
         var pointer = new GraphCanvasPointerController(state);
         var layout = new GraphCanvasLayout();
         var view = new GraphCanvasView(state, Vector2.Zero, new(800f, 600f));
-        var original = new GraphNodeId("workflow.original");
-        var added = new GraphNodeId("workflow.added");
+        var original = new GraphNodeID("workflow.original");
+        var added = new GraphNodeID("workflow.added");
         _ = layout.SetNodes([
             new(original, new(500f, 300f), new(100f, 80f), 24f, "Original", []),
             new(added, new(50f, 50f), new(100f, 80f), 24f, "Added", [])
@@ -101,9 +101,9 @@ public sealed class GraphCanvasPointerTests
         var output = new GraphEndpoint(new("flow.source"), new("next"));
         var input = new GraphEndpoint(new("flow.target"), new("previous"));
         _ = layout.SetNodes([
-            new(output.nodeId, default, new(200f, 100f), 24f, "Source", [new(output, GraphPortDirection.Output, new(200f, 40f), "Next")]),
+            new(output.nodeID, default, new(200f, 100f), 24f, "Source", [new(output, GraphPortDirection.Output, new(200f, 40f), "Next")]),
             new(
-                input.nodeId,
+                input.nodeID,
                 new(300f, 0f),
                 new(200f, 100f),
                 24f,
@@ -130,7 +130,7 @@ public sealed class GraphCanvasPointerTests
         var pointer = new GraphCanvasPointerController(state);
         var layout = new GraphCanvasLayout();
         var view = new GraphCanvasView(state, Vector2.Zero, new(800f, 600f));
-        var id = new GraphNodeId("flow.read-only");
+        var id = new GraphNodeID("flow.read-only");
         _ = layout.SetNodes([new(id, new(20f, 20f), new(200f, 100f), 24f, "Read only", [])]);
         _ = pointer.Step(view, layout, new() { position = new(30f, 25f), isHovered = true, isPressed = true, isDown = true });
         _ = pointer.Step(view, layout, new() { position = new(100f, 100f), isDown = true });

@@ -100,15 +100,15 @@ public sealed partial class AssetLoader
                                        && destinationRecord.persistentID != Guid.Empty;
         Guid persistentID = destinationOwnsIdentity
                             ? destinationRecord!.persistentID
-                            : asset.identity.persistentId;
+                            : asset.identity.persistentID;
         if (persistentID == Guid.Empty)
         {
             persistentID = Guid.NewGuid();
         }
-        if (asset.identity.runtimeId is not null && asset.identity.persistentId != persistentID)
+        if (asset.identity.runtimeID is not null && asset.identity.persistentID != persistentID)
         {
             throw new InvalidOperationException(
-                $"Registered asset '{asset.identity.persistentId:D}' cannot replace destination identity "
+                $"Registered asset '{asset.identity.persistentID:D}' cannot replace destination identity "
                 + $"'{persistentID:D}' at '{relativePath}'."
             );
         }
@@ -156,12 +156,12 @@ public sealed partial class AssetLoader
         AssetRecord committed = m_recordsByPath[relativePath];
         if (committed.asset is null)
         {
-            if (asset.identity.persistentId != persistentID)
+            if (asset.identity.persistentID != persistentID)
             {
                 m_identities.InitializePersistentIdentity(asset, persistentID);
             }
             committed.asset = asset;
-            if (m_identitiesActive && asset.identity.runtimeId is null)
+            if (m_identitiesActive && asset.identity.runtimeID is null)
             {
                 m_identities.Register(asset, persistentID);
             }

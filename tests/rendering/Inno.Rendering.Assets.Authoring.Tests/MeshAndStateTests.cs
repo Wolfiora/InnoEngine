@@ -43,11 +43,11 @@ public sealed class MeshAndStateTests : IDisposable
     [Fact]
     public void MaterialAndPipelineState_RoundTripsThroughAssetSerialization()
     {
-        var material = new MaterialAsset { techniqueId = new ShaderTechniqueId("high-quality") };
-        material.Set(new ShaderPropertyId("roughness"), MaterialValue.FromFloat(0.4f));
-        material.Set(new ShaderPropertyId("transform"), MaterialValue.FromMatrix(Matrix.identity));
+        var material = new MaterialAsset { techniqueId = new ShaderTechniqueID("high-quality") };
+        material.Set(new ShaderPropertyID("roughness"), MaterialValue.FromFloat(0.4f));
+        material.Set(new ShaderPropertyID("transform"), MaterialValue.FromMatrix(Matrix.identity));
         material.Set(
-            new ShaderPropertyId("albedo"),
+            new ShaderPropertyID("albedo"),
             new MaterialValue
             {
                 kind = MaterialValueKind.Texture,
@@ -69,9 +69,9 @@ public sealed class MeshAndStateTests : IDisposable
             return 0;
         });
 
-        Assert.True(restoredMaterial.TryGet(new ShaderPropertyId("roughness"), out MaterialValue roughness));
+        Assert.True(restoredMaterial.TryGet(new ShaderPropertyID("roughness"), out MaterialValue roughness));
         Assert.Equal(0.4f, roughness.vector.x);
-        Assert.True(restoredMaterial.TryGet(new ShaderPropertyId("albedo"), out MaterialValue albedo));
+        Assert.True(restoredMaterial.TryGet(new ShaderPropertyID("albedo"), out MaterialValue albedo));
         Assert.Equal(RenderSamplerFilter.Point, albedo.sampler.filter);
         Assert.Equal(RenderSamplerAddressMode.Mirror, albedo.sampler.addressV);
         Assert.Contains("Cutout", restoredMaterial.keywords);
@@ -124,15 +124,15 @@ public sealed class MeshAndStateTests : IDisposable
                 [advancedPass, basicPass],
                 [
                     new ShaderTechniqueDefinition(
-                        new ShaderTechniqueId("advanced"),
-                        new ShaderContractId("example.2d.sprite"),
-                        [new ShaderTechniquePass(new ShaderPassRoleId("draw"), advancedPass.name)],
+                        new ShaderTechniqueID("advanced"),
+                        new ShaderContractID("example.2d.sprite"),
+                        [new ShaderTechniquePass(new ShaderPassRoleID("draw"), advancedPass.name)],
                         GraphicsCapability.Compute
                     ),
                     new ShaderTechniqueDefinition(
-                        new ShaderTechniqueId("basic"),
-                        new ShaderContractId("example.2d.sprite"),
-                        [new ShaderTechniquePass(new ShaderPassRoleId("draw"), basicPass.name)]
+                        new ShaderTechniqueID("basic"),
+                        new ShaderContractID("example.2d.sprite"),
+                        [new ShaderTechniquePass(new ShaderPassRoleID("draw"), basicPass.name)]
                     )
                 ]
             ),
@@ -146,16 +146,16 @@ public sealed class MeshAndStateTests : IDisposable
         MaterialPassResolution basic = Assert.IsType<MaterialPassResolution>(
             MaterialPassResolver.Resolve(
                 material,
-                new ShaderContractId("example.2d.sprite"),
-                new ShaderPassRoleId("draw"),
+                new ShaderContractID("example.2d.sprite"),
+                new ShaderPassRoleID("draw"),
                 basicCapabilities
             )
         );
         MaterialPassResolution advanced = Assert.IsType<MaterialPassResolution>(
             MaterialPassResolver.Resolve(
                 material,
-                new ShaderContractId("example.2d.sprite"),
-                new ShaderPassRoleId("draw"),
+                new ShaderContractID("example.2d.sprite"),
+                new ShaderPassRoleID("draw"),
                 computeCapabilities
             )
         );
@@ -167,8 +167,8 @@ public sealed class MeshAndStateTests : IDisposable
         Assert.Null(
             MaterialPassResolver.Resolve(
                 material,
-                new ShaderContractId("unrelated.contract"),
-                new ShaderPassRoleId("draw"),
+                new ShaderContractID("unrelated.contract"),
+                new ShaderPassRoleID("draw"),
                 computeCapabilities
             )
         );
@@ -233,7 +233,7 @@ public sealed class MeshAndStateTests : IDisposable
 
     private static GraphicsCapabilities CreateCapabilities(GraphicsCapability features)
         => new(
-            GraphicsApi.Noop,
+            GraphicsApi.noop,
             features,
             new GraphicsLimits(64, 4, 4096, 8),
             Enum.GetValues<RenderTextureFormat>(),

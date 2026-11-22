@@ -81,7 +81,7 @@ public sealed class RenderGraphValidationTests
         => new(
             1,
             new GraphicsCapabilities(
-                GraphicsApi.Noop,
+                GraphicsApi.noop,
                 GraphicsCapability.None,
                 new GraphicsLimits(maxViews, 8, 16_384, 16),
                 Enum.GetValues<RenderTextureFormat>(),

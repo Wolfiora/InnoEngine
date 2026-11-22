@@ -150,7 +150,7 @@ public struct Color : IEquatable<Color>
     /// <returns>
     /// Red, green, blue and alpha bytes. Inputs must already be finite and in [0, 1]; conversion does not clamp field writes.
     /// </returns>
-    public (byte R, byte G, byte B, byte A) ToBytes()
+    public (byte r, byte g, byte b, byte a) ToBytes()
         => (
                 (byte)(r * 255),
                 (byte)(g * 255),

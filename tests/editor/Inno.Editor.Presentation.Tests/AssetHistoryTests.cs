@@ -25,7 +25,7 @@ namespace Inno.Editor.Presentation.Tests;
 
 public sealed class AssetHistoryTests : IDisposable
 {
-    private readonly EditorUiSession m_ui = new();
+    private readonly EditorUISession m_ui = new();
     private readonly IdentityAllocator m_identities = new();
     private readonly IDisposable m_identityScope;
     private readonly string m_projectRoot = Path.Combine(Path.GetTempPath(), "InnoAssetHistoryTests", Guid.NewGuid().ToString("N"));
@@ -65,7 +65,7 @@ public sealed class AssetHistoryTests : IDisposable
             new FileByteDocumentStore(Path.GetFullPath(Path.Combine(m_projectRoot, "Settings.Project.inno"))),
             m_types,
             m_serialization,
-            new ProjectId("tests.editor"),
+            new ProjectID("tests.editor"),
             AssetSerializationContext.Create(m_assets)
         );
         m_plugins = new PluginEnvironment(
@@ -139,14 +139,14 @@ public sealed class AssetHistoryTests : IDisposable
     {
         m_assets.CreateDirectory(AssetPath.Project("Folder"));
         m_assets.CreateDirectory(AssetPath.Project("Folder/Empty"));
-        Assert.True(m_assets.TryGetPersistentId(AssetPath.Project("Folder"), out Guid folderID));
+        Assert.True(m_assets.TryGetPersistentID(AssetPath.Project("Folder"), out Guid folderID));
         Assert.True(m_assets.TryGetFileSystemEntry(AssetPath.Project("Folder"), out AssetFileEntry folder));
         Assert.True(m_runtime.interactions.For("panel/asset.file-browser", folder).Execute("file-browser/delete"));
         Assert.False(m_assets.TryGetFileSystemEntry(AssetPath.Project("Folder"), out _));
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
         Assert.True(m_assets.TryGetFileSystemEntry(AssetPath.Project("Folder/Empty"), out AssetFileEntry restoredEmpty));
         Assert.True(restoredEmpty.isDirectory);
-        Assert.True(m_assets.TryGetPersistentId(AssetPath.Project("Folder"), out Guid restoredID));
+        Assert.True(m_assets.TryGetPersistentID(AssetPath.Project("Folder"), out Guid restoredID));
         Assert.Equal(folderID, restoredID);
         Assert.True(m_runtime.interactions.history.Redo().succeeded);
         Assert.False(m_assets.TryGetFileSystemEntry(AssetPath.Project("Folder"), out _));

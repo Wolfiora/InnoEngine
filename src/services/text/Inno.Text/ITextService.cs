@@ -39,7 +39,7 @@ public interface ITextService
     /// <param name="faceIndex">
     /// The zero-based collection face index.
     /// </param>
-    /// <param name="glyphId">
+    /// <param name="glyphID">
     /// The font-specific glyph identifier.
     /// </param>
     /// <param name="fontSize">
@@ -51,7 +51,7 @@ public interface ITextService
     GlyphBitmap Rasterize(
         FontAsset font,
         int faceIndex,
-        uint glyphId,
+        uint glyphID,
         float fontSize
     );
 }

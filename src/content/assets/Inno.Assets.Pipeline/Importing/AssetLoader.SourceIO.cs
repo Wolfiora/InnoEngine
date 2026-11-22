@@ -294,18 +294,18 @@ public sealed partial class AssetLoader
         var parts = new List<string>
         {
             "Inno.AssetBuild",
-            processor.processorId,
+            processor.processorID,
             processor.GetType().Assembly.ManifestModule.ModuleVersionId.ToString("D"),
-            definition.identity.persistentId.ToString("D"),
+            definition.identity.persistentID.ToString("D"),
             definition.GetType().Assembly.ManifestModule.ModuleVersionId.ToString("D"),
             definition.GetType().FullName ?? definition.GetType().Name,
             m_runtimeOwner.GetSourceHash(definition),
             ComputeSha256Hex(CaptureAssetState(definition)),
             ComputeSha256Hex(definition.runtimePayload.ToArray())
         };
-        foreach (AssetInfo input in inputs.OrderBy(static value => value.persistentId))
+        foreach (AssetInfo input in inputs.OrderBy(static value => value.persistentID))
         {
-            parts.Add(input.persistentId.ToString("D"));
+            parts.Add(input.persistentID.ToString("D"));
             parts.Add(input.artifactKey.value);
         }
         return string.Join("\n", parts);
@@ -513,8 +513,8 @@ public sealed partial class AssetLoader
     private static AssetDependencyData ToData(AssetDependency dependency)
         => new()
     {
-        persistentId = dependency.persistentId,
-        stableTypeId = dependency.type.stableId,
+        persistentId = dependency.persistentID,
+        stableTypeId = dependency.type.stableID,
         lastKnownPath = dependency.lastKnownPath
     };
 

@@ -15,11 +15,11 @@ namespace Inno.Core.Settings;
 public sealed class ProjectSettings : IDisposable
 {
     private readonly SettingsDocumentStore<ProjectSettingsDocument> m_documents;
-    private readonly ProjectId m_defaultProjectID;
+    private readonly ProjectID m_defaultProjectID;
     private readonly SerializationRegistry m_serialization;
     private readonly SerializationContext m_serializationContext;
     private readonly ProjectSettingsRegistry m_registry;
-    private readonly Dictionary<ProjectSettingId, ProjectSettingRecord> m_effective = [];
+    private readonly Dictionary<ProjectSettingID, ProjectSettingRecord> m_effective = [];
     private ProjectSettingsDocument m_document;
     private bool m_disposed;
 
@@ -35,7 +35,7 @@ public sealed class ProjectSettings : IDisposable
     /// <param name="serialization">
     /// The serialization registry used for settings documents and contribution payloads.
     /// </param>
-    /// <param name="defaultProjectId">
+    /// <param name="defaultProjectID">
     /// The project namespace used when the document has no authored identity override.
     /// </param>
     /// <param name="serializationContext">
@@ -51,21 +51,21 @@ public sealed class ProjectSettings : IDisposable
         IByteDocumentStore documentStore,
         TypeCatalog types,
         SerializationRegistry serialization,
-        ProjectId defaultProjectId,
+        ProjectID defaultProjectID,
         SerializationContext serializationContext,
         IReadOnlyList<ProjectSettingsContributor>? contributors = null
     ) {
         ArgumentNullException.ThrowIfNull(documentStore);
         ArgumentNullException.ThrowIfNull(types);
-        if (!defaultProjectId.isValid)
+        if (!defaultProjectID.isValid)
         {
-            throw new ArgumentException("A default Project ID is required.", nameof(defaultProjectId));
+            throw new ArgumentException("A default Project ID is required.", nameof(defaultProjectID));
         }
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(serializationContext);
         m_serialization = serialization;
         m_serializationContext = serializationContext;
-        m_defaultProjectID = defaultProjectId;
+        m_defaultProjectID = defaultProjectID;
         m_registry = new ProjectSettingsRegistry(types);
         m_documents = new SettingsDocumentStore<ProjectSettingsDocument>(
             documentStore,
@@ -95,7 +95,7 @@ public sealed class ProjectSettings : IDisposable
     /// <exception cref="InvalidCastException">
     /// Thrown when the definition does not implement the requested contract.
     /// </exception>
-    public TSetting Get<TSetting>(ProjectSettingId id)
+    public TSetting Get<TSetting>(ProjectSettingID id)
         where TSetting : class, ISerializable
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
@@ -124,7 +124,7 @@ public sealed class ProjectSettings : IDisposable
     /// <see langword="true"/> when a compatible definition exists.
     /// </returns>
     public bool TryGet<TSetting>(
-        ProjectSettingId id,
+        ProjectSettingID id,
         out TSetting? setting
     ) where TSetting : class, ISerializable
     {
@@ -144,7 +144,7 @@ public sealed class ProjectSettings : IDisposable
     /// <param name="id">
     /// Stable setting identifier.
     /// </param>
-    /// <param name="contributorId">
+    /// <param name="contributorID">
     /// Stable identity of the Plugin being exported.
     /// </param>
     /// <param name="declaredDependencies">
@@ -167,15 +167,15 @@ public sealed class ProjectSettings : IDisposable
     /// permitted by the declared dependency and override ownership.
     /// </exception>
     public bool TryCapture(
-        ProjectSettingId id,
-        string contributorId,
+        ProjectSettingID id,
+        string contributorID,
         IReadOnlySet<string> declaredDependencies,
         IReadOnlySet<string> declaredOverrides,
         IReadOnlyList<ProjectSettingsContributor> contributors,
         out ProjectSettingRecord record
     ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        ArgumentException.ThrowIfNullOrWhiteSpace(contributorId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(contributorID);
         ArgumentNullException.ThrowIfNull(declaredDependencies);
         ArgumentNullException.ThrowIfNull(declaredOverrides);
         ArgumentNullException.ThrowIfNull(contributors);
@@ -203,14 +203,14 @@ public sealed class ProjectSettings : IDisposable
         }
         ValidateRecord(id, definition, authored);
 
-        if (contributors.Any(contributor => string.Equals(contributor.id, contributorId, StringComparison.Ordinal)))
+        if (contributors.Any(contributor => string.Equals(contributor.id, contributorID, StringComparison.Ordinal)))
         {
             throw new InvalidOperationException(
-                $"Cannot export Plugin '{contributorId}' while a Plugin with the same ID is active."
+                $"Cannot export Plugin '{contributorID}' while a Plugin with the same ID is active."
             );
         }
         var prospective = new ProjectSettingsContributor(
-            contributorId,
+            contributorID,
             declaredDependencies,
             declaredOverrides,
             [authored]
@@ -241,7 +241,7 @@ public sealed class ProjectSettings : IDisposable
     /// <returns>
     /// <see langword="true"/> when a project contribution record exists.
     /// </returns>
-    public bool HasProjectOverride(ProjectSettingId id)
+    public bool HasProjectOverride(ProjectSettingID id)
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         return m_document.overrides.Any(candidate => candidate.id == id);
@@ -260,7 +260,7 @@ public sealed class ProjectSettings : IDisposable
     /// <see langword="true"/> when the setting is defined.
     /// </returns>
     public bool TryClone(
-        ProjectSettingId id,
+        ProjectSettingID id,
         out ISerializable? setting
     ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
@@ -292,7 +292,7 @@ public sealed class ProjectSettings : IDisposable
     /// <see langword="true"/> when the setting is defined.
     /// </returns>
     public bool TryCloneComposedDefault(
-        ProjectSettingId id,
+        ProjectSettingID id,
         IReadOnlyList<ProjectSettingsContributor> contributors,
         out ISerializable? setting
     ) {
@@ -358,8 +358,8 @@ public sealed class ProjectSettings : IDisposable
             }
         }
 
-        var candidate = new Dictionary<ProjectSettingId, ProjectSettingRecord>();
-        foreach ((ProjectSettingId id, ProjectSettingsRegistry.Definition definition) in registry.definitions)
+        var candidate = new Dictionary<ProjectSettingID, ProjectSettingRecord>();
+        foreach ((ProjectSettingID id, ProjectSettingsRegistry.Definition definition) in registry.definitions)
         {
             ProjectSettingRecord? projectRecord = FindRecord(m_document.overrides, id);
             ISerializable value = ComposeSetting(id, definition, contributors, projectRecord);
@@ -374,7 +374,7 @@ public sealed class ProjectSettings : IDisposable
         }
 
         m_effective.Clear();
-        foreach ((ProjectSettingId id, ProjectSettingRecord value) in candidate)
+        foreach ((ProjectSettingID id, ProjectSettingRecord value) in candidate)
         {
             m_effective.Add(id, value);
         }
@@ -393,11 +393,11 @@ public sealed class ProjectSettings : IDisposable
     /// Dependency-ordered defaults used to rebuild.
     /// </param>
     public void SetProjectOverride(
-        ProjectSettingId id,
+        ProjectSettingID id,
         ISerializable value,
         IReadOnlyList<ProjectSettingsContributor> contributors
     ) => _ = ApplyProjectOverrides(
-        new Dictionary<ProjectSettingId, ISerializable> { [id] = value },
+        new Dictionary<ProjectSettingID, ISerializable> { [id] = value },
         resets: null,
         contributors
     );
@@ -418,8 +418,8 @@ public sealed class ProjectSettings : IDisposable
     /// <see langword="true"/> when the project document changed.
     /// </returns>
     public bool ApplyProjectOverrides(
-        IReadOnlyDictionary<ProjectSettingId, ISerializable> values,
-        IReadOnlySet<ProjectSettingId>? resets,
+        IReadOnlyDictionary<ProjectSettingID, ISerializable> values,
+        IReadOnlySet<ProjectSettingID>? resets,
         IReadOnlyList<ProjectSettingsContributor> contributors
     ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
@@ -428,17 +428,17 @@ public sealed class ProjectSettings : IDisposable
         ValidateContributorOrder(contributors);
 
         ProjectSettingsRegistry.Snapshot registry = m_registry.settings;
-        Dictionary<ProjectSettingId, ProjectSettingRecord> records = m_document.overrides.ToDictionary(static record => record.id);
+        Dictionary<ProjectSettingID, ProjectSettingRecord> records = m_document.overrides.ToDictionary(static record => record.id);
         bool changed = false;
         if (resets is not null)
         {
-            foreach (ProjectSettingId id in resets)
+            foreach (ProjectSettingID id in resets)
             {
                 changed |= records.Remove(id);
             }
         }
 
-        foreach ((ProjectSettingId id, ISerializable value) in values)
+        foreach ((ProjectSettingID id, ISerializable value) in values)
         {
             ArgumentNullException.ThrowIfNull(value);
             if (resets?.Contains(id) == true)
@@ -554,7 +554,7 @@ public sealed class ProjectSettings : IDisposable
     }
 
     private ISerializable ComposeSetting(
-        ProjectSettingId id,
+        ProjectSettingID id,
         ProjectSettingsRegistry.Definition definition,
         IReadOnlyList<ProjectSettingsContributor> contributors,
         ProjectSettingRecord? projectRecord
@@ -609,11 +609,11 @@ public sealed class ProjectSettings : IDisposable
     }
 
     private ISerializable CreateHostDefault(
-        ProjectSettingId id,
+        ProjectSettingID id,
         ProjectSettingsRegistry.Definition definition
     ) {
         ISerializable value = definition.Create();
-        if (id == ProjectIdentitySettings.settingId && value is ProjectIdentitySettings identity)
+        if (id == ProjectIdentitySettings.settingID && value is ProjectIdentitySettings identity)
         {
             identity.projectId = m_defaultProjectID.value;
         }
@@ -621,7 +621,7 @@ public sealed class ProjectSettings : IDisposable
     }
 
     private ISerializable ComposeReplacement(
-        ProjectSettingId id,
+        ProjectSettingID id,
         ProjectSettingsRegistry.Definition definition,
         IReadOnlyList<ProjectSettingsContributor> contributors,
         ProjectSettingRecord? projectRecord
@@ -662,7 +662,7 @@ public sealed class ProjectSettings : IDisposable
     }
 
     private bool TryCreateRecord(
-        ProjectSettingId id,
+        ProjectSettingID id,
         ProjectSettingsRegistry.Definition definition,
         ISerializable baseline,
         ISerializable value,
@@ -717,12 +717,12 @@ public sealed class ProjectSettings : IDisposable
 
     private static ProjectSettingRecord? FindRecord(
         ProjectSettingsContributor contributor,
-        ProjectSettingId id
+        ProjectSettingID id
     ) => FindRecord(contributor.settings, id);
 
     private static ProjectSettingRecord? FindRecord(
         IEnumerable<ProjectSettingRecord> records,
-        ProjectSettingId id
+        ProjectSettingID id
     ) {
         ProjectSettingRecord? result = null;
         foreach (ProjectSettingRecord record in records)
@@ -798,7 +798,7 @@ public sealed class ProjectSettings : IDisposable
          && (left.propertyData ?? []).AsSpan().SequenceEqual(right.propertyData ?? []);
 
     private static void ValidateRecord(
-        ProjectSettingId id,
+        ProjectSettingID id,
         ProjectSettingsRegistry.Definition definition,
         ProjectSettingRecord record
     ) {

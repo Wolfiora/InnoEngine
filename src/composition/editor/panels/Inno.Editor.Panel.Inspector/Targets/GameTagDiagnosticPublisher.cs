@@ -46,7 +46,7 @@ internal sealed class GameTagDiagnosticPublisher
                 {
                     continue;
                 }
-                Guid targetID = gameObject.identity.persistentId;
+                Guid targetID = gameObject.identity.persistentID;
                 currentTargets.Add(targetID);
                 if (m_activeTargets.Contains(targetID))
                 {

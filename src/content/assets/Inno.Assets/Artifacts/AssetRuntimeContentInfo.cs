@@ -28,7 +28,7 @@ public sealed class AssetRuntimeContentInfo
     /// The source inventory is absent.
     /// </exception>
     public AssetRuntimeContentInfo(
-        IReadOnlyList<AssetSourceId> sources,
+        IReadOnlyList<AssetSourceID> sources,
         int assetCount,
         int artifactBundleCount,
         long totalBytes
@@ -43,7 +43,7 @@ public sealed class AssetRuntimeContentInfo
     /// <summary>
     /// Gets the source identities represented by the deployed catalog.
     /// </summary>
-    public IReadOnlyList<AssetSourceId> sources { get; }
+    public IReadOnlyList<AssetSourceID> sources { get; }
 
     /// <summary>
     /// Gets the number of runtime-scoped assets in the deployed catalog.

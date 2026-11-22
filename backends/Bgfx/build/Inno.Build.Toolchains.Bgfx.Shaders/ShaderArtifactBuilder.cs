@@ -144,7 +144,7 @@ public static class ShaderArtifactBuilder
         }
         RenderShaderPassArtifact pass = artifact.passes[0];
         RenderShaderBindingDescriptor[] bindings = pass.shaderInterface.bindings.Select(static binding => new RenderShaderBindingDescriptor(
-            new RenderBindingId(binding.id.value),
+            new RenderBindingID(binding.id.value),
             binding.bindingKind switch
             {
                 ShaderPropertyBindingKind.Uniform => RenderShaderBindingKind.Uniform,

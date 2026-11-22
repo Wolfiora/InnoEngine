@@ -92,7 +92,7 @@ public sealed class ContentRenderTargetArtifactProvider : IRenderTargetArtifactP
         ArgumentNullException.ThrowIfNull(shader);
         ArgumentNullException.ThrowIfNull(capabilities);
         string path = RenderTargetArtifactPath.GetShaderPath(
-            shader.identity.persistentId,
+            shader.identity.persistentID,
             capabilities.backend,
             variant
         );
@@ -145,7 +145,7 @@ public sealed class ContentRenderTargetArtifactProvider : IRenderTargetArtifactP
         RenderTextureArtifactReference texture,
         out ReadOnlyMemory<byte> artifact
     ) {
-        if (texture.assetId == Guid.Empty || string.IsNullOrWhiteSpace(texture.slot.id))
+        if (texture.assetID == Guid.Empty || string.IsNullOrWhiteSpace(texture.slot.id))
         {
             throw new ArgumentException("A valid texture artifact reference is required.", nameof(texture));
         }

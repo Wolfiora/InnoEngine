@@ -278,7 +278,7 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
         entry.line,
         0,
         entry.stackTrace,
-        entry.sessionId
+        entry.sessionID
     );
 
     private static EditorConsoleOccurrence FromDiagnostic(
@@ -307,7 +307,7 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
             location?.line ?? 0,
             location?.column ?? 0,
             string.Empty,
-            LogSessionId.none
+            LogSessionID.none
         );
     }
 }

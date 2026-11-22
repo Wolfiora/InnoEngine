@@ -180,7 +180,7 @@ public sealed class EditorGameInputCaptureTests
 
         WindowFocusChangedEvent reset = Assert.IsType<WindowFocusChangedEvent>(capture.Route(release));
         Assert.False(reset.isFocused);
-        Assert.Equal(42u, reset.windowId);
+        Assert.Equal(42u, reset.windowID);
         Assert.False(reset.isGlobalHandled);
         Assert.Null(capture.Route(release));
         Assert.Null(capture.Route(new KeyPressedEvent(42, KeyCode.B)));

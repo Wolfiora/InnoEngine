@@ -102,7 +102,7 @@ public sealed class BuildCachePublisher
     /// <param name="currentKey">
     /// A product/target/configuration root identity, or null for an unselected generation.
     /// </param>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The producer's product target, or null for a shared host generation.
     /// </param>
     /// <param name="cancellationToken">
@@ -124,13 +124,13 @@ public sealed class BuildCachePublisher
         string leasePath,
         IReadOnlyList<string> dependencies,
         string? currentKey,
-        string? targetId,
+        string? targetID,
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(dependencies);
-        if (targetId is not null)
+        if (targetID is not null)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
+            ArgumentException.ThrowIfNullOrWhiteSpace(targetID);
         }
         BuildCacheCleanupPlan.RequireChild(m_root, directory);
         BuildCacheCleanupPlan.RequireChild(m_root, leasePath);
@@ -147,7 +147,7 @@ public sealed class BuildCachePublisher
             DateTime.UtcNow,
             dependencies.Select(Path.GetFullPath).ToArray(),
             bytes,
-            targetId
+            targetID
         );
         AtomicFile.WriteAllBytes(Path.Combine(m_root, Key(relative) + ".cache.json"), WriteEntry(metadata));
         if (currentKey is not null && m_role == BuildCacheArtifactRole.ImmutableArtifact)
@@ -172,7 +172,7 @@ public sealed class BuildCachePublisher
     /// <param name="dependencies">
     /// The exact dependency closure, in its original publication order.
     /// </param>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The producer's explicit target, or null for shared host work.
     /// </param>
     /// <param name="cancellationToken">
@@ -199,13 +199,13 @@ public sealed class BuildCachePublisher
         string directory,
         string leasePath,
         IReadOnlyList<string> dependencies,
-        string? targetId,
+        string? targetID,
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(dependencies);
-        if (targetId is not null)
+        if (targetID is not null)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
+            ArgumentException.ThrowIfNullOrWhiteSpace(targetID);
         }
         if (m_role != BuildCacheArtifactRole.ImmutableArtifact)
         {
@@ -218,7 +218,7 @@ public sealed class BuildCachePublisher
         cancellationToken.ThrowIfCancellationRequested();
         if (!File.Exists(record))
         {
-            Record(directory, leasePath, dependencies, null, targetId, cancellationToken);
+            Record(directory, leasePath, dependencies, null, targetID, cancellationToken);
             return;
         }
         Entry previous = ReadEntry(record);
@@ -226,7 +226,7 @@ public sealed class BuildCachePublisher
         if (previous.directory != relative
             || !BuildCacheInventory.PATH_COMPARER.Equals(PathBoundary.Resolve(m_root, previous.leasePath), Path.GetFullPath(leasePath))
             || !previous.dependencies.SequenceEqual(dependencies.Select(Path.GetFullPath), BuildCacheInventory.PATH_COMPARER)
-            || previous.targetID != targetId || previous.bytes != bytes
+            || previous.targetID != targetID || previous.bytes != bytes
         ) {
             throw new InvalidDataException("Immutable ownership differs from its completed publication registration.");
         }
@@ -254,7 +254,7 @@ public sealed class BuildCachePublisher
     /// <param name="leasePath">
     /// The caller's persistent exclusive producer lease outside the workspace.
     /// </param>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The explicit product target, or null for shared host work.
     /// </param>
     /// <param name="cancellationToken">
@@ -269,7 +269,7 @@ public sealed class BuildCachePublisher
     public void BeginWorkingDirectory(
         string directory,
         string leasePath,
-        string? targetId,
+        string? targetID,
         CancellationToken cancellationToken = default
     ) {
         if (m_role != BuildCacheArtifactRole.ReusableWorkspace)
@@ -291,7 +291,7 @@ public sealed class BuildCachePublisher
         }
         AtomicFile.WriteAllBytes(
             record,
-            WriteEntry(new(relative, Path.GetRelativePath(m_root, leasePath).Replace('\\', '/'), DateTime.UtcNow, [], 0, targetId))
+            WriteEntry(new(relative, Path.GetRelativePath(m_root, leasePath).Replace('\\', '/'), DateTime.UtcNow, [], 0, targetID))
         );
         Directory.CreateDirectory(directory);
     }

@@ -10,7 +10,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Contains normalized CPU mesh data ready for backend upload.
 /// </summary>
-[StableTypeId("9590e0d3-f8d2-58b1-9288-d0a20448ceb6")]
+[StableTypeID("9590e0d3-f8d2-58b1-9288-d0a20448ceb6")]
 public sealed class GeometryData
 {
     /// <summary>

@@ -29,7 +29,7 @@ public static class StandardSupportPackRequirements
     /// </returns>
     public static PlayerSupportPackRequirements CreateDynamic(
         ProductNativeBuildPlan plan,
-        BuildTargetId target,
+        BuildTargetID target,
         string extension
     ) {
         string[] groups = plan.steps
@@ -62,7 +62,7 @@ public static class StandardSupportPackRequirements
     /// </returns>
     public static PlayerSupportPackRequirements CreateStatic(
         ProductNativeBuildPlan plan,
-        BuildTargetId target,
+        BuildTargetID target,
         NativeLinkPlan linkPlan
     ) {
         string[] archives = plan.steps.SelectMany(step => (

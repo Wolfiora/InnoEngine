@@ -13,7 +13,7 @@ using Inno.Rendering.Assets;
 namespace Inno.Rendering.Assets.Authoring;
 
 [AssetImporter("inno.rendering.geometry")]
-[StableTypeId("a7278025-7d95-5fb3-a309-25458cef8765")]
+[StableTypeID("a7278025-7d95-5fb3-a309-25458cef8765")]
 internal sealed class GeometryAssetImporter : AssetImporter<GeometryAsset>
 {
     /// <summary>

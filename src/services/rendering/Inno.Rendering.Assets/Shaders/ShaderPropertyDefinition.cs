@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Declares one shader property and its reflected stage visibility.
 /// </summary>
-[StableTypeId("4b05e49c-b844-535e-aec9-c2201cfdd93f")]
+[StableTypeID("4b05e49c-b844-535e-aec9-c2201cfdd93f")]
 public struct ShaderPropertyDefinition
 {
     /// <summary>
@@ -45,7 +45,7 @@ public struct ShaderPropertyDefinition
     /// Layer responsible for supplying the binding value at execution time.
     /// </param>
     public ShaderPropertyDefinition(
-        ShaderPropertyId id,
+        ShaderPropertyID id,
         string displayName,
         ShaderPropertyType type,
         ShaderStage stages,
@@ -81,7 +81,7 @@ public struct ShaderPropertyDefinition
     /// <summary>
     /// Gets or sets the stable property identifier.
     /// </summary>
-    public ShaderPropertyId id { get; set; }
+    public ShaderPropertyID id { get; set; }
 
     /// <summary>
     /// Gets or sets the artist-facing property name.

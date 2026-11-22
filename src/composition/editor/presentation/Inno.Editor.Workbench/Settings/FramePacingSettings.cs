@@ -4,8 +4,8 @@ using Inno.Editor.ImGui;
 using Inno.Editor.Settings;
 using Inno.Platform;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Workbench;
 
@@ -53,7 +53,7 @@ internal sealed class VerticalSyncSetting : EditorSetting
     protected override void OnDraw(EditorSettingObject setting)
     {
         bool enabled = setting.GetAsBoolean("enabled", false);
-        if (Ui.Checkbox("##vsync", ref enabled))
+        if (Gui.Checkbox("##vsync", ref enabled))
         {
             setting.SetAsBoolean("enabled", enabled);
         }
@@ -95,7 +95,7 @@ internal sealed class MaximumFrameRateSetting : EditorSetting
     protected override void OnDraw(EditorSettingObject setting)
     {
         int rate = setting.GetAsInt32("value", 0);
-        if (Ui.InputInt("##maximum_fps", ref rate, 1, 100, 0))
+        if (Gui.InputInt("##maximum_fps", ref rate, 1, 100, 0))
         {
             setting.SetAsInt32("value", Math.Clamp(rate, 0, 1000));
         }

@@ -21,7 +21,7 @@ internal static class BuildSettingsHistory
         return new EditorHistoryChange(C_KIND, EditorHistoryPayload.FromBytes(payload));
     }
 
-    internal static (ReadOnlyMemory<byte> Before, ReadOnlyMemory<byte> After) Read(EditorHistoryChange change)
+    internal static (ReadOnlyMemory<byte> before, ReadOnlyMemory<byte> after) Read(EditorHistoryChange change)
     {
         byte[] payload = change.payload.ReadBytes();
         if (payload.Length < sizeof(int))

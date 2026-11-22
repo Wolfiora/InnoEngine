@@ -8,7 +8,7 @@ namespace Inno.Scripting.Compiler;
 /// <summary>
 /// Defines one project script assembly and its compilation policy.
 /// </summary>
-[StableTypeId("038c096e-81e9-41dd-a8fb-fd0200ca2acb")]
+[StableTypeID("038c096e-81e9-41dd-a8fb-fd0200ca2acb")]
 public sealed class ScriptAssemblyDefinitionAsset : AssetObject
 {
     /// <summary>

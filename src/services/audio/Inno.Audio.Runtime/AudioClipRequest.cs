@@ -13,7 +13,7 @@ internal sealed class AudioClipRequest : IDisposable
         AudioClipAsset clip,
         IAssetArtifactLookup artifacts
     ) {
-        this.persistentID = clip.identity.persistentId;
+        this.persistentID = clip.identity.persistentID;
         this.contentVersion = clip.contentVersion;
         this.assetPath = clip.assetPath;
         this.metadata = clip.metadata;

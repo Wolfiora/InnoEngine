@@ -12,7 +12,7 @@ namespace Inno.Rendering.Assets.Authoring;
 /// <summary>
 /// Reads and atomically saves the sole shader graph source format without requiring successful compilation.
 /// </summary>
-[StableTypeId("dcfd81b7-a22d-5b35-a79a-a608e69b7ad8")]
+[StableTypeID("dcfd81b7-a22d-5b35-a79a-a608e69b7ad8")]
 public sealed class ShaderGraphSourceStore
 {
     private readonly AssetSourceStore m_sources;
@@ -95,7 +95,7 @@ public sealed class ShaderGraphSourceStore
 /// <summary>
 /// Contains detached graph source state, not a compiled or live runtime asset.
 /// </summary>
-[StableTypeId("fb1d9ba2-d37c-59f1-a7ef-17feeb3beb0e")]
+[StableTypeID("fb1d9ba2-d37c-59f1-a7ef-17feeb3beb0e")]
 public sealed class ShaderGraphSourceSnapshot
 {
     private readonly GraphDocument m_document;

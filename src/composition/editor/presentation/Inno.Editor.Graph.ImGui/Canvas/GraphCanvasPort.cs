@@ -51,8 +51,8 @@ public readonly record struct GraphCanvasPort
         bool isMissing = false,
         (Vector2 minimum, Vector2 maximum)? labelBounds = null
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(endpoint.nodeId.value);
-        ArgumentException.ThrowIfNullOrWhiteSpace(endpoint.portId.value);
+        ArgumentException.ThrowIfNullOrWhiteSpace(endpoint.nodeID.value);
+        ArgumentException.ThrowIfNullOrWhiteSpace(endpoint.portID.value);
         ArgumentNullException.ThrowIfNull(label);
         if (!float.IsFinite(position.X) || !float.IsFinite(position.Y))
         {

@@ -21,7 +21,7 @@ public sealed class FileSystemStorageBackendProvider : StorageBackendProvider
     /// The root is absent or not fully qualified.
     /// </exception>
     public FileSystemStorageBackendProvider(string rootDirectory)
-        : base(StorageBackendId.fileSystem)
+        : base(StorageBackendID.fileSystem)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootDirectory);
         if (!Path.IsPathFullyQualified(rootDirectory))

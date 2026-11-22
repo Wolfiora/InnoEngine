@@ -9,7 +9,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Requests one pipeline-defined rendering operation without prescribing world semantics.
 /// </summary>
-[StableTypeId("b553fd8c-9410-53a7-8d8f-276e2a302e66")]
+[StableTypeID("b553fd8c-9410-53a7-8d8f-276e2a302e66")]
 public sealed class RenderRequest
 {
     /// <summary>

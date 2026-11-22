@@ -122,7 +122,7 @@ public sealed class BuildCacheCleanupPlan
     /// <param name="retireAll">
     /// Whether to propose all unreferenced generations regardless of size pressure.
     /// </param>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// An exact producer-declared target filter, or null to manage all registered scopes.
     /// Outside-scope generations and their dependencies remain protected.
     /// </param>
@@ -152,7 +152,7 @@ public sealed class BuildCacheCleanupPlan
         IReadOnlyList<BuildCacheOwnerDescriptor> owners,
         BuildCachePolicy policy,
         bool retireAll = false,
-        string? targetId = null,
+        string? targetID = null,
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(policy);
@@ -161,7 +161,7 @@ public sealed class BuildCacheCleanupPlan
         Stopwatch elapsed = Stopwatch.StartNew();
         try
         {
-            BuildCacheCleanupPlan plan = CreateCore(workspace, owners, policy, retireAll, targetId, bounded.Token, elapsed);
+            BuildCacheCleanupPlan plan = CreateCore(workspace, owners, policy, retireAll, targetID, bounded.Token, elapsed);
             if (elapsed.Elapsed >= policy.timeBudget)
             {
                 throw new TimeoutException("Cache inventory exceeded its operation time budget; no artifact was retired.");
@@ -226,7 +226,7 @@ public sealed class BuildCacheCleanupPlan
             protectedPaths.UnionWith(
                 inventory.Protect(
                     inventory.artifacts.Values
-                        .Where(entry => entry.artifact.targetId != targetID)
+                        .Where(entry => entry.artifact.targetID != targetID)
                         .Select(static entry => entry.artifact.directory)
                 )
             );

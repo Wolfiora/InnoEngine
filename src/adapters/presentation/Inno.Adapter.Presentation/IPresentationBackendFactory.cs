@@ -10,7 +10,7 @@ public interface IPresentationBackendFactory
     /// <summary>
     /// Gets the implementation identities available in this immutable factory snapshot.
     /// </summary>
-    IReadOnlyList<PresentationBackendId> supportedBackends { get; }
+    IReadOnlyList<PresentationBackendID> supportedBackends { get; }
 
     /// <summary>
     /// Creates a presentation context over compatible platform and rendering adapters.
@@ -28,7 +28,7 @@ public interface IPresentationBackendFactory
     /// Thrown when the selected platform, rendering, and presentation backends are incompatible.
     /// </exception>
     IPresentationContext CreateContext(
-        PresentationBackendId backend,
+        PresentationBackendID backend,
         PresentationBackendOptions options
     );
 }

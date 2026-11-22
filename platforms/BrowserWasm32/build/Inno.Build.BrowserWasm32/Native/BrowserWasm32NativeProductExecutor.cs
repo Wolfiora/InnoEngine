@@ -56,7 +56,7 @@ public sealed class BrowserWasm32NativeProductExecutor : INativeProductExecutor
         ArgumentNullException.ThrowIfNull(plan);
         cancellationToken.ThrowIfCancellationRequested();
         NativeToolchainSelection tools = context.RequireToolchain();
-        if (tools.targetId != BrowserWasm32BuildModule.target.id.value || context.configuration != "release")
+        if (tools.targetID != BrowserWasm32BuildModule.target.id.value || context.configuration != "release")
         {
             throw new InvalidOperationException("Browser static publication requires an explicit Release wasm32 selection.");
         }
@@ -115,13 +115,13 @@ public sealed class BrowserWasm32NativeProductExecutor : INativeProductExecutor
                     generations.OrderBy(static pair => pair.Key, StringComparer.Ordinal)
                         .Select(static pair => pair.Key + "=" + pair.Value.fingerprint)
                 )
-                .Append("product=" + plan.productId)
+                .Append("product=" + plan.productID)
                 .ToArray();
             NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(
                 context,
                 componentDescriptor,
                 "browser",
-                tools.targetId,
+                tools.targetID,
                 inputs,
                 declarations,
                 [Path.Combine(owner, "Native", "BrowserWasm32NativeProductExecutor.cs")]
@@ -164,7 +164,7 @@ public sealed class BrowserWasm32NativeProductExecutor : INativeProductExecutor
                         token,
                         tools.environment
                     ).ConfigureAwait(false);
-                    ValidateNativeOutputs(output, tools.targetId, plan);
+                    ValidateNativeOutputs(output, tools.targetID, plan);
                     NativeBindingGenerationDescriptor.WriteSelection(
                         Path.Combine(output, "Metadata", "BindingSelection.props"),
                         generations,

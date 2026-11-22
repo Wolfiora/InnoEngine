@@ -234,12 +234,12 @@ internal sealed class EditorActionRouter(
         var candidates = new List<ShortcutCandidate>();
         for (int pass = 0; pass < 2; pass++)
         {
-            string[]? actionIds = pass == 0 ? exact : global;
-            if (actionIds is null)
+            string[]? actionIDs = pass == 0 ? exact : global;
+            if (actionIDs is null)
             {
                 continue;
             }
-            foreach (string action in actionIds)
+            foreach (string action in actionIDs)
             {
                 if (pass == 1 && exact is not null && Array.IndexOf(exact, action) >= 0)
                 {

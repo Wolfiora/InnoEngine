@@ -94,8 +94,8 @@ internal sealed class SceneProjectSettingsModule : EditorModule
 
     private void RefreshSettings()
     {
-        m_layerStack = m_settings.Get<GameLayerCatalog>(GameLayerCatalog.settingId);
-        m_tagCatalog = m_settings.Get<GameTagCatalog>(GameTagCatalog.settingId);
+        m_layerStack = m_settings.Get<GameLayerCatalog>(GameLayerCatalog.settingID);
+        m_tagCatalog = m_settings.Get<GameTagCatalog>(GameTagCatalog.settingID);
         m_observedRevision = m_settings.revision;
     }
 }

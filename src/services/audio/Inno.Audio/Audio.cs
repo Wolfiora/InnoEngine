@@ -210,7 +210,7 @@ public static class Audio
     /// <see langword="true"/> when the bus exists and was updated.
     /// </returns>
     public static bool SetBusVolume(
-        AudioBusId bus,
+        AudioBusID bus,
         float volume
     ) => AudioExecutionContext.current.SetBusVolume(bus, volume);
 
@@ -227,7 +227,7 @@ public static class Audio
     /// <see langword="true"/> when the bus exists and was updated.
     /// </returns>
     public static bool SetBusMuted(
-        AudioBusId bus,
+        AudioBusID bus,
         bool muted
     ) => AudioExecutionContext.current.SetBusMuted(bus, muted);
 
@@ -244,7 +244,7 @@ public static class Audio
     /// <see langword="true"/> when the bus exists and was updated.
     /// </returns>
     public static bool SetBusPaused(
-        AudioBusId bus,
+        AudioBusID bus,
         bool paused
     ) => AudioExecutionContext.current.SetBusPaused(bus, paused);
 

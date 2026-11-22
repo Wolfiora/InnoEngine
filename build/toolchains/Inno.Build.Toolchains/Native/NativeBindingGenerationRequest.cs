@@ -31,7 +31,7 @@ public sealed class NativeBindingGenerationRequest
     /// <param name="components">
     /// The component owners, each declaring one binding definition.
     /// </param>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The target identity selecting a declared configuration; host output uses the host definition.
     /// </param>
     /// <param name="outputMode">
@@ -51,16 +51,16 @@ public sealed class NativeBindingGenerationRequest
     /// </exception>
     public NativeBindingGenerationRequest(
         IEnumerable<NativeComponentDescriptor> components,
-        string targetId,
+        string targetID,
         NativeBindingOutputMode outputMode,
         bool checkOnly = false,
         IReadOnlyDictionary<string, string>? expectedFingerprints = null,
         IReadOnlyDictionary<string, NativeComponentBuildOptions>? componentOptions = null
     ) {
         ArgumentNullException.ThrowIfNull(components);
-        ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
-        if (!Enum.IsDefined(outputMode) || targetId is "." or ".."
-            || targetId.Any(static character => (
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetID);
+        if (!Enum.IsDefined(outputMode) || targetID is "." or ".."
+            || targetID.Any(static character => (
                 !char.IsAsciiLetterOrDigit(character)
                 && character is not ('-' or '_' or '.')
             ))
@@ -74,7 +74,7 @@ public sealed class NativeBindingGenerationRequest
             throw new ArgumentException("Binding owners must be distinct and declare their sole definition.", nameof(components));
         }
         this.components = Array.AsReadOnly(owners);
-        this.targetId = targetId;
+        this.targetID = targetID;
         this.outputMode = outputMode;
         this.checkOnly = checkOnly;
         var expected = new Dictionary<string, string>(expectedFingerprints ?? new Dictionary<string, string>(), StringComparer.Ordinal);
@@ -101,7 +101,7 @@ public sealed class NativeBindingGenerationRequest
     /// <summary>
     /// Gets the explicit configuration target, independent of the build execution host.
     /// </summary>
-    public string targetId { get; }
+    public string targetID { get; }
 
     /// <summary>
     /// Gets the selected output ownership policy.

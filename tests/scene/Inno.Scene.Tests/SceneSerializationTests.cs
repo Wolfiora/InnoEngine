@@ -41,7 +41,7 @@ public sealed partial class SceneSerializationTests : IDisposable
 
         var exception = new SceneTypeResolutionException(stableTypeID, "component");
 
-        Assert.Equal(stableTypeID, exception.stableTypeId);
+        Assert.Equal(stableTypeID, exception.stableTypeID);
         Assert.Equal("component", exception.elementKind);
         Assert.Contains(stableTypeID.ToString("D"), exception.Message, StringComparison.Ordinal);
     }
@@ -68,9 +68,9 @@ public sealed partial class SceneSerializationTests : IDisposable
         childReference.targetObject = root;
         childReference.targetComponent = rootReference;
 
-        Guid sceneID = source.identity.persistentId;
-        Guid rootID = root.identity.persistentId;
-        Guid childID = child.identity.persistentId;
+        Guid sceneID = source.identity.persistentID;
+        Guid rootID = root.identity.persistentID;
+        Guid childID = child.identity.persistentID;
         byte[] bytes = m_serialization.Serialize(source, m_serializationContext);
         Assert.Contains(
             m_types.GetSubTypesOf<SerializationConverter>(),
@@ -82,11 +82,11 @@ public sealed partial class SceneSerializationTests : IDisposable
         GameScene restored = m_serialization.Deserialize<GameScene>(bytes, m_serializationContext);
         SceneManager.LoadScene(restored);
 
-        Assert.Equal(sceneID, restored.identity.persistentId);
+        Assert.Equal(sceneID, restored.identity.persistentID);
         Assert.Equal("Roundtrip", restored.name);
         Assert.Equal(2, restored.GetObjects().Count);
-        GameObject restoredRoot = restored.GetObjects().Single(gameObject => gameObject.identity.persistentId == rootID);
-        GameObject restoredChild = restored.GetObjects().Single(gameObject => gameObject.identity.persistentId == childID);
+        GameObject restoredRoot = restored.GetObjects().Single(gameObject => gameObject.identity.persistentID == rootID);
+        GameObject restoredChild = restored.GetObjects().Single(gameObject => gameObject.identity.persistentID == childID);
         Assert.Equal("Player", restoredRoot.tag);
         Assert.Equal("Companion", restoredChild.tag);
         Assert.Equal(new GameLayer(3), restoredRoot.layer);
@@ -139,7 +139,7 @@ public sealed partial class SceneSerializationTests : IDisposable
         SceneManager.LoadSceneAdditive(targetScene);
 
         Assert.NotSame(first, second);
-        Assert.NotEqual(first.identity.persistentId, second.identity.persistentId);
+        Assert.NotEqual(first.identity.persistentID, second.identity.persistentID);
         GameObject firstChild = Assert.Single(first.transform.children).gameObject;
         GameObject secondChild = Assert.Single(second.transform.children).gameObject;
         Assert.Equal("Spawn", first.tag);
@@ -158,8 +158,8 @@ public sealed partial class SceneSerializationTests : IDisposable
         Assert.Same(secondChild.GetComponent<ReferenceComponent>(), secondReference.targetComponent);
         Assert.NotSame(firstReference.targetObject, secondReference.targetObject);
         Assert.NotEqual(
-            firstReference.targetComponent!.identity.persistentId,
-            secondReference.targetComponent!.identity.persistentId
+            firstReference.targetComponent!.identity.persistentID,
+            secondReference.targetComponent!.identity.persistentID
         );
     }
 
@@ -216,8 +216,8 @@ public sealed partial class SceneSerializationTests : IDisposable
     {
         var scene = new GameScene("Before");
         GameObject original = scene.CreateObject("Original");
-        Guid sceneID = scene.identity.persistentId;
-        Guid objectID = original.identity.persistentId;
+        Guid sceneID = scene.identity.persistentID;
+        Guid objectID = original.identity.persistentID;
         byte[] before = m_serialization.Serialize(scene, m_serializationContext);
         SceneManager.LoadScene(scene);
 
@@ -226,10 +226,10 @@ public sealed partial class SceneSerializationTests : IDisposable
         m_serialization.Restore(scene, before, m_serializationContext);
 
         Assert.Same(scene, SceneManager.activeScene);
-        Assert.Equal(sceneID, scene.identity.persistentId);
+        Assert.Equal(sceneID, scene.identity.persistentID);
         Assert.Equal("Before", scene.name);
         GameObject restored = Assert.Single(scene.GetObjects());
-        Assert.Equal(objectID, restored.identity.persistentId);
+        Assert.Equal(objectID, restored.identity.persistentID);
         Assert.Equal("Original", restored.name);
         Assert.True(scene.isLoaded);
     }
@@ -248,8 +248,8 @@ public sealed partial class SceneSerializationTests : IDisposable
 
         Assert.Contains(typeof(ReferenceComponent).FullName!, exception.Message);
         Assert.Contains("targetObject", exception.Message);
-        Assert.Contains(external.identity.persistentId.ToString(), exception.Message);
-        Assert.Contains(root.identity.persistentId.ToString(), exception.Message);
+        Assert.Contains(external.identity.persistentID.ToString(), exception.Message);
+        Assert.Contains(root.identity.persistentID.ToString(), exception.Message);
 
         SceneManager.LoadScene(scene);
         Assert.True(SceneManager.UnloadScene(scene));
@@ -298,7 +298,7 @@ public sealed partial class SceneSerializationTests : IDisposable
     }
 }
 
-[StableTypeId("09d35197-7161-4fdf-8d60-95ecf3555c0c")]
+[StableTypeID("09d35197-7161-4fdf-8d60-95ecf3555c0c")]
 internal sealed class ReferenceComponent : GameComponent
 {
     [SerializableProperty]
@@ -315,13 +315,13 @@ internal sealed class ReferenceComponent : GameComponent
     protected override void Reset() => resetCount++;
 }
 
-[StableTypeId("f7bc9bf3-288a-45b3-9caa-26289d66c181")]
+[StableTypeID("f7bc9bf3-288a-45b3-9caa-26289d66c181")]
 internal sealed class OrderSerializationSystemA : GameSystem;
 
-[StableTypeId("6924359d-798d-4384-bdb2-1b0e34ab3fbb")]
+[StableTypeID("6924359d-798d-4384-bdb2-1b0e34ab3fbb")]
 internal sealed class OrderSerializationSystemB : GameSystem;
 
-[StableTypeId("821c7b92-9aeb-40cb-924e-169004199ef0")]
+[StableTypeID("821c7b92-9aeb-40cb-924e-169004199ef0")]
 internal sealed class LayerValueComponent : GameComponent
 {
     [SerializableProperty]

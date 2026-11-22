@@ -47,9 +47,9 @@ public sealed partial class SceneEdits
                 historyName ?? $"Add {componentType.Name}",
                 new SceneElementHistoryData(
                     SceneElementKind.Component,
-                    owner.scene.identity.persistentId,
-                    owner.identity.persistentId,
-                    component.identity.persistentId,
+                    owner.scene.identity.persistentID,
+                    owner.identity.persistentID,
+                    component.identity.persistentID,
                     typeRef,
                     beforeIndex: -1,
                     afterIndex: owner.GetComponentIndex(component),
@@ -104,7 +104,7 @@ public sealed partial class SceneEdits
         byte[] state = SceneElementSerialization.CaptureState(component, m_workspace.serialization, m_workspace.assets);
         SceneIncomingReferenceState[] incoming = SceneReferenceIndex.CaptureIncoming(component, scene, m_workspace);
         int index = owner.GetComponentIndex(component);
-        Guid componentID = component.identity.persistentId;
+        Guid componentID = component.identity.persistentID;
         Type componentType = component.GetType();
         try
         {
@@ -116,8 +116,8 @@ public sealed partial class SceneEdits
                 historyName ?? $"Remove {componentType.Name}",
                 new SceneElementHistoryData(
                     SceneElementKind.Component,
-                    scene.identity.persistentId,
-                    owner.identity.persistentId,
+                    scene.identity.persistentID,
+                    owner.identity.persistentID,
                     componentID,
                     typeRef,
                     beforeIndex: index,
@@ -196,9 +196,9 @@ public sealed partial class SceneEdits
                 historyName ?? $"Reset {component.GetType().Name}",
                 new SceneElementHistoryData(
                     SceneElementKind.Component,
-                    owner.scene.identity.persistentId,
-                    owner.identity.persistentId,
-                    component.identity.persistentId,
+                    owner.scene.identity.persistentID,
+                    owner.identity.persistentID,
+                    component.identity.persistentID,
                     GetElementType(component),
                     index,
                     index,
@@ -257,9 +257,9 @@ public sealed partial class SceneEdits
                 historyName,
                 new SceneElementHistoryData(
                     SceneElementKind.Component,
-                    owner.scene.identity.persistentId,
-                    owner.identity.persistentId,
-                    component.identity.persistentId,
+                    owner.scene.identity.persistentID,
+                    owner.identity.persistentID,
+                    component.identity.persistentID,
                     GetElementType(component),
                     beforeIndex,
                     afterIndex,
@@ -305,9 +305,9 @@ public sealed partial class SceneEdits
                 historyName ?? $"Add {systemType.Name}",
                 new SceneElementHistoryData(
                     SceneElementKind.System,
-                    scene.identity.persistentId,
+                    scene.identity.persistentID,
                     Guid.Empty,
-                    system.identity.persistentId,
+                    system.identity.persistentID,
                     GetTypeRef(systemType),
                     beforeIndex: -1,
                     afterIndex: scene.GetSystemIndex(system),
@@ -364,7 +364,7 @@ public sealed partial class SceneEdits
         byte[] state = SceneElementSerialization.CaptureState(system, m_workspace.serialization, m_workspace.assets);
         SceneIncomingReferenceState[] incoming = SceneReferenceIndex.CaptureIncoming(system, scene, m_workspace);
         int index = scene.GetSystemIndex(system);
-        Guid systemID = system.identity.persistentId;
+        Guid systemID = system.identity.persistentID;
         TypeRef typeRef = GetElementType(system);
         Type systemType = system.GetType();
         try
@@ -377,7 +377,7 @@ public sealed partial class SceneEdits
                 historyName ?? $"Remove {systemType.Name}",
                 new SceneElementHistoryData(
                     SceneElementKind.System,
-                    scene.identity.persistentId,
+                    scene.identity.persistentID,
                     Guid.Empty,
                     systemID,
                     typeRef,
@@ -457,9 +457,9 @@ public sealed partial class SceneEdits
                 historyName ?? $"Reset {system.GetType().Name}",
                 new SceneElementHistoryData(
                     SceneElementKind.System,
-                    scene.identity.persistentId,
+                    scene.identity.persistentID,
                     Guid.Empty,
-                    system.identity.persistentId,
+                    system.identity.persistentID,
                     GetElementType(system),
                     index,
                     index,
@@ -522,9 +522,9 @@ public sealed partial class SceneEdits
                 historyName,
                 new SceneElementHistoryData(
                     SceneElementKind.System,
-                    scene.identity.persistentId,
+                    scene.identity.persistentID,
                     Guid.Empty,
-                    system.identity.persistentId,
+                    system.identity.persistentID,
                     GetElementType(system),
                     beforeIndex,
                     afterIndex,

@@ -42,11 +42,11 @@ public sealed class RuntimeSession : IDisposable
     ) {
         m_host = host;
         this.options = Validate(options);
-        this.sessionId = LogSessionId.Create();
+        this.sessionID = LogSessionID.Create();
         m_identities = new IdentityAllocator();
         m_coroutines = new CoroutineScheduler();
         this.events = new EventDispatcher();
-        m_retirement = new RetirementBarrier($"Runtime session {sessionId}", host.retirementTimeout);
+        m_retirement = new RetirementBarrier($"Runtime session {sessionID}", host.retirementTimeout);
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ public sealed class RuntimeSession : IDisposable
     /// <summary>
     /// Gets the unique logging identity assigned to this session.
     /// </summary>
-    public LogSessionId sessionId { get; }
+    public LogSessionID sessionID { get; }
 
     /// <summary>
     /// Gets the event dispatcher owned by this session.
@@ -134,7 +134,7 @@ public sealed class RuntimeSession : IDisposable
         {
             scopes.Add(m_host.logs.EnterScope());
             scopes.Add(m_host.diagnostics.EnterScope());
-            scopes.Add(LogSessionContext.Enter(sessionId));
+            scopes.Add(LogSessionContext.Enter(sessionID));
             scopes.Add(scenes.EnterScope());
             scopes.Add(m_clock.EnterScope());
             if (m_assets is not null)
@@ -286,9 +286,9 @@ public sealed class RuntimeSession : IDisposable
         scenes = new SceneWorld(m_identities, m_host.types);
         if (options.createLogSink is not null)
         {
-            ILogSink sink = options.createLogSink(sessionId)
+            ILogSink sink = options.createLogSink(sessionID)
                             ?? throw new InvalidOperationException("The session log factory returned no sink.");
-            m_sessionLog = new SessionLogSink(sessionId, sink);
+            m_sessionLog = new SessionLogSink(sessionID, sink);
             m_host.logs.RegisterSink(m_sessionLog);
         }
         using IDisposable scope = EnterExecutionScope();
@@ -343,7 +343,7 @@ public sealed class RuntimeSession : IDisposable
         {
             if (!m_retirement.TryComplete(DisposeCore))
             {
-                throw new RetirementPendingException($"Runtime session {sessionId} is still draining owned work.");
+                throw new RetirementPendingException($"Runtime session {sessionID} is still draining owned work.");
             }
         }
         catch (Exception failure) when (RetirementPendingException.Find(failure) is RetirementTimeoutException)
@@ -422,7 +422,7 @@ public sealed class RuntimeSession : IDisposable
     private static RuntimeSessionOptions Validate(RuntimeSessionOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
-        ArgumentException.ThrowIfNullOrWhiteSpace(options.applicationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.applicationID);
         if (!float.IsFinite(options.fixedDeltaTime) || options.fixedDeltaTime <= 0f)
         {
             throw new ArgumentOutOfRangeException(nameof(options), "Fixed delta time must be positive.");
@@ -450,7 +450,7 @@ public sealed class RuntimeSession : IDisposable
         return new RuntimeSessionOptions
         {
             kind = options.kind,
-            applicationId = options.applicationId,
+            applicationID = options.applicationID,
             contentStore = options.contentStore,
             createLogSink = options.createLogSink,
             assetResidencyBudgetBytes = options.assetResidencyBudgetBytes,

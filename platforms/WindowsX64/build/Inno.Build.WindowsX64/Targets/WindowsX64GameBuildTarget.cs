@@ -30,10 +30,10 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
     /// <summary>
     /// Gets the Windows x64 target identity.
     /// </summary>
-    public BuildTargetId id => WindowsX64BuildModule.target.id;
+    public BuildTargetID id => WindowsX64BuildModule.target.id;
 
     /// <inheritdoc/>
-    public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.coreClr;
+    public ManagedDeploymentID defaultManagedDeployment => ManagedDeploymentID.coreClr;
 
     /// <inheritdoc/>
     public string runtimeIdentifier => "win-x64";

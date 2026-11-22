@@ -307,7 +307,7 @@ public sealed unsafe partial class Sdl3PlatformApplication
                 if (m_windows.TryGetValue(sdlEvent.Window.WindowID, out Sdl3PlatformWindow? visibleWindow))
                 {
                     visibleWindow.UpdateVisibility(eventType);
-                    evnt = new WindowVisibilityChangedEvent(visibleWindow.windowId, visibleWindow.isVisible);
+                    evnt = new WindowVisibilityChangedEvent(visibleWindow.windowID, visibleWindow.isVisible);
                     return true;
                 }
                 evnt = null;
@@ -663,7 +663,7 @@ public sealed unsafe partial class Sdl3PlatformApplication
     ) {
         if (evnt is WindowEvent windowEvent)
         {
-            key = new PendingEventCoalesceKey(windowEvent.windowId, evnt.GetType());
+            key = new PendingEventCoalesceKey(windowEvent.windowID, evnt.GetType());
             return true;
         }
 

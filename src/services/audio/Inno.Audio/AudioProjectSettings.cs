@@ -7,19 +7,19 @@ namespace Inno.Audio;
 /// <summary>
 /// Stores portable project-wide defaults for audio playback and caching.
 /// </summary>
-[StableTypeId("29f99b3b-a9f3-45f4-888a-f4b13cb3504c")]
-[ProjectSettingDefinition(AudioProjectSettings.settingProtocolId)]
+[StableTypeID("29f99b3b-a9f3-45f4-888a-f4b13cb3504c")]
+[ProjectSettingDefinition(AudioProjectSettings.C_SETTING_PROTOCOL_ID)]
 public sealed class AudioProjectSettings : ISerializable
 {
     /// <summary>
     /// Gets the immutable project-setting protocol value used by discovery metadata.
     /// </summary>
-    public const string settingProtocolId = "inno.audio.runtime";
+    public const string C_SETTING_PROTOCOL_ID = "inno.audio.runtime";
 
     /// <summary>
     /// Gets the stable project-setting identity for audio runtime defaults.
     /// </summary>
-    public static ProjectSettingId settingId => new(settingProtocolId);
+    public static ProjectSettingID settingID => new(C_SETTING_PROTOCOL_ID);
 
     /// <summary>
     /// Gets or sets the default mixer asset, or <see langword="null"/> for the master-only graph.

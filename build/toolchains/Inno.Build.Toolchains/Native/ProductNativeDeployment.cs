@@ -103,7 +103,7 @@ public static class ProductNativeDeployment
         ArgumentException.ThrowIfNullOrWhiteSpace(applicationDirectory);
         NativeBuildProduct[] closure = products.ToArray();
         if (closure.Length == 0 || closure.Any(static product => product is null)
-            || closure.Select(static product => product.targetId).Distinct().Count() != 1
+            || closure.Select(static product => product.targetID).Distinct().Count() != 1
             || closure.Select(static product => product.component).Distinct().Count() != closure.Length
         ) {
             throw new ArgumentException(

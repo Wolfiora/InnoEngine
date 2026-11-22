@@ -286,7 +286,7 @@ public sealed class ProductNativePreparationTests : IDisposable
         => new(
             m_owner,
             "fixture",
-            context.toolchain!.targetId,
+            context.toolchain!.targetID,
             new[] { Path.Combine(m_root, "Source") }
                 .Concat(context.toolchain.inputPaths)
                 .Select(path => NativeBuildInput.FromPath(m_root, path)),

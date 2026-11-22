@@ -12,7 +12,7 @@ namespace Inno.Scene;
 /// <summary>
 /// Stores imported scene source that can create independent runtime scenes.
 /// </summary>
-[StableTypeId("56815f6e-87bb-421b-af5f-c43b9171ce84")]
+[StableTypeID("56815f6e-87bb-421b-af5f-c43b9171ce84")]
 public sealed class SceneAsset : AssetObject
 {
     private byte[] m_pendingPayload = [];

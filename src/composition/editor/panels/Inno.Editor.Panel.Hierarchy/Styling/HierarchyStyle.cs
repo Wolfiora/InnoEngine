@@ -15,7 +15,7 @@ internal readonly struct HierarchyStyle
     /// <summary>
     /// Gets the text color of inactive hierarchy entries.
     /// </summary>
-    internal static Vector4 inactiveText { get; } = new(0.52f, 0.52f, 0.54f, EditorPalette.opacityOpaque);
+    internal static Vector4 inactiveText { get; } = new(0.52f, 0.52f, 0.54f, EditorPalette.C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets hierarchy item spacing.

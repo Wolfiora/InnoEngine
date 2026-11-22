@@ -64,7 +64,7 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
     ) {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(exception);
-        Guid targetID = scene.identity.persistentId;
+        Guid targetID = scene.identity.persistentID;
         string state = exception.ToString();
         if (m_synchronizationStates.TryGetValue(targetID, out string? previous)
             && string.Equals(previous, state, StringComparison.Ordinal)
@@ -85,7 +85,7 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
         GameScene scene,
         string sourcePath
     ) {
-        Guid sceneID = scene.identity.persistentId;
+        Guid sceneID = scene.identity.persistentID;
         string state = "SCENE-SOURCE-MISSING:" + sourcePath;
         if (m_synchronizationStates.TryGetValue(sceneID, out string? previous)
             && string.Equals(previous, state, StringComparison.Ordinal)
@@ -119,7 +119,7 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
     ) {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(exception);
-        Guid targetID = scene.identity.persistentId;
+        Guid targetID = scene.identity.persistentID;
         string state = exception.ToString();
         if (m_dirtyCheckStates.TryGetValue(targetID, out string? previous)
             && string.Equals(previous, state, StringComparison.Ordinal)
@@ -145,18 +145,18 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
         Diagnostics.Clear(sceneID, C_DIRTY_CHECK_GROUP);
     }
 
-    internal void RetainSynchronizationTargets(IReadOnlySet<Guid> sceneIds)
+    internal void RetainSynchronizationTargets(IReadOnlySet<Guid> sceneIDs)
     {
-        ArgumentNullException.ThrowIfNull(sceneIds);
+        ArgumentNullException.ThrowIfNull(sceneIDs);
         Guid[] removed = m_synchronizationStates.Keys
-            .Where(id => !sceneIds.Contains(id))
+            .Where(id => !sceneIDs.Contains(id))
             .ToArray();
         for (int i = 0; i < removed.Length; i++)
         {
             ResolveSynchronization(removed[i]);
         }
         Guid[] removedDirtyChecks = m_dirtyCheckStates.Keys
-            .Where(id => !sceneIds.Contains(id))
+            .Where(id => !sceneIDs.Contains(id))
             .ToArray();
         for (int i = 0; i < removedDirtyChecks.Length; i++)
         {

@@ -21,7 +21,7 @@ public sealed class ShaderSourceModuleTests
             Request("adapter.first", "float Shade(float value) { return value; }"),
             new(
                 "adapter.second",
-                alternate.languageId,
+                alternate.languageID,
                 new(new("Other.ishadersource", "native function implementation"), "ShadeOther", new Includes())
             )
         ]);
@@ -123,7 +123,7 @@ public sealed class ShaderSourceModuleTests
         var alternate = new AlternateFrontend { inventedDependency = true };
         var request = new ShaderSourceImplementationRequest(
             "alternate",
-            alternate.languageId,
+            alternate.languageID,
             new(new("Other.ishadersource", "native source"), "Other", new Includes())
         );
         ShaderSourceModuleAnalysis result = new ShaderSourceFrontendCatalog([alternate]).AnalyzeModule([request]);
@@ -241,7 +241,7 @@ public sealed class ShaderSourceModuleTests
     {
         internal int calls;
         internal bool inventedDependency;
-        public string languageId => "tests.alternate";
+        public string languageID => "tests.alternate";
 
         public ShaderSourceAnalysis Analyze(ShaderSourceRequest request)
         {

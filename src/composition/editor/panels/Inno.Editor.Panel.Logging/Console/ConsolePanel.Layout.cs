@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Numerics;
 using Inno.Editor.ImGui;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Logging;
 
@@ -87,10 +87,10 @@ internal sealed partial class ConsolePanel
 
     private void RefreshLayout()
     {
-        EditorUiLayout layout = Ui.GetLayout();
+        EditorUILayout layout = Gui.GetLayout();
         (float width, float frameHeight, float padding, float spacing, float zoom) shape = (
-            width: Ui.GetContentRegionAvailable().X,
-            frameHeight: Ui.GetFrameHeight(),
+            width: Gui.GetContentRegionAvailable().X,
+            frameHeight: Gui.GetFrameHeight(),
             padding: layout.framePadding.Y,
             spacing: layout.itemSpacing.Y,
             zoom: EditorUI.current.widgets.style.zoom
@@ -133,7 +133,7 @@ internal sealed partial class ConsolePanel
 
     private void RefreshOffsets(int start)
     {
-        float spacing = Ui.GetLayout().itemSpacing.Y;
+        float spacing = Gui.GetLayout().itemSpacing.Y;
         for (int index = start; index < m_layout.Length; index++)
         {
             m_offsets[index + 1] = m_offsets[index] + m_layout[index].height + spacing;
@@ -142,14 +142,14 @@ internal sealed partial class ConsolePanel
 
     private void DrawVisibleEntries()
     {
-        (Vector2 minimum, Vector2 maximum) clip = Ui.GetClipBounds();
+        (Vector2 minimum, Vector2 maximum) clip = Gui.GetClipBounds();
         if (clip.maximum.Y <= clip.minimum.Y || clip.maximum.X <= clip.minimum.X)
         {
             return;
         }
         RefreshLayout();
         m_cardFrame++;
-        Vector2 origin = Ui.GetCursorScreenPosition();
+        Vector2 origin = Gui.GetCursorScreenPosition();
         int first = FindLayoutRow(clip.minimum.Y - origin.Y);
         int last = FindLayoutRow(clip.maximum.Y - origin.Y);
         int focused = m_view.FindIndex(m_focusedKey);
@@ -182,7 +182,7 @@ internal sealed partial class ConsolePanel
             }
             EntryMeasurement entry = m_layout[index];
             bool measure = entry.remainingMeasurements > 0;
-            Ui.SetCursorScreenPosition(origin + new Vector2(0f, m_offsets[index] + adjustment));
+            Gui.SetCursorScreenPosition(origin + new Vector2(0f, m_offsets[index] + adjustment));
             float height = DrawConsoleEntry(entry.row, measure);
             if (!float.IsFinite(height) || height <= 0f)
             {
@@ -203,11 +203,11 @@ internal sealed partial class ConsolePanel
                 float top = origin.Y + m_offsets[index] + adjustment;
                 if (top < clip.minimum.Y)
                 {
-                    Ui.SetScrollHereY(0f);
+                    Gui.SetScrollHereY(0f);
                 }
                 else if (top + height > clip.maximum.Y)
                 {
-                    Ui.SetScrollHereY(1f);
+                    Gui.SetScrollHereY(1f);
                 }
             }
         }
@@ -225,8 +225,8 @@ internal sealed partial class ConsolePanel
         m_scrollFocusedRow = false;
         // A slot is reusable only after all rows have finished submitting this frame.
         RetireCardWindows();
-        Ui.SetCursorScreenPosition(origin);
-        Ui.Dummy(new(1f, MathF.Max(1f, m_offsets[^1] - Ui.GetLayout().itemSpacing.Y)));
+        Gui.SetCursorScreenPosition(origin);
+        Gui.Dummy(new(1f, MathF.Max(1f, m_offsets[^1] - Gui.GetLayout().itemSpacing.Y)));
     }
 
     private int FindLayoutRow(float position)

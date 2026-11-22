@@ -65,7 +65,7 @@ public sealed class AssetBrowserModule : EditorModule, IInspectionIconProvider<A
     /// <summary>
     /// Gets the configured folder glyph used by asset navigation.
     /// </summary>
-    public string folderIcon => m_settings.Get("Editor/Appearance/Icons/Folder").GetAsString("value", ImGuiIcon.Folder)!;
+    public string folderIcon => m_settings.Get("Editor/Appearance/Icons/Folder").GetAsString("value", ImGuiIcon.C_FOLDER)!;
 
     /// <summary>
     /// Resolves the presentation icon registered for an asset type or source extension.
@@ -93,7 +93,7 @@ public sealed class AssetBrowserModule : EditorModule, IInspectionIconProvider<A
             return icon;
         }
 
-        return m_settings.Get("Editor/Appearance/Icons/File").GetAsString("value", ImGuiIcon.File)!;
+        return m_settings.Get("Editor/Appearance/Icons/File").GetAsString("value", ImGuiIcon.C_FILE)!;
     }
 
     /// <summary>
@@ -138,7 +138,7 @@ public sealed class AssetBrowserModule : EditorModule, IInspectionIconProvider<A
             return string.Empty;
         }
         AssetPath isolated = AssetPath.Parse(directory);
-        if ((root == AssetBrowserRoot.Assets) != (isolated.source == AssetSourceId.project))
+        if ((root == AssetBrowserRoot.Assets) != (isolated.source == AssetSourceID.project))
         {
             return string.Empty;
         }

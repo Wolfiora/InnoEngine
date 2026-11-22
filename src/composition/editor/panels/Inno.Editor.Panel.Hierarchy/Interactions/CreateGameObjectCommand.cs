@@ -4,8 +4,8 @@ using Inno.Scene;
 
 namespace Inno.Editor.Panel.Hierarchy;
 
-[EditorAction(HierarchyInteractionIds.C_CREATE_GAME_OBJECT)]
-[EditorMenu(HierarchyInteractionIds.C_AREA, "Create/Empty GameObject", order: 200)]
+[EditorAction(HierarchyInteractionIDs.C_CREATE_GAME_OBJECT)]
+[EditorMenu(HierarchyInteractionIDs.C_AREA, "Create/Empty GameObject", order: 200)]
 internal sealed class CreateGameObjectCommand(SceneEdits edits) : EditorAction<GameScene>
 {
     /// <summary>
@@ -31,8 +31,8 @@ internal sealed class CreateGameObjectCommand(SceneEdits edits) : EditorAction<G
     protected override void Execute(EditorActionContext<GameScene> context)
     {
         GameObject created = edits.CreateGameObject(context.target);
-        EditorInteraction interaction = context.interactions.For(HierarchyInteractionIds.C_AREA, created);
+        EditorInteraction interaction = context.interactions.For(HierarchyInteractionIDs.C_AREA, created);
         _ = interaction.Select();
-        _ = interaction.Execute(HierarchyInteractionIds.C_RENAME);
+        _ = interaction.Execute(HierarchyInteractionIDs.C_RENAME);
     }
 }

@@ -79,12 +79,12 @@ internal sealed class SettingsEditSession : IDisposable
     private readonly HashSet<string> m_editorResetIntent = new(StringComparer.Ordinal);
     private readonly HashSet<string> m_editorResets = new(StringComparer.Ordinal);
     private readonly Dictionary<string, EditorSettingObject> m_editorValues = new(StringComparer.Ordinal);
-    private readonly HashSet<ProjectSettingId> m_projectModified = [];
-    private readonly HashSet<ProjectSettingId> m_projectInitiallyNonDefault = [];
-    private readonly HashSet<ProjectSettingId> m_projectResetIntent = [];
-    private readonly HashSet<ProjectSettingId> m_projectResets = [];
-    private readonly Dictionary<ProjectSettingId, ISerializable> m_projectOriginalValues = [];
-    private readonly Dictionary<ProjectSettingId, ISerializable> m_projectValues = [];
+    private readonly HashSet<ProjectSettingID> m_projectModified = [];
+    private readonly HashSet<ProjectSettingID> m_projectInitiallyNonDefault = [];
+    private readonly HashSet<ProjectSettingID> m_projectResetIntent = [];
+    private readonly HashSet<ProjectSettingID> m_projectResets = [];
+    private readonly Dictionary<ProjectSettingID, ISerializable> m_projectOriginalValues = [];
+    private readonly Dictionary<ProjectSettingID, ISerializable> m_projectValues = [];
     private readonly BuildSettingsStore m_buildSettings;
     private readonly BuildPipeline m_buildPipeline;
     private readonly IEditorHistory m_history;
@@ -129,16 +129,16 @@ internal sealed class SettingsEditSession : IDisposable
         foreach (ProjectSettingEditor definition in projectSettings.definitions)
         {
             fields.Add(new SettingsField(definition));
-            if (m_projectValues.ContainsKey(definition.settingId))
+            if (m_projectValues.ContainsKey(definition.settingID))
             {
                 continue;
             }
             ISerializable value = projectSettings.Get(definition);
-            m_projectValues.Add(definition.settingId, value);
-            m_projectOriginalValues.Add(definition.settingId, projectSettings.Get(definition));
+            m_projectValues.Add(definition.settingID, value);
+            m_projectOriginalValues.Add(definition.settingID, projectSettings.Get(definition));
             if (!definition.ValuesEqual(value, projectSettings.GetComposedDefault(definition)))
             {
-                m_projectInitiallyNonDefault.Add(definition.settingId);
+                m_projectInitiallyNonDefault.Add(definition.settingID);
             }
         }
         foreach (BuildSettingsField definition in BuildSettingsPresentation.fields)
@@ -187,7 +187,7 @@ internal sealed class SettingsEditSession : IDisposable
         }
         if (field.project is ProjectSettingEditor project)
         {
-            return project.Draw(m_projectValues[project.settingId]);
+            return project.Draw(m_projectValues[project.settingID]);
         }
         if (field.build is BuildSettingsField build)
         {
@@ -209,7 +209,7 @@ internal sealed class SettingsEditSession : IDisposable
         ProjectSettingEditor project = field.project
                                        ?? throw new InvalidOperationException($"Settings field '{field.path}' has no owner.");
         bool differsFromDefault = !project.ValuesEqual(
-            m_projectValues[project.settingId],
+            m_projectValues[project.settingID],
             m_projectSettings.GetComposedDefault(project)
         );
         return differsFromDefault;
@@ -259,14 +259,14 @@ internal sealed class SettingsEditSession : IDisposable
         }
         ProjectSettingEditor project = field.project
                                        ?? throw new InvalidOperationException($"Settings field '{field.path}' has no owner.");
-        m_projectValues[project.settingId] = m_projectSettings.GetComposedDefault(project);
+        m_projectValues[project.settingID] = m_projectSettings.GetComposedDefault(project);
         SetResetState(
-            project.settingId,
-            m_projectInitiallyNonDefault.Contains(project.settingId),
+            project.settingID,
+            m_projectInitiallyNonDefault.Contains(project.settingID),
             m_projectResetIntent,
             m_projectResets
         );
-        _ = m_projectModified.Remove(project.settingId);
+        _ = m_projectModified.Remove(project.settingID);
     }
 
     internal void Reset(SettingsPage page)
@@ -294,7 +294,7 @@ internal sealed class SettingsEditSession : IDisposable
             UpdateDirty(editor.path, differsFromDrawBaseline, m_editorModified, m_editorResets, m_editorResetIntent);
             return;
         }
-        ProjectSettingId id = field.project?.settingId
+        ProjectSettingID id = field.project?.settingID
                               ?? throw new InvalidOperationException($"Settings field '{field.path}' has no owner.");
         ProjectSettingEditor project = field.project;
         ISerializable value = m_projectValues[id];
@@ -412,7 +412,7 @@ internal sealed class SettingsEditSession : IDisposable
 
     private bool ApplyProject()
     {
-        Dictionary<ProjectSettingId, ISerializable> values = m_projectModified.ToDictionary(id => id, id => m_projectValues[id]);
+        Dictionary<ProjectSettingID, ISerializable> values = m_projectModified.ToDictionary(id => id, id => m_projectValues[id]);
         return m_projectSettings.Apply(values, m_projectResets);
     }
 
@@ -424,16 +424,16 @@ internal sealed class SettingsEditSession : IDisposable
         m_projectResets.Clear();
         foreach (SettingsField field in definitions
             .Where(static field => field.scope == SettingsScope.Project)
-            .GroupBy(static field => field.project!.settingId)
+            .GroupBy(static field => field.project!.settingID)
             .Select(static group => group.First())
         ) {
             ProjectSettingEditor definition = field.project!;
             ISerializable value = m_projectSettings.Get(definition);
-            m_projectValues[definition.settingId] = value;
-            m_projectOriginalValues[definition.settingId] = m_projectSettings.Get(definition);
+            m_projectValues[definition.settingID] = value;
+            m_projectOriginalValues[definition.settingID] = m_projectSettings.Get(definition);
             if (!definition.ValuesEqual(value, m_projectSettings.GetComposedDefault(definition)))
             {
-                m_projectInitiallyNonDefault.Add(definition.settingId);
+                m_projectInitiallyNonDefault.Add(definition.settingID);
             }
         }
     }

@@ -26,7 +26,7 @@ public sealed class GraphicsProgramArtifactTests
             vertex,
             fragment,
             [new RenderShaderBindingDescriptor(
-                new RenderBindingId("s_tex"),
+                new RenderBindingID("s_tex"),
                 RenderShaderBindingKind.Texture,
                 slot: 3,
                 nativeName: "native_sampler"

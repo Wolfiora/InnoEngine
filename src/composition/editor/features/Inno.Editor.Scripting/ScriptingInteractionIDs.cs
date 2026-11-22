@@ -1,0 +1,8 @@
+namespace Inno.Editor.Scripting;
+
+internal static class ScriptingInteractionIDs
+{
+    internal const string C_MAIN_MENU_AREA = "editor/main-menu";
+    internal const string C_RELOAD_SCRIPTING = "scripting/reload";
+    internal const string C_RELOAD_PLUGINS = "scripting/reload-plugins";
+}

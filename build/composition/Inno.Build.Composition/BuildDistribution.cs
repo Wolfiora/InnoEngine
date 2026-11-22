@@ -21,7 +21,7 @@ public sealed class BuildDistribution
     private readonly GameBuildContribution[] m_games;
     private readonly BuildPlatformContribution[] m_platforms;
     private readonly IReadOnlyList<BuildPlatformContribution> m_platformSnapshot;
-    private readonly HashSet<BuildTargetId> m_targetIds;
+    private readonly HashSet<BuildTargetID> m_targetIDs;
     private readonly IReadOnlyDictionary<string, IReadOnlyDictionary<string, NativeProductContribution>> m_nativeProducts;
     private readonly IReadOnlyDictionary<string, INativeToolchainProvider> m_nativeToolchains;
 
@@ -64,8 +64,8 @@ public sealed class BuildDistribution
                 m_bindingGenerators.Add(platform.descriptor.id.value, platform.bindingGenerator);
             }
         }
-        m_targetIds = m_platforms.Select(static contribution => contribution.descriptor.id).ToHashSet();
-        if (m_targetIds.Count != m_platforms.Length)
+        m_targetIDs = m_platforms.Select(static contribution => contribution.descriptor.id).ToHashSet();
+        if (m_targetIDs.Count != m_platforms.Length)
         {
             throw new ArgumentException("Platform target identities must be unique.", nameof(games));
         }
@@ -97,7 +97,7 @@ public sealed class BuildDistribution
         m_nativeProducts = new ReadOnlyDictionary<string,
             IReadOnlyDictionary<string, NativeProductContribution>>(products);
         m_nativeToolchains = new ReadOnlyDictionary<string, INativeToolchainProvider>(native);
-        this.availableTargets = Array.AsReadOnly(m_targetIds.OrderBy(static id => id.value, StringComparer.Ordinal).ToArray());
+        this.availableTargets = Array.AsReadOnly(m_targetIDs.OrderBy(static id => id.value, StringComparer.Ordinal).ToArray());
         this.managedDeployments = new ManagedDeploymentCatalog(managedCompilers);
         this.supportPacks = new PlayerSupportPackPublisher(
             m_platforms.Select(static contribution => contribution.supportPackSource).ToArray()
@@ -107,7 +107,7 @@ public sealed class BuildDistribution
     /// <summary>
     /// Gets the immutable platform identities shared by all hosts.
     /// </summary>
-    public IReadOnlyList<BuildTargetId> availableTargets { get; }
+    public IReadOnlyList<BuildTargetID> availableTargets { get; }
 
     /// <summary>
     /// Gets complete platform registrations in their explicit composition order.
@@ -127,7 +127,7 @@ public sealed class BuildDistribution
     /// <summary>
     /// Resolves the generator explicitly registered by a target integration.
     /// </summary>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The requested native target.
     /// </param>
     /// <returns>
@@ -136,15 +136,15 @@ public sealed class BuildDistribution
     /// <exception cref="NotSupportedException">
     /// The target contributes no binding generator.
     /// </exception>
-    public INativeBindingGenerator ResolveBindingGenerator(string targetId)
-        => m_bindingGenerators.TryGetValue(targetId, out INativeBindingGenerator? generator)
+    public INativeBindingGenerator ResolveBindingGenerator(string targetID)
+        => m_bindingGenerators.TryGetValue(targetID, out INativeBindingGenerator? generator)
            ? generator
-           : throw new NotSupportedException($"No binding generator is registered for '{targetId}'.");
+           : throw new NotSupportedException($"No binding generator is registered for '{targetID}'.");
 
     /// <summary>
     /// Resolves the SDK integration bound to an explicitly registered publication target.
     /// </summary>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The requested native target identity, independently selected from the execution host.
     /// </param>
     /// <returns>
@@ -153,21 +153,21 @@ public sealed class BuildDistribution
     /// <exception cref="NotSupportedException">
     /// No native toolchain contribution is registered for the target.
     /// </exception>
-    public INativeToolchainProvider ResolveNativeToolchain(string targetId)
+    public INativeToolchainProvider ResolveNativeToolchain(string targetID)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
-        if (m_nativeToolchains.TryGetValue(targetId, out INativeToolchainProvider? provider))
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetID);
+        if (m_nativeToolchains.TryGetValue(targetID, out INativeToolchainProvider? provider))
         {
             return provider;
         }
-        throw new NotSupportedException($"No native toolchain is registered for target '{targetId}'.");
+        throw new NotSupportedException($"No native toolchain is registered for target '{targetID}'.");
     }
 
     /// <summary>
     /// Checks whether this distribution contributes an SDK for an explicitly requested binding target.
     /// A standalone binding definition may describe a target without registering a product publisher.
     /// </summary>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The exact target identity; no host-derived target is substituted.
     /// </param>
     /// <param name="provider">
@@ -180,20 +180,20 @@ public sealed class BuildDistribution
     /// The target identity is empty.
     /// </exception>
     public bool TryResolveNativeToolchain(
-        string targetId,
+        string targetID,
         [NotNullWhen(true)] out INativeToolchainProvider? provider
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
-        return m_nativeToolchains.TryGetValue(targetId, out provider);
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetID);
+        return m_nativeToolchains.TryGetValue(targetID, out provider);
     }
 
     /// <summary>
     /// Resolves a platform-contributed product closure without selecting backends inside the invoking host.
     /// </summary>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The explicit registered product target.
     /// </param>
-    /// <param name="productId">
+    /// <param name="productID">
     /// The product whose ordinary native build is requested.
     /// </param>
     /// <returns>
@@ -206,17 +206,17 @@ public sealed class BuildDistribution
     /// A target or product identity is empty.
     /// </exception>
     public NativeProductContribution ResolveNativeProduct(
-        string targetId,
-        string productId
+        string targetID,
+        string productID
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(productId);
-        if (m_nativeProducts.TryGetValue(targetId, out IReadOnlyDictionary<string, NativeProductContribution>? products)
-            && products.TryGetValue(productId, out NativeProductContribution? plan)
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetID);
+        ArgumentException.ThrowIfNullOrWhiteSpace(productID);
+        if (m_nativeProducts.TryGetValue(targetID, out IReadOnlyDictionary<string, NativeProductContribution>? products)
+            && products.TryGetValue(productID, out NativeProductContribution? plan)
         ) {
             return plan;
         }
-        throw new NotSupportedException($"No ordinary native build is registered for product '{productId}' on target '{targetId}'.");
+        throw new NotSupportedException($"No ordinary native build is registered for product '{productID}' on target '{targetID}'.");
     }
 
     /// <summary>
@@ -247,7 +247,7 @@ public sealed class BuildDistribution
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(types);
         var targets = new GameBuildTargetBinding[m_games.Length];
-        var identities = new HashSet<BuildTargetId>();
+        var identities = new HashSet<BuildTargetID>();
         for (int index = 0; index < targets.Length; index++)
         {
             BuildPlatformContribution platform = m_platforms[index];
@@ -280,10 +280,10 @@ public sealed class BuildDistribution
     /// </exception>
     public void ValidateDeployment(
         IGameBuildTarget target,
-        ManagedDeploymentId deployment
+        ManagedDeploymentID deployment
     ) {
         ArgumentNullException.ThrowIfNull(target);
-        if (!m_targetIds.Contains(target.id))
+        if (!m_targetIDs.Contains(target.id))
         {
             throw new InvalidOperationException($"Build target '{target.id}' is not registered in this distribution.");
         }

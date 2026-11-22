@@ -8,8 +8,8 @@ using Inno.Editor.Scene;
 using Inno.Scene;
 using Inno.Scene.Layers;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
 
@@ -72,10 +72,10 @@ internal sealed class GameObjectLayerSelector
             preview = "Mixed values";
         }
         EditorUI.current.widgets.LabelChip("Layer", InspectorTargetStyle.layerLabel);
-        Ui.SameLine(0f, 0f);
+        Gui.SameLine(0f, 0f);
         float selectorWidth = MathF.Max(1f, width);
         if (!EditorUI.current.widgets.BeginMenuSelector(
-            $"game_object_layer_{target.identity.persistentId:N}",
+            $"game_object_layer_{target.identity.persistentID:N}",
             preview,
             selectorWidth,
             selectorWidth
@@ -90,7 +90,7 @@ internal sealed class GameObjectLayerSelector
             {
                 GameLayerDefinition definition = definitions[i];
                 string label = FormatLayerLabel(definition.layer, definition.name);
-                if (Ui.Selectable(label, definition.layer == target.layer))
+                if (Gui.Selectable(label, definition.layer == target.layer))
                 {
                     using EditorHistoryTransaction transaction = interactions.history.BeginTransaction("Set Selection Layer");
                     foreach (GameObject selected in targets)

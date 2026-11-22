@@ -8,10 +8,10 @@ using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Native.ImGui;
 using Inno.Testing.Editor.Native;
 
+using GuiCond = Inno.Editor.ImGui.ImGuiCond;
+using GuiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
 using NativeGui = Inno.Native.ImGui.ImGui;
 using NativeVector = Inno.Native.ImGui.ImVec2C;
-using UiCond = Inno.Editor.ImGui.ImGuiCond;
-using UiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
 
 namespace Inno.Editor.PlayMode.Tests;
 
@@ -37,10 +37,10 @@ public sealed unsafe class VisualScaleMatrixTests
         {
             host.Frame(() =>
             {
-                NativeGui.SetNextWindowPos(new Vector2(20f, 20f), (int)UiCond.Always);
-                NativeGui.SetNextWindowSize(new Vector2(320f, 500f), (int)UiCond.Always);
+                NativeGui.SetNextWindowPos(new Vector2(20f, 20f), (int)GuiCond.Always);
+                NativeGui.SetNextWindowSize(new Vector2(320f, 500f), (int)GuiCond.Always);
                 bool open = true;
-                _ = NativeGui.Begin("Narrow inspector matrix", ref open, (int)UiWindowFlags.NoSavedSettings);
+                _ = NativeGui.Begin("Narrow inspector matrix", ref open, (int)GuiWindowFlags.NoSavedSettings);
                 try
                 {
                     ImGuiWidget widgets = host.ui.widgets;

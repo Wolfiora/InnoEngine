@@ -17,7 +17,7 @@ public abstract class RenderingBackendProvider
     /// <exception cref="ArgumentException">
     /// The identity is unassigned.
     /// </exception>
-    protected RenderingBackendProvider(RenderingBackendId id)
+    protected RenderingBackendProvider(RenderingBackendID id)
     {
         if (!id.isValid)
         {
@@ -29,7 +29,7 @@ public abstract class RenderingBackendProvider
     /// <summary>
     /// Gets the stable implementation identity paired with its authoring tools.
     /// </summary>
-    public RenderingBackendId id { get; }
+    public RenderingBackendID id { get; }
 
     /// <summary>
     /// Creates a caller-owned device using backend-neutral surface options.

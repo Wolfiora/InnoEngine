@@ -14,7 +14,7 @@ public static class WindowsX64BuildModule
     /// Gets the explicit implemented product target, independent of the tool execution host.
     /// </summary>
     public static PlatformTargetDescriptor target { get; } = new(
-        new BuildTargetId("windows-x64"),
+        new BuildTargetID("windows-x64"),
         "Windows",
         "x64",
         "msvc-x64",
@@ -65,7 +65,7 @@ public static class WindowsX64BuildModule
             "platforms/WindowsX64/editor/Inno.Editor.WindowsX64/Inno.Editor.WindowsX64.csproj",
             [nativePlan, editorNativePlan, shaderToolsPlan],
             bindingGenerator,
-            [ManagedDeploymentId.coreClr, ManagedDeploymentId.nativeAot]
+            [ManagedDeploymentID.coreClr, ManagedDeploymentID.nativeAot]
         );
     }
 }

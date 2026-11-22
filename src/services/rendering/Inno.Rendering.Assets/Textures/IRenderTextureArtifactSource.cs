@@ -8,7 +8,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Exposes one or more portable image artifacts owned by an imported asset.
 /// </summary>
-[StableTypeId("a067587f-d6a5-56ed-860b-9ad0c9e1f8cb")]
+[StableTypeID("a067587f-d6a5-56ed-860b-9ad0c9e1f8cb")]
 public interface IRenderTextureArtifactSource
 {
     /// <summary>

@@ -39,7 +39,7 @@ public sealed class RuntimeRetirementTests
                               ? Assert.Throws<InvalidOperationException>(() => host.CreateHostPipeline([factory]))
                               : Assert.Throws<InvalidOperationException>(() => host.CreateSession(new RuntimeSessionOptions
                               {
-                                  applicationId = "startup.test",
+                                  applicationID = "startup.test",
                                   kind = RuntimeSessionKind.Play,
                                   createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(root, "startup.test"), "Logs")),
                                   jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
@@ -78,7 +78,7 @@ public sealed class RuntimeRetirementTests
         var resource = new Resource();
         RuntimeSession session = host.CreateSession(new RuntimeSessionOptions
         {
-            applicationId = "stop.test",
+            applicationID = "stop.test",
             kind = RuntimeSessionKind.Play,
             createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(root, "stop.test"), "Logs")),
             jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
@@ -111,7 +111,7 @@ public sealed class RuntimeRetirementTests
         {
             RuntimeSession session = host.CreateSession(new RuntimeSessionOptions
             {
-                applicationId = "retirement.test",
+                applicationID = "retirement.test",
                 kind = RuntimeSessionKind.Play,
                 createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(root, "retirement.test"), "Logs")),
                 jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
@@ -145,7 +145,7 @@ public sealed class RuntimeRetirementTests
         Resource resource
     ) : IRuntimeSubsystemFactory
     {
-        public RuntimeSubsystemDescriptor descriptor { get; } = new(new RuntimeSubsystemId("tests.pending"));
+        public RuntimeSubsystemDescriptor descriptor { get; } = new(new RuntimeSubsystemID("tests.pending"));
 
         public IRuntimeSubsystem Create(RuntimeSubsystemContext context)
         {
@@ -185,7 +185,7 @@ public sealed class RuntimeRetirementTests
         internal bool observedRetainedResource;
 
         public RuntimeSubsystemDescriptor descriptor { get; } = new(
-            new RuntimeSubsystemId("tests.failure"),
+            new RuntimeSubsystemID("tests.failure"),
             lifetime: hostLifetime ? RuntimeSubsystemLifetime.Host : RuntimeSubsystemLifetime.Session
         );
 
@@ -230,7 +230,7 @@ public sealed class RuntimeRetirementTests
         Resource resource
     ) : IRuntimeSubsystemFactory
     {
-        public RuntimeSubsystemDescriptor descriptor { get; } = new(new RuntimeSubsystemId("tests.stop"));
+        public RuntimeSubsystemDescriptor descriptor { get; } = new(new RuntimeSubsystemID("tests.stop"));
 
         public IRuntimeSubsystem Create(RuntimeSubsystemContext context)
         {

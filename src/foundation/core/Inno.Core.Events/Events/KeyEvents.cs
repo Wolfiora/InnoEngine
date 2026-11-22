@@ -6,7 +6,7 @@ namespace Inno.Core.Events;
 /// <summary>
 /// Base class for keyboard events.
 /// </summary>
-/// <param name="windowId">
+/// <param name="windowID">
 /// The window id used to initialize this instance.
 /// </param>
 /// <param name="key">
@@ -16,7 +16,7 @@ namespace Inno.Core.Events;
 /// The modifiers used to initialize this instance.
 /// </param>
 public abstract class KeyEvent(
-    uint windowId,
+    uint windowID,
     KeyCode key,
     KeyModifier modifiers = KeyModifier.None
 ) : Event
@@ -24,7 +24,7 @@ public abstract class KeyEvent(
     /// <summary>
     /// Gets the source window id for this event.
     /// </summary>
-    public uint windowId { get; } = windowId;
+    public uint windowID { get; } = windowID;
 
     /// <summary>
     /// Gets the key code for this keyboard event.
@@ -40,7 +40,7 @@ public abstract class KeyEvent(
 /// <summary>
 /// Raised when a key is pressed.
 /// </summary>
-/// <param name="windowId">
+/// <param name="windowID">
 /// The window id used to initialize this instance.
 /// </param>
 /// <param name="key">
@@ -53,11 +53,11 @@ public abstract class KeyEvent(
 /// The repeat used to initialize this instance.
 /// </param>
 public sealed class KeyPressedEvent(
-    uint windowId,
+    uint windowID,
     KeyCode key,
     KeyModifier modifiers = KeyModifier.None,
     bool repeat = false
-) : KeyEvent(windowId, key, modifiers)
+) : KeyEvent(windowID, key, modifiers)
 {
     /// <summary>
     /// Gets whether this key press is an auto-repeat event.
@@ -68,7 +68,7 @@ public sealed class KeyPressedEvent(
 /// <summary>
 /// Raised when a key is released.
 /// </summary>
-/// <param name="windowId">
+/// <param name="windowID">
 /// The window id used to initialize this instance.
 /// </param>
 /// <param name="key">
@@ -78,29 +78,29 @@ public sealed class KeyPressedEvent(
 /// The modifiers used to initialize this instance.
 /// </param>
 public sealed class KeyReleasedEvent(
-    uint windowId,
+    uint windowID,
     KeyCode key,
     KeyModifier modifiers = KeyModifier.None
-) : KeyEvent(windowId, key, modifiers);
+) : KeyEvent(windowID, key, modifiers);
 
 /// <summary>
 /// Raised when the platform commits UTF-8 text through keyboard, IME, or virtual-keyboard input.
 /// </summary>
-/// <param name="windowId">
+/// <param name="windowID">
 /// The source window identifier.
 /// </param>
 /// <param name="text">
 /// The committed Unicode text.
 /// </param>
 public sealed class TextInputEvent(
-    uint windowId,
+    uint windowID,
     string text
 ) : Event
 {
     /// <summary>
     /// Gets the source window identifier.
     /// </summary>
-    public uint windowId { get; } = windowId;
+    public uint windowID { get; } = windowID;
 
     /// <summary>
     /// Gets the committed Unicode text.

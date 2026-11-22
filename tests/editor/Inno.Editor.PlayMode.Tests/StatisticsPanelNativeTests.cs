@@ -5,9 +5,9 @@ using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
 using Inno.Testing.Editor.Native;
 
+using Gui = Inno.Editor.ImGui.ImGui;
+using GuiCol = Inno.Editor.ImGui.ImGuiCol;
 using NativeImGui = Inno.Native.ImGui.ImGui;
-using Ui = Inno.Editor.ImGui.ImGui;
-using UiCol = Inno.Editor.ImGui.ImGuiCol;
 
 namespace Inno.Editor.PlayMode.Tests;
 
@@ -67,8 +67,8 @@ public sealed unsafe class StatisticsPanelNativeTests
             bool open = true;
             _ = NativeImGui.Begin("Statistics acceptance", ref open, (int)ImGuiWindowFlags.NoSavedSettings);
             var color = new Vector4(0.93f, 0.17f, 0.73f, 1f);
-            uint packed = Ui.ToPackedColor(color);
-            Ui.PushStyleColor(UiCol.PlotLines, color);
+            uint packed = Gui.ToPackedColor(color);
+            Gui.PushStyleColor(GuiCol.PlotLines, color);
             try
             {
                 Assert.True(panel.Draw(host.runtime.context));
@@ -84,7 +84,7 @@ public sealed unsafe class StatisticsPanelNativeTests
             }
             finally
             {
-                Ui.PopStyleColor();
+                Gui.PopStyleColor();
                 NativeImGui.End();
             }
         }, deltaTime);

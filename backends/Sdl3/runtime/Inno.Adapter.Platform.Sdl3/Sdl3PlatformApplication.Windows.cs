@@ -90,7 +90,7 @@ public sealed unsafe partial class Sdl3PlatformApplication
         ValidateOwnerThread();
         ObjectDisposedException.ThrowIf(m_disposed, this);
         ArgumentNullException.ThrowIfNull(window);
-        if (window.ownsNativeWindow || !m_windows.TryGetValue(window.windowId, out Sdl3PlatformWindow? registered)
+        if (window.ownsNativeWindow || !m_windows.TryGetValue(window.windowID, out Sdl3PlatformWindow? registered)
             || !ReferenceEquals(registered, window)
         ) {
             throw new ArgumentException("Only this application's adopted window can be released.", nameof(window));
@@ -120,7 +120,7 @@ public sealed unsafe partial class Sdl3PlatformApplication
         return window;
     }
 
-    private void RemoveWindow(Sdl3PlatformWindow window) => m_windows.Remove(window.windowId);
+    private void RemoveWindow(Sdl3PlatformWindow window) => m_windows.Remove(window.windowID);
 
     private void ValidateWindowRegistration()
     {

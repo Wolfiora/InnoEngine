@@ -43,7 +43,7 @@ public sealed class EditorMenuItem
         object? argument = null
     ) {
         this.label = label ?? string.Empty;
-        this.actionId = actionID ?? string.Empty;
+        this.actionID = actionID ?? string.Empty;
         this.order = order;
         this.separatorBefore = separatorBefore;
         this.status = status;
@@ -60,7 +60,7 @@ public sealed class EditorMenuItem
     /// Gets the stable action identifier consumed by a presentation backend.
     /// </summary>
     [ScriptingApiIgnore]
-    public string actionId { get; }
+    public string actionID { get; }
 
     /// <summary>
     /// Gets the stable ordering value.

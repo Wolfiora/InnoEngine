@@ -80,7 +80,7 @@ internal sealed partial class EditorSceneWorkspace
         try
         {
             document.isDirty = HasSerializedChanges(scene, document);
-            m_diagnostics.ResolveDirtyCheck(scene.identity.persistentId);
+            m_diagnostics.ResolveDirtyCheck(scene.identity.persistentID);
         }
         catch (Exception exception)
         {
@@ -221,8 +221,8 @@ internal sealed partial class EditorSceneWorkspace
         byte[] savedHash = ComputeSceneHash(scene);
         m_runtimeSession.scenes.LoadSceneAdditive(scene);
         m_documents.Add(
-            scene.identity.persistentId,
-            new SceneDocument(scene, normalizedPath, asset.identity.persistentId, savedHash)
+            scene.identity.persistentID,
+            new SceneDocument(scene, normalizedPath, asset.identity.persistentID, savedHash)
         );
         return scene;
     }
@@ -248,7 +248,7 @@ internal sealed partial class EditorSceneWorkspace
         {
             EnsurePresentedScene(scene);
             relativePath = playModeSession.TryGetSnapshot(
-                scene.identity.persistentId,
+                scene.identity.persistentID,
                 out SceneDocumentSnapshot snapshot
             )
                            ? snapshot.sourcePath
@@ -294,7 +294,7 @@ internal sealed partial class EditorSceneWorkspace
 
         byte[] savedHash = ComputeSceneHash(scene);
         document.sourcePath = relativePath;
-        document.sourceAssetID = sceneAsset.identity.persistentId;
+        document.sourceAssetID = sceneAsset.identity.persistentID;
         document.savedHash = savedHash;
         document.isDirty = false;
         document.nextRefreshTimestamp = Stopwatch.GetTimestamp()
@@ -303,7 +303,7 @@ internal sealed partial class EditorSceneWorkspace
 
     private SceneDocument GetOrCreateDocument(GameScene scene)
     {
-        Guid sceneID = scene.identity.persistentId;
+        Guid sceneID = scene.identity.persistentID;
         if (m_documents.TryGetValue(sceneID, out SceneDocument? document))
         {
             document.scene = scene;

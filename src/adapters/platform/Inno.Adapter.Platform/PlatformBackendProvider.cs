@@ -21,7 +21,7 @@ public abstract class PlatformBackendProvider
     /// <exception cref="ArgumentException">
     /// The identity is unassigned.
     /// </exception>
-    protected PlatformBackendProvider(PlatformBackendId id)
+    protected PlatformBackendProvider(PlatformBackendID id)
     {
         if (!id.isValid)
         {
@@ -33,7 +33,7 @@ public abstract class PlatformBackendProvider
     /// <summary>
     /// Gets this registration's immutable implementation identity.
     /// </summary>
-    public PlatformBackendId id { get; }
+    public PlatformBackendID id { get; }
 
     /// <summary>
     /// Creates a caller-owned platform service using this implementation.

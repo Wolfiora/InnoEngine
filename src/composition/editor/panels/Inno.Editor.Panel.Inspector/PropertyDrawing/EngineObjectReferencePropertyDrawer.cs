@@ -9,8 +9,8 @@ using Inno.Runtime;
 using Inno.Scene;
 using Inno.Scene.Components;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
 
@@ -42,7 +42,7 @@ internal sealed class EngineObjectReferencePropertyDrawer : IPropertyDrawer
         bool open = EditorUI.current.widgets.BeginBoundedCombo($"##{context.path}", preview);
         _ = EditorDragDropRenderer.Target(
             context.interactions.For(
-                InspectorInteractionIds.C_ENGINE_OBJECT_REFERENCE_AREA,
+                InspectorInteractionIDs.C_ENGINE_OBJECT_REFERENCE_AREA,
                 new EngineObjectReferenceDropTarget(targetType, value => context.SetValue(value))
             )
         );
@@ -55,7 +55,7 @@ internal sealed class EngineObjectReferencePropertyDrawer : IPropertyDrawer
             string search = m_searchByPath.TryGetValue(context.path, out string? currentSearch) ? currentSearch : string.Empty;
             _ = EditorUI.current.widgets.SearchInput(context.path, "Search scene objects...", ref search, C_SEARCH_BUFFER_SIZE);
             m_searchByPath[context.path] = search;
-            if (Ui.Selectable("None", selected is null))
+            if (Gui.Selectable("None", selected is null))
             {
                 context.SetValue(null);
             }
@@ -68,7 +68,7 @@ internal sealed class EngineObjectReferencePropertyDrawer : IPropertyDrawer
                     continue;
                 }
 
-                if (Ui.Selectable(displayName, ReferenceEquals(candidate, selected)))
+                if (Gui.Selectable(displayName, ReferenceEquals(candidate, selected)))
                 {
                     context.SetValue(candidate);
                 }

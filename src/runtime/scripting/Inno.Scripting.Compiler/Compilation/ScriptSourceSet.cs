@@ -125,7 +125,7 @@ internal sealed record ScriptSourceSet(
             builders,
             CreateDefaultDefinition(
                 C_GAME_ASSEMBLY_NAME,
-                AssetSourceId.project,
+                AssetSourceID.project,
                 ScriptAssemblyScope.Runtime,
                 AssemblyDomain.InnoScripting,
                 string.Empty,
@@ -136,7 +136,7 @@ internal sealed record ScriptSourceSet(
             builders,
             CreateDefaultDefinition(
                 C_EDITOR_ASSEMBLY_NAME,
-                AssetSourceId.project,
+                AssetSourceID.project,
                 ScriptAssemblyScope.Editor,
                 AssemblyDomain.InnoScripting,
                 string.Empty,
@@ -150,7 +150,7 @@ internal sealed record ScriptSourceSet(
         ) {
             if (entry.isSampleContent)
             {
-                if (entry.assetPath.source == AssetSourceId.project)
+                if (entry.assetPath.source == AssetSourceID.project)
                 {
                     continue;
                 }
@@ -176,7 +176,7 @@ internal sealed record ScriptSourceSet(
             {
                 builder = builders[definition.name];
             }
-            else if (entry.assetPath.source == AssetSourceId.project)
+            else if (entry.assetPath.source == AssetSourceID.project)
             {
                 builder = builders[scope == ScriptAssemblyScope.Editor
                                    ? C_EDITOR_ASSEMBLY_NAME
@@ -233,7 +233,7 @@ internal sealed record ScriptSourceSet(
         {
             throw new InvalidDataException($"Script assembly definition '{entry.assetPath}' has no metadata.");
         }
-        bool isPlugin = entry.assetPath.source != AssetSourceId.project;
+        bool isPlugin = entry.assetPath.source != AssetSourceID.project;
         return new ScriptAssemblyDefinition(
             asset.assemblyName,
             entry.assetPath.source,
@@ -259,10 +259,10 @@ internal sealed record ScriptSourceSet(
                        : candidateAssets.TryGetInfo(entry.assetPath, out info);
         if (!hasInfo
             || info is null
-            || info.persistentId == Guid.Empty
+            || info.persistentID == Guid.Empty
             || !(candidateAssets is null
-                 ? assets.TryGetArtifact(info.persistentId, "source", out AssetArtifactInfo? source)
-                 : candidateAssets.TryGetArtifact(info.persistentId, "source", out source))
+                 ? assets.TryGetArtifact(info.persistentID, "source", out AssetArtifactInfo? source)
+                 : candidateAssets.TryGetArtifact(info.persistentID, "source", out source))
             || source is null
         ) {
             throw new InvalidDataException($"Script source '{entry.assetPath}' has no committed source artifact.");
@@ -270,14 +270,14 @@ internal sealed record ScriptSourceSet(
         IReadOnlyList<AssetSourceMount> mounts = candidateAssets?.sourceMounts ?? assets.sourceMounts;
         AssetSourceMount mount = mounts.Single(candidate => candidate.id == entry.assetPath.source);
         using ArtifactLease lease = candidateAssets is null
-                                    ? assets.AcquireArtifact(info.persistentId, "source")
-                                    : candidateAssets.AcquireArtifact(info.persistentId, "source");
+                                    ? assets.AcquireArtifact(info.persistentID, "source")
+                                    : candidateAssets.AcquireArtifact(info.persistentID, "source");
         using var reader = new StreamReader(lease.OpenRead(), Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
         return new ScriptSourceInput(
             entry.assetPath,
             mount.Resolve(entry.assetPath.localPath),
             reader.ReadToEnd(),
-            info.persistentId,
+            info.persistentID,
             source.contentHash
         );
     }
@@ -492,7 +492,7 @@ internal sealed record ScriptSourceSet(
         {
             return;
         }
-        if (!plugins.TryGetCompilationPlugin(new AssetSourceId(assembly.ownerPluginID), out PluginCandidate? owner)
+        if (!plugins.TryGetCompilationPlugin(new AssetSourceID(assembly.ownerPluginID), out PluginCandidate? owner)
             || owner is null
             || !owner.manifest.dependencies.Contains(dependency.ownerPluginID, StringComparer.Ordinal)
         ) {
@@ -505,7 +505,7 @@ internal sealed record ScriptSourceSet(
 
     private static ScriptAssemblyDefinition CreateDefaultDefinition(
         string name,
-        AssetSourceId source,
+        AssetSourceID source,
         ScriptAssemblyScope scope,
         AssemblyDomain domain,
         string ownerPluginID,
@@ -577,7 +577,7 @@ internal sealed record ScriptSourceSet(
 
 internal sealed record ScriptAssemblyDefinition(
     string name,
-    AssetSourceId source,
+    AssetSourceID source,
     string directory,
     ScriptAssemblyScope scope,
     AssemblyDomain domain,

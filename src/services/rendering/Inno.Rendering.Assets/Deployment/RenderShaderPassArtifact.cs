@@ -10,7 +10,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Carries one immutable compiled shader pass and its reflected runtime bindings.
 /// </summary>
-[StableTypeId("f22a2116-992d-5c69-bf6c-af05c191123b")]
+[StableTypeID("f22a2116-992d-5c69-bf6c-af05c191123b")]
 public sealed class RenderShaderPassArtifact
 {
     private readonly IReadOnlyList<RenderShaderStageArtifact> m_stages;

@@ -108,12 +108,12 @@ public sealed class AssetCoreTests
     [Fact]
     public void RuntimeContentSummaryOwnsItsFrozenSourceInventory()
     {
-        var sources = new List<AssetSourceId> { AssetSourceId.project };
+        var sources = new List<AssetSourceID> { AssetSourceID.project };
         var summary = new AssetRuntimeContentInfo(sources, 2, 1, 4);
-        sources[0] = new AssetSourceId("replacement");
+        sources[0] = new AssetSourceID("replacement");
         sources.Clear();
-        Assert.Equal(AssetSourceId.project, Assert.Single(summary.sources));
-        Assert.Throws<NotSupportedException>(() => ((IList<AssetSourceId>)summary.sources).Clear());
+        Assert.Equal(AssetSourceID.project, Assert.Single(summary.sources));
+        Assert.Throws<NotSupportedException>(() => ((IList<AssetSourceID>)summary.sources).Clear());
         Assert.Throws<ArgumentNullException>(() => new AssetRuntimeContentInfo(null!, 0, 0, 0));
     }
 
@@ -133,7 +133,7 @@ public sealed class AssetCoreTests
             new[] { "diagnostic" }
         );
 
-        Assert.Equal(id, info.persistentId);
+        Assert.Equal(id, info.persistentID);
         Assert.Equal(AssetSourceKind.File, info.sourceKind);
         Assert.Equal(AssetImportStatus.Imported, info.status);
         Assert.All(
@@ -156,7 +156,7 @@ public sealed class AssetCoreTests
 
         Assert.Equal(42, set.revision);
         Assert.False(set.isEmpty);
-        Assert.Equal(id, set.changes[0].persistentId);
+        Assert.Equal(id, set.changes[0].persistentID);
         Assert.Equal(AssetPath.Project("A/value.txt"), set.changes[0].previousAssetPath);
         Assert.Equal(AssetPath.Project("B/value.txt"), set.changes[0].assetPath);
     }
@@ -164,8 +164,8 @@ public sealed class AssetCoreTests
     private sealed class PendingResolver : IAssetReferenceResolver
     {
         public AssetObject Resolve(
-            Guid persistentId,
-            Guid stableTypeId,
+            Guid persistentID,
+            Guid stableTypeID,
             string lastKnownPath,
             Type expectedType,
             string propertyPath

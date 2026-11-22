@@ -29,7 +29,7 @@ public sealed class ParallelCommandRecordingTests
         builder
             .AddRasterPass(
                 "Commands",
-                new RenderPhaseId("tests.commands"),
+                new RenderPhaseID("tests.commands"),
                 data,
                 static (
                     inputs,
@@ -80,7 +80,7 @@ public sealed class ParallelCommandRecordingTests
     {
         RenderGraphBuilder builder = CreateGraph();
         var data = new ReferenceInputs(phase);
-        builder.AddRasterPass("Lifetime", new RenderPhaseId("tests.lifetime"), data, RecordReferences)
+        builder.AddRasterPass("Lifetime", new RenderPhaseID("tests.lifetime"), data, RecordReferences)
             .AllowParallelRecording()
             .HasSideEffect();
         CompiledRenderGraph graph = builder.Compile().graph!;
@@ -117,7 +117,7 @@ public sealed class ParallelCommandRecordingTests
         => new(
             1,
             new GraphicsCapabilities(
-                GraphicsApi.Noop,
+                GraphicsApi.noop,
                 GraphicsCapability.Compute | GraphicsCapability.StorageBuffer | GraphicsCapability.StorageTexture,
                 new GraphicsLimits(16, 8, 16_384, 16),
                 [RenderTextureFormat.RGBA8],
@@ -133,7 +133,7 @@ public sealed class ParallelCommandRecordingTests
         CommandInputs data,
         RenderCommandEncoder commands
     ) {
-        var binding = new RenderBindingId("weights.\u03b1");
+        var binding = new RenderBindingID("weights.\u03b1");
         for (int index = 0; index < 64; index++)
         {
             var uniform = new byte[4097];
@@ -197,7 +197,7 @@ public sealed class ParallelCommandRecordingTests
         context.commands.SetRasterState(state);
         for (int index = 0; index < 32; index++)
         {
-            context.commands.SetUniform(new RenderBindingId("lifetime"), new byte[257]);
+            context.commands.SetUniform(new RenderBindingID("lifetime"), new byte[257]);
         }
         if (data.phase.Contains("record", StringComparison.Ordinal))
         {
@@ -295,41 +295,41 @@ public sealed class ParallelCommandRecordingTests
         public override void BindComputePipeline(ComputePipelineHandle pipeline) => Record("BindComputePipeline", pipeline);
 
         public override void BindTexture(
-            RenderBindingId binding,
+            RenderBindingID binding,
             RenderTextureHandle texture,
             RenderSamplerState sampler
         ) => Record("BindTextureGraph", binding, texture, sampler);
 
         public override void BindTexture(
-            RenderBindingId binding,
+            RenderBindingID binding,
             PersistentTextureHandle texture,
             RenderSamplerState sampler
         ) => Record("BindTexturePersistent", binding, texture, sampler);
 
         public override void BindStorageTexture(
-            RenderBindingId binding,
+            RenderBindingID binding,
             RenderTextureHandle texture,
             int mipLevel = 0
         ) => Record("BindStorageTextureGraph", binding, texture, mipLevel);
 
         public override void BindStorageTexture(
-            RenderBindingId binding,
+            RenderBindingID binding,
             PersistentTextureHandle texture,
             int mipLevel = 0
         ) => Record("BindStorageTexturePersistent", binding, texture, mipLevel);
 
         public override void BindBuffer(
-            RenderBindingId binding,
+            RenderBindingID binding,
             RenderBufferHandle buffer
         ) => Record("BindBufferGraph", binding, buffer);
 
         public override void BindBuffer(
-            RenderBindingId binding,
+            RenderBindingID binding,
             PersistentBufferHandle buffer
         ) => Record("BindBufferPersistent", binding, buffer);
 
         public override void SetUniform(
-            RenderBindingId binding,
+            RenderBindingID binding,
             ReadOnlySpan<byte> value
         ) => Record("SetUniform", binding, Convert.ToHexString(value));
 

@@ -36,14 +36,14 @@ public sealed class BrowserSupportPackTests : IDisposable
                 "explicit-sdk",
                 Path.GetTempPath(),
                 new BuildHostDescriptor("Windows", "x64"),
-                new BuildTargetId("browser-wasm")
+                new BuildTargetID("browser-wasm")
             )
         ).build
             .ResolveNativeProduct("browser-wasm", "player").plan;
         IPlayerSupportPackValidator validator = StandardBuildDistribution.Create(
-            StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId("windows-x64"))
+            StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetID("windows-x64"))
         ).build.platforms
-            .Single(static platform => platform.descriptor.id == new BuildTargetId("browser-wasm")).supportPackSource;
+            .Single(static platform => platform.descriptor.id == new BuildTargetID("browser-wasm")).supportPackSource;
         string pack = Path.Combine(m_root, "candidate");
         Write(pack, "References/Inno.Runtime.dll");
         Write(pack, "PlayerLink/Player.csproj");
@@ -88,15 +88,15 @@ public sealed class BrowserSupportPackTests : IDisposable
         Write(pack, "PlayerLink/Native/extra.a");
         Assert.Throws<InvalidDataException>(() => validator.Validate(pack));
         File.Delete(Path.Combine(pack, "PlayerLink", "Native", "extra.a"));
-        using PlayerSupportPackLease published = await catalog.PublishAsync(new BuildTargetId("browser-wasm"), pack, validator);
+        using PlayerSupportPackLease published = await catalog.PublishAsync(new BuildTargetID("browser-wasm"), pack, validator);
         pack = published.directory;
         Assert.True(File.Exists(Path.Combine(pack, "PlayerLink", "References", "BGCS.Runtime.dll")));
-        using PlayerSupportPackLease selected = catalog.Acquire(new BuildTargetId("browser-wasm"), validator);
+        using PlayerSupportPackLease selected = catalog.Acquire(new BuildTargetID("browser-wasm"), validator);
         Assert.Equal(pack, selected.directory);
 
         File.Delete(Path.Combine(pack, "PlayerLink", "Native", "sdl3", "browser-wasm", "libSDL3.a"));
         InvalidDataException missingArchive = Assert.Throws<InvalidDataException>(
-            () => catalog.Acquire(new BuildTargetId("browser-wasm"), validator)
+            () => catalog.Acquire(new BuildTargetID("browser-wasm"), validator)
         );
         Assert.Contains("libSDL3.a", missingArchive.Message, StringComparison.Ordinal);
     }

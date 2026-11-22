@@ -78,7 +78,7 @@ internal sealed class InspectorLockControl
             if (identityObject.identity.runtimeIdentity is RuntimeIdentity runtimeIdentity)
             {
                 m_lockedIdentity = runtimeIdentity;
-                m_lockedPersistentID = identityObject.identity.persistentId;
+                m_lockedPersistentID = identityObject.identity.persistentID;
                 return;
             }
         }
@@ -109,7 +109,7 @@ internal sealed class InspectorLockControl
             {
                 return target;
             }
-            return interactions.TryResolveIdentity(identity.domainId, m_lockedPersistentID, out target)
+            return interactions.TryResolveIdentity(identity.domainID, m_lockedPersistentID, out target)
                    ? target
                    : null;
         }

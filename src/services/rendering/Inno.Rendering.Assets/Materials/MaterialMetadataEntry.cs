@@ -12,7 +12,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Stores one open material metadata key and value.
 /// </summary>
-[StableTypeId("38365af5-31ec-5646-8f17-42c31c98f7c2")]
+[StableTypeID("38365af5-31ec-5646-8f17-42c31c98f7c2")]
 public struct MaterialMetadataEntry
 {
     /// <summary>

@@ -8,15 +8,15 @@ public static class SettingsFileNames
     /// <summary>
     /// Gets the machine/editor preference document name.
     /// </summary>
-    public const string editor = "Settings.Editor.inno";
+    public const string C_EDITOR = "Settings.Editor.inno";
 
     /// <summary>
     /// Gets the runtime project settings document name.
     /// </summary>
-    public const string project = "Settings.Project.inno";
+    public const string C_PROJECT = "Settings.Project.inno";
 
     /// <summary>
     /// Gets the authoring build-default document name.
     /// </summary>
-    public const string build = "Settings.Build.inno";
+    public const string C_BUILD = "Settings.Build.inno";
 }

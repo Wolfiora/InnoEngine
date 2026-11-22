@@ -110,10 +110,10 @@ internal static class StyleEngine
     internal static StyleReport Run(
         string root,
         IReadOnlyCollection<string> paths,
-        IReadOnlyCollection<string> ruleIds,
+        IReadOnlyCollection<string> ruleIDs,
         bool fix
     ) {
-        StyleRule[] rules = RULES.Where(rule => ruleIds.Count == 0 || ruleIds.Contains(rule.id)).ToArray();
+        StyleRule[] rules = RULES.Where(rule => ruleIDs.Count == 0 || ruleIDs.Contains(rule.id)).ToArray();
         var findings = new ConcurrentBag<StyleFinding>();
         var rejections = new ConcurrentBag<StyleRejection>();
         int files = 0;

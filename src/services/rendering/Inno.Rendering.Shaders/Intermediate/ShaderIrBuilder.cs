@@ -335,7 +335,7 @@ public sealed partial class ShaderIrBuilder
     /// <param name="module">
     /// A module whose selected implementations and variants share the same interface.
     /// </param>
-    /// <param name="implementationId">
+    /// <param name="implementationID">
     /// The exact implementation/configuration selected by the target.
     /// </param>
     /// <param name="inputs">
@@ -349,21 +349,21 @@ public sealed partial class ShaderIrBuilder
     /// </exception>
     public IReadOnlyDictionary<string, ShaderIrValue> Call(
         ShaderSourceModuleAnalysis module,
-        string implementationId,
+        string implementationID,
         IReadOnlyDictionary<string, ShaderIrValue> inputs
     ) {
         EnsureWritable();
         ArgumentNullException.ThrowIfNull(module);
-        ArgumentException.ThrowIfNullOrWhiteSpace(implementationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(implementationID);
         ArgumentNullException.ThrowIfNull(inputs);
         if (!module.succeeded)
         {
             throw new ArgumentException("A source call requires a fully validated module interface.", nameof(module));
         }
         ShaderSourceImplementationAnalysis source = module.implementations.FirstOrDefault(
-            value => value.implementationId == implementationId
+            value => value.implementationID == implementationID
         )
-            ?? throw new ArgumentException($"Implementation '{implementationId}' is not part of this module.", nameof(implementationId));
+            ?? throw new ArgumentException($"Implementation '{implementationID}' is not part of this module.", nameof(implementationID));
         ShaderSourceFunction function = source.analysis.function!;
         ShaderSourceParameter[] parameters = function.parameters
             .Where(static value => value.direction != ShaderSourceParameterDirection.Output)

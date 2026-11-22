@@ -71,7 +71,7 @@ internal sealed class EditorRenderingHostService :
     /// <summary>
     /// Requests validation of a compiled shader artifact for this device generation.
     /// </summary>
-    /// <param name="documentId">
+    /// <param name="documentID">
     /// The document id consumed by request; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     /// <param name="revision">
@@ -84,24 +84,24 @@ internal sealed class EditorRenderingHostService :
     /// The validated editor shader artifact validation snapshot that represents the completed operation.
     /// </returns>
     public EditorShaderArtifactValidationSnapshot Request(
-        Guid documentId,
+        Guid documentID,
         ulong revision,
         RenderShaderArtifact artifact
     ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        if (documentId == Guid.Empty)
+        if (documentID == Guid.Empty)
         {
-            throw new ArgumentException("Shader validation requires a document identity.", nameof(documentId));
+            throw new ArgumentException("Shader validation requires a document identity.", nameof(documentID));
         }
         ArgumentNullException.ThrowIfNull(artifact);
         lock (m_shaderValidationLock)
         {
-            if (!m_shaderValidations.TryGetValue(documentId, out ShaderValidationState? state)
+            if (!m_shaderValidations.TryGetValue(documentID, out ShaderValidationState? state)
                 || state.revision != revision
                 || !string.Equals(state.contentHash, artifact.contentHash, StringComparison.Ordinal)
             ) {
-                state = new ShaderValidationState(documentId, revision, artifact);
-                m_shaderValidations[documentId] = state;
+                state = new ShaderValidationState(documentID, revision, artifact);
+                m_shaderValidations[documentID] = state;
             }
             return state.snapshot;
         }
@@ -110,18 +110,18 @@ internal sealed class EditorRenderingHostService :
     /// <summary>
     /// Releases the caller-owned value lifetime and its retained resources.
     /// </summary>
-    /// <param name="documentId">
+    /// <param name="documentID">
     /// The document id consumed by release; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void Release(Guid documentId)
+    public void Release(Guid documentID)
     {
-        if (documentId == Guid.Empty)
+        if (documentID == Guid.Empty)
         {
             return;
         }
         lock (m_shaderValidationLock)
         {
-            m_shaderValidations.Remove(documentId);
+            m_shaderValidations.Remove(documentID);
         }
     }
 
@@ -157,19 +157,19 @@ internal sealed class EditorRenderingHostService :
     /// <summary>
     /// Releases the caller-owned value lifetime and its retained resources.
     /// </summary>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// The viewport id text validated by the release operation.
     /// </param>
-    public void Release(string viewportId)
+    public void Release(string viewportID)
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
-        if (m_renderedPreviews.Remove(viewportId, out PreviewState? preview))
+        ArgumentException.ThrowIfNullOrWhiteSpace(viewportID);
+        if (m_renderedPreviews.Remove(viewportID, out PreviewState? preview))
         {
             m_previewsByID.Remove(preview.handle.value);
         }
-        m_runtime.resources.Release(new RenderPersistentResourceId(viewportId));
-        if (!m_viewports.Remove(viewportId, out ViewportState? state))
+        m_runtime.resources.Release(new RenderPersistentResourceID(viewportID));
+        if (!m_viewports.Remove(viewportID, out ViewportState? state))
         {
             return;
         }
@@ -260,14 +260,14 @@ internal sealed class EditorRenderingHostService :
         EditorViewportOutput output = Submit(composition);
         if (!output.isReady)
         {
-            if (m_renderedPreviews.Remove(composition.viewportId, out PreviewState? stale))
+            if (m_renderedPreviews.Remove(composition.viewportID, out PreviewState? stale))
             {
                 m_previewsByID.Remove(stale.handle.value);
             }
             handle = default;
             return false;
         }
-        if (m_renderedPreviews.TryGetValue(composition.viewportId, out PreviewState? current)
+        if (m_renderedPreviews.TryGetValue(composition.viewportID, out PreviewState? current)
             && current.presentationTexture == output.texture && current.handle.deviceGeneration == deviceGeneration
         ) {
             handle = current.handle;
@@ -283,8 +283,8 @@ internal sealed class EditorRenderingHostService :
             value = ++m_nextPreviewID;
         }
         handle = new(value, deviceGeneration, output.pixelWidth, output.pixelHeight);
-        var preview = new PreviewState(default, handle, default, output.texture, composition.viewportId);
-        m_renderedPreviews[composition.viewportId] = preview;
+        var preview = new PreviewState(default, handle, default, output.texture, composition.viewportID);
+        m_renderedPreviews[composition.viewportID] = preview;
         m_previewsByID.Add(value, preview);
         return true;
     }
@@ -292,10 +292,10 @@ internal sealed class EditorRenderingHostService :
     /// <summary>
     /// Releases the caller-owned rendered lifetime and its retained resources.
     /// </summary>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// The viewport id text validated by the release rendered operation.
     /// </param>
-    public void ReleaseRendered(string viewportId) => Release(viewportId);
+    public void ReleaseRendered(string viewportID) => Release(viewportID);
 
     /// <summary>
     /// Tries to resolve a standalone texture preview without blocking target compilation.
@@ -421,7 +421,7 @@ internal sealed class EditorRenderingHostService :
         if (!output.isReady)
         {
             throw new InvalidOperationException(
-                $"Editor viewport '{output.viewportId}' has no completed render texture yet."
+                $"Editor viewport '{output.viewportID}' has no completed render texture yet."
             );
         }
         m_presentation.DrawImage(output.texture, logicalSize);
@@ -441,10 +441,10 @@ internal sealed class EditorRenderingHostService :
         ObjectDisposedException.ThrowIf(m_disposed, this);
         ArgumentNullException.ThrowIfNull(composition);
         RenderTextureDescriptor descriptor = CreateDescriptor(composition);
-        if (!m_viewports.TryGetValue(composition.viewportId, out ViewportState? state))
+        if (!m_viewports.TryGetValue(composition.viewportID, out ViewportState? state))
         {
-            state = new ViewportState(new RenderTexture($"Editor/{composition.viewportId}", descriptor));
-            m_viewports.Add(composition.viewportId, state);
+            state = new ViewportState(new RenderTexture($"Editor/{composition.viewportID}", descriptor));
+            m_viewports.Add(composition.viewportID, state);
         }
         else if (!state.target.descriptor.Equals(descriptor))
         {
@@ -456,7 +456,7 @@ internal sealed class EditorRenderingHostService :
         var viewport = new RenderViewport(0, 0, composition.pixelWidth, composition.pixelHeight);
         RenderRequest[] layers = composition.layers.Select(layer =>
             new RenderRequest(
-                $"Editor:{composition.viewportId}:{layer.contributorId}",
+                $"Editor:{composition.viewportID}:{layer.contributorID}",
                 target,
                 viewport,
                 layer.pipeline,
@@ -470,7 +470,7 @@ internal sealed class EditorRenderingHostService :
         else
         {
             m_runtime.SubmitComposition(
-                $"Editor:{composition.viewportId}",
+                $"Editor:{composition.viewportID}",
                 target,
                 viewport,
                 composition.targetFormat,
@@ -487,7 +487,7 @@ internal sealed class EditorRenderingHostService :
         }
 
         return new EditorViewportOutput(
-            composition.viewportId,
+            composition.viewportID,
             state.presentationTexture,
             composition.pixelWidth,
             composition.pixelHeight
@@ -510,7 +510,7 @@ internal sealed class EditorRenderingHostService :
         }
         foreach (string viewportID in m_viewports.Keys)
         {
-            m_runtime.resources.Release(new RenderPersistentResourceId(viewportID));
+            m_runtime.resources.Release(new RenderPersistentResourceID(viewportID));
         }
         foreach (PreviewState preview in m_renderedPreviews.Values)
         {

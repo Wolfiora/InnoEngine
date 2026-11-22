@@ -57,7 +57,7 @@ internal static class ProductNativeCacheLookup
                                                ? context.WithConfiguration(configuration)
                                                : context).WithComponentOptions(step.component, step.options);
                 NativeBuildRecipe recipe = step.createRecipe!(selected);
-                if (recipe.component != step.id || recipe.targetId != context.RequireToolchain().targetId
+                if (recipe.component != step.id || recipe.targetID != context.RequireToolchain().targetID
                     || recipe.owner.nativeProject != step.component.nativeProject
                     || recipe.owner.toolchainProject != step.component.toolchainProject
                 ) {
@@ -67,7 +67,7 @@ internal static class ProductNativeCacheLookup
                 {
                     recipe = step.bindDependencies(selected, recipe, products);
                 }
-                if (recipe.component != step.id || recipe.targetId != context.RequireToolchain().targetId
+                if (recipe.component != step.id || recipe.targetID != context.RequireToolchain().targetID
                     || recipe.owner.nativeProject != step.component.nativeProject
                     || recipe.owner.toolchainProject != step.component.toolchainProject
                 ) {
@@ -83,8 +83,8 @@ internal static class ProductNativeCacheLookup
                 NativeInputSnapshot snapshot = context.inputState.CaptureInitial(recipe.inputs, cancellation);
                 string fingerprint = NativeBuildFingerprint.Create(recipe.declarations, snapshot);
                 string identity = NativeWorkspaceIdentity.Create(selected, recipe, snapshot);
-                string workspace = selected.WithIdentity(step.component, recipe.targetId, identity).GetNativeBuildRoot(step.component);
-                string directory = Path.Combine(context.engineRoot, "artifacts", "native", step.id, recipe.targetId, fingerprint);
+                string workspace = selected.WithIdentity(step.component, recipe.targetID, identity).GetNativeBuildRoot(step.component);
+                string directory = Path.Combine(context.engineRoot, "artifacts", "native", step.id, recipe.targetID, fingerprint);
                 var candidate = new Candidate(selected, recipe, fingerprint, directory, workspace, binding);
                 NativeBuildProduct? product = await AcquireProductAsync(candidate, cancellation).ConfigureAwait(false);
                 if (product is null)
@@ -140,8 +140,8 @@ internal static class ProductNativeCacheLookup
                     candidate.directory,
                     candidate.directory + ".read.lock",
                     candidate.binding is { artifactDirectory.Length: > 0 } ? [candidate.binding.artifactDirectory] : [],
-                    candidate.recipe.component + "/" + candidate.recipe.targetId + "/" + candidate.context.configuration,
-                    candidate.recipe.targetId,
+                    candidate.recipe.component + "/" + candidate.recipe.targetID + "/" + candidate.context.configuration,
+                    candidate.recipe.targetID,
                     cancellation
                 );
             }
@@ -184,7 +184,7 @@ internal static class ProductNativeCacheLookup
         ).ConfigureAwait(false);
         return reading is null ? null : new NativeBuildProduct(
             candidate.recipe.component,
-            candidate.recipe.targetId,
+            candidate.recipe.targetID,
             candidate.fingerprint,
             candidate.directory,
             candidate.binding,

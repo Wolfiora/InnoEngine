@@ -42,7 +42,7 @@ public sealed partial class AssetLoader
         bool recursive = false
     ) {
         ArgumentNullException.ThrowIfNull(asset);
-        return Execute(() => GetDependenciesLocked(asset.identity.persistentId, recursive));
+        return Execute(() => GetDependenciesLocked(asset.identity.persistentID, recursive));
     }
 
     /// <summary>
@@ -100,8 +100,8 @@ public sealed partial class AssetLoader
             AssetRecord? dependencyRecord = FindDependencyRecordLocked(dependency);
             AssetObject dependencyAsset = dependencyRecord?.asset
                                           ?? ResolveReferenceLocked(
-                                              dependency.persistentId,
-                                              dependency.type.stableId,
+                                              dependency.persistentID,
+                                              dependency.type.stableID,
                                               dependency.lastKnownPath,
                                               ResolveDependencyExpectedType(dependency)
                                           );
@@ -113,15 +113,15 @@ public sealed partial class AssetLoader
 
     private AssetDependency[] ResolveDeclaredDependenciesLocked(AssetImportContext context)
     {
-        Dictionary<Guid, AssetDependency> result = context.runtimeDependencies.ToDictionary(static value => value.persistentId);
+        Dictionary<Guid, AssetDependency> result = context.runtimeDependencies.ToDictionary(static value => value.persistentID);
         foreach (Guid persistentID in result.Keys.ToArray())
         {
             AssetDependency dependency = result[persistentID];
             string dependencyPath = dependency.lastKnownPath;
-            if (m_recordsByID.TryGetValue(dependency.persistentId, out AssetRecord? record))
+            if (m_recordsByID.TryGetValue(dependency.persistentID, out AssetRecord? record))
             {
                 dependencyPath = record.relativePath;
-                result[persistentID] = new AssetDependency(dependency.persistentId, dependency.type, dependencyPath);
+                result[persistentID] = new AssetDependency(dependency.persistentID, dependency.type, dependencyPath);
             }
             if (!string.IsNullOrWhiteSpace(dependencyPath))
             {
@@ -134,7 +134,7 @@ public sealed partial class AssetLoader
             ValidateSourceReferenceLocked(context.assetPath.ToString(), normalized);
             if (m_activeImports.Contains(normalized))
             {
-                Guid pendingID = m_pendingImportIds[normalized];
+                Guid pendingID = m_pendingImportIDs[normalized];
                 AssetImporter? pendingImporter = m_importers.FindByPath(normalized);
                 TypeRef typeRef = pendingImporter is not null
                                   && m_types.TryGetTypeRef(pendingImporter.targetAssetType, out TypeRef pendingTypeRef)
@@ -160,7 +160,7 @@ public sealed partial class AssetLoader
                 dependencyRecord.relativePath
             );
         }
-        return result.Values.OrderBy(static value => value.persistentId).ToArray();
+        return result.Values.OrderBy(static value => value.persistentID).ToArray();
     }
 
     private void ValidateImportDependenciesLocked(AssetMeta candidate)
@@ -218,13 +218,13 @@ public sealed partial class AssetLoader
                 ? new AssetDependency(id, new TypeRef(dependency.stableTypeID), dependency.relativePath)
                 : FindDescriptor(record.meta, id)
             ))
-            .Where(static descriptor => descriptor.persistentId != Guid.Empty)
+            .Where(static descriptor => descriptor.persistentID != Guid.Empty)
             .ToArray();
     }
 
     private AssetReferenceInfo GetReferenceInfoLocked(AssetObject asset)
     {
-        Guid id = asset.identity.persistentId;
+        Guid id = asset.identity.persistentID;
         var locations = new List<AssetReferenceLocation>();
         foreach (Guid dependentID in m_runtimeGraph.GetDependents(id))
         {
@@ -268,7 +268,7 @@ public sealed partial class AssetLoader
 
     private AssetRecord? FindDependencyRecordLocked(AssetDependency dependency)
     {
-        if (m_recordsByID.TryGetValue(dependency.persistentId, out AssetRecord? record))
+        if (m_recordsByID.TryGetValue(dependency.persistentID, out AssetRecord? record))
         {
             return record;
         }
@@ -299,11 +299,11 @@ public sealed partial class AssetLoader
     ) {
         AssetPath owner = AssetPath.Parse(ownerPath);
         AssetPath dependency = AssetPath.Parse(dependencyPath);
-        if (owner.source == dependency.source || owner.source == AssetSourceId.project)
+        if (owner.source == dependency.source || owner.source == AssetSourceID.project)
         {
             return;
         }
-        if (dependency.source == AssetSourceId.project)
+        if (dependency.source == AssetSourceID.project)
         {
             throw new InvalidOperationException(
                 $"Plugin source '{owner.source}' cannot reference project asset '{dependency.localPath}'."
@@ -317,7 +317,7 @@ public sealed partial class AssetLoader
         {
             throw new InvalidOperationException($"Asset source dependency '{dependency.source}' is not mounted.");
         }
-        if (!ownerMount.dependencySourceIds.Contains(dependency.source))
+        if (!ownerMount.dependencySourceIDs.Contains(dependency.source))
         {
             throw new InvalidOperationException(
                 $"Plugin source '{owner.source}' did not declare dependency '{dependency.source}'."

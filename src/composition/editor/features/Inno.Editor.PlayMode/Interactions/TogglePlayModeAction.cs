@@ -3,9 +3,9 @@ using Inno.Editor.Interactions;
 
 namespace Inno.Editor.PlayMode;
 
-[EditorAction(PlayModeInteractionIds.C_TOGGLE_PLAY_MODE)]
+[EditorAction(PlayModeInteractionIDs.C_TOGGLE_PLAY_MODE)]
 [EditorToolbarItem(
-    PlayModeInteractionIds.C_MAIN_MENU_AREA,
+    PlayModeInteractionIDs.C_MAIN_MENU_AREA,
     EditorToolbarIcon.Play,
     "Enter Play Mode",
     activeIcon: EditorToolbarIcon.Stop

@@ -29,7 +29,7 @@ public enum ImGuiTabItemFlags : int
     /// <summary>
     /// Don't call PushID()/PopID() on BeginTabItem()/EndTabItem()
     /// </summary>
-    NoPushId = (int)NativeTabItemFlags.NoPushId,
+    NoPushID = (int)NativeTabItemFlags.NoPushId,
     /// <summary>
     /// Disable tooltip for the given tab
     /// </summary>

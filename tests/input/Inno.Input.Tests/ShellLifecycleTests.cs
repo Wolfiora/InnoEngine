@@ -134,13 +134,13 @@ public sealed class ShellLifecycleTests
         {
             adapters = new AdapterSelection
             {
-                platform = PlatformBackendId.sdl3,
-                input = InputBackendId.events,
-                rendering = RenderingBackendId.bgfx,
-                storage = StorageBackendId.fileSystem,
-                audio = AudioBackendId.miniAudio,
-                text = TextBackendId.freeTypeHarfBuzz,
-                ui = UiBackendId.rmlUi
+                platform = PlatformBackendID.sdl3,
+                input = InputBackendID.events,
+                rendering = RenderingBackendID.bgfx,
+                storage = StorageBackendID.fileSystem,
+                audio = AudioBackendID.miniAudio,
+                text = TextBackendID.freeTypeHarfBuzz,
+                ui = UIBackendID.rmlUI
             },
             suspendWhenHidden = suspendWhenHidden
         })
@@ -177,7 +177,7 @@ public sealed class ShellLifecycleTests
     }
 
     private sealed class TestCatalog : IAdapterCatalog, IPlatformBackendFactory, IInputBackendFactory,
-        IRenderingBackendFactory, IStorageBackendFactory, IAudioBackendFactory, ITextBackendFactory, IUiBackendFactory
+        IRenderingBackendFactory, IStorageBackendFactory, IAudioBackendFactory, ITextBackendFactory, IUIBackendFactory
     {
         public TestCatalog()
         {
@@ -192,43 +192,43 @@ public sealed class ShellLifecycleTests
         public IStorageBackendFactory storage => this;
         public IAudioBackendFactory audio => this;
         public ITextBackendFactory text => this;
-        public IUiBackendFactory ui => this;
-        IReadOnlyList<PlatformBackendId> IPlatformBackendFactory.supportedBackends => [PlatformBackendId.sdl3];
-        IReadOnlyList<InputBackendId> IInputBackendFactory.supportedBackends => [InputBackendId.events];
-        IReadOnlyList<RenderingBackendId> IRenderingBackendFactory.supportedBackends => [RenderingBackendId.bgfx];
-        IReadOnlyList<StorageBackendId> IStorageBackendFactory.supportedBackends => [StorageBackendId.fileSystem];
-        IReadOnlyList<AudioBackendId> IAudioBackendFactory.supportedBackends => [AudioBackendId.miniAudio];
-        IReadOnlyList<TextBackendId> ITextBackendFactory.supportedBackends => [TextBackendId.freeTypeHarfBuzz];
-        IReadOnlyList<UiBackendId> IUiBackendFactory.supportedBackends => [UiBackendId.rmlUi];
+        public IUIBackendFactory ui => this;
+        IReadOnlyList<PlatformBackendID> IPlatformBackendFactory.supportedBackends => [PlatformBackendID.sdl3];
+        IReadOnlyList<InputBackendID> IInputBackendFactory.supportedBackends => [InputBackendID.events];
+        IReadOnlyList<RenderingBackendID> IRenderingBackendFactory.supportedBackends => [RenderingBackendID.bgfx];
+        IReadOnlyList<StorageBackendID> IStorageBackendFactory.supportedBackends => [StorageBackendID.fileSystem];
+        IReadOnlyList<AudioBackendID> IAudioBackendFactory.supportedBackends => [AudioBackendID.miniAudio];
+        IReadOnlyList<TextBackendID> ITextBackendFactory.supportedBackends => [TextBackendID.freeTypeHarfBuzz];
+        IReadOnlyList<UIBackendID> IUIBackendFactory.supportedBackends => [UIBackendID.rmlUI];
 
-        public IPlatformApplication CreateApplication(PlatformBackendId backend) => application;
+        public IPlatformApplication CreateApplication(PlatformBackendID backend) => application;
 
         public IInputEventSource CreateEventSource(
-            InputBackendId backend,
+            InputBackendID backend,
             IPlatformWindow window,
             bool acceptAllWindows
         ) => new TestInputSource(retired);
 
         public IRenderDevice CreateDevice(
-            RenderingBackendId backend,
+            RenderingBackendID backend,
             RenderingBackendOptions options
         ) => new TestRenderDevice(retired);
 
         public IAudioDevice CreateDevice(
-            AudioBackendId backend,
+            AudioBackendID backend,
             AudioBackendOptions options = default
         ) => throw new NotSupportedException();
 
         public IApplicationStorage CreateStorage(
-            StorageBackendId backend,
+            StorageBackendID backend,
             StorageScope scope
         ) => throw new NotSupportedException();
 
-        public ITextBackend CreateBackend(TextBackendId backend) => throw new NotSupportedException();
+        public ITextBackend CreateBackend(TextBackendID backend) => throw new NotSupportedException();
 
-        public IUiBackend CreateBackend(UiBackendId backend) => throw new NotSupportedException();
+        public IUIBackend CreateBackend(UIBackendID backend) => throw new NotSupportedException();
 
-        public IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider(RenderingBackendId backend)
+        public IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider(RenderingBackendID backend)
             => throw new NotSupportedException();
     }
 
@@ -265,7 +265,7 @@ public sealed class ShellLifecycleTests
 
     private sealed class TestWindow(List<string> retired) : IPlatformWindow
     {
-        public uint windowId => 1;
+        public uint windowID => 1;
         public string title => "Lifecycle fixture";
         public int width => 32;
         public int height => 32;

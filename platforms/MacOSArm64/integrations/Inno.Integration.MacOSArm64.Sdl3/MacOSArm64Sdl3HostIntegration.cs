@@ -38,7 +38,7 @@ public sealed class MacOSArm64Sdl3HostIntegration : ISdl3HostIntegration
         {
             throw new InvalidOperationException("SDL did not provide the required MacOS surface.");
         }
-        return new PlatformNativeHandles(surface, handleKind: PlatformNativeHandleId.cocoa);
+        return new PlatformNativeHandles(surface, handleKind: PlatformNativeHandleID.cocoa);
     }
 
     /// <inheritdoc/>

@@ -173,7 +173,7 @@ internal sealed class SceneSystemScheduler
             throw new InvalidOperationException("The replacement GameSystem is already registered.");
         }
         previous.ValidateIdentityForReplacement();
-        if (replacement.identity.runtimeId is not null)
+        if (replacement.identity.runtimeID is not null)
         {
             throw new InvalidOperationException("The replacement GameSystem already has a registered identity.");
         }
@@ -187,7 +187,7 @@ internal sealed class SceneSystemScheduler
         {
             throw new InvalidOperationException("The replacement GameSystem belongs to another scene.");
         }
-        Guid persistentID = previous.identity.persistentId;
+        Guid persistentID = previous.identity.persistentID;
         try
         {
             _ = previous.ReleaseIdentityForReplacement();
@@ -202,7 +202,7 @@ internal sealed class SceneSystemScheduler
         catch (Exception exception)
         {
             List<Exception>? rollbackFailures = null;
-            if (replacement.identity.runtimeId is not null)
+            if (replacement.identity.runtimeID is not null)
             {
                 try
                 {
@@ -214,7 +214,7 @@ internal sealed class SceneSystemScheduler
                     rollbackFailures.Add(rollbackFailure);
                 }
             }
-            if (previous.identity.runtimeId is null)
+            if (previous.identity.runtimeID is null)
             {
                 try
                 {
@@ -384,7 +384,7 @@ internal sealed class SceneSystemScheduler
             entry = new SystemEntry(system, descriptor.runtimeTypeID, m_displayOrder.Count);
             m_systems.Add(entry)
                 .Set(m_systemKey, system)
-                .Set(m_persistentIDKey, system.identity.persistentId)
+                .Set(m_persistentIDKey, system.identity.persistentID)
                 .Set(m_typeKey, descriptor.runtimeTypeID);
             m_displayOrder.Add(entry);
             InvalidateSnapshots();

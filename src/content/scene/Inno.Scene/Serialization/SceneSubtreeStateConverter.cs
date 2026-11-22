@@ -37,20 +37,20 @@ internal sealed class SceneSubtreeStateConverter : SerializationConverter<SceneS
             .Where(entry => included.Contains(entry.gameObject))
             .ToArray();
         EngineObject[] allObjects = GetAllObjects(scene);
-        var sourceIds = new Dictionary<EngineObject, Guid>(ReferenceEqualityComparer.Instance);
+        var sourceIDs = new Dictionary<EngineObject, Guid>(ReferenceEqualityComparer.Instance);
         for (int i = 0; i < allObjects.Length; i++)
         {
-            sourceIds.Add(allObjects[i], allObjects[i].identity.persistentId);
+            sourceIDs.Add(allObjects[i], allObjects[i].identity.persistentID);
         }
-        var references = new SceneGraphReferenceMap(scene, sourceIds, root);
+        var references = new SceneGraphReferenceMap(scene, sourceIDs, root);
 
-        writer.Write(C_ROOT_ID_KEY, root.identity.persistentId);
+        writer.Write(C_ROOT_ID_KEY, root.identity.persistentID);
         using (references.Enter())
         {
             SceneGraphSerialization.WriteObjects(
                 writer,
                 entries,
-                sourceIds,
+                sourceIDs,
                 included.Contains,
                 preserveRootSiblingOrder: true
             );
@@ -82,12 +82,12 @@ internal sealed class SceneSubtreeStateConverter : SerializationConverter<SceneS
             EngineObject[] externalObjects = GetAllObjects(scene);
             for (int i = 0; i < externalObjects.Length; i++)
             {
-                references.Register(externalObjects[i].identity.persistentId, externalObjects[i]);
+                references.Register(externalObjects[i].identity.persistentID, externalObjects[i]);
             }
             RestoredSceneGraph restored = SceneGraphSerialization.RestoreObjects(
                 scene,
                 objectReaders,
-                preservePersistentIds: true,
+                preservePersistentIDs: true,
                 references,
                 SceneGraphSerialization.ReadMissingReferenceAliases(reader),
                 reader.context

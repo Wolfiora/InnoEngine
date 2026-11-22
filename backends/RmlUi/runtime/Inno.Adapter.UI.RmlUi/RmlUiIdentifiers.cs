@@ -11,10 +11,10 @@ public static class RmlUiIdentifiers
     /// <summary>
     /// Gets the runtime implementation identity.
     /// </summary>
-    public static UiBackendId backend { get; } = UiBackendId.rmlUi;
+    public static UIBackendID backend { get; } = UIBackendID.rmlUI;
 
     /// <summary>
     /// Gets the RML source-language identity.
     /// </summary>
-    public static UiDocumentLanguageId documentLanguage { get; } = new("inno.ui-language.rml");
+    public static UIDocumentLanguageID documentLanguage { get; } = new("inno.ui-language.rml");
 }

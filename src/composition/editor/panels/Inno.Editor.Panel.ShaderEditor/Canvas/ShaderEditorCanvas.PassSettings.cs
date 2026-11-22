@@ -8,7 +8,7 @@ using Inno.Rendering.Assets;
 using Inno.Rendering.Shaders;
 
 using EditorImGui = Inno.Editor.ImGui.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 
@@ -82,23 +82,23 @@ internal sealed partial class ShaderEditorCanvas
             }
             if (assignmentChanged)
             {
-                List<GraphNodeId> stageIds = (assignment.stages ?? [])
+                List<GraphNodeID> stageIDs = (assignment.stages ?? [])
                     .Where(id => id != node.id.value)
-                    .Select(static id => new GraphNodeId(id))
+                    .Select(static id => new GraphNodeID(id))
                     .ToList();
                 if (assigned)
                 {
-                    stageIds.RemoveAll(
+                    stageIDs.RemoveAll(
                         id => (
                             controller.document.FindNode(id) is GraphNodeRecord existing
                             && Read(existing, "settings", new ShaderGraphStageSettings()).stage == stage.stage
                         )
                     );
-                    stageIds.Add(node.id);
+                    stageIDs.Add(node.id);
                 }
 
                 controller.ReplaceDocument(
-                    ShaderGraphPrograms.Bind(controller.document, activePass, stageIds, owner.serialization, owner.context),
+                    ShaderGraphPrograms.Bind(controller.document, activePass, stageIDs, owner.serialization, owner.context),
                     "Assign Shared Shader Stage"
                 );
                 owner.Changed(draft);
@@ -106,7 +106,7 @@ internal sealed partial class ShaderEditorCanvas
 
             for (int i = 0; i < stage.outputs.Length; i++)
             {
-                EditorImGui.PushId(i);
+                EditorImGui.PushID(i);
                 try
                 {
                     ShaderGraphOutput output = stage.outputs[i];
@@ -176,7 +176,7 @@ internal sealed partial class ShaderEditorCanvas
                 }
                 finally
                 {
-                    EditorImGui.PopId();
+                    EditorImGui.PopID();
                 }
             }
 
@@ -384,7 +384,7 @@ internal sealed partial class ShaderEditorCanvas
             {
                 for (int i = 0; i < definition.keywords.Length; i++)
                 {
-                    EditorImGui.PushId("keyword-" + i);
+                    EditorImGui.PushID("keyword-" + i);
                     try
                     {
                         ShaderKeywordDefinition keyword = definition.keywords[i];
@@ -446,7 +446,7 @@ internal sealed partial class ShaderEditorCanvas
                     }
                     finally
                     {
-                        EditorImGui.PopId();
+                        EditorImGui.PopID();
                     }
                 }
 
@@ -461,7 +461,7 @@ internal sealed partial class ShaderEditorCanvas
             {
                 GraphDocument candidate = controller.document.Clone();
                 candidate.SetMetadata(
-                    ShaderGraphDocument.definitionKey,
+                    ShaderGraphDocument.C_DEFINITION_KEY,
                     ShaderGraphDocument.Encode(owner.serialization.Serialize(definition, owner.context), owner.serialization, owner.context)
                 );
                 controller.ReplaceDocument(candidate, "Edit Shader Settings", EditorImGui.IsAnyItemActive() ? draft.valueGesture : null);

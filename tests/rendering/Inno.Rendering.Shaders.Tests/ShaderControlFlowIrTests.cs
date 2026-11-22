@@ -231,7 +231,7 @@ public sealed class ShaderControlFlowIrTests
     {
         var toolchain = new BgfxShadercToolchain(MacOSArm64BgfxShaderProfiles.target);
         var capabilities = new GraphicsCapabilities(
-            GraphicsApi.Metal,
+            GraphicsApi.metal,
             GraphicsCapability.Compute | GraphicsCapability.StorageBuffer,
             new GraphicsLimits(256, 8, 8192, 16),
             Enum.GetValues<RenderTextureFormat>(),

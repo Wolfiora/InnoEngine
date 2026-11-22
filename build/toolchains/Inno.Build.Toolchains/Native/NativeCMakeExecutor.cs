@@ -126,7 +126,7 @@ public static class NativeCMakeExecutor
         configure.AddRange(selection.cmakeArguments.Select(sources.ResolveDefinition));
         configure.AddRange((options.linkPlan ?? selection.linkPlan).cmakeArguments.Select(sources.ResolveDefinition));
         configure.Add("-DINNO_ROOT=" + sources.root);
-        configure.Add("-DINNO_NATIVE_TARGET=" + selection.targetId);
+        configure.Add("-DINNO_NATIVE_TARGET=" + selection.targetID);
         if (!selection.multiConfiguration)
         {
             configure.Add("-DCMAKE_BUILD_TYPE=" + buildType);

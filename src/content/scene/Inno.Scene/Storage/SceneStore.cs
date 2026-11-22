@@ -116,7 +116,7 @@ internal sealed class SceneStore
         if (TryGetRecord(gameObject, out _))
         {
             throw new InvalidOperationException(
-                $"GameObject '{gameObject.identity.persistentId}' is already owned by this scene store."
+                $"GameObject '{gameObject.identity.persistentID}' is already owned by this scene store."
             );
         }
 
@@ -127,7 +127,7 @@ internal sealed class SceneStore
         {
             m_objects.Add(record)
                 .Set(m_objectKey, gameObject)
-                .Set(m_objectPersistentIDKey, gameObject.identity.persistentId)
+                .Set(m_objectPersistentIDKey, gameObject.identity.persistentID)
                 .Set(m_objectNameKey, gameObject.storedName)
                 .Set(m_objectTagKey, gameObject.storedTag)
                 .Set(m_objectLayerKey, gameObject.storedLayer)
@@ -174,7 +174,7 @@ internal sealed class SceneStore
             if (duplicate is { isAlive: true })
             {
                 throw new InvalidOperationException(
-                    $"GameObject '{owner.identity.persistentId}' already owns unique component "
+                    $"GameObject '{owner.identity.persistentID}' already owns unique component "
                     + $"'{descriptor.displayName}'."
                 );
             }
@@ -185,7 +185,7 @@ internal sealed class SceneStore
         {
             m_components.Add(entry)
                 .Set(m_componentKey, component)
-                .Set(m_componentPersistentIDKey, component.identity.persistentId)
+                .Set(m_componentPersistentIDKey, component.identity.persistentID)
                 .Set(m_componentOwnerKey, record)
                 .Set(m_componentTypeKey, descriptor.runtimeTypeID)
                 .Set(m_componentCommittedKey, false);
@@ -675,7 +675,7 @@ internal sealed class SceneStore
         }
 
         var result = new List<GameComponent>();
-        int[] concreteTypes = requestedType.assignableConcreteRuntimeTypeIds;
+        int[] concreteTypes = requestedType.assignableConcreteRuntimeTypeIDs;
         for (int i = 0; i < concreteTypes.Length; i++)
         {
             foreach (ComponentEntry entry in m_components.FindFast(m_componentTypeKey, concreteTypes[i]))
@@ -719,7 +719,7 @@ internal sealed class SceneStore
         if (!TryGetRecord(owner, out SceneObjectRecord? record) || !record!.isAlive)
         {
             throw new InvalidOperationException(
-                $"GameObject '{owner.identity.persistentId}' does not belong to this scene store."
+                $"GameObject '{owner.identity.persistentID}' does not belong to this scene store."
             );
         }
         return record;

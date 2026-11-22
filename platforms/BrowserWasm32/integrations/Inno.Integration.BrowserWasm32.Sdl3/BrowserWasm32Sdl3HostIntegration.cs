@@ -36,7 +36,7 @@ public sealed class BrowserWasm32Sdl3HostIntegration : ISdl3HostIntegration
             {
                 throw new InvalidOperationException("SDL did not provide a browser canvas selector.");
             }
-            return new PlatformNativeHandles(selector, handleKind: PlatformNativeHandleId.browserCanvas);
+            return new PlatformNativeHandles(selector, handleKind: PlatformNativeHandleID.browserCanvas);
         }
     }
 

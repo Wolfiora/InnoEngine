@@ -91,12 +91,12 @@ public sealed class AnimationBindingRuntime : IAnimationBindingSink, IDisposable
             }
             if (message is not null)
             {
-                issues[(sample.binding.value, sample.target.persistentId)] = new Diagnostic(
+                issues[(sample.binding.value, sample.target.persistentID)] = new Diagnostic(
                     "animation.binding.unavailable",
                     message,
                     DiagnosticSeverity.Warning,
                     sample.binding.value,
-                    sample.target.persistentId
+                    sample.target.persistentID
                 );
             }
         }
@@ -150,7 +150,7 @@ public sealed class AnimationBindingRuntime : IAnimationBindingSink, IDisposable
                             $"Animation provider '{declaration.id}' requires a concrete public parameterless implementation."
                         );
                     }
-                    (AnimationBindingId bindingId, AnimationValueKind kind) key = (declaration.bindingId, declaration.kind);
+                    (AnimationBindingID bindingID, AnimationValueKind kind) key = (declaration.bindingID, declaration.kind);
                     if (!ids.Add(declaration.id) || result.providers.ContainsKey(key))
                     {
                         throw new InvalidOperationException(
@@ -203,6 +203,6 @@ public sealed class AnimationBindingRuntime : IAnimationBindingSink, IDisposable
             }
         }
 
-        internal Dictionary<(AnimationBindingId, AnimationValueKind), AnimationBindingProvider> providers { get; } = [];
+        internal Dictionary<(AnimationBindingID, AnimationValueKind), AnimationBindingProvider> providers { get; } = [];
     }
 }

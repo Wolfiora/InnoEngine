@@ -159,7 +159,7 @@ public sealed class PlayerSupportPackPreparationIdentity
         CancellationToken cancellation
     ) {
         cancellation.ThrowIfCancellationRequested();
-        var declarations = new List<string> { "support-pack-preparation", m_nativePlan.productId };
+        var declarations = new List<string> { "support-pack-preparation", m_nativePlan.productID };
         if (m_properties.TryGetValue("InnoNativeDependencyManifest", out string? manifest))
         {
             IReadOnlyList<NativeDependencyAsset> assets = await NativeDependencyManifest.SelectAsync(
@@ -178,7 +178,7 @@ public sealed class PlayerSupportPackPreparationIdentity
         else
         {
             IReadOnlyList<NativeBuildRecipe> recipes = m_nativePlan.CreateRecipes(context);
-            declarations.Add(context.RequireToolchain().targetId);
+            declarations.Add(context.RequireToolchain().targetID);
             foreach (NativeBuildRecipe recipe in recipes)
             {
                 declarations.Add(
@@ -196,7 +196,7 @@ public sealed class PlayerSupportPackPreparationIdentity
                         context,
                         new NativeBindingGenerationRequest(
                             generated,
-                            context.RequireToolchain().targetId,
+                            context.RequireToolchain().targetID,
                             NativeBindingOutputMode.TargetArtifacts,
                             componentOptions: m_nativePlan.steps.Where(static step => step.component.bindingDefinition is not null)
                                 .GroupBy(static step => step.component.nativeProject, StringComparer.Ordinal)

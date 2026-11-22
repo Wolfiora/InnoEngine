@@ -22,8 +22,8 @@ internal sealed class AssetDependencyConverter : SerializationConverter<AssetDep
         AssetDependency value
     ) {
         ArgumentNullException.ThrowIfNull(writer);
-        writer.Write("persistentId", value.persistentId);
-        writer.Write("stableTypeId", value.type.stableId);
+        writer.Write("persistentId", value.persistentID);
+        writer.Write("stableTypeId", value.type.stableID);
         writer.Write("lastKnownPath", value.lastKnownPath);
     }
 

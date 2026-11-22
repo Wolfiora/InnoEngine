@@ -33,7 +33,7 @@ public sealed class EventDispatcherBehaviorTests
         Assert.True(source.isGlobalHandled);
         Assert.True(routed.isGlobalHandled);
         Assert.True(routedAgain.isGlobalHandled);
-        Assert.Equal(17u, routed.windowId);
+        Assert.Equal(17u, routed.windowID);
         Assert.Equal(40f, routed.x);
         Assert.Equal(30f, routed.y);
         Assert.Equal(240f, source.x);

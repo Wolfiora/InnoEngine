@@ -132,7 +132,7 @@ public static class TextToolchain
             context,
             componentDescriptor,
             "text",
-            selection.targetId,
+            selection.targetID,
             componentDescriptor.staticBuild!.inputPaths.Select(path => Path.GetFullPath(path, context.engineRoot)),
             [],
             [Path.Combine(componentDescriptor.GetToolchainRoot(context.engineRoot), "TextToolchain.cs")]

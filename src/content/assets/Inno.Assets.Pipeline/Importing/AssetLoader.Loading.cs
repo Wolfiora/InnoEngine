@@ -53,7 +53,7 @@ public sealed partial class AssetLoader
     /// <summary>
     /// Loads a canonical asset by persistent identity.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The persistent asset identity.
     /// </param>
     /// <param name="requestedAssetType">
@@ -63,11 +63,11 @@ public sealed partial class AssetLoader
     /// The canonical asset, or <see langword="null"/> when unavailable or incompatible.
     /// </returns>
     public AssetObject? Load(
-        Guid persistentId,
+        Guid persistentID,
         Type requestedAssetType
     ) {
         ArgumentNullException.ThrowIfNull(requestedAssetType);
-        return Execute(() => LoadIDLocked(persistentId, requestedAssetType));
+        return Execute(() => LoadIDLocked(persistentID, requestedAssetType));
     }
 
     /// <summary>
@@ -97,7 +97,7 @@ public sealed partial class AssetLoader
     /// <summary>
     /// Tries to load a canonical asset by persistent identity.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The persistent asset identity.
     /// </param>
     /// <param name="requestedAssetType">
@@ -110,11 +110,11 @@ public sealed partial class AssetLoader
     /// <see langword="true"/> when a compatible asset was loaded.
     /// </returns>
     public bool TryLoad(
-        Guid persistentId,
+        Guid persistentID,
         Type requestedAssetType,
         out AssetObject? asset
     ) {
-        asset = Load(persistentId, requestedAssetType);
+        asset = Load(persistentID, requestedAssetType);
         return asset is not null;
     }
 
@@ -162,7 +162,7 @@ public sealed partial class AssetLoader
     /// <summary>
     /// Asynchronously loads a canonical asset by persistent identity.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The persistent asset identity.
     /// </param>
     /// <param name="requestedAssetType">
@@ -175,7 +175,7 @@ public sealed partial class AssetLoader
     /// The canonical asset, or <see langword="null"/> when unavailable or incompatible.
     /// </returns>
     public ValueTask<AssetObject?> LoadAsync(
-        Guid persistentId,
+        Guid persistentID,
         Type requestedAssetType,
         CancellationToken cancellationToken = default
     ) {
@@ -184,12 +184,12 @@ public sealed partial class AssetLoader
         lock (m_asyncSync)
         {
             ObjectDisposedException.ThrowIf(m_disposeRequested, this);
-            if (!m_inFlightIDLoads.TryGetValue(persistentId, out operation!))
+            if (!m_inFlightIDLoads.TryGetValue(persistentID, out operation!))
             {
-                operation = Task.Run(() => Load(persistentId, typeof(AssetObject)));
-                m_inFlightIDLoads.Add(persistentId, operation);
+                operation = Task.Run(() => Load(persistentID, typeof(AssetObject)));
+                m_inFlightIDLoads.Add(persistentID, operation);
                 _ = operation.ContinueWith(
-                    _ => RemoveIDOperation(persistentId, operation),
+                    _ => RemoveIDOperation(persistentID, operation),
                     CancellationToken.None,
                     TaskContinuationOptions.ExecuteSynchronously,
                     TaskScheduler.Default
@@ -202,10 +202,10 @@ public sealed partial class AssetLoader
     /// <summary>
     /// Resolves a serialized reference or creates a persistent missing placeholder.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The referenced persistent identity.
     /// </param>
-    /// <param name="stableTypeId">
+    /// <param name="stableTypeID">
     /// The referenced stable asset type identity.
     /// </param>
     /// <param name="lastKnownPath">
@@ -218,29 +218,29 @@ public sealed partial class AssetLoader
     /// A compatible canonical asset or missing placeholder.
     /// </returns>
     public AssetObject ResolveReference(
-        Guid persistentId,
-        Guid stableTypeId,
+        Guid persistentID,
+        Guid stableTypeID,
         string lastKnownPath,
         Type expectedType
     ) {
         ArgumentNullException.ThrowIfNull(expectedType);
-        if (persistentId == Guid.Empty)
+        if (persistentID == Guid.Empty)
         {
             throw new InvalidOperationException("A serialized asset reference has an empty persistent identity.");
         }
-        return Execute(() => ResolveReferenceLocked(persistentId, stableTypeId, lastKnownPath, expectedType));
+        return Execute(() => ResolveReferenceLocked(persistentID, stableTypeID, lastKnownPath, expectedType));
     }
 
     AssetObject IAssetReferenceResolver.Resolve(
-        Guid persistentId,
-        Guid stableTypeId,
+        Guid persistentID,
+        Guid stableTypeID,
         string lastKnownPath,
         Type expectedType,
         string propertyPath
     ) {
         try
         {
-            return ResolveReference(persistentId, stableTypeId, lastKnownPath, expectedType);
+            return ResolveReference(persistentID, stableTypeID, lastKnownPath, expectedType);
         }
         catch (AssetImportExtensionUnavailableException)
         {
@@ -249,7 +249,7 @@ public sealed partial class AssetLoader
         catch (Exception exception)
         {
             throw new InvalidOperationException(
-                $"Asset reference '{persistentId:D}' at '{propertyPath}' cannot be resolved as "
+                $"Asset reference '{persistentID:D}' at '{propertyPath}' cannot be resolved as "
                 + $"'{expectedType.FullName}'.",
                 exception
             );

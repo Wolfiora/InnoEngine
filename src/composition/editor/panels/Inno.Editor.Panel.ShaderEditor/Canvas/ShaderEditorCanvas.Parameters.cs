@@ -10,7 +10,7 @@ using Inno.Rendering.Assets;
 using Inno.Rendering.Shaders;
 
 using EditorImGui = Inno.Editor.ImGui.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 
@@ -352,7 +352,7 @@ internal sealed partial class ShaderEditorCanvas
     ) {
         GraphDocument candidate = controller.document.Clone();
         candidate.SetMetadata(
-            ShaderGraphDocument.definitionKey,
+            ShaderGraphDocument.C_DEFINITION_KEY,
             ShaderGraphDocument.Encode(owner.serialization.Serialize(definition, owner.context), owner.serialization, owner.context)
         );
         controller.ReplaceDocument(candidate, label, continuous ? EditorUI.current.widgets.editMergeKey : null);

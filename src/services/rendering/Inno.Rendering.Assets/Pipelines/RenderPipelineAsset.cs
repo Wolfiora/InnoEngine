@@ -12,7 +12,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Selects a pipeline extension and ordered feature configuration without defining a render path.
 /// </summary>
-[StableTypeId("b17d289e-62de-4299-9e85-497143911798")]
+[StableTypeID("b17d289e-62de-4299-9e85-497143911798")]
 public sealed class RenderPipelineAsset : AssetObject
 {
     /// <summary>

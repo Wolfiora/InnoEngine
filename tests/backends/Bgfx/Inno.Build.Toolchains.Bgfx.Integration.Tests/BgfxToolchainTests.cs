@@ -62,7 +62,7 @@ public sealed class BgfxToolchainTests : IDisposable
         ShaderGraphProgramResult program = new ShaderGraphProgramCompiler(nodes).Lower(
             graph,
             "bgfx",
-            new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis>(),
+            new Dictionary<GraphNodeID, ShaderSourceModuleAnalysis>(),
             serialization,
             SerializationContext.empty
         );
@@ -71,7 +71,7 @@ public sealed class BgfxToolchainTests : IDisposable
         ShaderCompilationResult result = await compiler.CompileAsync(
             ShaderGraphDocument.ReadDefinition(graph, serialization, SerializationContext.empty),
             program,
-            compiler.CreateTarget(CreateCapabilities(GraphicsApi.OpenGLES, GraphicsCapability.None)),
+            compiler.CreateTarget(CreateCapabilities(GraphicsApi.openGLES, GraphicsCapability.None)),
             RenderShaderVariant.empty,
             serialization,
             SerializationContext.empty
@@ -106,7 +106,7 @@ public sealed class BgfxToolchainTests : IDisposable
         ShaderGraphProgramResult program = new ShaderGraphProgramCompiler(nodes).Lower(
             graph,
             "bgfx",
-            new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis>(),
+            new Dictionary<GraphNodeID, ShaderSourceModuleAnalysis>(),
             serialization,
             SerializationContext.empty
         );
@@ -115,7 +115,7 @@ public sealed class BgfxToolchainTests : IDisposable
         ShaderCompilationResult result = await compiler.CompileAsync(
             ShaderGraphDocument.ReadDefinition(graph, serialization, SerializationContext.empty),
             program,
-            compiler.CreateTarget(CreateCapabilities(GraphicsApi.Direct3D11, GraphicsCapability.None)),
+            compiler.CreateTarget(CreateCapabilities(GraphicsApi.direct3D11, GraphicsCapability.None)),
             RenderShaderVariant.empty,
             serialization,
             SerializationContext.empty
@@ -142,7 +142,7 @@ public sealed class BgfxToolchainTests : IDisposable
         {
             return;
         }
-        GraphicsApi backend = browser ? GraphicsApi.OpenGLES : GraphicsApi.OpenGL;
+        GraphicsApi backend = browser ? GraphicsApi.openGLES : GraphicsApi.openGL;
         var builder = new ShaderIrBuilder();
         ShaderSourceType colorType = ShaderSourceType.Atomic("float4");
         ShaderIrValue color = builder.Input("used-tint", colorType);
@@ -164,7 +164,7 @@ public sealed class BgfxToolchainTests : IDisposable
             ],
             [new("color", ShaderIrOutputKind.Color)]
         );
-        BgfxShaderTargetProfile platform = backend == GraphicsApi.OpenGLES
+        BgfxShaderTargetProfile platform = backend == GraphicsApi.openGLES
                                            ? ShaderProfileFixture.browser
                                            : OperatingSystem.IsWindows()
                                              ? ShaderProfileFixture.windows
@@ -223,7 +223,7 @@ public sealed class BgfxToolchainTests : IDisposable
         {
             return;
         }
-        GraphicsApi backend = browser ? GraphicsApi.OpenGLES : GraphicsApi.OpenGL;
+        GraphicsApi backend = browser ? GraphicsApi.openGLES : GraphicsApi.openGL;
         BgfxShaderTargetProfile platform = browser
                                            ? ShaderProfileFixture.browser
                                            : OperatingSystem.IsWindows() ? ShaderProfileFixture.windows : ShaderProfileFixture.mac;

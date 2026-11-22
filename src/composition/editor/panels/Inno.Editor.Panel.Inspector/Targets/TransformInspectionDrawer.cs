@@ -6,8 +6,8 @@ using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
 using Inno.Scene.Components;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
 
@@ -22,7 +22,7 @@ internal sealed class TransformInspectionDrawer(
     /// <summary>
     /// Gets the icon glyph used to represent this item in the editor.
     /// </summary>
-    public override string icon => ImGuiIcon.ArrowsUpDownLeftRight;
+    public override string icon => ImGuiIcon.C_ARROWS_UP_DOWN_LEFT_RIGHT;
 
     /// <summary>
     /// Binds a caller-visible label to the current inspection target.
@@ -83,11 +83,11 @@ internal sealed class TransformInspectionDrawer(
         {
             EditorUI.current.widgets.HelpBox(
                 "World editing requires an invertible parent transform. Edit in Local Space or restore the parent's zero scale.",
-                ImGuiIcon.TriangleExclamation,
+                ImGuiIcon.C_TRIANGLE_EXCLAMATION,
                 EditorPalette.warning
             );
         }
-        Ui.BeginDisabled(!invertible);
+        Gui.BeginDisabled(!invertible);
         try
         {
             Vector3 position = m_world ? target.worldPosition : target.localPosition;
@@ -149,7 +149,7 @@ internal sealed class TransformInspectionDrawer(
         }
         finally
         {
-            Ui.EndDisabled();
+            Gui.EndDisabled();
         }
     }
 
@@ -174,7 +174,7 @@ internal sealed class TransformInspectionDrawer(
     private string EditPath(
         Transform target,
         string property
-    ) => $"transform:{target.identity.persistentId:N}:{property}:{m_world}";
+    ) => $"transform:{target.identity.persistentID:N}:{property}:{m_world}";
 
     private static void DrawVector(
         string path,
@@ -185,11 +185,11 @@ internal sealed class TransformInspectionDrawer(
     ) {
         EditorUI.current.widgets.PropertyRow("transform." + label, label, () =>
         {
-            float width = MathF.Max(1f, (Ui.GetContentRegionAvailable().X - Ui.GetLayout().itemSpacing.X * 2f) / 3f);
+            float width = MathF.Max(1f, (Gui.GetContentRegionAvailable().X - Gui.GetLayout().itemSpacing.X * 2f) / 3f);
             bool changed = EditorUI.current.widgets.AxisDragFloat(label, "X", ref value.x, width);
-            Ui.SameLine(0f, -1f);
+            Gui.SameLine(0f, -1f);
             changed |= EditorUI.current.widgets.AxisDragFloat(label, "Y", ref value.y, width);
-            Ui.SameLine(0f, -1f);
+            Gui.SameLine(0f, -1f);
             changed |= EditorUI.current.widgets.AxisDragFloat(label, "Z", ref value.z, width);
             if (changed)
             {

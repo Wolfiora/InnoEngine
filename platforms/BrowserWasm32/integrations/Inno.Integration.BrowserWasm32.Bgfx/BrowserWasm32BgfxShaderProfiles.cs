@@ -31,7 +31,7 @@ public static class BrowserWasm32BgfxShaderProfiles
         ];
         RenderTextureFormat[] sampled = [.. color, RenderTextureFormat.Depth24Stencil8];
         return new(
-            GraphicsApi.OpenGLES,
+            GraphicsApi.openGLES,
             GraphicsCapability.Index32 | GraphicsCapability.Instancing
             | GraphicsCapability.Texture2DArray | GraphicsCapability.Texture3D | GraphicsCapability.FragmentDepth,
             new GraphicsLimits(256, 4, 2048, 0),

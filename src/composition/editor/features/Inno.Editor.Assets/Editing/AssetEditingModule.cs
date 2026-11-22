@@ -91,7 +91,7 @@ public sealed partial class AssetEditingModule : EditorModule
     /// <param name="directory">
     /// The source-relative writable destination directory.
     /// </param>
-    /// <param name="templateId">
+    /// <param name="templateID">
     /// The stable identity of a discovered creation template.
     /// </param>
     /// <returns>
@@ -100,9 +100,9 @@ public sealed partial class AssetEditingModule : EditorModule
     [ScriptingApiIgnore]
     public bool CanCreateAsset(
         string directory,
-        string templateId
+        string templateID
     ) {
-        if (!m_pipeline.isInitialized || !m_creations.TryGet(templateId, out _))
+        if (!m_pipeline.isInitialized || !m_creations.TryGet(templateID, out _))
         {
             return false;
         }
@@ -119,7 +119,7 @@ public sealed partial class AssetEditingModule : EditorModule
     /// <param name="directory">
     /// The source-relative writable destination directory.
     /// </param>
-    /// <param name="templateId">
+    /// <param name="templateID">
     /// The stable identity of a discovered creation template.
     /// </param>
     /// <returns>
@@ -128,14 +128,14 @@ public sealed partial class AssetEditingModule : EditorModule
     [ScriptingApiIgnore]
     public AssetFileEntry CreateAsset(
         string directory,
-        string templateId
+        string templateID
     ) {
-        if (!m_creations.TryGet(templateId, out AssetCreationRegistry.Registration? registration) || registration is null)
+        if (!m_creations.TryGet(templateID, out AssetCreationRegistry.Registration? registration) || registration is null)
         {
-            throw new InvalidOperationException($"Asset creation template '{templateId}' is unavailable.");
+            throw new InvalidOperationException($"Asset creation template '{templateID}' is unavailable.");
         }
 
-        if (!CanCreateAsset(directory, templateId))
+        if (!CanCreateAsset(directory, templateID))
         {
             throw new InvalidOperationException("The selected Asset directory is not writable.");
         }
@@ -157,11 +157,11 @@ public sealed partial class AssetEditingModule : EditorModule
         }
         while (File.Exists(mount.Resolve(path.localPath)) || File.Exists(mount.Resolve(path.localPath) + ".imeta"));
         AssetObject candidate = registration.template.Create()
-                                ?? throw new InvalidOperationException($"Asset creation template '{templateId}' returned no asset.");
+                                ?? throw new InvalidOperationException($"Asset creation template '{templateID}' returned no asset.");
         if (candidate.GetType() != registration.template.assetType)
         {
             throw new InvalidOperationException(
-                $"Asset creation template '{templateId}' returned '{candidate.GetType().FullName}' " + $"instead of '{registration.template.assetType.FullName}'."
+                $"Asset creation template '{templateID}' returned '{candidate.GetType().FullName}' " + $"instead of '{registration.template.assetType.FullName}'."
             );
         }
 
@@ -169,7 +169,7 @@ public sealed partial class AssetEditingModule : EditorModule
         byte[] source = registration.template.Encode(
             new AssetCreationContext(sources),
             candidate
-        ) ?? throw new InvalidOperationException($"Asset creation template '{templateId}' returned no source data.");
+        ) ?? throw new InvalidOperationException($"Asset creation template '{templateID}' returned no source data.");
         return CreateSource(path, source);
     }
 
@@ -183,7 +183,7 @@ public sealed partial class AssetEditingModule : EditorModule
     /// True when the request is accepted; otherwise false.
     /// </returns>
     [ScriptingApiIgnore]
-    public bool IsPluginSource(AssetSourceId source) => m_plugins.TryGet(source, out _);
+    public bool IsPluginSource(AssetSourceID source) => m_plugins.TryGet(source, out _);
 
     /// <summary>
     /// Determines whether an indexed entry is the root of an installed Plugin.
@@ -646,7 +646,7 @@ public sealed partial class AssetEditingModule : EditorModule
         string directory = Normalize(targetDirectory);
         AssetPath isolatedSource = AssetPath.Parse(source);
         AssetPath isolatedDirectory = AssetPath.Parse(directory);
-        if (isolatedSource.source != AssetSourceId.project || isolatedDirectory.source != AssetSourceId.project)
+        if (isolatedSource.source != AssetSourceID.project || isolatedDirectory.source != AssetSourceID.project)
         {
             return false;
         }

@@ -49,7 +49,7 @@ public interface IEditorDocumentService
     /// <param name="assetPath">
     /// Project asset path.
     /// </param>
-    /// <param name="assetId">
+    /// <param name="assetID">
     /// Persistent asset identity when available.
     /// </param>
     /// <returns>
@@ -57,13 +57,13 @@ public interface IEditorDocumentService
     /// </returns>
     EditorDocumentContext Open(
         string assetPath,
-        Guid assetId = default
+        Guid assetID = default
     );
 
     /// <summary>
     /// Updates an open document's source location after an identity-preserving asset move, without changing history or focus.
     /// </summary>
-    /// <param name="documentId">
+    /// <param name="documentID">
     /// Existing document identity.
     /// </param>
     /// <param name="assetPath">
@@ -73,34 +73,34 @@ public interface IEditorDocumentService
     /// Whether the document exists.
     /// </returns>
     bool UpdateAssetPath(
-        Guid documentId,
+        Guid documentID,
         string assetPath
     );
 
     /// <summary>
     /// Updates a document's unsaved state without saving, discarding or changing its History.
     /// </summary>
-    /// <param name="documentId">
+    /// <param name="documentID">
     /// Stable tab identity.
     /// </param>
     /// <param name="isDirty">
     /// Whether the provider's current draft differs from its saved baseline.
     /// </param>
     void SetDirty(
-        Guid documentId,
+        Guid documentID,
         bool isDirty = true
     );
 
     /// <summary>
     /// Saves one open document through its current provider.
     /// </summary>
-    /// <param name="documentId">
+    /// <param name="documentID">
     /// Stable tab identity.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when the document is saved.
     /// </returns>
-    bool Save(Guid documentId);
+    bool Save(Guid documentID);
 
     /// <summary>
     /// Saves every dirty open document.
@@ -113,29 +113,29 @@ public interface IEditorDocumentService
     /// <summary>
     /// Applies staged changes through the current provider.
     /// </summary>
-    /// <param name="documentId">
+    /// <param name="documentID">
     /// Stable tab identity.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when changes are applied.
     /// </returns>
-    bool Apply(Guid documentId);
+    bool Apply(Guid documentID);
 
     /// <summary>
     /// Reverts staged changes through the current provider.
     /// </summary>
-    /// <param name="documentId">
+    /// <param name="documentID">
     /// Stable tab identity.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when changes are reverted.
     /// </returns>
-    bool Revert(Guid documentId);
+    bool Revert(Guid documentID);
 
     /// <summary>
     /// Closes one document using an explicit dirty-document decision.
     /// </summary>
-    /// <param name="documentId">
+    /// <param name="documentID">
     /// Stable tab identity.
     /// </param>
     /// <param name="mode">
@@ -145,7 +145,7 @@ public interface IEditorDocumentService
     /// <see langword="true"/> when the document closed.
     /// </returns>
     bool Close(
-        Guid documentId,
+        Guid documentID,
         EditorDocumentCloseMode mode
     );
 }

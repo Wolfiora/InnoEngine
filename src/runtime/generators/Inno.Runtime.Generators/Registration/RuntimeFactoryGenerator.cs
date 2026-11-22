@@ -16,7 +16,7 @@ public sealed class RuntimeFactoryGenerator : IIncrementalGenerator
     /// <inheritdoc/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        IncrementalValueProvider<(Compilation Left, AnalyzerConfigOptionsProvider Right)> inputs = context.CompilationProvider.Combine(
+        IncrementalValueProvider<(Compilation left, AnalyzerConfigOptionsProvider right)> inputs = context.CompilationProvider.Combine(
             context.AnalyzerConfigOptionsProvider
         );
         context.RegisterSourceOutput(inputs, static (
@@ -24,12 +24,12 @@ public sealed class RuntimeFactoryGenerator : IIncrementalGenerator
             input
         ) =>
         {
-            if (!input.Right.GlobalOptions.TryGetValue("build_property.InnoGeneratePlayerComposition", out string? enabled)
+            if (!input.right.GlobalOptions.TryGetValue("build_property.InnoGeneratePlayerComposition", out string? enabled)
                 || !string.Equals(enabled, "true", StringComparison.OrdinalIgnoreCase)
             ) {
                 return;
             }
-            Generate(output, input.Left);
+            Generate(output, input.left);
         });
     }
 

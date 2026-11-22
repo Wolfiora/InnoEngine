@@ -34,7 +34,7 @@ public sealed class BuildCompositionContext
         string dotnetHost,
         string applicationDirectory,
         BuildHostDescriptor host,
-        BuildTargetId toolsTarget,
+        BuildTargetID toolsTarget,
         string? nativeDependencies = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(dotnetHost);
@@ -77,7 +77,7 @@ public sealed class BuildCompositionContext
     /// <summary>
     /// Gets the independently declared native target of build tools executed by this host.
     /// </summary>
-    public BuildTargetId toolsTarget { get; }
+    public BuildTargetID toolsTarget { get; }
 
     /// <summary>
     /// Gets the explicit consume-only selection propagated to product and Support Pack preparation.

@@ -16,16 +16,16 @@ internal sealed class FileBrowserChangeTracker(AssetBrowserModule assets)
     {
         ArgumentNullException.ThrowIfNull(context);
         m_context = context;
-        assets.edits.pipeline.Changed -= OnAssetsChanged;
-        assets.edits.pipeline.Changed += OnAssetsChanged;
-        assets.edits.pipeline.SourceMountsChanged -= OnSourceMountsChanged;
-        assets.edits.pipeline.SourceMountsChanged += OnSourceMountsChanged;
+        assets.edits.pipeline.changed -= OnAssetsChanged;
+        assets.edits.pipeline.changed += OnAssetsChanged;
+        assets.edits.pipeline.sourceMountsChanged -= OnSourceMountsChanged;
+        assets.edits.pipeline.sourceMountsChanged += OnSourceMountsChanged;
     }
 
     internal void Detach()
     {
-        assets.edits.pipeline.Changed -= OnAssetsChanged;
-        assets.edits.pipeline.SourceMountsChanged -= OnSourceMountsChanged;
+        assets.edits.pipeline.changed -= OnAssetsChanged;
+        assets.edits.pipeline.sourceMountsChanged -= OnSourceMountsChanged;
         m_context = null;
     }
 

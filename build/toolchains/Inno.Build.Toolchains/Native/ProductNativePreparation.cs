@@ -64,7 +64,7 @@ public static class ProductNativePreparation
                 .ToDictionary(static group => group.Key, static group => group.First().options, StringComparer.Ordinal);
             var request = new NativeBindingGenerationRequest(
                 components,
-                tools.targetId,
+                tools.targetID,
                 NativeBindingOutputMode.TargetArtifacts,
                 componentOptions: options
             );
@@ -75,7 +75,7 @@ public static class ProductNativePreparation
                     .ConfigureAwait(false)
             );
         }
-        IEnumerable<string> declarations = new[] { context.engineRoot, context.configuration, plan.productId, tools.targetId }
+        IEnumerable<string> declarations = new[] { context.engineRoot, context.configuration, plan.productID, tools.targetID }
             .Concat(
                 tools.environment
                     .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
@@ -142,7 +142,7 @@ public static class ProductNativePreparation
                 [
                     "product",
                     product.component,
-                    product.targetId,
+                    product.targetID,
                     product.fingerprint,
                     product.directory,
                     product.sharedLibraryExtension ?? string.Empty
@@ -252,7 +252,7 @@ public static class ProductNativePreparation
             for (int index = 0; index < productRows.Length; index++)
             {
                 string[] row = productRows[index];
-                if (row.Length != 6 || row[1] != plan.steps[index].id || row[2] != context.RequireToolchain().targetId)
+                if (row.Length != 6 || row[1] != plan.steps[index].id || row[2] != context.RequireToolchain().targetID)
                 {
                     return null;
                 }

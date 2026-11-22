@@ -43,8 +43,8 @@ public sealed class AssetReferenceDropTarget
     /// <summary>
     /// Assigns a persistent asset identity to the represented property.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The stable persistent identity used for lookup.
     /// </param>
-    public void Assign(Guid persistentId) => m_assign(persistentId);
+    public void Assign(Guid persistentID) => m_assign(persistentID);
 }

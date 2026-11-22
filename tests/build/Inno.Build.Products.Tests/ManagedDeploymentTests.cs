@@ -38,9 +38,9 @@ public sealed class ManagedDeploymentTests
     {
         var compiler = new CustomCompiler();
         var catalog = new ManagedDeploymentCatalog([compiler]);
-        Assert.Same(compiler, catalog.Resolve(new ManagedDeploymentId("custom-runtime"), "custom-target"));
+        Assert.Same(compiler, catalog.Resolve(new ManagedDeploymentID("custom-runtime"), "custom-target"));
         Assert.Throws<InvalidOperationException>(() => catalog.Resolve(compiler.id, "unsupported"));
-        Assert.Throws<InvalidOperationException>(() => catalog.Resolve(new ManagedDeploymentId("absent"), "custom-target"));
+        Assert.Throws<InvalidOperationException>(() => catalog.Resolve(new ManagedDeploymentID("absent"), "custom-target"));
         Assert.Throws<ArgumentException>(() => new ManagedDeploymentCatalog([compiler, compiler]));
     }
 
@@ -58,7 +58,7 @@ public sealed class ManagedDeploymentTests
         Assert.Equal("custom-target", Assert.Single(capabilities.runtimeIdentifiers));
         string[] files = ["game.wasm"];
         var result = new ManagedDeploymentResult(
-            new ManagedDeploymentId("custom-runtime"),
+            new ManagedDeploymentID("custom-runtime"),
             Path.GetTempPath(),
             "selected-sdk",
             files
@@ -75,7 +75,7 @@ public sealed class ManagedDeploymentTests
 
     private sealed class CustomCompiler : IManagedDeploymentCompiler
     {
-        public ManagedDeploymentId id => new("custom-runtime");
+        public ManagedDeploymentID id => new("custom-runtime");
 
         public ManagedDeploymentCapabilities capabilities { get; } = new(
             ["custom-target"],

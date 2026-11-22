@@ -12,10 +12,10 @@ namespace Inno.Editor.Graph;
 /// </summary>
 public sealed class GraphCanvasState
 {
-    private readonly HashSet<GraphNodeId> m_selectedNodes = [];
-    private readonly HashSet<GraphEdgeId> m_selectedEdges = [];
-    private FrozenSet<GraphNodeId>? m_nodeSelection;
-    private FrozenSet<GraphEdgeId>? m_edgeSelection;
+    private readonly HashSet<GraphNodeID> m_selectedNodes = [];
+    private readonly HashSet<GraphEdgeID> m_selectedEdges = [];
+    private FrozenSet<GraphNodeID>? m_nodeSelection;
+    private FrozenSet<GraphEdgeID>? m_edgeSelection;
 
     /// <summary>
     /// Gets the graph-space origin mapped to canvas screen origin.
@@ -30,12 +30,12 @@ public sealed class GraphCanvasState
     /// <summary>
     /// Gets selected node identities.
     /// </summary>
-    public IReadOnlyCollection<GraphNodeId> selectedNodes => m_nodeSelection ??= m_selectedNodes.ToFrozenSet();
+    public IReadOnlyCollection<GraphNodeID> selectedNodes => m_nodeSelection ??= m_selectedNodes.ToFrozenSet();
 
     /// <summary>
     /// Gets selected edge identities.
     /// </summary>
-    public IReadOnlyCollection<GraphEdgeId> selectedEdges => m_edgeSelection ??= m_selectedEdges.ToFrozenSet();
+    public IReadOnlyCollection<GraphEdgeID> selectedEdges => m_edgeSelection ??= m_selectedEdges.ToFrozenSet();
 
     /// <summary>
     /// Gets the endpoint currently being connected, or <see langword="null"/>.
@@ -121,7 +121,7 @@ public sealed class GraphCanvasState
     /// <param name="nodes">
     /// Complete selected-node set.
     /// </param>
-    public void SelectNodes(IEnumerable<GraphNodeId> nodes)
+    public void SelectNodes(IEnumerable<GraphNodeID> nodes)
     {
         ArgumentNullException.ThrowIfNull(nodes);
         m_selectedNodes.Clear();
@@ -132,15 +132,15 @@ public sealed class GraphCanvasState
     /// <summary>
     /// Toggles one node while preserving the remaining selection.
     /// </summary>
-    /// <param name="nodeId">
+    /// <param name="nodeID">
     /// Node to toggle.
     /// </param>
-    public void ToggleNode(GraphNodeId nodeId)
+    public void ToggleNode(GraphNodeID nodeID)
     {
         m_nodeSelection = null;
-        if (!m_selectedNodes.Remove(nodeId))
+        if (!m_selectedNodes.Remove(nodeID))
         {
-            m_selectedNodes.Add(nodeId);
+            m_selectedNodes.Add(nodeID);
         }
     }
 

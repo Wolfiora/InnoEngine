@@ -238,10 +238,10 @@ public sealed class PluginSourceService
         contentHash,
         manifest,
         new AssetSourceMount(
-            new AssetSourceId(manifest.pluginId),
+            new AssetSourceID(manifest.pluginId),
             contentRoot,
             isReadOnly: true,
-            manifest.dependencies.Select(static dependency => new AssetSourceId(dependency))
+            manifest.dependencies.Select(static dependency => new AssetSourceID(dependency))
         ),
         containsCode
     );

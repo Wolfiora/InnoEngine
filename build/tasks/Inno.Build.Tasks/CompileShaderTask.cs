@@ -99,8 +99,8 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
         }
         try
         {
-            BuildCompositionContext execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(ToolTarget));
-            BgfxShaderTargetProfile platform = StandardBuildDistribution.Create(execution).ResolveShaderTarget(new BuildTargetId(Target));
+            BuildCompositionContext execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetID(ToolTarget));
+            BgfxShaderTargetProfile platform = StandardBuildDistribution.Create(execution).ResolveShaderTarget(new BuildTargetID(Target));
             if (!GraphicsApi.TryParse(Renderer, out GraphicsApi renderer))
             {
                 throw new ArgumentException("The shader platform or rendering API is invalid.");
@@ -142,7 +142,7 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
         out BuildArtifactReadLease reading
     ) {
         var context = new NativeBuildContext(EngineRoot, "release");
-        BuildCompositionContext execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(ToolTarget));
+        BuildCompositionContext execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetID(ToolTarget));
         context = context.WithBindingGenerator(StandardBuildDistribution.Create(execution).build.ResolveBindingGenerator(ToolTarget));
         string cacheKey = "Inno.Build.ShaderTools|"
                           + context.engineRoot

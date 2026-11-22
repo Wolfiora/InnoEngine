@@ -84,12 +84,12 @@ public sealed class ShaderPublicationTests : IDisposable
     {
         ShaderDefinition definition = CreateDefinition();
         GraphDocument graph = ShaderGraphDocument.Create(definition, m_serialization, SerializationContext.empty);
-        byte[] committed = ShaderGraphArtifact.Encode(graph, new Dictionary<GraphNodeId, byte[]>(), m_serialization);
+        byte[] committed = ShaderGraphArtifact.Encode(graph, new Dictionary<GraphNodeID, byte[]>(), m_serialization);
 
         Mutate(definition);
         Mutate(ShaderGraphDocument.ReadDefinition(graph, m_serialization, SerializationContext.empty));
         AssertOriginal(ShaderGraphDocument.ReadDefinition(graph, m_serialization, SerializationContext.empty));
-        Assert.Equal(committed, ShaderGraphArtifact.Encode(graph, new Dictionary<GraphNodeId, byte[]>(), m_serialization));
+        Assert.Equal(committed, ShaderGraphArtifact.Encode(graph, new Dictionary<GraphNodeID, byte[]>(), m_serialization));
         GraphDocument restored = ShaderGraphArtifact.ReadDocument(committed, m_serialization);
         Mutate(ShaderGraphDocument.ReadDefinition(restored, m_serialization, SerializationContext.empty));
         AssertOriginal(ShaderGraphDocument.ReadDefinition(restored, m_serialization, SerializationContext.empty));
@@ -103,7 +103,7 @@ public sealed class ShaderPublicationTests : IDisposable
         RenderMaterialPass materialPass = MaterialProvider.Capture(definition.passes[0]);
 
         Mutate(definition);
-        resolution.technique.passes[0] = new ShaderTechniquePass(new ShaderPassRoleId("other"), "other");
+        resolution.technique.passes[0] = new ShaderTechniquePass(new ShaderPassRoleID("other"), "other");
         resolution.pass.metadata[0] = new ShaderMetadataEntry("sort", "changed");
         materialPass.definition.metadata[0] = new ShaderMetadataEntry("sort", "changed");
 
@@ -117,7 +117,7 @@ public sealed class ShaderPublicationTests : IDisposable
         => new(
             "Original",
             [new ShaderPropertyDefinition(
-                new ShaderPropertyId("value"),
+                new ShaderPropertyID("value"),
                 "Value",
                 ShaderPropertyType.Float,
                 ShaderStage.Fragment,
@@ -130,9 +130,9 @@ public sealed class ShaderPublicationTests : IDisposable
                 metadata: [new ShaderMetadataEntry("sort", "opaque")]
             )],
             [new ShaderTechniqueDefinition(
-                new ShaderTechniqueId("default"),
-                new ShaderContractId("test.draw"),
-                [new ShaderTechniquePass(new ShaderPassRoleId("draw"), "main")]
+                new ShaderTechniqueID("default"),
+                new ShaderContractID("test.draw"),
+                [new ShaderTechniquePass(new ShaderPassRoleID("draw"), "main")]
             )]
         );
 
@@ -142,7 +142,7 @@ public sealed class ShaderPublicationTests : IDisposable
         definition.properties[0].displayName = "Changed";
         definition.keywords[0].options[0] = "low";
         definition.passes[0].metadata[0] = new ShaderMetadataEntry("sort", "changed");
-        definition.techniques[0].passes[0] = new ShaderTechniquePass(new ShaderPassRoleId("other"), "other");
+        definition.techniques[0].passes[0] = new ShaderTechniquePass(new ShaderPassRoleID("other"), "other");
     }
 
     private static void AssertOriginal(ShaderDefinition definition)

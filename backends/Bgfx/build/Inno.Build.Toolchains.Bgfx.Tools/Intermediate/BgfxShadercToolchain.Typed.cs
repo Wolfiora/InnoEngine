@@ -34,7 +34,7 @@ public sealed partial class BgfxShadercToolchain
     /// <summary>
     /// Gets the implementation id text used by the current instance.
     /// </summary>
-    public string implementationId => "bgfx";
+    public string implementationID => "bgfx";
 
     /// <summary>
     /// Compiles the supplied source into a validated runtime artifact.
@@ -102,8 +102,8 @@ public sealed partial class BgfxShadercToolchain
                 ShaderIrStageInput input = request.stage.inputs.Single(value => value.id == binding.id);
                 return input.kind == ShaderIrInputKind.Storage || reflectedNames.Contains(binding.nativeName);
             }).ToArray();
-            if (request.target.capabilities.backend == GraphicsApi.OpenGL
-                || request.target.capabilities.backend == GraphicsApi.OpenGLES
+            if (request.target.capabilities.backend == GraphicsApi.openGL
+                || request.target.capabilities.backend == GraphicsApi.openGLES
             ) {
                 native = native with { bytes = NormalizeGlslUniformTable(native.bytes, request.stage, reflectedBindings) };
             }
@@ -159,7 +159,7 @@ public sealed partial class BgfxShadercToolchain
             }
             offset += nameLength + C_SHADER_UNIFORM_METADATA_SIZE;
         }
-        if (backend == GraphicsApi.OpenGL || backend == GraphicsApi.OpenGLES)
+        if (backend == GraphicsApi.openGL || backend == GraphicsApi.openGLES)
         {
             result.Clear();
             ReadCompiledGlslUniformNames(binary[offset..], result);

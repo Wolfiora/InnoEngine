@@ -80,7 +80,7 @@ public sealed class MaterialDocuments : EditorModule
     [ScriptingApiIgnore]
     public Draft Open(MaterialAsset material)
     {
-        if (!assets.TryGetInfo(material.identity.persistentId, out AssetInfo? info) || info is null)
+        if (!assets.TryGetInfo(material.identity.persistentID, out AssetInfo? info) || info is null)
         {
             throw new IOException("The Material source identity is unavailable.");
         }
@@ -90,18 +90,18 @@ public sealed class MaterialDocuments : EditorModule
     /// <summary>
     /// Reads a detached current-generation Material; referenced assets remain canonical read-only inputs.
     /// </summary>
-    /// <param name="assetId">
+    /// <param name="assetID">
     /// Open Material source identity.
     /// </param>
     /// <returns>
     /// The current unsaved Material value.
     /// </returns>
-    public MaterialAsset Read(Guid assetId) => m_documents.Read(assetId);
+    public MaterialAsset Read(Guid assetID) => m_documents.Read(assetID);
 
     /// <summary>
     /// Changes a draft through shared History without modifying its source or Scene/Game.
     /// </summary>
-    /// <param name="assetId">
+    /// <param name="assetID">
     /// Open Material source identity.
     /// </param>
     /// <param name="candidate">
@@ -111,10 +111,10 @@ public sealed class MaterialDocuments : EditorModule
     /// The current gesture key, or null for a discrete edit.
     /// </param>
     public void Replace(
-        Guid assetId,
+        Guid assetID,
         MaterialAsset candidate,
         string? mergeKey = null
-    ) => m_documents.Replace(assetId, candidate, mergeKey);
+    ) => m_documents.Replace(assetID, candidate, mergeKey);
 
     /// <summary>
     /// Changes compatible selected drafts within one shared gesture.
@@ -148,7 +148,7 @@ public sealed class MaterialDocuments : EditorModule
     /// <param name="shader">
     /// The canonical Shader used by the Material.
     /// </param>
-    /// <param name="propertyId">
+    /// <param name="propertyID">
     /// The stable binding identity.
     /// </param>
     /// <param name="error">
@@ -160,7 +160,7 @@ public sealed class MaterialDocuments : EditorModule
     [ScriptingApiIgnore]
     public ShaderParameterPresentation Presentation(
         ShaderAsset shader,
-        ShaderPropertyId propertyId,
+        ShaderPropertyID propertyID,
         out string error
     ) {
         PresentationCache cache = m_presentations.GetValue(shader, static _ => new());
@@ -182,7 +182,7 @@ public sealed class MaterialDocuments : EditorModule
         error = cache.error;
         return cache.graph is null
                ? new()
-               : ShaderParameterPresentation.Read(cache.graph, propertyId, m_serialization, AssetSerializationContext.Create(assets));
+               : ShaderParameterPresentation.Read(cache.graph, propertyID, m_serialization, AssetSerializationContext.Create(assets));
     }
 
     /// <summary>

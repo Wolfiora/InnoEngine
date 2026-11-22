@@ -31,7 +31,7 @@ public static class ShaderGraphPrograms
     /// <summary>
     /// Identifies native metadata holding pass references to shared stage programs.
     /// </summary>
-    public const string bindingsKey = "inno.shader.programs";
+    public const string C_BINDINGS_KEY = "inno.shader.programs";
 
     /// <summary>
     /// Reads detached pass-to-stage references, including unresolved authored identities.
@@ -52,7 +52,7 @@ public static class ShaderGraphPrograms
         GraphDocument graph,
         SerializationRegistry serialization,
         SerializationContext context
-    ) => graph.metadata.TryGetValue(bindingsKey, out GraphSerializedValue? data)
+    ) => graph.metadata.TryGetValue(C_BINDINGS_KEY, out GraphSerializedValue? data)
          ? ShaderGraphDocument.Decode<ShaderGraphPassProgram[]>(data, serialization, context)
          : throw new InvalidOperationException("The shader document has no pass-to-program references.");
 
@@ -80,7 +80,7 @@ public static class ShaderGraphPrograms
     public static GraphDocument Bind(
         GraphDocument graph,
         string pass,
-        IEnumerable<GraphNodeId> stages,
+        IEnumerable<GraphNodeID> stages,
         SerializationRegistry serialization,
         SerializationContext context
     ) {
@@ -97,7 +97,7 @@ public static class ShaderGraphPrograms
         }
         foreach (string id in references)
         {
-            if (graph.FindNode(new(id))?.definitionId != ShaderGraphDocument.outputDefinitionId)
+            if (graph.FindNode(new(id))?.definitionID != ShaderGraphDocument.C_OUTPUT_DEFINITION_ID)
             {
                 throw new ArgumentException($"Stage program '{id}' is unavailable.", nameof(stages));
             }
@@ -160,7 +160,7 @@ public static class ShaderGraphPrograms
             definition.techniques[index] = technique;
         }
         candidate.SetMetadata(
-            ShaderGraphDocument.definitionKey,
+            ShaderGraphDocument.C_DEFINITION_KEY,
             ShaderGraphDocument.Encode(serialization.Serialize(definition, context), serialization, context)
         );
         Write(candidate, remaining, serialization, context);
@@ -168,7 +168,7 @@ public static class ShaderGraphPrograms
             candidate,
             removedStages.Where(id => !retained.Contains(id))
                 .Distinct(StringComparer.Ordinal)
-                .Select(static id => new GraphNodeId(id))
+                .Select(static id => new GraphNodeID(id))
                 .Where(id => candidate.FindNode(id) is not null),
             serialization,
             context
@@ -180,5 +180,5 @@ public static class ShaderGraphPrograms
         ShaderGraphPassProgram[] programs,
         SerializationRegistry serialization,
         SerializationContext context
-    ) => graph.SetMetadata(bindingsKey, ShaderGraphDocument.Encode(programs, serialization, context));
+    ) => graph.SetMetadata(C_BINDINGS_KEY, ShaderGraphDocument.Encode(programs, serialization, context));
 }

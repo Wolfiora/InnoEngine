@@ -14,8 +14,8 @@ public sealed class IdentityAllocatorTests
         var entity = new Entity();
 
         Identity identity = GetIdentity(entity);
-        Assert.NotEqual(Guid.Empty, identity.persistentId);
-        Assert.Null(identity.runtimeId);
+        Assert.NotEqual(Guid.Empty, identity.persistentID);
+        Assert.Null(identity.runtimeID);
     }
 
     [Fact]
@@ -26,18 +26,18 @@ public sealed class IdentityAllocatorTests
         int unregisteredCount = 0;
 
         void OnUnregistered(IdentityObject _) => unregisteredCount++;
-        m_allocator.ObjectUnregistered += OnUnregistered;
+        m_allocator.objectUnregistered += OnUnregistered;
         try
         {
             m_allocator.InitializePersistentIdentity(entity, persistentID);
 
-            Assert.Equal(persistentID, GetIdentity(entity).persistentId);
-            Assert.Null(GetIdentity(entity).runtimeId);
+            Assert.Equal(persistentID, GetIdentity(entity).persistentID);
+            Assert.Null(GetIdentity(entity).runtimeID);
             Assert.Equal(0, unregisteredCount);
         }
         finally
         {
-            m_allocator.ObjectUnregistered -= OnUnregistered;
+            m_allocator.objectUnregistered -= OnUnregistered;
         }
     }
 
@@ -49,10 +49,10 @@ public sealed class IdentityAllocatorTests
         AssertRuntimeIDNotNull(entity);
 
         Identity identity = GetIdentity(entity);
-        Assert.Equal(Guid.Parse("11111111-1111-1111-1111-111111111111"), identity.persistentId);
-        int runtimeID = identity.runtimeId!.Value;
+        Assert.Equal(Guid.Parse("11111111-1111-1111-1111-111111111111"), identity.persistentID);
+        int runtimeID = identity.runtimeID!.Value;
         Assert.Same(entity, m_allocator.Get<IdentityObject>(runtimeID));
-        Assert.Same(entity, m_allocator.Get<IdentityObject>(identity.persistentId));
+        Assert.Same(entity, m_allocator.Get<IdentityObject>(identity.persistentID));
         Assert.Same(entity, m_allocator.Get<Entity>(runtimeID));
         Assert.Null(m_allocator.Get<UnrelatedEntity>(runtimeID));
     }
@@ -69,8 +69,8 @@ public sealed class IdentityAllocatorTests
         RuntimeIdentity firstIdentity = first.identity.runtimeIdentity!.Value;
         RuntimeIdentity secondIdentity = second.identity.runtimeIdentity!.Value;
 
-        Assert.Equal(firstIdentity.runtimeId, secondIdentity.runtimeId);
-        Assert.NotEqual(firstIdentity.domainId, secondIdentity.domainId);
+        Assert.Equal(firstIdentity.runtimeID, secondIdentity.runtimeID);
+        Assert.NotEqual(firstIdentity.domainID, secondIdentity.domainID);
         Assert.Same(first, m_allocator.Get<Entity>(firstIdentity));
         Assert.Null(m_allocator.Get<Entity>(secondIdentity));
     }
@@ -80,10 +80,10 @@ public sealed class IdentityAllocatorTests
     {
         var entity = new Entity();
         Assert.True(m_allocator.Register(entity));
-        int firstRuntimeID = GetIdentity(entity).runtimeId!.Value;
+        int firstRuntimeID = GetIdentity(entity).runtimeID!.Value;
 
         Assert.False(m_allocator.Register(entity));
-        Assert.Equal(firstRuntimeID, GetIdentity(entity).runtimeId);
+        Assert.Equal(firstRuntimeID, GetIdentity(entity).runtimeID);
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public sealed class IdentityAllocatorTests
     {
         var entity = new Entity();
         m_allocator.Register(entity);
-        int runtimeID = GetIdentity(entity).runtimeId!.Value;
+        int runtimeID = GetIdentity(entity).runtimeID!.Value;
 
         Assert.True(m_allocator.Unregister(entity));
         AssertRuntimeIDIsNull(entity);
@@ -110,8 +110,8 @@ public sealed class IdentityAllocatorTests
         void FailingHandler(IdentityObject removed)
         {
             Assert.Same(entity, removed);
-            Assert.Null(GetIdentity(removed).runtimeId);
-            Assert.Null(m_allocator.Get<Entity>(identity.persistentId));
+            Assert.Null(GetIdentity(removed).runtimeID);
+            Assert.Null(m_allocator.Get<Entity>(identity.persistentID));
             throw new InvalidOperationException("expected handler failure");
         }
 
@@ -121,20 +121,20 @@ public sealed class IdentityAllocatorTests
             successfulHandlers++;
         }
 
-        m_allocator.ObjectUnregistered += FailingHandler;
-        m_allocator.ObjectUnregistered += SuccessfulHandler;
+        m_allocator.objectUnregistered += FailingHandler;
+        m_allocator.objectUnregistered += SuccessfulHandler;
         try
         {
             AggregateException exception = Assert.Throws<AggregateException>(() => m_allocator.Unregister(entity));
 
             Assert.Single(exception.InnerExceptions);
             Assert.Equal(1, successfulHandlers);
-            Assert.Null(GetIdentity(entity).runtimeId);
+            Assert.Null(GetIdentity(entity).runtimeID);
         }
         finally
         {
-            m_allocator.ObjectUnregistered -= FailingHandler;
-            m_allocator.ObjectUnregistered -= SuccessfulHandler;
+            m_allocator.objectUnregistered -= FailingHandler;
+            m_allocator.objectUnregistered -= SuccessfulHandler;
         }
     }
 
@@ -143,14 +143,14 @@ public sealed class IdentityAllocatorTests
     {
         var first = new Entity();
         m_allocator.Register(first);
-        int firstRuntimeID = GetIdentity(first).runtimeId!.Value;
+        int firstRuntimeID = GetIdentity(first).runtimeID!.Value;
 
         Assert.True(m_allocator.Unregister(first));
         Assert.Null(m_allocator.Get<Entity>(firstRuntimeID));
 
         var second = new Entity();
         m_allocator.Register(second);
-        int secondRuntimeID = GetIdentity(second).runtimeId!.Value;
+        int secondRuntimeID = GetIdentity(second).runtimeID!.Value;
 
         Assert.Equal(UnpackSlot(firstRuntimeID), UnpackSlot(secondRuntimeID));
         Assert.NotEqual(UnpackGeneration(firstRuntimeID), UnpackGeneration(secondRuntimeID));
@@ -205,13 +205,13 @@ public sealed class IdentityAllocatorTests
     {
         var entity = new Entity();
         m_allocator.Register(entity);
-        runtimeID = GetIdentity(entity).runtimeId!.Value;
+        runtimeID = GetIdentity(entity).runtimeID!.Value;
         return new WeakReference<Entity>(entity);
     }
 
-    private static void AssertRuntimeIDNotNull(IdentityObject target) => Assert.NotNull(target.identity.runtimeId);
+    private static void AssertRuntimeIDNotNull(IdentityObject target) => Assert.NotNull(target.identity.runtimeID);
 
-    private static void AssertRuntimeIDIsNull(IdentityObject target) => Assert.Null(target.identity.runtimeId);
+    private static void AssertRuntimeIDIsNull(IdentityObject target) => Assert.Null(target.identity.runtimeID);
 
     private static int UnpackSlot(int runtimeID) => runtimeID & 0x000F_FFFF;
 

@@ -7,7 +7,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Accepts rendering-model-neutral requests without exposing runtime or backend ownership.
 /// </summary>
-[StableTypeId("53812496-61bc-5128-8cf9-2865a9319980")]
+[StableTypeID("53812496-61bc-5128-8cf9-2865a9319980")]
 public interface IRenderRequestSink
 {
     /// <summary>

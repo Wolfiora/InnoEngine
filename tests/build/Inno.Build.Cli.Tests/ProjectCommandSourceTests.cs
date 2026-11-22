@@ -21,7 +21,7 @@ public sealed class ProjectCommandSourceTests
         try
         {
             Console.SetError(errors);
-            int result = await BuildApplication.Run(
+            int result = await BuildApplication.RunAsync(
                 [
                     "scripts",
                     "--engine-root",

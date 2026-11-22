@@ -18,7 +18,7 @@ public static partial class ImGui
     /// </param>
     public static void SetCursorScreenPosition(Vector2 position)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.SetCursorScreenPos(position);
     }
 
@@ -30,7 +30,7 @@ public static partial class ImGui
     /// </param>
     public static void SetCursorPosX(float position)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.SetCursorPosX(position);
     }
 
@@ -42,7 +42,7 @@ public static partial class ImGui
     /// </param>
     public static void SetCursorPosY(float position)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.SetCursorPosY(position);
     }
 
@@ -54,7 +54,7 @@ public static partial class ImGui
     /// </returns>
     public static float GetCursorPosX()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.GetCursorPosX();
     }
 
@@ -66,7 +66,7 @@ public static partial class ImGui
     /// </returns>
     public static float GetCursorPosY()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.GetCursorPosY();
     }
 
@@ -78,7 +78,7 @@ public static partial class ImGui
     /// </returns>
     public static Vector2 GetWindowPos()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.GetWindowPos();
     }
 
@@ -90,7 +90,7 @@ public static partial class ImGui
     /// </returns>
     public static Vector2 GetWindowSize()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.GetWindowSize();
     }
 
@@ -102,7 +102,7 @@ public static partial class ImGui
     /// </returns>
     public static float GetFontSize()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.GetFontSize();
     }
 
@@ -114,7 +114,7 @@ public static partial class ImGui
     /// </returns>
     public static float GetFrameHeight()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.GetFrameHeight();
     }
 
@@ -126,7 +126,7 @@ public static partial class ImGui
     /// </returns>
     public static float GetTextLineHeight()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.GetTextLineHeight();
     }
 
@@ -138,7 +138,7 @@ public static partial class ImGui
     /// </returns>
     public static float GetFrameHeightWithSpacing()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.GetFrameHeightWithSpacing();
     }
 
@@ -150,7 +150,7 @@ public static partial class ImGui
     /// </returns>
     public static float GetWindowDpiScale()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.GetWindowDpiScale();
     }
 
@@ -159,7 +159,7 @@ public static partial class ImGui
     /// </summary>
     public static void AlignTextToFramePadding()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.AlignTextToFramePadding();
     }
 
@@ -168,7 +168,7 @@ public static partial class ImGui
     /// </summary>
     public static void SetNextItemAllowOverlap()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.SetNextItemAllowOverlap();
     }
 
@@ -185,7 +185,7 @@ public static partial class ImGui
         Vector2 size,
         ImGuiCond condition = ImGuiCond.None
     ) {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.SetNextWindowSize(size, (int)condition);
     }
 
@@ -197,7 +197,7 @@ public static partial class ImGui
     /// </param>
     public static void SetNextWindowContentSize(Vector2 size)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.SetNextWindowContentSize(size);
     }
 
@@ -209,7 +209,7 @@ public static partial class ImGui
     /// </param>
     public static void Indent(float amount = 0f)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.Indent(amount);
     }
 
@@ -221,7 +221,7 @@ public static partial class ImGui
     /// </param>
     public static void Unindent(float amount = 0f)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.Unindent(amount);
     }
 
@@ -233,7 +233,7 @@ public static partial class ImGui
     /// </param>
     public static void PushTextWrapPos(float position = 0f)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.PushTextWrapPos(position);
     }
 
@@ -242,7 +242,7 @@ public static partial class ImGui
     /// </summary>
     public static void PopTextWrapPos()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.PopTextWrapPos();
     }
 
@@ -254,7 +254,7 @@ public static partial class ImGui
     /// </returns>
     public static float GetScrollY()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.GetScrollY();
     }
 
@@ -266,7 +266,7 @@ public static partial class ImGui
     /// </returns>
     public static float GetScrollMaxY()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.GetScrollMaxY();
     }
 
@@ -278,7 +278,7 @@ public static partial class ImGui
     /// </param>
     public static void SetScrollHereY(float ratio = 0.5f)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.SetScrollHereY(ratio);
     }
 }

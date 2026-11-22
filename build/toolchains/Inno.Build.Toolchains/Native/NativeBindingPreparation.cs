@@ -50,7 +50,7 @@ public static class NativeBindingPreparation
         }
         var request = new NativeBindingGenerationRequest(
             owners,
-            context.RequireToolchain().targetId,
+            context.RequireToolchain().targetID,
             NativeBindingOutputMode.TargetArtifacts,
             componentOptions: componentOptions
         );

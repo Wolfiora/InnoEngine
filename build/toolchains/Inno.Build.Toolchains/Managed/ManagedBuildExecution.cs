@@ -159,7 +159,7 @@ public sealed class ManagedBuildExecution : IDisposable
             cache.BeginWorkingDirectory(
                 workspace,
                 workspace + ".lock",
-                properties.TryGetValue("InnoNativeTarget", out string? selectedTarget) ? selectedTarget : context.toolchain?.targetId,
+                properties.TryGetValue("InnoNativeTarget", out string? selectedTarget) ? selectedTarget : context.toolchain?.targetID,
                 cancellation
             );
             string sourceRoot = Path.Combine(workspace, "Sources");
@@ -208,7 +208,7 @@ public sealed class ManagedBuildExecution : IDisposable
                 cache,
                 workspace,
                 project + "/" + context.configuration,
-                properties.TryGetValue("InnoNativeTarget", out string? targetID) ? targetID : context.toolchain?.targetId
+                properties.TryGetValue("InnoNativeTarget", out string? targetID) ? targetID : context.toolchain?.targetID
             );
         }
         catch

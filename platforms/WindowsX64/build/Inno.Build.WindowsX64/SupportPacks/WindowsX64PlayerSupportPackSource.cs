@@ -57,7 +57,7 @@ public sealed class WindowsX64PlayerSupportPackSource : IPlayerSupportPackSource
     }
 
     /// <inheritdoc/>
-    public BuildTargetId target => WindowsX64BuildModule.target.id;
+    public BuildTargetID target => WindowsX64BuildModule.target.id;
 
     /// <inheritdoc/>
     public ValueTask<PlayerSupportPackPlan> CreatePlanAsync(

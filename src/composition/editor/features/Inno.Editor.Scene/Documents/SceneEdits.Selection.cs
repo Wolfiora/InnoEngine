@@ -35,7 +35,7 @@ public sealed partial class SceneEdits
             }
         }
 
-        HashSet<Guid> selected = unique.Select(value => value.identity.persistentId).ToHashSet();
+        HashSet<Guid> selected = unique.Select(value => value.identity.persistentID).ToHashSet();
         GameObject[] roots = unique.Where(value => !HasSelectedAncestor(value, selected)).ToArray();
         using EditorHistoryTransaction transaction = m_interactions.history.BeginTransaction("Delete GameObjects");
         foreach (GameObject target in roots)
@@ -225,7 +225,7 @@ public sealed partial class SceneEdits
             }
         }
 
-        HashSet<Guid> selected = unique.Select(value => value.identity.persistentId).ToHashSet();
+        HashSet<Guid> selected = unique.Select(value => value.identity.persistentID).ToHashSet();
         GameObject[] roots = unique.Where(value => !HasSelectedAncestor(value, selected)).ToArray();
         if (roots.Length == 0)
         {
@@ -233,7 +233,7 @@ public sealed partial class SceneEdits
         }
         for (Transform? ancestor = parent?.transform; ancestor is not null; ancestor = ancestor.parent)
         {
-            if (selected.Contains(ancestor.gameObject.identity.persistentId))
+            if (selected.Contains(ancestor.gameObject.identity.persistentID))
             {
                 throw new InvalidOperationException("A selection cannot be moved beneath itself.");
             }
@@ -318,7 +318,7 @@ public sealed partial class SceneEdits
     ) {
         for (Transform? parent = target.transform.parent; parent is not null; parent = parent.parent)
         {
-            if (selected.Contains(parent.gameObject.identity.persistentId))
+            if (selected.Contains(parent.gameObject.identity.persistentID))
             {
                 return true;
             }

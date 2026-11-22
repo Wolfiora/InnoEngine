@@ -10,12 +10,12 @@ public abstract class MouseEvent : Event
     /// <summary>
     /// Creates an independent mouse event belonging to one platform window.
     /// </summary>
-    /// <param name="windowId">
+    /// <param name="windowID">
     /// The platform window that produced the event.
     /// </param>
-    protected MouseEvent(uint windowId)
+    protected MouseEvent(uint windowID)
     {
-        this.windowId = windowId;
+        this.windowID = windowID;
     }
 
     /// <summary>
@@ -30,13 +30,13 @@ public abstract class MouseEvent : Event
     protected MouseEvent(MouseEvent source)
         : base(source)
         {
-        this.windowId = source.windowId;
+        this.windowID = source.windowID;
     }
 
     /// <summary>
     /// Gets the source window id for this event.
     /// </summary>
-    public uint windowId { get; }
+    public uint windowID { get; }
 }
 
 /// <summary>
@@ -47,7 +47,7 @@ public sealed class MouseMovedEvent : MouseEvent
     /// <summary>
     /// Creates a pointer movement in platform-window coordinates.
     /// </summary>
-    /// <param name="windowId">
+    /// <param name="windowID">
     /// The platform window that produced the movement.
     /// </param>
     /// <param name="x">
@@ -57,10 +57,10 @@ public sealed class MouseMovedEvent : MouseEvent
     /// The vertical pointer coordinate in logical pixels.
     /// </param>
     public MouseMovedEvent(
-        uint windowId,
+        uint windowID,
         float x,
         float y
-    ) : base(windowId)
+    ) : base(windowID)
     {
         this.x = x;
         this.y = y;
@@ -107,7 +107,7 @@ public sealed class MouseMovedEvent : MouseEvent
 /// <summary>
 /// Raised when mouse wheel scrolls.
 /// </summary>
-/// <param name="windowId">
+/// <param name="windowID">
 /// The window id used to initialize this instance.
 /// </param>
 /// <param name="offsetX">
@@ -117,10 +117,10 @@ public sealed class MouseMovedEvent : MouseEvent
 /// The offset y used to initialize this instance.
 /// </param>
 public sealed class MouseScrolledEvent(
-    uint windowId,
+    uint windowID,
     float offsetX,
     float offsetY
-) : MouseEvent(windowId)
+) : MouseEvent(windowID)
 {
     /// <summary>
     /// Gets horizontal scroll offset.
@@ -136,16 +136,16 @@ public sealed class MouseScrolledEvent(
 /// <summary>
 /// Base class for mouse button events.
 /// </summary>
-/// <param name="windowId">
+/// <param name="windowID">
 /// The window id used to initialize this instance.
 /// </param>
 /// <param name="button">
 /// The button used to initialize this instance.
 /// </param>
 public abstract class MouseButtonEvent(
-    uint windowId,
+    uint windowID,
     MouseButton button
-) : MouseEvent(windowId)
+) : MouseEvent(windowID)
 {
     /// <summary>
     /// Gets the mouse button for this event.
@@ -156,27 +156,27 @@ public abstract class MouseButtonEvent(
 /// <summary>
 /// Raised when a mouse button is pressed.
 /// </summary>
-/// <param name="windowId">
+/// <param name="windowID">
 /// The window id used to initialize this instance.
 /// </param>
 /// <param name="button">
 /// The button used to initialize this instance.
 /// </param>
 public sealed class MouseButtonPressedEvent(
-    uint windowId,
+    uint windowID,
     MouseButton button
-) : MouseButtonEvent(windowId, button);
+) : MouseButtonEvent(windowID, button);
 
 /// <summary>
 /// Raised when a mouse button is released.
 /// </summary>
-/// <param name="windowId">
+/// <param name="windowID">
 /// The window id used to initialize this instance.
 /// </param>
 /// <param name="button">
 /// The button used to initialize this instance.
 /// </param>
 public sealed class MouseButtonReleasedEvent(
-    uint windowId,
+    uint windowID,
     MouseButton button
-) : MouseButtonEvent(windowId, button);
+) : MouseButtonEvent(windowID, button);

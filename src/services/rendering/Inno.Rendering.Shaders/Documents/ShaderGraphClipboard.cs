@@ -32,14 +32,14 @@ public static class ShaderGraphClipboard
     /// </returns>
     public static GraphDocument Copy(
         GraphDocument graph,
-        IEnumerable<GraphNodeId> nodes,
+        IEnumerable<GraphNodeID> nodes,
         SerializationRegistry serialization,
         SerializationContext context
     ) {
         GraphDocument fragment = graph.Clone();
-        HashSet<GraphNodeId> selected = [.. nodes];
+        HashSet<GraphNodeID> selected = [.. nodes];
         HashSet<string> stages = fragment.nodes
-            .Where(node => selected.Contains(node.id) && node.definitionId == ShaderGraphDocument.outputDefinitionId)
+            .Where(node => selected.Contains(node.id) && node.definitionID == ShaderGraphDocument.C_OUTPUT_DEFINITION_ID)
             .Select(static node => node.id.value)
             .ToHashSet(StringComparer.Ordinal);
         foreach (GraphNodeRecord node in fragment.nodes.ToArray())
@@ -81,30 +81,30 @@ public static class ShaderGraphClipboard
         GraphDocument graph,
         GraphDocument fragment,
         bool preserveExternalStageReferences,
-        GraphNodeId? activeStage,
+        GraphNodeID? activeStage,
         SerializationRegistry serialization,
         SerializationContext context
     ) {
         GraphDocument candidate = graph.Clone();
-        ShaderDefinition? definition = candidate.metadata.ContainsKey(ShaderGraphDocument.definitionKey)
+        ShaderDefinition? definition = candidate.metadata.ContainsKey(ShaderGraphDocument.C_DEFINITION_KEY)
                                        ? ShaderGraphDocument.ReadDefinition(candidate, serialization, context)
                                        : null;
-        ShaderDefinition? source = fragment.metadata.ContainsKey(ShaderGraphDocument.definitionKey)
+        ShaderDefinition? source = fragment.metadata.ContainsKey(ShaderGraphDocument.C_DEFINITION_KEY)
                                    ? ShaderGraphDocument.ReadDefinition(fragment, serialization, context)
                                    : null;
-        Dictionary<GraphNodeId, GraphNodeId> remap = fragment.nodes.ToDictionary(
+        Dictionary<GraphNodeID, GraphNodeID> remap = fragment.nodes.ToDictionary(
             static node => node.id,
-            static _ => new GraphNodeId(Guid.NewGuid().ToString("N"))
+            static _ => new GraphNodeID(Guid.NewGuid().ToString("N"))
         );
         var passes = new Dictionary<string, string>(StringComparer.Ordinal);
-        List<ShaderGraphPassProgram> programs = candidate.metadata.ContainsKey(ShaderGraphPrograms.bindingsKey)
+        List<ShaderGraphPassProgram> programs = candidate.metadata.ContainsKey(ShaderGraphPrograms.C_BINDINGS_KEY)
                                                 ? ShaderGraphPrograms.Read(candidate, serialization, context).ToList()
                                                 : [];
         if (definition is not null && source is not null)
         {
             foreach (ShaderGraphPassProgram program in ShaderGraphPrograms.Read(fragment, serialization, context))
             {
-                GraphNodeId[] copiedStages = program.stages.Select(static id => new GraphNodeId(id)).Where(remap.ContainsKey).ToArray();
+                GraphNodeID[] copiedStages = program.stages.Select(static id => new GraphNodeID(id)).Where(remap.ContainsKey).ToArray();
                 if (copiedStages.Length == 0)
                 {
                     continue;
@@ -149,11 +149,11 @@ public static class ShaderGraphClipboard
                 ];
             }
         }
-        GraphNodeId? targetStage = activeStage
-            ?? candidate.nodes.FirstOrDefault(static node => node.definitionId == ShaderGraphDocument.outputDefinitionId)?.id;
+        GraphNodeID? targetStage = activeStage
+            ?? candidate.nodes.FirstOrDefault(static node => node.definitionID == ShaderGraphDocument.C_OUTPUT_DEFINITION_ID)?.id;
         foreach (GraphNodeRecord node in fragment.nodes)
         {
-            var clone = new GraphNodeRecord(remap[node.id], node.definitionId)
+            var clone = new GraphNodeRecord(remap[node.id], node.definitionID)
             {
                 position = new(node.position.x + 32, node.position.y + 32)
             };
@@ -164,11 +164,11 @@ public static class ShaderGraphClipboard
             string stage = ShaderGraphDocument.Read(node, "stage", string.Empty, serialization, context);
             if (stage.Length != 0)
             {
-                if (remap.TryGetValue(new(stage), out GraphNodeId mapped))
+                if (remap.TryGetValue(new(stage), out GraphNodeID mapped))
                 {
                     stage = mapped.value;
                 }
-                else if ((!preserveExternalStageReferences || candidate.FindNode(new(stage)) is null) && targetStage is GraphNodeId target)
+                else if ((!preserveExternalStageReferences || candidate.FindNode(new(stage)) is null) && targetStage is GraphNodeID target)
                 {
                     stage = target.value;
                 }
@@ -181,18 +181,21 @@ public static class ShaderGraphClipboard
             candidate.AddEdge(
                 new(
                     new(Guid.NewGuid().ToString("N")),
-                    new(remap[edge.output.nodeId], edge.output.portId),
-                    new(remap[edge.input.nodeId], edge.input.portId)
+                    new(remap[edge.output.nodeID], edge.output.portID),
+                    new(remap[edge.input.nodeID], edge.input.portID)
                 )
             );
         }
         if (definition is not null)
         {
-            candidate.SetMetadata(ShaderGraphPrograms.bindingsKey, ShaderGraphDocument.Encode(programs.ToArray(), serialization, context));
+            candidate.SetMetadata(
+                ShaderGraphPrograms.C_BINDINGS_KEY,
+                ShaderGraphDocument.Encode(programs.ToArray(), serialization, context)
+            );
             // Preserve copied defaults. Reject incompatible destination bindings before publishing any edit.
             if (source is not null)
             {
-                HashSet<string> bindings = fragment.nodes.Where(static node => node.definitionId == "inno.shader.stage-input")
+                HashSet<string> bindings = fragment.nodes.Where(static node => node.definitionID == "inno.shader.stage-input")
                     .Select(node => ShaderGraphDocument.Read(node, "settings", new ShaderGraphInputSettings(), serialization, context).id)
                     .ToHashSet(StringComparer.Ordinal);
                 definition.properties =
@@ -205,11 +208,11 @@ public static class ShaderGraphClipboard
                 ];
             }
             candidate.SetMetadata(
-                ShaderGraphDocument.definitionKey,
+                ShaderGraphDocument.C_DEFINITION_KEY,
                 ShaderGraphDocument.Encode(serialization.Serialize(definition, context), serialization, context)
             );
             foreach (GraphNodeRecord node in candidate.nodes
-                .Where(node => remap.Values.Contains(node.id) && node.definitionId == "inno.shader.stage-input")
+                .Where(node => remap.Values.Contains(node.id) && node.definitionID == "inno.shader.stage-input")
                 .ToArray()
             ) {
                 candidate = ShaderGraphBindings.ChangeInput(
@@ -246,7 +249,7 @@ public sealed class ShaderGraphPasteResult
 {
     internal ShaderGraphPasteResult(
         GraphDocument graph,
-        GraphNodeId[] nodes
+        GraphNodeID[] nodes
     ) {
         this.document = graph;
         this.insertedNodes = Array.AsReadOnly(nodes);
@@ -260,5 +263,5 @@ public sealed class ShaderGraphPasteResult
     /// <summary>
     /// Gets new identities suitable for selecting the pasted nodes.
     /// </summary>
-    public IReadOnlyList<GraphNodeId> insertedNodes { get; }
+    public IReadOnlyList<GraphNodeID> insertedNodes { get; }
 }

@@ -65,7 +65,7 @@ public abstract class ShaderGraphTemplate
     );
 }
 
-[ShaderGraphTemplate(ShaderBuiltInIds.C_RASTER_TEMPLATE, "Raster")]
+[ShaderGraphTemplate(ShaderBuiltInIDs.C_RASTER_TEMPLATE, "Raster")]
 internal sealed class RasterShaderGraphTemplate : ShaderGraphTemplate
 {
     /// <summary>
@@ -86,7 +86,7 @@ public override GraphDocument Create(
 ) => ShaderGraphTemplates.CreateRaster(serialization, context);
 }
 
-[ShaderGraphTemplate(ShaderBuiltInIds.C_NODE_TEMPLATE, "Reusable Node")]
+[ShaderGraphTemplate(ShaderBuiltInIDs.C_NODE_TEMPLATE, "Reusable Node")]
 internal sealed class ReusableShaderGraphNodeTemplate : ShaderGraphTemplate
 {
     /// <summary>
@@ -107,23 +107,23 @@ internal sealed class ReusableShaderGraphNodeTemplate : ShaderGraphTemplate
     ) {
         GraphDocument graph = ShaderGraphDocument.Create(new("Graph Node", [], [], []), serialization, context);
         ShaderGraphNodes.WriteSettings(graph, new ShaderGraphNodeSettings(), serialization, context);
-        var input = new GraphNodeRecord(new("node-inputs"), ShaderGraphNodes.inputDefinitionId)
+        var input = new GraphNodeRecord(new("node-inputs"), ShaderGraphNodes.C_INPUT_DEFINITION_ID)
         {
             position = new(40, 120)
         };
         input.SetValue(
-            ShaderGraphDocument.settingsKey,
+            ShaderGraphDocument.C_SETTINGS_KEY,
             ShaderGraphDocument.Encode(new ShaderGraphNodeInputSettings
             {
                 ports = [new() { id = "value", type = new() { id = "float" } }]
             }, serialization, context)
         );
-        var output = new GraphNodeRecord(new("node-outputs"), ShaderGraphNodes.outputDefinitionId)
+        var output = new GraphNodeRecord(new("node-outputs"), ShaderGraphNodes.C_OUTPUT_DEFINITION_ID)
         {
             position = new(620, 120)
         };
         output.SetValue(
-            ShaderGraphDocument.settingsKey,
+            ShaderGraphDocument.C_SETTINGS_KEY,
             ShaderGraphDocument.Encode(new ShaderGraphNodeOutputSettings
             {
                 ports = [new() { id = "value", type = new() { id = "float" } }]
@@ -136,7 +136,7 @@ internal sealed class ReusableShaderGraphNodeTemplate : ShaderGraphTemplate
     }
 }
 
-internal static class ShaderBuiltInIds
+internal static class ShaderBuiltInIDs
 {
     internal const string C_RASTER_TEMPLATE = "inno.shader.raster";
     internal const string C_NODE_TEMPLATE = "inno.shader.node";

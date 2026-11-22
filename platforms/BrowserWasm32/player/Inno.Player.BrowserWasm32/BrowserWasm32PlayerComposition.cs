@@ -48,10 +48,10 @@ internal static class BrowserWasm32PlayerComposition
                         new BgfxRenderingBackendProvider(new BrowserWasm32BgfxSurfaceIntegration())
                     ])
                 }),
-                adapterSelection = StandardAdapterSelection.Create(StorageBackendId.browser),
+                adapterSelection = StandardAdapterSelection.Create(StorageBackendID.browser),
                 contentSource = new HttpPlayerContentSource(client),
                 createStorage = manifest => storage.CreateStorage(
-                    StorageBackendId.browser,
+                    StorageBackendID.browser,
                     new StorageScope(manifest.applicationId)
                 ),
                 moduleActivator = Generated.PlayerMetadataComposition.CreateActivator(),

@@ -98,7 +98,7 @@ public static class WindowsX64EditorComposition
                 adapterCatalog = adapters,
                 shell = new ShellOptions
                 {
-                    adapters = StandardAdapterSelection.Create(StorageBackendId.fileSystem),
+                    adapters = StandardAdapterSelection.Create(StorageBackendID.fileSystem),
                     window = new PlatformWindowOptions
                     {
                         title = "Inno Editor",
@@ -111,7 +111,7 @@ public static class WindowsX64EditorComposition
                     preferredGraphicsApi = command.graphicsApi,
                     sRgbBackbuffer = true
                 },
-                presentation = PresentationBackendId.imGui,
+                presentation = PresentationBackendID.imGui,
                 frameDriver = new PollingShellFrameDriver(),
                 distribution = StandardBuildDistribution.Create(buildContext).build,
                 buildContext = buildContext,

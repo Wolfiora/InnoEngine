@@ -8,7 +8,7 @@ namespace Inno.Core.Settings;
 /// <summary>
 /// Identifies one host-neutral project setting protocol.
 /// </summary>
-public record struct ProjectSettingId
+public record struct ProjectSettingID
 {
     /// <summary>
     /// Creates a project setting identifier.
@@ -16,7 +16,7 @@ public record struct ProjectSettingId
     /// <param name="value">
     /// Globally stable setting value.
     /// </param>
-    public ProjectSettingId(string value)
+    public ProjectSettingID(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         this.value = value.Trim();
@@ -87,34 +87,34 @@ public struct ProjectSettingRecord
     /// <param name="id">
     /// Stable setting identity.
     /// </param>
-    /// <param name="stableTypeId">
+    /// <param name="stableTypeID">
     /// Stable settings type identity.
     /// </param>
     /// <param name="propertyData">
     /// Composer-owned contribution bytes, or complete property bytes for replacement settings.
     /// </param>
     public ProjectSettingRecord(
-        ProjectSettingId id,
-        Guid stableTypeId,
+        ProjectSettingID id,
+        Guid stableTypeID,
         ReadOnlySpan<byte> propertyData
     ) {
         if (!id.isValid)
         {
             throw new ArgumentException("A project setting ID must be valid.", nameof(id));
         }
-        if (stableTypeId == Guid.Empty)
+        if (stableTypeID == Guid.Empty)
         {
-            throw new ArgumentException("A project setting requires a stable type ID.", nameof(stableTypeId));
+            throw new ArgumentException("A project setting requires a stable type ID.", nameof(stableTypeID));
         }
         this.id = id;
-        this.stableTypeId = stableTypeId;
+        this.stableTypeId = stableTypeID;
         this.propertyData = propertyData.ToArray();
     }
 
     /// <summary>
     /// Gets or sets the stable setting identity.
     /// </summary>
-    public ProjectSettingId id { get; set; }
+    public ProjectSettingID id { get; set; }
 
     /// <summary>
     /// Gets or sets the stable settings type identity.

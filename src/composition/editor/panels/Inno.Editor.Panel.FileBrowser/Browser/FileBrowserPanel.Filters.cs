@@ -13,8 +13,8 @@ using Inno.Editor.ImGui.ImGuiWidget;
 
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
 
@@ -29,7 +29,7 @@ internal sealed partial class FileBrowserPanel
         DrawEntryTypeFilterOption("All", FileBrowserEntryTypeFilter.All);
         DrawEntryTypeFilterOption("Folders", FileBrowserEntryTypeFilter.FoldersOnly);
         DrawEntryTypeFilterOption("Files", FileBrowserEntryTypeFilter.FilesOnly);
-        Ui.Separator();
+        Gui.Separator();
         DrawEntryScopeFilterOption("Current", FileBrowserEntryScopeFilter.CurrentOnly);
         DrawEntryScopeFilterOption("Recursive", FileBrowserEntryScopeFilter.Recursive);
         EditorUI.current.widgets.EndBoundedCombo();
@@ -40,7 +40,7 @@ internal sealed partial class FileBrowserPanel
         FileBrowserEntryTypeFilter filter
     ) {
         bool selected = m_entryTypeFilter == filter;
-        if (Ui.Checkbox(label, ref selected))
+        if (Gui.Checkbox(label, ref selected))
         {
             if (selected)
             {
@@ -58,7 +58,7 @@ internal sealed partial class FileBrowserPanel
         FileBrowserEntryScopeFilter filter
     ) {
         bool selected = m_entryScopeFilter == filter;
-        if (Ui.Checkbox(label, ref selected))
+        if (Gui.Checkbox(label, ref selected))
         {
             if (selected)
             {
@@ -72,5 +72,5 @@ internal sealed partial class FileBrowserPanel
     }
 
     private void DrawSearchInput()
-        => _ = EditorUI.current.widgets.SearchInput("AssetSearch", ImGuiIcon.MagnifyingGlass, ref m_filter, (nuint)C_SEARCH_BUFFER_SIZE);
+        => _ = EditorUI.current.widgets.SearchInput("AssetSearch", ImGuiIcon.C_MAGNIFYING_GLASS, ref m_filter, (nuint)C_SEARCH_BUFFER_SIZE);
 }

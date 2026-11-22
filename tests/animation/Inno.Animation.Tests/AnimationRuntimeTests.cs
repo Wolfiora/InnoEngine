@@ -100,7 +100,7 @@ public sealed class AnimationRuntimeTests
         dispatcher.Flush();
 
         AnimationMarkerEvent marker = Assert.Single(markers);
-        Assert.Equal("midpoint", marker.eventId);
+        Assert.Equal("midpoint", marker.eventID);
         Assert.Equal(handle, marker.playback);
         Assert.False(runtime.TryGetState(handle, out _, out _));
     }
@@ -138,7 +138,7 @@ public sealed class AnimationRuntimeTests
         Assert.Equal(0.25f, sink.lastSamples.Single(sample => sample.target.Equals(firstTarget)).value.x);
         Assert.Equal(0.75f, sink.lastSamples.Single(sample => sample.target.Equals(secondTarget)).value.x);
         allocator.Unregister(first);
-        allocator.Register(new Destination(), firstTarget.persistentId);
+        allocator.Register(new Destination(), firstTarget.persistentID);
         Assert.Null(firstTarget.Resolve<Destination>());
         Assert.Throws<ArgumentException>(() => runtime.Play(clip, default));
     }

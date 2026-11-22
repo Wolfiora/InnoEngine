@@ -67,18 +67,18 @@ public sealed class PipelineDocuments : EditorModule
     /// <summary>
     /// Reads a detached current-generation Pipeline value; its referenced canonical assets must not be mutated.
     /// </summary>
-    /// <param name="assetId">
+    /// <param name="assetID">
     /// Open Pipeline identity.
     /// </param>
     /// <returns>
     /// The unsaved native Pipeline value.
     /// </returns>
-    public RenderPipelineAsset Read(Guid assetId) => drafts.Read(assetId);
+    public RenderPipelineAsset Read(Guid assetID) => drafts.Read(assetID);
 
     /// <summary>
     /// Changes a draft through shared History without publishing it to Scene/Game.
     /// </summary>
-    /// <param name="assetId">
+    /// <param name="assetID">
     /// Open Pipeline identity.
     /// </param>
     /// <param name="candidate">
@@ -88,10 +88,10 @@ public sealed class PipelineDocuments : EditorModule
     /// The current gesture key, or null for a discrete edit.
     /// </param>
     public void Replace(
-        Guid assetId,
+        Guid assetID,
         RenderPipelineAsset candidate,
         string? mergeKey = null
-    ) => drafts.Replace(assetId, candidate, mergeKey);
+    ) => drafts.Replace(assetID, candidate, mergeKey);
 
     /// <summary>
     /// Captures typed Pipeline settings with this source owner's complete reference and dependency context.
@@ -99,7 +99,7 @@ public sealed class PipelineDocuments : EditorModule
     /// <typeparam name="TSettings">
     /// Current plugin settings contract.
     /// </typeparam>
-    /// <param name="assetId">
+    /// <param name="assetID">
     /// Open Pipeline identity.
     /// </param>
     /// <param name="settings">
@@ -109,14 +109,14 @@ public sealed class PipelineDocuments : EditorModule
     /// The current gesture key, or null for a discrete edit.
     /// </param>
     public void ReplaceSettings<TSettings>(
-        Guid assetId,
+        Guid assetID,
         TSettings settings,
         string? mergeKey = null
     ) where TSettings : class, ISerializable
     {
-        RenderPipelineAsset pipeline = Read(assetId);
+        RenderPipelineAsset pipeline = Read(assetID);
         pipeline.pipelineState = new SerializedRenderExtensionState(assets.CaptureProperties(settings));
-        Replace(assetId, pipeline, mergeKey);
+        Replace(assetID, pipeline, mergeKey);
     }
 
     /// <summary>

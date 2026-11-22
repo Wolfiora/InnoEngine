@@ -83,10 +83,10 @@ internal abstract class SceneReferenceScope
         {
             throw new InvalidOperationException(
                 $"Reference to '{engineObject.GetType().FullName}' with identity "
-                + $"'{engineObject.identity.persistentId}' at '{path}' is outside the serialized graph boundary"
+                + $"'{engineObject.identity.persistentID}' at '{path}' is outside the serialized graph boundary"
                 + (m_captureRoot is null
                    ? "."
-                   : $" rooted at GameObject '{m_captureRoot.name}' ({m_captureRoot.identity.persistentId}).")
+                   : $" rooted at GameObject '{m_captureRoot.name}' ({m_captureRoot.identity.persistentID}).")
             );
         }
         GameScene ownerScene = engineObject switch

@@ -44,8 +44,8 @@ public sealed class SupportPackWorkflowTests : BuildPipelineFixture
 
         InvalidOperationException failure = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             pipeline.EnsurePlayerSupportPackAsync(
-                new BuildTargetId("windows-x64"),
-                new ManagedDeploymentId("unregistered")
+                new BuildTargetID("windows-x64"),
+                new ManagedDeploymentID("unregistered")
             ).AsTask());
 
         Assert.Contains("unregistered", failure.Message, StringComparison.Ordinal);
@@ -62,8 +62,8 @@ public sealed class SupportPackWorkflowTests : BuildPipelineFixture
 
         InvalidOperationException failure = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             pipeline.EnsurePlayerSupportPackAsync(
-                new BuildTargetId("windows-x64"),
-                ManagedDeploymentId.coreClr
+                new BuildTargetID("windows-x64"),
+                ManagedDeploymentID.coreClr
             ).AsTask());
 
         Assert.Contains("win-x64", failure.Message, StringComparison.Ordinal);
@@ -74,35 +74,35 @@ public sealed class SupportPackWorkflowTests : BuildPipelineFixture
     public async Task MissingSupportPackIsPreparedBeforeTheOwnerThreadExport()
     {
         SaveStartupScene();
-        Directory.Delete(Path.Combine(m_supportPackRoot, new BuildTargetId("macos-arm64").value), recursive: true);
+        Directory.Delete(Path.Combine(m_supportPackRoot, new BuildTargetID("macos-arm64").value), recursive: true);
         var provisioner = new TestSupportPackProvisioner(target => CreateSupportPack(target, "Inno.Player.MacOSArm64"));
 
         BuildPipeline pipeline = CreatePipeline(provisioner);
         using PlayerSupportPackLease prepared = await pipeline.EnsurePlayerSupportPackAsync(
-            new BuildTargetId("macos-arm64"),
+            new BuildTargetID("macos-arm64"),
             deployment: null
         );
         BuildResult result = await pipeline.BuildGameAsync(new GameBuildRequest
         {
-            profile = CreateProfile(new BuildTargetId("macos-arm64")),
+            profile = CreateProfile(new BuildTargetID("macos-arm64")),
             outputDirectory = Path.Combine(m_root, "Builds", "Provisioned")
         });
 
         Assert.True(result.succeeded);
         Assert.Equal(1, provisioner.callCount);
-        Assert.True(Directory.Exists(Path.Combine(m_supportPackRoot, new BuildTargetId("macos-arm64").value)));
+        Assert.True(Directory.Exists(Path.Combine(m_supportPackRoot, new BuildTargetID("macos-arm64").value)));
     }
 
     [Fact]
     public async Task MissingPackFailsPromptlyWhileAsynchronousPreparationIsPending()
     {
         SaveStartupScene();
-        Directory.Delete(Path.Combine(m_supportPackRoot, new BuildTargetId("macos-arm64").value), recursive: true);
+        Directory.Delete(Path.Combine(m_supportPackRoot, new BuildTargetID("macos-arm64").value), recursive: true);
         using var cancellation = new CancellationTokenSource();
         var provisioner = new PendingSupportPackProvisioner();
         BuildPipeline pipeline = CreatePipeline(provisioner);
         Task<PlayerSupportPackLease> preparation = pipeline.EnsurePlayerSupportPackAsync(
-            new BuildTargetId("macos-arm64"),
+            new BuildTargetID("macos-arm64"),
             deployment: null,
             cancellation.Token
         ).AsTask();
@@ -111,7 +111,7 @@ public sealed class SupportPackWorkflowTests : BuildPipelineFixture
             Assert.False(preparation.IsCompleted);
             Task<BuildResult> build = pipeline.BuildGameAsync(new GameBuildRequest
             {
-                profile = CreateProfile(new BuildTargetId("macos-arm64")),
+                profile = CreateProfile(new BuildTargetID("macos-arm64")),
                 outputDirectory = Path.Combine(m_root, "Builds", "Pending")
             }).AsTask();
 
@@ -133,7 +133,7 @@ public sealed class SupportPackWorkflowTests : BuildPipelineFixture
         SaveStartupScene();
         File.Delete(
             Path.Combine(
-                GetSupportPackDirectory(new BuildTargetId("macos-arm64")),
+                GetSupportPackDirectory(new BuildTargetID("macos-arm64")),
                 "native",
                 "libminiaudio-release.dylib"
             )
@@ -143,7 +143,7 @@ public sealed class SupportPackWorkflowTests : BuildPipelineFixture
         await Assert.ThrowsAsync<InvalidDataException>(() =>
             CreatePipeline(provisioner).BuildGameAsync(new GameBuildRequest
             {
-                profile = CreateProfile(new BuildTargetId("macos-arm64")),
+                profile = CreateProfile(new BuildTargetID("macos-arm64")),
                 outputDirectory = Path.Combine(m_root, "Builds", "InvalidPack")
             }).AsTask());
 

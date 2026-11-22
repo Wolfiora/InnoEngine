@@ -51,8 +51,8 @@ internal sealed class ProjectSettingEditorCatalog : TypeRegistry<ProjectSettingE
             throw new InvalidOperationException($"Project setting path '{duplicatePath}' is registered more than once.");
         }
 
-        IGrouping<ProjectSettingId, ProjectSettingEditor>? incompatiblePresentations = definitions
-            .GroupBy(static definition => definition.settingId)
+        IGrouping<ProjectSettingID, ProjectSettingEditor>? incompatiblePresentations = definitions
+            .GroupBy(static definition => definition.settingID)
             .FirstOrDefault(static group => group
                 .Select(static definition => definition.valueType)
                 .Distinct()
@@ -89,7 +89,7 @@ internal sealed class ProjectSettingEditorCatalog : TypeRegistry<ProjectSettingE
                 $"Project setting editor '{type.FullName}' targets '{definition.valueType.FullName}', "
                 + $"which is missing {nameof(ProjectSettingDefinitionAttribute)}."
             );
-        definition.BindSettingID(new ProjectSettingId(setting.id));
+        definition.BindSettingID(new ProjectSettingID(setting.id));
         definition.BindSerialization(m_serialization);
         definition.BindPlacement(attribute.path, attribute.order);
         return definition;

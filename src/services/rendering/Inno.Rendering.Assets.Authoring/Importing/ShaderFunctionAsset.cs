@@ -8,7 +8,7 @@ namespace Inno.Rendering.Assets.Authoring;
 /// <summary>
 /// Represents an authoring-only source-function library; it is never a complete GPU stage or runtime dependency.
 /// </summary>
-[StableTypeId("d8b5f6ec-c883-43b9-a5cd-95e7e24d6bba")]
+[StableTypeID("d8b5f6ec-c883-43b9-a5cd-95e7e24d6bba")]
 public sealed class ShaderFunctionAsset : AssetObject
 {
     /// <summary>

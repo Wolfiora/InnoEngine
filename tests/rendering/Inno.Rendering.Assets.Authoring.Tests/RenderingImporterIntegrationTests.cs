@@ -90,7 +90,7 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
         ];
         definition.techniques = [new(new("default"), new("tests.surface"), [new(new("draw"), "Main")])];
         graph.SetMetadata(
-            ShaderGraphDocument.definitionKey,
+            ShaderGraphDocument.C_DEFINITION_KEY,
             ShaderGraphDocument.Encode(m_serialization.Serialize(definition), m_serialization, SerializationContext.empty)
         );
         WriteBytes("Shaders/basic.ishader", GraphDocumentCodec.Encode(graph, m_serialization));
@@ -106,7 +106,7 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
             ShaderAsset shader = Assert.IsType<ShaderAsset>(writer.Load(AssetPath.Project("Shaders/basic.ishader"), typeof(ShaderAsset)));
 
             var material = new MaterialAsset { shader = shader };
-            material.Set(new ShaderPropertyId("roughness"), MaterialValue.FromFloat(0.25f));
+            material.Set(new ShaderPropertyID("roughness"), MaterialValue.FromFloat(0.25f));
             material.SetMetadata("tests.queue", "opaque");
             Assert.True(writer.Save(AssetPath.Project("Materials/basic.imaterial"), material));
 
@@ -143,7 +143,7 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
             ShaderGraphArtifact.ReadDocument(ShaderGraphArtifact.Read(loadedShader, loader), m_serialization).nodes.Count
         );
         Assert.Same(loadedShader, loadedMaterial.shader);
-        Assert.True(loadedMaterial.TryGet(new ShaderPropertyId("roughness"), out MaterialValue roughness));
+        Assert.True(loadedMaterial.TryGet(new ShaderPropertyID("roughness"), out MaterialValue roughness));
         Assert.Equal(0.25f, roughness.vector.x);
         Assert.True(loadedMaterial.TryGetMetadata("tests.queue", out string? queue));
         Assert.Equal("opaque", queue);
@@ -158,8 +158,8 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
     [Fact]
     public void ShaderIncludesUseTheCandidateMountSnapshotAndDeclaredPluginDependencies()
     {
-        var providerID = new AssetSourceId("tests.provider");
-        var consumerID = new AssetSourceId("tests.consumer");
+        var providerID = new AssetSourceID("tests.provider");
+        var consumerID = new AssetSourceID("tests.consumer");
         string providerRoot = Path.Combine(m_root, "ProviderPlugin");
         string consumerRoot = Path.Combine(m_root, "ConsumerPlugin");
         Directory.CreateDirectory(providerRoot);
@@ -185,7 +185,7 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
             vec4 Evaluate() { return ProviderColor() * LocalValue(); }
             """
         );
-        var project = new AssetSourceMount(AssetSourceId.project, m_assets, isReadOnly: false);
+        var project = new AssetSourceMount(AssetSourceID.project, m_assets, isReadOnly: false);
         var provider = new AssetSourceMount(providerID, providerRoot, isReadOnly: true);
         var undeclaredConsumer = new AssetSourceMount(consumerID, consumerRoot, isReadOnly: true);
 
@@ -241,12 +241,12 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
         using SerializationGeneration generation = m_serialization.CaptureGeneration();
         using ContentTestStore contentStore = ContentTestStore.FromDirectory(destination);
         using var runtime = new AssetDatabase(contentStore, generation, m_types.current, new IdentityAllocator());
-        ShaderAsset deployed = runtime.Load<ShaderAsset>(shader.identity.persistentId);
-        Assert.Equal(shader.identity.persistentId, deployed.identity.persistentId);
+        ShaderAsset deployed = runtime.Load<ShaderAsset>(shader.identity.persistentID);
+        Assert.Equal(shader.identity.persistentID, deployed.identity.persistentID);
         Assert.Equal(shader.definition!.name, deployed.definition!.name);
         Assert.True(deployed.runtimePayload.IsEmpty);
-        Assert.False(runtime.TryGetArtifact(shader.identity.persistentId, ShaderGraphArtifact.outputName, out _));
-        Assert.False(runtime.TryGetArtifact(function.identity.persistentId, ShaderSourceBundle.outputName, out _));
+        Assert.False(runtime.TryGetArtifact(shader.identity.persistentID, ShaderGraphArtifact.C_OUTPUT_NAME, out _));
+        Assert.False(runtime.TryGetArtifact(function.identity.persistentID, ShaderSourceBundle.C_OUTPUT_NAME, out _));
         foreach (string file in Directory.EnumerateFiles(Path.Combine(destination, "Artifacts"), "*", SearchOption.AllDirectories))
         {
             string bytes = Encoding.UTF8.GetString(File.ReadAllBytes(file));
@@ -342,8 +342,8 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
                 importerId = "inno.rendering.shader"
             })
         );
-        var id = new AssetSourceId("test.installed");
-        using AssetPipeline pipeline = CreatePipeline([new(AssetSourceId.project, m_assets, false), new(id, installed, true)]);
+        var id = new AssetSourceID("test.installed");
+        using AssetPipeline pipeline = CreatePipeline([new(AssetSourceID.project, m_assets, false), new(id, installed, true)]);
         var store = new ShaderGraphSourceStore(pipeline, m_serialization);
         var path = new AssetPath(id, "shader.ishader");
         ShaderGraphSourceSnapshot snapshot = store.Read(path);
@@ -365,13 +365,13 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
                 nested = new NestedPipelineReferences { shader = shader }
             })
         );
-        Assert.Equal(shader.identity.persistentId, Assert.Single(state.dependencies).persistentId);
+        Assert.Equal(shader.identity.persistentID, Assert.Single(state.dependencies).persistentID);
         var pipeline = new RenderPipelineAsset { pipelineTypeId = "tests.pipeline", pipelineState = state };
         AssetPath path = AssetPath.Project("configured.irenderpipeline");
         Assert.True(assets.Save(path, pipeline));
         RenderPipelineAsset loaded = assets.Load<RenderPipelineAsset>(path);
         var context = new RenderExtensionStateContext(loaded);
-        Assert.Equal(shader.identity.persistentId, Assert.Single(assets.GetDependencies(loaded)).persistentId);
+        Assert.Equal(shader.identity.persistentID, Assert.Single(assets.GetDependencies(loaded)).persistentID);
         var restored = new NestedPipelineSettings();
         context.Restore(loaded.pipelineState, restored);
         Assert.Same(shader, restored.nested.shader);
@@ -394,7 +394,7 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
         );
         RenderPipelineAsset otherPipeline = Assert.IsType<RenderPipelineAsset>(other.Load(path, typeof(RenderPipelineAsset)));
         ShaderAsset otherShader = Assert.IsType<ShaderAsset>(other.Load(AssetPath.Project("surface.ishader"), typeof(ShaderAsset)));
-        Assert.Equal(shader.identity.persistentId, otherShader.identity.persistentId);
+        Assert.Equal(shader.identity.persistentID, otherShader.identity.persistentID);
         Assert.NotSame(shader, otherShader);
         var second = new NestedPipelineSettings();
         new RenderExtensionStateContext(otherPipeline).Restore(otherPipeline.pipelineState, second);
@@ -478,7 +478,7 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
         );
     }
 
-    [StableTypeId("5c438963-794a-4fde-bd59-45c00d7479de")]
+    [StableTypeID("5c438963-794a-4fde-bd59-45c00d7479de")]
     private sealed class NestedPipelineSettings : ISerializable
     {
         [SerializableProperty]
@@ -490,7 +490,7 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
         public ShaderAsset? shader { get; set; }
     }
 
-    [StableTypeId("830a7851-bc19-44d4-a6e6-a6c38f6bb972")]
+    [StableTypeID("830a7851-bc19-44d4-a6e6-a6c38f6bb972")]
     private sealed class OtherPipelineSettings : ISerializable;
 }
 

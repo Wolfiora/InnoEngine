@@ -24,7 +24,7 @@ public abstract class PlayerSupportPackPlan
     /// The target has no stable identity.
     /// </exception>
     protected PlayerSupportPackPlan(
-        BuildTargetId target,
+        BuildTargetID target,
         string preparationIdentity
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(target.value);
@@ -40,7 +40,7 @@ public abstract class PlayerSupportPackPlan
     /// <summary>
     /// Gets the immutable target checked by the publisher before creating output.
     /// </summary>
-    public BuildTargetId target { get; }
+    public BuildTargetID target { get; }
 
     /// <summary>
     /// Gets the complete source preparation identity, independently of the resulting Pack content fingerprint.

@@ -22,13 +22,13 @@ internal static class SceneStateDiagnosticPublisher
                 foreach (MissingGameComponent missing in gameObject.GetComponents().OfType<MissingGameComponent>())
                 {
                     diagnostics.Add(
-                        CreateMissingDiagnostic(scene, missing.identity.persistentId, missing.missingTypeName)
+                        CreateMissingDiagnostic(scene, missing.identity.persistentID, missing.missingTypeName)
                     );
                 }
             }
             foreach (MissingGameSystem missing in scene.GetSystems().OfType<MissingGameSystem>())
             {
-                diagnostics.Add(CreateMissingDiagnostic(scene, missing.identity.persistentId, missing.missingTypeName));
+                diagnostics.Add(CreateMissingDiagnostic(scene, missing.identity.persistentID, missing.missingTypeName));
             }
         }
         Diagnostics.Set(C_MISSING_ELEMENTS, diagnostics);
@@ -60,6 +60,6 @@ internal static class SceneStateDiagnosticPublisher
     ) => Diagnostic.Warning(
         "INNOHR0002",
         $"'{missingTypeName}' is unavailable in scene '{scene.name}' "
-        + $"({scene.identity.persistentId:D}), element {elementID:D}. Its identity and serialized state are preserved."
+        + $"({scene.identity.persistentID:D}), element {elementID:D}. Its identity and serialized state are preserved."
     );
 }

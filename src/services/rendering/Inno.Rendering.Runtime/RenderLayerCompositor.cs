@@ -10,8 +10,8 @@ namespace Inno.Rendering.Runtime;
 /// </summary>
 internal sealed class RenderLayerCompositor : IDisposable
 {
-    private static readonly RenderPhaseId PHASE = new("inno.runtime.model-composition");
-    private static readonly RenderBindingId TEXTURE = new("s_tex");
+    private static readonly RenderPhaseID PHASE = new("inno.runtime.model-composition");
+    private static readonly RenderBindingID TEXTURE = new("s_tex");
 
     private static readonly float[] IDENTITY =
     [

@@ -10,7 +10,7 @@ using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Interactions;
 
-using Ui = Inno.Editor.ImGui.ImGui;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
 
@@ -45,11 +45,11 @@ internal sealed partial class FileBrowserTree
             }
             else
             {
-                EditorUiSession.current.widgets.SelectTarget(interactions, entry, m_visibleSelection);
+                EditorUISession.current.widgets.SelectTarget(interactions, entry, m_visibleSelection);
             }
             m_keyboardFocus = pending;
             m_rootFocused = false;
-            interactions.For(FileBrowserInteractionIds.C_AREA, entry).Focus();
+            interactions.For(FileBrowserInteractionIDs.C_AREA, entry).Focus();
         }
         if (m_pendingRootNavigation)
         {
@@ -57,7 +57,7 @@ internal sealed partial class FileBrowserTree
             m_assets.browser.Select(context, null);
             m_keyboardFocus = null;
             m_rootFocused = true;
-            interactions.For(FileBrowserInteractionIds.C_AREA).Focus();
+            interactions.For(FileBrowserInteractionIDs.C_AREA).Focus();
         }
         int focus = -1;
         int selectedIndex = -1;
@@ -79,7 +79,7 @@ internal sealed partial class FileBrowserTree
         {
             focus = selectedIndex;
         }
-        ListNavigationResult navigation = EditorUiSession.current.widgets.NavigateList(
+        ListNavigationResult navigation = EditorUISession.current.widgets.NavigateList(
             interactions,
             m_navigationRows.Count,
             focus,
@@ -123,7 +123,7 @@ internal sealed partial class FileBrowserTree
                 m_navigation.NavigateToRoot(context, m_assets.browser.root);
                 m_assets.browser.Select(context, null);
             }
-            interactions.For(FileBrowserInteractionIds.C_AREA, interactions.selection.selectedTarget).Focus();
+            interactions.For(FileBrowserInteractionIDs.C_AREA, interactions.selection.selectedTarget).Focus();
         }
         if (navigation.cancel)
         {
@@ -134,7 +134,7 @@ internal sealed partial class FileBrowserTree
 
     private void BeginNavigation()
     {
-        if (Ui.IsWindowFocused())
+        if (Gui.IsWindowFocused())
         {
             m_rename.MarkInteraction(FileBrowserPresentation.Tree);
         }
@@ -143,8 +143,8 @@ internal sealed partial class FileBrowserTree
         m_drawRootFocus = m_requestedRootFocus;
         m_requestedKeyboardFocus = null;
         m_requestedRootFocus = false;
-        float rowHeight = Ui.GetFrameHeight() + Ui.GetLayout().itemSpacing.Y;
-        m_keyboardPageSize = Math.Max(1, (int)(Ui.GetContentRegionAvailable().Y / rowHeight));
+        float rowHeight = Gui.GetFrameHeight() + Gui.GetLayout().itemSpacing.Y;
+        m_keyboardPageSize = Math.Max(1, (int)(Gui.GetContentRegionAvailable().Y / rowHeight));
     }
 
     private bool RequestsKeyboardFocus(

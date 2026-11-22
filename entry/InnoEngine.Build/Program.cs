@@ -23,7 +23,7 @@ internal static class Program
         Console.CancelKeyPress += onCancel;
         try
         {
-            return await BuildApplication.Run(CreateArguments(arguments), cancellation.Token).ConfigureAwait(false);
+            return await BuildApplication.RunAsync(CreateArguments(arguments), cancellation.Token).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {

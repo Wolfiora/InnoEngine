@@ -46,7 +46,7 @@ internal static class MacOSArm64PlayerComposition
                 types = Generated.PlayerMetadataComposition.CreateTypes(),
                 serializationMetadata = Generated.PlayerMetadataComposition.CreateSerialization(),
                 adapters = adapterCatalog,
-                adapterSelection = StandardAdapterSelection.Create(StorageBackendId.fileSystem),
+                adapterSelection = StandardAdapterSelection.Create(StorageBackendID.fileSystem),
                 contentSource = new MacOSArm64PlayerContentSource(AppContext.BaseDirectory, dataRoot),
                 createStorage = manifest => new FileSystemApplicationStorage(
                     Path.Combine(ResolveDataRoot(dataRoot, manifest), "Storage")

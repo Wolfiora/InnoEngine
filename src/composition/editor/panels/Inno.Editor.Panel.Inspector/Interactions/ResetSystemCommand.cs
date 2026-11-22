@@ -4,8 +4,8 @@ using Inno.Scene;
 
 namespace Inno.Editor.Panel.Inspector;
 
-[EditorAction(InspectorInteractionIds.C_RESET_SYSTEM, priority: 100)]
-[EditorMenu(InspectorInteractionIds.C_SYSTEM_AREA, "Reset System", order: 100)]
+[EditorAction(InspectorInteractionIDs.C_RESET_SYSTEM, priority: 100)]
+[EditorMenu(InspectorInteractionIDs.C_SYSTEM_AREA, "Reset System", order: 100)]
 internal sealed class ResetSystemCommand(SceneEdits edits) : EditorAction<GameSystem>
 {
     /// <summary>

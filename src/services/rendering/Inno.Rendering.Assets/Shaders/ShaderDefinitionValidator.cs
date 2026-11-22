@@ -10,7 +10,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Validates the source-free material, pass and technique contract shared by graph compilation and deployed shaders.
 /// </summary>
-[StableTypeId("196d9066-fe0d-5bd7-b763-0395296f7d88")]
+[StableTypeID("196d9066-fe0d-5bd7-b763-0395296f7d88")]
 public static class ShaderDefinitionValidator
 {
     /// <summary>

@@ -74,7 +74,7 @@ public sealed partial class SceneSerializationTests
         Assert.Same(current, restored.targetObject);
         Assert.Same(current.GetComponents().OfType<ReferenceComponent>().Single(), restored.targetComponent);
         Assert.Same(replacement.GetSystems().OfType<StateSystem>().Single(), restored.targetSystem);
-        Assert.Equal(target.identity.persistentId, current.identity.persistentId);
+        Assert.Equal(target.identity.persistentID, current.identity.persistentID);
         Assert.NotSame(target, current);
         Assert.True(target.isDestroyed);
     }
@@ -158,7 +158,7 @@ public sealed partial class SceneSerializationTests
     }
 }
 
-[StableTypeId("486290eb-6cc4-4a96-918a-c8022f51ad85")]
+[StableTypeID("486290eb-6cc4-4a96-918a-c8022f51ad85")]
 internal sealed class PropertyReferenceProbe : GameComponent
 {
     [SerializableProperty(order = -1)]

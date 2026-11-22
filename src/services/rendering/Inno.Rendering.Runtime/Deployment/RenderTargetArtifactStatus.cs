@@ -6,7 +6,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Describes the current availability of one target-specific rendering artifact.
 /// </summary>
-[StableTypeId("f3865bb4-5ff5-55c1-a910-27d7a65f84f2")]
+[StableTypeID("f3865bb4-5ff5-55c1-a910-27d7a65f84f2")]
 public enum RenderTargetArtifactStatus
 {
     /// <summary>

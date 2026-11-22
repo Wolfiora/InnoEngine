@@ -187,7 +187,7 @@ public sealed class EditorAudioHost : IEditorAudioHost
                                         ?? throw new InvalidOperationException("The audio settings provider returned null.");
         DiagnosticReporter diagnostics = context.resources.Own(
             m_diagnostics.CreateReporter(
-                new DiagnosticSource($"inno.editor.audio.{session.sessionId}", $"Audio ({session.options.kind})")
+                new DiagnosticSource($"inno.editor.audio.{session.sessionID}", $"Audio ({session.options.kind})")
             )
         );
         IAudioDevice device = CreateDevice(diagnostics);
@@ -213,7 +213,7 @@ public sealed class EditorAudioHost : IEditorAudioHost
             {
                 throw new InvalidOperationException("The configured default Editor audio mixer could not be activated.");
             }
-            if (!runtime.SetBusVolume(AudioBusId.master, settings.masterVolume))
+            if (!runtime.SetBusVolume(AudioBusID.master, settings.masterVolume))
             {
                 throw new InvalidOperationException("The configured Editor master audio volume could not be applied.");
             }
@@ -297,7 +297,7 @@ public sealed class EditorAudioHost : IEditorAudioHost
         {
             if (session.options.kind == RuntimeSessionKind.Edit)
             {
-                _ = runtime.SetBusPaused(AudioBusId.master, paused);
+                _ = runtime.SetBusPaused(AudioBusID.master, paused);
             }
         }
     }
@@ -311,9 +311,9 @@ public sealed class EditorAudioHost : IEditorAudioHost
         /// Gets the stable audio feature descriptor shared by every Editor session.
         /// </summary>
         public RuntimeSubsystemDescriptor descriptor { get; } = new(
-            new RuntimeSubsystemId("inno.runtime.audio"),
+            new RuntimeSubsystemID("inno.runtime.audio"),
             order: 500,
-            dependencies: [new RuntimeSubsystemId("inno.runtime.scene")]
+            dependencies: [new RuntimeSubsystemID("inno.runtime.scene")]
         );
 
         /// <summary>

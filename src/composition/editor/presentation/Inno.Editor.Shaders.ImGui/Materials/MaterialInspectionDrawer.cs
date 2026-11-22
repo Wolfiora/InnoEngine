@@ -9,8 +9,8 @@ using Inno.Editor.Shaders;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Shaders.ImGui;
 
@@ -20,7 +20,7 @@ internal sealed class MaterialInspectionDrawer(IInspectionIconProvider<AssetFile
     /// <summary>
     /// Gets the icon glyph used to represent this item in the editor.
     /// </summary>
-    public override string icon => ImGuiIcon.File;
+    public override string icon => ImGuiIcon.C_FILE;
 
     /// <summary>
     /// Retrieves the current icon from authoritative state.
@@ -106,7 +106,7 @@ internal sealed class MaterialSourceDrawer(IInspectionIconProvider<AssetFileEntr
     /// <summary>
     /// Gets the icon glyph used to represent this item in the editor.
     /// </summary>
-    public override string icon => ImGuiIcon.File;
+    public override string icon => ImGuiIcon.C_FILE;
 
     /// <summary>
     /// Retrieves the current icon from authoritative state.
@@ -201,14 +201,14 @@ internal static class MaterialInspector
         AssetDraftDocuments<MaterialAsset>.Draft draft
     ) => EditorUI.current.widgets.Disabled(draft.readOnly, () =>
     {
-        if (Ui.Button("Save"))
+        if (Gui.Button("Save"))
         {
-            _ = context.interactions.documents.Save(draft.documentId);
+            _ = context.interactions.documents.Save(draft.documentID);
         }
-        Ui.SameLine(0f, -1f);
-        if (Ui.Button("Revert"))
+        Gui.SameLine(0f, -1f);
+        if (Gui.Button("Revert"))
         {
-            _ = context.interactions.documents.Revert(draft.documentId);
+            _ = context.interactions.documents.Revert(draft.documentID);
         }
     });
 
@@ -219,7 +219,7 @@ internal static class MaterialInspector
     ) {
         MaterialAsset material = documents.Read(draft.id);
         var edits = new DraftEdits(documents, draft, material);
-        Ui.PushId(draft.id.ToString("N"));
+        Gui.PushID(draft.id.ToString("N"));
         try
         {
             if (EditorUI.current.widgets.SectionHeader("Preview", "Shows an isolated preview of the current Material draft."))
@@ -231,7 +231,7 @@ internal static class MaterialInspector
                 else if (context.interactions.TryGetModule<ShaderPreviews>(out ShaderPreviews? shaderPreviews)
                          && shaderPreviews is not null
                 ) {
-                    shaderPreviews.DrawMaterial(draft.id, material, MathF.Max(1f, MathF.Min(256f, Ui.GetContentRegionAvailable().X)));
+                    shaderPreviews.DrawMaterial(draft.id, material, MathF.Max(1f, MathF.Min(256f, Gui.GetContentRegionAvailable().X)));
                 }
                 else
                 {
@@ -271,7 +271,7 @@ internal static class MaterialInspector
                 return;
             }
 
-            if (materialOpen && Ui.SmallButton("Open Shader Editor"))
+            if (materialOpen && Gui.SmallButton("Open Shader Editor"))
             {
                 context.interactions.SetSelection(material.shader);
                 context.interactions.OpenPanel("rendering.shader-editor");
@@ -279,8 +279,8 @@ internal static class MaterialInspector
 
             if (materialOpen)
             {
-                Ui.SameLine(0f, -1f);
-                if (Ui.SmallButton("Locate Shader")
+                Gui.SameLine(0f, -1f);
+                if (Gui.SmallButton("Locate Shader")
                     && documents.assets.TryGetFileSystemEntry(material.shader.assetPath, out AssetFileEntry shaderEntry)
                 ) {
                     context.interactions.SetSelection(shaderEntry);
@@ -295,7 +295,7 @@ internal static class MaterialInspector
                 )) {
                     try
                     {
-                        if (Ui.Selectable("Automatic", !material.techniqueId.isValid) && !draft.readOnly)
+                        if (Gui.Selectable("Automatic", !material.techniqueId.isValid) && !draft.readOnly)
                         {
                             material.techniqueId = default;
                             documents.Replace(draft.id, material);
@@ -303,7 +303,7 @@ internal static class MaterialInspector
 
                         foreach (ShaderTechniqueDefinition technique in definition.techniques)
                         {
-                            if (Ui.Selectable(technique.id.value, material.techniqueId == technique.id) && !draft.readOnly)
+                            if (Gui.Selectable(technique.id.value, material.techniqueId == technique.id) && !draft.readOnly)
                             {
                                 material.techniqueId = technique.id;
                                 documents.Replace(draft.id, material);
@@ -359,7 +359,7 @@ internal static class MaterialInspector
                 {
                     value = property.defaultValue;
                 }
-                Ui.PushId(property.id.value);
+                Gui.PushID(property.id.value);
                 try
                 {
                     ShaderPropertyInspector.Draw(
@@ -374,7 +374,7 @@ internal static class MaterialInspector
                         presentation
                     );
                     EditorUI.current.widgets.Hint(overridden ? "Material override" : "Inherited from Shader");
-                    if (overridden && !draft.readOnly && Ui.SmallButton("Reset override"))
+                    if (overridden && !draft.readOnly && Gui.SmallButton("Reset override"))
                     {
                         material.ReplaceProperties(material.properties.Where(entry => entry.id != property.id).ToArray());
                         documents.Replace(draft.id, material);
@@ -385,7 +385,7 @@ internal static class MaterialInspector
                         if (value.texture is { isMissing: false } texture
                             && documents.previews.TryGetTexture(texture, out EditorPreviewHandle preview)
                         ) {
-                            float width = MathF.Max(1f, MathF.Min(128f, Ui.GetContentRegionAvailable().X));
+                            float width = MathF.Max(1f, MathF.Min(128f, Gui.GetContentRegionAvailable().X));
                             float height = width * preview.pixelHeight / preview.pixelWidth;
                             if (height > 128f)
                             {
@@ -399,7 +399,7 @@ internal static class MaterialInspector
                 }
                 finally
                 {
-                    Ui.PopId();
+                    Gui.PopID();
                 }
             }
 
@@ -407,7 +407,7 @@ internal static class MaterialInspector
             {
                 EditorUI.current.widgets.Hint("No editable parameters.");
             }
-            if (parametersOpen && material.properties.Count != 0 && !draft.readOnly && Ui.Button("Reset all overrides"))
+            if (parametersOpen && material.properties.Count != 0 && !draft.readOnly && Gui.Button("Reset all overrides"))
             {
                 material.ReplaceProperties([]);
                 documents.Replace(draft.id, material);
@@ -422,13 +422,13 @@ internal static class MaterialInspector
                 }
                 try
                 {
-                    if (Ui.Selectable("None", selected == "None"))
+                    if (Gui.Selectable("None", selected == "None"))
                     {
                         SetOption(null);
                     }
                     foreach (string option in keyword.options)
                     {
-                        if (Ui.Selectable(option, selected == option))
+                        if (Gui.Selectable(option, selected == option))
                         {
                             SetOption(option);
                         }
@@ -472,8 +472,8 @@ internal static class MaterialInspector
                 )) {
                     foreach (MaterialPropertyEntry entry in orphaned)
                     {
-                        Ui.Text(entry.id.value + " · " + entry.value.kind);
-                        if (!draft.readOnly && Ui.SmallButton("Remove##" + entry.id.value))
+                        Gui.Text(entry.id.value + " · " + entry.value.kind);
+                        if (!draft.readOnly && Gui.SmallButton("Remove##" + entry.id.value))
                         {
                             material.ReplaceProperties(material.properties.Where(value => value.id != entry.id).ToArray());
                             documents.Replace(draft.id, material);
@@ -494,8 +494,8 @@ internal static class MaterialInspector
                 )) {
                     foreach (string keyword in unknownKeywords)
                     {
-                        Ui.Text(keyword);
-                        if (!draft.readOnly && Ui.SmallButton("Remove##keyword." + keyword))
+                        Gui.Text(keyword);
+                        if (!draft.readOnly && Gui.SmallButton("Remove##keyword." + keyword))
                         {
                             material.SetKeyword(keyword, false);
                             documents.Replace(draft.id, material);
@@ -519,7 +519,7 @@ internal static class MaterialInspector
         }
         finally
         {
-            Ui.PopId();
+            Gui.PopID();
         }
 
         void Draw(

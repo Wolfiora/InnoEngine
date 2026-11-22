@@ -155,13 +155,13 @@ public sealed class EditorCommandLineOptions
         }
         api = value.ToLowerInvariant() switch
         {
-            "d3d11" => GraphicsApi.Direct3D11,
-            "d3d12" => GraphicsApi.Direct3D12,
-            "metal" => GraphicsApi.Metal,
-            "vulkan" => GraphicsApi.Vulkan,
-            "opengl" => GraphicsApi.OpenGL,
+            "d3d11" => GraphicsApi.direct3D11,
+            "d3d12" => GraphicsApi.direct3D12,
+            "metal" => GraphicsApi.metal,
+            "vulkan" => GraphicsApi.vulkan,
+            "opengl" => GraphicsApi.openGL,
             _ => GraphicsApi.TryParse(value, out GraphicsApi parsed) ? parsed : default
         };
-        return api.isValid && api != GraphicsApi.Noop;
+        return api.isValid && api != GraphicsApi.noop;
     }
 }

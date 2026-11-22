@@ -182,7 +182,7 @@ public sealed class PropertyDrawContext
         {
             return;
         }
-        EditorUiSession ui = EditorUiSession.current;
+        EditorUISession ui = EditorUISession.current;
         if (Equals(m_getter(), value) && !ui.widgets.isMixedValue)
         {
             return;

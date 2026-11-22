@@ -11,13 +11,13 @@ public sealed class EditorViewportNavigationTests
     public void Profile_RejectsDefaultModeMissingFromCapabilities()
     {
         Assert.Throws<ArgumentException>(() => new EditorViewportNavigationProfile(
-            new EditorViewportNavigationProfileId("tests.navigation.invalid-default"),
+            new EditorViewportNavigationProfileID("tests.navigation.invalid-default"),
             EditorViewportNavigationCapabilities.Pan,
             EditorViewportNavigationMode.Fly
         ));
 
         _ = new EditorViewportNavigationProfile(
-            new EditorViewportNavigationProfileId("tests.navigation.pan-only"),
+            new EditorViewportNavigationProfileID("tests.navigation.pan-only"),
             EditorViewportNavigationCapabilities.Pan,
             EditorViewportNavigationMode.Planar
         );

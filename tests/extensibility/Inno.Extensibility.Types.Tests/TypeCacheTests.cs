@@ -101,8 +101,8 @@ public sealed class TypeCacheTests : IDisposable
 
         TypeRef second = m_types.GetTypeRef(typeof(TestDerived));
         Assert.Equal(typeof(TestDerived), first.Resolve(m_types));
-        Assert.Equal(first.stableId, second.stableId);
-        Assert.Equal(first.runtimeId, second.runtimeId);
+        Assert.Equal(first.stableID, second.stableID);
+        Assert.Equal(first.runtimeID, second.runtimeID);
         Assert.True(m_types.current.version > previous.version);
     }
 
@@ -111,25 +111,25 @@ public sealed class TypeCacheTests : IDisposable
     {
         Assert.Equal(
             Guid.Parse("11111111-1111-1111-1111-111111111111"),
-            m_types.GetTypeRef(typeof(StableAnnotatedTypeA)).stableId
+            m_types.GetTypeRef(typeof(StableAnnotatedTypeA)).stableID
         );
         Assert.Equal(
             Guid.Parse("44444444-4444-4444-4444-444444444444"),
-            m_types.GetTypeRef(typeof(GeneratedMappedType)).stableId
+            m_types.GetTypeRef(typeof(GeneratedMappedType)).stableID
         );
 
-        Guid first = m_types.GetTypeRef(typeof(DeterministicStableType)).stableId;
+        Guid first = m_types.GetTypeRef(typeof(DeterministicStableType)).stableID;
         m_types.Rebuild();
-        Assert.Equal(first, m_types.GetTypeRef(typeof(DeterministicStableType)).stableId);
+        Assert.Equal(first, m_types.GetTypeRef(typeof(DeterministicStableType)).stableID);
     }
 
     [Fact]
     public void DiscoveryIncludesTypesOutsideInnoNamespace()
     {
-        Assert.True(m_types.GetTypeRef(typeof(OutsideNamespaceType)).runtimeId > 0);
+        Assert.True(m_types.GetTypeRef(typeof(OutsideNamespaceType)).runtimeID > 0);
         Assert.Equal(
             Guid.Parse("33333333-3333-3333-3333-333333333333"),
-            m_types.GetTypeRef(typeof(OutsideStableAnnotatedType)).stableId
+            m_types.GetTypeRef(typeof(OutsideStableAnnotatedType)).stableID
         );
     }
 
@@ -177,8 +177,8 @@ public sealed class TypeCacheTests : IDisposable
         Assert.Equal(secondPrevious, second.snapshotID);
         Assert.Equal(1, first.rollbackCount);
         Assert.Equal(1, second.rollbackCount);
-        Assert.Contains(firstPrevious + 1, first.disposedSnapshotIds);
-        Assert.Contains(secondPrevious + 1, second.disposedSnapshotIds);
+        Assert.Contains(firstPrevious + 1, first.disposedSnapshotIDs);
+        Assert.Contains(secondPrevious + 1, second.disposedSnapshotIDs);
     }
 
     [Fact]
@@ -194,7 +194,7 @@ public sealed class TypeCacheTests : IDisposable
         Assert.Equal(previous + 1, registry.snapshotID);
         Assert.Equal(0, registry.rollbackCount);
         Assert.Equal(1, registry.cleanupFailureCount);
-        Assert.Contains(previous, registry.disposedSnapshotIds);
+        Assert.Contains(previous, registry.disposedSnapshotIDs);
         Assert.Equal(GenerationState.Faulted, m_modules.generations.state);
         Assert.Throws<InvalidOperationException>(() => m_modules.generations.AcquireRead("build"));
         registry.failSnapshotCleanup = false;
@@ -214,8 +214,8 @@ public sealed class TypeCacheTests : IDisposable
         m_types.Rebuild();
 
         Assert.Equal(retiringPrevious + 1, retiring.snapshotID);
-        Assert.Contains(survivorPrevious, survivor.disposedSnapshotIds);
-        Assert.Contains(survivorPrevious + 1, survivor.disposedSnapshotIds);
+        Assert.Contains(survivorPrevious, survivor.disposedSnapshotIDs);
+        Assert.Contains(survivorPrevious + 1, survivor.disposedSnapshotIDs);
     }
 
     [Fact]
@@ -273,7 +273,7 @@ public sealed class TypeCacheTests : IDisposable
         internal int rollbackCount;
         internal int cleanupFailureCount;
         internal int snapshotID;
-        internal List<int> disposedSnapshotIds { get; } = [];
+        internal List<int> disposedSnapshotIDs { get; } = [];
 
         protected override Snapshot Build(TypeCacheSnapshot types) => new(++m_nextSnapshotID);
 
@@ -300,7 +300,7 @@ public sealed class TypeCacheTests : IDisposable
 
         protected override void DisposeSnapshot(Snapshot snapshot)
         {
-            disposedSnapshotIds.Add(snapshot.id);
+            disposedSnapshotIDs.Add(snapshot.id);
             if (failSnapshotCleanup)
             {
                 throw new InvalidOperationException("Injected snapshot cleanup failure.");
@@ -338,10 +338,10 @@ public sealed class AttributedType;
 [TestMarker]
 public abstract class AbstractAttributedType;
 
-[StableTypeId("11111111-1111-1111-1111-111111111111")]
+[StableTypeID("11111111-1111-1111-1111-111111111111")]
 public sealed class StableAnnotatedTypeA;
 
-[StableTypeId("22222222-2222-2222-2222-222222222222")]
+[StableTypeID("22222222-2222-2222-2222-222222222222")]
 public struct StableAnnotatedTypeB;
 
 public sealed class DeterministicStableType;

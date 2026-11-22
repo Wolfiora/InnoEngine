@@ -9,11 +9,11 @@ using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
 using Inno.Testing.Editor.Native;
 
+using Gui = Inno.Editor.ImGui.ImGui;
+using GuiDrawList = Inno.Editor.ImGui.EditorDrawList;
+using GuiHoveredFlags = Inno.Editor.ImGui.ImGuiHoveredFlags;
+using GuiMouseButton = Inno.Editor.ImGui.ImGuiMouseButton;
 using NativeGui = Inno.Native.ImGui.ImGui;
-using Ui = Inno.Editor.ImGui.ImGui;
-using UiDrawList = Inno.Editor.ImGui.EditorDrawList;
-using UiHoveredFlags = Inno.Editor.ImGui.ImGuiHoveredFlags;
-using UiMouseButton = Inno.Editor.ImGui.ImGuiMouseButton;
 
 namespace Inno.Editor.PlayMode.Tests;
 
@@ -47,8 +47,8 @@ public sealed unsafe class GraphCanvasNativeTests
         Frame(origin + new Vector2(270f, 100f), true);
         Frame(origin + new Vector2(300f, 60f), false);
         GraphEdgeRecord edge = Assert.Single(controller.document.edges);
-        Assert.Equal(first.id, edge.output.nodeId);
-        Assert.Equal(second.id, edge.input.nodeId);
+        Assert.Equal(first.id, edge.output.nodeID);
+        Assert.Equal(second.id, edge.input.nodeID);
         Assert.True(history.Undo().succeeded);
         Assert.Empty(controller.document.edges);
         Assert.True(history.Redo().succeeded);
@@ -69,9 +69,9 @@ public sealed unsafe class GraphCanvasNativeTests
                 _ = NativeGui.Begin("Workflow graph", ref open, (int)(ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoSavedSettings));
                 try
                 {
-                    origin = Ui.GetCursorScreenPosition();
-                    Vector2 size = Ui.GetContentRegionAvailable();
-                    _ = Ui.InvisibleButton("workflow-canvas", size);
+                    origin = Gui.GetCursorScreenPosition();
+                    Vector2 size = Gui.GetContentRegionAvailable();
+                    _ = Gui.InvisibleButton("workflow-canvas", size);
                     var view = new GraphCanvasView(state, origin, size);
                     _ = layout.SetNodes(
                         controller.document.nodes.Select(node => new GraphCanvasNode(
@@ -88,11 +88,11 @@ public sealed unsafe class GraphCanvasNativeTests
                     );
                     GraphCanvasPointerResult result = pointer.Step(view, layout, new()
                     {
-                        position = Ui.GetMousePos(),
-                        isHovered = Ui.IsItemHovered(UiHoveredFlags.AllowWhenBlockedByActiveItem),
-                        isPressed = Ui.IsMouseClicked(UiMouseButton.Left),
-                        isDown = Ui.IsMouseButtonDown(UiMouseButton.Left),
-                        isReleased = Ui.IsMouseReleased(UiMouseButton.Left)
+                        position = Gui.GetMousePos(),
+                        isHovered = Gui.IsItemHovered(GuiHoveredFlags.AllowWhenBlockedByActiveItem),
+                        isPressed = Gui.IsMouseClicked(GuiMouseButton.Left),
+                        isDown = Gui.IsMouseButtonDown(GuiMouseButton.Left),
+                        isReleased = Gui.IsMouseReleased(GuiMouseButton.Left)
                     });
                     if (result.movedNodes is { } positions)
                     {
@@ -102,7 +102,7 @@ public sealed unsafe class GraphCanvasNativeTests
                     {
                         _ = controller.Connect(output, input);
                     }
-                    UiDrawList draw = Ui.GetDrawList();
+                    GuiDrawList draw = Gui.GetDrawList();
                     foreach (GraphCanvasNode node in layout.nodes)
                     {
                         _ = view.DrawNode(
@@ -127,7 +127,7 @@ public sealed unsafe class GraphCanvasNativeTests
     {
         using var host = new NativePanelHost(typeof(GraphCanvasNativeTests).Assembly);
         var state = new GraphCanvasState();
-        var id = new GraphNodeId("workflow.begin");
+        var id = new GraphNodeID("workflow.begin");
         var node = new GraphCanvasNode(
             id,
             new(10f, 10f),
@@ -148,7 +148,7 @@ public sealed unsafe class GraphCanvasNativeTests
                 {
                     ImGuiWindow* window = NativeGui.Raw.GetCurrentWindow();
                     int clipDepth = window->DrawList->ClipRectStack.Size;
-                    UiDrawList draw = Ui.GetDrawList();
+                    GuiDrawList draw = Gui.GetDrawList();
                     var view = new GraphCanvasView(state, new(40f, 60f), new(540f, 300f));
                     var failure = new InvalidOperationException("Workflow node extension failed.");
                     Assert.Same(

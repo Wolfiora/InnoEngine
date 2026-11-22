@@ -19,37 +19,37 @@ public readonly struct AdapterSelection
     /// <summary>
     /// Gets the selected platform backend.
     /// </summary>
-    public PlatformBackendId platform { get; init; }
+    public PlatformBackendID platform { get; init; }
 
     /// <summary>
     /// Gets the selected input backend.
     /// </summary>
-    public InputBackendId input { get; init; }
+    public InputBackendID input { get; init; }
 
     /// <summary>
     /// Gets the selected storage backend.
     /// </summary>
-    public StorageBackendId storage { get; init; }
+    public StorageBackendID storage { get; init; }
 
     /// <summary>
     /// Gets the selected rendering backend.
     /// </summary>
-    public RenderingBackendId rendering { get; init; }
+    public RenderingBackendID rendering { get; init; }
 
     /// <summary>
     /// Gets the selected audio backend.
     /// </summary>
-    public AudioBackendId audio { get; init; }
+    public AudioBackendID audio { get; init; }
 
     /// <summary>
     /// Gets the selected Unicode text backend.
     /// </summary>
-    public TextBackendId text { get; init; }
+    public TextBackendID text { get; init; }
 
     /// <summary>
     /// Gets the selected retained-mode UI backend.
     /// </summary>
-    public UiBackendId ui { get; init; }
+    public UIBackendID ui { get; init; }
 
     /// <summary>
     /// Validates every selected registration before the composition creates any service.

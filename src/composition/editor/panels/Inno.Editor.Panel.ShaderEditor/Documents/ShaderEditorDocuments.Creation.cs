@@ -25,21 +25,21 @@ internal sealed partial class ShaderEditorDocuments
         ShaderNodeCreation creation
     ) {
         GraphDocument graph = Controller(draft).document;
-        GraphNodeId? stage = draft.createFromPort is GraphEndpoint endpoint
-            ? new(ShaderGraphDocument.Read(graph.FindNode(endpoint.nodeId)!, "stage", string.Empty, serialization, context))
+        GraphNodeID? stage = draft.createFromPort is GraphEndpoint endpoint
+            ? new(ShaderGraphDocument.Read(graph.FindNode(endpoint.nodeID)!, "stage", string.Empty, serialization, context))
             : draft.activeStage
-              ?? graph.nodes.FirstOrDefault(static node => node.definitionId == ShaderGraphDocument.outputDefinitionId)?.id;
+              ?? graph.nodes.FirstOrDefault(static node => node.definitionID == ShaderGraphDocument.C_OUTPUT_DEFINITION_ID)?.id;
         var node = new GraphNodeRecord(
             new(Guid.NewGuid().ToString("N")),
             creation.definitionID
         ) { position = draft.menuPosition };
-        if (stage is GraphNodeId id)
+        if (stage is GraphNodeID id)
         {
             node.SetValue("stage", ShaderGraphDocument.Encode(id.value, serialization, context));
         }
         if (creation.definitionID == "inno.shader.stage-input")
         {
-            HashSet<string> names = graph.nodes.Where(static value => value.definitionId == "inno.shader.stage-input")
+            HashSet<string> names = graph.nodes.Where(static value => value.definitionID == "inno.shader.stage-input")
                 .Select(value => ShaderGraphDocument.Read(value, "settings", new ShaderGraphInputSettings(), serialization, context).id)
                 .ToHashSet(StringComparer.Ordinal);
             string name = "parameter";
@@ -58,23 +58,23 @@ internal sealed partial class ShaderEditorDocuments
                 }, serialization, context)
             );
         }
-        else if (creation.definitionID == ShaderGraphNodes.inputDefinitionId)
+        else if (creation.definitionID == ShaderGraphNodes.C_INPUT_DEFINITION_ID)
         {
             node.SetValue(
-                ShaderGraphDocument.settingsKey,
+                ShaderGraphDocument.C_SETTINGS_KEY,
                 ShaderGraphDocument.Encode(new ShaderGraphNodeInputSettings(), serialization, context)
             );
         }
-        else if (creation.definitionID == ShaderGraphNodes.outputDefinitionId)
+        else if (creation.definitionID == ShaderGraphNodes.C_OUTPUT_DEFINITION_ID)
         {
             node.SetValue(
-                ShaderGraphDocument.settingsKey,
+                ShaderGraphDocument.C_SETTINGS_KEY,
                 ShaderGraphDocument.Encode(new ShaderGraphNodeOutputSettings(), serialization, context)
             );
         }
         if (draft.createFromPort is GraphEndpoint source)
         {
-            ShaderNodePort port = draft.ports[source.nodeId].Single(value => value.id == source.portId.value);
+            ShaderNodePort port = draft.ports[source.nodeID].Single(value => value.id == source.portID.value);
             node.SetValue("type", ShaderGraphDocument.Encode(port.type.id, serialization, context));
             if (creation.definitionID == "inno.shader.reroute")
             {
@@ -94,10 +94,10 @@ internal sealed partial class ShaderEditorDocuments
                 ArgumentException.ThrowIfNullOrWhiteSpace(creation.function);
                 node.SetValue("function", ShaderGraphDocument.Encode(creation.function, serialization, context));
             }
-            else if (creation.definitionID == ShaderGraphNodes.callDefinitionId)
+            else if (creation.definitionID == ShaderGraphNodes.C_CALL_DEFINITION_ID)
             {
                 node.SetValue(
-                    ShaderGraphNodes.interfaceKey,
+                    ShaderGraphNodes.C_INTERFACE_KEY,
                     ShaderGraphDocument.Encode(LoadGraphNodeInterface(creation.sourceID), serialization, context)
                 );
             }
@@ -109,10 +109,10 @@ internal sealed partial class ShaderEditorDocuments
     {
         ShaderSourceModuleAnalysis? module = null;
         string implementation = string.Empty;
-        ShaderIrStageInput? input = node.definitionId == "inno.shader.stage-input"
+        ShaderIrStageInput? input = node.definitionID == "inno.shader.stage-input"
             ? ShaderGraphDocument.Read(node, "settings", new ShaderGraphInputSettings(), serialization, context).CreateBinding()
             : null;
-        if (node.definitionId == "inno.shader.source")
+        if (node.definitionID == "inno.shader.source")
         {
             Guid id = ShaderGraphDocument.Read(node, "sourceId", Guid.Empty, serialization, context);
             if (id != Guid.Empty
@@ -132,18 +132,18 @@ internal sealed partial class ShaderEditorDocuments
             }
         }
         GraphNodeRecord described = node;
-        if (node.definitionId == ShaderGraphNodes.callDefinitionId)
+        if (node.definitionID == ShaderGraphNodes.C_CALL_DEFINITION_ID)
         {
             Guid id = ShaderGraphDocument.Read(node, "sourceId", Guid.Empty, serialization, context);
             if (id != Guid.Empty && TryLoadGraphNodeInterface(id, out ShaderGraphNodeInterface? nodeInterface))
             {
-                described = new GraphNodeRecord(node.id, node.definitionId) { position = node.position };
+                described = new GraphNodeRecord(node.id, node.definitionID) { position = node.position };
                 foreach ((string key, GraphSerializedValue value) in node.values)
                 {
                     described.SetValue(key, value);
                 }
                 described.SetValue(
-                    ShaderGraphNodes.interfaceKey,
+                    ShaderGraphNodes.C_INTERFACE_KEY,
                     ShaderGraphDocument.Encode(nodeInterface!, serialization, context)
                 );
             }
@@ -164,7 +164,7 @@ internal sealed partial class ShaderEditorDocuments
         {
             return null;
         }
-        ShaderNodePort output = draft.ports[source.nodeId].Single(value => value.id == source.portId.value);
+        ShaderNodePort output = draft.ports[source.nodeID].Single(value => value.id == source.portID.value);
         return Describe(node).FirstOrDefault(
             value => value.direction == GraphPortDirection.Input && value.type.IsEquivalentTo(output.type)
         );
@@ -178,8 +178,8 @@ internal sealed partial class ShaderEditorDocuments
         {
             return false;
         }
-        if (creation.definitionID is ShaderGraphNodes.inputDefinitionId or ShaderGraphNodes.outputDefinitionId
-            && Controller(draft).document.nodes.Any(node => node.definitionId == creation.definitionID)
+        if (creation.definitionID is ShaderGraphNodes.C_INPUT_DEFINITION_ID or ShaderGraphNodes.C_OUTPUT_DEFINITION_ID
+            && Controller(draft).document.nodes.Any(node => node.definitionID == creation.definitionID)
         ) {
                 return false;
         }
@@ -206,12 +206,12 @@ internal sealed partial class ShaderEditorDocuments
         ShaderNodePort? input = CompatibleInput(draft, node);
         GraphDocument graph = Controller(draft).document.Clone();
         graph.AddNode(node);
-        if (node.definitionId is ShaderGraphNodes.inputDefinitionId or ShaderGraphNodes.outputDefinitionId
+        if (node.definitionID is ShaderGraphNodes.C_INPUT_DEFINITION_ID or ShaderGraphNodes.C_OUTPUT_DEFINITION_ID
             && !ShaderGraphNodes.IsNodeGraph(graph)
         ) {
             ShaderGraphNodes.WriteSettings(graph, new ShaderGraphNodeSettings(), serialization, context);
         }
-        if (node.definitionId == "inno.shader.stage-input")
+        if (node.definitionID == "inno.shader.stage-input")
         {
             graph = ShaderGraphBindings.ChangeInput(
                 graph,

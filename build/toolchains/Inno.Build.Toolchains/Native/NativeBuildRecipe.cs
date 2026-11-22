@@ -19,7 +19,7 @@ public sealed class NativeBuildRecipe
     /// <param name="component">
     /// The component's portable artifact path segment.
     /// </param>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The ABI's portable artifact path segment.
     /// </param>
     /// <param name="inputs">
@@ -37,7 +37,7 @@ public sealed class NativeBuildRecipe
     public NativeBuildRecipe(
         NativeComponentDescriptor owner,
         string component,
-        string targetId,
+        string targetID,
         IEnumerable<NativeBuildInput> inputs,
         IEnumerable<string> declarations
     ) {
@@ -45,7 +45,7 @@ public sealed class NativeBuildRecipe
         ArgumentNullException.ThrowIfNull(inputs);
         ArgumentNullException.ThrowIfNull(declarations);
         ValidateSegment(component);
-        ValidateSegment(targetId);
+        ValidateSegment(targetID);
         NativeBuildInput[] frozenInputs = inputs.ToArray();
         string[] frozenDeclarations = declarations.ToArray();
         if (frozenInputs.Any(static input => input is null)
@@ -55,7 +55,7 @@ public sealed class NativeBuildRecipe
         }
         this.owner = owner;
         this.component = component;
-        this.targetId = targetId;
+        this.targetID = targetID;
         this.inputs = Array.AsReadOnly(frozenInputs);
         this.declarations = Array.AsReadOnly(frozenDeclarations);
     }
@@ -73,7 +73,7 @@ public sealed class NativeBuildRecipe
     /// <summary>
     /// Gets the target ABI's artifact path segment.
     /// </summary>
-    public string targetId { get; }
+    public string targetID { get; }
 
     /// <summary>
     /// Gets the frozen declarations of physical inputs and their logical identities.
@@ -112,7 +112,7 @@ public sealed class NativeBuildRecipe
         return new(
             owner,
             component,
-            targetId,
+            targetID,
             inputs.Append(input),
             declarations.Append("dependency=" + fingerprint)
         ) { toolchain = toolchain };
@@ -131,7 +131,7 @@ public sealed class NativeBuildRecipe
     /// <param name="component">
     /// The native component artifact segment.
     /// </param>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The selected target ABI.
     /// </param>
     /// <param name="inputPaths">
@@ -155,7 +155,7 @@ public sealed class NativeBuildRecipe
         NativeBuildContext context,
         NativeComponentDescriptor owner,
         string component,
-        string targetId,
+        string targetID,
         IEnumerable<string> inputPaths,
         IEnumerable<string> declarations,
         IEnumerable<string> implementationPaths
@@ -264,9 +264,9 @@ public sealed class NativeBuildRecipe
         return new NativeBuildRecipe(
             owner,
             component,
-            targetId,
+            targetID,
             paths.Select(path => NativeBuildInput.FromPath(context.engineRoot, path)),
-            new[] { component, targetId, context.configuration, "executionRoot=" + context.engineRoot }.Concat(declarations)
+            new[] { component, targetID, context.configuration, "executionRoot=" + context.engineRoot }.Concat(declarations)
                 .Concat(options.declarations)
                 .Concat(context.toolchain?.declarations ?? [])
         ) { toolchain = context.toolchain };
@@ -290,7 +290,7 @@ public sealed class NativeBuildRecipe
         return new NativeBuildRecipe(
             owner,
             component,
-            targetId,
+            targetID,
             inputs.Concat(generated),
             declarations.Append("bindings=" + generation.fingerprint)
                 .Append("bindingNativeRoot=" + generation.nativeDirectory)

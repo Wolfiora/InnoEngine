@@ -73,13 +73,13 @@ public interface IEditorGizmoSink
     /// <param name="position">
     /// The icon position in world space.
     /// </param>
-    /// <param name="iconId">
+    /// <param name="iconID">
     /// A stable semantic icon ID. Unknown IDs use the generic scene icon.
     /// </param>
     void Icon(
         Identity owner,
         Vector3 position,
-        string iconId
+        string iconID
     );
 
     /// <summary>
@@ -150,13 +150,13 @@ public sealed class EditorGizmoProviderExtensionAttribute : Attribute
 /// <param name="position">
 /// The vector3 value used to initialize this instance.
 /// </param>
-/// <param name="iconId">
+/// <param name="iconID">
 /// The stable visual identity resolved by the Scene View presentation.
 /// </param>
 public readonly record struct EditorGizmoIcon(
     Identity owner,
     Vector3 position,
-    string iconId
+    string iconID
 );
 
 /// <summary>
@@ -200,16 +200,16 @@ public sealed class EditorGizmoFrame : IEditorGizmoSink
     /// <param name="position">
     /// The position consumed by icon; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <param name="iconId">
+    /// <param name="iconID">
     /// The stable icon identity resolved by the Scene View.
     /// </param>
     public void Icon(
         Identity owner,
         Vector3 position,
-        string iconId
+        string iconID
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(iconId);
-        m_icons.Add(new EditorGizmoIcon(owner, position, iconId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(iconID);
+        m_icons.Add(new EditorGizmoIcon(owner, position, iconID));
     }
 
     /// <summary>

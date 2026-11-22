@@ -4,7 +4,7 @@ using Inno.Scene;
 
 namespace Inno.Editor.Panel.Hierarchy;
 
-[EditorAction(HierarchyInteractionIds.C_OPEN, priority: 200)]
+[EditorAction(HierarchyInteractionIDs.C_OPEN, priority: 200)]
 internal sealed class OpenPrefabAssetAction(
     IEditorSceneWorkspace workspace,
     SceneEdits edits
@@ -38,6 +38,6 @@ protected override void Execute(EditorActionContext<PrefabAsset, string> context
             return;
         }
         GameObject instance = edits.InstantiatePrefab(context.target, scene);
-        _ = context.interactions.For(HierarchyInteractionIds.C_AREA, instance).Select();
+        _ = context.interactions.For(HierarchyInteractionIDs.C_AREA, instance).Select();
     }
 }

@@ -5,7 +5,7 @@ using Inno.Scene;
 
 namespace Inno.Editor.Panel.Inspector;
 
-[EditorAction(InspectorInteractionIds.C_ADD_SYSTEM, InspectorInteractionIds.C_SYSTEM_AREA)]
+[EditorAction(InspectorInteractionIDs.C_ADD_SYSTEM, InspectorInteractionIDs.C_SYSTEM_AREA)]
 internal sealed class AddSystemCommand(
     SceneEdits edits,
     TypeCatalog types

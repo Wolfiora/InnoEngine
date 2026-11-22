@@ -50,13 +50,13 @@ public sealed partial class PlayerWithoutFileSystemTests
         {
             adapterSelection = new AdapterSelection
             {
-                platform = PlatformBackendId.sdl3,
-                input = InputBackendId.events,
-                rendering = RenderingBackendId.bgfx,
-                storage = StorageBackendId.fileSystem,
-                audio = AudioBackendId.miniAudio,
-                text = TextBackendId.freeTypeHarfBuzz,
-                ui = UiBackendId.rmlUi
+                platform = PlatformBackendID.sdl3,
+                input = InputBackendID.events,
+                rendering = RenderingBackendID.bgfx,
+                storage = StorageBackendID.fileSystem,
+                audio = AudioBackendID.miniAudio,
+                text = TextBackendID.freeTypeHarfBuzz,
+                ui = UIBackendID.rmlUI
             },
             modules = modules,
             types = new ReflectionTypeCatalogSource(),
@@ -124,15 +124,15 @@ public sealed partial class PlayerWithoutFileSystemTests
                 )
             );
             using var settings = new ProjectSettingsStore(
-                new FileByteDocumentStore(Path.Combine(root, SettingsFileNames.project)),
+                new FileByteDocumentStore(Path.Combine(root, SettingsFileNames.C_PROJECT)),
                 engine.types,
                 engine.serialization,
-                new ProjectId("tests.memory.player"),
+                new ProjectID("tests.memory.player"),
                 AssetSerializationContext.Create(assets)
             );
             string exported = Path.Combine(root, "Exported");
             assets.ExportRuntimeArtifacts(exported);
-            File.WriteAllBytes(Path.Combine(exported, SettingsFileNames.project), settings.CaptureDocument());
+            File.WriteAllBytes(Path.Combine(exported, SettingsFileNames.C_PROJECT), settings.CaptureDocument());
             ContentTestStore content = ContentTestStore.FromDirectory(exported);
             var manifest = new GameRuntimeManifest
             {

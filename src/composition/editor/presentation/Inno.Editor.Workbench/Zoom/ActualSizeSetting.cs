@@ -3,15 +3,15 @@ using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Settings;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Workbench;
 
 [EditorSettingPath("Editor/Appearance/Accessibility/Actual Size")]
 internal sealed class ActualSizeSetting : EditorSetting
 {
-    private static readonly (float Value, string Label)[] CHOICES =
+    private static readonly (float value, string label)[] CHOICES =
     [
         (0.75f, "75%"),
         (0.9f, "90%"),
@@ -46,7 +46,7 @@ internal sealed class ActualSizeSetting : EditorSetting
     {
         float value = setting.GetAsSingle("value", 1f);
         string preview = GetLabel(value);
-        Ui.SetNextItemWidth(-1f);
+        Gui.SetNextItemWidth(-1f);
         if (!EditorUI.current.widgets.BeginBoundedCombo("##actual_size", preview))
         {
             return;
@@ -56,7 +56,7 @@ internal sealed class ActualSizeSetting : EditorSetting
             for (int i = 0; i < CHOICES.Length; i++)
             {
                 (float candidate, string label) = CHOICES[i];
-                if (Ui.Selectable(label, MathF.Abs(candidate - value) < 0.0001f))
+                if (Gui.Selectable(label, MathF.Abs(candidate - value) < 0.0001f))
                 {
                     setting.SetAsSingle("value", candidate);
                 }
@@ -79,9 +79,9 @@ internal sealed class ActualSizeSetting : EditorSetting
     {
         for (int i = 0; i < CHOICES.Length; i++)
         {
-            if (MathF.Abs(CHOICES[i].Value - value) < 0.0001f)
+            if (MathF.Abs(CHOICES[i].value - value) < 0.0001f)
             {
-                return CHOICES[i].Label;
+                return CHOICES[i].label;
             }
         }
 

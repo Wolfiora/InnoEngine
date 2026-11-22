@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Declares one contract-compatible pass mapping selectable by materials.
 /// </summary>
-[StableTypeId("461d82ac-0279-5044-b17b-776085f2ba35")]
+[StableTypeID("461d82ac-0279-5044-b17b-776085f2ba35")]
 public struct ShaderTechniqueDefinition
 {
     /// <summary>
@@ -32,8 +32,8 @@ public struct ShaderTechniqueDefinition
     /// Capabilities required by the complete technique.
     /// </param>
     public ShaderTechniqueDefinition(
-        ShaderTechniqueId id,
-        ShaderContractId contract,
+        ShaderTechniqueID id,
+        ShaderContractID contract,
         IEnumerable<ShaderTechniquePass> passes,
         GraphicsCapability requiredFeatures = GraphicsCapability.None
     ) {
@@ -55,12 +55,12 @@ public struct ShaderTechniqueDefinition
     /// <summary>
     /// Gets or sets the stable technique identifier.
     /// </summary>
-    public ShaderTechniqueId id { get; set; }
+    public ShaderTechniqueID id { get; set; }
 
     /// <summary>
     /// Gets or sets the open rendering-provider contract.
     /// </summary>
-    public ShaderContractId contract { get; set; }
+    public ShaderContractID contract { get; set; }
 
     /// <summary>
     /// Gets or sets role-to-pass mappings.

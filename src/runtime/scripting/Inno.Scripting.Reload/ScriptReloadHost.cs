@@ -269,12 +269,12 @@ public sealed class ScriptReloadHost : IDisposable
             throw new InvalidOperationException("ScriptReloadHost requires AssetPipeline to be initialized first.");
         }
         m_assets.Update();
-        m_assets.Changed -= OnAssetDatabaseChanged;
-        m_assets.Changed += OnAssetDatabaseChanged;
-        m_assets.SourceMountsChanged -= OnSourceMountsChanged;
-        m_assets.SourceMountsChanged += OnSourceMountsChanged;
-        m_plugins.ActivationCandidateChanged -= OnPluginActivationCandidateChanged;
-        m_plugins.ActivationCandidateChanged += OnPluginActivationCandidateChanged;
+        m_assets.changed -= OnAssetDatabaseChanged;
+        m_assets.changed += OnAssetDatabaseChanged;
+        m_assets.sourceMountsChanged -= OnSourceMountsChanged;
+        m_assets.sourceMountsChanged += OnSourceMountsChanged;
+        m_plugins.activationCandidateChanged -= OnPluginActivationCandidateChanged;
+        m_plugins.activationCandidateChanged += OnPluginActivationCandidateChanged;
         if (m_options.autoCompile)
         {
             lock (m_sync)
@@ -299,7 +299,7 @@ public sealed class ScriptReloadHost : IDisposable
     /// <summary>
     /// Requests cancellation of the active compilation without changing the active script generation.
     /// </summary>
-    /// <param name="operationId">
+    /// <param name="operationID">
     /// The observed request; a stale cancellation is rejected.
     /// </param>
     /// <returns>
@@ -308,20 +308,20 @@ public sealed class ScriptReloadHost : IDisposable
     /// <exception cref="ObjectDisposedException">
     /// Thrown after the manager has been disposed.
     /// </exception>
-    public bool CancelCompilation(long operationId)
+    public bool CancelCompilation(long operationID)
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         CancellationTokenSource? cancellation;
         lock (m_sync)
         {
-            if (operationId != m_progress.operationId || operationId != m_activeProgressOperation)
+            if (operationID != m_progress.operationID || operationID != m_activeProgressOperation)
             {
                 return false;
             }
             cancellation = m_activeCompilationCancellation;
             if (cancellation is not null)
             {
-                SetCompilationProgress(m_progress.fraction, "Canceling script compilation...", operationId, cancellationRequested: true);
+                SetCompilationProgress(m_progress.fraction, "Canceling script compilation...", operationID, cancellationRequested: true);
             }
         }
         if (cancellation is null)
@@ -405,7 +405,7 @@ public sealed class ScriptReloadHost : IDisposable
                 return false;
             }
             request = m_requestedReload;
-            operation = m_progress.operationId;
+            operation = m_progress.operationID;
             m_requestedReload = ScriptReloadRequest.None;
             m_initialCompileRequested = false;
         }
@@ -546,10 +546,10 @@ public sealed class ScriptReloadHost : IDisposable
             {
                 if (m_assets.isInitialized)
                 {
-                    m_assets.Changed -= OnAssetDatabaseChanged;
-                    m_assets.SourceMountsChanged -= OnSourceMountsChanged;
+                    m_assets.changed -= OnAssetDatabaseChanged;
+                    m_assets.sourceMountsChanged -= OnSourceMountsChanged;
                 }
-                m_plugins.ActivationCandidateChanged -= OnPluginActivationCandidateChanged;
+                m_plugins.activationCandidateChanged -= OnPluginActivationCandidateChanged;
                 lock (m_sync)
                 {
                     m_requestedReload = ScriptReloadRequest.None;
@@ -836,7 +836,7 @@ public sealed class ScriptReloadHost : IDisposable
         lock (m_sync)
         {
             ScriptReloadProgress current = m_progress;
-            if (m_disposed || (operationID is long expected && expected != current.operationId))
+            if (m_disposed || (operationID is long expected && expected != current.operationID))
             {
                 return;
             }
@@ -847,11 +847,11 @@ public sealed class ScriptReloadHost : IDisposable
             Volatile.Write(
                 ref m_progress,
                 new ScriptReloadProgress(
-                    current.operationId,
+                    current.operationID,
                     Math.Clamp(fraction, 0f, 1f),
                     stage,
                     current.cancellationRequested || cancellationRequested,
-                    m_activeCompilationCancellation is not null && m_activeProgressOperation == current.operationId
+                    m_activeCompilationCancellation is not null && m_activeProgressOperation == current.operationID
                     && (canCancel || isCompilerUpdate) && !current.cancellationRequested && !cancellationRequested
                 )
             );
@@ -1110,7 +1110,7 @@ public sealed class ScriptReloadHost : IDisposable
         }
         try
         {
-            return AssetPath.Parse(path).source != AssetSourceId.project;
+            return AssetPath.Parse(path).source != AssetSourceID.project;
         }
         catch (ArgumentException)
         {

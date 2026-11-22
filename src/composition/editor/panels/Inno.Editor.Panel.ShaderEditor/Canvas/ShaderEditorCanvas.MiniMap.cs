@@ -5,7 +5,7 @@ using System.Numerics;
 using Inno.Core.Graphs;
 using Inno.Editor.ImGui;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 using ImGuiApi = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.ShaderEditor;
@@ -16,7 +16,7 @@ internal sealed partial class ShaderEditorCanvas
     private const float C_MINI_MAP_HEIGHT = 145f;
     private const float C_MINI_MAP_MARGIN = 14f;
     private const float C_MINI_MAP_PADDING = 9f;
-    private readonly Dictionary<GraphNodeId, MiniMapNodeGeometry> m_miniMapGeometry = [];
+    private readonly Dictionary<GraphNodeID, MiniMapNodeGeometry> m_miniMapGeometry = [];
 
     private bool MiniMapContains(Vector2 point)
     {
@@ -130,8 +130,8 @@ internal sealed partial class ShaderEditorCanvas
     ) {
         foreach (GraphEdgeRecord edge in controller.document.edges)
         {
-            if (!m_miniMapGeometry.TryGetValue(edge.output.nodeId, out MiniMapNodeGeometry source)
-                || !m_miniMapGeometry.TryGetValue(edge.input.nodeId, out MiniMapNodeGeometry target)
+            if (!m_miniMapGeometry.TryGetValue(edge.output.nodeID, out MiniMapNodeGeometry source)
+                || !m_miniMapGeometry.TryGetValue(edge.input.nodeID, out MiniMapNodeGeometry target)
             ) {
                 continue;
             }

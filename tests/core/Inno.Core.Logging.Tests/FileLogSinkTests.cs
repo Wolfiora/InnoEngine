@@ -192,6 +192,6 @@ public sealed class FileLogSinkTests : IDisposable
             string.Empty,
             0,
             string.Empty,
-            LogSessionId.none
+            LogSessionID.none
         );
 }

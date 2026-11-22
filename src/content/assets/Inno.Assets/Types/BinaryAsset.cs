@@ -7,7 +7,7 @@ namespace Inno.Assets;
 /// <summary>
 /// Describes an imported opaque binary payload.
 /// </summary>
-[StableTypeId("5298dd91-e9a7-4298-a343-bf8a6c5fc779")]
+[StableTypeID("5298dd91-e9a7-4298-a343-bf8a6c5fc779")]
 public sealed class BinaryAsset : AssetObject
 {
     /// <summary>

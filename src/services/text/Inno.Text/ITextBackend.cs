@@ -63,7 +63,7 @@ public interface ITextBackend : IDisposable
     /// <param name="font">
     /// The loaded face.
     /// </param>
-    /// <param name="glyphId">
+    /// <param name="glyphID">
     /// The font-specific glyph identifier.
     /// </param>
     /// <param name="fontSize">
@@ -74,7 +74,7 @@ public interface ITextBackend : IDisposable
     /// </returns>
     GlyphBitmap Rasterize(
         TextFontHandle font,
-        uint glyphId,
+        uint glyphID,
         float fontSize
     );
 }

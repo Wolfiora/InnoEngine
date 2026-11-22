@@ -12,7 +12,7 @@ try {
     [IO.File]::WriteAllText((Join-Path $root 'Program.cs'), @'
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using EditorUiAcceptance;
+using EditorUIAcceptance;
 
 if (args is ["memory-sampling"])
 {

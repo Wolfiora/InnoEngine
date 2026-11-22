@@ -5,7 +5,7 @@ using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
-[StableTypeId("3f7f8f3e-f933-57dd-a513-4165386a62ae")]
+[StableTypeID("3f7f8f3e-f933-57dd-a513-4165386a62ae")]
 internal sealed class ShaderDefinitionSnapshot
 {
     private readonly ShaderDefinition m_definition;

@@ -32,7 +32,7 @@ public readonly record struct AudioClipDescriptor
     /// The load mode is undefined or a channel, rate, frame, or byte count is outside its valid range.
     /// </exception>
     public AudioClipDescriptor(
-        AudioCodecId codec,
+        AudioCodecID codec,
         AudioClipLoadMode loadMode,
         int channels,
         int sampleRate,
@@ -62,7 +62,7 @@ public readonly record struct AudioClipDescriptor
     /// <summary>
     /// Gets the encoded codec protocol.
     /// </summary>
-    public AudioCodecId codec { get; }
+    public AudioCodecID codec { get; }
 
     /// <summary>
     /// Gets the required storage strategy.

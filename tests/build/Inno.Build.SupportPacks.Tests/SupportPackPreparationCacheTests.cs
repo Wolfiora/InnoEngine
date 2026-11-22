@@ -13,7 +13,7 @@ namespace Inno.Build.SupportPacks.Tests;
 
 public sealed class SupportPackPreparationCacheTests : IDisposable
 {
-    private static readonly BuildTargetId TARGET = new("fixture-target");
+    private static readonly BuildTargetID TARGET = new("fixture-target");
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoPackPreparationCache", Guid.NewGuid().ToString("N"));
     private readonly Source m_source;
 
@@ -223,7 +223,7 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         public Action? onPlan { get; set; }
         public Action? onValidate { get; set; }
         public Action<string>? onPrepared { get; set; }
-        public BuildTargetId target => TARGET;
+        public BuildTargetID target => TARGET;
 
         public ValueTask<PlayerSupportPackPlan> CreatePlanAsync(
             PlayerSupportPackPlanningContext context,

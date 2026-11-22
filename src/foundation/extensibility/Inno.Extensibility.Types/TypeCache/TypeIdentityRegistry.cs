@@ -81,7 +81,7 @@ internal sealed class TypeIdentityRegistry
 
         foreach (Type type in sourceTypes)
         {
-            StableTypeIdAttribute? attr = metadata[type].declaredAttributes.OfType<StableTypeIdAttribute>().SingleOrDefault();
+            StableTypeIDAttribute? attr = metadata[type].declaredAttributes.OfType<StableTypeIDAttribute>().SingleOrDefault();
             GeneratedStableTypeMapping? mapping = null;
             Guid stableID;
             if (attr is not null)
@@ -89,7 +89,7 @@ internal sealed class TypeIdentityRegistry
                 if (!Guid.TryParse(attr.id, out stableID))
                 {
                     throw new InvalidOperationException(
-                        $"Type '{type.FullName}' has invalid StableTypeId '{attr.id}'."
+                        $"Type '{type.FullName}' has invalid StableTypeID '{attr.id}'."
                     );
                 }
             }
@@ -99,7 +99,7 @@ internal sealed class TypeIdentityRegistry
                 if (!Guid.TryParse(mapping.id, out stableID))
                 {
                     throw new InvalidOperationException(
-                        $"Type '{type.FullName}' has invalid generated StableTypeId '{mapping.id}'."
+                        $"Type '{type.FullName}' has invalid generated StableTypeID '{mapping.id}'."
                     );
                 }
             }
@@ -112,7 +112,7 @@ internal sealed class TypeIdentityRegistry
             {
                 Type existing = typeByStable[stableID];
                 throw new InvalidOperationException(
-                    $"StableTypeId '{stableID}' conflicts between '{existing.FullName}' and '{type.FullName}'."
+                    $"StableTypeID '{stableID}' conflicts between '{existing.FullName}' and '{type.FullName}'."
                 );
             }
 
@@ -279,20 +279,20 @@ internal sealed class TypeIdentityRegistry
     ) {
         lock (m_sync)
         {
-            if (typeRef.stableId == Guid.Empty)
+            if (typeRef.stableID == Guid.Empty)
             {
                 type = null;
                 return false;
             }
-            if (typeRef.runtimeId > 0
-                && m_typeByRuntime.TryGetValue(typeRef.runtimeId, out Type? runtimeType)
+            if (typeRef.runtimeID > 0
+                && m_typeByRuntime.TryGetValue(typeRef.runtimeID, out Type? runtimeType)
                 && m_stableByType.TryGetValue(runtimeType, out Guid runtimeStableID)
-                && runtimeStableID == typeRef.stableId
+                && runtimeStableID == typeRef.stableID
             ) {
                 type = runtimeType;
                 return true;
             }
-            if (m_typeByStable.TryGetValue(typeRef.stableId, out Type? stableType))
+            if (m_typeByStable.TryGetValue(typeRef.stableID, out Type? stableType))
             {
                 type = stableType;
                 return true;
@@ -465,19 +465,19 @@ internal sealed class TypeIdentityRegistry
                 );
                 if (string.IsNullOrWhiteSpace(mapping.typeName))
                 {
-                    throw new InvalidOperationException("A generated StableTypeId mapping requires a type name.");
+                    throw new InvalidOperationException("A generated StableTypeID mapping requires a type name.");
                 }
                 if (!availableTypes.ContainsKey(mapping.typeName))
                 {
                     throw new InvalidOperationException(
-                        $"Generated StableTypeId mapping refers to missing type '{mapping.typeName}' "
+                        $"Generated StableTypeID mapping refers to missing type '{mapping.typeName}' "
                         + $"in assembly '{group.Key.GetName().Name}'."
                     );
                 }
                 if (!mappings.TryAdd(mapping.typeName, mapping))
                 {
                     throw new InvalidOperationException(
-                        $"Type '{mapping.typeName}' has more than one generated StableTypeId mapping."
+                        $"Type '{mapping.typeName}' has more than one generated StableTypeID mapping."
                     );
                 }
             }
@@ -494,7 +494,7 @@ internal sealed class TypeIdentityRegistry
         if (parts.Length != 2)
         {
             throw new InvalidOperationException(
-                $"Assembly '{assemblyName}' has invalid generated StableTypeId metadata '{value}'."
+                $"Assembly '{assemblyName}' has invalid generated StableTypeID metadata '{value}'."
             );
         }
         return new GeneratedStableTypeMapping(parts[1], parts[0]);

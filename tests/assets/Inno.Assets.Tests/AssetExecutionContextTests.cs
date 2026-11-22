@@ -81,7 +81,7 @@ public sealed class AssetExecutionContextTests
             where TAsset : AssetObject
                 => Cast<TAsset>();
 
-        public TAsset Load<TAsset>(Guid persistentId)
+        public TAsset Load<TAsset>(Guid persistentID)
             where TAsset : AssetObject
                 => Cast<TAsset>();
 
@@ -95,7 +95,7 @@ public sealed class AssetExecutionContextTests
         }
 
         public bool TryLoad<TAsset>(
-            Guid persistentId,
+            Guid persistentID,
             out TAsset? loadedAsset
         ) where TAsset : AssetObject
         {

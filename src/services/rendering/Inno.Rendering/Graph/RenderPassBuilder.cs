@@ -28,7 +28,7 @@ public abstract class RenderPassBuilder
     /// <returns>
     /// This builder for fluent declarations.
     /// </returns>
-    public RenderPassBuilder Before(RenderPhaseId phase)
+    public RenderPassBuilder Before(RenderPhaseID phase)
     {
         m_graph.EnsurePassMutable(m_pass);
         m_pass.before.Add(phase);
@@ -44,7 +44,7 @@ public abstract class RenderPassBuilder
     /// <returns>
     /// This builder for fluent declarations.
     /// </returns>
-    public RenderPassBuilder After(RenderPhaseId phase)
+    public RenderPassBuilder After(RenderPhaseID phase)
     {
         m_graph.EnsurePassMutable(m_pass);
         m_pass.after.Add(phase);

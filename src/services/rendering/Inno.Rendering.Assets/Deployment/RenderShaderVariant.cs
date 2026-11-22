@@ -10,7 +10,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Identifies one deterministic selection of static shader keyword options shared by authoring and runtime.
 /// </summary>
-[StableTypeId("c6c7b7a6-5e4f-5822-af8f-e894d7bb2d38")]
+[StableTypeID("c6c7b7a6-5e4f-5822-af8f-e894d7bb2d38")]
 public readonly struct RenderShaderVariant : IEquatable<RenderShaderVariant>
 {
     private static readonly IReadOnlyDictionary<string, string> EMPTY_OPTIONS =

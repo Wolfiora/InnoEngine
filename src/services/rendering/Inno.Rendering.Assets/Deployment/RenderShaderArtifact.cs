@@ -10,7 +10,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Contains one immutable, source-free shader artifact ready for runtime GPU resource creation.
 /// </summary>
-[StableTypeId("43b40c10-c10b-5e97-b662-9bf9b4c9e34e")]
+[StableTypeID("43b40c10-c10b-5e97-b662-9bf9b4c9e34e")]
 public sealed class RenderShaderArtifact
 {
     private readonly byte[] m_definitionData;

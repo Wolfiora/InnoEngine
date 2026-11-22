@@ -4,7 +4,7 @@ using Inno.Core.Identity;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Interactions;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 
 namespace Inno.Editor.ImGui;
 
@@ -37,8 +37,8 @@ public static class EditorDragDropRenderer
     ) {
         ArgumentNullException.ThrowIfNull(data);
         return EditorUI.current.widgets.DragDropSource(
-            GetPayloadType(data.sourceIdentity.domainId),
-            () => interaction.BeginDrag(data).runtimeId,
+            GetPayloadType(data.sourceIdentity.domainID),
+            () => interaction.BeginDrag(data).runtimeID,
             drawPreview
         );
     }
@@ -64,7 +64,7 @@ public static class EditorDragDropRenderer
             return EditorDropWidgetResult.none;
         }
         bool delivered = EditorUI.current.widgets.DragDropTarget(
-            GetPayloadType(activeIdentity.domainId),
+            GetPayloadType(activeIdentity.domainID),
             out int runtimeID,
             out bool isPreviewing,
             drawDefaultHighlight: false
@@ -77,13 +77,13 @@ public static class EditorDragDropRenderer
         {
             return EditorDropWidgetResult.none;
         }
-        var identity = new RuntimeIdentity(activeIdentity.domainId, runtimeID);
+        var identity = new RuntimeIdentity(activeIdentity.domainID, runtimeID);
         EditorDropStatus status = interaction.QueryDrop(identity, placement);
         EditorDropResult result = delivered && status.canDrop ? interaction.Drop(identity, placement) : EditorDropResult.rejected;
         return new EditorDropWidgetResult(isPreviewing, status, result);
     }
 
-    private static string GetPayloadType(IdentityDomainId domainID)
+    private static string GetPayloadType(IdentityDomainID domainID)
         => C_IDENTITY_PAYLOAD_PREFIX + domainID.value.ToString("X8", CultureInfo.InvariantCulture);
 }
 

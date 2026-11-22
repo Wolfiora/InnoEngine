@@ -81,13 +81,13 @@ public sealed class AssetResidencyTests
         }
 
         public ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
-            Guid persistentId,
+            Guid persistentID,
             CancellationToken cancellationToken = default
         ) where TAsset : AssetObject
             => AcquireAsync<TAsset>(AssetPath.Project("Text/readme.txt"), cancellationToken);
 
         public ArtifactLease AcquireArtifact(
-            Guid persistentId,
+            Guid persistentID,
             string outputName
         ) => CreateArtifactLease(
             new AssetArtifactInfo(new AssetArtifactKey(new string('A', 64)), outputName, "HASH", 3),

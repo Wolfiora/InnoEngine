@@ -23,7 +23,7 @@ public sealed class NativeBindingProfile
     /// <summary>
     /// Creates a target profile without discovering an SDK or executing a generator.
     /// </summary>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The engine target identity that may consume this profile.
     /// </param>
     /// <param name="target">
@@ -46,24 +46,24 @@ public sealed class NativeBindingProfile
     /// An identity is empty, uses implicit host selection, or a path escapes the checkout.
     /// </exception>
     public NativeBindingProfile(
-        string targetId,
+        string targetID,
         TargetConfiguration target,
         ManagedRuntimeId? runtime = null,
         IEnumerable<string>? inputPaths = null,
         Action<BindingHostBuilder>? configureGenerator = null,
         BindingImportMode? importMode = null
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
-        if (targetId == "host")
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetID);
+        if (targetID == "host")
         {
-            throw new ArgumentException("A binding profile requires an explicit engine target.", nameof(targetId));
+            throw new ArgumentException("A binding profile requires an explicit engine target.", nameof(targetID));
         }
         ArgumentNullException.ThrowIfNull(target);
         if (target.id == "host" || string.IsNullOrWhiteSpace(target.id))
         {
             throw new ArgumentException("Binding profiles require an explicit native ABI.", nameof(target));
         }
-        this.targetId = targetId;
+        this.targetID = targetID;
         this.target = target;
         if (importMode is { } selectedImport && !Enum.IsDefined(selectedImport))
         {
@@ -78,7 +78,7 @@ public sealed class NativeBindingProfile
     /// <summary>
     /// Gets the engine target authorized to consume this profile.
     /// </summary>
-    public string targetId { get; }
+    public string targetID { get; }
 
     /// <summary>
     /// Gets the immutable official BGCS target configuration.

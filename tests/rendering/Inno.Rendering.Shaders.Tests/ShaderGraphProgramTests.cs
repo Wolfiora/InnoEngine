@@ -81,7 +81,7 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
         Assert.Contains("SHADER_DUPLICATE_KEYWORD_OPTION", codes);
         Assert.Contains("SHADER_UNKNOWN_TECHNIQUE_PASS", codes);
         graph.SetMetadata(
-            ShaderGraphDocument.definitionKey,
+            ShaderGraphDocument.C_DEFINITION_KEY,
             ShaderGraphDocument.Encode(m_serialization.Serialize(definition), m_serialization, SerializationContext.empty)
         );
         Assert.False(Lower(graph).succeeded);
@@ -96,7 +96,7 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
         definition.passes = [pass];
         RenderTextureFormat[] formats = Enum.GetValues<RenderTextureFormat>();
         var capabilities = new GraphicsCapabilities(
-            GraphicsApi.Noop,
+            GraphicsApi.noop,
             GraphicsCapability.None,
             new(64, 1, 4096, 0),
             formats,
@@ -162,7 +162,7 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
         Assert.Null(edited.FindNode(new("color")));
         Assert.Empty(ShaderGraphDocument.ReadDefinition(edited, m_serialization, SerializationContext.empty).properties);
         Assert.Equal(before, GraphDocumentCodec.Encode(graph, m_serialization));
-        Assert.DoesNotContain(edited.edges, edge => edge.output.nodeId.value == "color");
+        Assert.DoesNotContain(edited.edges, edge => edge.output.nodeID.value == "color");
     }
 
     [Fact]
@@ -217,7 +217,7 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
         => new ShaderGraphProgramCompiler(m_nodes).Lower(
             graph,
             "bgfx",
-            new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis>(),
+            new Dictionary<GraphNodeID, ShaderSourceModuleAnalysis>(),
             m_serialization,
             SerializationContext.empty
         );

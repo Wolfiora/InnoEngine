@@ -6,7 +6,7 @@ using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using NativeMouseButton = Inno.Native.ImGui.ImGuiMouseButton;
 
@@ -17,10 +17,10 @@ namespace Inno.Editor.ImGui;
 /// </summary>
 public sealed unsafe class EditorMenuRenderer
 {
-    private readonly EditorUiSession m_session;
-    private readonly Dictionary<(string Owner, uint Popup), string> m_contextSearches = [];
+    private readonly EditorUISession m_session;
+    private readonly Dictionary<(string owner, uint popup), string> m_contextSearches = [];
 
-    internal EditorMenuRenderer(EditorUiSession session)
+    internal EditorMenuRenderer(EditorUISession session)
     {
         m_session = session;
     }
@@ -238,10 +238,10 @@ public sealed unsafe class EditorMenuRenderer
                 continue;
             }
 
-            string shortcut = interaction.TryGetShortcut(item.actionId, out HotKeyGesture gesture) ? gesture.ToString() : string.Empty;
+            string shortcut = interaction.TryGetShortcut(item.actionID, out HotKeyGesture gesture) ? gesture.ToString() : string.Empty;
             if (NativeImGui.MenuItem(item.label, shortcut, item.status.isChecked, item.status.isEnabled))
             {
-                interaction.Enqueue(item.actionId, item.argument);
+                interaction.Enqueue(item.actionID, item.argument);
             }
 
             DrawUnavailableReason(item.status);
@@ -275,7 +275,7 @@ public sealed unsafe class EditorMenuRenderer
 
     internal void RetireOwner(string owner)
     {
-        foreach ((string Owner, uint Popup) key in m_contextSearches.Keys.Where(value => value.Owner == owner).ToArray())
+        foreach ((string owner, uint popup) key in m_contextSearches.Keys.Where(value => value.owner == owner).ToArray())
         {
             m_contextSearches.Remove(key);
         }
@@ -379,7 +379,7 @@ public sealed unsafe class EditorMenuRenderer
             NativeImGui.BeginDisabled(true);
         }
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
-        bool pressed = NativeImGui.InvisibleButton($"##editor_toolbar_{item.actionId}", size);
+        bool pressed = NativeImGui.InvisibleButton($"##editor_toolbar_{item.actionID}", size);
         bool hovered = NativeImGui.IsItemHovered();
         bool active = NativeImGui.IsItemActive();
         if (disabled)
@@ -403,7 +403,7 @@ public sealed unsafe class EditorMenuRenderer
         EditorUI.current.widgets.AddGlyphCentered(NativeImGui.GetFontSize(), GetToolbarIcon(item.icon), minimum + size * 0.5f, color);
         if (hovered && EditorUI.current.widgets.BeginMenuTooltip())
         {
-            string tooltip = interaction.TryGetShortcut(item.actionId, out HotKeyGesture shortcut)
+            string tooltip = interaction.TryGetShortcut(item.actionID, out HotKeyGesture shortcut)
                              ? $"{item.tooltip} ({shortcut})"
                              : item.tooltip;
             NativeImGui.TextUnformatted(tooltip);
@@ -412,18 +412,18 @@ public sealed unsafe class EditorMenuRenderer
 
         if (pressed && item.status.isEnabled)
         {
-            interaction.Enqueue(item.actionId);
+            interaction.Enqueue(item.actionID);
         }
     }
 
     private string GetToolbarIcon(EditorToolbarIcon icon)
         => icon switch
     {
-        EditorToolbarIcon.Play => ImGuiIcon.Play,
-        EditorToolbarIcon.Stop => ImGuiIcon.Stop,
-        EditorToolbarIcon.Pause => ImGuiIcon.Pause,
-        EditorToolbarIcon.Step => ImGuiIcon.ForwardStep,
-        EditorToolbarIcon.Edit => ImGuiIcon.Pen,
+        EditorToolbarIcon.Play => ImGuiIcon.C_PLAY,
+        EditorToolbarIcon.Stop => ImGuiIcon.C_STOP,
+        EditorToolbarIcon.Pause => ImGuiIcon.C_PAUSE,
+        EditorToolbarIcon.Step => ImGuiIcon.C_FORWARD_STEP,
+        EditorToolbarIcon.Edit => ImGuiIcon.C_PEN,
         _ => string.Empty
     };
 
@@ -465,7 +465,7 @@ public sealed unsafe class EditorMenuRenderer
             DrawUnavailableReason(item.status);
             if (chosen && item.status.isEnabled)
             {
-                interaction.Enqueue(item.actionId, item.argument);
+                interaction.Enqueue(item.actionID, item.argument);
                 return true;
             }
         }

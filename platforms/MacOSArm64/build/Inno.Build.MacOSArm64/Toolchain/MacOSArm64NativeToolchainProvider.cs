@@ -34,15 +34,15 @@ public sealed class MacOSArm64NativeToolchainProvider : INativeToolchainProvider
     public async ValueTask<NativeToolchainSelection> ResolveAsync(
         NativeBuildContext context,
         BuildHostDescriptor host,
-        string targetId,
+        string targetID,
         CancellationToken cancellationToken
     ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(host);
         cancellationToken.ThrowIfCancellationRequested();
-        if (!(host.system == "MacOS" && host.architecture == "arm64" && targetId == "macos-arm64"))
+        if (!(host.system == "MacOS" && host.architecture == "arm64" && targetID == "macos-arm64"))
         {
-            throw new PlatformNotSupportedException($"The MacOS SDK cannot build '{targetId}' on {host.system}/{host.architecture}.");
+            throw new PlatformNotSupportedException($"The MacOS SDK cannot build '{targetID}' on {host.system}/{host.architecture}.");
         }
         var tools = new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -76,7 +76,7 @@ public sealed class MacOSArm64NativeToolchainProvider : INativeToolchainProvider
         ConfigureTools(tools, environment, cmakeArguments);
 
         return NativeToolchainPreparation.Freeze(
-            targetId,
+            targetID,
             host,
             tools,
             environment,

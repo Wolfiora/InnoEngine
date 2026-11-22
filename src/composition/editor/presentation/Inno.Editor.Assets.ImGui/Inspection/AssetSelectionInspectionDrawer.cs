@@ -7,7 +7,7 @@ using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Inspection;
 using Inno.Editor.Interactions;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 
 namespace Inno.Editor.Assets.ImGui;
 
@@ -33,7 +33,7 @@ internal sealed class AssetSelectionInspectionDrawer : InspectionDrawer<AssetFil
     /// <summary>
     /// Gets the icon glyph used to represent this item in the editor.
     /// </summary>
-    public override string icon => ImGuiIcon.File;
+    public override string icon => ImGuiIcon.C_FILE;
 
     /// <summary>
     /// Retrieves the requested icon value from current authoritative state.

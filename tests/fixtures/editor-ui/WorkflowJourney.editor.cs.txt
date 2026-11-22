@@ -19,11 +19,11 @@ public sealed class WorkflowJourney(
 ) : EditorModule
 {
     private readonly List<string> m_verified = [];
-    private Guid m_sceneId;
-    private Guid m_firstId;
-    private Guid m_secondId;
-    private Guid m_componentId;
-    private Guid m_duplicateId;
+    private Guid m_sceneID;
+    private Guid m_firstID;
+    private Guid m_secondID;
+    private Guid m_componentID;
+    private Guid m_duplicateID;
     private string m_scenePath = string.Empty;
     private int m_step;
     private int m_playFrames;
@@ -71,11 +71,11 @@ public sealed class WorkflowJourney(
             edits.RenameGameObject(second, "Workflow Second");
             first.transform.localPosition = new Vector3(0, 2, 3);
             second.transform.localPosition = new Vector3(0, 5, 6);
-            m_sceneId = created.identity.persistentId;
-            m_firstId = first.identity.persistentId;
-            m_secondId = second.identity.persistentId;
-            m_componentId = edits.AddComponent(first, typeof(WorkflowState)).identity.persistentId;
-            m_duplicateId = edits.AddComponent(first, typeof(WorkflowState)).identity.persistentId;
+            m_sceneID = created.identity.persistentID;
+            m_firstID = first.identity.persistentID;
+            m_secondID = second.identity.persistentID;
+            m_componentID = edits.AddComponent(first, typeof(WorkflowState)).identity.persistentID;
+            m_duplicateID = edits.AddComponent(first, typeof(WorkflowState)).identity.persistentID;
             interactions.SetSelection([first, second], first);
             m_step++;
             return;
@@ -89,10 +89,10 @@ public sealed class WorkflowJourney(
             WorkflowState state = first.GetComponents().OfType<WorkflowState>().Single(value => value.number == 7);
             Require(first.GetComponents().OfType<WorkflowState>().Count() == 2 && state.reference == second,
                 "Save and reopen lost component order, values or references.");
-            m_sceneId = reopened.identity.persistentId;
-            m_firstId = first.identity.persistentId;
-            m_secondId = second.identity.persistentId;
-            m_componentId = state.identity.persistentId;
+            m_sceneID = reopened.identity.persistentID;
+            m_firstID = first.identity.persistentID;
+            m_secondID = second.identity.persistentID;
+            m_componentID = state.identity.persistentID;
             interactions.SetSelection(first);
             m_verified.Add("actual File Browser and Inspector: save, close, reopen and reference restoration");
             m_step++;
@@ -103,10 +103,10 @@ public sealed class WorkflowJourney(
             AdvancePlayJourney(context);
             return;
         }
-        GameScene scene = workspace.scenes.Single(value => value.identity.persistentId == m_sceneId);
-        GameObject? firstObject = scene.GetObjects().SingleOrDefault(value => value.identity.persistentId == m_firstId);
-        GameObject? secondObject = scene.GetObjects().SingleOrDefault(value => value.identity.persistentId == m_secondId);
-        WorkflowState? component = FindComponent(scene, m_componentId) as WorkflowState;
+        GameScene scene = workspace.scenes.Single(value => value.identity.persistentID == m_sceneID);
+        GameObject? firstObject = scene.GetObjects().SingleOrDefault(value => value.identity.persistentID == m_firstID);
+        GameObject? secondObject = scene.GetObjects().SingleOrDefault(value => value.identity.persistentID == m_secondID);
+        WorkflowState? component = FindComponent(scene, m_componentID) as WorkflowState;
         switch (m_step)
         {
             case 1:
@@ -188,18 +188,18 @@ public sealed class WorkflowJourney(
                 break;
             case 13:
                 interactions.SetSelection(firstObject);
-                edits.SetComponentIndex(FindComponent(scene, m_duplicateId)!, 1);
+                edits.SetComponentIndex(FindComponent(scene, m_duplicateID)!, 1);
                 break;
             case 14:
-                Require(firstObject!.GetComponentIndex(FindComponent(scene, m_duplicateId)!) == 1,
+                Require(firstObject!.GetComponentIndex(FindComponent(scene, m_duplicateID)!) == 1,
                     "Duplicate component ordering selected the wrong instance.");
                 Require(interactions.history.Undo().succeeded &&
-                    firstObject.GetComponentIndex(FindComponent(scene, m_duplicateId)!) == 2, "Component order Undo failed.");
-                Require(edits.RemoveComponent(FindComponent(scene, m_duplicateId)!), "Component removal failed.");
+                    firstObject.GetComponentIndex(FindComponent(scene, m_duplicateID)!) == 2, "Component order Undo failed.");
+                Require(edits.RemoveComponent(FindComponent(scene, m_duplicateID)!), "Component removal failed.");
                 break;
             case 15:
-                Require(FindComponent(scene, m_duplicateId) is null, "The removed component remained attached.");
-                Require(interactions.history.Undo().succeeded && FindComponent(scene, m_duplicateId) is WorkflowState,
+                Require(FindComponent(scene, m_duplicateID) is null, "The removed component remained attached.");
+                Require(interactions.history.Undo().succeeded && FindComponent(scene, m_duplicateID) is WorkflowState,
                     "Component restoration lost identity or type.");
                 m_verified.Add("actual Inspector: duplicate instance order, removal and identity-preserving restoration");
                 break;
@@ -260,7 +260,7 @@ public sealed class WorkflowJourney(
                 if (play.isPlaying)
                     return;
                 Require(workspace.canPersist, "Stop did not restore Edit persistence.");
-                Require(workspace.scenes.Single(value => value.identity.persistentId == m_sceneId)
+                Require(workspace.scenes.Single(value => value.identity.persistentID == m_sceneID)
                     .GetObjects().SelectMany(static value => value.GetComponents()).OfType<WorkflowState>()
                     .All(static value => value.ticks == 0), "Play mutations leaked into the Edit document.");
                 m_verified.Add("actual Game view: Play, frame advancement, Stop and restored Edit");
@@ -278,9 +278,9 @@ public sealed class WorkflowJourney(
 
     private static GameComponent? FindComponent(
         GameScene scene,
-        Guid persistentId
+        Guid persistentID
     ) => scene.GetObjects().SelectMany(static value => value.GetComponents())
-        .SingleOrDefault(value => value.identity.persistentId == persistentId);
+        .SingleOrDefault(value => value.identity.persistentID == persistentID);
 
     private static void Require(
         bool condition,

@@ -10,9 +10,9 @@ namespace Inno.Adapter.Rendering.Bgfx.Tests;
 [Trait("ProcessIsolation", "Required")]
 public sealed class BgfxDeviceTests
 {
-    private static readonly RenderPhaseId FIRST = new("tests.first");
-    private static readonly RenderPhaseId COMPUTE = new("tests.compute");
-    private static readonly RenderPhaseId LAYERED = new("tests.layered");
+    private static readonly RenderPhaseID FIRST = new("tests.first");
+    private static readonly RenderPhaseID COMPUTE = new("tests.compute");
+    private static readonly RenderPhaseID LAYERED = new("tests.layered");
 
     private readonly BgfxDevice m_device;
 
@@ -37,7 +37,7 @@ public sealed class BgfxDeviceTests
         m_device.Execute(graph, 1);
         uint submitted = m_device.EndFrame();
 
-        Assert.Equal(GraphicsApi.Noop, m_device.capabilities.backend);
+        Assert.Equal(GraphicsApi.noop, m_device.capabilities.backend);
         Assert.Equal(submitted, m_device.backendFrame);
         Assert.Single(graph.passes);
     }
@@ -399,7 +399,7 @@ public sealed class BgfxDeviceTests
     {
         var options = new BgfxDeviceOptions
         {
-            preferredBackend = GraphicsApi.Noop,
+            preferredBackend = GraphicsApi.noop,
             backbufferWidth = 1,
             backbufferHeight = 1,
             verticalSync = false,
@@ -457,7 +457,7 @@ public sealed class BgfxDeviceFixture : IDisposable
     private static BgfxDevice CreateDevice()
         => new(new BgfxDeviceOptions
         {
-            preferredBackend = GraphicsApi.Noop,
+            preferredBackend = GraphicsApi.noop,
             backbufferWidth = 1,
             backbufferHeight = 1,
             verticalSync = false,

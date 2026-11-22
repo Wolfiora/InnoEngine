@@ -16,13 +16,13 @@ public abstract class ProjectSettingEditor
     private string? m_pagePath;
     private string? m_path;
     private SerializationRegistry? m_serialization;
-    private ProjectSettingId m_settingID;
+    private ProjectSettingID m_settingID;
 
     /// <summary>
     /// Gets the stable runtime project setting protocol read from the target setting type's
     /// <see cref="ProjectSettingDefinitionAttribute"/> by the Editor catalog.
     /// </summary>
-    public ProjectSettingId settingId => m_settingID;
+    public ProjectSettingID settingID => m_settingID;
 
     /// <summary>
     /// Gets the complete slash-delimited placement path.
@@ -116,7 +116,7 @@ public abstract class ProjectSettingEditor
         m_serialization = serializationRegistry;
     }
 
-    internal void BindSettingID(ProjectSettingId id)
+    internal void BindSettingID(ProjectSettingID id)
     {
         if (!id.isValid)
         {
@@ -143,7 +143,7 @@ public abstract class ProjectSettingEditor
                 $"Project setting editor '{GetType().FullName}' was registered at more than one path."
             );
         }
-        if (!settingId.isValid)
+        if (!settingID.isValid)
         {
             throw new InvalidOperationException(
                 $"Project setting editor '{GetType().FullName}' returned an invalid setting ID."
@@ -166,7 +166,7 @@ public abstract class ProjectSettingEditor
         if (value.GetType() != valueType)
         {
             throw new ArgumentException(
-                $"Project setting '{settingId}' requires '{valueType.FullName}', not '{value.GetType().FullName}'.",
+                $"Project setting '{settingID}' requires '{valueType.FullName}', not '{value.GetType().FullName}'.",
                 nameof(value)
             );
         }

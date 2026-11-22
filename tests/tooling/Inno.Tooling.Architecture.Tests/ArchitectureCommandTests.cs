@@ -209,13 +209,13 @@ public sealed class ArchitectureCommandTests
     )]
     [InlineData(
         "src/composition/editor/panels/Probe.cs",
-        "using Ui = Inno.Editor.ImGui.ImGui; internal class Probe { void Draw() { for (int i = 0; i < 2; i++) { Ui.PushId(i); DrawRow(); if (i == 1) break; Ui.PopId(); } } }",
+        "using Ui = Inno.Editor.ImGui.ImGui; internal class Probe { void Draw() { for (int i = 0; i < 2; i++) { Ui.PushID(i); DrawRow(); if (i == 1) break; Ui.PopID(); } } }",
         "presentation loop ID scopes",
         true
     )]
     [InlineData(
         "src/composition/editor/panels/Probe.cs",
-        "using Ui = Inno.Editor.ImGui.ImGui;\n\ninternal sealed class Probe\n{\n    private void Draw()\n    {\n        for (int i = 0; i < 2; i++)\n        {\n            Ui.PushId(i);\n            try\n            {\n                DrawRow();\n                if (i == 1) break;\n            }\n            finally\n            {\n                Ui.PopId();\n            }\n        }\n    }\n}\n",
+        "using Ui = Inno.Editor.ImGui.ImGui;\n\ninternal sealed class Probe\n{\n    private void Draw()\n    {\n        for (int i = 0; i < 2; i++)\n        {\n            Ui.PushID(i);\n            try\n            {\n                DrawRow();\n                if (i == 1) break;\n            }\n            finally\n            {\n                Ui.PopID();\n            }\n        }\n    }\n}\n",
         "presentation loop ID scopes",
         false
     )]
@@ -245,13 +245,13 @@ public sealed class ArchitectureCommandTests
     )]
     [InlineData(
         "src/services/Probe.cs",
-        "using Ui = Inno.Editor.ImGui.ImGui;\n\ninternal sealed class Probe\n{\n    private void Draw()\n    {\n        for (int i = 0; i < 2; i++)\n        {\n            Ui.PushId(i);\n            DrawRow();\n            Ui.PopId();\n        }\n    }\n}\n",
+        "using Ui = Inno.Editor.ImGui.ImGui;\n\ninternal sealed class Probe\n{\n    private void Draw()\n    {\n        for (int i = 0; i < 2; i++)\n        {\n            Ui.PushID(i);\n            DrawRow();\n            Ui.PopID();\n        }\n    }\n}\n",
         "presentation loop ID scopes",
         false
     )]
     [InlineData(
         "src/composition/editor/panels/Probe.cs",
-        "internal sealed class Probe\n{\n    private void Draw()\n    {\n        for (int i = 0; i < 2; i++)\n        {\n            collector.PushId(i);\n            DrawRow();\n            collector.PopId();\n        }\n    }\n}\n",
+        "internal sealed class Probe\n{\n    private void Draw()\n    {\n        for (int i = 0; i < 2; i++)\n        {\n            collector.PushID(i);\n            DrawRow();\n            collector.PopID();\n        }\n    }\n}\n",
         "presentation loop ID scopes",
         false
     )]

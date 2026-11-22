@@ -12,7 +12,7 @@ public static class AssetSample
     /// <summary>
     /// Gets the logical File Browser type used for a sample directory.
     /// </summary>
-    public const string fileType = ".isample";
+    public const string C_FILE_TYPE = ".isample";
 
     /// <summary>
     /// Determines whether the final path segment uses the sample-directory naming convention.
@@ -44,7 +44,7 @@ public static class AssetSample
     /// segment starts with <c>~</c>. A Project directory with the same name remains normal writable
     /// authoring content.
     /// </returns>
-    public static bool IsRoot(AssetPath path) => path.source != AssetSourceId.project && HasSampleDirectoryName(path);
+    public static bool IsRoot(AssetPath path) => path.source != AssetSourceID.project && HasSampleDirectoryName(path);
 
     /// <summary>
     /// Determines whether a source path is a sample directory or is contained by one.
@@ -62,7 +62,7 @@ public static class AssetSample
     public static bool Contains(
         AssetPath path,
         bool isDirectory
-    ) => path.source != AssetSourceId.project && ContainsTildeDirectory(path, isDirectory);
+    ) => path.source != AssetSourceID.project && ContainsTildeDirectory(path, isDirectory);
 
     /// <summary>
     /// Gets the original sample directory name for a writable Project copy.

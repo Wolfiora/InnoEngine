@@ -84,7 +84,7 @@ public sealed class DefaultAuthoringAdapterCatalog :
     /// <summary>
     /// Gets the built-in retained-mode UI backend factory.
     /// </summary>
-    public IUiBackendFactory ui => m_runtime.ui;
+    public IUIBackendFactory ui => m_runtime.ui;
 
     /// <summary>
     /// Gets the built-in rendering authoring toolchain factory.
@@ -96,12 +96,12 @@ public sealed class DefaultAuthoringAdapterCatalog :
     /// </summary>
     public IPresentationBackendFactory presentation => m_presentation;
 
-    IReadOnlyList<RenderingBackendId> IRenderingAuthoringBackendFactory.supportedBackends
+    IReadOnlyList<RenderingBackendID> IRenderingAuthoringBackendFactory.supportedBackends
         => m_renderingAuthoring.supportedBackends;
 
-    IShaderCompilerToolchain IRenderingAuthoringBackendFactory.CreateShaderCompilerToolchain(RenderingBackendId backend)
+    IShaderCompilerToolchain IRenderingAuthoringBackendFactory.CreateShaderCompilerToolchain(RenderingBackendID backend)
         => m_renderingAuthoring.CreateShaderCompilerToolchain(backend);
 
-    ITextureTargetCompiler IRenderingAuthoringBackendFactory.CreateTextureTargetCompiler(RenderingBackendId backend)
+    ITextureTargetCompiler IRenderingAuthoringBackendFactory.CreateTextureTargetCompiler(RenderingBackendID backend)
         => m_renderingAuthoring.CreateTextureTargetCompiler(backend);
 }

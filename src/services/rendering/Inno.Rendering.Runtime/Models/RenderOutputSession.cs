@@ -12,7 +12,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Declares a host output without naming a camera or scene model.
 /// </summary>
-[StableTypeId("18d40f92-089a-5c0e-94a9-402b68225c2b")]
+[StableTypeID("18d40f92-089a-5c0e-94a9-402b68225c2b")]
 public sealed class RenderOutputSession
 {
     /// <summary>
@@ -121,7 +121,7 @@ public sealed class RenderOutputSession
             viewport,
             frameIndex,
             deltaTime,
-            new SelectedViewContentCollector(viewContent, layer.sourceIds),
+            new SelectedViewContentCollector(viewContent, layer.sourceIDs),
             input
         );
     }

@@ -13,10 +13,10 @@ internal sealed partial class BgfxShaderIrGenerator
 {
     private string EmitModule(ShaderSourceImplementationAnalysis implementation)
     {
-        if (implementation.languageId != "inno.shader-language.bgfx-sc")
+        if (implementation.languageID != "inno.shader-language.bgfx-sc")
         {
             throw new BgfxSourceSyntaxException(
-                $"BGFX SC generation cannot embed language '{implementation.languageId}'.",
+                $"BGFX SC generation cannot embed language '{implementation.languageID}'.",
                 new(implementation.sourcePath, 1, 1)
             );
         }

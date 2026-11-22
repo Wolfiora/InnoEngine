@@ -10,18 +10,18 @@ public sealed class ShaderTargetUnavailableException : InvalidOperationException
     /// <summary>
     /// Creates a missing-target diagnostic without retaining extension objects.
     /// </summary>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The stable authored target identity.
     /// </param>
-    public ShaderTargetUnavailableException(string targetId)
-        : base($"Shader target '{targetId}' is unavailable. The authored graph is retained for recovery.")
+    public ShaderTargetUnavailableException(string targetID)
+        : base($"Shader target '{targetID}' is unavailable. The authored graph is retained for recovery.")
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
-        this.targetId = targetId;
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetID);
+        this.targetID = targetID;
     }
 
     /// <summary>
     /// Gets the stable target identity required by the authored graph.
     /// </summary>
-    public string targetId { get; }
+    public string targetID { get; }
 }

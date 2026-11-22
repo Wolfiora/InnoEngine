@@ -6,7 +6,7 @@ namespace Inno.Scene;
 
 internal sealed class PrefabOverrideSet
 {
-    private readonly Dictionary<(Guid sourceComponentId, string propertyName), PrefabPropertyOverride>
+    private readonly Dictionary<(Guid sourceComponentID, string propertyName), PrefabPropertyOverride>
         m_properties = [];
 
     private readonly Dictionary<Guid, PrefabStructureOverride> m_structures = [];

@@ -2,8 +2,8 @@ using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Scripting;
 
-[EditorAction(ScriptingInteractionIds.C_RELOAD_SCRIPTING, ScriptingInteractionIds.C_MAIN_MENU_AREA)]
-[EditorMenu(ScriptingInteractionIds.C_MAIN_MENU_AREA, "Tools/Scripting/Reload Scripts", order: 100)]
+[EditorAction(ScriptingInteractionIDs.C_RELOAD_SCRIPTING, ScriptingInteractionIDs.C_MAIN_MENU_AREA)]
+[EditorMenu(ScriptingInteractionIDs.C_MAIN_MENU_AREA, "Tools/Scripting/Reload Scripts", order: 100)]
 internal sealed class ReloadScriptingAction(EditorScripting scripting) : EditorAction
 {
     /// <summary>
@@ -27,8 +27,8 @@ internal sealed class ReloadScriptingAction(EditorScripting scripting) : EditorA
     protected override void Execute(EditorActionContext context) => scripting.ReloadScripting();
 }
 
-[EditorAction(ScriptingInteractionIds.C_RELOAD_PLUGINS, ScriptingInteractionIds.C_MAIN_MENU_AREA)]
-[EditorMenu(ScriptingInteractionIds.C_MAIN_MENU_AREA, "Tools/Scripting/Reload Plugins", order: 120)]
+[EditorAction(ScriptingInteractionIDs.C_RELOAD_PLUGINS, ScriptingInteractionIDs.C_MAIN_MENU_AREA)]
+[EditorMenu(ScriptingInteractionIDs.C_MAIN_MENU_AREA, "Tools/Scripting/Reload Plugins", order: 120)]
 internal sealed class ReloadPluginsAction(EditorScripting scripting) : EditorAction
 {
     /// <summary>

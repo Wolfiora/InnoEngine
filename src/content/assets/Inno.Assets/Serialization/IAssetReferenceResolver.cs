@@ -15,15 +15,15 @@ public interface IAssetReferenceResolver : IReferenceResolver
     /// <summary>
     /// Gets the stable open protocol identifier for persistent asset references.
     /// </summary>
-    ReferenceKindId IReferenceResolver.kindId => AssetReferenceProtocol.id;
+    ReferenceKindID IReferenceResolver.kindID => AssetReferenceProtocol.id;
 
     /// <summary>
     /// Resolves one serialized asset reference to the canonical object owned by this resolver.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The persistent asset identity encoded in the reference.
     /// </param>
-    /// <param name="stableTypeId">
+    /// <param name="stableTypeID">
     /// The stable concrete asset type identity encoded in the reference.
     /// </param>
     /// <param name="lastKnownPath">
@@ -42,8 +42,8 @@ public interface IAssetReferenceResolver : IReferenceResolver
     /// Thrown when the reference cannot be resolved to a compatible asset.
     /// </exception>
     AssetObject Resolve(
-        Guid persistentId,
-        Guid stableTypeId,
+        Guid persistentID,
+        Guid stableTypeID,
         string lastKnownPath,
         Type expectedType,
         string propertyPath
@@ -64,12 +64,12 @@ public interface IAssetReferenceResolver : IReferenceResolver
     ReferenceResolution IReferenceResolver.Resolve(ReferenceDescriptor descriptor)
     {
         ArgumentNullException.ThrowIfNull(descriptor);
-        if (descriptor.kindId != AssetReferenceProtocol.id)
+        if (descriptor.kindID != AssetReferenceProtocol.id)
         {
             return new ReferenceResolution(
                 descriptor,
                 ReferenceResolutionState.Invalid,
-                diagnostic: $"Asset resolver cannot process reference kind '{descriptor.kindId}'."
+                diagnostic: $"Asset resolver cannot process reference kind '{descriptor.kindID}'."
             );
         }
         if (descriptor.isUnassigned)
@@ -79,13 +79,13 @@ public interface IAssetReferenceResolver : IReferenceResolver
         try
         {
             AssetObject asset = Resolve(
-                descriptor.targetPersistentId,
-                descriptor.expectedStableTypeId,
+                descriptor.targetPersistentID,
+                descriptor.expectedStableTypeID,
                 descriptor.lastKnownPath ?? string.Empty,
                 typeof(AssetObject),
                 "$reference"
             );
-            if (asset.identity.persistentId != descriptor.targetPersistentId)
+            if (asset.identity.persistentID != descriptor.targetPersistentID)
             {
                 return new ReferenceResolution(
                     descriptor,
@@ -98,7 +98,7 @@ public interface IAssetReferenceResolver : IReferenceResolver
                 return new ReferenceResolution(
                     descriptor,
                     ReferenceResolutionState.Missing,
-                    diagnostic: $"Asset '{descriptor.targetPersistentId:D}' is unavailable in the current generation."
+                    diagnostic: $"Asset '{descriptor.targetPersistentID:D}' is unavailable in the current generation."
                 );
             }
             if (asset.identity.runtimeIdentity is not RuntimeIdentity runtimeIdentity)
@@ -106,7 +106,7 @@ public interface IAssetReferenceResolver : IReferenceResolver
                 return new ReferenceResolution(
                     descriptor,
                     ReferenceResolutionState.Invalid,
-                    diagnostic: $"Asset '{descriptor.targetPersistentId:D}' is not registered in a runtime identity domain."
+                    diagnostic: $"Asset '{descriptor.targetPersistentID:D}' is not registered in a runtime identity domain."
                 );
             }
             return new ReferenceResolution(descriptor, ReferenceResolutionState.Resolved, runtimeIdentity);

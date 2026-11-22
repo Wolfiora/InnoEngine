@@ -37,7 +37,7 @@ public interface IAssetResidency
     /// <typeparam name="TAsset">
     /// Required asset contract.
     /// </typeparam>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// Non-empty persistent asset identity.
     /// </param>
     /// <param name="cancellationToken">
@@ -47,14 +47,14 @@ public interface IAssetResidency
     /// A lease that owns residency for the canonical asset.
     /// </returns>
     ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
-        Guid persistentId,
+        Guid persistentID,
         CancellationToken cancellationToken = default
     ) where TAsset : AssetObject;
 
     /// <summary>
     /// Acquires one verified immutable artifact output.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// Persistent identity of the artifact owner.
     /// </param>
     /// <param name="outputName">
@@ -67,7 +67,7 @@ public interface IAssetResidency
     /// Thrown when the requested artifact does not exist or fails verification.
     /// </exception>
     ArtifactLease AcquireArtifact(
-        Guid persistentId,
+        Guid persistentID,
         string outputName
     );
 }

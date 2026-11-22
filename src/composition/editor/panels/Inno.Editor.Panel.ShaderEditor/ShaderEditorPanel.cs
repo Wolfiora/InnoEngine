@@ -11,8 +11,8 @@ using Inno.Editor.Shaders;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 
@@ -48,7 +48,7 @@ internal sealed class ShaderEditorPanel(ShaderEditorDocuments documents) : Edito
             _ = documents.assets.TryGetFileSystemEntry(shader.assetPath, out entry);
         }
         if (documents.interactions.selection.selectedTarget is ShaderInspectionSelection selection
-            && documents.assets.TryGetInfo(selection.assetId, out AssetInfo? info)
+            && documents.assets.TryGetInfo(selection.assetID, out AssetInfo? info)
             && info is not null
         ) {
             _ = documents.assets.TryGetFileSystemEntry(info.assetPath, out entry);
@@ -58,7 +58,7 @@ internal sealed class ShaderEditorPanel(ShaderEditorDocuments documents) : Edito
             ShaderEditorCanvas.DrawHeader(documents, null);
             EditorUI.current.widgets.CenteredWrappedText(
                 "Select a Shader (.ishader) in the File Browser.",
-                Vector2.Max(Vector2.One, Ui.GetContentRegionAvailable()),
+                Vector2.Max(Vector2.One, Gui.GetContentRegionAvailable()),
                 new Vector2(40f, 28f)
             );
             return;

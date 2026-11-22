@@ -33,7 +33,7 @@ public sealed class SettingsReferenceTests
         File.WriteAllText(source, "original");
         TextAsset clip = fixture.assets.Load<TextAsset>(AssetPath.Project("value.txt"));
         byte[] metadata = File.ReadAllBytes(source + ".imeta");
-        ProjectSettingId id = composed ? ComposedClipSettings.id : ClipSettings.id;
+        ProjectSettingID id = composed ? ComposedClipSettings.id : ClipSettings.id;
         ClipSettingsBase value = composed ? new ComposedClipSettings() : new ClipSettings();
         value.clip = clip;
         fixture.settings.SetProjectOverride(id, value, []);
@@ -44,7 +44,7 @@ public sealed class SettingsReferenceTests
         fixture.assets.ReplaceSourceMounts(fixture.assets.sourceMounts);
         TextAsset missing = Assert.IsType<TextAsset>(fixture.settings.Get<ClipSettingsBase>(id).clip);
         Assert.True(missing.isMissing);
-        Assert.Equal(clip.identity.persistentId, missing.identity.persistentId);
+        Assert.Equal(clip.identity.persistentID, missing.identity.persistentID);
         Assert.Equal(document, fixture.settings.CaptureDocument());
 
         File.WriteAllText(source, "restored");
@@ -52,7 +52,7 @@ public sealed class SettingsReferenceTests
         fixture.assets.ReplaceSourceMounts(fixture.assets.sourceMounts);
         TextAsset restored = Assert.IsType<TextAsset>(fixture.settings.Get<ClipSettingsBase>(id).clip);
         Assert.False(restored.isMissing);
-        Assert.Equal(clip.identity.persistentId, restored.identity.persistentId);
+        Assert.Equal(clip.identity.persistentID, restored.identity.persistentID);
         Assert.Equal("restored", restored.content);
         Assert.NotSame(clip, restored);
         Assert.Equal(document, fixture.settings.CaptureDocument());
@@ -68,7 +68,7 @@ public sealed class SettingsReferenceTests
         using var fixture = new Fixture();
         File.WriteAllText(Path.Combine(fixture.assetRoot, "value.txt"), "deployed");
         TextAsset clip = fixture.assets.Load<TextAsset>(AssetPath.Project("value.txt"));
-        ProjectSettingId id = composed ? ComposedClipSettings.id : ClipSettings.id;
+        ProjectSettingID id = composed ? ComposedClipSettings.id : ClipSettings.id;
         ClipSettingsBase value = composed ? new ComposedClipSettings() : new ClipSettings();
         value.clip = clip;
         fixture.settings.SetProjectOverride(id, value, []);
@@ -80,7 +80,7 @@ public sealed class SettingsReferenceTests
         var identities = new IdentityAllocator();
         using ContentTestStore contentStore = ContentTestStore.FromDirectory(content);
         using var database = new AssetDatabase(contentStore, serialization, fixture.types.current, identities);
-        Assert.Null(identities.Get<AssetObject>(clip.identity.persistentId));
+        Assert.Null(identities.Get<AssetObject>(clip.identity.persistentID));
 
         using ContentReadLease settingsLease = contentStore.Acquire(new ContentKey("Settings.Project.inno"));
         using Stream settingsInput = settingsLease.OpenRead();
@@ -90,13 +90,13 @@ public sealed class SettingsReferenceTests
             new ReadOnlyByteDocumentStore("Settings.Project.inno", settingsBytes),
             fixture.types,
             fixture.serialization,
-            new ProjectId("tests.deployed.settings"),
+            new ProjectID("tests.deployed.settings"),
             AssetSerializationContext.Create(database)
         );
 
         TextAsset runtime = Assert.IsType<TextAsset>(settings.Get<ClipSettingsBase>(id).clip);
         Assert.Equal("deployed", runtime.content);
-        Assert.Same(runtime, identities.Get<AssetObject>(clip.identity.persistentId));
+        Assert.Same(runtime, identities.Get<AssetObject>(clip.identity.persistentID));
         Assert.NotSame(clip, runtime);
         byte[] previous = settings.CaptureDocument();
         ClipSettingsBase changed = composed ? new ComposedClipSettings() : new ClipSettings();
@@ -183,7 +183,7 @@ public sealed class SettingsReferenceTests
             new FileByteDocumentStore(Path.GetFullPath(Path.Combine(fixture.root, "Rejected.inno"))),
             fixture.types,
             fixture.serialization,
-            new ProjectId("tests.rejected"),
+            new ProjectID("tests.rejected"),
             null!
         ));
     }
@@ -221,7 +221,7 @@ public sealed class SettingsReferenceTests
                 new FileByteDocumentStore(Path.GetFullPath(Path.Combine(root, "Settings.Project.inno"))),
                 types,
                 serialization,
-                new ProjectId("tests.settings.references"),
+                new ProjectID("tests.settings.references"),
                 context
             );
         }
@@ -257,19 +257,19 @@ internal abstract class ClipSettingsBase : ISerializable
     public string[] labels { get; set; } = [];
 }
 
-[StableTypeId("2c7288db-eb9e-43a5-9894-bf9d10b22a2d")]
+[StableTypeID("2c7288db-eb9e-43a5-9894-bf9d10b22a2d")]
 [ProjectSettingDefinition("tests.settings.clip")]
 internal sealed class ClipSettings : ClipSettingsBase
 {
     internal static readonly Guid TYPE_ID = new("2c7288db-eb9e-43a5-9894-bf9d10b22a2d");
-    internal static ProjectSettingId id => new("tests.settings.clip");
+    internal static ProjectSettingID id => new("tests.settings.clip");
 }
 
-[StableTypeId("cbeec86a-29da-4894-915f-b6239086ee05")]
+[StableTypeID("cbeec86a-29da-4894-915f-b6239086ee05")]
 [ProjectSettingDefinition("tests.settings.composed-clip")]
 internal sealed class ComposedClipSettings : ClipSettingsBase
 {
-    internal static ProjectSettingId id => new("tests.settings.composed-clip");
+    internal static ProjectSettingID id => new("tests.settings.composed-clip");
 }
 
 internal sealed class ClipContribution : ISerializable

@@ -22,7 +22,7 @@ public readonly record struct AudioProcessorParameter
     /// Neutral numeric value interpreted by the processor.
     /// </param>
     public AudioProcessorParameter(
-        AudioParameterId id,
+        AudioParameterID id,
         float value
     ) {
         if (!id.isValid)
@@ -36,7 +36,7 @@ public readonly record struct AudioProcessorParameter
     /// <summary>
     /// Gets the open parameter identifier.
     /// </summary>
-    public AudioParameterId id { get; }
+    public AudioParameterID id { get; }
 
     /// <summary>
     /// Gets the neutral numeric value.
@@ -61,7 +61,7 @@ public sealed class AudioProcessorConfiguration
     /// Complete processor parameter set.
     /// </param>
     public AudioProcessorConfiguration(
-        AudioProcessorId id,
+        AudioProcessorID id,
         IEnumerable<AudioProcessorParameter>? parameters = null
     ) {
         if (!id.isValid)
@@ -79,7 +79,7 @@ public sealed class AudioProcessorConfiguration
     /// <summary>
     /// Gets the open processor protocol identifier.
     /// </summary>
-    public AudioProcessorId id { get; }
+    public AudioProcessorID id { get; }
 
     /// <summary>
     /// Gets the immutable processor parameter set.
@@ -113,8 +113,8 @@ public sealed class AudioBusDefinition
     /// Ordered processor chain.
     /// </param>
     public AudioBusDefinition(
-        AudioBusId id,
-        AudioBusId? parent,
+        AudioBusID id,
+        AudioBusID? parent,
         float volume,
         bool muted,
         IEnumerable<AudioProcessorConfiguration>? processors = null
@@ -127,11 +127,11 @@ public sealed class AudioBusDefinition
         {
             throw new ArgumentOutOfRangeException(nameof(volume));
         }
-        if (id == AudioBusId.master && parent is not null)
+        if (id == AudioBusID.master && parent is not null)
         {
             throw new ArgumentException("The master bus cannot have a parent.", nameof(parent));
         }
-        if (id != AudioBusId.master && (parent is null || !parent.Value.isValid))
+        if (id != AudioBusID.master && (parent is null || !parent.Value.isValid))
         {
             throw new ArgumentException("A non-master bus requires a valid parent.", nameof(parent));
         }
@@ -145,12 +145,12 @@ public sealed class AudioBusDefinition
     /// <summary>
     /// Gets the stable bus identifier.
     /// </summary>
-    public AudioBusId id { get; }
+    public AudioBusID id { get; }
 
     /// <summary>
     /// Gets the parent bus, or <see langword="null"/> for the master bus.
     /// </summary>
-    public AudioBusId? parent { get; }
+    public AudioBusID? parent { get; }
 
     /// <summary>
     /// Gets the initial linear bus gain.
@@ -191,9 +191,9 @@ public sealed class AudioMixer
 /// </summary>
 public sealed class AudioMixerBuilder
 {
-    private readonly Dictionary<AudioBusId, AudioBusDefinition> m_buses = new()
+    private readonly Dictionary<AudioBusID, AudioBusDefinition> m_buses = new()
     {
-        [AudioBusId.master] = new(AudioBusId.master, null, 1f, false)
+        [AudioBusID.master] = new(AudioBusID.master, null, 1f, false)
     };
 
     /// <summary>
@@ -215,12 +215,12 @@ public sealed class AudioMixerBuilder
     /// Thrown when the bus identifier is invalid or duplicated.
     /// </exception>
     public void AddBus(
-        AudioBusId id,
-        AudioBusId parent,
+        AudioBusID id,
+        AudioBusID parent,
         float volume = 1f,
         bool muted = false
     ) {
-        if (!id.isValid || id == AudioBusId.master)
+        if (!id.isValid || id == AudioBusID.master)
         {
             throw new ArgumentException("A valid non-master bus identifier is required.", nameof(id));
         }
@@ -244,7 +244,7 @@ public sealed class AudioMixerBuilder
     /// Thrown when the bus is not defined.
     /// </exception>
     public void AddProcessor(
-        AudioBusId bus,
+        AudioBusID bus,
         AudioProcessorConfiguration processor
     ) {
         ArgumentNullException.ThrowIfNull(processor);
@@ -273,10 +273,10 @@ public sealed class AudioMixerBuilder
     public AudioMixer Build()
     {
         var order = new List<AudioBusDefinition>(m_buses.Count);
-        var visiting = new HashSet<AudioBusId>();
-        var visited = new HashSet<AudioBusId>();
-        Visit(AudioBusId.master, order, visiting, visited);
-        foreach (AudioBusId id in m_buses.Keys.OrderBy(static id => id.value, StringComparer.Ordinal))
+        var visiting = new HashSet<AudioBusID>();
+        var visited = new HashSet<AudioBusID>();
+        Visit(AudioBusID.master, order, visiting, visited);
+        foreach (AudioBusID id in m_buses.Keys.OrderBy(static id => id.value, StringComparer.Ordinal))
         {
             Visit(id, order, visiting, visited);
         }
@@ -284,10 +284,10 @@ public sealed class AudioMixerBuilder
     }
 
     private void Visit(
-        AudioBusId id,
+        AudioBusID id,
         ICollection<AudioBusDefinition> order,
-        ISet<AudioBusId> visiting,
-        ISet<AudioBusId> visited
+        ISet<AudioBusID> visiting,
+        ISet<AudioBusID> visited
     ) {
         if (visited.Contains(id))
         {
@@ -301,7 +301,7 @@ public sealed class AudioMixerBuilder
         {
             throw new InvalidOperationException($"Audio mixer bus routing contains a cycle at '{id}'.");
         }
-        if (definition.parent is AudioBusId parent)
+        if (definition.parent is AudioBusID parent)
         {
             Visit(parent, order, visiting, visited);
         }
@@ -327,17 +327,17 @@ public struct SerializedAudioExtensionState
     /// <summary>
     /// Creates neutral extension state.
     /// </summary>
-    /// <param name="stableTypeId">
+    /// <param name="stableTypeID">
     /// Stable settings type identity, or empty when no typed settings exist.
     /// </param>
     /// <param name="propertyData">
     /// Neutral serialized property bytes.
     /// </param>
     public SerializedAudioExtensionState(
-        Guid stableTypeId,
+        Guid stableTypeID,
         ReadOnlySpan<byte> propertyData
     ) {
-        this.stableTypeId = stableTypeId;
+        this.stableTypeId = stableTypeID;
         this.propertyData = propertyData.ToArray();
     }
 
@@ -367,7 +367,7 @@ public struct AudioMixerFeatureConfiguration
     /// <summary>
     /// Creates a mixer feature configuration.
     /// </summary>
-    /// <param name="featureTypeId">
+    /// <param name="featureTypeID">
     /// Globally stable feature extension identifier.
     /// </param>
     /// <param name="state">
@@ -377,12 +377,12 @@ public struct AudioMixerFeatureConfiguration
     /// Whether the feature participates in graph construction.
     /// </param>
     public AudioMixerFeatureConfiguration(
-        string featureTypeId,
+        string featureTypeID,
         SerializedAudioExtensionState? state = null,
         bool enabled = true
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(featureTypeId);
-        this.featureTypeId = featureTypeId;
+        ArgumentException.ThrowIfNullOrWhiteSpace(featureTypeID);
+        this.featureTypeId = featureTypeID;
         this.state = state ?? new SerializedAudioExtensionState();
         this.enabled = enabled;
     }
@@ -409,7 +409,7 @@ public struct AudioMixerFeatureConfiguration
 /// <summary>
 /// Selects a mixer extension and ordered features without defining a game-specific mixing model.
 /// </summary>
-[StableTypeId("6e167326-d078-45e9-ad33-993300ee5fed")]
+[StableTypeID("6e167326-d078-45e9-ad33-993300ee5fed")]
 public sealed class AudioMixerAsset : AssetObject
 {
     /// <summary>

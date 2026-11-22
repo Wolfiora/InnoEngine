@@ -12,7 +12,7 @@ internal static class AnimationSubsystem
         {
             DiagnosticReporter reporter = owner.resources.Own(
                 owner.diagnostics.CreateReporter(
-                    new DiagnosticSource($"inno.animation.bindings.{owner.identities.domainId}", "Animation")
+                    new DiagnosticSource($"inno.animation.bindings.{owner.identities.domainID}", "Animation")
                 )
             );
             AnimationBindingRuntime bindings = owner.resources.Own(new AnimationBindingRuntime(owner.types, reporter));

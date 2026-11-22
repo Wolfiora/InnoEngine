@@ -10,7 +10,7 @@ internal sealed class EditorToolbarCatalog(
     internal EditorToolbarModel Build(EditorActionContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        var items = new List<(EditorToolbarItem Item, string TypeName)>();
+        var items = new List<(EditorToolbarItem item, string typeName)>();
         EditorExtensionCatalog.Snapshot snapshot = catalog.extensions;
         for (int actionIndex = 0; actionIndex < snapshot.actions.Length; actionIndex++)
         {
@@ -48,16 +48,16 @@ internal sealed class EditorToolbarCatalog(
             right
         ) =>
         {
-            int order = left.Item.order.CompareTo(right.Item.order);
+            int order = left.item.order.CompareTo(right.item.order);
             if (order != 0)
             {
                 return order;
             }
-            int action = string.Compare(left.Item.actionId, right.Item.actionId, StringComparison.Ordinal);
+            int action = string.Compare(left.item.actionID, right.item.actionID, StringComparison.Ordinal);
             return action != 0
                    ? action
-                   : string.Compare(left.TypeName, right.TypeName, StringComparison.Ordinal);
+                   : string.Compare(left.typeName, right.typeName, StringComparison.Ordinal);
         });
-        return new EditorToolbarModel(items.ConvertAll(static value => value.Item));
+        return new EditorToolbarModel(items.ConvertAll(static value => value.item));
     }
 }

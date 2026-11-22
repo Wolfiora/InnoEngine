@@ -434,7 +434,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
     }
 
     AudioBusHandle IAudioDevice.CreateBus(
-        AudioBusId id,
+        AudioBusID id,
         AudioBusHandle parent
     ) {
         EnsureActive();
@@ -452,7 +452,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
                 return default;
             }
         }
-        else if (id != AudioBusId.master)
+        else if (id != AudioBusID.master)
         {
             return default;
         }
@@ -767,10 +767,10 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
 
     private NativeProcessor? CreateProcessor(AudioProcessorConfiguration processor)
     {
-        if (processor.id == AudioProcessorId.delay)
+        if (processor.id == AudioProcessorID.delay)
         {
-            float delayMilliseconds = Math.Max(0f, GetParameter(processor, AudioParameterId.delayMilliseconds, 250f));
-            float decay = Math.Clamp(GetParameter(processor, AudioParameterId.decay, 0.35f), 0f, 1f);
+            float delayMilliseconds = Math.Max(0f, GetParameter(processor, AudioParameterID.delayMilliseconds, 250f));
+            float decay = Math.Clamp(GetParameter(processor, AudioParameterID.decay, 0.35f), 0f, 1f);
             uint delayFrames = checked((uint)Math.Round(delayMilliseconds * capabilities.sampleRate / 1000d));
             MaDelayNode* node = (MaDelayNode*)NativeMemory.AllocZeroed((nuint)sizeof(MaDelayNode));
             MaDelayNodeConfig config = NativeApi.DelayNodeConfigInit(
@@ -793,13 +793,13 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
             return new NativeProcessor(node, true);
         }
 
-        if (processor.id != AudioProcessorId.lowPass
-            && processor.id != AudioProcessorId.highPass
-            && processor.id != AudioProcessorId.bandPass
-            && processor.id != AudioProcessorId.notch
-            && processor.id != AudioProcessorId.peak
-            && processor.id != AudioProcessorId.lowShelf
-            && processor.id != AudioProcessorId.highShelf
+        if (processor.id != AudioProcessorID.lowPass
+            && processor.id != AudioProcessorID.highPass
+            && processor.id != AudioProcessorID.bandPass
+            && processor.id != AudioProcessorID.notch
+            && processor.id != AudioProcessorID.peak
+            && processor.id != AudioProcessorID.lowShelf
+            && processor.id != AudioProcessorID.highShelf
         ) {
             return null;
         }
@@ -832,37 +832,37 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
     private BiquadCoefficients CreateBiquadCoefficients(AudioProcessorConfiguration processor)
     {
         double frequency = Math.Clamp(
-            GetParameter(processor, AudioParameterId.frequency, processor.id == AudioProcessorId.lowPass ? 20000f : 200f),
+            GetParameter(processor, AudioParameterID.frequency, processor.id == AudioProcessorID.lowPass ? 20000f : 200f),
             1f,
             capabilities.sampleRate * 0.499f
         );
-        double quality = Math.Max(0.001, GetParameter(processor, AudioParameterId.quality, 0.70710678f));
-        double gain = GetParameter(processor, AudioParameterId.gainDecibels, 0f);
-        double shelfSlope = Math.Max(0.001, GetParameter(processor, AudioParameterId.shelfSlope, 1f));
+        double quality = Math.Max(0.001, GetParameter(processor, AudioParameterID.quality, 0.70710678f));
+        double gain = GetParameter(processor, AudioParameterID.gainDecibels, 0f);
+        double shelfSlope = Math.Max(0.001, GetParameter(processor, AudioParameterID.shelfSlope, 1f));
         double omega = 2d * Math.PI * frequency / capabilities.sampleRate;
         double sine = Math.Sin(omega);
         double cosine = Math.Cos(omega);
         double alpha = sine / (2d * quality);
 
-        if (processor.id == AudioProcessorId.lowPass)
+        if (processor.id == AudioProcessorID.lowPass)
         {
             return new((1d - cosine) / 2d, 1d - cosine, (1d - cosine) / 2d, 1d + alpha, -2d * cosine, 1d - alpha);
         }
-        if (processor.id == AudioProcessorId.highPass)
+        if (processor.id == AudioProcessorID.highPass)
         {
             return new((1d + cosine) / 2d, -(1d + cosine), (1d + cosine) / 2d, 1d + alpha, -2d * cosine, 1d - alpha);
         }
-        if (processor.id == AudioProcessorId.bandPass)
+        if (processor.id == AudioProcessorID.bandPass)
         {
             return new(alpha, 0d, -alpha, 1d + alpha, -2d * cosine, 1d - alpha);
         }
-        if (processor.id == AudioProcessorId.notch)
+        if (processor.id == AudioProcessorID.notch)
         {
             return new(1d, -2d * cosine, 1d, 1d + alpha, -2d * cosine, 1d - alpha);
         }
 
         double amplitude = Math.Pow(10d, gain / 40d);
-        if (processor.id == AudioProcessorId.peak)
+        if (processor.id == AudioProcessorID.peak)
         {
             return new(
                 1d + alpha * amplitude,
@@ -876,7 +876,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
 
         double shelfAlpha = sine / 2d * Math.Sqrt((amplitude + 1d / amplitude) * (1d / shelfSlope - 1d) + 2d);
         double twoRootAAlpha = 2d * Math.Sqrt(amplitude) * shelfAlpha;
-        if (processor.id == AudioProcessorId.lowShelf)
+        if (processor.id == AudioProcessorID.lowShelf)
         {
             return new(
                 amplitude * ((amplitude + 1d) - (amplitude - 1d) * cosine + twoRootAAlpha),
@@ -1042,7 +1042,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
 
     private static float GetParameter(
         AudioProcessorConfiguration processor,
-        AudioParameterId id,
+        AudioParameterID id,
         float defaultValue
     ) {
         foreach (AudioProcessorParameter parameter in processor.parameters)
@@ -1118,7 +1118,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
     private sealed class BusRecord
     {
         internal readonly MaSound* group;
-        internal readonly AudioBusId id;
+        internal readonly AudioBusID id;
         internal readonly BusRecord? parent;
         internal readonly List<NativeProcessor> processors = [];
         internal readonly void* target;
@@ -1128,7 +1128,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         internal float volume = 1f;
 
         internal BusRecord(
-            AudioBusId id,
+            AudioBusID id,
             BusRecord? parent,
             MaSound* group,
             void* target

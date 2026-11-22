@@ -12,7 +12,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Resolves materials through open provider-owned shader contracts and roles.
 /// </summary>
-[StableTypeId("dcf92cc9-04c6-52cd-8fd3-b2dc48f73b5a")]
+[StableTypeID("dcf92cc9-04c6-52cd-8fd3-b2dc48f73b5a")]
 public static class MaterialPassResolver
 {
     /// <summary>
@@ -21,10 +21,10 @@ public static class MaterialPassResolver
     /// <param name="material">
     /// Material whose shader and technique should be queried.
     /// </param>
-    /// <param name="contractId">
+    /// <param name="contractID">
     /// Rendering-provider contract required by the caller.
     /// </param>
-    /// <param name="passRoleId">
+    /// <param name="passRoleID">
     /// Provider-defined pass role required by the caller.
     /// </param>
     /// <param name="capabilities">
@@ -35,13 +35,13 @@ public static class MaterialPassResolver
     /// </returns>
     public static MaterialPassResolution? Resolve(
         MaterialAsset material,
-        ShaderContractId contractId,
-        ShaderPassRoleId passRoleId,
+        ShaderContractID contractID,
+        ShaderPassRoleID passRoleID,
         GraphicsCapabilities capabilities
     ) {
         ArgumentNullException.ThrowIfNull(material);
         ShaderDefinition? definition = material.shader?.definition;
-        return definition is null ? null : Resolve(definition, material.techniqueId, contractId, passRoleId, capabilities);
+        return definition is null ? null : Resolve(definition, material.techniqueId, contractID, passRoleID, capabilities);
     }
 
     /// <summary>
@@ -50,13 +50,13 @@ public static class MaterialPassResolver
     /// <param name="definition">
     /// The immutable publication's detached material contract.
     /// </param>
-    /// <param name="techniqueId">
+    /// <param name="techniqueID">
     /// Explicit material technique, or an invalid ID to select the first compatible technique.
     /// </param>
-    /// <param name="contractId">
+    /// <param name="contractID">
     /// Open rendering contract required by the caller.
     /// </param>
-    /// <param name="passRoleId">
+    /// <param name="passRoleID">
     /// Open pass role required by the caller.
     /// </param>
     /// <param name="capabilities">
@@ -70,32 +70,32 @@ public static class MaterialPassResolver
     /// </exception>
     public static MaterialPassResolution? Resolve(
         ShaderDefinition definition,
-        ShaderTechniqueId techniqueId,
-        ShaderContractId contractId,
-        ShaderPassRoleId passRoleId,
+        ShaderTechniqueID techniqueID,
+        ShaderContractID contractID,
+        ShaderPassRoleID passRoleID,
         GraphicsCapabilities capabilities
     ) {
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(capabilities);
-        if (!contractId.isValid)
+        if (!contractID.isValid)
         {
-            throw new ArgumentException("A shader contract ID must be valid.", nameof(contractId));
+            throw new ArgumentException("A shader contract ID must be valid.", nameof(contractID));
         }
-        if (!passRoleId.isValid)
+        if (!passRoleID.isValid)
         {
-            throw new ArgumentException("A shader pass role ID must be valid.", nameof(passRoleId));
+            throw new ArgumentException("A shader pass role ID must be valid.", nameof(passRoleID));
         }
 
         foreach (ShaderTechniqueDefinition technique in definition.techniques)
         {
-            if (technique.contract != contractId || !capabilities.Supports(technique.requiredFeatures)
-                || techniqueId.isValid && technique.id != techniqueId
+            if (technique.contract != contractID || !capabilities.Supports(technique.requiredFeatures)
+                || techniqueID.isValid && technique.id != techniqueID
             ) {
                     continue;
             }
             foreach (ShaderTechniquePass mapping in technique.passes)
             {
-                if (mapping.role != passRoleId)
+                if (mapping.role != passRoleID)
                 {
                     continue;
                 }

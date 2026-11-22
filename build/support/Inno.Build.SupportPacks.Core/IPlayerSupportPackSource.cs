@@ -12,7 +12,7 @@ public interface IPlayerSupportPackSource : IPlayerSupportPackValidator
     /// <summary>
     /// Gets the stable target identity implemented by this source.
     /// </summary>
-    BuildTargetId target { get; }
+    BuildTargetID target { get; }
 
     /// <summary>
     /// Validates discovery inputs and freezes a plan before publication output exists.

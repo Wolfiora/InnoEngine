@@ -27,19 +27,19 @@ public sealed class ShaderSourceFrontendRegistry : TypeRegistry<ShaderSourceFron
     /// <summary>
     /// Gets immutable language identities available in the current generation.
     /// </summary>
-    public IReadOnlyList<string> languageIds
+    public IReadOnlyList<string> languageIDs
     {
         get
         {
             using IDisposable operation = m_types.AcquireOperation("Query shader source languages");
-            return current.languageIds;
+            return current.languageIDs;
         }
     }
 
     /// <summary>
     /// Analyzes source while preventing provider retirement for the complete synchronous operation.
     /// </summary>
-    /// <param name="languageId">
+    /// <param name="languageID">
     /// The exact registered language identity.
     /// </param>
     /// <param name="request">
@@ -52,11 +52,11 @@ public sealed class ShaderSourceFrontendRegistry : TypeRegistry<ShaderSourceFron
     /// The language is not available in the current generation.
     /// </exception>
     public ShaderSourceAnalysis Analyze(
-        string languageId,
+        string languageID,
         ShaderSourceRequest request
     ) {
         using IDisposable operation = m_types.AcquireOperation("Analyze shader source interface");
-        return current.Analyze(languageId, request);
+        return current.Analyze(languageID, request);
     }
 
     /// <summary>

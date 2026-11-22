@@ -142,7 +142,7 @@ public sealed class AssetBrowserState
         }
 
         AssetPath path = AssetPath.Parse(normalized);
-        AssetBrowserRoot targetRoot = path.source == AssetSourceId.project ? AssetBrowserRoot.Assets : AssetBrowserRoot.Plugins;
+        AssetBrowserRoot targetRoot = path.source == AssetSourceID.project ? AssetBrowserRoot.Assets : AssetBrowserRoot.Plugins;
         SetDirectory(targetRoot, normalized);
         root = targetRoot;
     }
@@ -208,7 +208,7 @@ public sealed class AssetBrowserState
         if (!string.IsNullOrEmpty(normalized))
         {
             AssetPath path = AssetPath.Parse(normalized);
-            bool isProject = path.source == AssetSourceId.project;
+            bool isProject = path.source == AssetSourceID.project;
             if ((targetRoot == AssetBrowserRoot.Assets) != isProject)
             {
                 throw new ArgumentException($"Directory '{directory}' does not belong to the '{targetRoot}' root.", nameof(directory));

@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Selects the triangle face rejected by a raster pass.
 /// </summary>
-[StableTypeId("a0efdb24-2746-512d-aef5-46180c539581")]
+[StableTypeID("a0efdb24-2746-512d-aef5-46180c539581")]
 public enum ShaderCullMode
 {
     /// <summary>
@@ -33,7 +33,7 @@ public enum ShaderCullMode
 /// <summary>
 /// Selects the comparison used by depth testing.
 /// </summary>
-[StableTypeId("cababee4-46b3-5bd8-800f-46d58149959b")]
+[StableTypeID("cababee4-46b3-5bd8-800f-46d58149959b")]
 public enum ShaderCompareFunction
 {
     /// <summary>
@@ -73,7 +73,7 @@ public enum ShaderCompareFunction
 /// <summary>
 /// Declares backend-neutral fixed-function state for one shader pass.
 /// </summary>
-[StableTypeId("1ee6df72-41ef-5fd0-a32a-2a8220164675")]
+[StableTypeID("1ee6df72-41ef-5fd0-a32a-2a8220164675")]
 public struct ShaderRenderState
 {
     /// <summary>

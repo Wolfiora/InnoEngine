@@ -35,7 +35,7 @@ public sealed class BuildProfileTests : IDisposable
     [InlineData("studio//game")]
     public void ProfileRejectsPersistentDataPathsOutsidePortableApplicationFolders(string path)
     {
-        BuildProfile profile = CreateProfile(new BuildTargetId("windows-x64"));
+        BuildProfile profile = CreateProfile(new BuildTargetID("windows-x64"));
         profile.persistentDataPath = path;
         Assert.Throws<InvalidDataException>(profile.Validate);
     }
@@ -48,7 +48,7 @@ public sealed class BuildProfileTests : IDisposable
     [InlineData("Bad:Name")]
     public void BuildProfileRejectsNamesThatAreInvalidOnEitherTarget(string productName)
     {
-        BuildProfile profile = CreateProfile(new BuildTargetId("macos-arm64"), productName);
+        BuildProfile profile = CreateProfile(new BuildTargetID("macos-arm64"), productName);
 
         Assert.Throws<InvalidDataException>(profile.Validate);
     }
@@ -58,7 +58,7 @@ public sealed class BuildProfileTests : IDisposable
     {
         string path = Path.Combine(m_projectRoot, "BuildProfile.inno");
         var store = new BuildProfileStore(path, m_engine.serialization);
-        BuildProfile source = CreateProfile(new BuildTargetId("windows-x64"), "Stored Game");
+        BuildProfile source = CreateProfile(new BuildTargetID("windows-x64"), "Stored Game");
         source.windowWidth = 1920;
         source.windowHeight = 1080;
 
@@ -69,7 +69,7 @@ public sealed class BuildProfileTests : IDisposable
         Assert.Equal(source.applicationId, restored.applicationId);
         Assert.Equal(source.productName, restored.productName);
         Assert.Equal(source.startupScene, restored.startupScene);
-        Assert.Equal(new BuildTargetId("windows-x64"), restored.target);
+        Assert.Equal(new BuildTargetID("windows-x64"), restored.target);
         Assert.Equal(1920, restored.windowWidth);
         Assert.Equal(1080, restored.windowHeight);
     }
@@ -79,10 +79,10 @@ public sealed class BuildProfileTests : IDisposable
     {
         string path = Path.Combine(m_projectRoot, "BuildProfile.inno");
         var store = new BuildProfileStore(path, m_engine.serialization);
-        BuildProfile committed = CreateProfile(new BuildTargetId("macos-arm64"), "Committed Game");
+        BuildProfile committed = CreateProfile(new BuildTargetID("macos-arm64"), "Committed Game");
         store.Save(committed);
         byte[] committedBytes = File.ReadAllBytes(path);
-        BuildProfile invalid = CreateProfile(new BuildTargetId("windows-x64"), "Invalid/Game");
+        BuildProfile invalid = CreateProfile(new BuildTargetID("windows-x64"), "Invalid/Game");
 
         Assert.Throws<InvalidDataException>(() => store.Save(invalid));
 
@@ -103,7 +103,7 @@ public sealed class BuildProfileTests : IDisposable
     }
 
     private static BuildProfile CreateProfile(
-        BuildTargetId target,
+        BuildTargetID target,
         string productName = "Test Game"
     ) => new()
     {

@@ -11,7 +11,7 @@ public interface IGameContentCompiler
     /// <summary>
     /// Gets the exact publication target whose content this compiler produces.
     /// </summary>
-    BuildTargetId target { get; }
+    BuildTargetID target { get; }
 
     /// <summary>
     /// Writes target content into the current operation's isolated staging directory.

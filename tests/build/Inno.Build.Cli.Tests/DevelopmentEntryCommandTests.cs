@@ -19,7 +19,7 @@ public sealed class DevelopmentEntryCommandTests
     [InlineData("editor", "--unrecognized", "value")]
     public async Task InvalidCommandsFailBeforeSdkDiscoveryOrCleanup(params string[] arguments) => Assert.Equal(
         1,
-        await BuildApplication.Run(arguments, CancellationToken.None)
+        await BuildApplication.RunAsync(arguments, CancellationToken.None)
     );
 
     [Fact]
@@ -27,6 +27,6 @@ public sealed class DevelopmentEntryCommandTests
     {
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
-        Assert.Equal(2, await BuildApplication.Run(["editor", "--clean"], cancellation.Token));
+        Assert.Equal(2, await BuildApplication.RunAsync(["editor", "--clean"], cancellation.Token));
     }
 }

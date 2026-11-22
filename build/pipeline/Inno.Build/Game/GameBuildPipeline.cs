@@ -28,7 +28,7 @@ internal sealed class GameBuildPipeline
     private readonly ProjectSettingsStore m_settings;
     private readonly SerializationRegistry m_serialization;
     private readonly ScriptCompiler m_compiler;
-    private readonly IReadOnlyDictionary<BuildTargetId, GameBuildTargetBinding> m_targets;
+    private readonly IReadOnlyDictionary<BuildTargetID, GameBuildTargetBinding> m_targets;
     private readonly PlayerSupportPackCatalog m_supportPacks;
     private readonly ManagedDeploymentCatalog m_managedDeployments;
 
@@ -38,7 +38,7 @@ internal sealed class GameBuildPipeline
         ProjectSettingsStore settings,
         SerializationRegistry serialization,
         ScriptCompiler compiler,
-        IReadOnlyDictionary<BuildTargetId, GameBuildTargetBinding> targets,
+        IReadOnlyDictionary<BuildTargetID, GameBuildTargetBinding> targets,
         PlayerSupportPackCatalog supportPacks,
         ManagedDeploymentCatalog managedDeployments
     ) {
@@ -168,7 +168,7 @@ internal sealed class GameBuildPipeline
                 .ConfigureAwait(false);
             EnsureGenerationUnchanged(assetRevision, pluginRevision, settingsRevision);
 
-            await File.WriteAllBytesAsync(Path.Combine(rawContent, SettingsFileNames.project), settings, stagingToken)
+            await File.WriteAllBytesAsync(Path.Combine(rawContent, SettingsFileNames.C_PROJECT), settings, stagingToken)
                 .ConfigureAwait(false);
             string managed = Path.Combine(staging, "CodeInputs");
             Directory.CreateDirectory(managed);
@@ -371,7 +371,7 @@ internal sealed class GameBuildPipeline
     }
 
     private static void ValidateManagedPublication(
-        ManagedDeploymentId deployment,
+        ManagedDeploymentID deployment,
         string staging,
         ManagedDeploymentResult result
     ) {

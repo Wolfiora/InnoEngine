@@ -26,8 +26,8 @@ internal static class BindingCommand
     ) {
         string root = request.root;
         string configuration = request.configuration;
-        BuildTargetId target = request.target;
-        BuildTargetId toolsTarget = request.toolsTarget;
+        BuildTargetID target = request.target;
+        BuildTargetID toolsTarget = request.toolsTarget;
         BuildCompositionContext context = request.composition;
         BuildDistribution distribution = request.distribution;
 

@@ -45,7 +45,7 @@ public static class WindowsX64BgfxIntegration
             serialization,
             types,
             shaderProfile,
-            [GraphicsApi.Direct3D11, GraphicsApi.Direct3D12, GraphicsApi.Vulkan, GraphicsApi.OpenGL],
+            [GraphicsApi.direct3D11, GraphicsApi.direct3D12, GraphicsApi.vulkan, GraphicsApi.openGL],
             tools
         );
     }

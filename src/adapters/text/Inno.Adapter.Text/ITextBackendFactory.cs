@@ -11,7 +11,7 @@ public interface ITextBackendFactory
     /// <summary>
     /// Gets the exact registrations available in this composition snapshot.
     /// </summary>
-    IReadOnlyList<TextBackendId> supportedBackends { get; }
+    IReadOnlyList<TextBackendID> supportedBackends { get; }
 
     /// <summary>
     /// Creates one caller-owned text backend.
@@ -22,5 +22,5 @@ public interface ITextBackendFactory
     /// <returns>
     /// A newly allocated text backend.
     /// </returns>
-    ITextBackend CreateBackend(TextBackendId backend);
+    ITextBackend CreateBackend(TextBackendID backend);
 }

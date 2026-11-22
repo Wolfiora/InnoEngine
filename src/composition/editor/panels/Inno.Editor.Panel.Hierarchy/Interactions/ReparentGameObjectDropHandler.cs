@@ -9,7 +9,7 @@ using Inno.Scene.Components;
 
 namespace Inno.Editor.Panel.Hierarchy;
 
-[EditorDrop(HierarchyInteractionIds.C_AREA)]
+[EditorDrop(HierarchyInteractionIDs.C_AREA)]
 internal sealed class ReparentGameObjectDropHandler(SceneEdits edits) : EditorDrop<GameObject, HierarchyObjectDropTarget>
 {
     /// <summary>

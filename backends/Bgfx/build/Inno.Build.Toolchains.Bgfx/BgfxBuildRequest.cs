@@ -14,7 +14,7 @@ internal sealed class BgfxBuildRequest
         ArgumentNullException.ThrowIfNull(operation);
         NativeToolchainSelection initial = operation.RequireToolchain();
         ArgumentNullException.ThrowIfNull(profile);
-        if (profile.targetID != initial.targetId)
+        if (profile.targetID != initial.targetID)
         {
             throw new ArgumentException("The BGFX profile does not match the frozen toolchain target.", nameof(profile));
         }
@@ -60,7 +60,7 @@ internal sealed class BgfxBuildRequest
             context,
             component,
             includeTools ? "bgfx-tools" : "bgfx",
-            tools.targetId,
+            tools.targetID,
             new[] { bgfx, bx, bimg, genie }.Concat(
                 includeTools
                 ? []

@@ -105,7 +105,7 @@ public sealed class EditorAudioHostTests : IDisposable
     ) => new()
     {
         kind = kind,
-        applicationId = name,
+        applicationID = name,
         createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(m_root, "Persistent", name), "Logs")),
         jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
         createSubsystems = owner => [host.CreateRuntimeSubsystemFactory(owner)]
@@ -114,7 +114,7 @@ public sealed class EditorAudioHostTests : IDisposable
     private AudioClipAsset CreateClip()
     {
         var clip = new AudioClipAsset();
-        byte[] payload = AudioClipMetadataCodec.Encode(new AudioClipMetadata(AudioCodecId.wav, 1, 48_000, 480_000, 128));
+        byte[] payload = AudioClipMetadataCodec.Encode(new AudioClipMetadata(AudioCodecID.wav, 1, 48_000, 480_000, 128));
         new AssetRuntimeOwner().Initialize(
             clip,
             AssetPath.Project("Audio/Preview.wav"),
@@ -125,7 +125,7 @@ public sealed class EditorAudioHostTests : IDisposable
         );
         string path = Path.Combine(m_root, "preview.wav");
         File.WriteAllBytes(path, new byte[128]);
-        m_artifacts.Add(clip.identity.persistentId, path);
+        m_artifacts.Add(clip.identity.persistentID, path);
         return clip;
     }
 
@@ -135,16 +135,16 @@ public sealed class EditorAudioHostTests : IDisposable
         private readonly Dictionary<Guid, (AssetArtifactInfo info, string path)> m_artifacts = [];
 
         public ArtifactLease AcquireArtifact(
-            Guid persistentId,
+            Guid persistentID,
             string outputName
-        ) => m_retention.Retain(m_artifacts[persistentId].info, () => File.OpenRead(m_artifacts[persistentId].path));
+        ) => m_retention.Retain(m_artifacts[persistentID].info, () => File.OpenRead(m_artifacts[persistentID].path));
 
         public bool TryGetArtifact(
-            Guid persistentId,
+            Guid persistentID,
             string outputName,
             out AssetArtifactInfo? artifact
         ) {
-            if (outputName == "audio-data" && m_artifacts.TryGetValue(persistentId, out (AssetArtifactInfo info, string path) found))
+            if (outputName == "audio-data" && m_artifacts.TryGetValue(persistentID, out (AssetArtifactInfo info, string path) found))
             {
                 artifact = found.info;
                 return true;

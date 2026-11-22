@@ -12,7 +12,7 @@ public sealed class BgfxProcessLifetimeTests
     {
         using (var device = new BgfxDevice(new BgfxDeviceOptions
         {
-            preferredBackend = GraphicsApi.Noop,
+            preferredBackend = GraphicsApi.noop,
             forceSingleThreaded = true
         })) {
             device.BeginFrame();
@@ -22,7 +22,7 @@ public sealed class BgfxProcessLifetimeTests
         {
             Assert.Throws<InvalidOperationException>(() => new BgfxDevice(new BgfxDeviceOptions
             {
-                preferredBackend = GraphicsApi.Noop,
+                preferredBackend = GraphicsApi.noop,
                 forceSingleThreaded = inline
             }));
         }
@@ -36,7 +36,7 @@ public sealed class BgfxProcessLifetimeTests
             preferredBackend = new GraphicsApi("fixture.unsupported"),
             forceSingleThreaded = true
         }));
-        using var device = new BgfxDevice(new BgfxDeviceOptions { preferredBackend = GraphicsApi.Noop });
+        using var device = new BgfxDevice(new BgfxDeviceOptions { preferredBackend = GraphicsApi.noop });
         device.BeginFrame();
         device.EndFrame();
     }

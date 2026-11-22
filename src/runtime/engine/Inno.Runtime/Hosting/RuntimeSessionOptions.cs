@@ -20,7 +20,7 @@ public sealed class RuntimeSessionOptions
     /// <summary>
     /// Gets or initializes the stable application identifier used to isolate persistent data.
     /// </summary>
-    public string applicationId { get; init; } = "inno.application";
+    public string applicationID { get; init; } = "inno.application";
 
     /// <summary>
     /// Gets or initializes the immutable content store borrowed for the session lifetime.
@@ -39,7 +39,7 @@ public sealed class RuntimeSessionOptions
     /// and is disposed during retirement when it implements <c>IDisposable</c>.
     /// A null factory leaves logging to the host router's existing sinks.
     /// </remarks>
-    public Func<LogSessionId, ILogSink>? createLogSink { get; init; }
+    public Func<LogSessionID, ILogSink>? createLogSink { get; init; }
 
     /// <summary>
     /// Gets or initializes the runtime asset payload residency budget in bytes.
@@ -85,7 +85,7 @@ public sealed class RuntimeSessionOptions
     /// <summary>
     /// Gets or initializes capabilities verified by composition for this session's selected services.
     /// </summary>
-    public IReadOnlyList<RuntimeCapabilityId> capabilities { get; init; } = Array.Empty<RuntimeCapabilityId>();
+    public IReadOnlyList<RuntimeCapabilityID> capabilities { get; init; } = Array.Empty<RuntimeCapabilityID>();
 
     /// <summary>
     /// Gets or initializes owner-provided resolvers included in this session's immutable reference catalog.

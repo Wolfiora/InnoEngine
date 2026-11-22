@@ -6,8 +6,8 @@ using Inno.Editor.Scene;
 using Inno.Editor.Settings;
 using Inno.Scene;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Hierarchy;
 
@@ -21,14 +21,14 @@ internal sealed class HierarchySelection(
         if (interactions.selection.TryGet(out GameScene? selectedScene)
             && (!selectedScene.isLoaded || !ContainsScene(workspace.scenes, selectedScene))
         ) {
-            _ = interactions.For(HierarchyInteractionIds.C_AREA).Select();
+            _ = interactions.For(HierarchyInteractionIDs.C_AREA).Select();
             return;
         }
 
         if (interactions.selection.TryGet(out GameObject? gameObject)
             && (!gameObject.isRuntimeValid || !ContainsScene(workspace.scenes, gameObject.scene))
         ) {
-            _ = interactions.For(HierarchyInteractionIds.C_AREA).Select();
+            _ = interactions.For(HierarchyInteractionIDs.C_AREA).Select();
         }
     }
 
@@ -54,7 +54,7 @@ internal sealed class HierarchySelection(
     internal void DrawSceneRowContent(GameScene scene)
     {
         EditorUI.current.widgets.IconText(
-            settings.Get("Editor/Appearance/Icons/Scene").GetAsString("value", ImGuiIcon.Cubes)!,
+            settings.Get("Editor/Appearance/Icons/Scene").GetAsString("value", ImGuiIcon.C_CUBES)!,
             scene.name,
             ReferenceEquals(scene, workspace.activeScene)
         );
@@ -62,9 +62,9 @@ internal sealed class HierarchySelection(
         {
             return;
         }
-        Ui.SameLine(0f, 0f);
+        Gui.SameLine(0f, 0f);
         using ImGuiFontScope font = ImGuiFont.PushStyle(ImGuiFontStyle.Italic);
-        Ui.Text(" *");
+        Gui.Text(" *");
     }
 
     private static bool ContainsScene(

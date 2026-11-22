@@ -13,7 +13,7 @@ namespace Inno.Rendering.Runtime;
 /// Marks a reloadable pipeline feature implementation with a stable extension identifier.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-[StableTypeId("f290f8ca-3a8b-5e90-aa2d-1b0a541cd95a")]
+[StableTypeID("f290f8ca-3a8b-5e90-aa2d-1b0a541cd95a")]
 public sealed class RenderFeatureExtensionAttribute : Attribute
 {
     /// <summary>

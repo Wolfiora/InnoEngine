@@ -3,24 +3,24 @@ using System.Numerics;
 using Inno.Core.Logging;
 using Inno.Editor.ImGui;
 
-using Ui = Inno.Editor.ImGui.ImGui;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Logging;
 
 internal sealed class ConsolePanelContent
 {
-    private const string C_ICON_BUG = ImGuiIcon.Bug;
-    private const string C_ICON_INFO = ImGuiIcon.CircleInfo;
-    private const string C_ICON_WARN = ImGuiIcon.TriangleExclamation;
-    private const string C_ICON_ERROR = ImGuiIcon.CircleXmark;
-    private const string C_ICON_FATAL = ImGuiIcon.SkullCrossbones;
-    private const string C_ICON_DEFAULT = ImGuiIcon.FileLines;
+    private const string C_ICON_BUG = ImGuiIcon.C_BUG;
+    private const string C_ICON_INFO = ImGuiIcon.C_CIRCLE_INFO;
+    private const string C_ICON_WARN = ImGuiIcon.C_TRIANGLE_EXCLAMATION;
+    private const string C_ICON_ERROR = ImGuiIcon.C_CIRCLE_XMARK;
+    private const string C_ICON_FATAL = ImGuiIcon.C_SKULL_CROSSBONES;
+    private const string C_ICON_DEFAULT = ImGuiIcon.C_FILE_LINES;
 
     internal void DrawDisabledHint(string text)
     {
-        Ui.BeginDisabled(true);
-        Ui.Text(text);
-        Ui.EndDisabled();
+        Gui.BeginDisabled(true);
+        Gui.Text(text);
+        Gui.EndDisabled();
     }
 
     internal (Vector4 color, string icon) GetLevelVisual(LogLevel level)
@@ -70,11 +70,11 @@ internal sealed class ConsolePanelContent
         {
             return C_ELLIPSIS;
         }
-        if (Ui.MeasureText(text).X <= maxWidth)
+        if (Gui.MeasureText(text).X <= maxWidth)
         {
             return text;
         }
-        float ellipsisWidth = Ui.MeasureText(C_ELLIPSIS).X;
+        float ellipsisWidth = Gui.MeasureText(C_ELLIPSIS).X;
         if (ellipsisWidth >= maxWidth)
         {
             return C_ELLIPSIS;
@@ -85,7 +85,7 @@ internal sealed class ConsolePanelContent
         while (low < high)
         {
             int middle = (low + high + 1) / 2;
-            if (Ui.MeasureText(text[..middle]).X <= maxTextWidth)
+            if (Gui.MeasureText(text[..middle]).X <= maxTextWidth)
             {
                 low = middle;
             }

@@ -37,7 +37,7 @@ public sealed class NativeProductExecutorTests : IDisposable
         {
             NativeArtifact artifact = Assert.Single(Assert.Single(first).artifacts);
             Assert.Equal(NativeArtifactRole.StaticArchive, artifact.role);
-            Assert.Equal("probe-target", first[0].targetId);
+            Assert.Equal("probe-target", first[0].targetID);
             Assert.Equal("probe-output.data", Path.GetFileName(artifact.file));
         }
         using ProductNativeBuildResult hot = await contribution.BuildAsync(Context(), CancellationToken.None);

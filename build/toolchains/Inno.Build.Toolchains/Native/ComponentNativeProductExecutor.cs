@@ -56,7 +56,7 @@ public sealed class ComponentNativeProductExecutor : INativeProductExecutor
                     borrowed,
                     cancellationToken
                 ).ConfigureAwait(false);
-                if (product.component != step.id || product.targetId != toolchain.targetId)
+                if (product.component != step.id || product.targetID != toolchain.targetID)
                 {
                     product.Dispose();
                     throw new InvalidOperationException($"Native step '{step.id}' returned a foreign component or target.");

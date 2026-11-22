@@ -12,7 +12,7 @@ public sealed class EditorToolbarItem
         int order,
         EditorActionState status
     ) {
-        this.actionId = actionID;
+        this.actionID = actionID;
         this.icon = icon;
         this.tooltip = tooltip;
         this.order = order;
@@ -22,7 +22,7 @@ public sealed class EditorToolbarItem
     /// <summary>
     /// Gets the stable action dispatched when this item is pressed.
     /// </summary>
-    public string actionId { get; }
+    public string actionID { get; }
 
     /// <summary>
     /// Gets the resolved presentation-independent symbol.

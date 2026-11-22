@@ -10,37 +10,37 @@ namespace Inno.Editor.Shaders;
 /// </summary>
 public sealed class ShaderInspectionSelection
 {
-    private readonly GraphNodeId[] m_nodes;
+    private readonly GraphNodeID[] m_nodes;
 
     /// <summary>
     /// Creates a neutral Inspector selection separate from the Asset Browser's navigation.
     /// </summary>
-    /// <param name="assetId">
+    /// <param name="assetID">
     /// Persistent shader asset identity.
     /// </param>
     /// <param name="nodes">
     /// Selected stable node identities; empty selects document settings.
     /// </param>
     public ShaderInspectionSelection(
-        Guid assetId,
-        IEnumerable<GraphNodeId> nodes
+        Guid assetID,
+        IEnumerable<GraphNodeID> nodes
     ) {
-        if (assetId == Guid.Empty)
+        if (assetID == Guid.Empty)
         {
-            throw new ArgumentException("A persistent shader identity is required.", nameof(assetId));
+            throw new ArgumentException("A persistent shader identity is required.", nameof(assetID));
         }
         ArgumentNullException.ThrowIfNull(nodes);
-        this.assetId = assetId;
+        this.assetID = assetID;
         m_nodes = nodes.Distinct().OrderBy(static node => node.value, StringComparer.Ordinal).ToArray();
     }
 
     /// <summary>
     /// Gets the persistent shader identity.
     /// </summary>
-    public Guid assetId { get; }
+    public Guid assetID { get; }
 
     /// <summary>
     /// Gets selected stable node identities.
     /// </summary>
-    public IReadOnlyList<GraphNodeId> nodes => Array.AsReadOnly(m_nodes);
+    public IReadOnlyList<GraphNodeID> nodes => Array.AsReadOnly(m_nodes);
 }

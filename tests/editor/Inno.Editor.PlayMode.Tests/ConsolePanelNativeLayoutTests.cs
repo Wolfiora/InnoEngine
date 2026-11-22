@@ -20,9 +20,9 @@ using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 using Inno.Native.ImGui;
 
+using Gui = Inno.Editor.ImGui.ImGui;
 using ImGuiApi = Inno.Native.ImGui.ImGui;
 using NativeVector2 = Inno.Native.ImGui.ImVec2C;
-using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.PlayMode.Tests;
 
@@ -51,7 +51,7 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
             using var logs = new LogRouter();
             var diagnostics = new DiagnosticHub();
             using IDisposable diagnosticScope = diagnostics.EnterScope();
-            using var ui = new EditorUiSession();
+            using var ui = new EditorUISession();
             using var runtime = new EditorInteractionRuntime(
                 new EditorContext(root, new EditorKeyboardPolicy(KeyModifier.Control, "Super")),
                 types,
@@ -75,7 +75,7 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
                     Assert.False(panel.isOpen);
                 }
                 Assert.Equal(parent, (nint)ImGuiApi.Raw.GetCurrentWindow());
-                Ui.Text("Following valid drawing");
+                Gui.Text("Following valid drawing");
                 ImGuiApi.End();
                 ImGuiApi.Render();
             }
@@ -117,7 +117,7 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
             using var console = new EditorConsole(logs, hub, new InactivePlayMode());
             console.Start();
             using DiagnosticReporter reporter = hub.CreateReporter(new("shader", "Rendering"));
-            using var ui = new EditorUiSession();
+            using var ui = new EditorUISession();
             using var runtime = new EditorInteractionRuntime(
                 new EditorContext(root, new EditorKeyboardPolicy(KeyModifier.Control, "Super")),
                 types,
@@ -239,7 +239,7 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
         public EditorPlayModeState state => EditorPlayModeState.Editing;
         public bool isPlaying => false;
         public string? lastFailure => null;
-        public LogSessionId activeSessionId => LogSessionId.none;
+        public LogSessionID activeSessionID => LogSessionID.none;
 
         public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener) => m_stateDispatcher.CreateHub();
 

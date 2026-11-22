@@ -143,10 +143,10 @@ public sealed class AssetImportWriter<TAsset>
     /// <summary>
     /// Declares an asset artifact input that invalidates this import.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The stable persistent identity used for lookup.
     /// </param>
-    public void DependsOnArtifact(Guid persistentId) => m_context.DependsOnArtifact(persistentId);
+    public void DependsOnArtifact(Guid persistentID) => m_context.DependsOnArtifact(persistentID);
 
     /// <summary>
     /// Declares a custom deterministic import input.

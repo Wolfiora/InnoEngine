@@ -54,9 +54,9 @@ internal sealed class PluginPackageBuilder
             throw new InvalidOperationException("Plugin build requires an active authoring asset database.");
         }
         if (m_plugins.activePlugins.Any(plugin =>
-                string.Equals(plugin.manifest.pluginId, request.pluginId, StringComparison.Ordinal))
+                string.Equals(plugin.manifest.pluginId, request.pluginID, StringComparison.Ordinal))
         ) {
-            throw new InvalidOperationException($"Plugin ID '{request.pluginId}' is already active in this project.");
+            throw new InvalidOperationException($"Plugin ID '{request.pluginID}' is already active in this project.");
         }
         string destination = Path.GetFullPath(request.outputPath);
         ValidateDestination(destination);
@@ -153,10 +153,10 @@ internal sealed class PluginPackageBuilder
 
     private PluginPackagePlan CapturePlan(PluginBuildRequest request)
     {
-        AssetSourceMount projectMount = m_assets.sourceMounts.Single(static mount => mount.id == AssetSourceId.project);
+        AssetSourceMount projectMount = m_assets.sourceMounts.Single(static mount => mount.id == AssetSourceID.project);
         PluginCandidate[] installedPlugins = m_plugins.activePlugins.ToArray();
         ValidateDependencyGraph(installedPlugins);
-        var selectedIds = new HashSet<string>(StringComparer.Ordinal);
+        var selectedIDs = new HashSet<string>(StringComparer.Ordinal);
         Dictionary<string, PluginCandidate> installedByID = installedPlugins.ToDictionary(
             static plugin => plugin.manifest.pluginId,
             StringComparer.Ordinal
@@ -167,7 +167,7 @@ internal sealed class PluginPackageBuilder
             {
                 throw new InvalidOperationException($"Declared plugin dependency '{id}' is not installed and active.");
             }
-            if (!selectedIds.Add(id))
+            if (!selectedIDs.Add(id))
             {
                 return;
             }
@@ -181,9 +181,9 @@ internal sealed class PluginPackageBuilder
             SelectDependency(id);
         }
         PluginCandidate[] activePlugins = installedPlugins
-            .Where(plugin => selectedIds.Contains(plugin.manifest.pluginId))
+            .Where(plugin => selectedIDs.Contains(plugin.manifest.pluginId))
             .ToArray();
-        string[] dependencyIds = activePlugins.Select(static plugin => plugin.manifest.pluginId).ToArray();
+        string[] dependencyIDs = activePlugins.Select(static plugin => plugin.manifest.pluginId).ToArray();
         ProjectSettingsDocument settingsDocument = m_serialization.Deserialize<ProjectSettingsDocument>(
             m_settings.CaptureDocument()
         );
@@ -192,7 +192,7 @@ internal sealed class PluginPackageBuilder
                 settingsDocument.overrides.Any(project => project.id == contribution.id)))
             .Select(static plugin => plugin.manifest.pluginId)
             .ToArray();
-        HashSet<string> dependencySet = dependencyIds.ToHashSet(StringComparer.Ordinal);
+        HashSet<string> dependencySet = dependencyIDs.ToHashSet(StringComparer.Ordinal);
         HashSet<string> overrideSet = overrides.ToHashSet(StringComparer.Ordinal);
         var settings = new List<ProjectSettingRecord>();
         foreach (ProjectSettingRecord record in settingsDocument.overrides
@@ -200,7 +200,7 @@ internal sealed class PluginPackageBuilder
         ) {
             if (m_settings.TryCapture(
                 record.id,
-                request.pluginId,
+                request.pluginID,
                 dependencySet,
                 overrideSet,
                 out ProjectSettingRecord captured
@@ -210,7 +210,7 @@ internal sealed class PluginPackageBuilder
         }
 
         AssetFileEntry[] projectFiles = m_assets.GetFileSystemEntries(includeDirectories: false)
-            .Where(static entry => entry.source == AssetSourceId.project)
+            .Where(static entry => entry.source == AssetSourceID.project)
             .OrderBy(static entry => entry.assetPath.localPath, StringComparer.Ordinal)
             .ToArray();
         if (projectFiles.Length == 0)
@@ -227,9 +227,9 @@ internal sealed class PluginPackageBuilder
         }
         var manifest = new PluginManifest
         {
-            pluginId = request.pluginId,
+            pluginId = request.pluginID,
             displayName = request.displayName,
-            dependencies = dependencyIds,
+            dependencies = dependencyIDs,
             overrides = overrides,
             contentRoots = ["Assets"],
             assemblyDefinitions = relativeFiles
@@ -301,7 +301,7 @@ internal sealed class PluginPackageBuilder
                 source.EnsureUnchanged();
             }
         }
-        (string pluginId, string contentHash)[] current = m_plugins.activePlugins
+        (string pluginID, string contentHash)[] current = m_plugins.activePlugins
             .Select(static plugin => (plugin.manifest.pluginId, plugin.contentHash))
             .ToArray();
         if (!plan.activePlugins.SequenceEqual(current))
@@ -430,7 +430,7 @@ internal sealed class PluginPackageBuilder
         IReadOnlyList<SourceEntry> projectEntries,
         IReadOnlyList<PluginDependencyPlan> dependencies,
         int assetCount,
-        IReadOnlyList<(string pluginId, string contentHash)> activePlugins
+        IReadOnlyList<(string pluginID, string contentHash)> activePlugins
     );
 
     private sealed record PluginDependencyPlan(

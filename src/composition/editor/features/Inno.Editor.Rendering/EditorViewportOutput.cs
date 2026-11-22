@@ -17,7 +17,7 @@ public readonly record struct EditorViewportOutput
     /// <summary>
     /// Creates an editor viewport output snapshot.
     /// </summary>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// Stable viewport identity.
     /// </param>
     /// <param name="texture">
@@ -30,15 +30,15 @@ public readonly record struct EditorViewportOutput
     /// Current target height.
     /// </param>
     public EditorViewportOutput(
-        string viewportId,
+        string viewportID,
         PresentationTextureHandle texture,
         int pixelWidth,
         int pixelHeight
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(viewportID);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelWidth);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelHeight);
-        this.viewportId = viewportId;
+        this.viewportID = viewportID;
         this.texture = texture;
         this.pixelWidth = pixelWidth;
         this.pixelHeight = pixelHeight;
@@ -47,7 +47,7 @@ public readonly record struct EditorViewportOutput
     /// <summary>
     /// Gets the stable viewport identity.
     /// </summary>
-    public string viewportId { get; }
+    public string viewportID { get; }
 
     /// <summary>
     /// Gets the opaque presentation token.
@@ -113,10 +113,10 @@ public interface IEditorRenderingHost
     /// <summary>
     /// Releases one viewport and queues its GPU target for frame-safe destruction.
     /// </summary>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// Stable viewport identity.
     /// </param>
-    void Release(string viewportId);
+    void Release(string viewportID);
 
     /// <summary>
     /// Releases every viewport owned by this editor host service.
@@ -132,7 +132,7 @@ public sealed class EditorViewportLayer
     /// <summary>
     /// Creates one immutable model-neutral viewport layer.
     /// </summary>
-    /// <param name="contributorId">
+    /// <param name="contributorID">
     /// Stable identity of the rendering-model contributor that produced the layer.
     /// </param>
     /// <param name="pipeline">
@@ -145,14 +145,14 @@ public sealed class EditorViewportLayer
     /// Ascending model-composition order.
     /// </param>
     public EditorViewportLayer(
-        string contributorId,
+        string contributorID,
         RenderPipelineAsset? pipeline,
         RenderFrameData data,
         int order
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(contributorId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(contributorID);
         ArgumentNullException.ThrowIfNull(data);
-        this.contributorId = contributorId;
+        this.contributorID = contributorID;
         this.pipeline = pipeline;
         this.data = data;
         this.order = order;
@@ -161,7 +161,7 @@ public sealed class EditorViewportLayer
     /// <summary>
     /// Gets the stable identity of the rendering-model contributor.
     /// </summary>
-    public string contributorId { get; }
+    public string contributorID { get; }
 
     /// <summary>
     /// Gets the contributor-selected pipeline, or null for the project default.
@@ -189,7 +189,7 @@ public sealed class EditorViewportComposition
     /// <summary>
     /// Creates an immutable viewport composition.
     /// </summary>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// Stable panel viewport identity.
     /// </param>
     /// <param name="pixelWidth">
@@ -205,13 +205,13 @@ public sealed class EditorViewportComposition
     /// Ordered non-empty rendering-model layer collection.
     /// </param>
     public EditorViewportComposition(
-        string viewportId,
+        string viewportID,
         int pixelWidth,
         int pixelHeight,
         RenderTextureFormat targetFormat,
         IEnumerable<EditorViewportLayer> layers
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(viewportID);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelWidth);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelHeight);
         ArgumentNullException.ThrowIfNull(layers);
@@ -224,7 +224,7 @@ public sealed class EditorViewportComposition
         {
             throw new ArgumentException("A viewport composition cannot contain null model layers.", nameof(layers));
         }
-        if (materializedLayers.Select(static layer => layer.contributorId).Distinct(StringComparer.Ordinal).Count()
+        if (materializedLayers.Select(static layer => layer.contributorID).Distinct(StringComparer.Ordinal).Count()
             != materializedLayers.Length
         ) {
             throw new ArgumentException("Viewport contributor identities must be unique.", nameof(layers));
@@ -232,10 +232,10 @@ public sealed class EditorViewportComposition
         m_layers = Array.AsReadOnly(
             materializedLayers
                 .OrderBy(static layer => layer.order)
-                .ThenBy(static layer => layer.contributorId, StringComparer.Ordinal)
+                .ThenBy(static layer => layer.contributorID, StringComparer.Ordinal)
                 .ToArray()
         );
-        this.viewportId = viewportId;
+        this.viewportID = viewportID;
         this.pixelWidth = pixelWidth;
         this.pixelHeight = pixelHeight;
         this.targetFormat = targetFormat;
@@ -244,7 +244,7 @@ public sealed class EditorViewportComposition
     /// <summary>
     /// Gets the stable viewport identity.
     /// </summary>
-    public string viewportId { get; }
+    public string viewportID { get; }
 
     /// <summary>
     /// Gets the target width.

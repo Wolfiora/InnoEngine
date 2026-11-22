@@ -34,36 +34,36 @@ public sealed class ShaderSourceImplementationRequest
     /// <summary>
     /// Creates a candidate without inferring a language or adapter from its filename.
     /// </summary>
-    /// <param name="implementationId">
+    /// <param name="implementationID">
     /// Unique owner-defined key, including the target or variant when applicable.
     /// </param>
-    /// <param name="languageId">
+    /// <param name="languageID">
     /// Registered source language identity.
     /// </param>
     /// <param name="source">
     /// Source function and candidate-scoped dependency resolver.
     /// </param>
     public ShaderSourceImplementationRequest(
-        string implementationId,
-        string languageId,
+        string implementationID,
+        string languageID,
         ShaderSourceRequest source
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(implementationId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(languageId);
-        this.implementationId = implementationId;
-        this.languageId = languageId;
+        ArgumentException.ThrowIfNullOrWhiteSpace(implementationID);
+        ArgumentException.ThrowIfNullOrWhiteSpace(languageID);
+        this.implementationID = implementationID;
+        this.languageID = languageID;
         this.source = source ?? throw new ArgumentNullException(nameof(source));
     }
 
     /// <summary>
     /// Gets the stable owner-defined implementation/configuration key.
     /// </summary>
-    public string implementationId { get; }
+    public string implementationID { get; }
 
     /// <summary>
     /// Gets the explicitly selected language identity.
     /// </summary>
-    public string languageId { get; }
+    public string languageID { get; }
 
     /// <summary>
     /// Gets the transient candidate request, which must not be persisted or retained after analysis.
@@ -82,8 +82,8 @@ public sealed class ShaderSourceImplementationAnalysis
         IEnumerable<ShaderSourceFile> files,
         IEnumerable<ShaderSourceInclude> includes
     ) {
-        this.implementationId = request.implementationId;
-        this.languageId = request.languageId;
+        this.implementationID = request.implementationID;
+        this.languageID = request.languageID;
         this.sourcePath = request.source.source.assetPath;
         this.entryPoint = request.source.entryPoint;
         this.defines = request.source.defines;
@@ -100,12 +100,12 @@ public sealed class ShaderSourceImplementationAnalysis
     /// <summary>
     /// Gets the stable implementation/configuration key.
     /// </summary>
-    public string implementationId { get; }
+    public string implementationID { get; }
 
     /// <summary>
     /// Gets the selected source language.
     /// </summary>
-    public string languageId { get; }
+    public string languageID { get; }
 
     /// <summary>
     /// Gets the root source path in the frozen source set.
@@ -156,7 +156,7 @@ public sealed class ShaderSourceImplementationAnalysis
     {
         using var stream = new MemoryStream();
         using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
-        writer.Write(languageId);
+        writer.Write(languageID);
         writer.Write(sourcePath);
         writer.Write(entryPoint);
         writer.Write(defines.Count);

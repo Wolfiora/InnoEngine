@@ -16,13 +16,13 @@ using Inno.Extensibility.Types;
 using Inno.Native.ImGui;
 
 using EditorImGui = Inno.Editor.ImGui.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using GuiCond = Inno.Editor.ImGui.ImGuiCond;
+using GuiMouseButton = Inno.Editor.ImGui.ImGuiMouseButton;
+using GuiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using NativeKey = Inno.Native.ImGui.ImGuiKey;
 using NativeVector2 = Inno.Native.ImGui.ImVec2C;
-using UiCond = Inno.Editor.ImGui.ImGuiCond;
-using UiMouseButton = Inno.Editor.ImGui.ImGuiMouseButton;
-using UiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
 using Widget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 
 namespace Inno.Editor.ImGui.Tests;
@@ -539,9 +539,9 @@ public sealed unsafe class WidgetLayoutTests
             long before = GC.GetAllocatedBytesForCurrentThread();
             for (int index = 0; index < 128; index++)
             {
-                EditorImGui.PushId(index);
+                EditorImGui.PushID(index);
                 _ = EditorImGui.InputText("Value", ref value, 1024);
-                EditorImGui.PopId();
+                EditorImGui.PopID();
             }
 
             allocated = GC.GetAllocatedBytesForCurrentThread() - before;
@@ -612,7 +612,7 @@ public sealed unsafe class WidgetLayoutTests
             hit = (EditorImGui.GetItemMinimum() + EditorImGui.GetItemMaximum()) * 0.5f;
             active = EditorImGui.IsItemActive();
             held = EditorImGui.IsMouseButtonDown();
-            drag = EditorImGui.GetMouseDragDelta(UiMouseButton.Left, 0f);
+            drag = EditorImGui.GetMouseDragDelta(GuiMouseButton.Left, 0f);
             NativeImGui.End();
         };
         context.Frame(draw);
@@ -1060,7 +1060,7 @@ public sealed unsafe class WidgetLayoutTests
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static EditorStyleMetrics RetireStyleOwner(out WeakReference owner)
     {
-        using EditorUI session = new EditorUiSession();
+        using EditorUI session = new EditorUISession();
         owner = new WeakReference(session);
         return session.widgets.style;
     }
@@ -1069,13 +1069,13 @@ public sealed unsafe class WidgetLayoutTests
         string name,
         Vector2 size
     ) {
-        NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), (int)(UiCond.Always), default);
-        NativeImGui.SetNextWindowSize(size, (int)(UiCond.Always));
+        NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), (int)(GuiCond.Always), default);
+        NativeImGui.SetNextWindowSize(size, (int)(GuiCond.Always));
         using NativeStringLease nativeTestText0 = Utf8Codec.EncodeNullTerminated(name, allowsNull: false);
         NativeImGui.Raw.Begin(
             (sbyte*)nativeTestText0.pointer,
             null,
-            (int)(UiWindowFlags.NoTitleBar | UiWindowFlags.NoResize | UiWindowFlags.NoMove | UiWindowFlags.NoSavedSettings)
+            (int)(GuiWindowFlags.NoTitleBar | GuiWindowFlags.NoResize | GuiWindowFlags.NoMove | GuiWindowFlags.NoSavedSettings)
         );
     }
 

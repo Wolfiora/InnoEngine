@@ -46,7 +46,7 @@ public sealed class GraphDocumentTests
             document.AddNode(new(new("node-" + index), "test.node"));
         }
         GraphNodeRecord node = document.nodes[^1];
-        GraphNodeId id = node.id;
+        GraphNodeID id = node.id;
         for (int index = 0; index < 1_000; index++)
         {
             _ = document.FindNode(id);

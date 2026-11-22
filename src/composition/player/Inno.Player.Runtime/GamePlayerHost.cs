@@ -162,7 +162,7 @@ internal sealed class GamePlayerHost : ShellHost
     ) {
         using IDisposable scope = settings.EnterExecutionScope();
         using IDisposable sessionScope = session.EnterExecutionScope();
-        using IDisposable uiScope = session.subsystems.GetRequiredSubsystem<UiRuntime>().EnterExecutionScope();
+        using IDisposable uiScope = session.subsystems.GetRequiredSubsystem<UIRuntime>().EnterExecutionScope();
         return await RunAsync(frameDriver, smokeFrameLimit, cancellationToken);
     }
 
@@ -277,12 +277,12 @@ internal sealed class GamePlayerHost : ShellHost
         {
             kind = RuntimeSessionKind.Player,
             jobExecutionMode = options.jobExecutionMode,
-            applicationId = manifest.applicationId,
+            applicationID = manifest.applicationId,
             contentStore = m_content,
             createLogSink = options.createLogSink is null ? null : id => options.createLogSink(manifest, id),
             createSubsystems = owner =>
             {
-                using ContentReadLease document = m_content!.Acquire(new ContentKey(SettingsFileNames.project));
+                using ContentReadLease document = m_content!.Acquire(new ContentKey(SettingsFileNames.C_PROJECT));
                 using Stream documentStream = document.OpenRead();
                 var documentBytes = new byte[checked((int)document.entry.length)];
                 documentStream.ReadExactly(documentBytes);
@@ -290,12 +290,12 @@ internal sealed class GamePlayerHost : ShellHost
                     new ReadOnlyByteDocumentStore(document.entry.key.value!, documentBytes),
                     m_engine.types,
                     m_engine.serialization,
-                    new ProjectId(manifest.applicationId),
+                    new ProjectID(manifest.applicationId),
                     AssetSerializationContext.Create(owner.assets)
                 );
                 settings.SetContributors(manifest.CreateSettingContributors());
                 settings.RebuildCurrent();
-                if (!string.Equals(settings.projectId.value, manifest.applicationId, StringComparison.Ordinal))
+                if (!string.Equals(settings.projectID.value, manifest.applicationId, StringComparison.Ordinal))
                 {
                     throw new InvalidDataException("Runtime manifest and Project Settings identities do not match.");
                 }
@@ -306,13 +306,13 @@ internal sealed class GamePlayerHost : ShellHost
                         adapterSelection,
                         inputSource,
                         owner.assets,
-                        () => settings.Get<AudioProjectSettings>(AudioProjectSettings.settingId),
+                        () => settings.Get<AudioProjectSettings>(AudioProjectSettings.settingID),
                         () => options.createStorage(manifest)
                     )
                 );
             }
         });
-        GamePresentationSettings presentation = settings.Get<GamePresentationSettings>(GamePresentationSettings.settingId);
+        GamePresentationSettings presentation = settings.Get<GamePresentationSettings>(GamePresentationSettings.settingID);
         AudioRuntime audio = session.subsystems
             .GetRequiredSubsystem<AudioRuntime>();
         AnimationRuntime animation = session.subsystems

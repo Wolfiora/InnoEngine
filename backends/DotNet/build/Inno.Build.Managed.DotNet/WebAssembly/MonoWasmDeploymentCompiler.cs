@@ -56,7 +56,7 @@ public sealed class MonoWasmDeploymentCompiler : IManagedDeploymentCompiler
     }
 
     /// <inheritdoc/>
-    public ManagedDeploymentId id => m_aheadOfTime ? ManagedDeploymentId.monoWasmAot : ManagedDeploymentId.monoWasm;
+    public ManagedDeploymentID id => m_aheadOfTime ? ManagedDeploymentID.monoWasmAot : ManagedDeploymentID.monoWasm;
 
     /// <inheritdoc/>
     public ManagedDeploymentCapabilities capabilities { get; }

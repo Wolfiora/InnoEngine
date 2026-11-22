@@ -43,7 +43,7 @@ public static class ShaderGraphTemplates
             MaterialValue.FromVector(new Vector4(1f, 1f, 1f, 1f))
         )], [], [pass]);
         GraphDocument graph = ShaderGraphDocument.Create(definition, serialization, context);
-        GraphNodeRecord vertex = Node("vertex", ShaderGraphDocument.outputDefinitionId, 770, 50);
+        GraphNodeRecord vertex = Node("vertex", ShaderGraphDocument.C_OUTPUT_DEFINITION_ID, 770, 50);
         Set(
             vertex,
             "settings",
@@ -53,7 +53,7 @@ public static class ShaderGraphTemplates
                 outputs = [new() { id = "position", kind = ShaderIrOutputKind.ClipPosition }]
             }
         );
-        GraphNodeRecord fragment = Node("fragment", ShaderGraphDocument.outputDefinitionId, 770, 640);
+        GraphNodeRecord fragment = Node("fragment", ShaderGraphDocument.C_OUTPUT_DEFINITION_ID, 770, 640);
         Set(
             fragment,
             "settings",

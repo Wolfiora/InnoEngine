@@ -27,7 +27,7 @@ namespace Inno.Runtime.Tests;
 public sealed partial class PlayerWithoutFileSystemTests
 {
     private sealed class MemoryAdapters : IAdapterCatalog, IPlatformBackendFactory, IInputBackendFactory,
-        IRenderingBackendFactory, IStorageBackendFactory, IAudioBackendFactory, ITextBackendFactory, IUiBackendFactory
+        IRenderingBackendFactory, IStorageBackendFactory, IAudioBackendFactory, ITextBackendFactory, IUIBackendFactory
     {
         private readonly MemoryRenderDevice m_render;
 
@@ -45,43 +45,43 @@ public sealed partial class PlayerWithoutFileSystemTests
         public IStorageBackendFactory storage => this;
         public IAudioBackendFactory audio => this;
         public ITextBackendFactory text => this;
-        public IUiBackendFactory ui => this;
-        IReadOnlyList<PlatformBackendId> IPlatformBackendFactory.supportedBackends => [PlatformBackendId.sdl3];
-        IReadOnlyList<InputBackendId> IInputBackendFactory.supportedBackends => [InputBackendId.events];
-        IReadOnlyList<RenderingBackendId> IRenderingBackendFactory.supportedBackends => [RenderingBackendId.bgfx];
-        IReadOnlyList<StorageBackendId> IStorageBackendFactory.supportedBackends => [StorageBackendId.fileSystem];
-        IReadOnlyList<AudioBackendId> IAudioBackendFactory.supportedBackends => [AudioBackendId.miniAudio];
-        IReadOnlyList<TextBackendId> ITextBackendFactory.supportedBackends => [TextBackendId.freeTypeHarfBuzz];
-        IReadOnlyList<UiBackendId> IUiBackendFactory.supportedBackends => [UiBackendId.rmlUi];
+        public IUIBackendFactory ui => this;
+        IReadOnlyList<PlatformBackendID> IPlatformBackendFactory.supportedBackends => [PlatformBackendID.sdl3];
+        IReadOnlyList<InputBackendID> IInputBackendFactory.supportedBackends => [InputBackendID.events];
+        IReadOnlyList<RenderingBackendID> IRenderingBackendFactory.supportedBackends => [RenderingBackendID.bgfx];
+        IReadOnlyList<StorageBackendID> IStorageBackendFactory.supportedBackends => [StorageBackendID.fileSystem];
+        IReadOnlyList<AudioBackendID> IAudioBackendFactory.supportedBackends => [AudioBackendID.miniAudio];
+        IReadOnlyList<TextBackendID> ITextBackendFactory.supportedBackends => [TextBackendID.freeTypeHarfBuzz];
+        IReadOnlyList<UIBackendID> IUIBackendFactory.supportedBackends => [UIBackendID.rmlUI];
 
-        public IPlatformApplication CreateApplication(PlatformBackendId backend) => application;
+        public IPlatformApplication CreateApplication(PlatformBackendID backend) => application;
 
         public IInputEventSource CreateEventSource(
-            InputBackendId backend,
+            InputBackendID backend,
             IPlatformWindow window,
             bool acceptAllWindows
         ) => new MemoryInputSource(retired);
 
         public IRenderDevice CreateDevice(
-            RenderingBackendId backend,
+            RenderingBackendID backend,
             RenderingBackendOptions options
         ) => m_render;
 
         public IAudioDevice CreateDevice(
-            AudioBackendId backend,
+            AudioBackendID backend,
             AudioBackendOptions options = default
         ) => new MutedAudioDevice();
 
         public IApplicationStorage CreateStorage(
-            StorageBackendId backend,
+            StorageBackendID backend,
             StorageScope scope
         ) => new MemoryStorage();
 
-        public ITextBackend CreateBackend(TextBackendId backend) => new MemoryText(retired);
+        public ITextBackend CreateBackend(TextBackendID backend) => new MemoryText(retired);
 
-        public IUiBackend CreateBackend(UiBackendId backend) => new MemoryUI(retired);
+        public IUIBackend CreateBackend(UIBackendID backend) => new MemoryUI(retired);
 
-        public IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider(RenderingBackendId backend)
+        public IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider(RenderingBackendID backend)
             => new UnusedCompositionPrograms();
 
         internal int completedFrames => m_render.completedFrames;
@@ -120,7 +120,7 @@ public sealed partial class PlayerWithoutFileSystemTests
 
     private sealed class MemoryWindow(List<string> retired) : IPlatformWindow
     {
-        public uint windowId => 1;
+        public uint windowID => 1;
         public string title => "Lifecycle fixture";
         public int width => 32;
         public int height => 32;
@@ -158,7 +158,7 @@ public sealed partial class PlayerWithoutFileSystemTests
         internal int completedFrames;
 
         public GraphicsCapabilities capabilities { get; } = new(
-            GraphicsApi.Noop,
+            GraphicsApi.noop,
             GraphicsCapability.None,
             new GraphicsLimits(64, 4, 4096, 0),
             [RenderTextureFormat.RGBA8],
@@ -259,97 +259,97 @@ public sealed partial class PlayerWithoutFileSystemTests
         public void Dispose() => retired.Add("render");
     }
 
-    private sealed class MemoryUI(List<string> retired) : IUiBackend
+    private sealed class MemoryUI(List<string> retired) : IUIBackend
     {
-        public string implementationId => "tests.ui";
-        public UiBackendCapabilities capabilities { get; } = new([new("tests.ui-language")], true);
+        public string implementationID => "tests.ui";
+        public UIBackendCapabilities capabilities { get; } = new([new("tests.ui-language")], true);
 
-        public UiContextHandle CreateContext(UiContextOptions options) => new(1);
+        public UIContextHandle CreateContext(UIContextOptions options) => new(1);
 
-        public void DestroyContext(UiContextHandle context) {}
+        public void DestroyContext(UIContextHandle context) {}
 
         public void SetViewport(
-            UiContextHandle context,
+            UIContextHandle context,
             int width,
             int height,
             float density
         ) {}
 
-        public UiDocumentHandle LoadDocument(
-            UiContextHandle context,
-            UiDocumentSource source
+        public UIDocumentHandle LoadDocument(
+            UIContextHandle context,
+            UIDocumentSource source
         ) => new(1);
 
         public void ShowDocument(
-            UiContextHandle context,
-            UiDocumentHandle document
+            UIContextHandle context,
+            UIDocumentHandle document
         ) {}
 
         public void HideDocument(
-            UiContextHandle context,
-            UiDocumentHandle document
+            UIContextHandle context,
+            UIDocumentHandle document
         ) {}
 
         public void CloseDocument(
-            UiContextHandle context,
-            UiDocumentHandle document
+            UIContextHandle context,
+            UIDocumentHandle document
         ) {}
 
         public bool SetText(
-            UiContextHandle context,
-            UiDocumentHandle document,
-            string elementId,
+            UIContextHandle context,
+            UIDocumentHandle document,
+            string elementID,
             string text
         ) => true;
 
         public bool SetContent(
-            UiContextHandle context,
-            UiDocumentHandle document,
-            string elementId,
-            UiDocumentFragment content
+            UIContextHandle context,
+            UIDocumentHandle document,
+            string elementID,
+            UIDocumentFragment content
         ) => true;
 
         public bool SetAttribute(
-            UiContextHandle context,
-            UiDocumentHandle document,
-            string elementId,
+            UIContextHandle context,
+            UIDocumentHandle document,
+            string elementID,
             string name,
             string value
         ) => true;
 
         public bool SetClass(
-            UiContextHandle context,
-            UiDocumentHandle document,
-            string elementId,
+            UIContextHandle context,
+            UIDocumentHandle document,
+            string elementID,
             string className,
             bool active
         ) => true;
 
-        public void RegisterFont(UiFontRegistration registration) {}
+        public void RegisterFont(UIFontRegistration registration) {}
 
         public void RegisterTexture(
-            UiContextHandle context,
+            UIContextHandle context,
             string source,
-            UiTextureData texture
+            UITextureData texture
         ) {}
 
         public bool HasElementAtPoint(
-            UiContextHandle context,
+            UIContextHandle context,
             Vector2 position
         ) => false;
 
         public void Update(
-            UiContextHandle context,
-            UiInputSnapshot input
+            UIContextHandle context,
+            UIInputSnapshot input
         ) => lastInput = input;
 
-        public UiRenderFrame Render(UiContextHandle context) => UiRenderFrame.empty;
+        public UIRenderFrame Render(UIContextHandle context) => UIRenderFrame.empty;
 
-        public IReadOnlyList<UiEvent> DrainEvents(UiContextHandle context) => [];
+        public IReadOnlyList<UIEvent> DrainEvents(UIContextHandle context) => [];
 
         public void Dispose() => retired.Add("ui");
 
-        internal UiInputSnapshot? lastInput { get; private set; }
+        internal UIInputSnapshot? lastInput { get; private set; }
     }
 
     private sealed class UnusedCompositionPrograms : IRenderLayerCompositionProgramProvider
@@ -383,7 +383,7 @@ public sealed partial class PlayerWithoutFileSystemTests
 
         public GlyphBitmap Rasterize(
             TextFontHandle font,
-            uint glyphId,
+            uint glyphID,
             float fontSize
         ) => throw new NotSupportedException();
 

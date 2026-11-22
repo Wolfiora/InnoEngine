@@ -15,11 +15,11 @@ internal sealed partial class ShaderEditorDocuments
         // Preserve a released intent when History rejects the operation so it can be retried.
         draft.pendingMove ??= draft.pointer.previewPositions.Count == 0
                               ? null
-                              : new Dictionary<GraphNodeId, GraphPosition>(draft.pointer.previewPositions);
+                              : new Dictionary<GraphNodeID, GraphPosition>(draft.pointer.previewPositions);
         if (draft.pendingMove is { } positions)
         {
             bool changed = false;
-            foreach (KeyValuePair<GraphNodeId, GraphPosition> entry in positions)
+            foreach (KeyValuePair<GraphNodeID, GraphPosition> entry in positions)
             {
                 changed |= controller.document.FindNode(entry.Key) is not { } current || current.position != entry.Value;
             }
@@ -30,7 +30,7 @@ internal sealed partial class ShaderEditorDocuments
             }
             draft.pendingMove = null;
         }
-        if (draft.resizingNode is GraphNodeId resizing
+        if (draft.resizingNode is GraphNodeID resizing
             && controller.document.FindNode(resizing) is { } node
         ) {
             GraphDocument replacement = controller.document.Clone();

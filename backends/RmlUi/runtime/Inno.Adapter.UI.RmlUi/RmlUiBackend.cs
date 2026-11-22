@@ -16,9 +16,9 @@ namespace Inno.Adapter.UI.RmlUi;
 /// <summary>
 /// Implements retained-mode UI document processing through the pinned RmlUi native bridge.
 /// </summary>
-public sealed unsafe class RmlUiBackend : IUiBackend
+public sealed unsafe class RmlUiBackend : IUIBackend
 {
-    private static readonly UiBackendCapabilities CAPABILITIES = new(
+    private static readonly UIBackendCapabilities CAPABILITIES = new(
         [RmlUiIdentifiers.documentLanguage],
         supportsFontCollectionFaces: false
     );
@@ -47,12 +47,12 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <summary>
     /// Gets the implementation id text used by the current instance.
     /// </summary>
-    public string implementationId => RmlUiIdentifiers.backend.value;
+    public string implementationID => RmlUiIdentifiers.backend.value;
 
     /// <summary>
     /// Gets the immutable feature and limit set reported by the active graphics backend.
     /// </summary>
-    public UiBackendCapabilities capabilities => CAPABILITIES;
+    public UIBackendCapabilities capabilities => CAPABILITIES;
 
     /// <summary>
     /// Creates a context using this implementation's validated inputs.
@@ -63,7 +63,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <returns>
     /// The validated ui context handle that represents the completed operation.
     /// </returns>
-    public UiContextHandle CreateContext(UiContextOptions options)
+    public UIContextHandle CreateContext(UIContextOptions options)
     {
         EnsureActive();
         ulong value = 0;
@@ -78,7 +78,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
             ),
             "create UI context"
         );
-        return new UiContextHandle(value);
+        return new UIContextHandle(value);
     }
 
     /// <summary>
@@ -87,7 +87,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    public void DestroyContext(UiContextHandle context)
+    public void DestroyContext(UIContextHandle context)
     {
         EnsureActive();
         ThrowIfFailed(RmlUiNativeRuntime.DestroyContext(m_runtime, Require(context)), "destroy UI context");
@@ -109,7 +109,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// The density consumed by set viewport; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public void SetViewport(
-        UiContextHandle context,
+        UIContextHandle context,
         int width,
         int height,
         float density
@@ -136,9 +136,9 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <returns>
     /// The validated ui document handle that represents the completed operation.
     /// </returns>
-    public UiDocumentHandle LoadDocument(
-        UiContextHandle context,
-        UiDocumentSource source
+    public UIDocumentHandle LoadDocument(
+        UIContextHandle context,
+        UIDocumentSource source
     ) {
         EnsureActive();
         ArgumentNullException.ThrowIfNull(source);
@@ -154,7 +154,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
             ),
             "load UI document"
         );
-        return new UiDocumentHandle(document);
+        return new UIDocumentHandle(document);
     }
 
     /// <summary>
@@ -167,8 +167,8 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// The document consumed by show document; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public void ShowDocument(
-        UiContextHandle context,
-        UiDocumentHandle document
+        UIContextHandle context,
+        UIDocumentHandle document
     ) {
         EnsureActive();
         ThrowIfFailed(RmlUiNativeRuntime.ShowDocument(m_runtime, Require(context), Require(document)), "show UI document");
@@ -184,8 +184,8 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// The document consumed by hide document; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public void HideDocument(
-        UiContextHandle context,
-        UiDocumentHandle document
+        UIContextHandle context,
+        UIDocumentHandle document
     ) {
         EnsureActive();
         ThrowIfFailed(RmlUiNativeRuntime.HideDocument(m_runtime, Require(context), Require(document)), "hide UI document");
@@ -201,8 +201,8 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// The document consumed by close document; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public void CloseDocument(
-        UiContextHandle context,
-        UiDocumentHandle document
+        UIContextHandle context,
+        UIDocumentHandle document
     ) {
         EnsureActive();
         ThrowIfFailed(RmlUiNativeRuntime.CloseDocument(m_runtime, Require(context), Require(document)), "close UI document");
@@ -217,7 +217,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <param name="document">
     /// The document consumed by set text; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <param name="elementId">
+    /// <param name="elementID">
     /// The element id text validated by the set text operation.
     /// </param>
     /// <param name="text">
@@ -227,13 +227,13 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool SetText(
-        UiContextHandle context,
-        UiDocumentHandle document,
-        string elementId,
+        UIContextHandle context,
+        UIDocumentHandle document,
+        string elementID,
         string text
     ) {
         EnsureActive();
-        ArgumentException.ThrowIfNullOrWhiteSpace(elementId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(elementID);
         ArgumentNullException.ThrowIfNull(text);
         byte changed = 0;
         ThrowIfFailed(
@@ -241,7 +241,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
                 m_runtime,
                 Require(context),
                 Require(document),
-                elementId,
+                elementID,
                 WebUtility.HtmlEncode(text),
                 ref changed
             ),
@@ -259,7 +259,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <param name="document">
     /// The document consumed by set content; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <param name="elementId">
+    /// <param name="elementID">
     /// The element id text validated by the set content operation.
     /// </param>
     /// <param name="content">
@@ -269,13 +269,13 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool SetContent(
-        UiContextHandle context,
-        UiDocumentHandle document,
-        string elementId,
-        UiDocumentFragment content
+        UIContextHandle context,
+        UIDocumentHandle document,
+        string elementID,
+        UIDocumentFragment content
     ) {
         EnsureActive();
-        ArgumentException.ThrowIfNullOrWhiteSpace(elementId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(elementID);
         EnsureRml(content.language);
         byte changed = 0;
         ThrowIfFailed(
@@ -283,7 +283,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
                 m_runtime,
                 Require(context),
                 Require(document),
-                elementId,
+                elementID,
                 RewriteFontFamilies(content.text),
                 ref changed
             ),
@@ -301,7 +301,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <param name="document">
     /// The document consumed by set attribute; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <param name="elementId">
+    /// <param name="elementID">
     /// The element id text validated by the set attribute operation.
     /// </param>
     /// <param name="name">
@@ -314,14 +314,14 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool SetAttribute(
-        UiContextHandle context,
-        UiDocumentHandle document,
-        string elementId,
+        UIContextHandle context,
+        UIDocumentHandle document,
+        string elementID,
         string name,
         string value
     ) {
         EnsureActive();
-        ArgumentException.ThrowIfNullOrWhiteSpace(elementId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(elementID);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(value);
         byte changed = 0;
@@ -330,7 +330,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
                 m_runtime,
                 Require(context),
                 Require(document),
-                elementId,
+                elementID,
                 name,
                 value,
                 ref changed
@@ -349,7 +349,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <param name="document">
     /// The document consumed by set class; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <param name="elementId">
+    /// <param name="elementID">
     /// The element id text validated by the set class operation.
     /// </param>
     /// <param name="className">
@@ -362,14 +362,14 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool SetClass(
-        UiContextHandle context,
-        UiDocumentHandle document,
-        string elementId,
+        UIContextHandle context,
+        UIDocumentHandle document,
+        string elementID,
         string className,
         bool active
     ) {
         EnsureActive();
-        ArgumentException.ThrowIfNullOrWhiteSpace(elementId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(elementID);
         ArgumentException.ThrowIfNullOrWhiteSpace(className);
         byte changed = 0;
         ThrowIfFailed(
@@ -377,7 +377,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
                 m_runtime,
                 Require(context),
                 Require(document),
-                elementId,
+                elementID,
                 className,
                 active ? (byte)1 : (byte)0,
                 ref changed
@@ -393,12 +393,12 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <param name="registration">
     /// The registration consumed by register font; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void RegisterFont(UiFontRegistration registration)
+    public void RegisterFont(UIFontRegistration registration)
     {
         EnsureActive();
         if (registration.faceIndex != 0)
         {
-            throw new UiCapabilityUnavailableException(UiBackendCapability.FontCollectionFaceSelection);
+            throw new UICapabilityUnavailableException(UIBackendCapability.FontCollectionFaceSelection);
         }
         // All weights and styles of one declared family must share one native family.
         // Document imports give each family a private name before it reaches this backend.
@@ -439,9 +439,9 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// The texture consumed by register texture; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public void RegisterTexture(
-        UiContextHandle context,
+        UIContextHandle context,
         string source,
-        UiTextureData texture
+        UITextureData texture
     ) {
         EnsureActive();
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
@@ -478,7 +478,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool HasElementAtPoint(
-        UiContextHandle context,
+        UIContextHandle context,
         Vector2 position
     ) {
         EnsureActive();
@@ -506,8 +506,8 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// The input consumed by update; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public void Update(
-        UiContextHandle context,
-        UiInputSnapshot input
+        UIContextHandle context,
+        UIInputSnapshot input
     ) {
         EnsureActive();
         ArgumentNullException.ThrowIfNull(input);
@@ -572,14 +572,14 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <returns>
     /// The validated ui render frame that represents the completed operation.
     /// </returns>
-    public UiRenderFrame Render(UiContextHandle context)
+    public UIRenderFrame Render(UIContextHandle context)
     {
         EnsureActive();
         ulong handle = Require(context);
         InnoUIRmlUiAdapterFrameInfo info = default;
         ThrowIfFailed(RmlUiNativeFrames.Render(m_runtime, handle, ref info), "render UI context");
 
-        var builder = new UiRenderFrameBuilder();
+        var builder = new UIRenderFrameBuilder();
         try
         {
             for (int meshIndex = 0; meshIndex < checked((int)info.MeshUpdateCount); ++meshIndex)
@@ -590,7 +590,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
                 var indices = new uint[checked((int)mesh.IndexCount)];
                 CopyMeshVertices(handle, mesh.Id, nativeVertices);
                 CopyMeshIndices(handle, mesh.Id, indices);
-                var vertices = new UiVertex[nativeVertices.Length];
+                var vertices = new UIVertex[nativeVertices.Length];
                 for (int vertexIndex = 0; vertexIndex < vertices.Length; ++vertexIndex)
                 {
                     InnoUIRmlUiAdapterVertex value = nativeVertices[vertexIndex];
@@ -636,7 +636,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
                 builder.AddReleasedTexture(new(texture));
             }
 
-            UiRenderFrame frame = builder.Build();
+            UIRenderFrame frame = builder.Build();
             ThrowIfFailed(RmlUiNativeFrames.FinishFrame(m_runtime, handle), "finish UI frame transfer");
             return frame;
         }
@@ -656,13 +656,13 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <returns>
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
-    public IReadOnlyList<UiEvent> DrainEvents(UiContextHandle context)
+    public IReadOnlyList<UIEvent> DrainEvents(UIContextHandle context)
     {
         EnsureActive();
         ulong handle = Require(context);
         ulong eventCount = 0;
         ThrowIfFailed(RmlUiNativeFrames.GetEventCount(m_runtime, handle, ref eventCount), "query UI events");
-        var events = new UiEvent[checked((int)eventCount)];
+        var events = new UIEvent[checked((int)eventCount)];
         try
         {
             for (int index = 0; index < events.Length; index++)
@@ -674,9 +674,9 @@ public sealed unsafe class RmlUiBackend : IUiBackend
                     RmlUiNativeFrames.CopyEventTargetID(m_runtime, handle, checked((ulong)index), targetBytes.AsSpan()),
                     "copy UI event target"
                 );
-                events[index] = new UiEvent(
-                    (UiEventType)info.Type,
-                    new UiDocumentHandle(info.Document),
+                events[index] = new UIEvent(
+                    (UIEventType)info.Type,
+                    new UIDocumentHandle(info.Document),
                     Encoding.UTF8.GetString(targetBytes, 0, checked((int)info.TargetIdLength))
                 );
             }
@@ -785,7 +785,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
 
     private void EnsureActive() => ObjectDisposedException.ThrowIf(m_disposed, this);
 
-    private static void EnsureRml(UiDocumentLanguageId language)
+    private static void EnsureRml(UIDocumentLanguageID language)
     {
         if (language != RmlUiIdentifiers.documentLanguage)
         {
@@ -793,10 +793,10 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         }
     }
 
-    private static ulong Require(UiContextHandle context)
+    private static ulong Require(UIContextHandle context)
         => context.isValid ? context.value : throw new ArgumentException("A valid UI context handle is required.", nameof(context));
 
-    private static ulong Require(UiDocumentHandle document)
+    private static ulong Require(UIDocumentHandle document)
         => document.isValid ? document.value : throw new ArgumentException("A valid UI document handle is required.", nameof(document));
 
     private static void ThrowIfFailed(

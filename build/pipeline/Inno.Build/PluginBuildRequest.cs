@@ -13,7 +13,7 @@ public sealed class PluginBuildRequest
     /// <summary>
     /// Gets or initializes the globally stable lowercase Plugin identity.
     /// </summary>
-    public required string pluginId { get; init; }
+    public required string pluginID { get; init; }
 
     /// <summary>
     /// Gets or initializes the user-facing Plugin name.
@@ -44,9 +44,9 @@ public sealed class PluginBuildRequest
     /// </exception>
     public void Validate()
     {
-        if (string.IsNullOrWhiteSpace(pluginId)
-            || pluginId == "project"
-            || pluginId.Any(static character =>
+        if (string.IsNullOrWhiteSpace(pluginID)
+            || pluginID == "project"
+            || pluginID.Any(static character =>
                 !(character is >= 'a' and <= 'z'
                   || character is >= '0' and <= '9'
                   || character is '.' or '_' or '-'))

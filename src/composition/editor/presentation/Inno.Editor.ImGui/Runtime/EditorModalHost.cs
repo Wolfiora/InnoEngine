@@ -4,7 +4,7 @@ using Inno.Editor.Core;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Interactions;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 
 namespace Inno.Editor.ImGui;
 
@@ -140,11 +140,11 @@ internal sealed class EditorModalHost
             if (m_requested || now <= m_hideAt)
             {
                 double fadeIn = (now - m_visibleAt) / EditorUI.current.widgets.style.modalFadeInSeconds;
-                return (float)Math.Clamp(fadeIn, EditorPalette.opacityFaint, EditorPalette.opacityOpaque);
+                return (float)Math.Clamp(fadeIn, EditorPalette.C_OPACITY_FAINT, EditorPalette.C_OPACITY_OPAQUE);
             }
 
             double fadeOut = (now - m_hideAt) / EditorUI.current.widgets.style.modalFadeOutSeconds;
-            return (float)Math.Clamp(1.0 - fadeOut, EditorPalette.opacityFaint, EditorPalette.opacityOpaque);
+            return (float)Math.Clamp(1.0 - fadeOut, EditorPalette.C_OPACITY_FAINT, EditorPalette.C_OPACITY_OPAQUE);
         }
     }
 }

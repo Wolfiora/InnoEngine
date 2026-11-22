@@ -11,7 +11,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Encodes and validates the strict source-free binary format shared by game builds and Players.
 /// </summary>
-[StableTypeId("224813eb-a98c-5afa-a351-92e539a99d61")]
+[StableTypeID("224813eb-a98c-5afa-a351-92e539a99d61")]
 public static class RenderShaderArtifactCodec
 {
     private const int C_MAX_BINDINGS = 4096;
@@ -207,7 +207,7 @@ public static class RenderShaderArtifactCodec
                 throw new InvalidDataException($"Shader binding '{id}' has an invalid array count.");
             }
             bindings[index] = new ShaderInterfaceBinding(
-                new ShaderPropertyId(id),
+                new ShaderPropertyID(id),
                 type,
                 stages,
                 arrayCount,

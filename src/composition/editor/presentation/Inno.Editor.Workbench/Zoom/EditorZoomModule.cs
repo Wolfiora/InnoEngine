@@ -17,7 +17,7 @@ namespace Inno.Editor.Workbench;
 [EditorModule("editor-zoom", order: 10)]
 internal sealed class EditorZoomModule(
     EditorSettings settings,
-    EditorUiSession ui
+    EditorUISession ui
 ) : EditorModule
 {
     private const string C_ACTUAL_SIZE_PATH = "Editor/Appearance/Accessibility/Actual Size";

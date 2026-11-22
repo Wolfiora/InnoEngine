@@ -19,7 +19,7 @@ internal static class AudioSubsystem
     ) {
         DiagnosticReporter diagnostics = owner.resources.Own(
             owner.diagnostics.CreateReporter(
-                new DiagnosticSource($"inno.audio.{composition.session.sessionId}", "Audio")
+                new DiagnosticSource($"inno.audio.{composition.session.sessionID}", "Audio")
             )
         );
         IAudioDevice device;
@@ -63,7 +63,7 @@ internal static class AudioSubsystem
             {
                 throw new InvalidOperationException("The configured default mixer could not be activated.");
             }
-            if (!runtime.SetBusVolume(AudioBusId.master, settings.masterVolume))
+            if (!runtime.SetBusVolume(AudioBusID.master, settings.masterVolume))
             {
                 throw new InvalidOperationException("The configured master volume could not be applied.");
             }

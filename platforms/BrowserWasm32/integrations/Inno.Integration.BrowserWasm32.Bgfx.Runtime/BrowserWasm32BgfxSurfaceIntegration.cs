@@ -44,7 +44,7 @@ public sealed class BrowserWasm32BgfxSurfaceIntegration : IBgfxSurfaceIntegratio
         {
             throw new NotSupportedException("The browser canvas host does not support additional BGFX windows.");
         }
-        if (handles.handleKind != PlatformNativeHandleId.browserCanvas)
+        if (handles.handleKind != PlatformNativeHandleID.browserCanvas)
         {
             throw new NotSupportedException("The Browser BGFX integration requires its explicit browserCanvas surface ABI.");
         }

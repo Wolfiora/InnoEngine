@@ -272,7 +272,7 @@ public sealed partial class AssetLoader
         bool catalogChanged = false;
         bool stale = importer is not null && IsStale(record, out catalogChanged);
         if (importer is not null
-            && (!string.Equals(importer.importerId, record.meta.importerId, StringComparison.Ordinal)
+            && (!string.Equals(importer.importerID, record.meta.importerId, StringComparison.Ordinal)
                 || stale)
         ) {
             ImportLocked(newNormalized);

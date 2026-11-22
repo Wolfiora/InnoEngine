@@ -10,7 +10,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Restores neutral render settings through the canonical asset's actual owner and pinned references.
 /// </summary>
-[StableTypeId("ad67f148-af5b-5383-ac2d-55a34e305e96")]
+[StableTypeID("ad67f148-af5b-5383-ac2d-55a34e305e96")]
 public sealed class RenderExtensionStateContext
 {
     private readonly AssetObject m_owner;

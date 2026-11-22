@@ -28,7 +28,7 @@ internal static class SceneHistoryCompensation
             SceneHistoryCompensationResult result = Remove(
                 gameObject,
                 () => scene.DestroyObject(gameObject),
-                $"{description} GameObject '{gameObject.identity.persistentId}'",
+                $"{description} GameObject '{gameObject.identity.persistentID}'",
                 workspace
             );
             statePreserved &= result.statePreserved;
@@ -60,7 +60,7 @@ internal static class SceneHistoryCompensation
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(remove);
         ArgumentException.ThrowIfNullOrWhiteSpace(description);
-        Guid persistentID = target.identity.persistentId;
+        Guid persistentID = target.identity.persistentID;
         Exception? failure = null;
         bool reportedRemoved = false;
         try

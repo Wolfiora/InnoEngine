@@ -14,7 +14,7 @@ namespace Inno.Editor.ImGui.ImGuiWidget;
 public sealed unsafe partial class ImGuiWidget
 {
     private EditorEditGesture? m_propertyGesture;
-    private (string Owner, string Path) m_propertyEditKey;
+    private (string owner, string path) m_propertyEditKey;
     private bool m_propertyEditTouched;
 
     /// <summary>

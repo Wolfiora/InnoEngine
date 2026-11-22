@@ -38,7 +38,7 @@ public sealed class ScriptCommandTests : IDisposable
         try
         {
             Console.SetError(errors);
-            int result = await BuildApplication.Run([
+            int result = await BuildApplication.RunAsync([
                 "scripts",
                 "--engine-root",
                 m_root,
@@ -77,7 +77,7 @@ public sealed class ScriptCommandTests : IDisposable
         cancellation.Cancel();
         Assert.Equal(
             2,
-            await BuildApplication.Run([
+            await BuildApplication.RunAsync([
                 "scripts",
                 "--engine-root",
                 m_root,

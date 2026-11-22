@@ -12,7 +12,7 @@ using Inno.Editor.Rendering;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 using ImGuiApi = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
@@ -23,7 +23,7 @@ internal sealed class PipelineInspectionDrawer(IInspectionIconProvider<AssetFile
     /// <summary>
     /// Gets the icon glyph used to represent this item in the editor.
     /// </summary>
-    public override string icon => ImGuiIcon.File;
+    public override string icon => ImGuiIcon.C_FILE;
 
     /// <summary>
     /// Retrieves the current icon from authoritative state.
@@ -42,7 +42,7 @@ internal sealed class PipelineInspectionDrawer(IInspectionIconProvider<AssetFile
         RenderPipelineAsset target
     ) => context.interactions.TryGetModule<PipelineDocuments>(out PipelineDocuments? documents)
          && documents is not null
-         && documents.assets.TryGetInfo(target.identity.persistentId, out AssetInfo? info)
+         && documents.assets.TryGetInfo(target.identity.persistentID, out AssetInfo? info)
          && info is not null
          && documents.assets.TryGetFileSystemEntry(
              info.assetPath,
@@ -81,7 +81,7 @@ internal sealed class PipelineInspectionDrawer(IInspectionIconProvider<AssetFile
     ) {
         if (context.interactions.TryGetModule<PipelineDocuments>(out PipelineDocuments? documents)
             && documents is not null
-            && documents.assets.TryGetInfo(target.identity.persistentId, out AssetInfo? info)
+            && documents.assets.TryGetInfo(target.identity.persistentID, out AssetInfo? info)
             && info is not null
         ) {
             PipelineInspector.DrawHeader(context, documents, documents.Open(info.assetPath));
@@ -103,7 +103,7 @@ internal sealed class PipelineInspectionDrawer(IInspectionIconProvider<AssetFile
     ) {
         if (context.interactions.TryGetModule<PipelineDocuments>(out PipelineDocuments? documents)
             && documents is not null
-            && documents.assets.TryGetInfo(target.identity.persistentId, out AssetInfo? info)
+            && documents.assets.TryGetInfo(target.identity.persistentID, out AssetInfo? info)
             && info is not null
         ) {
             PipelineInspector.Draw(context, documents, documents.Open(info.assetPath));
@@ -117,7 +117,7 @@ internal sealed class PipelineSourceDrawer(IInspectionIconProvider<AssetFileEntr
     /// <summary>
     /// Gets the icon glyph used to represent this item in the editor.
     /// </summary>
-    public override string icon => ImGuiIcon.File;
+    public override string icon => ImGuiIcon.C_FILE;
 
     /// <summary>
     /// Retrieves the current icon from authoritative state.
@@ -217,12 +217,12 @@ internal static class PipelineInspector
         {
             if (ImGuiApi.Button("Save"))
             {
-                _ = context.interactions.documents.Save(draft.documentId);
+                _ = context.interactions.documents.Save(draft.documentID);
             }
             ImGuiApi.SameLine(0f, -1f);
             if (ImGuiApi.Button("Revert"))
             {
-                _ = context.interactions.documents.Revert(draft.documentId);
+                _ = context.interactions.documents.Revert(draft.documentID);
             }
         }
         finally
@@ -239,7 +239,7 @@ internal static class PipelineInspector
         AssetDraftDocuments<RenderPipelineAsset>.Draft draft = documents.drafts.GetDraft(id);
         RenderPipelineAsset pipeline = documents.Read(id);
         var edits = new DraftEdits(documents, id, pipeline);
-        ImGuiApi.PushId(id.ToString("N"));
+        ImGuiApi.PushID(id.ToString("N"));
         try
         {
             if (EditorUI.current.widgets.SectionHeader(
@@ -269,7 +269,7 @@ internal static class PipelineInspector
             for (int index = 0; featuresOpen && index < features.Length; index++)
             {
                 int slot = index;
-                ImGuiApi.PushId(slot);
+                ImGuiApi.PushID(slot);
                 try
                 {
                     RenderFeatureConfiguration feature = features[slot];
@@ -328,7 +328,7 @@ internal static class PipelineInspector
                 }
                 finally
                 {
-                    ImGuiApi.PopId();
+                    ImGuiApi.PopID();
                 }
             }
 
@@ -339,7 +339,7 @@ internal static class PipelineInspector
         }
         finally
         {
-            ImGuiApi.PopId();
+            ImGuiApi.PopID();
         }
 
         void DrawSettings(

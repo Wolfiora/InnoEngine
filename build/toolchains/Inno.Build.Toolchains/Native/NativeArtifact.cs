@@ -38,7 +38,7 @@ public sealed record NativeArtifact
     /// <summary>
     /// Captures an output independently of platform suffix conventions.
     /// </summary>
-    /// <param name="logicalId">
+    /// <param name="logicalID">
     /// The unique producer-owned output identity.
     /// </param>
     /// <param name="file">
@@ -51,16 +51,16 @@ public sealed record NativeArtifact
     /// The identity, path or role is invalid.
     /// </exception>
     public NativeArtifact(
-        string logicalId,
+        string logicalID,
         string file,
         NativeArtifactRole role
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(logicalId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(logicalID);
         if (!Path.IsPathFullyQualified(file) || !Enum.IsDefined(role))
         {
             throw new ArgumentException("Native outputs require an absolute file and an explicit supported role.");
         }
-        this.logicalId = logicalId;
+        this.logicalID = logicalID;
         this.file = Path.GetFullPath(file);
         this.role = role;
     }
@@ -68,7 +68,7 @@ public sealed record NativeArtifact
     /// <summary>
     /// Gets the producer-owned output identity.
     /// </summary>
-    public string logicalId { get; }
+    public string logicalID { get; }
 
     /// <summary>
     /// Gets the exact absolute output path.
@@ -86,7 +86,7 @@ public sealed record NativeArtifact
     ) {
         string output = Path.Combine(directory, "Outputs");
         if (artifacts.Count == 0
-            || artifacts.Select(static item => item.logicalId).Distinct(StringComparer.Ordinal).Count() != artifacts.Count
+            || artifacts.Select(static item => item.logicalID).Distinct(StringComparer.Ordinal).Count() != artifacts.Count
         ) {
             throw new InvalidDataException("A Native output inventory must contain unique logical identities.");
         }
@@ -107,7 +107,7 @@ public sealed record NativeArtifact
                 artifacts
                     .Select(
                         artifact => new Entry(
-                            artifact.logicalId,
+                            artifact.logicalID,
                             Path.GetRelativePath(output, artifact.file).Replace('\\', '/'),
                             artifact.role
                         )

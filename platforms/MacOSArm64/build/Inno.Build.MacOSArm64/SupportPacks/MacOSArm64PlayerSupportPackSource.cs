@@ -57,7 +57,7 @@ public sealed class MacOSArm64PlayerSupportPackSource : IPlayerSupportPackSource
     }
 
     /// <inheritdoc/>
-    public BuildTargetId target => MacOSArm64BuildModule.target.id;
+    public BuildTargetID target => MacOSArm64BuildModule.target.id;
 
     /// <inheritdoc/>
     public ValueTask<PlayerSupportPackPlan> CreatePlanAsync(

@@ -35,7 +35,7 @@ public static class NativeToolchainPreparation
     /// Validates and freezes a provider's complete tool selection before product staging,
     /// including CMake data from its physical installation rather than a shared command prefix.
     /// </summary>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The explicit requested target.
     /// </param>
     /// <param name="host">
@@ -72,7 +72,7 @@ public static class NativeToolchainPreparation
     /// A selected CMake executable alias cannot be resolved to its installation.
     /// </exception>
     public static NativeToolchainSelection Freeze(
-        string targetId,
+        string targetID,
         BuildHostDescriptor host,
         IReadOnlyDictionary<string, string> tools,
         IReadOnlyDictionary<string, string> environment,
@@ -101,7 +101,7 @@ public static class NativeToolchainPreparation
             }
         }
         return new(
-            targetId,
+            targetID,
             host,
             tools,
             environment,

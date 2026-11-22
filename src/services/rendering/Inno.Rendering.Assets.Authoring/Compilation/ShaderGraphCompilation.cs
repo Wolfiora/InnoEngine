@@ -82,7 +82,7 @@ public sealed partial class ShaderCompiler
         }
         ShaderGraphProgramResult program = ShaderGraphArtifact.Lower(
             artifact.Span,
-            m_toolchain.implementationId,
+            m_toolchain.implementationID,
             nodes,
             frontends,
             serialization,

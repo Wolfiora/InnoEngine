@@ -206,7 +206,7 @@ public sealed class InlineLogDeliveryTests
             string.Empty,
             0,
             string.Empty,
-            LogSessionId.none
+            LogSessionID.none
         );
 
     private sealed class CallbackSink(Action<LogEntry> callback) : ILogSink

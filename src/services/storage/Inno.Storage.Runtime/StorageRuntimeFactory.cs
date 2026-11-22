@@ -26,7 +26,7 @@ public sealed class StorageRuntimeFactory : IRuntimeSubsystemFactory
     /// Gets stable ordering metadata for the frame-scoped storage service.
     /// </summary>
     public RuntimeSubsystemDescriptor descriptor { get; } = new(
-        new RuntimeSubsystemId("inno.runtime.storage"),
+        new RuntimeSubsystemID("inno.runtime.storage"),
         order: -900
     );
 

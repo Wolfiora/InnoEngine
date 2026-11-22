@@ -10,7 +10,7 @@ namespace Inno.Scene.Components;
 /// <summary>
 /// Stores local transform data and exposes the scene hierarchy relationship.
 /// </summary>
-[StableTypeId("39a944b8-f021-4ac9-9f66-506f15a96848")]
+[StableTypeID("39a944b8-f021-4ac9-9f66-506f15a96848")]
 [SerializationRevision("m_serializationRevision")]
 public sealed class Transform : GameComponent
 {

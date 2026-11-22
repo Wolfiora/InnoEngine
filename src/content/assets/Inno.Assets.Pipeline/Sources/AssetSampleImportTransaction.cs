@@ -393,15 +393,15 @@ public sealed class AssetSampleImportTransaction : IDisposable
         ) => candidate.TryGetInfo(path, out info);
 
         ArtifactLease IAssetArtifactLookup.AcquireArtifact(
-            Guid persistentId,
+            Guid persistentID,
             string outputName
-        ) => candidate.AcquireArtifact(persistentId, outputName);
+        ) => candidate.AcquireArtifact(persistentID, outputName);
 
         bool IAssetArtifactLookup.TryGetArtifact(
-            Guid persistentId,
+            Guid persistentID,
             string outputName,
             out AssetArtifactInfo? artifact
-        ) => candidate.TryGetArtifact(persistentId, outputName, out artifact);
+        ) => candidate.TryGetArtifact(persistentID, outputName, out artifact);
     }
 
     private sealed record Indexing(

@@ -203,7 +203,7 @@ public readonly record struct TextShapingOptions
 /// <summary>
 /// Describes one positioned glyph emitted by Unicode shaping.
 /// </summary>
-/// <param name="glyphId">
+/// <param name="glyphID">
 /// The glyph identifier in the font face that produced this layout.
 /// </param>
 /// <param name="cluster">
@@ -223,7 +223,7 @@ public readonly record struct TextShapingOptions
 /// The vertical placement offset from the pen position in logical pixels.
 /// </param>
 public readonly record struct TextGlyph(
-    uint glyphId,
+    uint glyphID,
     uint cluster,
     float advanceX,
     float advanceY,

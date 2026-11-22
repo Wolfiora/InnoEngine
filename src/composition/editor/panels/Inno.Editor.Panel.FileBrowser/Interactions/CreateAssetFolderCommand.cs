@@ -8,8 +8,8 @@ using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Panel.FileBrowser;
 
-[EditorAction(FileBrowserInteractionIds.C_CREATE_FOLDER, FileBrowserInteractionIds.C_AREA)]
-[EditorMenu(FileBrowserInteractionIds.C_AREA, "Create/Folder", order: 100)]
+[EditorAction(FileBrowserInteractionIDs.C_CREATE_FOLDER, FileBrowserInteractionIDs.C_AREA)]
+[EditorMenu(FileBrowserInteractionIDs.C_AREA, "Create/Folder", order: 100)]
 internal sealed class CreateAssetFolderCommand(AssetBrowserModule assets) : EditorAction<string>
 {
     /// <summary>
@@ -34,15 +34,15 @@ internal sealed class CreateAssetFolderCommand(AssetBrowserModule assets) : Edit
     protected override void Execute(EditorActionContext<string> context)
     {
         AssetFileEntry target = assets.edits.CreateDirectory(AssetPath.Parse(context.target));
-        EditorInteraction interaction = context.interactions.For(FileBrowserInteractionIds.C_AREA, target);
+        EditorInteraction interaction = context.interactions.For(FileBrowserInteractionIDs.C_AREA, target);
         _ = interaction.Select();
-        _ = interaction.Execute(FileBrowserInteractionIds.C_RENAME);
+        _ = interaction.Execute(FileBrowserInteractionIDs.C_RENAME);
     }
 
     private bool IsWritableDirectory(string relativePath)
     {
         string normalized = Normalize(relativePath);
-        AssetSourceId source = AssetPath.Parse(normalized).source;
+        AssetSourceID source = AssetPath.Parse(normalized).source;
         AssetSourceMount? mount = assets.edits.pipeline.sourceMounts.FirstOrDefault(candidate => candidate.id == source);
         if (mount is null || mount.isReadOnly)
         {

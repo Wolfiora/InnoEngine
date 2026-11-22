@@ -18,38 +18,38 @@ public sealed class BgfxSurfaceIntegrationTests
         Assert.Equal(
             (nint)42,
             windows.Resolve(
-                new((nint)42, handleKind: PlatformNativeHandleId.win32),
+                new((nint)42, handleKind: PlatformNativeHandleID.win32),
                 BgfxSurfaceRole.Primary
             ).windowHandle
         );
         Assert.True(windows.supportsAdditionalSurfaces);
         Assert.True(
             macOS.Resolve(
-                new((nint)42, handleKind: PlatformNativeHandleId.cocoa),
+                new((nint)42, handleKind: PlatformNativeHandleID.cocoa),
                 BgfxSurfaceRole.Additional
             ).supportsSrgbReset
         );
         Assert.False(
             browser.Resolve(
-                new((nint)42, handleKind: PlatformNativeHandleId.browserCanvas),
+                new((nint)42, handleKind: PlatformNativeHandleID.browserCanvas),
                 BgfxSurfaceRole.Primary
             ).supportsSrgbReset
         );
         Assert.False(browser.supportsAdditionalSurfaces);
         Assert.Throws<NotSupportedException>(() => windows.Resolve(
-            new((nint)42, handleKind: PlatformNativeHandleId.cocoa),
+            new((nint)42, handleKind: PlatformNativeHandleID.cocoa),
             BgfxSurfaceRole.Primary
         ));
         Assert.Throws<NotSupportedException>(() => browser.Resolve(
-            new((nint)42, handleKind: PlatformNativeHandleId.browserCanvas),
+            new((nint)42, handleKind: PlatformNativeHandleID.browserCanvas),
             BgfxSurfaceRole.Additional
         ));
         Assert.Throws<ArgumentOutOfRangeException>(() => windows.Resolve(
-            new((nint)42, handleKind: PlatformNativeHandleId.win32),
+            new((nint)42, handleKind: PlatformNativeHandleID.win32),
             (BgfxSurfaceRole)99
         ));
         Assert.Throws<ArgumentException>(() => windows.Resolve(
-            new(0, handleKind: PlatformNativeHandleId.win32),
+            new(0, handleKind: PlatformNativeHandleID.win32),
             BgfxSurfaceRole.Primary
         ));
     }

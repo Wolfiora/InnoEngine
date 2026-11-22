@@ -50,9 +50,9 @@ public sealed partial class SceneEdits
         Guid? selectedAfter
     ) {
         var data = new SceneSubtreeHistoryData(
-            root.scene.identity.persistentId,
-            root.identity.persistentId,
-            root.transform.parent?.gameObject.identity.persistentId,
+            root.scene.identity.persistentID,
+            root.identity.persistentID,
+            root.transform.parent?.gameObject.identity.persistentID,
             root.transform.siblingIndex,
             existsBefore,
             existsAfter,
@@ -81,7 +81,7 @@ public sealed partial class SceneEdits
 
     private Guid? GetActiveSceneID()
         => m_workspace.activeScene is { isDestroyed: false } scene
-           ? scene.identity.persistentId
+           ? scene.identity.persistentID
            : null;
 
     private GameScene ResolveOwnerScene(EngineObject target)
@@ -97,14 +97,14 @@ public sealed partial class SceneEdits
 
     private Guid? GetSelectionID()
         => m_interactions.selection.selectedTarget is EngineObject { isDestroyed: false } target
-           ? target.identity.persistentId
+           ? target.identity.persistentID
            : null;
 
     private TypeRef GetTypeRef(Type type)
         => m_workspace.types.TryGetTypeRef(type, out TypeRef typeRef)
            ? typeRef
            : throw new InvalidOperationException(
-               $"Scene element type '{type.FullName}' does not have an active StableTypeId."
+               $"Scene element type '{type.FullName}' does not have an active StableTypeID."
            );
 
     private static void RecordWithRollback(

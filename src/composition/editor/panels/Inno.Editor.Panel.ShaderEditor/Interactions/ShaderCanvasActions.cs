@@ -16,7 +16,7 @@ using Inno.Rendering.Assets;
 using Inno.Rendering.Assets.Authoring;
 using Inno.Rendering.Shaders;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 
@@ -55,9 +55,9 @@ internal sealed class ShaderCanvasMenu(ShaderEditorDocuments documents) : Editor
             builder.Add("Create/Outputs/Compute Output", "shader/create-output", order: 20, argument: "Compute");
         }
 
-        foreach (string definition in documents.nodes.definitionIds)
+        foreach (string definition in documents.nodes.definitionIDs)
         {
-            if (definition is not ("inno.shader.source" or ShaderGraphNodes.callDefinitionId)
+            if (definition is not ("inno.shader.source" or ShaderGraphNodes.C_CALL_DEFINITION_ID)
                 && documents.CanCreate(draft, new(definition))
             ) {
                 string category = Category(definition);
@@ -91,7 +91,7 @@ internal sealed class ShaderCanvasMenu(ShaderEditorDocuments documents) : Editor
             if (source.extension == ".ishadersource"
                 && documents.assets.TryGetInfo(source.assetPath, out AssetInfo? info)
                 && info is not null
-                && documents.assets.TryLoad(info.persistentId, out ShaderFunctionAsset? library)
+                && documents.assets.TryLoad(info.persistentID, out ShaderFunctionAsset? library)
                 && library is not null
                 && !library.isMissing
             ) {
@@ -114,7 +114,7 @@ internal sealed class ShaderCanvasMenu(ShaderEditorDocuments documents) : Editor
         ) {
             foreach (string function in library.exports)
             {
-                if (documents.CanCreate(draft, new("inno.shader.source", info.persistentId, function)))
+                if (documents.CanCreate(draft, new("inno.shader.source", info.persistentID, function)))
                 {
                     string catalog = NormalizeCatalog(library.catalogPath);
                     string prefix = "Create/Functions/" + (catalog.Length == 0 ? "General" : catalog);
@@ -122,7 +122,7 @@ internal sealed class ShaderCanvasMenu(ShaderEditorDocuments documents) : Editor
                         prefix + "/" + source.nameWithoutExtension + "/" + function,
                         "shader/create-node",
                         order: 500 + library.catalogOrder,
-                        argument: new ShaderNodeCreation("inno.shader.source", info.persistentId, function)
+                        argument: new ShaderNodeCreation("inno.shader.source", info.persistentID, function)
                     );
                 }
             }
@@ -135,7 +135,7 @@ internal sealed class ShaderCanvasMenu(ShaderEditorDocuments documents) : Editor
         ) {
             if (!documents.assets.TryGetInfo(source.assetPath, out AssetInfo? info)
                 || info is null
-                || info.persistentId == draft.id
+                || info.persistentID == draft.id
                 || info.status != AssetImportStatus.Imported
             ) {
                 continue;
@@ -143,7 +143,7 @@ internal sealed class ShaderCanvasMenu(ShaderEditorDocuments documents) : Editor
             ShaderGraphNodeInterface nodeInterface;
             try
             {
-                nodeInterface = documents.LoadGraphNodeInterface(info.persistentId);
+                nodeInterface = documents.LoadGraphNodeInterface(info.persistentID);
             }
             catch (Exception failure) when ((failure is InvalidOperationException or ArgumentException or FormatException)
                                             && RetirementPendingException.Find(failure) is null)
@@ -151,7 +151,7 @@ internal sealed class ShaderCanvasMenu(ShaderEditorDocuments documents) : Editor
                 continue;
             }
 
-            var creation = new ShaderNodeCreation(ShaderGraphNodes.callDefinitionId, info.persistentId);
+            var creation = new ShaderNodeCreation(ShaderGraphNodes.C_CALL_DEFINITION_ID, info.persistentID);
             if (!documents.CanCreate(draft, creation))
             {
                 continue;
@@ -190,7 +190,7 @@ internal sealed class ShaderCanvasMenu(ShaderEditorDocuments documents) : Editor
             => definition switch
         {
             "inno.shader.constant" or "inno.shader.stage-input" => "Inputs",
-            ShaderGraphNodes.inputDefinitionId or ShaderGraphNodes.outputDefinitionId => "Interface",
+            ShaderGraphNodes.C_INPUT_DEFINITION_ID or ShaderGraphNodes.C_OUTPUT_DEFINITION_ID => "Interface",
             "inno.shader.sample" => "Textures",
             "inno.shader.binary" or "inno.shader.construct" or "inno.shader.extract" or "inno.shader.select" => "Math",
             "inno.shader.storage-load" or "inno.shader.storage-store" or "inno.shader.storage-atomic-add" => "Resources",
@@ -244,7 +244,7 @@ internal sealed class CreateShaderOutput(ShaderEditorDocuments documents) : Edit
             return EditorActionState.disabled;
         }
         bool exists = graph.nodes
-            .Where(static node => node.definitionId == ShaderGraphDocument.outputDefinitionId)
+            .Where(static node => node.definitionID == ShaderGraphDocument.C_OUTPUT_DEFINITION_ID)
             .Any(
                 node => (
                     ShaderGraphDocument.Read(
@@ -318,7 +318,7 @@ internal sealed class CreateShaderOutput(ShaderEditorDocuments documents) : Edit
             }
             definition.passes = [..definition.passes, new(name, kind)];
             graph.SetMetadata(
-                ShaderGraphDocument.definitionKey,
+                ShaderGraphDocument.C_DEFINITION_KEY,
                 ShaderGraphDocument.Encode(
                     documents.serialization.Serialize(definition, documents.context),
                     documents.serialization,
@@ -328,8 +328,8 @@ internal sealed class CreateShaderOutput(ShaderEditorDocuments documents) : Edit
             stages = [];
         }
 
-        var id = new GraphNodeId(Guid.NewGuid().ToString("N"));
-        var node = new GraphNodeRecord(id, ShaderGraphDocument.outputDefinitionId)
+        var id = new GraphNodeID(Guid.NewGuid().ToString("N"));
+        var node = new GraphNodeRecord(id, ShaderGraphDocument.C_OUTPUT_DEFINITION_ID)
         {
             position = draft.menuPosition
         };
@@ -355,7 +355,7 @@ internal sealed class CreateShaderOutput(ShaderEditorDocuments documents) : Edit
         graph = ShaderGraphPrograms.Bind(
             graph,
             name,
-            stages.Select(static value => new GraphNodeId(value)).Append(id),
+            stages.Select(static value => new GraphNodeID(value)).Append(id),
             documents.serialization,
             documents.context
         );
@@ -469,7 +469,7 @@ internal sealed class DeleteShaderNodes(ShaderEditorDocuments documents) : Shade
         ShaderEditorDocuments.Draft draft = documents.Open(context.target);
         GraphDocumentController controller = documents.Controller(draft);
         using EditorHistoryTransaction transaction = context.history.BeginTransaction("Delete Shader Selection");
-        if (draft.selectedEdge is GraphEdgeId edge)
+        if (draft.selectedEdge is GraphEdgeID edge)
         {
             controller.Disconnect(edge);
         }
@@ -561,7 +561,7 @@ internal sealed class DuplicateShaderNodes(ShaderEditorDocuments documents) : Sh
             return EditorActionState.disabled;
         }
         return draft.canvas.selectedNodes.Any(
-            id => documents.Controller(draft).document.FindNode(id)?.definitionId == ShaderGraphDocument.outputDefinitionId
+            id => documents.Controller(draft).document.FindNode(id)?.definitionID == ShaderGraphDocument.C_OUTPUT_DEFINITION_ID
         )
                ? EditorActionState.disabled
                : EditorActionState.enabled;
@@ -596,7 +596,7 @@ internal sealed class DisconnectShaderNodes(ShaderEditorDocuments documents) : S
         using EditorHistoryTransaction transaction = context.history.BeginTransaction("Disconnect Nodes");
         foreach (GraphEdgeRecord edge in controller.document.edges
             .Where(
-                edge => draft.canvas.selectedNodes.Contains(edge.input.nodeId) || draft.canvas.selectedNodes.Contains(edge.output.nodeId)
+                edge => draft.canvas.selectedNodes.Contains(edge.input.nodeID) || draft.canvas.selectedNodes.Contains(edge.output.nodeID)
             )
             .ToArray()
         ) {

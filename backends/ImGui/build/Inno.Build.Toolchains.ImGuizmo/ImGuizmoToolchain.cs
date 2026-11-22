@@ -55,7 +55,7 @@ public static class ImGuizmoToolchain
         ArgumentNullException.ThrowIfNull(imGui);
         NativeToolchainSelection selection = context.RequireToolchain();
         NativeBuildRecipe sourceRecipe = CreateRecipe(context);
-        if (imGui.component != "cimgui" || imGui.targetId != selection.targetId)
+        if (imGui.component != "cimgui" || imGui.targetID != selection.targetID)
         {
             throw new ArgumentException("The supplied ImGui product does not match this gizmo target.", nameof(imGui));
         }
@@ -144,7 +144,7 @@ public static class ImGuizmoToolchain
             context,
             componentDescriptor,
             "cimguizmo",
-            selection.targetId,
+            selection.targetID,
             [upstream, imGui, Path.Combine(source, "CMakeLists.txt")],
             ["dependency=cimgui"],
             [
@@ -185,7 +185,7 @@ public static class ImGuizmoToolchain
         ArgumentNullException.ThrowIfNull(sourceRecipe);
         ArgumentNullException.ThrowIfNull(imGui);
         NativeToolchainSelection selection = context.RequireToolchain();
-        if (imGui.component != "cimgui" || imGui.targetId != selection.targetId)
+        if (imGui.component != "cimgui" || imGui.targetID != selection.targetID)
         {
             throw new ArgumentException("The supplied ImGui product does not match this gizmo target.", nameof(imGui));
         }

@@ -53,7 +53,7 @@ internal sealed partial class EditorSceneWorkspace
                 .Select(CaptureDocumentSnapshot)
                 .OrderBy(static snapshot => snapshot.sceneIndex)
                 .ToArray();
-            Guid? activeSceneID = m_runtimeSession.scenes.activeScene?.identity.persistentId;
+            Guid? activeSceneID = m_runtimeSession.scenes.activeScene?.identity.persistentID;
             Guid? selectedSceneObjectID = GetSelectedSceneObjectID();
             var session = new PlayModeLease(
                 this,
@@ -104,7 +104,7 @@ internal sealed partial class EditorSceneWorkspace
         }
         object? runtimeSelection = m_selection?.selectedTarget;
         Guid? runtimeSelectionID = runtimeSelection is EngineObject { isDestroyed: false } selected
-                                   ? selected.identity.persistentId
+                                   ? selected.identity.persistentID
                                    : null;
         m_playModeSession = null;
         Guid? editSelectionID = runtimeSelectionID is Guid currentID
@@ -144,7 +144,7 @@ internal sealed partial class EditorSceneWorkspace
             if (session.activeSceneID is Guid activeSceneID)
             {
                 GameScene? activeScene = runtimeWorld.loadedScenes.FirstOrDefault(
-                    scene => scene.identity.persistentId == activeSceneID
+                    scene => scene.identity.persistentID == activeSceneID
                 );
                 if (activeScene is not null)
                 {

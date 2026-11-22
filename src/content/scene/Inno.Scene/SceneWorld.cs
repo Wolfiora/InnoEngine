@@ -97,15 +97,15 @@ public sealed class SceneWorld : IDisposable
     /// <typeparam name="TObject">
     /// The required scene object contract.
     /// </typeparam>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The persistent identity to resolve.
     /// </param>
     /// <returns>
     /// The live compatible object, or <see langword="null"/> when this world does not own one.
     /// </returns>
-    public TObject? Find<TObject>(Guid persistentId)
+    public TObject? Find<TObject>(Guid persistentID)
         where TObject : IdentityObject
-            => m_identities.Get<TObject>(persistentId);
+            => m_identities.Get<TObject>(persistentID);
 
     /// <summary>
     /// Binds this world and its identity allocator to the current asynchronous execution context.

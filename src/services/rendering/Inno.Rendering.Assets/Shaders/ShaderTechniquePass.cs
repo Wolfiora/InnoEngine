@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Maps one provider-defined role to one concrete shader pass.
 /// </summary>
-[StableTypeId("5ca78007-1d3e-53a0-a5e3-dce6b61088b4")]
+[StableTypeID("5ca78007-1d3e-53a0-a5e3-dce6b61088b4")]
 public struct ShaderTechniquePass
 {
     /// <summary>
@@ -26,7 +26,7 @@ public struct ShaderTechniquePass
     /// Concrete pass name within the shader.
     /// </param>
     public ShaderTechniquePass(
-        ShaderPassRoleId role,
+        ShaderPassRoleID role,
         string passName
     ) {
         if (!role.isValid)
@@ -41,7 +41,7 @@ public struct ShaderTechniquePass
     /// <summary>
     /// Gets or sets the provider-defined role.
     /// </summary>
-    public ShaderPassRoleId role { get; set; }
+    public ShaderPassRoleID role { get; set; }
 
     /// <summary>
     /// Gets or sets the concrete pass name.

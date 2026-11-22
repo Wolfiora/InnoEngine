@@ -14,7 +14,7 @@ public static class MacOSArm64BuildModule
     /// Gets the explicit implemented product target, independent of the tool execution host.
     /// </summary>
     public static PlatformTargetDescriptor target { get; } = new(
-        new BuildTargetId("macos-arm64"),
+        new BuildTargetID("macos-arm64"),
         "MacOS",
         "arm64",
         "darwin-arm64",
@@ -65,7 +65,7 @@ public static class MacOSArm64BuildModule
             "platforms/MacOSArm64/editor/Inno.Editor.MacOSArm64/Inno.Editor.MacOSArm64.csproj",
             [nativePlan, editorNativePlan, shaderToolsPlan],
             bindingGenerator,
-            [ManagedDeploymentId.coreClr, ManagedDeploymentId.nativeAot]
+            [ManagedDeploymentID.coreClr, ManagedDeploymentID.nativeAot]
         );
     }
 }

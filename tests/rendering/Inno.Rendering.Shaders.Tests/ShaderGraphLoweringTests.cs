@@ -54,7 +54,7 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
             graph,
             new Dictionary<string, GraphEndpoint> { ["color"] = Endpoint(color, "value") },
             "metal",
-            new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis> { [source.id] = module }
+            new Dictionary<GraphNodeID, ShaderSourceModuleAnalysis> { [source.id] = module }
         );
         Set(constant, "value", 99f);
         extension.position = new(900, 1200);
@@ -66,7 +66,7 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
         var stage = new ShaderIrStage(ShaderStage.Fragment, lowered.block, [], [new("color", ShaderIrOutputKind.Color)]);
         var compiler = new ShaderCompiler(new BgfxShadercToolchain(MacOSArm64BgfxShaderProfiles.target));
         var caps = new GraphicsCapabilities(
-            GraphicsApi.Metal,
+            GraphicsApi.metal,
             GraphicsCapability.None,
             new(256, 8, 8192, 16),
             Enum.GetValues<RenderTextureFormat>(),
@@ -96,7 +96,7 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
                 graph,
                 new Dictionary<string, GraphEndpoint> { ["color"] = Endpoint(color, "value") },
                 "metal",
-                new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis> { [source.id] = module }
+                new Dictionary<GraphNodeID, ShaderSourceModuleAnalysis> { [source.id] = module }
             );
             ShaderGraphLoweringResult result = Catalog(new DoubleCompiler()).Lower(request, m_serialization, SerializationContext.empty);
             Assert.True(result.succeeded, Errors(result));
@@ -124,7 +124,7 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
                 graph,
                 new Dictionary<string, GraphEndpoint> { ["color"] = Endpoint(color, "value") },
                 "metal",
-                new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis> { [source.id] = module }
+                new Dictionary<GraphNodeID, ShaderSourceModuleAnalysis> { [source.id] = module }
             );
         ShaderGraphLoweringResult missing = Catalog().Lower(
             Request(Source("float Shade(float value) { return value; }")),
@@ -141,7 +141,7 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
         Assert.False(renamed.succeeded);
         Assert.Contains(
             renamed.diagnostics,
-            diagnostic => diagnostic.code == "SHADER_GRAPH_PORT_MISSING" && diagnostic.portId == "input.value"
+            diagnostic => diagnostic.code == "SHADER_GRAPH_PORT_MISSING" && diagnostic.portID == "input.value"
         );
         Assert.Equal(edgeCount, graph.edges.Count);
         ShaderGraphLoweringResult restored = Catalog(new DoubleCompiler()).Lower(
@@ -242,7 +242,7 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
 
     private sealed class DoubleCompiler : IShaderNodeCompiler
     {
-        public string definitionId => "tests.double";
+        public string definitionID => "tests.double";
 
         public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext context)
             => [

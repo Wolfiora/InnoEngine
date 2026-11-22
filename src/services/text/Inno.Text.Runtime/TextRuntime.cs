@@ -86,7 +86,7 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
     /// <param name="faceIndex">
     /// The zero-based collection face index.
     /// </param>
-    /// <param name="glyphId">
+    /// <param name="glyphID">
     /// The font-specific glyph identifier.
     /// </param>
     /// <param name="fontSize">
@@ -98,7 +98,7 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
     public GlyphBitmap Rasterize(
         FontAsset font,
         int faceIndex,
-        uint glyphId,
+        uint glyphID,
         float fontSize
     ) {
         ArgumentNullException.ThrowIfNull(font);
@@ -107,7 +107,7 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
             throw new ArgumentOutOfRangeException(nameof(fontSize));
         }
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        return m_backend.Rasterize(GetOrLoad(font, faceIndex).handle, glyphId, fontSize);
+        return m_backend.Rasterize(GetOrLoad(font, faceIndex).handle, glyphID, fontSize);
     }
 
     /// <summary>
@@ -177,13 +177,13 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
         {
             throw new ArgumentOutOfRangeException(nameof(faceIndex));
         }
-        var key = new FontKey(font.identity.persistentId, font.contentVersion, faceIndex);
+        var key = new FontKey(font.identity.persistentID, font.contentVersion, faceIndex);
         if (m_fonts.TryGetValue(key, out LoadedFont? loaded))
         {
             return loaded;
         }
 
-        ArtifactLease artifact = m_artifacts.AcquireArtifact(font.identity.persistentId, "font-data");
+        ArtifactLease artifact = m_artifacts.AcquireArtifact(font.identity.persistentID, "font-data");
         try
         {
             byte[] bytes = artifact.ReadAllBytes();

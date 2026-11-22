@@ -143,7 +143,7 @@ public sealed class EngineHost : IDisposable
     /// </exception>
     public RuntimeSubsystemPipeline CreateHostPipeline(
         IReadOnlyList<IRuntimeSubsystemFactory> factories,
-        IReadOnlyList<RuntimeCapabilityId>? capabilities = null
+        IReadOnlyList<RuntimeCapabilityID>? capabilities = null
     ) {
         ArgumentNullException.ThrowIfNull(factories);
         lock (m_sync)

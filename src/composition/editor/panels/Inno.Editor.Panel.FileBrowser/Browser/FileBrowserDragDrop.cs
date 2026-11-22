@@ -7,8 +7,8 @@ using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.Interactions;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
 
@@ -41,9 +41,9 @@ internal sealed class FileBrowserDragDrop(AssetBrowserModule assets)
             return;
         }
         _ = EditorDragDropRenderer.Source(
-            assets.edits.interactions.For(FileBrowserInteractionIds.C_AREA, entry),
+            assets.edits.interactions.For(FileBrowserInteractionIDs.C_AREA, entry),
             data,
-            () => Ui.Text(data.label)
+            () => Gui.Text(data.label)
         );
     }
 
@@ -64,10 +64,10 @@ internal sealed class FileBrowserDragDrop(AssetBrowserModule assets)
         {
             return;
         }
-        Vector2 minimum = Ui.GetItemMinimum();
-        Vector2 maximum = Ui.GetItemMaximum();
+        Vector2 minimum = Gui.GetItemMinimum();
+        Vector2 maximum = Gui.GetItemMaximum();
         EditorDropWidgetResult result = EditorDragDropRenderer.Target(
-            assets.edits.interactions.For(FileBrowserInteractionIds.C_AREA, relativePath)
+            assets.edits.interactions.For(FileBrowserInteractionIDs.C_AREA, relativePath)
         );
         if (!result.isPreviewing || !result.status.canDrop)
         {

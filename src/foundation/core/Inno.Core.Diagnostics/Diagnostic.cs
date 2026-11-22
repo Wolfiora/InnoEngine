@@ -32,10 +32,10 @@ public sealed class Diagnostic
     /// <param name="severity">
     /// The common engine impact classification.
     /// </param>
-    /// <param name="semanticId">
+    /// <param name="semanticID">
     /// An optional extension or protocol identifier, never interpreted as a file path.
     /// </param>
-    /// <param name="objectId">
+    /// <param name="objectID">
     /// An optional persistent object identity, never a runtime handle.
     /// </param>
     /// <param name="location">
@@ -51,29 +51,29 @@ public sealed class Diagnostic
         string code,
         string message,
         DiagnosticSeverity severity,
-        string? semanticId = null,
-        Guid? objectId = null,
+        string? semanticID = null,
+        Guid? objectID = null,
         DiagnosticLocation? location = null
     ) : this(severity, code, message, location)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(code);
-        if (objectId == Guid.Empty)
+        if (objectID == Guid.Empty)
         {
-            throw new ArgumentException("A diagnostic object identity cannot be empty.", nameof(objectId));
+            throw new ArgumentException("A diagnostic object identity cannot be empty.", nameof(objectID));
         }
-        this.semanticId = semanticId;
-        this.objectId = objectId;
+        this.semanticID = semanticID;
+        this.objectID = objectID;
     }
 
     /// <summary>
     /// Gets the related protocol identifier without treating it as a source file.
     /// </summary>
-    public string? semanticId { get; }
+    public string? semanticID { get; }
 
     /// <summary>
     /// Gets the related persistent object identity, or null for a non-object issue.
     /// </summary>
-    public Guid? objectId { get; }
+    public Guid? objectID { get; }
 
     /// <summary>
     /// Gets the diagnostic severity.

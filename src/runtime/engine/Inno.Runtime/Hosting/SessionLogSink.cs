@@ -5,11 +5,11 @@ namespace Inno.Runtime;
 
 internal sealed class SessionLogSink : ILogSink, IDisposable
 {
-    private readonly LogSessionId m_sessionID;
+    private readonly LogSessionID m_sessionID;
     private ILogSink? m_sink;
 
     internal SessionLogSink(
-        LogSessionId sessionID,
+        LogSessionID sessionID,
         ILogSink sink
     ) {
         m_sessionID = sessionID;
@@ -19,7 +19,7 @@ internal sealed class SessionLogSink : ILogSink, IDisposable
     /// <inheritdoc/>
     public void Receive(LogEntry entry)
     {
-        if (entry.sessionId == m_sessionID)
+        if (entry.sessionID == m_sessionID)
         {
             m_sink?.Receive(entry);
         }

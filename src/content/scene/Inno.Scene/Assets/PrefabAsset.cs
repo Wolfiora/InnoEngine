@@ -13,7 +13,7 @@ namespace Inno.Scene;
 /// <summary>
 /// Stores a persistent game object subtree that can be instantiated repeatedly.
 /// </summary>
-[StableTypeId("21d5a292-cc2a-4c79-879d-e4ca5ca6844f")]
+[StableTypeID("21d5a292-cc2a-4c79-879d-e4ca5ca6844f")]
 public sealed class PrefabAsset : AssetObject
 {
     private byte[] m_pendingPayload = [];

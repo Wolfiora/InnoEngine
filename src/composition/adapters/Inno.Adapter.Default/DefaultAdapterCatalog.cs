@@ -28,7 +28,7 @@ public sealed class DefaultAdapterCatalog : IAdapterCatalog
     private readonly IRenderingBackendFactory m_rendering;
     private readonly AudioBackendCatalog m_audio;
     private readonly TextBackendCatalog m_text;
-    private readonly UiBackendCatalog m_ui;
+    private readonly UIBackendCatalog m_ui;
 
     /// <summary>
     /// Captures each domain registration snapshot without initializing native services.
@@ -50,7 +50,7 @@ public sealed class DefaultAdapterCatalog : IAdapterCatalog
     /// </param>
     public DefaultAdapterCatalog(
         DefaultAdapterCatalogOptions options,
-        IEnumerable<UiBackendProvider>? uiProviders = null,
+        IEnumerable<UIBackendProvider>? uiProviders = null,
         IEnumerable<InputBackendProvider>? inputProviders = null,
         IEnumerable<AudioBackendProvider>? audioProviders = null,
         IEnumerable<TextBackendProvider>? textProviders = null
@@ -62,7 +62,7 @@ public sealed class DefaultAdapterCatalog : IAdapterCatalog
         m_rendering = options.rendering ?? throw new ArgumentException("Host rendering must be configured.", nameof(options));
         m_audio = new AudioBackendCatalog(audioProviders ?? [new MiniAudioBackendProvider()]);
         m_text = new TextBackendCatalog(textProviders ?? [new FreeTypeHarfBuzzTextBackendProvider()]);
-        m_ui = new UiBackendCatalog(uiProviders ?? [new RmlUiBackendProvider()]);
+        m_ui = new UIBackendCatalog(uiProviders ?? [new RmlUiBackendProvider()]);
     }
 
     /// <summary>
@@ -98,5 +98,5 @@ public sealed class DefaultAdapterCatalog : IAdapterCatalog
     /// <summary>
     /// Gets the composition-owned ui factory snapshot.
     /// </summary>
-    public IUiBackendFactory ui => m_ui;
+    public IUIBackendFactory ui => m_ui;
 }

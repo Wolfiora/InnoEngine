@@ -111,7 +111,7 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
                     sceneState.scene.ReplaceComponentForReload(
                         previousComponent,
                         (GameComponent)replacement,
-                        replacementTypeRef.runtimeId
+                        replacementTypeRef.runtimeID
                     );
                 }
                 else
@@ -119,7 +119,7 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
                     sceneState.scene.ReplaceSystemForReload(
                         (GameSystem)state.target,
                         (GameSystem)replacement,
-                        replacementTypeRef.runtimeId
+                        replacementTypeRef.runtimeID
                     );
                 }
                 state.currentTarget = replacement;
@@ -144,7 +144,7 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
                 replacement.scene.ReplaceComponentForReload(
                     (GameComponent)replacement.current,
                     previousComponent,
-                    replacement.previousType.runtimeId
+                    replacement.previousType.runtimeID
                 );
             }
             else
@@ -152,7 +152,7 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
                 replacement.scene.ReplaceSystemForReload(
                     (GameSystem)replacement.current,
                     (GameSystem)replacement.previous,
-                    replacement.previousType.runtimeId
+                    replacement.previousType.runtimeID
                 );
             }
         }
@@ -223,8 +223,8 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
                         "INNOHR0004",
                         DiagnosticSeverity.Error,
                         $"Retired scene element '{replacement.previous.GetType().FullName}' failed during cleanup: {exception.Message}",
-                        replacement.scene.identity.persistentId,
-                        replacement.previous.identity.persistentId,
+                        replacement.scene.identity.persistentID,
+                        replacement.previous.identity.persistentID,
                         string.Empty,
                         replacement.previous.GetType().FullName ?? replacement.previous.GetType().Name,
                         string.Empty
@@ -247,13 +247,13 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         {
             foreach (ObjectState state in sceneState.states)
             {
-                Guid elementID = state.target.identity.persistentId;
+                Guid elementID = state.target.identity.persistentID;
                 yield return new SerializedMissingState(
                     new ReferenceKey(elementID, "element"),
                     new ReferenceDescriptor(
                         SceneElementReferenceResolver.id,
                         elementID,
-                        state.logicalType.stableId,
+                        state.logicalType.stableID,
                         state.typeName
                     ),
                     state.data
@@ -261,11 +261,11 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
                 foreach (AssetDependency dependency in state.dependencies.Distinct())
                 {
                     yield return new SerializedMissingState(
-                        new ReferenceKey(elementID, $"assets/{dependency.persistentId:D}"),
+                        new ReferenceKey(elementID, $"assets/{dependency.persistentID:D}"),
                         new ReferenceDescriptor(
                             AssetReferenceProtocol.id,
-                            dependency.persistentId,
-                            dependency.type.stableId,
+                            dependency.persistentID,
+                            dependency.type.stableID,
                             lastKnownPath: dependency.lastKnownPath
                         ),
                         []
@@ -293,12 +293,12 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
                 .SelectMany(static entry => entry.components.Cast<EngineObject>().Prepend(entry.gameObject))
                 .Concat(scene.GetSystems())
                 .ToArray();
-            var sourceIds = new Dictionary<EngineObject, Guid>(ReferenceEqualityComparer.Instance);
+            var sourceIDs = new Dictionary<EngineObject, Guid>(ReferenceEqualityComparer.Instance);
             foreach (EngineObject target in engineObjects)
             {
-                sourceIds.Add(target, target.identity.persistentId);
+                sourceIDs.Add(target, target.identity.persistentID);
             }
-            var references = new SceneGraphReferenceMap(scene, sourceIds);
+            var references = new SceneGraphReferenceMap(scene, sourceIDs);
             var states = new List<ObjectState>();
             using (references.Enter())
             {
@@ -313,7 +313,7 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
             }
 
             ValidateMultiplicity(scene, structure, context);
-            scenes.Add(new SceneState(scene, engineObjects, sourceIds, states));
+            scenes.Add(new SceneState(scene, engineObjects, sourceIDs, states));
         }
         return new SceneReloadStateTransfer(context, serialization, assets, scenes);
     }
@@ -361,8 +361,8 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         var currentByPersistentID = new Dictionary<Guid, EngineObject>();
         for (int i = 0; i < currentObjects.Length; i++)
         {
-            references.Register(sceneState.engineObjects[i].identity.persistentId, currentObjects[i]);
-            currentByPersistentID[currentObjects[i].identity.persistentId] = currentObjects[i];
+            references.Register(sceneState.engineObjects[i].identity.persistentID, currentObjects[i]);
+            currentByPersistentID[currentObjects[i].identity.persistentID] = currentObjects[i];
         }
         foreach (ObjectState state in sceneState.states)
         {
@@ -428,7 +428,7 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
                     && (!result.success || result.ignoredCount != 0)
                 ) {
                     throw new InvalidOperationException(
-                        $"Missing scene element '{state.target.identity.persistentId}' could not restore its complete preserved state."
+                        $"Missing scene element '{state.target.identity.persistentID}' could not restore its complete preserved state."
                     );
                 }
                 for (int i = 0; i < result.failures.Count; i++)
@@ -443,8 +443,8 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
                             $"Hot reload skipped '{target.GetType().FullName}.{failure.name}' because "
                             + $"serialized type '{previousType}' is incompatible with '{currentType}'. "
                             + $"The new member default value was preserved. {failure.message}",
-                            sceneState.scene.identity.persistentId,
-                            ((EngineObject)target).identity.persistentId,
+                            sceneState.scene.identity.persistentID,
+                            ((EngineObject)target).identity.persistentID,
                             failure.name,
                             previousType,
                             currentType
@@ -605,7 +605,7 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
                 }
                 throw new InvalidOperationException(
                     $"Script reload would leave GameObject '{entry.gameObject.name}' "
-                    + $"({entry.gameObject.identity.persistentId}) with {group.count} instances of unique component "
+                    + $"({entry.gameObject.identity.persistentID}) with {group.count} instances of unique component "
                     + $"'{group.displayName}'. Remove duplicate components or restore "
                     + $"[{nameof(AllowMultipleComponentAttribute)}] before reloading."
                 );
@@ -632,7 +632,7 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
                 continue;
             }
             throw new InvalidOperationException(
-                $"Script reload would leave scene '{scene.name}' ({scene.identity.persistentId}) with "
+                $"Script reload would leave scene '{scene.name}' ({scene.identity.persistentID}) with "
                 + $"{group.count} instances of unique system '{group.displayName}'. Remove duplicate systems or restore "
                 + $"[{nameof(AllowMultipleSystemAttribute)}] before reloading."
             );
@@ -701,7 +701,7 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
             || candidate == typeof(MissingGameComponent) || candidate == typeof(MissingGameSystem)
         ) {
             throw new InvalidOperationException(
-                $"Stable type id '{state.logicalType.stableId:D}' resolves to invalid replacement '{candidate.FullName}'."
+                $"Stable type id '{state.logicalType.stableID:D}' resolves to invalid replacement '{candidate.FullName}'."
             );
         }
         return candidate;
@@ -727,7 +727,7 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
     private sealed record SceneState(
         GameScene scene,
         EngineObject[] engineObjects,
-        IReadOnlyDictionary<EngineObject, Guid> sourceIds,
+        IReadOnlyDictionary<EngineObject, Guid> sourceIDs,
         List<ObjectState> states
     );
 

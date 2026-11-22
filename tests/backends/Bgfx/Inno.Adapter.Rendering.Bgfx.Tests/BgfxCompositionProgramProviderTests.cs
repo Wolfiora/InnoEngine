@@ -19,8 +19,8 @@ public sealed class BgfxCompositionProgramProviderTests
             return;
         }
         GraphicsApi[] apis = OperatingSystem.IsMacOS()
-                             ? [GraphicsApi.Metal, GraphicsApi.Vulkan, GraphicsApi.OpenGL]
-                             : [GraphicsApi.Direct3D11, GraphicsApi.Direct3D12, GraphicsApi.Vulkan, GraphicsApi.OpenGL];
+                             ? [GraphicsApi.metal, GraphicsApi.vulkan, GraphicsApi.openGL]
+                             : [GraphicsApi.direct3D11, GraphicsApi.direct3D12, GraphicsApi.vulkan, GraphicsApi.openGL];
         var layout = new RenderVertexLayout(
             [
                 new(RenderVertexSemantic.Position, RenderVertexFormat.Float2),

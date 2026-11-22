@@ -7,7 +7,7 @@ using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
-[StableTypeId("a1b58cb9-3923-52f8-aa05-e9f282e5bdbd")]
+[StableTypeID("a1b58cb9-3923-52f8-aa05-e9f282e5bdbd")]
 internal sealed class SerializedRenderExtensionStateConverter : SerializationConverter<SerializedRenderExtensionState>
 {
     /// <summary>

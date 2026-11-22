@@ -30,7 +30,7 @@ public readonly record struct AudioClipMetadata
     /// Encoded artifact length in bytes.
     /// </param>
     public AudioClipMetadata(
-        AudioCodecId codec,
+        AudioCodecID codec,
         int channels,
         int sampleRate,
         long frameCount,
@@ -54,7 +54,7 @@ public readonly record struct AudioClipMetadata
     /// <summary>
     /// Gets the codec protocol of the encoded artifact.
     /// </summary>
-    public AudioCodecId codec { get; }
+    public AudioCodecID codec { get; }
 
     /// <summary>
     /// Gets the encoded channel count.
@@ -143,7 +143,7 @@ public static class AudioClipMetadataCodec
         try
         {
             return new AudioClipMetadata(
-                new AudioCodecId(Encoding.UTF8.GetString(payload[C_FIXED_SIZE..])),
+                new AudioCodecID(Encoding.UTF8.GetString(payload[C_FIXED_SIZE..])),
                 BinaryPrimitives.ReadInt32LittleEndian(payload[8..12]),
                 BinaryPrimitives.ReadInt32LittleEndian(payload[12..16]),
                 BinaryPrimitives.ReadInt64LittleEndian(payload[16..24]),
@@ -160,7 +160,7 @@ public static class AudioClipMetadataCodec
 /// <summary>
 /// Represents one imported audio source and its compact runtime metadata.
 /// </summary>
-[StableTypeId("c64bbcb2-f7ee-48f2-85df-4506dc7b86d5")]
+[StableTypeID("c64bbcb2-f7ee-48f2-85df-4506dc7b86d5")]
 public sealed class AudioClipAsset : AssetObject
 {
     private AudioClipMetadata? m_metadata;

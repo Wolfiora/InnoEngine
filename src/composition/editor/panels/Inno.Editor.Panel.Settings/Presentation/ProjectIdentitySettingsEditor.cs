@@ -5,7 +5,7 @@ using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Settings;
 
 using EditorImGui = Inno.Editor.ImGui.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 
 namespace Inno.Editor.Panel.Settings;
 

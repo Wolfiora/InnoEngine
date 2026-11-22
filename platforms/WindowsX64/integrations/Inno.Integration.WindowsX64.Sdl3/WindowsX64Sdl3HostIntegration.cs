@@ -38,7 +38,7 @@ public sealed class WindowsX64Sdl3HostIntegration : ISdl3HostIntegration
         {
             throw new InvalidOperationException("SDL did not provide the required Windows surface.");
         }
-        return new PlatformNativeHandles(surface, handleKind: PlatformNativeHandleId.win32);
+        return new PlatformNativeHandles(surface, handleKind: PlatformNativeHandleID.win32);
     }
 
     /// <inheritdoc/>

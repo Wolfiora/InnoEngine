@@ -53,7 +53,7 @@ public sealed class EditorPlayModeController :
     private EditorPlayModeState m_state;
     private float m_playTime;
     private string? m_lastFailure;
-    private LogSessionId m_activeSessionID;
+    private LogSessionID m_activeSessionID;
     private bool m_disposed;
 
     /// <summary>
@@ -128,7 +128,7 @@ public sealed class EditorPlayModeController :
     /// <summary>
     /// Gets the isolated runtime log session associated with the current request.
     /// </summary>
-    public LogSessionId activeSessionId => m_activeSessionID;
+    public LogSessionID activeSessionID => m_activeSessionID;
 
     /// <inheritdoc/>
     bool IEditorReloadGuard.canRequestReload => !m_disposed && m_state == EditorPlayModeState.Editing;
@@ -183,7 +183,7 @@ public sealed class EditorPlayModeController :
         m_entryFailed = false;
         m_retirement = null;
         m_lastFailure = null;
-        m_activeSessionID = LogSessionId.none;
+        m_activeSessionID = LogSessionID.none;
         m_compilationTicket = m_scripting.RequestCompilation();
         SetState(EditorPlayModeState.Compiling);
         return true;
@@ -351,7 +351,7 @@ public sealed class EditorPlayModeController :
         {
             sessionScope = session.EnterExecutionScope();
             audioScope = m_audio?.EnterExecutionScope(session);
-            uiScope = session.subsystems.GetRequiredSubsystem<UiRuntime>().EnterExecutionScope();
+            uiScope = session.subsystems.GetRequiredSubsystem<UIRuntime>().EnterExecutionScope();
             return new PresentationScope(sessionScope, audioScope, uiScope);
         }
         catch
@@ -404,7 +404,7 @@ public sealed class EditorPlayModeController :
             {
                 m_sceneLease = m_scenes.BeginPlayMode(m_runtimeSession);
             }
-            m_activeSessionID = m_runtimeSession.sessionId;
+            m_activeSessionID = m_runtimeSession.sessionID;
             m_playTime = 0f;
             SetState(EditorPlayModeState.Playing);
         }
@@ -531,7 +531,7 @@ public sealed class EditorPlayModeController :
     private void CompleteEditingTransition()
     {
         m_compilationTicket = null;
-        m_activeSessionID = LogSessionId.none;
+        m_activeSessionID = LogSessionID.none;
         m_playTime = 0f;
         SetState(EditorPlayModeState.Editing);
     }

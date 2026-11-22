@@ -367,7 +367,7 @@ public abstract class Shell : IDisposable
     /// </returns>
     protected virtual bool ShouldExit(Event evnt)
         => evnt is ApplicationQuitEvent
-           || evnt is WindowCloseEvent close && close.windowId == primaryWindow.windowId;
+           || evnt is WindowCloseEvent close && close.windowID == primaryWindow.windowID;
 
     /// <summary>
     /// Advances one product-specific frame after all pending platform events have been dispatched.
@@ -456,7 +456,7 @@ public abstract class Shell : IDisposable
         {
             return;
         }
-        if (windowID == primaryWindow.windowId)
+        if (windowID == primaryWindow.windowID)
         {
             UpdatePrimaryPresentationSize();
         }
@@ -553,7 +553,7 @@ public abstract class Shell : IDisposable
             {
                 inputSource.ProcessEvent(evnt);
             }
-            if (evnt is WindowResizeEvent resize && resize.windowId == primaryWindow.windowId)
+            if (evnt is WindowResizeEvent resize && resize.windowID == primaryWindow.windowID)
             {
                 UpdatePrimaryPresentationSize();
             }
@@ -586,7 +586,7 @@ public abstract class Shell : IDisposable
             case ApplicationSuspensionChangedEvent application:
                 m_applicationSuspended = application.isSuspended;
                 break;
-            case WindowVisibilityChangedEvent window when window.windowId == primaryWindow.windowId:
+            case WindowVisibilityChangedEvent window when window.windowID == primaryWindow.windowID:
                 m_primaryWindowHidden = !window.isVisible;
                 break;
             default:

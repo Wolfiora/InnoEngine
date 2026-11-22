@@ -104,7 +104,7 @@ public sealed class ModuleHostTests : IDisposable
         var previousRef = new TypeRef(RELOADABLE_TYPE_ID);
         Type previous = previousRef.Resolve(m_types);
         Assert.Equal(1, ReadVersion(previous));
-        int previousRuntimeID = m_types.GetTypeRef(previous).runtimeId;
+        int previousRuntimeID = m_types.GetTypeRef(previous).runtimeID;
 
         using AssemblyReloadSession reload = m_modules.BeginReload(handle, CreateRequest("V2"));
         TypeCacheReloadContext typeReload = reload.context.GetContext<TypeCacheReloadContext>();
@@ -114,14 +114,14 @@ public sealed class ModuleHostTests : IDisposable
         Assert.Same(previous, previousRef.Resolve(typeReload.previous));
         Assert.Equal(previousRef, candidateRef);
         Assert.Equal(previousRef.GetHashCode(), candidateRef.GetHashCode());
-        Assert.NotEqual(previousRef.runtimeId, candidateRef.runtimeId);
+        Assert.NotEqual(previousRef.runtimeID, candidateRef.runtimeID);
 
         reload.Activate();
 
         Type current = previousRef.Resolve(m_types);
         Assert.Same(candidate, current);
         Assert.Equal(2, ReadVersion(current));
-        int currentRuntimeID = m_types.GetTypeRef(current).runtimeId;
+        int currentRuntimeID = m_types.GetTypeRef(current).runtimeID;
         Assert.NotEqual(previousRuntimeID, currentRuntimeID);
         _ = reload.Complete();
         Assert.Throws<InvalidOperationException>(() => _ = typeReload.previous);
@@ -284,27 +284,27 @@ public sealed class ModuleHostTests : IDisposable
     }
 
     [Fact]
-    public void RolledBackCandidateRuntimeIdsAreNeverReused()
+    public void RolledBackCandidateRuntimeIDsAreNeverReused()
     {
         AssemblyModuleHandle handle = LoadVersion("V1");
         using var registry = new ReloadableTypeRegistry(m_types);
         _ = registry.types;
         registry.failActivation = true;
         Type previous = new TypeRef(RELOADABLE_TYPE_ID).Resolve(m_types);
-        int previousRuntimeID = m_types.GetTypeRef(previous).runtimeId;
+        int previousRuntimeID = m_types.GetTypeRef(previous).runtimeID;
 
         using (AssemblyReloadSession failed = m_modules.BeginReload(handle, CreateRequest("V2")))
         {
             Assert.Throws<InvalidOperationException>(failed.Activate);
         }
-        int rejectedRuntimeID = registry.lastBuiltRef.runtimeId;
+        int rejectedRuntimeID = registry.lastBuiltRef.runtimeID;
 
         registry.failActivation = false;
         using AssemblyReloadSession accepted = m_modules.BeginReload(handle, CreateRequest("V2"));
         TypeCacheReloadContext context = accepted.context.GetContext<TypeCacheReloadContext>();
         TypeRef acceptedRef = context.candidate.GetTypeRef(new TypeRef(RELOADABLE_TYPE_ID).Resolve(context.candidate));
         Assert.NotEqual(previousRuntimeID, rejectedRuntimeID);
-        Assert.NotEqual(rejectedRuntimeID, acceptedRef.runtimeId);
+        Assert.NotEqual(rejectedRuntimeID, acceptedRef.runtimeID);
         accepted.Activate();
         _ = accepted.Complete();
     }

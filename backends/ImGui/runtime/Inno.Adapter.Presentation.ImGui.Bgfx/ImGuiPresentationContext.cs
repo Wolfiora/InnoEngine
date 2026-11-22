@@ -49,10 +49,10 @@ internal sealed class ImGuiPresentationContext : IPresentationContext
 
     void IPresentationContext.SetLayoutFile(string? filePath) => m_context.SetIniFile(filePath);
 
-    bool IPresentationContext.TryGetWindowId(
-        uint viewportId,
-        out uint windowId
-    ) => m_context.TryGetWindowID(viewportId, out windowId);
+    bool IPresentationContext.TryGetWindowID(
+        uint viewportID,
+        out uint windowID
+    ) => m_context.TryGetWindowID(viewportID, out windowID);
 
     void IPresentationContext.LoadLayout(string? settings) => m_context.LoadIniSettings(settings);
 

@@ -77,7 +77,7 @@ public sealed class NativeProjectPanelHost : IDisposable
         m_session = m_engine.CreateSession(new RuntimeSessionOptions
         {
             kind = RuntimeSessionKind.Edit,
-            applicationId = "inno.tests.native-panels",
+            applicationID = "inno.tests.native-panels",
             createLogSink = _ => new FileLogSink(Path.Combine(library, "Logs")),
             jobExecutionMode = RuntimeJobExecutionMode.SingleThread
         });
@@ -96,7 +96,7 @@ public sealed class NativeProjectPanelHost : IDisposable
             settingsDocument ?? new FileByteDocumentStore(Path.Combine(m_root, "Settings.Project.inno")),
             m_engine.types,
             m_engine.serialization,
-            new ProjectId("tests.native-panels"),
+            new ProjectID("tests.native-panels"),
             AssetSerializationContext.Create(assets)
         );
         var pluginSources = new PluginSourceService(m_engine.serialization, pluginRoot, library);
@@ -111,7 +111,7 @@ public sealed class NativeProjectPanelHost : IDisposable
         );
         m_console = new EditorConsole(m_engine.logs, m_engine.diagnostics, new NativePanelHost.InactivePlayMode());
         m_console.Start();
-        var ui = new EditorUiSession();
+        var ui = new EditorUISession();
         this.reloads = new EditorReloadCoordinator();
         SettingsPanelServices? settingsServices = includeSettings
                                                   ? new SettingsPanelServices(m_root, assets, m_plugins, m_settings, m_engine)

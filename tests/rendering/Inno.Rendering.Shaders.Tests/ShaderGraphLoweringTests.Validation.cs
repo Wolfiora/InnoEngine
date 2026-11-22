@@ -37,7 +37,7 @@ public sealed partial class ShaderGraphLoweringTests
         var graph = new GraphDocument();
         GraphNodeRecord first = Add(graph, "first", "inno.shader.source");
         GraphNodeRecord second = Add(graph, "second", "inno.shader.source");
-        var modules = new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis>
+        var modules = new Dictionary<GraphNodeID, ShaderSourceModuleAnalysis>
         {
             [first.id] = Source("void Shade() {}", "first.ishadersource"),
             [second.id] = Source("void Shade() {}", "second.ishadersource")
@@ -70,8 +70,8 @@ public sealed partial class ShaderGraphLoweringTests
             graph,
             new Dictionary<string, GraphEndpoint> { ["value"] = Endpoint(source, "return") },
             "metal",
-            new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis> { [source.id] = module },
-            new Dictionary<GraphNodeId, ShaderIrStageInput>
+            new Dictionary<GraphNodeID, ShaderSourceModuleAnalysis> { [source.id] = module },
+            new Dictionary<GraphNodeID, ShaderIrStageInput>
             {
                 [input.id] = new("data", module.function!.parameters[0].type, ShaderIrInputKind.Uniform)
             }
@@ -101,8 +101,8 @@ public sealed partial class ShaderGraphLoweringTests
         NodeRegistryProbe.conflict = false;
         using (var registry = new ShaderNodeCompilerRegistry(m_types))
         {
-            Assert.Contains("tests.registry.node", registry.definitionIds);
-            Assert.Contains("inno.shader.source", registry.definitionIds);
+            Assert.Contains("tests.registry.node", registry.definitionIDs);
+            Assert.Contains("inno.shader.source", registry.definitionIDs);
             m_modules.Rebuild();
             Assert.Equal(1, NodeRegistryProbe.created - NodeRegistryProbe.disposed);
             NodeRegistryProbe.conflict = true;
@@ -114,7 +114,7 @@ public sealed partial class ShaderGraphLoweringTests
             {
                 NodeRegistryProbe.conflict = false;
             }
-            Assert.Contains("tests.registry.node", registry.definitionIds);
+            Assert.Contains("tests.registry.node", registry.definitionIDs);
             Assert.Equal(1, NodeRegistryProbe.created - NodeRegistryProbe.disposed);
         }
         Assert.Equal(NodeRegistryProbe.created, NodeRegistryProbe.disposed);
@@ -134,7 +134,7 @@ internal sealed class NodeRegistryProbe : IShaderNodeCompiler, IDisposable
         m_id = conflict ? "inno.shader.constant" : "tests.registry.node";
     }
 
-    public string definitionId => m_id;
+    public string definitionID => m_id;
 
     public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext context) => [];
 

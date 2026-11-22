@@ -31,7 +31,7 @@ public interface IAssetLookup
     /// <typeparam name="TAsset">
     /// The required asset contract.
     /// </typeparam>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The non-empty persistent asset identity.
     /// </param>
     /// <returns>
@@ -40,7 +40,7 @@ public interface IAssetLookup
     /// <exception cref="InvalidOperationException">
     /// Thrown when the asset does not exist or has an incompatible concrete type.
     /// </exception>
-    TAsset Load<TAsset>(Guid persistentId)
+    TAsset Load<TAsset>(Guid persistentID)
         where TAsset : AssetObject;
 
     /// <summary>
@@ -70,7 +70,7 @@ public interface IAssetLookup
     /// <typeparam name="TAsset">
     /// The required asset contract.
     /// </typeparam>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The non-empty persistent asset identity.
     /// </param>
     /// <param name="asset">
@@ -81,7 +81,7 @@ public interface IAssetLookup
     /// <see langword="false"/>.
     /// </returns>
     bool TryLoad<TAsset>(
-        Guid persistentId,
+        Guid persistentID,
         out TAsset? asset
     ) where TAsset : AssetObject;
 }

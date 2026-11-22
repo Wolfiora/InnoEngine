@@ -14,7 +14,7 @@ public sealed class ContentReadScopeTests
         var owner = new IdentityAllocator();
         var root = new Root();
         owner.Register(root);
-        Guid id = root.identity.persistentId;
+        Guid id = root.identity.persistentID;
         using var scope = new ContentReadScope([root.identity], id);
         Assert.Same(root, Assert.Single(scope.GetValues<Root>()));
         owner.Unregister(root);

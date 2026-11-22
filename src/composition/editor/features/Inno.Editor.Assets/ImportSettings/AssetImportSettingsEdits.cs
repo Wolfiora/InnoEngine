@@ -81,14 +81,14 @@ public sealed partial class AssetImportSettingsEdits : EditorModule
         {
             throw new InvalidOperationException("The importer settings type changed. Reload the editor.");
         }
-        if (!m_assets.TryGetPersistentId(path, out Guid id))
+        if (!m_assets.TryGetPersistentID(path, out Guid id))
         {
             throw new InvalidOperationException("The source has no persistent identity.");
         }
         var data = new ChangeData
         {
             assetId = id,
-            typeId = m_types.GetTypeRef(settings.GetType()).stableId,
+            typeId = m_types.GetTypeRef(settings.GetType()).stableID,
             before = Capture(before.value),
             after = Capture(settings)
         };
@@ -158,7 +158,7 @@ public sealed partial class AssetImportSettingsEdits : EditorModule
             throw new IOException("The import-settings source is not writable.");
         }
         AssetImportSettingsSnapshot current = m_assets.GetImportSettings(info.assetPath);
-        if (current.value is null || m_types.GetTypeRef(current.value.GetType()).stableId != data.typeId)
+        if (current.value is null || m_types.GetTypeRef(current.value.GetType()).stableID != data.typeId)
         {
             throw new InvalidOperationException("The importer settings extension is unavailable or changed type.");
         }

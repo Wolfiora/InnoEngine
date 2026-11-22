@@ -37,7 +37,7 @@ internal static class MacOSArm64BgfxToolContribution
             tools.Add("cmake", cmake);
         }
         return new NativeToolchainSelection(
-            sdk.targetId,
+            sdk.targetID,
             sdk.host,
             tools,
             sdk.environment,

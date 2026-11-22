@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Contains the source-of-truth definition shared by shader import and material tooling.
 /// </summary>
-[StableTypeId("5bce7c89-203f-5921-8efc-1bca0f364943")]
+[StableTypeID("5bce7c89-203f-5921-8efc-1bca0f364943")]
 public sealed class ShaderDefinition : ISerializable
 {
     /// <summary>

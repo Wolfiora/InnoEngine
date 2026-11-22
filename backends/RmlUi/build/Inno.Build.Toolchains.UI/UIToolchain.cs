@@ -133,7 +133,7 @@ public static class UIToolchain
             context,
             componentDescriptor,
             "ui",
-            selection.targetId,
+            selection.targetID,
             componentDescriptor.staticBuild!.inputPaths.Select(path => Path.GetFullPath(path, context.engineRoot)),
             [],
             [Path.Combine(componentDescriptor.GetToolchainRoot(context.engineRoot), "UIToolchain.cs")]

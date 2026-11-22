@@ -45,8 +45,8 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
         Set(node, "operation", "multiply");
         ShaderGraphLiteral value = ShaderGraphLiteral.Zero(ShaderSourceType.Atomic("float"));
         value.scalarBits = [0x3F80_0000];
-        Set(node, ShaderGraphDocument.inputDefaultPrefix + "left", value);
-        Set(node, ShaderGraphDocument.inputDefaultPrefix + "right", value);
+        Set(node, ShaderGraphDocument.C_INPUT_DEFAULT_PREFIX + "left", value);
+        Set(node, ShaderGraphDocument.C_INPUT_DEFAULT_PREFIX + "right", value);
         GraphDocument restored = GraphDocumentCodec.Decode(GraphDocumentCodec.Encode(graph, m_serialization), m_serialization);
         var catalog = new ShaderNodeCompilerCatalog([new ShaderBinaryNodeCompiler(), new ShaderConstantNodeCompiler()]);
         ShaderGraphLoweringResult missing = Lower(restored, catalog);
@@ -70,14 +70,14 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
         graph.AddNode(node);
         graph.AddNode(constant);
         Set(node, "type", "float");
-        Set(node, ShaderGraphDocument.inputDefaultPrefix + "left", ShaderGraphLiteral.Zero(ShaderSourceType.Atomic("uint")));
-        Set(node, ShaderGraphDocument.inputDefaultPrefix + "right", ShaderGraphLiteral.Zero(ShaderSourceType.Atomic("float")));
+        Set(node, ShaderGraphDocument.C_INPUT_DEFAULT_PREFIX + "left", ShaderGraphLiteral.Zero(ShaderSourceType.Atomic("uint")));
+        Set(node, ShaderGraphDocument.C_INPUT_DEFAULT_PREFIX + "right", ShaderGraphLiteral.Zero(ShaderSourceType.Atomic("float")));
         var catalog = new ShaderNodeCompilerCatalog([new ShaderBinaryNodeCompiler(), new ShaderConstantNodeCompiler()]);
         Assert.Equal(2, Lower(graph, catalog).diagnostics.Count(value => value.code == "SHADER_GRAPH_INPUT_REQUIRED"));
         graph.AddEdge(new(new("connect-left"), new(constant.id, new("value")), new(node.id, new("left"))));
         graph.AddEdge(new(new("connect-right"), new(constant.id, new("value")), new(node.id, new("right"))));
         Assert.True(Lower(graph, catalog).succeeded);
-        Assert.True(node.TryGetValue(ShaderGraphDocument.inputDefaultPrefix + "left", out _));
+        Assert.True(node.TryGetValue(ShaderGraphDocument.C_INPUT_DEFAULT_PREFIX + "left", out _));
     }
 
     [Fact]
@@ -122,8 +122,8 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
             m_serialization,
             SerializationContext.empty
         );
-        var boundaryInput = new GraphNodeRecord(new("node-inputs"), ShaderGraphNodes.inputDefinitionId);
-        var boundaryOutput = new GraphNodeRecord(new("node-outputs"), ShaderGraphNodes.outputDefinitionId);
+        var boundaryInput = new GraphNodeRecord(new("node-inputs"), ShaderGraphNodes.C_INPUT_DEFINITION_ID);
+        var boundaryOutput = new GraphNodeRecord(new("node-outputs"), ShaderGraphNodes.C_OUTPUT_DEFINITION_ID);
         child.AddNode(boundaryInput);
         child.AddNode(boundaryOutput);
         var optional = new ShaderGraphNodePortDefinition
@@ -132,11 +132,11 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
             type = new() { id = "float3" },
             required = false
         };
-        Set(boundaryInput, ShaderGraphDocument.settingsKey, new ShaderGraphNodeInputSettings
+        Set(boundaryInput, ShaderGraphDocument.C_SETTINGS_KEY, new ShaderGraphNodeInputSettings
         {
             ports = [optional]
         });
-        Set(boundaryOutput, ShaderGraphDocument.settingsKey, new ShaderGraphNodeOutputSettings
+        Set(boundaryOutput, ShaderGraphDocument.C_SETTINGS_KEY, new ShaderGraphNodeOutputSettings
         {
             ports = [new() { id = "value", type = new() { id = "float3" } }]
         });
@@ -147,13 +147,13 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
             m_serialization,
             SerializationContext.empty
         );
-        var call = new GraphNodeRecord(new("call"), ShaderGraphNodes.callDefinitionId);
+        var call = new GraphNodeRecord(new("call"), ShaderGraphNodes.C_CALL_DEFINITION_ID);
         parent.AddNode(call);
         Set(call, "sourceId", sourceID);
         Set(call, "sourcePath", "Optional.ishader");
         Set(
             call,
-            ShaderGraphNodes.interfaceKey,
+            ShaderGraphNodes.C_INTERFACE_KEY,
             ShaderGraphNodes.ReadInterface(child, m_serialization, SerializationContext.empty)
         );
 
@@ -167,9 +167,9 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
             SerializationContext.empty
         );
         GraphNodeRecord value = Assert.Single(expanded.nodes);
-        Assert.Equal("inno.shader.reroute", value.definitionId);
-        Assert.False(value.TryGetValue(ShaderGraphDocument.inputDefaultPrefix + "input", out _));
-        Assert.False(value.TryGetValue(ShaderGraphDocument.inputDefaultPrefix + "value", out _));
+        Assert.Equal("inno.shader.reroute", value.definitionID);
+        Assert.False(value.TryGetValue(ShaderGraphDocument.C_INPUT_DEFAULT_PREFIX + "input", out _));
+        Assert.False(value.TryGetValue(ShaderGraphDocument.C_INPUT_DEFAULT_PREFIX + "value", out _));
     }
 
     [Fact]
@@ -196,7 +196,7 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
 
         Assert.True(result.succeeded, string.Join("\n", result.diagnostics.Select(value => value.message)));
         Assert.Empty(result.diagnostics);
-        Assert.False(reroute.TryGetValue(ShaderGraphDocument.inputDefaultPrefix + "input", out _));
+        Assert.False(reroute.TryGetValue(ShaderGraphDocument.C_INPUT_DEFAULT_PREFIX + "input", out _));
     }
 
     [Fact]

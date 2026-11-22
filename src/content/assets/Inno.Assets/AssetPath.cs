@@ -7,7 +7,7 @@ namespace Inno.Assets;
 /// <summary>
 /// Identifies one isolated asset source mount.
 /// </summary>
-public record struct AssetSourceId
+public record struct AssetSourceID
 {
     /// <summary>
     /// Creates a globally stable source identifier.
@@ -15,7 +15,7 @@ public record struct AssetSourceId
     /// <param name="value">
     /// Lowercase project or Plugin source identity.
     /// </param>
-    public AssetSourceId(string value)
+    public AssetSourceID(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         string normalized = value.Trim();
@@ -35,7 +35,7 @@ public record struct AssetSourceId
     /// <summary>
     /// Gets the writable project source identifier.
     /// </summary>
-    public static AssetSourceId project => new("project");
+    public static AssetSourceID project => new("project");
 
     /// <summary>
     /// Gets or sets the globally stable source value.
@@ -73,7 +73,7 @@ public record struct AssetPath
     /// Source-local path using forward slashes.
     /// </param>
     public AssetPath(
-        AssetSourceId source,
+        AssetSourceID source,
         string localPath
     ) {
         if (!source.isValid)
@@ -87,7 +87,7 @@ public record struct AssetPath
     /// <summary>
     /// Gets or sets the owning source mount.
     /// </summary>
-    public AssetSourceId source { get; set; }
+    public AssetSourceID source { get; set; }
 
     /// <summary>
     /// Gets or sets the source-local path.
@@ -106,7 +106,7 @@ public record struct AssetPath
     /// The human-readable representation of this value.
     /// </returns>
     public override readonly string ToString()
-        => source == AssetSourceId.project
+        => source == AssetSourceID.project
            ? localPath ?? string.Empty
            : $"{source}{C_SOURCE_SEPARATOR}{localPath}";
 
@@ -119,7 +119,7 @@ public record struct AssetPath
     /// <returns>
     /// A project-owned asset path.
     /// </returns>
-    public static AssetPath Project(string localPath) => new(AssetSourceId.project, localPath);
+    public static AssetPath Project(string localPath) => new(AssetSourceID.project, localPath);
 
     /// <summary>
     /// Parses a canonical path, treating an unqualified value as project-owned.
@@ -136,7 +136,7 @@ public record struct AssetPath
         int separator = value.IndexOf(C_SOURCE_SEPARATOR, StringComparison.Ordinal);
         return separator < 0
                ? Project(value)
-               : new AssetPath(new AssetSourceId(value[..separator]), value[(separator + C_SOURCE_SEPARATOR.Length)..]);
+               : new AssetPath(new AssetSourceID(value[..separator]), value[(separator + C_SOURCE_SEPARATOR.Length)..]);
     }
 
     private static string NormalizeLocalPath(string value)

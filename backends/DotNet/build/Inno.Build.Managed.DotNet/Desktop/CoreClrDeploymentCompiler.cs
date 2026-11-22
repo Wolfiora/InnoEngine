@@ -50,7 +50,7 @@ public sealed class CoreClrDeploymentCompiler : IManagedDeploymentCompiler
     }
 
     /// <inheritdoc/>
-    public ManagedDeploymentId id => ManagedDeploymentId.coreClr;
+    public ManagedDeploymentID id => ManagedDeploymentID.coreClr;
 
     /// <inheritdoc/>
     public ManagedDeploymentCapabilities capabilities { get; }

@@ -94,7 +94,7 @@ public sealed partial class RenderRuntime
                     int match = -1;
                     for (int candidate = 0; candidate < applicable.Count; candidate++)
                     {
-                        if (applicable[candidate].id == layer.modelId)
+                        if (applicable[candidate].id == layer.modelID)
                         {
                             match = candidate;
                             break;

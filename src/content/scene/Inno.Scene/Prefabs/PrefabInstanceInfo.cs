@@ -19,8 +19,8 @@ public sealed class PrefabInstanceInfo
         int orphanedOverrideCount,
         AssetObject sourceAsset
     ) {
-        this.sourceAssetId = sourceAssetID;
-        this.sourceObjectId = sourceObjectID;
+        this.sourceAssetID = sourceAssetID;
+        this.sourceObjectID = sourceObjectID;
         this.instanceRoot = instanceRoot;
         this.isRoot = isRoot;
         this.isVariant = isVariant;
@@ -33,12 +33,12 @@ public sealed class PrefabInstanceInfo
     /// <summary>
     /// Gets the persistent identity of the source prefab asset.
     /// </summary>
-    public Guid sourceAssetId { get; }
+    public Guid sourceAssetID { get; }
 
     /// <summary>
     /// Gets the source-local identity represented by this object.
     /// </summary>
-    public Guid sourceObjectId { get; }
+    public Guid sourceObjectID { get; }
 
     /// <summary>
     /// Gets the root object of this prefab instance connection.

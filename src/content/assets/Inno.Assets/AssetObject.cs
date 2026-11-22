@@ -55,7 +55,7 @@ public abstract class AssetObject : IdentityObject, ISerializable
     /// <typeparam name="TValue">
     /// Current settings contract with a stable type identity.
     /// </typeparam>
-    /// <param name="stableTypeId">
+    /// <param name="stableTypeID">
     /// Persisted settings type identity.
     /// </param>
     /// <param name="propertyData">
@@ -68,7 +68,7 @@ public abstract class AssetObject : IdentityObject, ISerializable
     /// The asset is unowned, retired, or lacks property-state services.
     /// </exception>
     public void RestoreProperties<TValue>(
-        Guid stableTypeId,
+        Guid stableTypeID,
         byte[] propertyData,
         TValue target
     ) where TValue : class, ISerializable
@@ -79,7 +79,7 @@ public abstract class AssetObject : IdentityObject, ISerializable
         ) {
             throw new InvalidOperationException("The asset's property-state owner is unavailable.");
         }
-        owner.RestoreProperties(stableTypeId, propertyData, target);
+        owner.RestoreProperties(stableTypeID, propertyData, target);
     }
 
     internal string sourceHash => m_sourceHash;

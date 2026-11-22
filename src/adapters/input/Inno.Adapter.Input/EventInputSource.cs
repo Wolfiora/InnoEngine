@@ -19,12 +19,12 @@ public sealed class EventInputSource : IInputEventSource
     /// <summary>
     /// Creates an input source restricted to one window, or to all windows when the identifier is zero.
     /// </summary>
-    /// <param name="windowId">
+    /// <param name="windowID">
     /// The platform window identifier accepted by this source; zero accepts events from every window.
     /// </param>
-    public EventInputSource(uint windowId)
+    public EventInputSource(uint windowID)
     {
-        m_windowID = windowId;
+        m_windowID = windowID;
         m_inputHub = m_events.CreateHub();
     }
 

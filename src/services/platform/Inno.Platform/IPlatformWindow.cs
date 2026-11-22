@@ -10,7 +10,7 @@ public interface IPlatformWindow : IDisposable
     /// <summary>
     /// Gets the application-local identifier of this window.
     /// </summary>
-    uint windowId { get; }
+    uint windowID { get; }
 
     /// <summary>
     /// Gets the title captured when the window was created.

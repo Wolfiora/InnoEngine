@@ -95,7 +95,7 @@ public sealed class PlatformOwnershipContractTests
             await Assert.ThrowsAsync<PlatformNotSupportedException>(() => publisher.PublishAsync(
                 TestRepository.GetRoot(typeof(PlatformOwnershipContractTests).Assembly),
                 output,
-                new BuildTargetId("windows-x64"),
+                new BuildTargetID("windows-x64"),
                 sdk
             ).AsTask());
         }
@@ -104,7 +104,7 @@ public sealed class PlatformOwnershipContractTests
             await Assert.ThrowsAsync<FileNotFoundException>(() => publisher.PublishAsync(
                 TestRepository.GetRoot(typeof(PlatformOwnershipContractTests).Assembly),
                 output,
-                new BuildTargetId("windows-x64"),
+                new BuildTargetID("windows-x64"),
                 sdk
             ).AsTask());
         }
@@ -143,13 +143,13 @@ public sealed class PlatformOwnershipContractTests
             "unresolved-sdk",
             Path.GetFullPath(Path.GetTempPath()),
             new BuildHostDescriptor("Windows", "x64"),
-            new BuildTargetId("windows-x64")
+            new BuildTargetID("windows-x64")
         );
         StandardBuildDistribution distribution = StandardBuildDistribution.Create(context);
 
         Assert.Same(
             BrowserWasm32BgfxShaderProfiles.target,
-            distribution.ResolveShaderTarget(new BuildTargetId("browser-wasm"))
+            distribution.ResolveShaderTarget(new BuildTargetID("browser-wasm"))
         );
         Assert.Throws<NotSupportedException>(() => distribution.build.ResolveNativeProduct("linux-arm64", "shader-tools"));
         Assert.Throws<NotSupportedException>(() => distribution.ResolveShaderTarget(new("unregistered-target")));
@@ -163,19 +163,19 @@ public sealed class PlatformOwnershipContractTests
             "unresolved-sdk",
             Path.GetFullPath(Path.GetTempPath()),
             new BuildHostDescriptor("Windows", "x64"),
-            new BuildTargetId("windows-x64")
+            new BuildTargetID("windows-x64")
         );
         var apple = new BuildCompositionContext(
             "unresolved-sdk",
             Path.GetFullPath(Path.GetTempPath()),
             new BuildHostDescriptor("MacOS", "arm64"),
-            new BuildTargetId("macos-arm64")
+            new BuildTargetID("macos-arm64")
         );
         BuildDistribution first = StandardBuildDistribution.Create(windows).build;
         BuildDistribution second = StandardBuildDistribution.Create(apple).build;
 
         Assert.Equal(first.availableTargets, second.availableTargets);
-        Assert.Contains(new BuildTargetId("browser-wasm"), first.availableTargets);
+        Assert.Contains(new BuildTargetID("browser-wasm"), first.availableTargets);
         ProductNativeBuildPlan browser = first.ResolveNativeProduct("browser-wasm", "player").plan;
         Assert.Equal(
             browser.steps.Select(static step => step.component.id),
@@ -188,8 +188,8 @@ public sealed class PlatformOwnershipContractTests
             Assert.NotNull(step.component.staticBuild);
         });
         Assert.Throws<NotSupportedException>(() => first.ResolveNativeProduct("browser-wasm", "editor"));
-        Assert.DoesNotContain(new BuildTargetId("desktop"), first.availableTargets);
-        Assert.DoesNotContain(new BuildTargetId("linux-x64"), first.availableTargets);
+        Assert.DoesNotContain(new BuildTargetID("desktop"), first.availableTargets);
+        Assert.DoesNotContain(new BuildTargetID("linux-x64"), first.availableTargets);
         Assert.Throws<NotSupportedException>(() => first.ResolveNativeToolchain("linux-x64"));
         Assert.Throws<NotSupportedException>(() => first.ResolveNativeToolchain("fixture-unregistered"));
         Assert.Equal("x64", WindowsX64BuildModule.target.architecture);

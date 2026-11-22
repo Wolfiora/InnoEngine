@@ -12,8 +12,8 @@ using Inno.Editor.ImGui.ImGuiWidget;
 
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
 
@@ -86,7 +86,7 @@ internal sealed partial class FileBrowserTree
             if (!m_assets.edits.interactions.TryResolveIdentity(identity, out IdentityObject? resolved)
                 || resolved is not AssetFileEntry current
             ) {
-                Ui.Dummy(new(1f, Ui.GetFrameHeight()));
+                Gui.Dummy(new(1f, Gui.GetFrameHeight()));
                 return;
             }
             entry = current;
@@ -95,7 +95,7 @@ internal sealed partial class FileBrowserTree
         bool currentDirectory = row.virtualRoot
             ? string.IsNullOrEmpty(m_assets.browser.currentDirectory)
             : (entry?.isDirectory ?? row.isRoot) && string.Equals(m_assets.browser.currentDirectory, row.path, StringComparison.Ordinal)
-              && (m_assets.browser.root == AssetBrowserRoot.Assets) == (AssetPath.Parse(row.path).source == AssetSourceId.project);
+              && (m_assets.browser.root == AssetBrowserRoot.Assets) == (AssetPath.Parse(row.path).source == AssetSourceID.project);
         string icon = entry is { isDirectory: false } ? m_assets.GetIcon(entry) : m_assets.folderIcon;
         bool editing = !row.isRoot && m_rename.IsEditing(context, row.path, FileBrowserPresentation.Tree);
         TreeNodeResult result = EditorUI.current.widgets.TreeNode(
@@ -162,8 +162,8 @@ internal sealed partial class FileBrowserTree
         }
 
         EditorUI.current.widgets.IconText(icon, string.Empty, false);
-        Ui.SameLine(0f, 0f);
-        m_rename.Draw(context, id, relativePath, FileBrowserPresentation.Tree, Ui.GetContentRegionAvailable().X, rowHeight);
+        Gui.SameLine(0f, 0f);
+        m_rename.Draw(context, id, relativePath, FileBrowserPresentation.Tree, Gui.GetContentRegionAvailable().X, rowHeight);
     }
 
     private bool ShouldOpenTreeEntry(

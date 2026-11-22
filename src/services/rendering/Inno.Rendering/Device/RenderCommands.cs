@@ -5,7 +5,7 @@ namespace Inno.Rendering;
 /// <summary>
 /// Identifies a shader binding by stable manifest name.
 /// </summary>
-public readonly record struct RenderBindingId
+public readonly record struct RenderBindingID
 {
     /// <summary>
     /// Creates a stable shader binding identifier.
@@ -13,7 +13,7 @@ public readonly record struct RenderBindingId
     /// <param name="value">
     /// Stable manifest binding name.
     /// </param>
-    public RenderBindingId(string value)
+    public RenderBindingID(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         this.value = value;
@@ -198,7 +198,7 @@ public abstract class RenderCommandEncoder
     /// Graph texture to bind.
     /// </param>
     public void BindTexture(
-        RenderBindingId binding,
+        RenderBindingID binding,
         RenderTextureHandle texture
     ) => BindTexture(binding, texture, RenderSamplerState.linearClamp);
 
@@ -212,7 +212,7 @@ public abstract class RenderCommandEncoder
     /// Persistent texture owned by the active device generation.
     /// </param>
     public void BindTexture(
-        RenderBindingId binding,
+        RenderBindingID binding,
         PersistentTextureHandle texture
     ) => BindTexture(binding, texture, RenderSamplerState.linearClamp);
 
@@ -229,7 +229,7 @@ public abstract class RenderCommandEncoder
     /// Sampling state copied by value.
     /// </param>
     public abstract void BindTexture(
-        RenderBindingId binding,
+        RenderBindingID binding,
         RenderTextureHandle texture,
         RenderSamplerState sampler
     );
@@ -247,7 +247,7 @@ public abstract class RenderCommandEncoder
     /// Sampling state copied by value.
     /// </param>
     public abstract void BindTexture(
-        RenderBindingId binding,
+        RenderBindingID binding,
         PersistentTextureHandle texture,
         RenderSamplerState sampler
     );
@@ -265,7 +265,7 @@ public abstract class RenderCommandEncoder
     /// Zero-based mip level used for storage access.
     /// </param>
     public abstract void BindStorageTexture(
-        RenderBindingId binding,
+        RenderBindingID binding,
         RenderTextureHandle texture,
         int mipLevel = 0
     );
@@ -283,7 +283,7 @@ public abstract class RenderCommandEncoder
     /// Zero-based mip level used for storage access.
     /// </param>
     public abstract void BindStorageTexture(
-        RenderBindingId binding,
+        RenderBindingID binding,
         PersistentTextureHandle texture,
         int mipLevel = 0
     );
@@ -298,7 +298,7 @@ public abstract class RenderCommandEncoder
     /// Frame-scoped buffer owned by the current graph generation.
     /// </param>
     public abstract void BindBuffer(
-        RenderBindingId binding,
+        RenderBindingID binding,
         RenderBufferHandle buffer
     );
 
@@ -312,7 +312,7 @@ public abstract class RenderCommandEncoder
     /// Persistent buffer owned by the current device generation.
     /// </param>
     public abstract void BindBuffer(
-        RenderBindingId binding,
+        RenderBindingID binding,
         PersistentBufferHandle buffer
     );
 
@@ -326,7 +326,7 @@ public abstract class RenderCommandEncoder
     /// Current-frame storage slice.
     /// </param>
     public void BindBuffer(
-        RenderBindingId binding,
+        RenderBindingID binding,
         RenderBufferSlice buffer
     ) {
         ValidateSlice(buffer, RenderBufferUsage.Storage);
@@ -350,7 +350,7 @@ public abstract class RenderCommandEncoder
     /// Bytes borrowed for this call. An encoder that defers execution must copy them before returning.
     /// </param>
     public abstract void SetUniform(
-        RenderBindingId binding,
+        RenderBindingID binding,
         ReadOnlySpan<byte> value
     );
 

@@ -10,7 +10,7 @@ namespace Inno.Adapter.Storage;
 /// </summary>
 public sealed class StorageBackendCatalog : IStorageBackendFactory
 {
-    private readonly Dictionary<StorageBackendId, StorageBackendProvider> m_providers = [];
+    private readonly Dictionary<StorageBackendID, StorageBackendProvider> m_providers = [];
 
     /// <summary>
     /// Validates and captures a complete provider set without creating any service.
@@ -34,18 +34,18 @@ public sealed class StorageBackendCatalog : IStorageBackendFactory
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
             }
         }
-        this.supportedBackends = new ReadOnlyCollection<StorageBackendId>([.. m_providers.Keys]);
+        this.supportedBackends = new ReadOnlyCollection<StorageBackendID>([.. m_providers.Keys]);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<StorageBackendId> supportedBackends { get; }
+    public IReadOnlyList<StorageBackendID> supportedBackends { get; }
 
     /// <exception cref="InvalidOperationException">
     /// The selected provider returned no service.
     /// </exception>
     /// <inheritdoc/>
     public IApplicationStorage CreateStorage(
-        StorageBackendId backend,
+        StorageBackendID backend,
         StorageScope scope
     ) {
         if (!scope.isValid)

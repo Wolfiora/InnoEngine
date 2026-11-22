@@ -76,7 +76,7 @@ public enum EditorViewportNavigationCapabilities
 /// <summary>
 /// Identifies a provider-defined navigation profile across reload generations.
 /// </summary>
-public readonly record struct EditorViewportNavigationProfileId
+public readonly record struct EditorViewportNavigationProfileID
 {
     /// <summary>
     /// Creates a stable profile identifier.
@@ -84,7 +84,7 @@ public readonly record struct EditorViewportNavigationProfileId
     /// <param name="value">
     /// Globally stable profile identity.
     /// </param>
-    public EditorViewportNavigationProfileId(string value)
+    public EditorViewportNavigationProfileID(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         this.value = value.Trim();
@@ -176,7 +176,7 @@ public sealed class EditorViewportNavigationProfile
     /// Preferred mode when current state is unsupported.
     /// </param>
     public EditorViewportNavigationProfile(
-        EditorViewportNavigationProfileId id,
+        EditorViewportNavigationProfileID id,
         EditorViewportNavigationCapabilities capabilities,
         EditorViewportNavigationMode defaultMode
     ) {
@@ -210,7 +210,7 @@ public sealed class EditorViewportNavigationProfile
     /// <summary>
     /// Gets the stable profile identity.
     /// </summary>
-    public EditorViewportNavigationProfileId id { get; }
+    public EditorViewportNavigationProfileID id { get; }
 
     /// <summary>
     /// Gets the operations accepted by this provider.
@@ -276,7 +276,7 @@ public sealed class EditorViewportNavigationProfile
     /// Gets a disabled fallback profile used when no provider navigation contract exists.
     /// </summary>
     public static EditorViewportNavigationProfile disabled { get; } = new(
-        new EditorViewportNavigationProfileId("inno.editor.navigation.disabled"),
+        new EditorViewportNavigationProfileID("inno.editor.navigation.disabled"),
         EditorViewportNavigationCapabilities.None,
         EditorViewportNavigationMode.Planar
     );

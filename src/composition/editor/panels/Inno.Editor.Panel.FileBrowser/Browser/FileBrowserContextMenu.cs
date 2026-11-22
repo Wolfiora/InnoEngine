@@ -8,8 +8,8 @@ using Inno.Editor.Interactions;
 
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
 
@@ -27,7 +27,7 @@ internal sealed class FileBrowserContextMenu(
         {
             return;
         }
-        if (Ui.IsItemClicked(ImGuiMouseButton.Right) && !assets.edits.interactions.selection.Contains(entry))
+        if (Gui.IsItemClicked(ImGuiMouseButton.Right) && !assets.edits.interactions.selection.Contains(entry))
         {
             assets.edits.interactions.SetSelection(entry);
         }
@@ -35,7 +35,7 @@ internal sealed class FileBrowserContextMenu(
         bool isOpen = EditorUI.current.menus.ContextMenu(
             id,
             CreateDirectoryInteraction(creationDirectory),
-            assets.edits.interactions.For(FileBrowserInteractionIds.C_AREA, entry)
+            assets.edits.interactions.For(FileBrowserInteractionIDs.C_AREA, entry)
         );
         if (isOpen)
         {
@@ -77,5 +77,5 @@ internal sealed class FileBrowserContextMenu(
     }
 
     private EditorInteraction CreateDirectoryInteraction(string relativePath)
-        => assets.edits.interactions.For(FileBrowserInteractionIds.C_AREA, NormalizePath(relativePath));
+        => assets.edits.interactions.For(FileBrowserInteractionIDs.C_AREA, NormalizePath(relativePath));
 }

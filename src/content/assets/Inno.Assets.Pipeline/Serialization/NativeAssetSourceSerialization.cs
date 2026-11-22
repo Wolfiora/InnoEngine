@@ -40,7 +40,7 @@ public static partial class NativeAssetSourceSerialization
         byte[] propertyData = services.serialization.Encode(writer => writer.WriteProperties(asset), context);
         return services.serialization.Serialize(new NativeAssetSourceDocument
         {
-            stableAssetTypeId = type.stableId,
+            stableAssetTypeId = type.stableID,
             propertyData = propertyData,
             dependencies = dependencies.dependencies.ToArray()
         });
@@ -76,11 +76,11 @@ public static partial class NativeAssetSourceSerialization
         ArgumentNullException.ThrowIfNull(services);
         NativeAssetSourceDocument document = services.serialization.Deserialize<NativeAssetSourceDocument>(bytes);
         TypeRef expectedType = services.types.GetTypeRef(typeof(TAsset));
-        if (document.stableAssetTypeId != expectedType.stableId)
+        if (document.stableAssetTypeId != expectedType.stableID)
         {
             throw new InvalidOperationException(
                 $"Native asset source type '{document.stableAssetTypeId:D}' does not match "
-                + $"'{expectedType.stableId:D}'."
+                + $"'{expectedType.stableID:D}'."
             );
         }
         TAsset asset = (TAsset)(Activator.CreateInstance(typeof(TAsset), nonPublic: true)

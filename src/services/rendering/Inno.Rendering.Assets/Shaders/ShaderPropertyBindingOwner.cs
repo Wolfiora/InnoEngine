@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Identifies which layer supplies a declared shader property's value for each dispatch or draw.
 /// </summary>
-[StableTypeId("0c1a224a-4d13-56de-bda2-93128c1374cb")]
+[StableTypeID("0c1a224a-4d13-56de-bda2-93128c1374cb")]
 public enum ShaderPropertyBindingOwner
 {
     /// <summary>

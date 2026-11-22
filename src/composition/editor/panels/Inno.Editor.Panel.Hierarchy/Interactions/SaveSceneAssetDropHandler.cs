@@ -8,7 +8,7 @@ using Inno.Scene;
 
 namespace Inno.Editor.Panel.Hierarchy;
 
-[EditorDrop(HierarchyInteractionIds.C_FILE_BROWSER_AREA)]
+[EditorDrop(HierarchyInteractionIDs.C_FILE_BROWSER_AREA)]
 internal sealed class SaveSceneAssetDropHandler : EditorDrop<GameScene, string>
 {
     private readonly IEditorSceneWorkspace m_workspace;

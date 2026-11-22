@@ -59,7 +59,7 @@ internal sealed class BuildWorkspace : IDisposable
         m_engine.Dispose();
     }
 
-    internal ProjectId projectID => m_settings.projectId;
+    internal ProjectID projectID => m_settings.projectID;
 
     internal BuildPipeline CreatePipeline(
         BuildCompositionContext context,
@@ -179,7 +179,7 @@ internal sealed class BuildWorkspace : IDisposable
 
     internal BuildProfile LoadGameProfile(
         string? path,
-        BuildTargetId defaultTarget
+        BuildTargetID defaultTarget
     ) {
         if (!string.IsNullOrWhiteSpace(path))
         {
@@ -195,7 +195,7 @@ internal sealed class BuildWorkspace : IDisposable
             defaultTarget
         );
         var settings = new BuildSettingsStore(
-            Path.Combine(m_projectDirectory, SettingsFileNames.build),
+            Path.Combine(m_projectDirectory, SettingsFileNames.C_BUILD),
             m_engine.serialization,
             defaults
         );
@@ -236,7 +236,7 @@ internal sealed class BuildWorkspace : IDisposable
             PluginScanResult scan = sources.Scan();
             AssetPipelineOptions options = AssetPipelineOptions.Create(assetsRoot, libraryRoot);
             AssetSourceMount projectMount = options.sourceMounts!.Single(static mount => (
-                mount.id == AssetSourceId.project
+                mount.id == AssetSourceID.project
             ));
             assets = new AssetPipeline(
                 engine.modules,
@@ -257,10 +257,10 @@ internal sealed class BuildWorkspace : IDisposable
                 }
             );
             settings = new ProjectSettingsStore(
-                new FileByteDocumentStore(Path.GetFullPath(Path.Combine(projectRoot, SettingsFileNames.project))),
+                new FileByteDocumentStore(Path.GetFullPath(Path.Combine(projectRoot, SettingsFileNames.C_PROJECT))),
                 engine.types,
                 engine.serialization,
-                ProjectId.FromName(new DirectoryInfo(projectRoot).Name),
+                ProjectID.FromName(new DirectoryInfo(projectRoot).Name),
                 AssetSerializationContext.Create(assets)
             );
             plugins = new PluginEnvironment(
@@ -312,7 +312,7 @@ internal sealed class BuildWorkspace : IDisposable
     private string FindDefaultStartupScene()
     {
         foreach (AssetFileEntry entry in m_assets.GetFileSystemEntries(includeDirectories: false)
-            .Where(static entry => entry.source == AssetSourceId.project)
+            .Where(static entry => entry.source == AssetSourceID.project)
             .Where(static entry => !AssetSample.IsRuntimeExcluded(entry.assetPath, isDirectory: false))
             .OrderBy(static entry => entry.assetPath.localPath, StringComparer.Ordinal)
         ) {

@@ -32,7 +32,7 @@ public interface IEditorShaderArtifactValidator
     /// <summary>
     /// Requests or reads validation for an exact document revision and immutable artifact.
     /// </summary>
-    /// <param name="documentId">
+    /// <param name="documentID">
     /// Stable Editor document identity.
     /// </param>
     /// <param name="revision">
@@ -45,7 +45,7 @@ public interface IEditorShaderArtifactValidator
     /// Current detached validation state.
     /// </returns>
     EditorShaderArtifactValidationSnapshot Request(
-        Guid documentId,
+        Guid documentID,
         ulong revision,
         RenderShaderArtifact artifact
     );
@@ -53,8 +53,8 @@ public interface IEditorShaderArtifactValidator
     /// <summary>
     /// Forgets pending and completed validation state owned by one document.
     /// </summary>
-    /// <param name="documentId">
+    /// <param name="documentID">
     /// Closing or invalidated document identity.
     /// </param>
-    void Release(Guid documentId);
+    void Release(Guid documentID);
 }

@@ -6,14 +6,14 @@ using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Settings;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Workbench;
 
 internal abstract class IconSetting : EditorSetting
 {
-    private static readonly IReadOnlyList<(string Name, string Glyph)> ICONS = EditorIconCatalog.standard;
+    private static readonly IReadOnlyList<(string name, string glyph)> ICONS = EditorIconCatalog.standard;
     private readonly string m_glyph;
 
     /// <summary>
@@ -48,7 +48,7 @@ internal abstract class IconSetting : EditorSetting
     {
         string value = setting.GetAsString("value", m_glyph) ?? m_glyph;
         float iconSlotWidth = GetIconSlotWidth();
-        Ui.SetNextItemWidth(-1f);
+        Gui.SetNextItemWidth(-1f);
         bool isOpen = EditorUI.current.widgets.BeginBoundedCombo("##icon", value + "  " + GetIconName(value));
         if (isOpen)
         {
@@ -57,22 +57,22 @@ internal abstract class IconSetting : EditorSetting
                 for (int i = 0; i < ICONS.Count; i++)
                 {
                     (string name, string candidate) = ICONS[i];
-                    Ui.PushId(name);
+                    Gui.PushID(name);
                     try
                     {
                         bool selected = string.Equals(candidate, value, StringComparison.Ordinal);
-                        if (Ui.Selectable("##icon_option", selected, ImGuiSelectableFlags.None, new Vector2(0f, Ui.GetFrameHeight())))
+                        if (Gui.Selectable("##icon_option", selected, ImGuiSelectableFlags.None, new Vector2(0f, Gui.GetFrameHeight())))
                         {
                             value = candidate;
                             setting.SetAsString("value", candidate);
                         }
 
-                        Vector2 minimum = Ui.GetItemMinimum();
-                        Vector2 maximum = Ui.GetItemMaximum();
-                        EditorUiLayout style = Ui.GetLayout();
-                        float lineHeight = Ui.GetTextLineHeight();
+                        Vector2 minimum = Gui.GetItemMinimum();
+                        Vector2 maximum = Gui.GetItemMaximum();
+                        EditorUILayout style = Gui.GetLayout();
+                        float lineHeight = Gui.GetTextLineHeight();
                         DrawIconTextAt(
-                            Ui.GetDrawList(),
+                            Gui.GetDrawList(),
                             new Vector2(
                                 minimum.X + style.framePadding.X,
                                 minimum.Y + MathF.Max(0f, (maximum.Y - minimum.Y - lineHeight) * 0.5f)
@@ -83,12 +83,12 @@ internal abstract class IconSetting : EditorSetting
                         );
                         if (selected)
                         {
-                            Ui.SetItemDefaultFocus();
+                            Gui.SetItemDefaultFocus();
                         }
                     }
                     finally
                     {
-                        Ui.PopId();
+                        Gui.PopID();
                     }
                 }
             }
@@ -113,9 +113,9 @@ internal abstract class IconSetting : EditorSetting
     {
         for (int i = 0; i < ICONS.Count; i++)
         {
-            if (string.Equals(ICONS[i].Glyph, glyph, StringComparison.Ordinal))
+            if (string.Equals(ICONS[i].glyph, glyph, StringComparison.Ordinal))
             {
-                return ICONS[i].Name;
+                return ICONS[i].name;
             }
         }
 
@@ -129,22 +129,22 @@ internal abstract class IconSetting : EditorSetting
         string text,
         float iconSlotWidth
     ) {
-        EditorUiLayout style = Ui.GetLayout();
-        float fontSize = Ui.GetFontSize();
-        float lineHeight = Ui.GetTextLineHeight();
-        uint color = Ui.GetStyleColor(ImGuiCol.Text);
+        EditorUILayout style = Gui.GetLayout();
+        float fontSize = Gui.GetFontSize();
+        float lineHeight = Gui.GetTextLineHeight();
+        uint color = Gui.GetStyleColor(ImGuiCol.Text);
         EditorUI.current.widgets.AddGlyphCentered(
             fontSize,
             glyph,
             new Vector2(origin.X + iconSlotWidth * 0.5f, origin.Y + lineHeight * 0.5f),
             color
         );
-        Ui.DrawText(new Vector2(origin.X + iconSlotWidth + style.itemInnerSpacing.X, origin.Y), color, text);
+        Gui.DrawText(new Vector2(origin.X + iconSlotWidth + style.itemInnerSpacing.X, origin.Y), color, text);
     }
 }
 
 [EditorSettingPath("Editor/Appearance/Icons/Scene")]
-internal sealed class SceneIconSetting() : IconSetting(ImGuiIcon.Cubes)
+internal sealed class SceneIconSetting() : IconSetting(ImGuiIcon.C_CUBES)
 {
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
@@ -153,7 +153,7 @@ internal sealed class SceneIconSetting() : IconSetting(ImGuiIcon.Cubes)
 }
 
 [EditorSettingPath("Editor/Appearance/Icons/GameObject")]
-internal sealed class GameObjectIconSetting() : IconSetting(ImGuiIcon.Cube)
+internal sealed class GameObjectIconSetting() : IconSetting(ImGuiIcon.C_CUBE)
 {
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
@@ -162,7 +162,7 @@ internal sealed class GameObjectIconSetting() : IconSetting(ImGuiIcon.Cube)
 }
 
 [EditorSettingPath("Editor/Appearance/Icons/Prefab")]
-internal sealed class PrefabIconSetting() : IconSetting(ImGuiIcon.DiceD6)
+internal sealed class PrefabIconSetting() : IconSetting(ImGuiIcon.C_DICE_D_6)
 {
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
@@ -171,7 +171,7 @@ internal sealed class PrefabIconSetting() : IconSetting(ImGuiIcon.DiceD6)
 }
 
 [EditorSettingPath("Editor/Appearance/Icons/Layers")]
-internal sealed class LayersIconSetting() : IconSetting(ImGuiIcon.LayerGroup)
+internal sealed class LayersIconSetting() : IconSetting(ImGuiIcon.C_LAYER_GROUP)
 {
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
@@ -180,7 +180,7 @@ internal sealed class LayersIconSetting() : IconSetting(ImGuiIcon.LayerGroup)
 }
 
 [EditorSettingPath("Editor/Appearance/Icons/Folder")]
-internal sealed class FolderIconSetting() : IconSetting(ImGuiIcon.Folder)
+internal sealed class FolderIconSetting() : IconSetting(ImGuiIcon.C_FOLDER)
 {
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
@@ -189,7 +189,7 @@ internal sealed class FolderIconSetting() : IconSetting(ImGuiIcon.Folder)
 }
 
 [EditorSettingPath("Editor/Appearance/Icons/File")]
-internal sealed class FileIconSetting() : IconSetting(ImGuiIcon.File)
+internal sealed class FileIconSetting() : IconSetting(ImGuiIcon.C_FILE)
 {
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
@@ -198,7 +198,7 @@ internal sealed class FileIconSetting() : IconSetting(ImGuiIcon.File)
 }
 
 [EditorSettingPath("Editor/Appearance/Icons/Shader")]
-internal sealed class ShaderIconSetting() : IconSetting(ImGuiIcon.Shader)
+internal sealed class ShaderIconSetting() : IconSetting(ImGuiIcon.C_SHADER)
 {
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
@@ -207,7 +207,7 @@ internal sealed class ShaderIconSetting() : IconSetting(ImGuiIcon.Shader)
 }
 
 [EditorSettingPath("Editor/Appearance/Icons/ShaderSource")]
-internal sealed class ShaderSourceIconSetting() : IconSetting(ImGuiIcon.RupeeSign)
+internal sealed class ShaderSourceIconSetting() : IconSetting(ImGuiIcon.C_RUPEE_SIGN)
 {
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
@@ -217,7 +217,7 @@ internal sealed class ShaderSourceIconSetting() : IconSetting(ImGuiIcon.RupeeSig
 }
 
 [EditorSettingPath("Editor/Appearance/Icons/Material")]
-internal sealed class MaterialIconSetting() : IconSetting(ImGuiIcon.Palette)
+internal sealed class MaterialIconSetting() : IconSetting(ImGuiIcon.C_PALETTE)
 {
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
@@ -226,7 +226,7 @@ internal sealed class MaterialIconSetting() : IconSetting(ImGuiIcon.Palette)
 }
 
 [EditorSettingPath("Editor/Appearance/Icons/RenderPipeline")]
-internal sealed class RenderPipelineIconSetting() : IconSetting(ImGuiIcon.RupiahSign)
+internal sealed class RenderPipelineIconSetting() : IconSetting(ImGuiIcon.C_RUPIAH_SIGN)
 {
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.

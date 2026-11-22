@@ -12,7 +12,7 @@ public interface IRenderingBackendFactory
     /// <summary>
     /// Gets the exact runtime backend identities available in this composition generation.
     /// </summary>
-    IReadOnlyList<RenderingBackendId> supportedBackends { get; }
+    IReadOnlyList<RenderingBackendID> supportedBackends { get; }
 
     /// <summary>
     /// Creates a rendering device for the supplied primary presentation surface.
@@ -27,7 +27,7 @@ public interface IRenderingBackendFactory
     /// A caller-owned backend-neutral rendering device.
     /// </returns>
     IRenderDevice CreateDevice(
-        RenderingBackendId backend,
+        RenderingBackendID backend,
         RenderingBackendOptions options
     );
 
@@ -43,5 +43,5 @@ public interface IRenderingBackendFactory
     /// <exception cref="NotSupportedException">
     /// No provider is registered for the requested backend identity.
     /// </exception>
-    IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider(RenderingBackendId backend);
+    IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider(RenderingBackendID backend);
 }

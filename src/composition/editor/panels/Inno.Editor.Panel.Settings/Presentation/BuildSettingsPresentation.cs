@@ -4,8 +4,8 @@ using Inno.Build;
 using Inno.Build.Managed;
 using Inno.Editor.ImGui;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Settings;
 
@@ -153,8 +153,8 @@ internal sealed class BuildSettingsField
         string value,
         Action<string> apply
     ) {
-        Ui.SetNextItemWidth(-1f);
-        if (!Ui.InputText("##value", ref value, C_TEXT_CAPACITY))
+        Gui.SetNextItemWidth(-1f);
+        if (!Gui.InputText("##value", ref value, C_TEXT_CAPACITY))
         {
             return false;
         }
@@ -166,8 +166,8 @@ internal sealed class BuildSettingsField
         int value,
         Action<int> apply
     ) {
-        Ui.SetNextItemWidth(-1f);
-        if (!Ui.InputInt("##value", ref value, 1, 100, 0))
+        Gui.SetNextItemWidth(-1f);
+        if (!Gui.InputInt("##value", ref value, 1, 100, 0))
         {
             return false;
         }
@@ -180,22 +180,22 @@ internal sealed class BuildSettingsField
         BuildPipeline buildPipeline
     ) {
         bool changed = false;
-        Ui.SetNextItemWidth(-1f);
+        Gui.SetNextItemWidth(-1f);
         if (!EditorUI.current.widgets.BeginBoundedCombo("##value", settings.gameManagedDeployment?.value ?? "Platform default"))
         {
             return false;
         }
         try
         {
-            if (Ui.Selectable("Platform default", settings.gameManagedDeployment is null))
+            if (Gui.Selectable("Platform default", settings.gameManagedDeployment is null))
             {
                 settings.gameManagedDeployment = null;
                 changed = true;
             }
 
-            foreach (ManagedDeploymentId deployment in buildPipeline.GetManagedDeployments(settings.gameTarget))
+            foreach (ManagedDeploymentID deployment in buildPipeline.GetManagedDeployments(settings.gameTarget))
             {
-                if (!Ui.Selectable(deployment.value, settings.gameManagedDeployment == deployment))
+                if (!Gui.Selectable(deployment.value, settings.gameManagedDeployment == deployment))
                 {
                     continue;
                 }
@@ -216,14 +216,14 @@ internal sealed class BuildSettingsField
         BuildPipeline buildPipeline
     ) {
         bool changed = false;
-        Ui.SetNextItemWidth(-1f);
+        Gui.SetNextItemWidth(-1f);
         if (!EditorUI.current.widgets.BeginBoundedCombo("##value", GetTargetLabel(settings.gameTarget, buildPipeline)))
         {
             return false;
         }
         try
         {
-            foreach (BuildTargetId target in buildPipeline.availableGameTargets)
+            foreach (BuildTargetID target in buildPipeline.availableGameTargets)
             {
                 changed |= DrawTargetChoice(settings, target, buildPipeline);
             }
@@ -239,7 +239,7 @@ internal sealed class BuildSettingsField
     private static bool DrawIncludeDependencies(BuildSettings settings)
     {
         bool value = settings.includePluginDependencies;
-        if (!Ui.Checkbox("##value", ref value))
+        if (!Gui.Checkbox("##value", ref value))
         {
             return false;
         }
@@ -249,24 +249,24 @@ internal sealed class BuildSettingsField
 
     private static bool DrawTargetChoice(
         BuildSettings settings,
-        BuildTargetId target,
+        BuildTargetID target,
         BuildPipeline buildPipeline
     ) {
         bool selected = settings.gameTarget == target;
-        bool changed = Ui.Selectable(GetTargetLabel(target, buildPipeline), selected);
+        bool changed = Gui.Selectable(GetTargetLabel(target, buildPipeline), selected);
         if (changed)
         {
             settings.gameTarget = target;
         }
         if (selected)
         {
-            Ui.SetItemDefaultFocus();
+            Gui.SetItemDefaultFocus();
         }
         return changed;
     }
 
     private static string GetTargetLabel(
-        BuildTargetId target,
+        BuildTargetID target,
         BuildPipeline buildPipeline
     ) => buildPipeline.TryGetGameTargetDisplayName(target, out string displayName) ? displayName : $"Missing ({target})";
 }

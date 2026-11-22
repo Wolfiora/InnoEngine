@@ -31,10 +31,10 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
     /// <summary>
     /// Gets the macOS ARM64 target identity.
     /// </summary>
-    public BuildTargetId id => MacOSArm64BuildModule.target.id;
+    public BuildTargetID id => MacOSArm64BuildModule.target.id;
 
     /// <inheritdoc/>
-    public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.coreClr;
+    public ManagedDeploymentID defaultManagedDeployment => ManagedDeploymentID.coreClr;
 
     /// <inheritdoc/>
     public string runtimeIdentifier => "osx-arm64";

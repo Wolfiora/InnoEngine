@@ -14,7 +14,7 @@ namespace Inno.Core.Coroutines;
 public sealed class CoroutineScheduler : IDisposable
 {
     private readonly ConcurrentQueue<Command> m_commands = new();
-    private readonly ConcurrentDictionary<long, byte> m_liveIds = new();
+    private readonly ConcurrentDictionary<long, byte> m_liveIDs = new();
     private readonly Dictionary<long, CoroutineState> m_states = [];
     private readonly List<long> m_active = [];
     private readonly Lock m_tickGate = new();
@@ -71,7 +71,7 @@ public sealed class CoroutineScheduler : IDisposable
             ObjectDisposedException.ThrowIf(Volatile.Read(ref m_disposed) != 0, this);
 
             long id = Interlocked.Increment(ref m_nextID);
-            m_liveIds[id] = 0;
+            m_liveIDs[id] = 0;
             m_commands.Enqueue(Command.Start(id, owner, routine));
             return new CoroutineHandle(id, m_selfRef);
         }
@@ -235,7 +235,7 @@ public sealed class CoroutineScheduler : IDisposable
         return handle.isValid;
     }
 
-    internal bool IsHandleValid(long id) => Volatile.Read(ref m_disposed) == 0 && id > 0 && m_liveIds.ContainsKey(id);
+    internal bool IsHandleValid(long id) => Volatile.Read(ref m_disposed) == 0 && id > 0 && m_liveIDs.ContainsKey(id);
 
     private void ApplyPendingCommands()
     {
@@ -431,7 +431,7 @@ public sealed class CoroutineScheduler : IDisposable
         state.retired = true;
         m_needsPruning = true;
         m_states.Remove(state.id);
-        m_liveIds.TryRemove(state.id, out _);
+        m_liveIDs.TryRemove(state.id, out _);
         state.waiter = null;
         if (!state.executing)
         {

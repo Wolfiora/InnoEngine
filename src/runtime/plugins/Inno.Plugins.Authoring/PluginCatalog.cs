@@ -77,7 +77,7 @@ internal sealed class PluginCatalog
     /// <see langword="true"/> when the source belongs to an active Plugin.
     /// </returns>
     public bool TryGet(
-        AssetSourceId source,
+        AssetSourceID source,
         out PluginCandidate? plugin
     ) {
         lock (m_sync)
@@ -96,7 +96,7 @@ internal sealed class PluginCatalog
     {
         ArgumentNullException.ThrowIfNull(result);
         PluginCandidate[] ordered = PluginSourceService.GetActivatableCandidates(result).ToArray();
-        FrozenDictionary<AssetSourceId, PluginCandidate> bySource = ordered.ToFrozenDictionary(
+        FrozenDictionary<AssetSourceID, PluginCandidate> bySource = ordered.ToFrozenDictionary(
             static candidate => candidate.sourceMount.id,
             static candidate => candidate
         );
@@ -181,11 +181,11 @@ internal sealed class PluginCatalog
 
     private sealed record Snapshot(
         IReadOnlyList<PluginCandidate> ordered,
-        FrozenDictionary<AssetSourceId, PluginCandidate> bySource
+        FrozenDictionary<AssetSourceID, PluginCandidate> bySource
     ) {
         internal static Snapshot empty { get; } = new(
             [],
-            new Dictionary<AssetSourceId, PluginCandidate>().ToFrozenDictionary()
+            new Dictionary<AssetSourceID, PluginCandidate>().ToFrozenDictionary()
         );
     }
 }

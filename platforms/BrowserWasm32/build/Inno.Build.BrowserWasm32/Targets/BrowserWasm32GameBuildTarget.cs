@@ -31,10 +31,10 @@ public sealed class BrowserWasm32GameBuildTarget : IGameBuildTarget
     /// <summary>
     /// Gets the browser WebAssembly target identity.
     /// </summary>
-    public BuildTargetId id => BrowserWasm32BuildModule.target.id;
+    public BuildTargetID id => BrowserWasm32BuildModule.target.id;
 
     /// <inheritdoc/>
-    public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.monoWasm;
+    public ManagedDeploymentID defaultManagedDeployment => ManagedDeploymentID.monoWasm;
 
     /// <inheritdoc/>
     public string runtimeIdentifier => "browser-wasm";

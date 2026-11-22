@@ -4,8 +4,8 @@ using Inno.Scene;
 
 namespace Inno.Editor.Panel.Hierarchy;
 
-[EditorAction(HierarchyInteractionIds.C_SET_ACTIVE_SCENE)]
-[EditorMenu(HierarchyInteractionIds.C_AREA, "Set Active Scene", order: 100)]
+[EditorAction(HierarchyInteractionIDs.C_SET_ACTIVE_SCENE)]
+[EditorMenu(HierarchyInteractionIDs.C_AREA, "Set Active Scene", order: 100)]
 internal sealed class SetActiveSceneCommand(IEditorSceneWorkspace workspace) : EditorAction<GameScene>
 {
     /// <summary>

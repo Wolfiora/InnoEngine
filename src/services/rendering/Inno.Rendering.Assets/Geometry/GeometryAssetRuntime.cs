@@ -10,7 +10,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Decodes normalized CPU geometry committed by mesh importers.
 /// </summary>
-[StableTypeId("81298da5-7d85-5964-8cb9-6f70a1e0564f")]
+[StableTypeID("81298da5-7d85-5964-8cb9-6f70a1e0564f")]
 public static class GeometryAssetRuntime
 {
     /// <summary>

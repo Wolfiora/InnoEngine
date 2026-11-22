@@ -13,7 +13,7 @@ namespace Inno.Editor.ImGui.ImGuiWidget;
 /// </summary>
 public sealed unsafe partial class ImGuiWidget
 {
-    private readonly Dictionary<(string Owner, uint Window), TreeWidgetWindowState> m_treeStatesByWindow = [];
+    private readonly Dictionary<(string owner, uint window), TreeWidgetWindowState> m_treeStatesByWindow = [];
     private bool m_hasNextTreeNodeOpen;
     private bool m_nextTreeNodeOpen;
 
@@ -144,7 +144,7 @@ public sealed unsafe partial class ImGuiWidget
     }
 
     private List<TreeWidgetNodeState> m_treeNodeStack => GetTreeWindowState().treeNodeStack;
-    private List<string> m_lastNodeIdsByDepth => GetTreeWindowState().lastNodeIdsByDepth;
+    private List<string> m_lastNodeIDsByDepth => GetTreeWindowState().lastNodeIDsByDepth;
     private List<TreeWidgetLineSegment> m_lineSegments => GetTreeWindowState().lineSegments;
     private Dictionary<string, bool> m_hasNextSiblingByID => GetTreeWindowState().hasNextSiblingByID;
     private Dictionary<string, bool> m_openStatesByID => GetTreeWindowState().openStatesByID;
@@ -248,7 +248,7 @@ public sealed unsafe partial class ImGuiWidget
                 NativeImGui.SetKeyboardFocusHere();
             }
             isOpen = NativeImGui.TreeNodeEx($"##{id}", (int)(flags));
-            GetTreeWindowState().navigationItemIds.Add(NativeImGui.Raw.GetCurrentContext()->LastItemData.ID);
+            GetTreeWindowState().navigationItemIDs.Add(NativeImGui.Raw.GetCurrentContext()->LastItemData.ID);
         }
         finally
         {
@@ -437,9 +437,9 @@ public sealed unsafe partial class ImGuiWidget
         }
         TreeWidgetWindowState state = GetTreeWindowState();
         state.treeNodeStack.Clear();
-        state.lastNodeIdsByDepth.Clear();
+        state.lastNodeIDsByDepth.Clear();
         state.lineSegments.Clear();
-        state.navigationItemIds.Clear();
+        state.navigationItemIDs.Clear();
         if (state.activeContentID != NativeImGui.Raw.GetCurrentContext()->ActiveId)
         {
             state.activeContentID = 0;
@@ -461,20 +461,20 @@ public sealed unsafe partial class ImGuiWidget
         int depth
     ) {
         bool hasNextSibling = m_hasNextSiblingByID.TryGetValue(id, out bool cachedHasNextSibling) && cachedHasNextSibling;
-        while (m_lastNodeIdsByDepth.Count <= depth)
+        while (m_lastNodeIDsByDepth.Count <= depth)
         {
-            m_lastNodeIdsByDepth.Add(string.Empty);
+            m_lastNodeIDsByDepth.Add(string.Empty);
         }
-        string previousID = m_lastNodeIdsByDepth[depth];
+        string previousID = m_lastNodeIDsByDepth[depth];
         if (!string.IsNullOrEmpty(previousID) && !string.Equals(previousID, id, StringComparison.Ordinal))
         {
             m_hasNextSiblingByID[previousID] = true;
         }
         m_hasNextSiblingByID[id] = false;
-        m_lastNodeIdsByDepth[depth] = id;
-        for (int i = depth + 1; i < m_lastNodeIdsByDepth.Count; i++)
+        m_lastNodeIDsByDepth[depth] = id;
+        for (int i = depth + 1; i < m_lastNodeIDsByDepth.Count; i++)
         {
-            m_lastNodeIdsByDepth[i] = string.Empty;
+            m_lastNodeIDsByDepth[i] = string.Empty;
         }
         return hasNextSibling;
     }
@@ -696,9 +696,9 @@ public readonly struct TreeNodeResult
 
 internal sealed class TreeWidgetWindowState
 {
-    internal readonly HashSet<uint> navigationItemIds = [];
+    internal readonly HashSet<uint> navigationItemIDs = [];
     internal readonly List<TreeWidgetNodeState> treeNodeStack = [];
-    internal readonly List<string> lastNodeIdsByDepth = [];
+    internal readonly List<string> lastNodeIDsByDepth = [];
     internal readonly List<TreeWidgetLineSegment> lineSegments = [];
     internal readonly Dictionary<string, bool> hasNextSiblingByID = new(StringComparer.Ordinal);
     internal readonly Dictionary<string, bool> openStatesByID = new(StringComparer.Ordinal);

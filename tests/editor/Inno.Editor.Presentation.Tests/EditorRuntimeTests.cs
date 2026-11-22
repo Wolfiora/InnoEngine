@@ -207,14 +207,14 @@ public sealed partial class EditorRuntimeTests : IDisposable
         Guid assetID = Guid.NewGuid();
         EditorDocumentContext opened = documents.Open("./Assets/Hero.ispriteatlas2d", assetID);
         EditorDocumentContext focused = documents.Open("Assets/OtherName.ispriteatlas2d", assetID);
-        documents.SetDirty(opened.documentId);
+        documents.SetDirty(opened.documentID);
         Assert.Same(opened, focused);
         Assert.Equal("Assets/OtherName.ispriteatlas2d", opened.assetPath);
         Assert.Equal("OtherName.ispriteatlas2d", opened.title);
         Assert.True(opened.isDirty);
-        Assert.False(documents.Close(opened.documentId, EditorDocumentCloseMode.Cancel));
+        Assert.False(documents.Close(opened.documentID, EditorDocumentCloseMode.Cancel));
         Assert.Single(documents.documents);
-        Assert.True(documents.Close(opened.documentId, EditorDocumentCloseMode.Save));
+        Assert.True(documents.Close(opened.documentID, EditorDocumentCloseMode.Save));
         Assert.Empty(documents.documents);
         Assert.Equal(1, provider.saveCount);
         Assert.Equal(1, provider.closeCount);
@@ -232,7 +232,7 @@ public sealed partial class EditorRuntimeTests : IDisposable
         Assert.NotSame(first, replacement);
         Assert.Single(documents.documents);
         Assert.Equal(1, provider.closeCount);
-        documents.SetDirty(replacement.documentId);
+        documents.SetDirty(replacement.documentID);
         InvalidOperationException failure = Assert.Throws<InvalidOperationException>(() => documents.Open(C_PATH, Guid.NewGuid()));
         Assert.Contains("unsaved changes", failure.Message, StringComparison.Ordinal);
         Assert.Same(replacement, Assert.Single(documents.documents));
@@ -246,10 +246,10 @@ public sealed partial class EditorRuntimeTests : IDisposable
         IDisposable firstLease = documents.RegisterProvider(firstProvider);
         EditorDocumentContext opened = documents.Open("Assets/World.itilemap2d", Guid.NewGuid());
         opened.SetViewParameter("zoom", "2.5");
-        documents.SetDirty(opened.documentId);
+        documents.SetDirty(opened.documentID);
         firstLease.Dispose();
         Assert.False(opened.isProviderAvailable);
-        Assert.False(documents.Save(opened.documentId));
+        Assert.False(documents.Save(opened.documentID));
         var replacement = new TestDocumentProvider();
         using IDisposable replacementLease = documents.RegisterProvider(replacement);
         Assert.True(opened.isProviderAvailable);
@@ -257,7 +257,7 @@ public sealed partial class EditorRuntimeTests : IDisposable
         EditorDocumentContext restored = Assert.Single(documents.documents);
         Assert.True(restored.TryGetViewParameter("zoom", out string zoom));
         Assert.Equal("2.5", zoom);
-        Assert.True(documents.Close(opened.documentId, EditorDocumentCloseMode.Discard));
+        Assert.True(documents.Close(opened.documentID, EditorDocumentCloseMode.Discard));
     }
 
     [Fact]
@@ -313,8 +313,8 @@ public sealed partial class EditorRuntimeTests : IDisposable
     public void StatisticsUseStableReplacementAndOneFrameOrderHandoff()
     {
         EditorStatistics statistics = m_runtime.context.statistics;
-        var id = new EditorStatisticId("tests.statistics.frame-time");
-        var groupID = new EditorStatisticGroupId("tests.statistics");
+        var id = new EditorStatisticID("tests.statistics.frame-time");
+        var groupID = new EditorStatisticGroupID("tests.statistics");
         statistics.Publish(new EditorStatistic(id, groupID, "Tests", "Frame Time", "10 ms"));
         statistics.Publish(new EditorStatistic(id, groupID, "Tests", "Frame Time", "8 ms"));
         Assert.Equal("8 ms", Assert.Single(statistics.GetSnapshot()).value);
@@ -467,7 +467,7 @@ public sealed partial class EditorRuntimeTests : IDisposable
     {
         EditorInteraction interaction = m_runtime.interactions.For("tests/toolbar");
         EditorToolbarItem initial = Assert.Single(interaction.BuildToolbar().items);
-        Assert.Equal("tests.toolbar", initial.actionId);
+        Assert.Equal("tests.toolbar", initial.actionID);
         Assert.Equal(EditorToolbarIcon.Play, initial.icon);
         Assert.Equal("Start Runtime", initial.tooltip);
         Assert.False(initial.status.isChecked);
@@ -476,7 +476,7 @@ public sealed partial class EditorRuntimeTests : IDisposable
         Assert.Equal(EditorToolbarIcon.Stop, active.icon);
         Assert.Equal("Stop Runtime", active.tooltip);
         Assert.True(active.status.isChecked);
-        interaction.Enqueue(active.actionId);
+        interaction.Enqueue(active.actionID);
         m_runtime.Update(new EditorFrame(0.016f, 1f, isFocused: true));
         Assert.Equal(1, ToolbarAction.executeCount);
     }
@@ -598,20 +598,20 @@ public sealed partial class EditorRuntimeTests : IDisposable
         Assert.Same(secondary, secondaryResult);
         Assert.True(
             m_runtime.interactions.TryResolveIdentity(
-                secondaryIdentity.domainId,
-                secondary.identity.persistentId,
+                secondaryIdentity.domainID,
+                secondary.identity.persistentID,
                 out IdentityObject? persistentResult
             )
         );
         Assert.Same(secondary, persistentResult);
-        var crossDomainAlias = new RuntimeIdentity(secondaryIdentity.domainId, primaryIdentity.runtimeId);
+        var crossDomainAlias = new RuntimeIdentity(secondaryIdentity.domainID, primaryIdentity.runtimeID);
         Assert.NotSame(primary, m_runtime.interactions.TryResolveIdentity(crossDomainAlias, out IdentityObject? alias) ? alias : null);
-        Guid persistentID = secondary.identity.persistentId;
+        Guid persistentID = secondary.identity.persistentID;
         Assert.True(m_secondaryIdentities.Unregister(secondary));
         var replacement = new DragSource();
         Assert.True(m_secondaryIdentities.Register(replacement, persistentID));
         Assert.True(
-            m_runtime.interactions.TryResolveIdentity(secondaryIdentity.domainId, persistentID, out IdentityObject? replacementResult)
+            m_runtime.interactions.TryResolveIdentity(secondaryIdentity.domainID, persistentID, out IdentityObject? replacementResult)
         );
         Assert.Same(replacement, replacementResult);
     }
@@ -1108,11 +1108,11 @@ public sealed class TestPanel(TestModule module) : EditorPanel
     protected override void OnDraw(EditorContext context) {}
 }
 
-[StableTypeId("0fbd66e2-303e-4b35-83a1-fc2b90d58360")]
+[StableTypeID("0fbd66e2-303e-4b35-83a1-fc2b90d58360")]
 [ProjectSettingDefinition("tests.editor.multi-presentation")]
 public sealed class MultiPresentationSetting : ISerializable
 {
-    public static ProjectSettingId settingID => new("tests.editor.multi-presentation");
+    public static ProjectSettingID settingID => new("tests.editor.multi-presentation");
 
     [SerializableProperty]
     public int value { get; set; } = 7;
@@ -1399,7 +1399,7 @@ public sealed class TestViewportTool(IEditorHistory history) : EditorViewportToo
         EditorViewportPointerEvent pointer
     ) {
         downCount++;
-        context.CapturePointer(pointer.pointerId);
+        context.CapturePointer(pointer.pointerID);
         context.BeginHistoryGesture("Paint Tile");
         NeutralHistoryHandler.value = 1;
         history.RecordApplied("Paint Tile Cell", NeutralHistoryHandler.CreateChange(before: 0, after: 1));

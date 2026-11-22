@@ -46,7 +46,7 @@ public sealed class FileProductPublicationTests : IDisposable
         File.WriteAllText(Path.Combine(projectRoot, "PlayerDeploymentDefinition.g.cs"), "// The fixture has no game registrations.");
         string code = Path.Combine(m_root, "Code");
         Directory.CreateDirectory(code);
-        string sourceAssembly = typeof(ManagedDeploymentId).Assembly.Location;
+        string sourceAssembly = typeof(ManagedDeploymentID).Assembly.Location;
         File.Copy(sourceAssembly, Path.Combine(code, Path.GetFileName(sourceAssembly)));
         string nativeRelative = Path.Combine("native", "fixture", "target", nativeFileName);
         string nativeInput = Path.Combine(projectRoot, nativeRelative);

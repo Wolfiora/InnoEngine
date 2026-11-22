@@ -23,26 +23,26 @@ public sealed class GraphDiagnostic
     /// <param name="severity">
     /// Diagnostic impact.
     /// </param>
-    /// <param name="nodeId">
+    /// <param name="nodeID">
     /// Optional related node identifier.
     /// </param>
-    /// <param name="edgeId">
+    /// <param name="edgeID">
     /// Optional related edge identifier.
     /// </param>
     public GraphDiagnostic(
         string code,
         string message,
         DiagnosticSeverity severity,
-        GraphNodeId? nodeId = null,
-        GraphEdgeId? edgeId = null
+        GraphNodeID? nodeID = null,
+        GraphEdgeID? edgeID = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(code);
         ArgumentException.ThrowIfNullOrWhiteSpace(message);
         this.code = code;
         this.message = message;
         this.severity = severity;
-        this.nodeId = nodeId;
-        this.edgeId = edgeId;
+        this.nodeID = nodeID;
+        this.edgeID = edgeID;
     }
 
     /// <summary>
@@ -63,12 +63,12 @@ public sealed class GraphDiagnostic
     /// <summary>
     /// Gets the related node identifier, if any.
     /// </summary>
-    public GraphNodeId? nodeId { get; }
+    public GraphNodeID? nodeID { get; }
 
     /// <summary>
     /// Gets the related edge identifier, if any.
     /// </summary>
-    public GraphEdgeId? edgeId { get; }
+    public GraphEdgeID? edgeID { get; }
 }
 
 /// <summary>
@@ -148,7 +148,7 @@ public static class GraphValidator
         ArgumentNullException.ThrowIfNull(resolver);
 
         List<GraphDiagnostic> diagnostics = [];
-        Dictionary<GraphNodeId, IReadOnlyDictionary<GraphPortId, GraphPortDefinition>> portsByNode = [];
+        Dictionary<GraphNodeID, IReadOnlyDictionary<GraphPortID, GraphPortDefinition>> portsByNode = [];
 
         ResolvePorts(document, resolver, portsByNode, diagnostics);
         ValidateEdges(document, portsByNode, conversion, diagnostics);
@@ -165,17 +165,17 @@ public static class GraphValidator
     private static void ResolvePorts(
         GraphDocument document,
         IGraphNodeDefinitionResolver resolver,
-        Dictionary<GraphNodeId, IReadOnlyDictionary<GraphPortId, GraphPortDefinition>> portsByNode,
+        Dictionary<GraphNodeID, IReadOnlyDictionary<GraphPortID, GraphPortDefinition>> portsByNode,
         List<GraphDiagnostic> diagnostics
     ) {
         foreach (GraphNodeRecord node in document.nodes)
         {
-            if (!resolver.TryResolve(node.definitionId, out GraphNodeDefinition? definition) || definition is null)
+            if (!resolver.TryResolve(node.definitionID, out GraphNodeDefinition? definition) || definition is null)
             {
                 diagnostics.Add(
                     new GraphDiagnostic(
                         "GRAPH_MISSING_NODE",
-                        $"Node definition '{node.definitionId}' is not active. The node and its connections were preserved.",
+                        $"Node definition '{node.definitionID}' is not active. The node and its connections were preserved.",
                         DiagnosticSeverity.Warning,
                         node.id
                     )
@@ -185,7 +185,7 @@ public static class GraphValidator
 
             try
             {
-                Dictionary<GraphPortId, GraphPortDefinition> ports = [];
+                Dictionary<GraphPortID, GraphPortDefinition> ports = [];
                 foreach (GraphPortDefinition port in definition.GetPorts(node))
                 {
                     if (!ports.TryAdd(port.id, port))
@@ -193,7 +193,7 @@ public static class GraphValidator
                         diagnostics.Add(
                             new GraphDiagnostic(
                                 "GRAPH_DUPLICATE_PORT",
-                                $"Node definition '{node.definitionId}' returned duplicate port '{port.id}'.",
+                                $"Node definition '{node.definitionID}' returned duplicate port '{port.id}'.",
                                 DiagnosticSeverity.Error,
                                 node.id
                             )
@@ -219,7 +219,7 @@ public static class GraphValidator
 
     private static void ValidateEdges(
         GraphDocument document,
-        IReadOnlyDictionary<GraphNodeId, IReadOnlyDictionary<GraphPortId, GraphPortDefinition>> portsByNode,
+        IReadOnlyDictionary<GraphNodeID, IReadOnlyDictionary<GraphPortID, GraphPortDefinition>> portsByNode,
         IGraphTypeConversion? conversion,
         List<GraphDiagnostic> diagnostics
     ) {
@@ -227,8 +227,8 @@ public static class GraphValidator
 
         foreach (GraphEdgeRecord edge in document.edges)
         {
-            GraphNodeRecord? outputNode = document.FindNode(edge.output.nodeId);
-            GraphNodeRecord? inputNode = document.FindNode(edge.input.nodeId);
+            GraphNodeRecord? outputNode = document.FindNode(edge.output.nodeID);
+            GraphNodeRecord? inputNode = document.FindNode(edge.input.nodeID);
             if (outputNode is null || inputNode is null)
             {
                 diagnostics.Add(
@@ -236,7 +236,7 @@ public static class GraphValidator
                         "GRAPH_MISSING_ENDPOINT_NODE",
                         $"Edge '{edge.id}' references a node that is not present in the document.",
                         DiagnosticSeverity.Error,
-                        edgeId: edge.id
+                        edgeID: edge.id
                     )
                 );
                 continue;
@@ -245,14 +245,14 @@ public static class GraphValidator
             if (!TryGetPort(portsByNode, edge.output, out GraphPortDefinition outputPort)
                 || !TryGetPort(portsByNode, edge.input, out GraphPortDefinition inputPort)
             ) {
-                if (portsByNode.ContainsKey(edge.output.nodeId) && portsByNode.ContainsKey(edge.input.nodeId))
+                if (portsByNode.ContainsKey(edge.output.nodeID) && portsByNode.ContainsKey(edge.input.nodeID))
                 {
                     diagnostics.Add(
                         new GraphDiagnostic(
                             "GRAPH_MISSING_ENDPOINT_PORT",
                             $"Edge '{edge.id}' references a port that is not active on its node.",
                             DiagnosticSeverity.Error,
-                            edgeId: edge.id
+                            edgeID: edge.id
                         )
                     );
                 }
@@ -267,21 +267,21 @@ public static class GraphValidator
                         "GRAPH_INVALID_DIRECTION",
                         $"Edge '{edge.id}' must connect an output port to an input port.",
                         DiagnosticSeverity.Error,
-                        edgeId: edge.id
+                        edgeID: edge.id
                     )
                 );
             }
 
-            bool compatible = StringComparer.Ordinal.Equals(outputPort.valueTypeId, inputPort.valueTypeId)
-                              || (conversion?.CanConvert(outputPort.valueTypeId, inputPort.valueTypeId) ?? false);
+            bool compatible = StringComparer.Ordinal.Equals(outputPort.valueTypeID, inputPort.valueTypeID)
+                              || (conversion?.CanConvert(outputPort.valueTypeID, inputPort.valueTypeID) ?? false);
             if (!compatible)
             {
                 diagnostics.Add(
                     new GraphDiagnostic(
                         "GRAPH_INCOMPATIBLE_TYPES",
-                        $"Edge '{edge.id}' cannot convert '{outputPort.valueTypeId}' to '{inputPort.valueTypeId}'.",
+                        $"Edge '{edge.id}' cannot convert '{outputPort.valueTypeID}' to '{inputPort.valueTypeID}'.",
                         DiagnosticSeverity.Error,
-                        edgeId: edge.id
+                        edgeID: edge.id
                     )
                 );
             }
@@ -295,7 +295,7 @@ public static class GraphValidator
         GraphEndpoint endpoint,
         GraphPortDefinition port,
         Dictionary<GraphEndpoint, int> connectionCounts,
-        GraphEdgeId edgeID,
+        GraphEdgeID edgeID,
         List<GraphDiagnostic> diagnostics
     ) {
         connectionCounts.TryGetValue(endpoint, out int currentCount);
@@ -306,9 +306,9 @@ public static class GraphValidator
             diagnostics.Add(
                 new GraphDiagnostic(
                     "GRAPH_PORT_CAPACITY",
-                    $"Port '{endpoint.portId}' accepts only one connection.",
+                    $"Port '{endpoint.portID}' accepts only one connection.",
                     DiagnosticSeverity.Error,
-                    endpoint.nodeId,
+                    endpoint.nodeID,
                     edgeID
                 )
             );
@@ -317,7 +317,7 @@ public static class GraphValidator
 
     private static void ValidateRequiredInputs(
         GraphDocument document,
-        IReadOnlyDictionary<GraphNodeId, IReadOnlyDictionary<GraphPortId, GraphPortDefinition>> portsByNode,
+        IReadOnlyDictionary<GraphNodeID, IReadOnlyDictionary<GraphPortID, GraphPortDefinition>> portsByNode,
         List<GraphDiagnostic> diagnostics
     ) {
         HashSet<GraphEndpoint> connectedInputs = [];
@@ -326,7 +326,7 @@ public static class GraphValidator
             connectedInputs.Add(edge.input);
         }
 
-        foreach ((GraphNodeId nodeID, IReadOnlyDictionary<GraphPortId, GraphPortDefinition> ports) in portsByNode)
+        foreach ((GraphNodeID nodeID, IReadOnlyDictionary<GraphPortID, GraphPortDefinition> ports) in portsByNode)
         {
             foreach (GraphPortDefinition port in ports.Values)
             {
@@ -351,7 +351,7 @@ public static class GraphValidator
         GraphDocument document,
         List<GraphDiagnostic> diagnostics
     ) {
-        var graph = new DependencyGraph<GraphNodeId>();
+        var graph = new DependencyGraph<GraphNodeID>();
         foreach (GraphNodeRecord node in document.nodes)
         {
             graph.AddNode(node.id);
@@ -359,13 +359,13 @@ public static class GraphValidator
 
         foreach (GraphEdgeRecord edge in document.edges)
         {
-            if (graph.ContainsNode(edge.output.nodeId) && graph.ContainsNode(edge.input.nodeId))
+            if (graph.ContainsNode(edge.output.nodeID) && graph.ContainsNode(edge.input.nodeID))
             {
-                graph.AddDependency(edge.input.nodeId, edge.output.nodeId);
+                graph.AddDependency(edge.input.nodeID, edge.output.nodeID);
             }
         }
 
-        if (graph.TryFindCycle(out IReadOnlyList<GraphNodeId> cycle))
+        if (graph.TryFindCycle(out IReadOnlyList<GraphNodeID> cycle))
         {
             diagnostics.Add(
                 new GraphDiagnostic(
@@ -379,12 +379,12 @@ public static class GraphValidator
     }
 
     private static bool TryGetPort(
-        IReadOnlyDictionary<GraphNodeId, IReadOnlyDictionary<GraphPortId, GraphPortDefinition>> portsByNode,
+        IReadOnlyDictionary<GraphNodeID, IReadOnlyDictionary<GraphPortID, GraphPortDefinition>> portsByNode,
         GraphEndpoint endpoint,
         out GraphPortDefinition port
     ) {
-        if (portsByNode.TryGetValue(endpoint.nodeId, out IReadOnlyDictionary<GraphPortId, GraphPortDefinition>? ports)
-            && ports.TryGetValue(endpoint.portId, out GraphPortDefinition? resolved)
+        if (portsByNode.TryGetValue(endpoint.nodeID, out IReadOnlyDictionary<GraphPortID, GraphPortDefinition>? ports)
+            && ports.TryGetValue(endpoint.portID, out GraphPortDefinition? resolved)
         ) {
             port = resolved;
             return true;

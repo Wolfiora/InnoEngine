@@ -12,7 +12,7 @@ public sealed class BrowserWasm32StorageBackendProvider : StorageBackendProvider
     /// Creates an explicitly composed registration for the bundled implementation.
     /// </summary>
     public BrowserWasm32StorageBackendProvider()
-        : base(StorageBackendId.browser) {}
+        : base(StorageBackendID.browser) {}
 
     /// <inheritdoc/>
     public override IApplicationStorage CreateStorage(StorageScope scope) => new BrowserWasm32ApplicationStorage(scope);

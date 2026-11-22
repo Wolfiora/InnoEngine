@@ -213,7 +213,7 @@ internal static class ScriptCompilerEngine
                 assembly.scope,
                 assembly.domain,
                 string.IsNullOrEmpty(assembly.ownerPluginID)
-                ? AssetSourceId.project.value
+                ? AssetSourceID.project.value
                 : assembly.ownerPluginID,
                 GetCompilationDefines(assembly, includeEditor, environment.inputs.predefinedSymbols),
                 assembly.nullable,

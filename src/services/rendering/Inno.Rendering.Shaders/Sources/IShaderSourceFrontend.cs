@@ -201,7 +201,7 @@ public interface IShaderSourceFrontend
     /// <summary>
     /// Gets the open source language identity, distinct from a rendering backend or GPU API.
     /// </summary>
-    string languageId { get; }
+    string languageID { get; }
 
     /// <summary>
     /// Analyzes an immutable source candidate with explicit preprocessing inputs.

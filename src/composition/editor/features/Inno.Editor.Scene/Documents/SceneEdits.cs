@@ -105,7 +105,7 @@ public sealed partial class SceneEdits : EditorModule
                     activeBefore,
                     GetActiveSceneID(),
                     selectedBefore,
-                    scene.identity.persistentId
+                    scene.identity.persistentID
                 );
             },
             () =>

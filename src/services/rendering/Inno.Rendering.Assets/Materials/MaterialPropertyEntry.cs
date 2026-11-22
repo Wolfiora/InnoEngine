@@ -12,7 +12,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Stores one persistent material property entry.
 /// </summary>
-[StableTypeId("f4c298ba-cda4-5155-a050-d33f70175c7c")]
+[StableTypeID("f4c298ba-cda4-5155-a050-d33f70175c7c")]
 public struct MaterialPropertyEntry
 {
     /// <summary>
@@ -25,7 +25,7 @@ public struct MaterialPropertyEntry
     /// Neutral material value.
     /// </param>
     public MaterialPropertyEntry(
-        ShaderPropertyId id,
+        ShaderPropertyID id,
         MaterialValue value
     ) {
         if (!id.isValid)
@@ -39,7 +39,7 @@ public struct MaterialPropertyEntry
     /// <summary>
     /// Gets or sets the stable shader property identifier.
     /// </summary>
-    public ShaderPropertyId id { get; set; }
+    public ShaderPropertyID id { get; set; }
 
     /// <summary>
     /// Gets or sets the neutral material value.

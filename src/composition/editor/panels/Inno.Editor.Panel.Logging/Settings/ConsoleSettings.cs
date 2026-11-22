@@ -1,6 +1,6 @@
 using Inno.Editor.Settings;
 
-using Ui = Inno.Editor.ImGui.ImGui;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Logging;
 
@@ -60,7 +60,7 @@ internal sealed class ClearConsoleOnPlaySetting : EditorSetting
     protected override void OnDraw(EditorSettingObject setting)
     {
         bool value = setting.GetAsBoolean("value", true);
-        if (Ui.Checkbox("Clear ordinary logs when entering Play Mode", ref value))
+        if (Gui.Checkbox("Clear ordinary logs when entering Play Mode", ref value))
         {
             setting.SetAsBoolean("value", value);
         }

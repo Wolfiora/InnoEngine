@@ -27,7 +27,7 @@ internal sealed class FileBrowserRename(AssetBrowserModule assets)
     {
         AssetFileEntry? target = assets.edits.interactions.selection.selectedTarget as AssetFileEntry;
         bool isActive = target is not null
-            && assets.edits.interactions.For(FileBrowserInteractionIds.C_AREA, target).IsActive(FileBrowserInteractionIds.C_RENAME);
+            && assets.edits.interactions.For(FileBrowserInteractionIDs.C_AREA, target).IsActive(FileBrowserInteractionIDs.C_RENAME);
         if (isActive && target?.identity.runtimeIdentity == m_activeTarget)
         {
             return;
@@ -61,8 +61,8 @@ internal sealed class FileBrowserRename(AssetBrowserModule assets)
         {
             return;
         }
-        _ = assets.edits.interactions.For(FileBrowserInteractionIds.C_AREA, ResolveTarget()).Present(
-            FileBrowserInteractionIds.C_RENAME,
+        _ = assets.edits.interactions.For(FileBrowserInteractionIDs.C_AREA, ResolveTarget()).Present(
+            FileBrowserInteractionIDs.C_RENAME,
             new InlineRenamePresentation(id, MathF.Max(1f, width), MathF.Max(1f, rowHeight))
         );
     }

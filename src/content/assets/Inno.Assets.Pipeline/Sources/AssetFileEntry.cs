@@ -14,7 +14,7 @@ public sealed class AssetFileEntry : IdentityObject
     /// </summary>
     public string name
         => string.IsNullOrEmpty(assetPath.localPath)
-           ? assetPath.source == AssetSourceId.project
+           ? assetPath.source == AssetSourceID.project
              ? "Assets"
              : assetPath.source.value
            : Path.GetFileName(assetPath.localPath);
@@ -32,7 +32,7 @@ public sealed class AssetFileEntry : IdentityObject
     /// <summary>
     /// Gets the owning source mount identity.
     /// </summary>
-    public AssetSourceId source => assetPath.source;
+    public AssetSourceID source => assetPath.source;
 
     /// <summary>
     /// Gets whether source mutations are forbidden.

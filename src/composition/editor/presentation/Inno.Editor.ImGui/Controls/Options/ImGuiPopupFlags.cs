@@ -41,7 +41,7 @@ public enum ImGuiPopupFlags : int
     /// <summary>
     /// For IsPopupOpen(): ignore the ImGuiID parameter and test for any popup.
     /// </summary>
-    AnyPopupId = (int)NativePopupFlags.AnyPopupId,
+    AnyPopupID = (int)NativePopupFlags.AnyPopupId,
     /// <summary>
     /// For IsPopupOpen(): search/test at any level of the popup stack (default test in the current level)
     /// </summary>

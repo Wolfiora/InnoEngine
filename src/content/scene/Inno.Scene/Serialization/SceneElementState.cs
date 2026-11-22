@@ -36,9 +36,9 @@ internal sealed class SceneElementState : ISerializable
 
     internal void SetDependencies(IEnumerable<AssetDependency> dependencies)
     {
-        AssetDependency[] snapshot = dependencies.OrderBy(static value => value.persistentId).ToArray();
-        dependencyIds = snapshot.Select(static value => value.persistentId).ToArray();
-        dependencyTypes = snapshot.Select(static value => value.type.stableId).ToArray();
+        AssetDependency[] snapshot = dependencies.OrderBy(static value => value.persistentID).ToArray();
+        dependencyIds = snapshot.Select(static value => value.persistentID).ToArray();
+        dependencyTypes = snapshot.Select(static value => value.type.stableID).ToArray();
         dependencyPaths = snapshot.Select(static value => value.lastKnownPath).ToArray();
     }
 

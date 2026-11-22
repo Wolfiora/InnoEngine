@@ -53,7 +53,7 @@ public sealed class RuntimeSubsystemContext
         LifetimeScope resources,
         RuntimeSubsystemLifetime lifetime,
         bool isEditMode = false,
-        IEnumerable<RuntimeCapabilityId>? capabilities = null
+        IEnumerable<RuntimeCapabilityID>? capabilities = null
     ) {
         this.events = events ?? throw new ArgumentNullException(nameof(events));
         this.diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
@@ -107,5 +107,5 @@ public sealed class RuntimeSubsystemContext
     /// <summary>
     /// Gets the immutable capabilities verified by the owner, never a mutable service container.
     /// </summary>
-    public IReadOnlySet<RuntimeCapabilityId> capabilities { get; }
+    public IReadOnlySet<RuntimeCapabilityID> capabilities { get; }
 }

@@ -12,7 +12,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Adds capability-aware passes without owning frame graph state.
 /// </summary>
-[StableTypeId("a16b9e1e-2bf1-5ba4-85aa-ee24ebda097b")]
+[StableTypeID("a16b9e1e-2bf1-5ba4-85aa-ee24ebda097b")]
 public abstract class RenderPipelineFeature
 {
     /// <summary>

@@ -4,7 +4,7 @@ using Inno.Rendering;
 
 namespace Inno.Rendering.Assets.Authoring;
 
-[StableTypeId("d9c542b3-2def-59a3-a8a5-7115eaa1e0ea")]
+[StableTypeID("d9c542b3-2def-59a3-a8a5-7115eaa1e0ea")]
 internal sealed class RenderingAssetFormatException : FormatException
 {
     internal RenderingAssetFormatException(

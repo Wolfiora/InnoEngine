@@ -10,7 +10,7 @@ using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Panel.FileBrowser;
 
-[EditorAction(FileBrowserInteractionIds.C_CREATE_ASSET, FileBrowserInteractionIds.C_AREA)]
+[EditorAction(FileBrowserInteractionIDs.C_CREATE_ASSET, FileBrowserInteractionIDs.C_AREA)]
 internal sealed class CreateAssetCommand(AssetBrowserModule assets) : EditorAction<string, string>
 {
     /// <summary>
@@ -37,13 +37,13 @@ internal sealed class CreateAssetCommand(AssetBrowserModule assets) : EditorActi
     protected override void Execute(EditorActionContext<string, string> context)
     {
         AssetFileEntry created = assets.edits.CreateAsset(context.target, context.argument);
-        _ = context.interactions.For(FileBrowserInteractionIds.C_AREA, created).Select();
-        _ = context.interactions.For(FileBrowserInteractionIds.C_AREA, created).Execute(FileBrowserInteractionIds.C_RENAME);
+        _ = context.interactions.For(FileBrowserInteractionIDs.C_AREA, created).Select();
+        _ = context.interactions.For(FileBrowserInteractionIDs.C_AREA, created).Execute(FileBrowserInteractionIDs.C_RENAME);
         context.interactions.OpenPanel("scene.inspector");
     }
 }
 
-[EditorMenuSource(FileBrowserInteractionIds.C_AREA)]
+[EditorMenuSource(FileBrowserInteractionIDs.C_AREA)]
 internal sealed class AssetCreationMenu(AssetBrowserModule assets) : EditorMenuSource
 {
     /// <summary>
@@ -84,7 +84,7 @@ internal sealed class AssetCreationMenu(AssetBrowserModule assets) : EditorMenuS
 
             builder.Add(
                 "Create/" + declaration.menuPath,
-                FileBrowserInteractionIds.C_CREATE_ASSET,
+                FileBrowserInteractionIDs.C_CREATE_ASSET,
                 declaration.itemOrder,
                 argument: declaration.id
             );

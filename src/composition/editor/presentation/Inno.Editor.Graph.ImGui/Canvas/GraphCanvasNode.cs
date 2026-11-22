@@ -42,7 +42,7 @@ public sealed class GraphCanvasNode
     /// The node's geometry is nonfinite or has an invalid extent.
     /// </exception>
     public GraphCanvasNode(
-        GraphNodeId id,
+        GraphNodeID id,
         GraphPosition position,
         Vector2 size,
         float headerHeight,
@@ -65,7 +65,7 @@ public sealed class GraphCanvasNode
             throw new ArgumentOutOfRangeException(nameof(headerHeight));
         }
         GraphCanvasPort[] frozen = ports.ToArray();
-        if (frozen.Any(port => port.endpoint.nodeId != id)
+        if (frozen.Any(port => port.endpoint.nodeID != id)
             || frozen.Select(static port => (port.endpoint, port.direction)).Distinct().Count() != frozen.Length
         ) {
             throw new ArgumentException("Node ports require unique endpoint/direction pairs owned by the same node.", nameof(ports));
@@ -81,7 +81,7 @@ public sealed class GraphCanvasNode
     /// <summary>
     /// Gets the stable graph identity represented by this display snapshot.
     /// </summary>
-    public GraphNodeId id { get; }
+    public GraphNodeID id { get; }
 
     /// <summary>
     /// Gets the document position, before transient gesture previews.

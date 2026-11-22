@@ -12,7 +12,7 @@ using Inno.Rendering.Assets;
 namespace Inno.Rendering.Assets.Authoring;
 
 [AssetImporter("inno.rendering.material")]
-[StableTypeId("64229f7a-85a7-5d65-9a50-3c8ea5bc3585")]
+[StableTypeID("64229f7a-85a7-5d65-9a50-3c8ea5bc3585")]
 internal sealed class MaterialAssetImporter : AssetImporter<MaterialAsset>
 {
     /// <summary>
@@ -86,7 +86,7 @@ internal sealed class MaterialAssetImporter : AssetImporter<MaterialAsset>
     {
         ShaderDefinition definition = asset.shader?.definition
                                       ?? throw new InvalidOperationException("A material requires a shader with a committed definition.");
-        Dictionary<ShaderPropertyId, ShaderPropertyDefinition> properties = definition.properties
+        Dictionary<ShaderPropertyID, ShaderPropertyDefinition> properties = definition.properties
             .ToDictionary(static property => property.id);
         foreach (MaterialPropertyEntry property in asset.properties)
         {

@@ -81,7 +81,7 @@ internal static class NativeBindingGenerationIdentity
                 SerializeIdentity(request.configurationSnapshot),
                 SerializeIdentity(request.pluginSnapshots),
                 definition.component.nativeProject,
-                definition.request.targetId,
+                definition.request.targetID,
                 definition.request.outputMode.ToString()
             };
             IEnumerable<NativeBuildInput> profileInputs = definition.profile.inputPaths.Select(

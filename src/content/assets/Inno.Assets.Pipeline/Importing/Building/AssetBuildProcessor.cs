@@ -40,7 +40,7 @@ public abstract class AssetBuildProcessor
     /// <summary>
     /// Gets the stable processor identifier used by build cache keys.
     /// </summary>
-    public string processorId
+    public string processorID
         => m_processorID
            ?? throw new InvalidOperationException(
                $"Asset build processor '{GetType().FullName}' has not been bound to discovery metadata."

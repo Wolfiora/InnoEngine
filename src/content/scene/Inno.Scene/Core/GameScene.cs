@@ -127,7 +127,7 @@ public sealed class GameScene : EngineObject, ISerializable
         {
             return false;
         }
-        Guid persistentID = gameObject.identity.persistentId;
+        Guid persistentID = gameObject.identity.persistentID;
         Exception? firstException = null;
 
         Transform[] children = gameObject.transform.children.ToArray();
@@ -703,7 +703,7 @@ public sealed class GameScene : EngineObject, ISerializable
             throw new InvalidOperationException("Only attached non-Transform components can be hot reloaded.");
         }
         previous.ValidateIdentityForReplacement();
-        if (replacement.identity.runtimeId is not null)
+        if (replacement.identity.runtimeID is not null)
         {
             throw new InvalidOperationException("The replacement component already has a registered identity.");
         }
@@ -716,7 +716,7 @@ public sealed class GameScene : EngineObject, ISerializable
         {
             throw new InvalidOperationException("The replacement component belongs to another GameObject.");
         }
-        Guid persistentID = previous.identity.persistentId;
+        Guid persistentID = previous.identity.persistentID;
         try
         {
             if (replacement is GameBehavior replacementBehavior
@@ -732,7 +732,7 @@ public sealed class GameScene : EngineObject, ISerializable
         catch (Exception exception)
         {
             List<Exception>? rollbackFailures = null;
-            if (replacement.identity.runtimeId is not null)
+            if (replacement.identity.runtimeID is not null)
             {
                 try
                 {
@@ -744,7 +744,7 @@ public sealed class GameScene : EngineObject, ISerializable
                     rollbackFailures.Add(rollbackFailure);
                 }
             }
-            if (previous.identity.runtimeId is null)
+            if (previous.identity.runtimeID is null)
             {
                 try
                 {
@@ -794,10 +794,10 @@ public sealed class GameScene : EngineObject, ISerializable
     internal void PrepareRestoreTarget(Guid persistentID)
     {
         EnsureNotDestroyed();
-        if (identity.persistentId != persistentID)
+        if (identity.persistentID != persistentID)
         {
             throw new InvalidOperationException(
-                $"Scene identity '{identity.persistentId}' does not match serialized identity '{persistentID}'."
+                $"Scene identity '{identity.persistentID}' does not match serialized identity '{persistentID}'."
             );
         }
 

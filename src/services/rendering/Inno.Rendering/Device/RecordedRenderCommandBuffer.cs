@@ -151,10 +151,10 @@ internal sealed class RecordedRenderCommandBuffer : IDisposable
         internal T? ReadReference<T>()
             where T : class => (T?)m_references[Read<int>()];
 
-        internal RenderBindingId ReadBinding()
+        internal RenderBindingID ReadBinding()
         {
             string? value = ReadReference<string>();
-            return value is null ? default : new RenderBindingId(value);
+            return value is null ? default : new RenderBindingID(value);
         }
 
         internal ReadOnlySpan<byte> ReadSnapshot()

@@ -22,11 +22,11 @@ public sealed class PlatformBackendIntegrationTests
             "explicit-sdk",
             Path.GetTempPath(),
             new BuildHostDescriptor("Windows", "x64"),
-            new BuildTargetId("windows-x64")
+            new BuildTargetID("windows-x64")
         );
         StandardBuildDistribution standard = StandardBuildDistribution.Create(context);
-        Assert.Same(WindowsX64BgfxIntegration.shaderProfile, standard.ResolveShaderTarget(new BuildTargetId("windows-x64")));
-        Assert.Same(MacOSArm64BgfxIntegration.shaderProfile, standard.ResolveShaderTarget(new BuildTargetId("macos-arm64")));
-        Assert.Same(BrowserWasm32BgfxIntegration.shaderProfile, standard.ResolveShaderTarget(new BuildTargetId("browser-wasm")));
+        Assert.Same(WindowsX64BgfxIntegration.shaderProfile, standard.ResolveShaderTarget(new BuildTargetID("windows-x64")));
+        Assert.Same(MacOSArm64BgfxIntegration.shaderProfile, standard.ResolveShaderTarget(new BuildTargetID("macos-arm64")));
+        Assert.Same(BrowserWasm32BgfxIntegration.shaderProfile, standard.ResolveShaderTarget(new BuildTargetID("browser-wasm")));
     }
 }

@@ -43,7 +43,7 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
     {
         SaveStartupScene();
         TypeCacheSnapshot runtimeTypes = m_engine.types.current;
-        var target = new BuildTargetId(targetValue);
+        var target = new BuildTargetID(targetValue);
         using SerializationGeneration serialization = m_engine.serialization.CaptureGeneration();
         BuildProfile profile = CreateProfile(target);
         profile.persistentDataPath = "studio/testgame";
@@ -57,25 +57,25 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
         Assert.True(result.succeeded);
         string outputPath = Assert.IsType<string>(result.outputPath);
         string contentHash = Assert.IsType<string>(result.contentHash);
-        string packagedContent = target == new BuildTargetId("macos-arm64")
+        string packagedContent = target == new BuildTargetID("macos-arm64")
                                  ? Path.Combine(outputPath, "Contents", "Resources", "Content")
                                  : Path.Combine(outputPath, "Content");
-        string executable = target == new BuildTargetId("macos-arm64")
+        string executable = target == new BuildTargetID("macos-arm64")
                             ? Path.Combine(outputPath, "Contents", "MacOS", "Test Game")
                             : Path.Combine(outputPath, "Test Game.exe");
         Assert.True(File.Exists(executable));
-        string playerRoot = target == new BuildTargetId("macos-arm64")
+        string playerRoot = target == new BuildTargetID("macos-arm64")
                             ? Path.Combine(outputPath, "Contents", "MacOS")
                             : outputPath;
         Assert.False(Directory.Exists(Path.Combine(playerRoot, "References")));
-        string deployedNative = target == new BuildTargetId("macos-arm64")
+        string deployedNative = target == new BuildTargetID("macos-arm64")
                                 ? Path.Combine(outputPath, "Contents", "MacOS", "native")
                                 : Path.Combine(outputPath, "native");
         Assert.True(
             File.Exists(
                 Path.Combine(
                     deployedNative,
-                    target == new BuildTargetId("macos-arm64")
+                    target == new BuildTargetID("macos-arm64")
                     ? "libinno-text-release.dylib"
                     : "inno-text-release.dll"
                 )
@@ -85,7 +85,7 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
             File.Exists(
                 Path.Combine(
                     deployedNative,
-                    target == new BuildTargetId("macos-arm64")
+                    target == new BuildTargetID("macos-arm64")
                     ? "libinno-ui-release.dylib"
                     : "inno-ui-release.dll"
                 )
@@ -99,7 +99,7 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
         );
 
         byte[] envelope = File.ReadAllBytes(Path.Combine(packagedContent, "runtime.manifest"));
-        Assert.Equal("tests.game", RuntimeManifestEnvelope.ReadApplicationId(envelope));
+        Assert.Equal("tests.game", RuntimeManifestEnvelope.ReadApplicationID(envelope));
         Assert.Equal("studio/testgame", RuntimeManifestEnvelope.ReadPersistentDataPath(envelope));
         GameRuntimeManifest manifest = RuntimeManifestEnvelope.Decode(envelope, serialization);
         Assert.Equal("studio/testgame", manifest.persistentDataPath);
@@ -217,7 +217,7 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
 
         BuildResult result = await m_pipeline.BuildGameAsync(new GameBuildRequest
         {
-            profile = CreateProfile(new BuildTargetId("macos-arm64")),
+            profile = CreateProfile(new BuildTargetID("macos-arm64")),
             outputDirectory = Path.Combine(m_root, "Builds", "PendingImport")
         });
 
@@ -272,7 +272,7 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
 
         Task<BuildResult> build = pipeline.BuildGameAsync(new GameBuildRequest
         {
-            profile = CreateProfile(new BuildTargetId("macos-arm64")),
+            profile = CreateProfile(new BuildTargetID("macos-arm64")),
             outputDirectory = outputRoot
         }).AsTask();
         Assert.True(SpinWait.SpinUntil(() => target.started.Task.IsCompleted, TimeSpan.FromSeconds(2)));
@@ -297,7 +297,7 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
 
         BuildResult result = await m_pipeline.BuildGameAsync(new GameBuildRequest
         {
-            profile = CreateProfile(new BuildTargetId("macos-arm64")),
+            profile = CreateProfile(new BuildTargetID("macos-arm64")),
             outputDirectory = outputRoot
         });
 
@@ -322,7 +322,7 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
         SaveStartupScene();
         var request = new GameBuildRequest
         {
-            profile = CreateProfile(new BuildTargetId("windows-x64")),
+            profile = CreateProfile(new BuildTargetID("windows-x64")),
             outputDirectory = Path.Combine(m_root, "Builds", "CleanupFailure")
         };
         string previous = Path.Combine(request.outputDirectory, request.profile.productName + "-Windows-x64");
@@ -360,7 +360,7 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
         SaveStartupScene();
         BuildResult result = await m_pipeline.BuildGameAsync(new GameBuildRequest
         {
-            profile = CreateProfile(new BuildTargetId("windows-x64")),
+            profile = CreateProfile(new BuildTargetID("windows-x64")),
             outputDirectory = Path.Combine(m_root, "Builds", "ProgressFailure")
         }, new CommitFailingProgress());
         Assert.True(result.succeeded);
@@ -383,7 +383,7 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
             m_pipeline.BuildGameAsync(
                 new GameBuildRequest
                 {
-                    profile = CreateProfile(new BuildTargetId("macos-arm64")),
+                    profile = CreateProfile(new BuildTargetID("macos-arm64")),
                     outputDirectory = outputRoot
                 },
                 cancellationToken: cancellation.Token
@@ -405,7 +405,7 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
         InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             m_pipeline.BuildGameAsync(new GameBuildRequest
             {
-                profile = CreateProfile(new BuildTargetId("macos-arm64")),
+                profile = CreateProfile(new BuildTargetID("macos-arm64")),
                 outputDirectory = output
             }).AsTask());
 
@@ -423,13 +423,13 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
 
         ValueTask<BuildResult> firstBuild = m_pipeline.BuildPluginAsync(new PluginBuildRequest
         {
-            pluginId = "tests.export",
+            pluginID = "tests.export",
             displayName = "Export Test",
             outputPath = firstPath
         });
         ValueTask<BuildResult> secondBuild = m_pipeline.BuildPluginAsync(new PluginBuildRequest
         {
-            pluginId = "tests.export",
+            pluginID = "tests.export",
             displayName = "Export Test",
             outputPath = secondPath
         });
@@ -477,7 +477,7 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
             m_pipeline.BuildPluginAsync(
                 new PluginBuildRequest
                 {
-                    pluginId = "tests.canceled",
+                    pluginID = "tests.canceled",
                     displayName = "Canceled",
                     outputPath = output
                 },

@@ -39,10 +39,10 @@ using Inno.Scene;
 using Inno.Scripting.Compiler;
 using Inno.Testing.Build;
 
+using GuiSession = Inno.Editor.ImGui.EditorUISession;
 using NativeGui = Inno.Native.ImGui.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
-using UiRuntime = Inno.Editor.ImGui.ImGuiEditorRuntime;
-using UiSession = Inno.Editor.ImGui.EditorUiSession;
+using UIRuntime = Inno.Editor.ImGui.ImGuiEditorRuntime;
 
 namespace Inno.Editor.Exporting.Native.Tests;
 
@@ -53,10 +53,10 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
     public unsafe void EditorShutdownDrainsSupportPackCleanupBeforeReleasingExportServices()
     {
         SaveStartupScene();
-        Directory.Delete(Path.Combine(m_supportPackRoot, new BuildTargetId("macos-arm64").value), recursive: true);
+        Directory.Delete(Path.Combine(m_supportPackRoot, new BuildTargetID("macos-arm64").value), recursive: true);
         var provisioner = new DrainingSupportPackProvisioner();
         BuildPipeline pipeline = CreatePipeline(provisioner);
-        BuildSettings defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", new BuildTargetId("macos-arm64"));
+        BuildSettings defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", new BuildTargetID("macos-arm64"));
         var buildSettings = new BuildSettingsStore(
             Path.Combine(m_projectRoot, "Settings.Build.inno"),
             m_engine.serialization,
@@ -81,7 +81,7 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
         try
         {
             NativeImGui.Raw.GetIO()->IniFilename = null;
-            using var uiSession = new UiSession();
+            using var uiSession = new GuiSession();
             using IDisposable uiScope = uiSession.Enter();
             ImGuiIO* io = NativeImGui.Raw.GetIO();
             io->DisplaySize = new ImVec2C { X = 1200f, Y = 900f };
@@ -185,7 +185,7 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
         {
             NativeGui.Raw.GetIO()->IniFilename = null;
             m_engine.logs.RegisterSink(logs);
-            using var session = new UiSession();
+            using var session = new GuiSession();
             using IDisposable scope = session.Enter();
             using var runtime = new EditorInteractionRuntime(
                 context,
@@ -231,7 +231,7 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
         int height,
         float dpi
     ) {
-        BuildSettings defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", new BuildTargetId("macos-arm64"));
+        BuildSettings defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", new BuildTargetID("macos-arm64"));
         var settings = new BuildSettingsStore(
             Path.Combine(m_projectRoot, "Settings.Build.inno"),
             m_engine.serialization,
@@ -250,7 +250,7 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
             io->DeltaTime = 0.2f;
             io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
             io->Fonts->RendererHasTextures = 1;
-            using var runtime = new UiRuntime(
+            using var runtime = new UIRuntime(
                 new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Ctrl")),
                 m_engine.types,
                 m_engine.logs,
@@ -329,9 +329,9 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
 
     private sealed class ExportLabelTarget : IGameBuildTarget, IGameContentCompiler
     {
-        public BuildTargetId id => new("fixture-export");
-        public BuildTargetId target => id;
-        public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.coreClr;
+        public BuildTargetID id => new("fixture-export");
+        public BuildTargetID target => id;
+        public ManagedDeploymentID defaultManagedDeployment => ManagedDeploymentID.coreClr;
         public string runtimeIdentifier => "fixture";
         public string displayName => reject ? throw new InvalidOperationException("Export target label failed.") : "Fixture target";
 

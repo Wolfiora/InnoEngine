@@ -29,7 +29,7 @@ using Inno.Scripting.Api;
 [assembly: ScriptingApiExport(typeof(ViewContentSourceExtensionAttribute), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(IViewContentCollector), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(SelectedViewContentCollector), ScriptingApiScope.Runtime)]
-[assembly: ScriptingApiExport(typeof(RenderPersistentResourceId), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(RenderPersistentResourceID), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(RenderTextureSubresourceData), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(RenderGeometrySection), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(RenderGeometry), ScriptingApiScope.Runtime)]

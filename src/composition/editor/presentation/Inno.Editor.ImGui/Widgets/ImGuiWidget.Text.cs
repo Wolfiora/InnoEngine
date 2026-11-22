@@ -31,9 +31,9 @@ public sealed unsafe partial class ImGuiWidget
         }
         float fontSize = NativeImGui.GetFontSize();
         float width = NativeImGui.GetTextLineHeight();
-        foreach ((string Name, string Glyph) entry in EditorIconCatalog.standard)
+        foreach ((string name, string glyph) entry in EditorIconCatalog.standard)
         {
-            Vector4 bounds = GetGlyphVisualBounds(fontSize, entry.Glyph);
+            Vector4 bounds = GetGlyphVisualBounds(fontSize, entry.glyph);
             width = MathF.Max(width, bounds.Z - bounds.X);
         }
 

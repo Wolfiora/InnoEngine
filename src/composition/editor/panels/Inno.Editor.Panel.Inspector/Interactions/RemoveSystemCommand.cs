@@ -4,8 +4,8 @@ using Inno.Scene;
 
 namespace Inno.Editor.Panel.Inspector;
 
-[EditorAction(InspectorInteractionIds.C_REMOVE_SYSTEM, priority: 100)]
-[EditorMenu(InspectorInteractionIds.C_SYSTEM_AREA, "Remove System", order: 200)]
+[EditorAction(InspectorInteractionIDs.C_REMOVE_SYSTEM, priority: 100)]
+[EditorMenu(InspectorInteractionIDs.C_SYSTEM_AREA, "Remove System", order: 200)]
 internal sealed class RemoveSystemCommand(SceneEdits edits) : EditorAction<GameSystem>
 {
     /// <summary>

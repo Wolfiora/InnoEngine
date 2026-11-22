@@ -227,7 +227,7 @@ public sealed partial class AssetDatabase
         );
         foreach (AssetDependency dependency in record.dependencies)
         {
-            CollectPayloadReads(m_recordsByID[dependency.persistentId], visited, reads);
+            CollectPayloadReads(m_recordsByID[dependency.persistentID], visited, reads);
         }
     }
 

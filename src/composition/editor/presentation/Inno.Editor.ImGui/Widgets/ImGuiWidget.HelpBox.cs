@@ -52,9 +52,9 @@ public sealed unsafe partial class ImGuiWidget
         float height = MathF.Max(NativeImGui.GetTextLineHeight(), textSize.Y) + padding.Y * 2f;
         ImDrawList* draw = NativeImGui.Raw.GetWindowDrawList();
         Vector4 background = Vector4.Lerp(EditorPalette.windowBackground, color, 0.075f);
-        background.W = EditorPalette.opacityOpaque;
+        background.W = EditorPalette.C_OPACITY_OPAQUE;
         Vector4 outline = color;
-        outline.W = EditorPalette.opacityMuted;
+        outline.W = EditorPalette.C_OPACITY_MUTED;
         ImGui.DrawNativeFilledRectangle(
             draw,
             origin,

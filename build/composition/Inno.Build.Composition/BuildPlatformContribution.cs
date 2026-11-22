@@ -55,7 +55,7 @@ public sealed class BuildPlatformContribution
         string? editorProject = null,
         IReadOnlyList<NativeProductContribution>? nativeProducts = null,
         INativeBindingGenerator? bindingGenerator = null,
-        IReadOnlyList<ManagedDeploymentId>? managedDeployments = null
+        IReadOnlyList<ManagedDeploymentID>? managedDeployments = null
     ) {
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentNullException.ThrowIfNull(factory);
@@ -82,7 +82,7 @@ public sealed class BuildPlatformContribution
         var products = new Dictionary<string, NativeProductContribution>(StringComparer.Ordinal);
         foreach (NativeProductContribution product in nativeProducts ?? [])
         {
-            if (product is null || !products.TryAdd(product.plan.productId, product))
+            if (product is null || !products.TryAdd(product.plan.productID, product))
             {
                 throw new ArgumentException(
                     "Native product plans must be complete and have unique product identities.",
@@ -91,7 +91,7 @@ public sealed class BuildPlatformContribution
             }
         }
         this.nativeProducts = new ReadOnlyDictionary<string, NativeProductContribution>(products);
-        ManagedDeploymentId[] deployments = (managedDeployments ?? []).ToArray();
+        ManagedDeploymentID[] deployments = (managedDeployments ?? []).ToArray();
         if (deployments.Any(static id => string.IsNullOrWhiteSpace(id.value))
             || deployments.Distinct().Count() != deployments.Length
         ) {
@@ -138,5 +138,5 @@ public sealed class BuildPlatformContribution
     /// <summary>
     /// Gets the deployment identities this platform authorizes for its declared managed runtime target.
     /// </summary>
-    public IReadOnlyList<ManagedDeploymentId> managedDeployments { get; }
+    public IReadOnlyList<ManagedDeploymentID> managedDeployments { get; }
 }

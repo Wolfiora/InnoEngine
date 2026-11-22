@@ -12,7 +12,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Stores one ordered feature extension selection using only stable data.
 /// </summary>
-[StableTypeId("aa788bff-6891-5055-8762-899971ba3bed")]
+[StableTypeID("aa788bff-6891-5055-8762-899971ba3bed")]
 public struct RenderFeatureConfiguration
 {
     /// <summary>
@@ -23,7 +23,7 @@ public struct RenderFeatureConfiguration
     /// <summary>
     /// Creates a feature configuration.
     /// </summary>
-    /// <param name="featureTypeId">
+    /// <param name="featureTypeID">
     /// Globally stable feature extension identifier.
     /// </param>
     /// <param name="state">
@@ -33,12 +33,12 @@ public struct RenderFeatureConfiguration
     /// Whether the feature participates in graph building.
     /// </param>
     public RenderFeatureConfiguration(
-        string featureTypeId,
+        string featureTypeID,
         SerializedRenderExtensionState? state = null,
         bool enabled = true
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(featureTypeId);
-        this.featureTypeId = featureTypeId;
+        ArgumentException.ThrowIfNullOrWhiteSpace(featureTypeID);
+        this.featureTypeId = featureTypeID;
         this.state = state ?? new SerializedRenderExtensionState();
         this.enabled = enabled;
     }

@@ -60,7 +60,7 @@ public static class Diagnostics
     /// <summary>
     /// Atomically sets the complete current state of one targeted diagnostic group owned by the calling type.
     /// </summary>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The stable identity of the asset, scene element, or other dynamic target.
     /// </param>
     /// <param name="group">
@@ -73,26 +73,26 @@ public static class Diagnostics
     /// The optional target name presented by diagnostic consumers.
     /// </param>
     /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="targetId"/> is empty or <paramref name="group"/> is empty.
+    /// Thrown when <paramref name="targetID"/> is empty or <paramref name="group"/> is empty.
     /// </exception>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="diagnostic"/> is <see langword="null"/>.
     /// </exception>
     [MethodImpl(MethodImplOptions.NoInlining)]
     public static void Set(
-        Guid targetId,
+        Guid targetID,
         string group,
         Diagnostic diagnostic,
         string? displayName = null
     ) {
         ArgumentNullException.ThrowIfNull(diagnostic);
-        Set(targetId, group, [diagnostic], displayName);
+        Set(targetID, group, [diagnostic], displayName);
     }
 
     /// <summary>
     /// Atomically sets the complete current state of one targeted diagnostic group owned by the calling type.
     /// </summary>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The stable identity of the asset, scene element, or other dynamic target.
     /// </param>
     /// <param name="group">
@@ -105,20 +105,20 @@ public static class Diagnostics
     /// The optional target name presented by diagnostic consumers.
     /// </param>
     /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="targetId"/> is empty, <paramref name="group"/> is empty, or the collection contains a null entry.
+    /// Thrown when <paramref name="targetID"/> is empty, <paramref name="group"/> is empty, or the collection contains a null entry.
     /// </exception>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="diagnostics"/> is <see langword="null"/>.
     /// </exception>
     [MethodImpl(MethodImplOptions.NoInlining)]
     public static void Set(
-        Guid targetId,
+        Guid targetID,
         string group,
         IEnumerable<Diagnostic> diagnostics,
         string? displayName = null
     ) {
         ArgumentNullException.ThrowIfNull(diagnostics);
-        DiagnosticHub.current.Set(DiagnosticCallerResolver.Resolve(group, targetId, displayName), diagnostics);
+        DiagnosticHub.current.Set(DiagnosticCallerResolver.Resolve(group, targetID, displayName), diagnostics);
     }
 
     /// <summary>
@@ -136,18 +136,18 @@ public static class Diagnostics
     /// <summary>
     /// Clears one targeted diagnostic group owned by the calling type.
     /// </summary>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The stable identity of the asset, scene element, or other dynamic target.
     /// </param>
     /// <param name="group">
     /// The non-empty responsibility name scoped to the calling type and target.
     /// </param>
     /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="targetId"/> is empty or <paramref name="group"/> is empty.
+    /// Thrown when <paramref name="targetID"/> is empty or <paramref name="group"/> is empty.
     /// </exception>
     [MethodImpl(MethodImplOptions.NoInlining)]
     public static void Clear(
-        Guid targetId,
+        Guid targetID,
         string group
-    ) => DiagnosticHub.current.Clear(DiagnosticCallerResolver.Resolve(group, targetId));
+    ) => DiagnosticHub.current.Clear(DiagnosticCallerResolver.Resolve(group, targetID));
 }

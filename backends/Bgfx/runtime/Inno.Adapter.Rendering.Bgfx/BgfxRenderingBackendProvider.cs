@@ -20,7 +20,7 @@ public sealed class BgfxRenderingBackendProvider : RenderingBackendProvider
     /// The integration is null.
     /// </exception>
     public BgfxRenderingBackendProvider(IBgfxSurfaceIntegration surfaceIntegration)
-        : base(RenderingBackendId.bgfx)
+        : base(RenderingBackendID.bgfx)
     {
         ArgumentNullException.ThrowIfNull(surfaceIntegration);
         m_surfaceIntegration = surfaceIntegration;

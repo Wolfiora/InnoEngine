@@ -172,7 +172,7 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
             string definition = Path.GetRelativePath(root, Path.GetFullPath(BindingDefinition)).Replace('\\', '/');
             var owner = new NativeComponentDescriptor(ComponentId, project, project, bindingDefinition: definition);
             var context = new NativeBuildContext(root, "release");
-            BuildCompositionContext captured = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(TargetId));
+            BuildCompositionContext captured = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetID(TargetId));
             var execution = new BuildCompositionContext(
                 DotnetHost,
                 captured.applicationDirectory,

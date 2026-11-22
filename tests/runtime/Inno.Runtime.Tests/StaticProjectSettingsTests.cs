@@ -12,7 +12,7 @@ namespace Inno.Runtime.Tests;
 
 public sealed class StaticProjectSettingsTests
 {
-    private static readonly ProjectSettingId SETTING_ID = new("tests.static-setting");
+    private static readonly ProjectSettingID SETTING_ID = new("tests.static-setting");
 
     [Fact]
     public void SettingsUseContributedMetadataAndFactoryWithoutReflectiveDeclarations()
@@ -25,7 +25,7 @@ public sealed class StaticProjectSettingsTests
                 new FileByteDocumentStore(Path.GetFullPath(Path.Combine(directory, "Settings.Project.inno"))),
                 host.types,
                 host.serialization,
-                new ProjectId("tests.static"),
+                new ProjectID("tests.static"),
                 SerializationContext.empty
             );
 
@@ -54,7 +54,7 @@ public sealed class StaticProjectSettingsTests
                     new FileByteDocumentStore(Path.GetFullPath(Path.Combine(directory, "Settings.Project.inno"))),
                     host.types,
                     host.serialization,
-                    new ProjectId("tests.static"),
+                    new ProjectID("tests.static"),
                     SerializationContext.empty
                 ));
             Assert.Contains("factory in the current type catalog", exception.Message);
@@ -71,7 +71,7 @@ public sealed class StaticProjectSettingsTests
     ) {
         Attribute[] attributes =
         [
-            new StableTypeIdAttribute("f506944b-bcfa-48e4-b839-a66b4d8f5887"),
+            new StableTypeIDAttribute("f506944b-bcfa-48e4-b839-a66b4d8f5887"),
             new ProjectSettingDefinitionAttribute(SETTING_ID.value)
         ];
         var types = new StaticTypeCatalogSource([register => register.Register(

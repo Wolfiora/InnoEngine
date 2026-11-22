@@ -36,7 +36,7 @@ public sealed class ShaderGraphProgramCompiler
     /// <param name="document">
     /// Authored graph, copied before validation.
     /// </param>
-    /// <param name="implementationId">
+    /// <param name="implementationID">
     /// Exact adapter implementation identity selected by the caller.
     /// </param>
     /// <param name="sources">
@@ -56,8 +56,8 @@ public sealed class ShaderGraphProgramCompiler
     /// </returns>
     public ShaderGraphProgramResult Lower(
         GraphDocument document,
-        string implementationId,
-        IReadOnlyDictionary<GraphNodeId, ShaderSourceModuleAnalysis> sources,
+        string implementationID,
+        IReadOnlyDictionary<GraphNodeID, ShaderSourceModuleAnalysis> sources,
         SerializationRegistry serialization,
         SerializationContext context,
         CancellationToken cancellationToken = default
@@ -66,7 +66,7 @@ public sealed class ShaderGraphProgramCompiler
         ArgumentNullException.ThrowIfNull(sources);
         var diagnostics = new List<ShaderGraphDiagnostic>();
         var passes = new List<ShaderGraphPass>();
-        GraphNodeId? activeNode = null;
+        GraphNodeID? activeNode = null;
         try
         {
             GraphDocument graph = document.Clone();
@@ -79,7 +79,7 @@ public sealed class ShaderGraphProgramCompiler
             {
                 return new([], diagnostics);
             }
-            ConnectRasterStages(graph, implementationId, sources, serialization, context);
+            ConnectRasterStages(graph, implementationID, sources, serialization, context);
             Dictionary<string, ShaderPassDefinition> definitions = definition.passes.ToDictionary(
                 static pass => pass.name,
                 StringComparer.Ordinal
@@ -96,18 +96,18 @@ public sealed class ShaderGraphProgramCompiler
             }
             var stages = new Dictionary<string, ShaderIrStage>(StringComparer.Ordinal);
             GraphNodeRecord[] outputs = graph.nodes
-                .Where(static node => node.definitionId == ShaderGraphDocument.outputDefinitionId)
+                .Where(static node => node.definitionID == ShaderGraphDocument.C_OUTPUT_DEFINITION_ID)
                 .ToArray();
-            Dictionary<GraphNodeId, string> owners = graph.nodes
-                .Where(static node => node.definitionId != ShaderGraphDocument.outputDefinitionId)
+            Dictionary<GraphNodeID, string> owners = graph.nodes
+                .Where(static node => node.definitionID != ShaderGraphDocument.C_OUTPUT_DEFINITION_ID)
                 .ToDictionary(
                     static node => node.id,
-                    node => ShaderGraphDocument.Read(node, ShaderGraphDocument.stageKey, string.Empty, serialization, context)
+                    node => ShaderGraphDocument.Read(node, ShaderGraphDocument.C_STAGE_KEY, string.Empty, serialization, context)
                 );
-            HashSet<string> outputIds = outputs.Select(static node => node.id.value).ToHashSet(StringComparer.Ordinal);
-            foreach ((GraphNodeId node, string owner) in owners)
+            HashSet<string> outputIDs = outputs.Select(static node => node.id.value).ToHashSet(StringComparer.Ordinal);
+            foreach ((GraphNodeID node, string owner) in owners)
             {
-                if (!outputIds.Contains(owner))
+                if (!outputIDs.Contains(owner))
                 {
                     Error("SHADER_STAGE_MISSING", "The node's stage is missing; its data remains available for repair.", node);
                 }
@@ -122,7 +122,7 @@ public sealed class ShaderGraphProgramCompiler
                 activeNode = output.id;
                 ShaderGraphStageSettings settings = ShaderGraphDocument.Read<ShaderGraphStageSettings?>(
                     output,
-                    ShaderGraphDocument.settingsKey,
+                    ShaderGraphDocument.C_SETTINGS_KEY,
                     null,
                     serialization,
                     context
@@ -136,29 +136,29 @@ public sealed class ShaderGraphProgramCompiler
                         region.RemoveNode(node.id);
                     }
                 }
-                HashSet<GraphNodeId> members = region.nodes.Select(static node => node.id).ToHashSet();
+                HashSet<GraphNodeID> members = region.nodes.Select(static node => node.id).ToHashSet();
                 var endpoints = new Dictionary<string, GraphEndpoint>(StringComparer.Ordinal);
                 foreach (GraphEdgeRecord edge in graph.edges)
                 {
-                    if (edge.input.nodeId == output.id)
+                    if (edge.input.nodeID == output.id)
                     {
-                        if (!members.Contains(edge.output.nodeId))
+                        if (!members.Contains(edge.output.nodeID))
                         {
                             throw new InvalidOperationException(
                                 "A stage output is connected to another stage; use an explicit varying interface."
                             );
                         }
-                        if (!endpoints.TryAdd(edge.input.portId.value, edge.output))
+                        if (!endpoints.TryAdd(edge.input.portID.value, edge.output))
                         {
                             throw new InvalidOperationException("A stage output port has multiple incoming connections.");
                         }
                     }
-                    else if (members.Contains(edge.input.nodeId) != members.Contains(edge.output.nodeId)
-                             && edge.output.nodeId != output.id && edge.input.nodeId != output.id
+                    else if (members.Contains(edge.input.nodeID) != members.Contains(edge.output.nodeID)
+                             && edge.output.nodeID != output.id && edge.input.nodeID != output.id
                     ) {
                         throw new InvalidOperationException("A connection crosses incompatible stage boundaries.");
                     }
-                    if (edge.output.nodeId == output.id)
+                    if (edge.output.nodeID == output.id)
                     {
                         throw new InvalidOperationException("A GPU stage output node cannot produce graph values.");
                     }
@@ -171,18 +171,18 @@ public sealed class ShaderGraphProgramCompiler
                         "Every stage output must have exactly one connection with its original port identity."
                     );
                 }
-                Dictionary<GraphNodeId, ShaderIrStageInput> inputs = region.nodes
-                    .Where(static node => node.definitionId == "inno.shader.stage-input")
+                Dictionary<GraphNodeID, ShaderIrStageInput> inputs = region.nodes
+                    .Where(static node => node.definitionID == "inno.shader.stage-input")
                     .ToDictionary(static node => node.id, node =>
                         (ShaderGraphDocument.Read<ShaderGraphInputSettings?>(
                             node,
-                            ShaderGraphDocument.settingsKey,
+                            ShaderGraphDocument.C_SETTINGS_KEY,
                             null,
                             serialization,
                             context
                         )
                          ?? throw new InvalidOperationException("A stage input requires its interface settings.")).CreateBinding());
-                IGrouping<string, KeyValuePair<GraphNodeId, ShaderIrStageInput>>? duplicateInput = inputs
+                IGrouping<string, KeyValuePair<GraphNodeID, ShaderIrStageInput>>? duplicateInput = inputs
                     .GroupBy(static pair => pair.Value.id, StringComparer.Ordinal)
                     .FirstOrDefault(static group => group.Count() > 1);
                 if (duplicateInput is not null)
@@ -196,7 +196,7 @@ public sealed class ShaderGraphProgramCompiler
                     new(
                         region,
                         endpoints,
-                        implementationId,
+                        implementationID,
                         sources.Where(pair => members.Contains(pair.Key)).ToDictionary(),
                         inputs
                     ),
@@ -275,26 +275,26 @@ public sealed class ShaderGraphProgramCompiler
         void Error(
             string code,
             string message,
-            GraphNodeId? node = null
+            GraphNodeID? node = null
         ) => diagnostics.Add(new(code, DiagnosticSeverity.Error, message, node));
     }
 
     private void ConnectRasterStages(
         GraphDocument graph,
         string implementationID,
-        IReadOnlyDictionary<GraphNodeId, ShaderSourceModuleAnalysis> sources,
+        IReadOnlyDictionary<GraphNodeID, ShaderSourceModuleAnalysis> sources,
         SerializationRegistry serialization,
         SerializationContext context
     ) {
         GraphNodeRecord[] outputs = graph.nodes
-            .Where(static node => node.definitionId == ShaderGraphDocument.outputDefinitionId)
+            .Where(static node => node.definitionID == ShaderGraphDocument.C_OUTPUT_DEFINITION_ID)
             .ToArray();
         Dictionary<string, GraphNodeRecord> outputByID = outputs.ToDictionary(static node => node.id.value, StringComparer.Ordinal);
         Dictionary<string, ShaderStage> stageByID = outputs.ToDictionary(
             static node => node.id.value,
             node => ShaderGraphDocument.Read(
                 node,
-                ShaderGraphDocument.settingsKey,
+                ShaderGraphDocument.C_SETTINGS_KEY,
                 new ShaderGraphStageSettings(),
                 serialization,
                 context
@@ -303,9 +303,9 @@ public sealed class ShaderGraphProgramCompiler
         );
 
         string Owner(GraphNodeRecord node)
-            => node.definitionId == ShaderGraphDocument.outputDefinitionId
+            => node.definitionID == ShaderGraphDocument.C_OUTPUT_DEFINITION_ID
                ? node.id.value
-               : ShaderGraphDocument.Read(node, ShaderGraphDocument.stageKey, string.Empty, serialization, context);
+               : ShaderGraphDocument.Read(node, ShaderGraphDocument.C_STAGE_KEY, string.Empty, serialization, context);
 
         (
             GraphEdgeRecord edge,
@@ -316,9 +316,9 @@ public sealed class ShaderGraphProgramCompiler
         )[] crossings = graph.edges
             .Select(edge =>
                 {
-                    GraphNodeRecord source = graph.FindNode(edge.output.nodeId)
+                    GraphNodeRecord source = graph.FindNode(edge.output.nodeID)
                                              ?? throw new InvalidOperationException($"Connection '{edge.id.value}' has no source node.");
-                    GraphNodeRecord destination = graph.FindNode(edge.input.nodeId)
+                    GraphNodeRecord destination = graph.FindNode(edge.input.nodeID)
                         ?? throw new InvalidOperationException($"Connection '{edge.id.value}' has no destination node.");
                     return (edge, source, destination, sourceOwner: Owner(source), destinationOwner: Owner(destination));
                 })
@@ -327,11 +327,11 @@ public sealed class ShaderGraphProgramCompiler
                 && value.sourceOwner != value.destinationOwner
             ))
             .OrderBy(static value => value.sourceOwner, StringComparer.Ordinal)
-            .ThenBy(static value => value.edge.output.nodeId.value, StringComparer.Ordinal)
-            .ThenBy(static value => value.edge.output.portId.value, StringComparer.Ordinal)
+            .ThenBy(static value => value.edge.output.nodeID.value, StringComparer.Ordinal)
+            .ThenBy(static value => value.edge.output.portID.value, StringComparer.Ordinal)
             .ThenBy(static value => value.destinationOwner, StringComparer.Ordinal)
-            .ThenBy(static value => value.edge.input.nodeId.value, StringComparer.Ordinal)
-            .ThenBy(static value => value.edge.input.portId.value, StringComparer.Ordinal)
+            .ThenBy(static value => value.edge.input.nodeID.value, StringComparer.Ordinal)
+            .ThenBy(static value => value.edge.input.portID.value, StringComparer.Ordinal)
             .ToArray();
         if (crossings.Length == 0)
         {
@@ -339,13 +339,13 @@ public sealed class ShaderGraphProgramCompiler
         }
 
         var ports = new Dictionary<GraphEndpoint, ShaderNodePort>();
-        foreach (GraphNodeRecord node in graph.nodes.Where(static node => node.definitionId != ShaderGraphDocument.outputDefinitionId))
+        foreach (GraphNodeRecord node in graph.nodes.Where(static node => node.definitionID != ShaderGraphDocument.C_OUTPUT_DEFINITION_ID))
         {
             sources.TryGetValue(node.id, out ShaderSourceModuleAnalysis? source);
-            ShaderIrStageInput? input = node.definitionId == "inno.shader.stage-input"
+            ShaderIrStageInput? input = node.definitionID == "inno.shader.stage-input"
                                         ? ShaderGraphDocument.Read(
                                             node,
-                                            ShaderGraphDocument.settingsKey,
+                                            ShaderGraphDocument.C_SETTINGS_KEY,
                                             new ShaderGraphInputSettings(),
                                             serialization,
                                             context
@@ -361,7 +361,7 @@ public sealed class ShaderGraphProgramCompiler
             static node => node.id.value,
             node => ShaderGraphDocument.Read(
                 node,
-                ShaderGraphDocument.settingsKey,
+                ShaderGraphDocument.C_SETTINGS_KEY,
                 new ShaderGraphStageSettings(),
                 serialization,
                 context
@@ -374,7 +374,7 @@ public sealed class ShaderGraphProgramCompiler
                 .ToHashSet(),
             StringComparer.Ordinal
         );
-        var sourceBridges = new Dictionary<GraphEndpoint, (string portId, int location)>();
+        var sourceBridges = new Dictionary<GraphEndpoint, (string portID, int location)>();
         var destinationBridges = new Dictionary<(GraphEndpoint source, string destination), GraphNodeRecord>();
         foreach ((GraphEdgeRecord edge, _, _, string sourceOwner, string destinationOwner) in crossings)
         {
@@ -409,12 +409,12 @@ public sealed class ShaderGraphProgramCompiler
                 );
             }
 
-            if (!sourceBridges.TryGetValue(edge.output, out (string portId, int location) sourceBridge))
+            if (!sourceBridges.TryGetValue(edge.output, out (string portID, int location) sourceBridge))
             {
                 string token = Convert.ToHexString(
                     SHA256.HashData(
                         Encoding.UTF8.GetBytes(
-                            sourceOwner + "\n" + edge.output.nodeId.value + "\n" + edge.output.portId.value
+                            sourceOwner + "\n" + edge.output.nodeID.value + "\n" + edge.output.portID.value
                         )
                     )
                 )[..16];
@@ -440,7 +440,7 @@ public sealed class ShaderGraphProgramCompiler
                 GraphNodeRecord sourceOutput = outputByID[sourceOwner];
                 ShaderGraphStageSettings outputSettings = ShaderGraphDocument.Read(
                     sourceOutput,
-                    ShaderGraphDocument.settingsKey,
+                    ShaderGraphDocument.C_SETTINGS_KEY,
                     new ShaderGraphStageSettings(),
                     serialization,
                     context
@@ -457,7 +457,7 @@ public sealed class ShaderGraphProgramCompiler
                     }
                 ];
                 sourceOutput.SetValue(
-                    ShaderGraphDocument.settingsKey,
+                    ShaderGraphDocument.C_SETTINGS_KEY,
                     ShaderGraphDocument.Encode(outputSettings, serialization, context)
                 );
                 graph.AddEdge(new(new(edgeID), edge.output, new(sourceOutput.id, new(portID))));
@@ -471,7 +471,7 @@ public sealed class ShaderGraphProgramCompiler
                 string token = Convert.ToHexString(
                     SHA256.HashData(
                         Encoding.UTF8.GetBytes(
-                            sourceOwner + "\n" + edge.output.nodeId.value + "\n" + edge.output.portId.value + "\n" + destinationOwner
+                            sourceOwner + "\n" + edge.output.nodeID.value + "\n" + edge.output.portID.value + "\n" + destinationOwner
                         )
                     )
                 )[..16];
@@ -482,14 +482,14 @@ public sealed class ShaderGraphProgramCompiler
                 }
                 inputNode = new(new(id), "inno.shader.stage-input");
                 inputNode.SetValue(
-                    ShaderGraphDocument.stageKey,
+                    ShaderGraphDocument.C_STAGE_KEY,
                     ShaderGraphDocument.Encode(destinationOwner, serialization, context)
                 );
                 inputNode.SetValue(
-                    ShaderGraphDocument.settingsKey,
+                    ShaderGraphDocument.C_SETTINGS_KEY,
                     ShaderGraphDocument.Encode(new ShaderGraphInputSettings
                     {
-                        id = sourceBridge.portId,
+                        id = sourceBridge.portID,
                         type = ShaderGraphType.Capture(sourcePort.type),
                         kind = ShaderIrInputKind.Varying,
                         semantic = "texcoord",

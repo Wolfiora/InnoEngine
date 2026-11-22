@@ -10,7 +10,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Stores one normalized vertex shared by all rendering backends.
 /// </summary>
-[StableTypeId("cfce5c30-dee4-5d62-9aa3-3e32ea5e7355")]
+[StableTypeID("cfce5c30-dee4-5d62-9aa3-3e32ea5e7355")]
 public readonly record struct GeometryVertex
 {
     /// <summary>

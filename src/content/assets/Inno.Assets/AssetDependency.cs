@@ -12,7 +12,7 @@ public readonly struct AssetDependency : IEquatable<AssetDependency>
     /// <summary>
     /// Creates an asset dependency descriptor.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The persistent identity of the referenced asset.
     /// </param>
     /// <param name="type">
@@ -22,19 +22,19 @@ public readonly struct AssetDependency : IEquatable<AssetDependency>
     /// The last known source-relative path.
     /// </param>
     /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="persistentId"/> is empty.
+    /// Thrown when <paramref name="persistentID"/> is empty.
     /// </exception>
     [ScriptingApiIgnore]
     public AssetDependency(
-        Guid persistentId,
+        Guid persistentID,
         TypeRef type,
         string lastKnownPath
     ) {
-        if (persistentId == Guid.Empty)
+        if (persistentID == Guid.Empty)
         {
-            throw new ArgumentException("An asset dependency requires a persistent identity.", nameof(persistentId));
+            throw new ArgumentException("An asset dependency requires a persistent identity.", nameof(persistentID));
         }
-        this.persistentId = persistentId;
+        this.persistentID = persistentID;
         this.type = type;
         this.lastKnownPath = lastKnownPath ?? string.Empty;
     }
@@ -42,7 +42,7 @@ public readonly struct AssetDependency : IEquatable<AssetDependency>
     /// <summary>
     /// Gets the persistent identity of the referenced asset.
     /// </summary>
-    public Guid persistentId { get; }
+    public Guid persistentID { get; }
 
     /// <summary>
     /// Gets the reload-safe identity of the expected asset type.
@@ -64,7 +64,7 @@ public readonly struct AssetDependency : IEquatable<AssetDependency>
     /// <returns>
     /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool Equals(AssetDependency other) => persistentId == other.persistentId;
+    public bool Equals(AssetDependency other) => persistentID == other.persistentID;
 
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.
@@ -83,7 +83,7 @@ public readonly struct AssetDependency : IEquatable<AssetDependency>
     /// <returns>
     /// A hash code consistent with the implemented equality contract.
     /// </returns>
-    public override int GetHashCode() => persistentId.GetHashCode();
+    public override int GetHashCode() => persistentID.GetHashCode();
 
     /// <summary>
     /// Determines whether two descriptors refer to the same persistent asset.

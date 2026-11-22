@@ -40,7 +40,7 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
     [Fact]
     public void MissingRequiredCapabilityRejectsBeforeFactoryAllocation()
     {
-        Factory factory = Create("test.required", capabilities: [new RuntimeCapabilityId("test.output")]);
+        Factory factory = Create("test.required", capabilities: [new RuntimeCapabilityID("test.output")]);
         InvalidOperationException error = Assert.Throws<InvalidOperationException>(() => m_host.CreateHostPipeline([factory]));
         Assert.Contains("test.output", error.Message);
         Assert.Equal(0, factory.createCount);
@@ -50,14 +50,14 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
     [Fact]
     public void SuppliedCapabilitiesAndDescriptorCollectionsAreImmutableSnapshots()
     {
-        RuntimeCapabilityId[] required = [new("test.output")];
+        RuntimeCapabilityID[] required = [new("test.output")];
         Factory factory = Create("test.ready", capabilities: required);
-        required[0] = new RuntimeCapabilityId("test.changed");
-        RuntimeCapabilityId[] supplied = [new("test.output")];
+        required[0] = new RuntimeCapabilityID("test.changed");
+        RuntimeCapabilityID[] supplied = [new("test.output")];
         RuntimeSubsystemPipeline pipeline = m_host.CreateHostPipeline([factory], supplied);
-        supplied[0] = new RuntimeCapabilityId("test.changed");
-        Assert.Contains(new RuntimeCapabilityId("test.output"), factory.context!.capabilities);
-        Assert.Equal(new RuntimeCapabilityId("test.output"), factory.descriptor.requiredCapabilities[0]);
+        supplied[0] = new RuntimeCapabilityID("test.changed");
+        Assert.Contains(new RuntimeCapabilityID("test.output"), factory.context!.capabilities);
+        Assert.Equal(new RuntimeCapabilityID("test.output"), factory.descriptor.requiredCapabilities[0]);
         Assert.Equal("test.ready", Assert.Single(pipeline.descriptors).id.value);
         Assert.Empty(pipeline.startupDiagnostics);
     }
@@ -70,7 +70,7 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
         Factory unavailable = Create(
             "test.optional",
             RuntimeSubsystemRequirement.Optional,
-            capabilities: missingCapability ? [new RuntimeCapabilityId("test.absent")] : []
+            capabilities: missingCapability ? [new RuntimeCapabilityID("test.absent")] : []
         );
         unavailable.failCreate = !missingCapability;
         Factory consumer = Create(
@@ -133,10 +133,10 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
         Factory missing = Create(
             "test.missing",
             RuntimeSubsystemRequirement.Optional,
-            dependencies: [new RuntimeSubsystemId("test.absent")]
+            dependencies: [new RuntimeSubsystemID("test.absent")]
         );
         Assert.Single(m_host.CreateHostPipeline([missing]).startupDiagnostics);
-        Factory a = Create("test.a", RuntimeSubsystemRequirement.Optional, dependencies: [new RuntimeSubsystemId("test.b")]);
+        Factory a = Create("test.a", RuntimeSubsystemRequirement.Optional, dependencies: [new RuntimeSubsystemID("test.b")]);
         Factory b = Create("test.b", RuntimeSubsystemRequirement.Optional, dependencies: [a.descriptor.id]);
         Assert.Throws<InvalidOperationException>(() => m_host.CreateHostPipeline([a, b]));
         Assert.Equal(0, a.createCount);
@@ -175,11 +175,11 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
     private static Factory Create(
         string id,
         RuntimeSubsystemRequirement requirement = RuntimeSubsystemRequirement.Required,
-        IReadOnlyList<RuntimeSubsystemId>? dependencies = null,
-        IReadOnlyList<RuntimeCapabilityId>? capabilities = null
+        IReadOnlyList<RuntimeSubsystemID>? dependencies = null,
+        IReadOnlyList<RuntimeCapabilityID>? capabilities = null
     ) => new(
         new RuntimeSubsystemDescriptor(
-            new RuntimeSubsystemId(id),
+            new RuntimeSubsystemID(id),
             dependencies: dependencies,
             lifetime: RuntimeSubsystemLifetime.Host,
             requirement: requirement,

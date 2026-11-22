@@ -69,15 +69,15 @@ public sealed class PluginSceneReloadTests : IDisposable
         MissingGameComponent missing = Assert.IsType<MissingGameComponent>(
             owner.GetComponents().Single(component => component is not Transform)
         );
-        Assert.Equal(componentPersistentID, missing.identity.persistentId);
-        Assert.Equal(COMPONENT_TYPE_ID, missing.missingType.stableId);
+        Assert.Equal(componentPersistentID, missing.identity.persistentID);
+        Assert.Equal(COMPONENT_TYPE_ID, missing.missingType.stableID);
         Assert.Equal(typeName, missing.missingTypeName);
         Assert.False(missing.missingType.IsValid(m_types));
         ReferenceRecoveryChange missingChange = Assert.Single(
-            m_changes.Where(change => (change.missingState.descriptor.targetPersistentId == componentPersistentID))
+            m_changes.Where(change => (change.missingState.descriptor.targetPersistentID == componentPersistentID))
         );
         Assert.Equal(ReferenceResolutionState.Missing, missingChange.resolution.state);
-        Assert.Equal(COMPONENT_TYPE_ID, missingChange.missingState.descriptor.expectedStableTypeId);
+        Assert.Equal(COMPONENT_TYPE_ID, missingChange.missingState.descriptor.expectedStableTypeID);
         Assert.False(missingChange.missingState.payload.IsEmpty);
 
         using (AssemblyReloadSession recovery = m_modules.BeginReload([CreateRequest()]))
@@ -97,11 +97,11 @@ public sealed class PluginSceneReloadTests : IDisposable
 
         GameComponent recovered = owner.GetComponents().Single(component => component is not Transform);
         Assert.IsNotType<MissingGameComponent>(recovered);
-        Assert.Equal(COMPONENT_TYPE_ID, m_types.GetTypeRef(recovered.GetType()).stableId);
-        Assert.Equal(componentPersistentID, recovered.identity.persistentId);
+        Assert.Equal(COMPONENT_TYPE_ID, m_types.GetTypeRef(recovered.GetType()).stableID);
+        Assert.Equal(componentPersistentID, recovered.identity.persistentID);
         Assert.Equal(47, GetValue(recovered));
         ReferenceRecoveryChange recoveredChange = Assert.Single(
-            m_changes.Where(change => (change.missingState.descriptor.targetPersistentId == componentPersistentID))
+            m_changes.Where(change => (change.missingState.descriptor.targetPersistentID == componentPersistentID))
         );
         Assert.Equal(ReferenceResolutionState.Resolved, recoveredChange.resolution.state);
         Assert.Equal(recovered.identity.runtimeIdentity, recoveredChange.resolution.runtimeIdentity);
@@ -156,7 +156,7 @@ public sealed class PluginSceneReloadTests : IDisposable
         Type type = new TypeRef(COMPONENT_TYPE_ID).Resolve(m_types);
         GameComponent original = owner.AddComponent(type);
         SetValue(original, 47);
-        return (original.identity.persistentId, type.FullName!);
+        return (original.identity.persistentID, type.FullName!);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

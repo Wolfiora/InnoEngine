@@ -110,7 +110,7 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
         {
             throw new InvalidDataException("The WAV source is missing valid format or data chunks.");
         }
-        return new AudioClipMetadata(AudioCodecId.wav, channels, sampleRate, dataLength / blockAlignment, bytes.Length);
+        return new AudioClipMetadata(AudioCodecID.wav, channels, sampleRate, dataLength / blockAlignment, bytes.Length);
     }
 
     private static AudioClipMetadata ReadFlac(ReadOnlySpan<byte> bytes)
@@ -158,7 +158,7 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
         {
             throw new InvalidDataException("The FLAC source is missing valid STREAMINFO metadata.");
         }
-        return new AudioClipMetadata(AudioCodecId.flac, channels, sampleRate, frameCount, bytes.Length);
+        return new AudioClipMetadata(AudioCodecID.flac, channels, sampleRate, frameCount, bytes.Length);
     }
 
     private static AudioClipMetadata ReadMp3(ReadOnlySpan<byte> bytes)
@@ -194,7 +194,7 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
         {
             throw new InvalidDataException("The MP3 source contains no valid Layer III frame.");
         }
-        return new AudioClipMetadata(AudioCodecId.mp3, channels, sampleRate, frameCount, bytes.Length);
+        return new AudioClipMetadata(AudioCodecID.mp3, channels, sampleRate, frameCount, bytes.Length);
     }
 
     private static int SkipID3(ReadOnlySpan<byte> bytes)

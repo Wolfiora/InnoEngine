@@ -15,7 +15,7 @@ public static class Settings
     /// <summary>
     /// Gets the current project namespace used to qualify project-authored logical names.
     /// </summary>
-    public static ProjectId projectId => Get<ProjectIdentitySettings>(ProjectIdentitySettings.settingId).id;
+    public static ProjectID projectID => Get<ProjectIdentitySettings>(ProjectIdentitySettings.settingID).id;
 
     /// <summary>
     /// Gets the revision of the settings snapshot active in the current execution context.
@@ -28,7 +28,7 @@ public static class Settings
     /// <summary>
     /// Gets the current owner's lifetime identity. Pair it with revision when caching an isolated settings snapshot.
     /// </summary>
-    public static Guid ownerId => ProjectSettingsExecutionContext.current.ownerId;
+    public static Guid ownerID => ProjectSettingsExecutionContext.current.ownerID;
 
     /// <summary>
     /// Creates one complete project identity from a display or local name.
@@ -39,7 +39,7 @@ public static class Settings
     /// <returns>
     /// The canonical <c>projectId.name</c> identity.
     /// </returns>
-    public static ProjectScopedId QualifyId(string name) => projectId.Qualify(ProjectLocalId.FromName(name));
+    public static ProjectScopedID QualifyID(string name) => projectID.Qualify(ProjectLocalID.FromName(name));
 
     /// <summary>
     /// Gets an isolated effective setting from the current extension generation.
@@ -62,7 +62,7 @@ public static class Settings
     /// <exception cref="InvalidCastException">
     /// Thrown by the standard project settings store when the setting does not implement the requested contract.
     /// </exception>
-    public static TSetting Get<TSetting>(ProjectSettingId id)
+    public static TSetting Get<TSetting>(ProjectSettingID id)
         where TSetting : class, ISerializable
             => ProjectSettingsExecutionContext.current.Get<TSetting>(id);
 
@@ -86,7 +86,7 @@ public static class Settings
     /// Thrown when no project settings lookup is active for the caller.
     /// </exception>
     public static bool TryGet<TSetting>(
-        ProjectSettingId id,
+        ProjectSettingID id,
         out TSetting? setting
     ) where TSetting : class, ISerializable
         => ProjectSettingsExecutionContext.current.TryGet(id, out setting);

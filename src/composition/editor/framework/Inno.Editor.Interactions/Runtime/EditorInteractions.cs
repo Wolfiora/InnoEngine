@@ -16,7 +16,7 @@ namespace Inno.Editor.Interactions;
 public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHistoryIsolation
 {
     private readonly EditorContext m_editor;
-    private readonly Dictionary<IdentityDomainId, IdentityAllocator> m_identityDomains;
+    private readonly Dictionary<IdentityDomainID, IdentityAllocator> m_identityDomains;
     private readonly int m_identityOwnerThread = Environment.CurrentManagedThreadId;
     private readonly EditorHistory m_history;
     private readonly EditorDocumentService m_documents;
@@ -27,7 +27,7 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     private EditorMenuCatalog? m_menus;
     private EditorToolbarCatalog? m_toolbars;
     private EditorDropRouter? m_drops;
-    private string m_focusedArea = EditorBuiltInInteractionIds.C_GLOBAL_AREA;
+    private string m_focusedArea = EditorBuiltInInteractionIDs.C_GLOBAL_AREA;
     private EditorTargetReference? m_focus;
     private EditorTargetReference[]? m_previousGenerationSelection;
     private EditorTargetReference? m_previousGenerationFocus;
@@ -41,7 +41,7 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     ) {
         m_editor = editor ?? throw new ArgumentNullException(nameof(editor));
         ArgumentNullException.ThrowIfNull(identityDomains);
-        m_identityDomains = identityDomains.ToDictionary(static allocator => allocator.domainId);
+        m_identityDomains = identityDomains.ToDictionary(static allocator => allocator.domainID);
         m_log = log ?? throw new ArgumentNullException(nameof(log));
         this.selection = new EditorSelectionState(this);
         m_documents = new EditorDocumentService(events);
@@ -147,7 +147,7 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     /// <summary>
     /// Reads whether one available panel is currently open.
     /// </summary>
-    /// <param name="panelId">
+    /// <param name="panelID">
     /// The stable panel identity.
     /// </param>
     /// <param name="isOpen">
@@ -157,12 +157,12 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     /// True when the current generation contains the requested available panel.
     /// </returns>
     public bool TryGetPanelState(
-        string panelId,
+        string panelID,
         out bool isOpen
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(panelID);
         isOpen = false;
-        return m_catalog?.TryGetPanelState(panelId, out isOpen) == true;
+        return m_catalog?.TryGetPanelState(panelID, out isOpen) == true;
     }
 
     /// <summary>
@@ -358,19 +358,19 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     /// <summary>
     /// Toggles one panel in the currently active extension generation.
     /// </summary>
-    /// <param name="panelId">
+    /// <param name="panelID">
     /// The stable panel identifier to resolve.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when an available panel was found and toggled.
     /// </returns>
     /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="panelId"/> is empty.
+    /// Thrown when <paramref name="panelID"/> is empty.
     /// </exception>
-    public bool TogglePanel(string panelId)
+    public bool TogglePanel(string panelID)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
-        return m_catalog?.TryTogglePanel(panelId) == true;
+        ArgumentException.ThrowIfNullOrWhiteSpace(panelID);
+        return m_catalog?.TryTogglePanel(panelID) == true;
     }
 
     /// <summary>
@@ -397,11 +397,11 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
         ArgumentNullException.ThrowIfNull(allocator);
         EnsureIdentityDomainOwner();
         ObjectDisposedException.ThrowIf(m_identityDomainsRetired, this);
-        if (!m_identityDomains.TryAdd(allocator.domainId, allocator))
+        if (!m_identityDomains.TryAdd(allocator.domainID, allocator))
         {
             throw new InvalidOperationException("The Editor identity domain is already registered.");
         }
-        return new IdentityDomainLease(this, allocator.domainId);
+        return new IdentityDomainLease(this, allocator.domainID);
     }
 
     /// <summary>
@@ -421,7 +421,7 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
         RuntimeIdentity identity,
         out IdentityObject? target
     ) {
-        target = m_identityDomains.TryGetValue(identity.domainId, out IdentityAllocator? allocator)
+        target = m_identityDomains.TryGetValue(identity.domainID, out IdentityAllocator? allocator)
                  ? allocator.Get<IdentityObject>(identity)
                  : null;
         return target is not null;
@@ -430,10 +430,10 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     /// <summary>
     /// Resolves a persistent identity through one explicitly selected Editor identity domain.
     /// </summary>
-    /// <param name="domainId">
+    /// <param name="domainID">
     /// Identity domain that owns the object and any replacement generation.
     /// </param>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// Stable object identity to resolve inside that domain.
     /// </param>
     /// <param name="target">
@@ -444,12 +444,12 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     /// </returns>
     [ScriptingApiIgnore]
     public bool TryResolveIdentity(
-        IdentityDomainId domainId,
-        Guid persistentId,
+        IdentityDomainID domainID,
+        Guid persistentID,
         out IdentityObject? target
     ) {
-        target = persistentId != Guid.Empty && m_identityDomains.TryGetValue(domainId, out IdentityAllocator? allocator)
-                 ? allocator.Get<IdentityObject>(persistentId)
+        target = persistentID != Guid.Empty && m_identityDomains.TryGetValue(domainID, out IdentityAllocator? allocator)
+                 ? allocator.Get<IdentityObject>(persistentID)
                  : null;
         return target is not null;
     }
@@ -457,37 +457,37 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     /// <summary>
     /// Opens and requests presentation focus for one panel in the active extension generation.
     /// </summary>
-    /// <param name="panelId">
+    /// <param name="panelID">
     /// The stable panel identifier to resolve.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when an available panel was found.
     /// </returns>
     /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="panelId"/> is empty.
+    /// Thrown when <paramref name="panelID"/> is empty.
     /// </exception>
-    public bool OpenPanel(string panelId)
+    public bool OpenPanel(string panelID)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
-        return m_catalog?.TryOpenPanel(panelId) == true;
+        ArgumentException.ThrowIfNullOrWhiteSpace(panelID);
+        return m_catalog?.TryOpenPanel(panelID) == true;
     }
 
     /// <summary>
     /// Closes one panel in the active extension generation without toggling its current state.
     /// </summary>
-    /// <param name="panelId">
+    /// <param name="panelID">
     /// The stable panel identifier to resolve.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when an available panel was found.
     /// </returns>
     /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="panelId"/> is empty.
+    /// Thrown when <paramref name="panelID"/> is empty.
     /// </exception>
-    public bool ClosePanel(string panelId)
+    public bool ClosePanel(string panelID)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
-        return m_catalog?.TryClosePanel(panelId) == true;
+        ArgumentException.ThrowIfNullOrWhiteSpace(panelID);
+        return m_catalog?.TryClosePanel(panelID) == true;
     }
 
     internal EditorHistory historyHost => m_history;
@@ -554,7 +554,7 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
         drops.Cancel();
         m_catalog = null;
         selection.Clear();
-        m_focusedArea = EditorBuiltInInteractionIds.C_GLOBAL_AREA;
+        m_focusedArea = EditorBuiltInInteractionIDs.C_GLOBAL_AREA;
         m_focus = null;
         m_previousGenerationSelection = null;
         m_previousGenerationAnchor = null;
@@ -630,9 +630,9 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
         {
             foreach (EditorMenuItem item in items)
             {
-                if (item.actionId.Length != 0)
+                if (item.actionID.Length != 0)
                 {
-                    _ = placed.Add(item.actionId);
+                    _ = placed.Add(item.actionID);
                 }
                 Collect(item.children);
             }
@@ -726,7 +726,7 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
 
     private sealed class IdentityDomainLease(
         EditorInteractions owner,
-        IdentityDomainId domain
+        IdentityDomainID domain
     ) : IDisposable
     {
         private EditorInteractions? m_owner = owner;

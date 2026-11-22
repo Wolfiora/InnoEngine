@@ -62,7 +62,7 @@ public sealed class PluginSourceServiceTests : IDisposable
             new FileByteDocumentStore(Path.GetFullPath(Path.Combine(m_root, "Settings.Project.inno"))),
             m_types,
             m_serialization,
-            new ProjectId("tests.plugins"),
+            new ProjectID("tests.plugins"),
             SerializationContext.empty
         );
     }
@@ -215,7 +215,7 @@ public sealed class PluginSourceServiceTests : IDisposable
         m_environment.CommitPending();
 
         Assert.Empty(m_environment.activePlugins);
-        Assert.Collection(m_assets.sourceMounts, mount => Assert.Equal(AssetSourceId.project, mount.id));
+        Assert.Collection(m_assets.sourceMounts, mount => Assert.Equal(AssetSourceID.project, mount.id));
     }
 
     [Fact]
@@ -252,7 +252,7 @@ public sealed class PluginSourceServiceTests : IDisposable
         m_environment.CommitPending();
 
         Assert.Empty(m_environment.activePlugins);
-        Assert.Collection(m_assets.sourceMounts, mount => Assert.Equal(AssetSourceId.project, mount.id));
+        Assert.Collection(m_assets.sourceMounts, mount => Assert.Equal(AssetSourceID.project, mount.id));
     }
 
     [Fact]
@@ -296,7 +296,7 @@ public sealed class PluginSourceServiceTests : IDisposable
         m_environment.CommitPending();
 
         Assert.Empty(m_environment.activePlugins);
-        Assert.Collection(m_assets.sourceMounts, mount => Assert.Equal(AssetSourceId.project, mount.id));
+        Assert.Collection(m_assets.sourceMounts, mount => Assert.Equal(AssetSourceID.project, mount.id));
     }
 
     [Fact]
@@ -533,7 +533,7 @@ public sealed class PluginSourceServiceTests : IDisposable
     }
 
     [Fact]
-    public void MissingDependenciesDuplicateIdsAndInvalidOverridesRejectTheCandidateGeneration()
+    public void MissingDependenciesDuplicateIDsAndInvalidOverridesRejectTheCandidateGeneration()
     {
         WritePlugin("missing.iplugin", Manifest("tests.missing", "tests.absent"), TextContent("missing"));
         WritePlugin("duplicate-a.iplugin", Manifest("tests.duplicate"), TextContent("first"));
@@ -613,7 +613,7 @@ public sealed class PluginSourceServiceTests : IDisposable
         Assert.Single(m_environment!.discovery.candidates);
         Assert.Contains(m_environment!.discovery.diagnostics, diagnostic =>
             diagnostic.message.Contains("candidate activation failed", StringComparison.OrdinalIgnoreCase));
-        Assert.Collection(m_assets!.sourceMounts, mount => Assert.Equal(AssetSourceId.project, mount.id));
+        Assert.Collection(m_assets!.sourceMounts, mount => Assert.Equal(AssetSourceID.project, mount.id));
     }
 
     [Fact]
@@ -625,7 +625,7 @@ public sealed class PluginSourceServiceTests : IDisposable
         [
             new ProjectSettingRecord(
                 PluginDefaultTestSetting.id,
-                m_types.GetTypeRef(typeof(PluginDefaultTestSetting)).stableId,
+                m_types.GetTypeRef(typeof(PluginDefaultTestSetting)).stableID,
                 m_serialization.CapturePropertiesData(contributed)
             )
         ];
@@ -642,7 +642,7 @@ public sealed class PluginSourceServiceTests : IDisposable
 
         Assert.Equal("tests.settings", Assert.Single(m_environment!.activePlugins).manifest.pluginId);
         Assert.Equal(
-            [AssetSourceId.project, new AssetSourceId("tests.settings")],
+            [AssetSourceID.project, new AssetSourceID("tests.settings")],
             m_assets!.sourceMounts.Select(static mount => mount.id)
         );
         Assert.Equal(42, m_settings.Get<PluginDefaultTestSetting>(PluginDefaultTestSetting.id).value);
@@ -664,18 +664,18 @@ public sealed class PluginSourceServiceTests : IDisposable
 
         Assert.True(m_environment!.hasPendingActivation);
         Assert.Empty(m_environment!.activePlugins);
-        Assert.Collection(m_assets!.sourceMounts, mount => Assert.Equal(AssetSourceId.project, mount.id));
+        Assert.Collection(m_assets!.sourceMounts, mount => Assert.Equal(AssetSourceID.project, mount.id));
         Assert.Equal("tests.staged-code", Assert.Single(m_environment!.compilationPlugins).manifest.pluginId);
         Assert.Contains(
             m_environment!.compilationAssets!.GetFileSystemEntries(includeDirectories: false),
-            entry => entry.assetPath == new AssetPath(new AssetSourceId("tests.staged-code"), "Plugin.cs")
+            entry => entry.assetPath == new AssetPath(new AssetSourceID("tests.staged-code"), "Plugin.cs")
         );
 
         m_environment!.RollbackPending();
 
         Assert.False(m_environment!.hasPendingActivation);
         Assert.Empty(m_environment!.activePlugins);
-        Assert.Collection(m_assets!.sourceMounts, mount => Assert.Equal(AssetSourceId.project, mount.id));
+        Assert.Collection(m_assets!.sourceMounts, mount => Assert.Equal(AssetSourceID.project, mount.id));
     }
 
     [Theory]
@@ -697,9 +697,9 @@ public sealed class PluginSourceServiceTests : IDisposable
         Action first = () => throw ordinary;
         Action blocked = () => throw pending;
         Action later = () => laterCalled = true;
-        if (earlierFailure) m_environment!.ActivationCandidateChanged += first;
-        m_environment!.ActivationCandidateChanged += blocked;
-        m_environment.ActivationCandidateChanged += later;
+        if (earlierFailure) m_environment!.activationCandidateChanged += first;
+        m_environment!.activationCandidateChanged += blocked;
+        m_environment.activationCandidateChanged += later;
         try
         {
             AggregateException failure = Assert.Throws<AggregateException>(() => m_environment.Refresh());
@@ -721,9 +721,9 @@ public sealed class PluginSourceServiceTests : IDisposable
         finally
         {
             // The simulated observer has quiesced; explicitly retire the retained candidate.
-            m_environment.ActivationCandidateChanged -= first;
-            m_environment.ActivationCandidateChanged -= blocked;
-            m_environment.ActivationCandidateChanged -= later;
+            m_environment.activationCandidateChanged -= first;
+            m_environment.activationCandidateChanged -= blocked;
+            m_environment.activationCandidateChanged -= later;
             m_environment.RollbackPending();
         }
         Assert.False(m_environment.hasPendingActivation);
@@ -750,8 +750,8 @@ public sealed class PluginSourceServiceTests : IDisposable
         bool laterCalled = false;
         Action blocked = () => throw failure;
         Action later = () => laterCalled = true;
-        m_environment.Changed += blocked;
-        m_environment.Changed += later;
+        m_environment.changed += blocked;
+        m_environment.changed += later;
         try
         {
             Assert.Same(failure, Assert.Throws<InvalidOperationException>(m_environment.RollbackPending));
@@ -761,8 +761,8 @@ public sealed class PluginSourceServiceTests : IDisposable
         }
         finally
         {
-            m_environment.Changed -= blocked;
-            m_environment.Changed -= later;
+            m_environment.changed -= blocked;
+            m_environment.changed -= later;
             m_environment.RollbackPending();
         }
         Assert.False(m_environment.hasPendingActivation);
@@ -799,7 +799,7 @@ public sealed class PluginSourceServiceTests : IDisposable
             candidate.GetFileSystemEntries(),
             static entry => entry.assetPath == AssetPath.Project(string.Empty)
         );
-        Assert.Equal(activeEntry.identity.persistentId, candidateEntry.identity.persistentId);
+        Assert.Equal(activeEntry.identity.persistentID, candidateEntry.identity.persistentID);
         Assert.NotNull(activeEntry.identity.runtimeIdentity);
         Assert.Null(candidateEntry.identity.runtimeIdentity);
 
@@ -807,7 +807,7 @@ public sealed class PluginSourceServiceTests : IDisposable
 
         Assert.Null(activeEntry.identity.runtimeIdentity);
         Assert.True(m_assets.TryGetFileSystemEntry(AssetPath.Project(string.Empty), out AssetFileEntry activatedEntry));
-        Assert.Equal(activeEntry.identity.persistentId, activatedEntry.identity.persistentId);
+        Assert.Equal(activeEntry.identity.persistentID, activatedEntry.identity.persistentID);
         Assert.NotNull(activatedEntry.identity.runtimeIdentity);
 
         m_environment.RollbackPending();
@@ -839,7 +839,7 @@ public sealed class PluginSourceServiceTests : IDisposable
 
         Assert.Equal("tests.watched", Assert.Single(m_environment.activePlugins).manifest.pluginId);
         Assert.Equal(
-            [AssetSourceId.project, new AssetSourceId("tests.watched")],
+            [AssetSourceID.project, new AssetSourceID("tests.watched")],
             m_assets!.sourceMounts.Select(static mount => mount.id)
         );
     }
@@ -847,7 +847,7 @@ public sealed class PluginSourceServiceTests : IDisposable
     private ProjectSettingRecord SettingRecord(int value)
         => new(
             PluginDefaultTestSetting.id,
-            m_types.GetTypeRef(typeof(PluginDefaultTestSetting)).stableId,
+            m_types.GetTypeRef(typeof(PluginDefaultTestSetting)).stableID,
             m_serialization.CapturePropertiesData(new PluginDefaultTestSetting { value = value })
         );
 
@@ -986,14 +986,14 @@ public sealed class PluginSourceServiceTests : IDisposable
 [CollectionDefinition("Plugin source serialization", DisableParallelization = true)]
 public sealed class PluginSourceSerializationCollection;
 
-[StableTypeId("706c1248-478b-43f1-a44d-98a1a8f7b919")]
+[StableTypeID("706c1248-478b-43f1-a44d-98a1a8f7b919")]
 [ProjectSettingDefinition("tests.plugins.default")]
 internal sealed class PluginDefaultTestSetting : ISerializable
 {
     [SerializableProperty]
     public int value { get; set; } = 1;
 
-    internal static ProjectSettingId id => new("tests.plugins.default");
+    internal static ProjectSettingID id => new("tests.plugins.default");
 }
 
 internal sealed class TestAssetSourceMeta : ISerializable

@@ -12,13 +12,13 @@ namespace Inno.Rendering.Assets.Authoring;
 /// <summary>
 /// Persists only frozen function compilation inputs, never a parser, live asset, resolver or generated main function.
 /// </summary>
-[StableTypeId("3387d371-94f4-5f59-a571-aa552e7eef0a")]
+[StableTypeID("3387d371-94f4-5f59-a571-aa552e7eef0a")]
 public static partial class ShaderSourceBundle
 {
     /// <summary>
     /// Identifies the authoring-only frozen function module output.
     /// </summary>
-    public const string outputName = "shader-function";
+    public const string C_OUTPUT_NAME = "shader-function";
 
     /// <summary>
     /// Reads an immutable function snapshot through its explicit artifact owner.
@@ -38,7 +38,7 @@ public static partial class ShaderSourceBundle
     ) {
         ArgumentNullException.ThrowIfNull(function);
         ArgumentNullException.ThrowIfNull(artifacts);
-        using ArtifactLease lease = artifacts.AcquireArtifact(function.identity.persistentId, outputName);
+        using ArtifactLease lease = artifacts.AcquireArtifact(function.identity.persistentID, C_OUTPUT_NAME);
         return lease.ReadAllBytes();
     }
 
@@ -71,8 +71,8 @@ public static partial class ShaderSourceBundle
                 name = pair.Key,
                 implementations = pair.Value.implementations.Select(static value => new ImplementationData
                 {
-                    id = value.implementationId,
-                    language = value.languageId,
+                    id = value.implementationID,
+                    language = value.languageID,
                     root = value.sourcePath,
                     entry = value.entryPoint,
                     paths = value.sources.Select(static file => file.assetPath).ToArray(),
@@ -189,7 +189,7 @@ public static partial class ShaderSourceBundle
              : throw new InvalidOperationException($"Source dependency '{include}' from '{includingFile}' was not captured by import.");
     }
 
-    [StableTypeId("0e035881-9850-5f9c-8037-283168890d0d")]
+    [StableTypeID("0e035881-9850-5f9c-8037-283168890d0d")]
     private sealed class BundleData : ISerializable
     {
         /// <summary>
@@ -199,7 +199,7 @@ public static partial class ShaderSourceBundle
         public FunctionData[] functions { get; set; } = [];
     }
 
-    [StableTypeId("3c78ad4e-deb3-547b-984e-18de97667641")]
+    [StableTypeID("3c78ad4e-deb3-547b-984e-18de97667641")]
     private struct FunctionData
     {
         /// <summary>
@@ -213,7 +213,7 @@ public static partial class ShaderSourceBundle
         public ImplementationData[] implementations { get; set; }
     }
 
-    [StableTypeId("4f51d0e8-599b-5fd7-b4cc-4694fe18e922")]
+    [StableTypeID("4f51d0e8-599b-5fd7-b4cc-4694fe18e922")]
     private struct ImplementationData
     {
         /// <summary>

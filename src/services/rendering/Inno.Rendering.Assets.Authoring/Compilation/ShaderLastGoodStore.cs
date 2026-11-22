@@ -10,7 +10,7 @@ namespace Inno.Rendering.Assets.Authoring;
 /// <summary>
 /// Describes the artifact selected after evaluating a candidate compilation.
 /// </summary>
-[StableTypeId("2cbb2378-91ef-5c66-866e-e651e80a79a7")]
+[StableTypeID("2cbb2378-91ef-5c66-866e-e651e80a79a7")]
 public sealed class ShaderArtifactSelection
 {
     /// <summary>
@@ -65,7 +65,7 @@ public sealed class ShaderArtifactSelection
 /// <summary>
 /// Atomically preserves last-good CPU shader artifacts by asset, target and variant.
 /// </summary>
-[StableTypeId("b238055f-335a-528f-bdee-cf0044f8e75e")]
+[StableTypeID("b238055f-335a-528f-bdee-cf0044f8e75e")]
 public sealed class ShaderLastGoodStore
 {
     private readonly object m_gate = new();
@@ -74,7 +74,7 @@ public sealed class ShaderLastGoodStore
     /// <summary>
     /// Commits a complete candidate or returns the current last-good artifact after failure.
     /// </summary>
-    /// <param name="shaderId">
+    /// <param name="shaderID">
     /// Persistent shader asset identity.
     /// </param>
     /// <param name="targetKey">
@@ -90,19 +90,19 @@ public sealed class ShaderLastGoodStore
     /// The artifact safe to use for rendering.
     /// </returns>
     public ShaderArtifactSelection Select(
-        Guid shaderId,
+        Guid shaderID,
         string targetKey,
         RenderShaderVariant variant,
         ShaderCompilationResult candidate
     ) {
-        if (shaderId == Guid.Empty)
+        if (shaderID == Guid.Empty)
         {
-            throw new ArgumentException("A persistent shader identity is required.", nameof(shaderId));
+            throw new ArgumentException("A persistent shader identity is required.", nameof(shaderID));
         }
 
         ArgumentException.ThrowIfNullOrWhiteSpace(targetKey);
         ArgumentNullException.ThrowIfNull(candidate);
-        var key = new ArtifactKey(shaderId, targetKey, variant.value);
+        var key = new ArtifactKey(shaderID, targetKey, variant.value);
         lock (m_gate)
         {
             if (candidate.succeeded)
@@ -129,15 +129,15 @@ public sealed class ShaderLastGoodStore
     /// <summary>
     /// Removes all CPU artifacts associated with one persistent shader.
     /// </summary>
-    /// <param name="shaderId">
+    /// <param name="shaderID">
     /// Persistent shader asset identity.
     /// </param>
     /// <returns>
     /// The number of removed variants.
     /// </returns>
-    public int Remove(Guid shaderId)
+    public int Remove(Guid shaderID)
     {
-        if (shaderId == Guid.Empty)
+        if (shaderID == Guid.Empty)
         {
             return 0;
         }
@@ -147,7 +147,7 @@ public sealed class ShaderLastGoodStore
             int removed = 0;
             foreach (ArtifactKey key in new List<ArtifactKey>(m_artifacts.Keys))
             {
-                if (key.shaderID == shaderId && m_artifacts.Remove(key))
+                if (key.shaderID == shaderID && m_artifacts.Remove(key))
                 {
                     removed++;
                 }

@@ -4,8 +4,8 @@ using Inno.Scene;
 
 namespace Inno.Editor.Panel.Inspector;
 
-[EditorAction(InspectorInteractionIds.C_RESET_COMPONENT, priority: 100)]
-[EditorMenu(InspectorInteractionIds.C_COMPONENT_AREA, "Reset Component", order: 100)]
+[EditorAction(InspectorInteractionIDs.C_RESET_COMPONENT, priority: 100)]
+[EditorMenu(InspectorInteractionIDs.C_COMPONENT_AREA, "Reset Component", order: 100)]
 internal sealed class ResetComponentCommand(SceneEdits edits) : EditorAction<GameComponent>
 {
     /// <summary>

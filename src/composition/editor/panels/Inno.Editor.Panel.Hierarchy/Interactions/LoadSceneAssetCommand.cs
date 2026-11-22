@@ -5,8 +5,8 @@ using Inno.Editor.Scene;
 
 namespace Inno.Editor.Panel.Hierarchy;
 
-[EditorAction(HierarchyInteractionIds.C_LOAD_SCENE_ASSET, priority: 200)]
-[EditorMenu(HierarchyInteractionIds.C_FILE_BROWSER_AREA, "Load", order: 40)]
+[EditorAction(HierarchyInteractionIDs.C_LOAD_SCENE_ASSET, priority: 200)]
+[EditorMenu(HierarchyInteractionIDs.C_FILE_BROWSER_AREA, "Load", order: 40)]
 internal sealed class LoadSceneAssetCommand(IEditorSceneWorkspace workspace) : EditorAction<AssetFileEntry>
 {
     /// <summary>
@@ -33,6 +33,6 @@ protected override EditorActionState Query(EditorActionContext<AssetFileEntry> c
     /// </param>
 protected override void Execute(EditorActionContext<AssetFileEntry> context)
     => _ = context.interactions
-        .For(HierarchyInteractionIds.C_FILE_BROWSER_AREA, context.target)
-        .Execute(HierarchyInteractionIds.C_OPEN);
+        .For(HierarchyInteractionIDs.C_FILE_BROWSER_AREA, context.target)
+        .Execute(HierarchyInteractionIDs.C_OPEN);
 }

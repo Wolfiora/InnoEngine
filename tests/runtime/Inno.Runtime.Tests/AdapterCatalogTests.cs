@@ -24,8 +24,8 @@ public sealed class AdapterCatalogTests
     [Fact]
     public void PresentationRegistrationUsesAnImmutableOpenCatalog()
     {
-        var first = new TestPresentationProvider(new PresentationBackendId("test.presentation.first"));
-        var second = new TestPresentationProvider(new PresentationBackendId("test.presentation.second"));
+        var first = new TestPresentationProvider(new PresentationBackendID("test.presentation.first"));
+        var second = new TestPresentationProvider(new PresentationBackendID("test.presentation.second"));
         Assert.Throws<ArgumentException>(() => new PresentationBackendCatalog([first, first]));
         Assert.Throws<ArgumentException>(() => new PresentationBackendCatalog([null!]));
         Assert.Throws<ArgumentException>(() => new TestPresentationProvider(default));
@@ -48,7 +48,7 @@ public sealed class AdapterCatalogTests
         Assert.Equal(1, first.creationCount);
         Assert.Equal(0, second.creationCount);
         Assert.Throws<NotSupportedException>(() =>
-            ((IList<PresentationBackendId>)catalog.supportedBackends).Add(second.id));
+            ((IList<PresentationBackendID>)catalog.supportedBackends).Add(second.id));
     }
 
     [Fact]
@@ -58,48 +58,48 @@ public sealed class AdapterCatalogTests
         catalog.selection.Validate(catalog);
         Assert.Equal(0, catalog.creationCount);
         Assert.Throws<NotSupportedException>(() =>
-            new AdapterSelection { platform = new PlatformBackendId("missing.platform") }.Validate(catalog));
+            new AdapterSelection { platform = new PlatformBackendID("missing.platform") }.Validate(catalog));
         Assert.Equal(0, catalog.creationCount);
     }
 
     [Fact]
     public void AllDomainsRejectDuplicateAndNullProviders()
     {
-        var platform = new TestPlatformProvider(new PlatformBackendId("test.platform"));
+        var platform = new TestPlatformProvider(new PlatformBackendID("test.platform"));
         Assert.Throws<ArgumentException>(() => new PlatformBackendCatalog([platform, platform]));
         Assert.Throws<ArgumentException>(() => new PlatformBackendCatalog([null!]));
         Assert.Throws<ArgumentException>(() => new TestPlatformProvider(default));
-        var input = new TestInputProvider(new InputBackendId("test.input"));
+        var input = new TestInputProvider(new InputBackendID("test.input"));
         Assert.Throws<ArgumentException>(() => new InputBackendCatalog([input, input]));
         Assert.Throws<ArgumentException>(() => new InputBackendCatalog([null!]));
         Assert.Throws<ArgumentException>(() => new TestInputProvider(default));
-        var storage = new TestStorageProvider(new StorageBackendId("test.storage"));
+        var storage = new TestStorageProvider(new StorageBackendID("test.storage"));
         Assert.Throws<ArgumentException>(() => new StorageBackendCatalog([storage, storage]));
         Assert.Throws<ArgumentException>(() => new StorageBackendCatalog([null!]));
         Assert.Throws<ArgumentException>(() => new TestStorageProvider(default));
-        var audio = new TestAudioProvider(new AudioBackendId("test.audio"));
+        var audio = new TestAudioProvider(new AudioBackendID("test.audio"));
         Assert.Throws<ArgumentException>(() => new AudioBackendCatalog([audio, audio]));
         Assert.Throws<ArgumentException>(() => new AudioBackendCatalog([null!]));
         Assert.Throws<ArgumentException>(() => new TestAudioProvider(default));
-        var text = new TestTextProvider(new TextBackendId("test.text"));
+        var text = new TestTextProvider(new TextBackendID("test.text"));
         Assert.Throws<ArgumentException>(() => new TextBackendCatalog([text, text]));
         Assert.Throws<ArgumentException>(() => new TextBackendCatalog([null!]));
         Assert.Throws<ArgumentException>(() => new TestTextProvider(default));
-        var rendering = new TestRenderingProvider(new RenderingBackendId("test.rendering"));
+        var rendering = new TestRenderingProvider(new RenderingBackendID("test.rendering"));
         Assert.Throws<ArgumentException>(() => new RenderingBackendCatalog([rendering, rendering]));
         Assert.Throws<ArgumentException>(() => new RenderingBackendCatalog([null!]));
         Assert.Throws<ArgumentException>(() => new TestRenderingProvider(default));
-        var ui = new TestUIProvider(new UiBackendId("test.ui"));
-        Assert.Throws<ArgumentException>(() => new UiBackendCatalog([ui, ui]));
-        Assert.Throws<ArgumentException>(() => new UiBackendCatalog([null!]));
+        var ui = new TestUIProvider(new UIBackendID("test.ui"));
+        Assert.Throws<ArgumentException>(() => new UIBackendCatalog([ui, ui]));
+        Assert.Throws<ArgumentException>(() => new UIBackendCatalog([null!]));
         Assert.Throws<ArgumentException>(() => new TestUIProvider(default));
     }
 
     [Fact]
     public void CapturedRegistrationsCannotBeChangedByTheirSourceCollection()
     {
-        var first = new TestStorageProvider(new StorageBackendId("test.storage.first"));
-        var second = new TestStorageProvider(new StorageBackendId("test.storage.second"));
+        var first = new TestStorageProvider(new StorageBackendID("test.storage.first"));
+        var second = new TestStorageProvider(new StorageBackendID("test.storage.second"));
         var providers = new List<StorageBackendProvider> { first };
         var catalog = new StorageBackendCatalog(providers);
         providers.Clear();
@@ -110,38 +110,38 @@ public sealed class AdapterCatalogTests
         Assert.Throws<InvalidOperationException>(() => catalog.CreateStorage(first.id, new StorageScope("application")));
         Assert.Equal(1, first.creationCount);
         Assert.Equal(0, second.creationCount);
-        Assert.Throws<NotSupportedException>(() => ((IList<StorageBackendId>)catalog.supportedBackends).Add(second.id));
+        Assert.Throws<NotSupportedException>(() => ((IList<StorageBackendID>)catalog.supportedBackends).Add(second.id));
     }
 
     [Fact]
     public void InvalidIdentifiersAndUnassignedSelectionsFailAtTheBoundary()
     {
-        Assert.Throws<ArgumentException>(() => new PlatformBackendId("invalid id"));
-        Assert.False(default(PlatformBackendId).isValid);
-        Assert.Throws<ArgumentException>(() => new InputBackendId("invalid id"));
-        Assert.False(default(InputBackendId).isValid);
-        Assert.Throws<ArgumentException>(() => new StorageBackendId("invalid id"));
-        Assert.False(default(StorageBackendId).isValid);
-        Assert.Throws<ArgumentException>(() => new AudioBackendId("invalid id"));
-        Assert.False(default(AudioBackendId).isValid);
-        Assert.Throws<ArgumentException>(() => new TextBackendId("invalid id"));
-        Assert.False(default(TextBackendId).isValid);
-        Assert.Throws<ArgumentException>(() => new RenderingBackendId("invalid id"));
-        Assert.False(default(RenderingBackendId).isValid);
-        Assert.Throws<ArgumentException>(() => new UiBackendId("invalid id"));
-        Assert.False(default(UiBackendId).isValid);
+        Assert.Throws<ArgumentException>(() => new PlatformBackendID("invalid id"));
+        Assert.False(default(PlatformBackendID).isValid);
+        Assert.Throws<ArgumentException>(() => new InputBackendID("invalid id"));
+        Assert.False(default(InputBackendID).isValid);
+        Assert.Throws<ArgumentException>(() => new StorageBackendID("invalid id"));
+        Assert.False(default(StorageBackendID).isValid);
+        Assert.Throws<ArgumentException>(() => new AudioBackendID("invalid id"));
+        Assert.False(default(AudioBackendID).isValid);
+        Assert.Throws<ArgumentException>(() => new TextBackendID("invalid id"));
+        Assert.False(default(TextBackendID).isValid);
+        Assert.Throws<ArgumentException>(() => new RenderingBackendID("invalid id"));
+        Assert.False(default(RenderingBackendID).isValid);
+        Assert.Throws<ArgumentException>(() => new UIBackendID("invalid id"));
+        Assert.False(default(UIBackendID).isValid);
         Assert.Throws<NotSupportedException>(() => default(AdapterSelection).Validate(new TestCatalog()));
     }
 
     private sealed class TestCatalog : IAdapterCatalog
     {
-        private readonly TestPlatformProvider m_platform = new(new PlatformBackendId("test.platform"));
-        private readonly TestInputProvider m_input = new(new InputBackendId("test.input"));
-        private readonly TestStorageProvider m_storage = new(new StorageBackendId("test.storage"));
-        private readonly TestAudioProvider m_audio = new(new AudioBackendId("test.audio"));
-        private readonly TestTextProvider m_text = new(new TextBackendId("test.text"));
-        private readonly TestRenderingProvider m_rendering = new(new RenderingBackendId("test.rendering"));
-        private readonly TestUIProvider m_ui = new(new UiBackendId("test.ui"));
+        private readonly TestPlatformProvider m_platform = new(new PlatformBackendID("test.platform"));
+        private readonly TestInputProvider m_input = new(new InputBackendID("test.input"));
+        private readonly TestStorageProvider m_storage = new(new StorageBackendID("test.storage"));
+        private readonly TestAudioProvider m_audio = new(new AudioBackendID("test.audio"));
+        private readonly TestTextProvider m_text = new(new TextBackendID("test.text"));
+        private readonly TestRenderingProvider m_rendering = new(new RenderingBackendID("test.rendering"));
+        private readonly TestUIProvider m_ui = new(new UIBackendID("test.ui"));
 
         public TestCatalog()
         {
@@ -151,7 +151,7 @@ public sealed class AdapterCatalogTests
             this.audio = new AudioBackendCatalog([m_audio]);
             this.text = new TextBackendCatalog([m_text]);
             this.rendering = new RenderingBackendCatalog([m_rendering]);
-            this.ui = new UiBackendCatalog([m_ui]);
+            this.ui = new UIBackendCatalog([m_ui]);
         }
 
         public AdapterSelection selection
@@ -181,12 +181,12 @@ public sealed class AdapterCatalogTests
         public IAudioBackendFactory audio { get; }
         public ITextBackendFactory text { get; }
         public IRenderingBackendFactory rendering { get; }
-        public IUiBackendFactory ui { get; }
+        public IUIBackendFactory ui { get; }
     }
 
     private sealed class TestPlatformProvider : PlatformBackendProvider
     {
-        public TestPlatformProvider(PlatformBackendId id)
+        public TestPlatformProvider(PlatformBackendID id)
             : base(id) {}
 
         public int creationCount { get; private set; }
@@ -200,7 +200,7 @@ public sealed class AdapterCatalogTests
 
     private sealed class TestInputProvider : InputBackendProvider
     {
-        public TestInputProvider(InputBackendId id)
+        public TestInputProvider(InputBackendID id)
             : base(id) {}
 
         public int creationCount { get; private set; }
@@ -216,7 +216,7 @@ public sealed class AdapterCatalogTests
 
     private sealed class TestStorageProvider : StorageBackendProvider
     {
-        public TestStorageProvider(StorageBackendId id)
+        public TestStorageProvider(StorageBackendID id)
             : base(id) {}
 
         public int creationCount { get; private set; }
@@ -230,7 +230,7 @@ public sealed class AdapterCatalogTests
 
     private sealed class TestAudioProvider : AudioBackendProvider
     {
-        public TestAudioProvider(AudioBackendId id)
+        public TestAudioProvider(AudioBackendID id)
             : base(id) {}
 
         public int creationCount { get; private set; }
@@ -244,7 +244,7 @@ public sealed class AdapterCatalogTests
 
     private sealed class TestTextProvider : TextBackendProvider
     {
-        public TestTextProvider(TextBackendId id)
+        public TestTextProvider(TextBackendID id)
             : base(id) {}
 
         public int creationCount { get; private set; }
@@ -258,7 +258,7 @@ public sealed class AdapterCatalogTests
 
     private sealed class TestRenderingProvider : RenderingBackendProvider
     {
-        public TestRenderingProvider(RenderingBackendId id)
+        public TestRenderingProvider(RenderingBackendID id)
             : base(id) {}
 
         public int creationCount { get; private set; }
@@ -273,14 +273,14 @@ public sealed class AdapterCatalogTests
             => throw new InvalidOperationException("Registration validation must not create composition programs.");
     }
 
-    private sealed class TestUIProvider : UiBackendProvider
+    private sealed class TestUIProvider : UIBackendProvider
     {
-        public TestUIProvider(UiBackendId id)
+        public TestUIProvider(UIBackendID id)
             : base(id) {}
 
         public int creationCount { get; private set; }
 
-        public override IUiBackend CreateBackend()
+        public override IUIBackend CreateBackend()
         {
             creationCount++;
             return null!;
@@ -289,7 +289,7 @@ public sealed class AdapterCatalogTests
 
     private sealed class TestPresentationProvider : PresentationBackendProvider
     {
-        public TestPresentationProvider(PresentationBackendId id)
+        public TestPresentationProvider(PresentationBackendID id)
             : base(id) {}
 
         public int creationCount { get; private set; }

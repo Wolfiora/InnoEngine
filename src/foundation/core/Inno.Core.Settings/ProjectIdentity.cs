@@ -8,7 +8,7 @@ namespace Inno.Core.Settings;
 /// <summary>
 /// Identifies one project namespace used to qualify project-authored logical names.
 /// </summary>
-public readonly record struct ProjectId
+public readonly record struct ProjectID
 {
     /// <summary>
     /// Creates a portable project identifier.
@@ -16,7 +16,7 @@ public readonly record struct ProjectId
     /// <param name="value">
     /// Lowercase ASCII namespace segments.
     /// </param>
-    public ProjectId(string value)
+    public ProjectID(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         string normalized = value.Trim();
@@ -43,7 +43,7 @@ public readonly record struct ProjectId
     /// <returns>
     /// The complete project-scoped identity.
     /// </returns>
-    public ProjectScopedId Qualify(ProjectLocalId name) => new(this, name);
+    public ProjectScopedID Qualify(ProjectLocalID name) => new(this, name);
 
     /// <summary>
     /// Formats the canonical identifier.
@@ -62,7 +62,7 @@ public readonly record struct ProjectId
     /// <returns>
     /// A portable initial project identifier.
     /// </returns>
-    public static ProjectId FromName(string name)
+    public static ProjectID FromName(string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         var builder = new StringBuilder(name.Length);
@@ -83,7 +83,7 @@ public readonly record struct ProjectId
             }
         }
         string value = builder.Length == 0 ? "inno.project" : builder.ToString();
-        return new ProjectId(string.Equals(value, "project", StringComparison.Ordinal) ? "inno.project" : value);
+        return new ProjectID(string.Equals(value, "project", StringComparison.Ordinal) ? "inno.project" : value);
 
         void Append(char character)
         {
@@ -133,7 +133,7 @@ public readonly record struct ProjectId
 /// <summary>
 /// Stores the project-independent portion of one project-scoped identity.
 /// </summary>
-public readonly record struct ProjectLocalId
+public readonly record struct ProjectLocalID
 {
     /// <summary>
     /// Creates a portable local identity.
@@ -141,11 +141,11 @@ public readonly record struct ProjectLocalId
     /// <param name="value">
     /// Lowercase ASCII local namespace segments.
     /// </param>
-    public ProjectLocalId(string value)
+    public ProjectLocalID(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         string normalized = value.Trim();
-        ProjectId.ValidatePortable(normalized, "Project-local ID", nameof(value));
+        ProjectID.ValidatePortable(normalized, "Project-local ID", nameof(value));
         this.value = normalized;
     }
 
@@ -171,7 +171,7 @@ public readonly record struct ProjectLocalId
     /// <returns>
     /// The normalized local identity.
     /// </returns>
-    public static ProjectLocalId FromName(string name)
+    public static ProjectLocalID FromName(string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         var builder = new StringBuilder(name.Length);
@@ -204,7 +204,7 @@ public readonly record struct ProjectLocalId
         {
             throw new ArgumentException("A project-scoped name must contain a letter or digit.", nameof(name));
         }
-        return new ProjectLocalId(builder.ToString());
+        return new ProjectLocalID(builder.ToString());
     }
 
     private static void AppendSeparator(
@@ -222,47 +222,47 @@ public readonly record struct ProjectLocalId
 /// <summary>
 /// Combines a mutable project namespace with a stable project-independent local identity.
 /// </summary>
-public readonly record struct ProjectScopedId
+public readonly record struct ProjectScopedID
 {
     /// <summary>
     /// Creates a qualified project identity.
     /// </summary>
-    /// <param name="projectId">
+    /// <param name="projectID">
     /// The current project namespace.
     /// </param>
     /// <param name="name">
     /// The stable local identity.
     /// </param>
-    public ProjectScopedId(
-        ProjectId projectId,
-        ProjectLocalId name
+    public ProjectScopedID(
+        ProjectID projectID,
+        ProjectLocalID name
     ) {
-        if (!projectId.isValid)
+        if (!projectID.isValid)
         {
-            throw new ArgumentException("A valid Project ID is required.", nameof(projectId));
+            throw new ArgumentException("A valid Project ID is required.", nameof(projectID));
         }
         if (string.IsNullOrEmpty(name.value))
         {
             throw new ArgumentException("A valid project-local ID is required.", nameof(name));
         }
-        this.projectId = projectId;
+        this.projectID = projectID;
         this.name = name;
     }
 
     /// <summary>
     /// Gets the project namespace.
     /// </summary>
-    public ProjectId projectId { get; }
+    public ProjectID projectID { get; }
 
     /// <summary>
     /// Gets the project-independent local identity.
     /// </summary>
-    public ProjectLocalId name { get; }
+    public ProjectLocalID name { get; }
 
     /// <summary>
     /// Gets the canonical <c>projectId.name</c> representation.
     /// </summary>
-    public string value => $"{projectId.value}.{name.value}";
+    public string value => $"{projectID.value}.{name.value}";
 
     /// <summary>
     /// Formats the canonical qualified identity.
@@ -276,21 +276,21 @@ public readonly record struct ProjectScopedId
 /// <summary>
 /// Stores the editable identity namespace of the current project.
 /// </summary>
-[StableTypeId("d5f90462-506d-4ff7-aa9f-0f14da28b9c3")]
-[ProjectSettingDefinition(ProjectIdentitySettings.settingProtocolId, allowPluginContributions: false)]
+[StableTypeID("d5f90462-506d-4ff7-aa9f-0f14da28b9c3")]
+[ProjectSettingDefinition(ProjectIdentitySettings.C_SETTING_PROTOCOL_ID, allowPluginContributions: false)]
 public sealed class ProjectIdentitySettings : ISerializable
 {
     /// <summary>
     /// Gets the immutable project-setting protocol value used by discovery metadata.
     /// </summary>
-    public const string settingProtocolId = "inno.project.identity";
+    public const string C_SETTING_PROTOCOL_ID = "inno.project.identity";
 
     private string m_projectID = "inno.project";
 
     /// <summary>
     /// Gets the stable project setting protocol identity.
     /// </summary>
-    public static ProjectSettingId settingId => new(settingProtocolId);
+    public static ProjectSettingID settingID => new(C_SETTING_PROTOCOL_ID);
 
     /// <summary>
     /// Gets or sets the editable project namespace.
@@ -299,13 +299,13 @@ public sealed class ProjectIdentitySettings : ISerializable
     public string projectId
     {
         get => m_projectID;
-        set => m_projectID = new ProjectId(value).value;
+        set => m_projectID = new ProjectID(value).value;
     }
 
     /// <summary>
     /// Gets the validated project identifier.
     /// </summary>
-    public ProjectId id => new(m_projectID);
+    public ProjectID id => new(m_projectID);
 
     /// <summary>
     /// Qualifies a display name under the current project identifier.
@@ -316,5 +316,5 @@ public sealed class ProjectIdentitySettings : ISerializable
     /// <returns>
     /// The complete project-scoped identity.
     /// </returns>
-    public ProjectScopedId Qualify(string name) => id.Qualify(ProjectLocalId.FromName(name));
+    public ProjectScopedID Qualify(string name) => id.Qualify(ProjectLocalID.FromName(name));
 }

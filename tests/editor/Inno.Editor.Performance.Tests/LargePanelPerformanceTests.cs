@@ -96,7 +96,7 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
             host,
             null,
             "10000-hierarchy-source-freshness",
-            () => Assert.Same(asset, host.assets.Load<SceneAsset>(asset.identity.persistentId)),
+            () => Assert.Same(asset, host.assets.Load<SceneAsset>(asset.identity.persistentID)),
             consumer: "canonical-source-load-with-freshness-verification"
         );
     }

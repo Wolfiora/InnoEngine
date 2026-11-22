@@ -43,7 +43,7 @@ public sealed partial class SceneEdits
             name,
             value => scene.name = value,
             historyName,
-            $"scene-name:{scene.identity.persistentId:N}"
+            $"scene-name:{scene.identity.persistentID:N}"
         );
     }
 
@@ -75,7 +75,7 @@ public sealed partial class SceneEdits
             name,
             value => gameObject.name = value,
             historyName,
-            $"game-object-name:{gameObject.identity.persistentId:N}"
+            $"game-object-name:{gameObject.identity.persistentID:N}"
         );
     }
 
@@ -148,7 +148,7 @@ public sealed partial class SceneEdits
             requestedTag,
             value => gameObject.tag = value,
             historyName,
-            $"game-object-tag:{gameObject.identity.persistentId:N}"
+            $"game-object-tag:{gameObject.identity.persistentID:N}"
         );
     }
 
@@ -186,7 +186,7 @@ public sealed partial class SceneEdits
             layer.index.ToString(CultureInfo.InvariantCulture),
             value => gameObject.layer = new GameLayer(int.Parse(value, CultureInfo.InvariantCulture)),
             historyName,
-            $"game-object-layer:{gameObject.identity.persistentId:N}"
+            $"game-object-layer:{gameObject.identity.persistentID:N}"
         );
     }
 
@@ -283,7 +283,7 @@ public sealed partial class SceneEdits
             return false;
         }
         ScenePropertyHistoryData data = ScenePropertyHistoryData.Create(
-            target.identity.persistentId,
+            target.identity.persistentID,
             propertyName,
             deltas
         );
@@ -340,7 +340,7 @@ public sealed partial class SceneEdits
             {
                 setter(after);
                 SceneScalarHistoryData data = SceneScalarHistoryData.Create(
-                    target.identity.persistentId,
+                    target.identity.persistentID,
                     scalarKind,
                     before,
                     after

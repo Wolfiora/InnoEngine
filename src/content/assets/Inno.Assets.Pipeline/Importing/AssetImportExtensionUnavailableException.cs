@@ -16,18 +16,18 @@ public sealed class AssetImportExtensionUnavailableException : InvalidOperationE
     /// <param name="extensionKind">
     /// The stable extension protocol identity.
     /// </param>
-    /// <param name="extensionId">
+    /// <param name="extensionID">
     /// The required implementation's stable identity.
     /// </param>
     public AssetImportExtensionUnavailableException(
         string extensionKind,
-        string extensionId
-    ) : base($"Required authoring extension '{extensionKind}/{extensionId}' is unavailable. Source and last-good artifacts are retained.")
+        string extensionID
+    ) : base($"Required authoring extension '{extensionKind}/{extensionID}' is unavailable. Source and last-good artifacts are retained.")
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(extensionKind);
-        ArgumentException.ThrowIfNullOrWhiteSpace(extensionId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(extensionID);
         this.extensionKind = extensionKind;
-        this.extensionId = extensionId;
+        this.extensionID = extensionID;
     }
 
     /// <summary>
@@ -38,5 +38,5 @@ public sealed class AssetImportExtensionUnavailableException : InvalidOperationE
     /// <summary>
     /// Gets the required implementation's stable identity.
     /// </summary>
-    public string extensionId { get; }
+    public string extensionID { get; }
 }

@@ -54,7 +54,7 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     private readonly DependencyGraph<string> m_importGraph = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConditionalWeakTable<AssetObject, AssetDependencySet> m_dependencyRetention = new();
     private readonly HashSet<string> m_activeImports = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<string, Guid> m_pendingImportIds = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, Guid> m_pendingImportIDs = new(StringComparer.OrdinalIgnoreCase);
 
     private readonly Dictionary<string, (long generation, AssetSourceFileStamp source, AssetSourceFileStamp metadata,
         string kind, string id)> m_unavailableImports = new(StringComparer.OrdinalIgnoreCase);
@@ -70,7 +70,7 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     private readonly SerializationContext m_serializationContext;
     private readonly AssetSourcePolicy m_sourcePolicy;
     private readonly TypeCatalog m_types;
-    private readonly IReadOnlyDictionary<AssetSourceId, AssetSourceMount> m_mounts;
+    private readonly IReadOnlyDictionary<AssetSourceID, AssetSourceMount> m_mounts;
     private readonly bool m_runtimeArtifactsOnly;
 
     private CancellationToken m_importCancellation;
@@ -128,7 +128,7 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
         identities,
         diagnostics,
         logs,
-        [new AssetSourceMount(AssetSourceId.project, assetRoot, isReadOnly: false)],
+        [new AssetSourceMount(AssetSourceID.project, assetRoot, isReadOnly: false)],
         libraryRoot,
         sourcePolicy
     ) {}
@@ -217,12 +217,12 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
         {
             throw new ArgumentException("Catalog Library root is required.", nameof(catalogLibraryRoot));
         }
-        Dictionary<AssetSourceId, AssetSourceMount> byID = mounts.ToDictionary(static mount => mount.id);
+        Dictionary<AssetSourceID, AssetSourceMount> byID = mounts.ToDictionary(static mount => mount.id);
         if (byID.Count != mounts.Count)
         {
             throw new ArgumentException("Asset source mount IDs must be unique.", nameof(mounts));
         }
-        if (!byID.TryGetValue(AssetSourceId.project, out AssetSourceMount? project)
+        if (!byID.TryGetValue(AssetSourceID.project, out AssetSourceMount? project)
             || project.isReadOnly && !runtimeArtifactsOnly
         ) {
             throw new ArgumentException(
@@ -280,7 +280,7 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     /// <summary>
     /// Occurs after a loaded canonical asset is updated in place.
     /// </summary>
-    public event Action<AssetObject>? AssetReloaded;
+    public event Action<AssetObject>? assetReloaded;
 
     /// <summary>
     /// Restores serialized properties to the existing asset object.
@@ -288,7 +288,7 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     /// <typeparam name="TValue">
     /// Serialized asset object type receiving restored properties.
     /// </typeparam>
-    /// <param name="stableTypeId">
+    /// <param name="stableTypeID">
     /// The stable type id consumed by restore properties; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     /// <param name="propertyData">
@@ -298,14 +298,14 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     /// The existing target that receives the validated result.
     /// </param>
     public void RestoreProperties<TValue>(
-        Guid stableTypeId,
+        Guid stableTypeID,
         byte[] propertyData,
         TValue target
     ) where TValue : class, ISerializable
     {
         ObjectDisposedException.ThrowIf(m_disposed || m_disposeRequested, this);
         ArgumentNullException.ThrowIfNull(target);
-        if (m_types.GetTypeRef(target.GetType()).stableId != stableTypeId)
+        if (m_types.GetTypeRef(target.GetType()).stableID != stableTypeID)
         {
             throw new InvalidOperationException("The asset property payload has an incompatible stable type identity.");
         }
@@ -371,7 +371,7 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
 
     private void PublishReloaded(AssetObject asset)
     {
-        Action<AssetObject>? handlers = AssetReloaded;
+        Action<AssetObject>? handlers = assetReloaded;
         if (handlers is null)
         {
             return;

@@ -21,7 +21,7 @@ public sealed partial class BgfxShadercToolchain
         ShaderIrStage stage,
         IReadOnlyList<ShaderStageBinding> bindings
     ) {
-        HashSet<string> activeNames = ReadReflectedUniformNames(binary, GraphicsApi.OpenGL);
+        HashSet<string> activeNames = ReadReflectedUniformNames(binary, GraphicsApi.openGL);
         ushort count = BinaryPrimitives.ReadUInt16LittleEndian(binary.AsSpan(C_SHADER_BINARY_HEADER_SIZE));
         int offset = C_SHADER_BINARY_HEADER_SIZE + sizeof(ushort);
         var records = new Dictionary<string, byte[]>(StringComparer.Ordinal);

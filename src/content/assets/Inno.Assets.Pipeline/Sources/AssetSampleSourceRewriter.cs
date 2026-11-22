@@ -12,14 +12,14 @@ namespace Inno.Assets.Pipeline;
 public sealed class AssetSampleTransformContext
 {
     private readonly Dictionary<Guid, Guid> m_identityMap;
-    private readonly IReadOnlyDictionary<string, (Guid oldId, Guid newId)> m_sourceIdentities;
+    private readonly IReadOnlyDictionary<string, (Guid oldID, Guid newID)> m_sourceIdentities;
 
     internal AssetSampleTransformContext(
         string stagedRoot,
         AssetPath source,
         AssetPath target,
         Dictionary<Guid, Guid> identityMap,
-        IReadOnlyDictionary<string, (Guid oldId, Guid newId)> sourceIdentities,
+        IReadOnlyDictionary<string, (Guid oldID, Guid newID)> sourceIdentities,
         CancellationToken cancellationToken
     ) {
         this.stagedRoot = stagedRoot;
@@ -61,10 +61,10 @@ public sealed class AssetSampleTransformContext
     /// <param name="relativePath">
     /// Slash-separated source-local file path below the sample directory.
     /// </param>
-    /// <param name="oldId">
+    /// <param name="oldID">
     /// Receives the installed source identity.
     /// </param>
-    /// <param name="newId">
+    /// <param name="newID">
     /// Receives the writable clone identity.
     /// </param>
     /// <returns>
@@ -72,46 +72,46 @@ public sealed class AssetSampleTransformContext
     /// </returns>
     public bool TryGetSourceIdentity(
         string relativePath,
-        out Guid oldId,
-        out Guid newId
+        out Guid oldID,
+        out Guid newID
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
-        if (m_sourceIdentities.TryGetValue(relativePath.Replace('\\', '/'), out (Guid oldId, Guid newId) pair))
+        if (m_sourceIdentities.TryGetValue(relativePath.Replace('\\', '/'), out (Guid oldID, Guid newID) pair))
         {
-            oldId = pair.oldId;
-            newId = pair.newId;
+            oldID = pair.oldID;
+            newID = pair.newID;
             return true;
         }
-        oldId = default;
-        newId = default;
+        oldID = default;
+        newID = default;
         return false;
     }
 
     /// <summary>
     /// Registers one source-language type replacement for subsequent structured asset rewriting.
     /// </summary>
-    /// <param name="oldId">
+    /// <param name="oldID">
     /// The type identity stored in installed sample assets.
     /// </param>
-    /// <param name="newId">
+    /// <param name="newID">
     /// The type identity declared by the cloned source.
     /// </param>
     /// <exception cref="InvalidDataException">
     /// A source identity is reused inconsistently.
     /// </exception>
     public void MapType(
-        Guid oldId,
-        Guid newId
+        Guid oldID,
+        Guid newID
     ) {
-        if (oldId == Guid.Empty || newId == Guid.Empty)
+        if (oldID == Guid.Empty || newID == Guid.Empty)
         {
             throw new ArgumentException("Sample type identities must be non-empty.");
         }
-        if (m_identityMap.TryGetValue(oldId, out Guid existing) && existing != newId)
+        if (m_identityMap.TryGetValue(oldID, out Guid existing) && existing != newID)
         {
-            throw new InvalidDataException($"Sample type identity '{oldId:D}' has conflicting clone mappings.");
+            throw new InvalidDataException($"Sample type identity '{oldID:D}' has conflicting clone mappings.");
         }
-        m_identityMap[oldId] = newId;
+        m_identityMap[oldID] = newID;
     }
 }
 

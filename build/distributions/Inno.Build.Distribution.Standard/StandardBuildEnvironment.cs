@@ -38,7 +38,7 @@ public static class StandardBuildEnvironment
     /// </exception>
     public static BuildCompositionContext Capture(
         string applicationDirectory,
-        BuildTargetId toolsTarget,
+        BuildTargetID toolsTarget,
         string? dotnetHost = null,
         string? nativeDependencies = null
     ) {

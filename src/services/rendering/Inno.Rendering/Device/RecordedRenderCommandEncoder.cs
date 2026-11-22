@@ -34,7 +34,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
 
     /// <inheritdoc/>
     public override void BindTexture(
-        RenderBindingId binding,
+        RenderBindingID binding,
         RenderTextureHandle texture,
         RenderSamplerState sampler
     ) {
@@ -46,7 +46,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
 
     /// <inheritdoc/>
     public override void BindTexture(
-        RenderBindingId binding,
+        RenderBindingID binding,
         PersistentTextureHandle texture,
         RenderSamplerState sampler
     ) {
@@ -58,7 +58,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
 
     /// <inheritdoc/>
     public override void BindStorageTexture(
-        RenderBindingId binding,
+        RenderBindingID binding,
         RenderTextureHandle texture,
         int mipLevel = 0
     ) {
@@ -70,7 +70,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
 
     /// <inheritdoc/>
     public override void BindStorageTexture(
-        RenderBindingId binding,
+        RenderBindingID binding,
         PersistentTextureHandle texture,
         int mipLevel = 0
     ) {
@@ -82,7 +82,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
 
     /// <inheritdoc/>
     public override void BindBuffer(
-        RenderBindingId binding,
+        RenderBindingID binding,
         RenderBufferHandle buffer
     ) {
         Begin(Operation.BindBufferGraph);
@@ -92,7 +92,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
 
     /// <inheritdoc/>
     public override void BindBuffer(
-        RenderBindingId binding,
+        RenderBindingID binding,
         PersistentBufferHandle buffer
     ) {
         Begin(Operation.BindBufferPersistent);
@@ -105,7 +105,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
     /// </remarks>
     /// <inheritdoc/>
     public override void SetUniform(
-        RenderBindingId binding,
+        RenderBindingID binding,
         ReadOnlySpan<byte> value
     ) {
         Begin(Operation.SetUniform);

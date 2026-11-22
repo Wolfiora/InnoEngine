@@ -132,13 +132,13 @@ public sealed partial class AssetLoader
                 );
             }
         }
-        HashSet<Guid> exportedIds = exported
+        HashSet<Guid> exportedIDs = exported
             .Select(static record => record.persistentID)
             .ToHashSet();
         foreach (AssetRecord record in exported)
         {
             AssetDependencyData unavailable = record.meta.runtimeDependencies
-                .FirstOrDefault(dependency => !exportedIds.Contains(dependency.persistentId));
+                .FirstOrDefault(dependency => !exportedIDs.Contains(dependency.persistentId));
             if (unavailable.persistentId != Guid.Empty)
             {
                 throw new InvalidOperationException(
@@ -177,13 +177,13 @@ public sealed partial class AssetLoader
         totalBytes += Directory.EnumerateFiles(destinationArtifacts.root, "*", SearchOption.AllDirectories)
             .Sum(static path => new FileInfo(path).Length);
 
-        AssetSourceId[] sources = exported
+        AssetSourceID[] sources = exported
             .Select(static record => AssetPath.Parse(record.relativePath).source)
-            .Append(AssetSourceId.project)
+            .Append(AssetSourceID.project)
             .Distinct()
             .OrderBy(static source => source.value, StringComparer.Ordinal)
             .ToArray();
-        foreach (AssetSourceId source in sources)
+        foreach (AssetSourceID source in sources)
         {
             Directory.CreateDirectory(Path.Combine(destination, "Sources", source.value));
         }

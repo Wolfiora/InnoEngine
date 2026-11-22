@@ -67,11 +67,11 @@ public sealed class SceneTestsFixture : IDisposable
     private sealed class RejectingAssetReferenceResolver : IAssetReferenceResolver
     {
         public AssetObject Resolve(
-            Guid persistentId,
-            Guid stableTypeId,
+            Guid persistentID,
+            Guid stableTypeID,
             string lastKnownPath,
             Type expectedType,
             string propertyPath
-        ) => throw new InvalidOperationException($"Unexpected asset reference '{persistentId:D}' at '{propertyPath}'.");
+        ) => throw new InvalidOperationException($"Unexpected asset reference '{persistentID:D}' at '{propertyPath}'.");
     }
 }

@@ -10,7 +10,7 @@ namespace Inno.Audio.Runtime;
 internal sealed class AudioContentOwner : IDisposable
 {
     private readonly Dictionary<Guid, EmitterRecord> m_emitters = [];
-    private readonly HashSet<string> m_providerDiagnosticIds = new(StringComparer.Ordinal);
+    private readonly HashSet<string> m_providerDiagnosticIDs = new(StringComparer.Ordinal);
     private readonly IAudioDevice m_device;
     private readonly AudioVoiceOwner m_voices;
     private readonly IDiagnosticReporter m_diagnostics;
@@ -47,11 +47,11 @@ internal sealed class AudioContentOwner : IDisposable
         m_listener = default;
         m_listenerID = Guid.Empty;
         m_emitters.Clear();
-        foreach (string id in m_providerDiagnosticIds)
+        foreach (string id in m_providerDiagnosticIDs)
         {
             m_diagnostics.Resolve("AUDIO_CONTENT_PROVIDER_FAILED", id);
         }
-        m_providerDiagnosticIds.Clear();
+        m_providerDiagnosticIDs.Clear();
         if (m_listenerDiagnosticID != Guid.Empty)
         {
             m_diagnostics.Resolve("AUDIO_LISTENER_PRIORITY_TIE", m_listenerDiagnosticID.ToString("D"));
@@ -92,12 +92,12 @@ internal sealed class AudioContentOwner : IDisposable
         var listeners = new List<AudioListenerSnapshot>();
         var ids = new HashSet<Guid>();
         int rejectedProviders = 0;
-        foreach (string retiredID in m_providerDiagnosticIds
+        foreach (string retiredID in m_providerDiagnosticIDs
             .Where(id => !providers.providers.Any(entry => entry.id == id))
             .ToArray()
         ) {
             m_diagnostics.Resolve("AUDIO_CONTENT_PROVIDER_FAILED", retiredID);
-            m_providerDiagnosticIds.Remove(retiredID);
+            m_providerDiagnosticIDs.Remove(retiredID);
         }
         foreach (AudioExtensionRegistry.ProviderEntry entry in providers.providers)
         {
@@ -123,7 +123,7 @@ internal sealed class AudioContentOwner : IDisposable
                     listeners.Add(listener);
                 }
                 m_diagnostics.Resolve("AUDIO_CONTENT_PROVIDER_FAILED", entry.id);
-                m_providerDiagnosticIds.Remove(entry.id);
+                m_providerDiagnosticIDs.Remove(entry.id);
             }
             catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
             {
@@ -132,7 +132,7 @@ internal sealed class AudioContentOwner : IDisposable
             catch (Exception exception)
             {
                 rejectedProviders++;
-                m_providerDiagnosticIds.Add(entry.id);
+                m_providerDiagnosticIDs.Add(entry.id);
                 Publish(
                     "AUDIO_CONTENT_PROVIDER_FAILED",
                     $"Audio content provider '{entry.id}' was isolated for this update: {exception.Message}",
@@ -162,7 +162,7 @@ internal sealed class AudioContentOwner : IDisposable
             }
             if (m_emitters.TryGetValue(snapshot.id, out EmitterRecord? current))
             {
-                if (current.clipID != snapshot.clip.identity.persistentId
+                if (current.clipID != snapshot.clip.identity.persistentID
                     || current.contentVersion != snapshot.clip.contentVersion
                     || current.playbackRevision != snapshot.playbackRevision
                 ) {
@@ -258,7 +258,7 @@ internal sealed class AudioContentOwner : IDisposable
         ulong playbackRevision,
         AudioVoiceHandle voice
     ) {
-        internal Guid clipID { get; } = clip.identity.persistentId;
+        internal Guid clipID { get; } = clip.identity.persistentID;
         internal long contentVersion { get; } = clip.contentVersion;
         internal ulong playbackRevision { get; } = playbackRevision;
         internal AudioVoiceHandle voice { get; } = voice;

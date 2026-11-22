@@ -12,10 +12,10 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Holds frame-local material overrides without modifying a shared asset.
 /// </summary>
-[StableTypeId("aa10e23b-3f29-525e-af70-e48b77746037")]
+[StableTypeID("aa10e23b-3f29-525e-af70-e48b77746037")]
 public sealed class MaterialPropertyBlock
 {
-    private readonly Dictionary<ShaderPropertyId, MaterialValue> m_values = [];
+    private readonly Dictionary<ShaderPropertyID, MaterialValue> m_values = [];
 
     /// <summary>
     /// Gets the number of active overrides.
@@ -32,7 +32,7 @@ public sealed class MaterialPropertyBlock
     /// Neutral material value.
     /// </param>
     public void Set(
-        ShaderPropertyId id,
+        ShaderPropertyID id,
         MaterialValue value
     ) {
         if (!id.isValid)
@@ -55,7 +55,7 @@ public sealed class MaterialPropertyBlock
     /// <see langword="true"/> when the override exists.
     /// </returns>
     public bool TryGet(
-        ShaderPropertyId id,
+        ShaderPropertyID id,
         out MaterialValue value
     ) => m_values.TryGetValue(id, out value);
 
@@ -67,7 +67,7 @@ public sealed class MaterialPropertyBlock
     internal MaterialPropertyBlock Snapshot()
     {
         var snapshot = new MaterialPropertyBlock();
-        foreach ((ShaderPropertyId id, MaterialValue value) in m_values)
+        foreach ((ShaderPropertyID id, MaterialValue value) in m_values)
         {
             snapshot.m_values.Add(id, value);
         }

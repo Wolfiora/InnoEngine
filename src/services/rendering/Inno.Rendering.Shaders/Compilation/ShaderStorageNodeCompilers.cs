@@ -50,7 +50,7 @@ internal sealed class ShaderStorageLoadNodeCompiler : IShaderNodeCompiler
     /// <summary>
     /// Gets the definition id text used by the current instance.
     /// </summary>
-public string definitionId => "inno.shader.storage-load";
+public string definitionID => "inno.shader.storage-load";
 
     /// <summary>
     /// Retrieves the current ports from authoritative state.
@@ -85,7 +85,7 @@ internal sealed class ShaderStorageStoreNodeCompiler : IShaderNodeCompiler
     /// <summary>
     /// Gets the definition id text used by the current instance.
     /// </summary>
-public string definitionId => "inno.shader.storage-store";
+public string definitionID => "inno.shader.storage-store";
 
     /// <summary>
     /// Retrieves the current ports from authoritative state.
@@ -119,7 +119,7 @@ internal sealed class ShaderStorageAtomicAddNodeCompiler : IShaderNodeCompiler
     /// <summary>
     /// Gets the definition id text used by the current instance.
     /// </summary>
-public string definitionId => "inno.shader.storage-atomic-add";
+public string definitionID => "inno.shader.storage-atomic-add";
 
     /// <summary>
     /// Retrieves the current ports from authoritative state.
@@ -154,7 +154,7 @@ internal sealed class ShaderDiscardNodeCompiler : IShaderNodeCompiler
     /// <summary>
     /// Gets the definition id text used by the current instance.
     /// </summary>
-public string definitionId => "inno.shader.discard";
+public string definitionID => "inno.shader.discard";
 
     /// <summary>
     /// Retrieves the current ports from authoritative state.

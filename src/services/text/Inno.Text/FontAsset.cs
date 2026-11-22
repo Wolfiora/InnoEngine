@@ -98,7 +98,7 @@ public static class FontMetadataCodec
 /// <summary>
 /// Represents one imported OpenType font file or collection.
 /// </summary>
-[StableTypeId("c8c708e2-3fd1-4ee1-9f16-5a47680272af")]
+[StableTypeID("c8c708e2-3fd1-4ee1-9f16-5a47680272af")]
 public sealed class FontAsset : AssetObject
 {
     private FontMetadata? m_metadata;

@@ -47,8 +47,8 @@ public sealed class DiagnosticLogSink : IDiagnosticSink, IDisposable
         foreach (Diagnostic issue in report.diagnostics)
         {
             if (previous.Any(old => (
-                old.code == issue.code && old.semanticId == issue.semanticId
-                && old.objectId == issue.objectId && old.message == issue.message && old.severity == issue.severity
+                old.code == issue.code && old.semanticID == issue.semanticID
+                && old.objectID == issue.objectID && old.message == issue.message && old.severity == issue.severity
                 && Equals(old.location, issue.location)
             ))) {
                 continue;

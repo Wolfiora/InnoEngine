@@ -90,7 +90,7 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
         try
         {
             long started = Stopwatch.GetTimestamp();
-            BuildCompositionContext execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(TargetId));
+            BuildCompositionContext execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetID(TargetId));
             BuildDistribution distribution = StandardBuildDistribution.Create(execution).build;
             NativeProductContribution contribution = distribution.ResolveNativeProduct(TargetId, ProductId);
             ProductNativeBuildPlan plan = contribution.plan;
@@ -125,7 +125,7 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
             StandardBuildCaches.CreateOwners(context.engineRoot, plan.steps.Select(static step => step.component).ToArray());
             IBuildEngine4 engine = BuildEngine as IBuildEngine4
                                    ?? throw new InvalidOperationException("Native preparation requires MSBuild build-lifetime ownership.");
-            string scope = NativeBuildFingerprint.Create([context.engineRoot, context.configuration, TargetId, plan.productId], []);
+            string scope = NativeBuildFingerprint.Create([context.engineRoot, context.configuration, TargetId, plan.productID], []);
             string cacheKey = "Inno.Build.NativePreparation/" + scope;
             using FileLease preparation = AcquirePreparation(
                 engine,

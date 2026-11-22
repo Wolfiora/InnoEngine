@@ -7,9 +7,9 @@ using Inno.Scene;
 
 namespace Inno.Editor.Panel.Hierarchy;
 
-[EditorAction(HierarchyInteractionIds.C_DELETE_GAME_OBJECT, priority: 100)]
-[EditorMenu(HierarchyInteractionIds.C_AREA, "Delete", order: 300)]
-[EditorShortcut(HierarchyInteractionIds.C_AREA, KeyCode.Delete)]
+[EditorAction(HierarchyInteractionIDs.C_DELETE_GAME_OBJECT, priority: 100)]
+[EditorMenu(HierarchyInteractionIDs.C_AREA, "Delete", order: 300)]
+[EditorShortcut(HierarchyInteractionIDs.C_AREA, KeyCode.Delete)]
 internal sealed class DeleteGameObjectCommand(SceneEdits edits) : EditorAction<GameObject>
 {
     /// <summary>

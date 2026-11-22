@@ -10,7 +10,7 @@ namespace Inno.Build.Managed.DotNet;
 internal static class DotNetDeploymentPublisher
 {
     internal static async ValueTask<ManagedDeploymentResult> PublishAsync(
-        ManagedDeploymentId id,
+        ManagedDeploymentID id,
         ManagedDeploymentCapabilities capabilities,
         string hostPath,
         IToolchainWorkspaceProvider workspaces,

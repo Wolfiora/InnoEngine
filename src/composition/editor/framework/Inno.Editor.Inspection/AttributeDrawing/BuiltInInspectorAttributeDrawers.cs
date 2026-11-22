@@ -8,8 +8,8 @@ using Inno.Editor.Annotations;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
 
@@ -41,14 +41,14 @@ internal sealed class TextInspectorAttributeDrawer : IInspectorAttributeDrawer
     public void DrawBefore(InspectorAttributeDrawContext context)
     {
         string text = ((TextAttribute)context.attribute).text;
-        Ui.PushStyleColor((ImGuiCol.Text), EditorPalette.textDisabled);
+        Gui.PushStyleColor((ImGuiCol.Text), EditorPalette.textDisabled);
         try
         {
             EditorUI.current.widgets.WrappedText(text);
         }
         finally
         {
-            Ui.PopStyleColor();
+            Gui.PopStyleColor();
         }
     }
 }
@@ -65,7 +65,7 @@ internal sealed class SpaceInspectorAttributeDrawer : IInspectorAttributeDrawer
     public void DrawBefore(InspectorAttributeDrawContext context)
     {
         float height = ((SpaceAttribute)context.attribute).height;
-        Ui.Dummy(new Vector2(0f, height));
+        Gui.Dummy(new Vector2(0f, height));
     }
 }
 
@@ -188,13 +188,13 @@ internal sealed class HelpBoxInspectorAttributeDrawer : IInspectorAttributeDrawe
         {
             InspectorMessageType.Warning => EditorPalette.warning,
             InspectorMessageType.Error => EditorPalette.error,
-            _ => new Vector4(0.42f, 0.66f, 0.88f, EditorPalette.opacityOpaque)
+            _ => new Vector4(0.42f, 0.66f, 0.88f, EditorPalette.C_OPACITY_OPAQUE)
         };
         string icon = help.messageType switch
         {
-            InspectorMessageType.Warning => ImGuiIcon.TriangleExclamation,
-            InspectorMessageType.Error => ImGuiIcon.CircleXmark,
-            _ => ImGuiIcon.CircleInfo
+            InspectorMessageType.Warning => ImGuiIcon.C_TRIANGLE_EXCLAMATION,
+            InspectorMessageType.Error => ImGuiIcon.C_CIRCLE_XMARK,
+            _ => ImGuiIcon.C_CIRCLE_INFO
         };
         EditorUI.current.widgets.HelpBox(help.text, icon, color);
     }

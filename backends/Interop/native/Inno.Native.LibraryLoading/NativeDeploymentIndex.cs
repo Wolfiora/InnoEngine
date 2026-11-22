@@ -21,7 +21,7 @@ public sealed class NativeDeploymentIndex
     /// <summary>
     /// Freezes one product target and its explicit aliases without detecting the host OS.
     /// </summary>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The exact deployment target selected by the product.
     /// </param>
     /// <param name="libraries">
@@ -37,12 +37,12 @@ public sealed class NativeDeploymentIndex
     /// A mapping is absent.
     /// </exception>
     public NativeDeploymentIndex(
-        string targetId,
+        string targetID,
         IReadOnlyDictionary<string, string> libraries,
         IReadOnlyDictionary<string, string> files
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
-        this.targetID = targetId;
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetID);
+        this.targetID = targetID;
         this.libraries = Freeze(libraries);
         this.files = Freeze(files);
     }

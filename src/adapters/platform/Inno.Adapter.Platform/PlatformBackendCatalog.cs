@@ -10,7 +10,7 @@ namespace Inno.Adapter.Platform;
 /// </summary>
 public sealed class PlatformBackendCatalog : IPlatformBackendFactory
 {
-    private readonly Dictionary<PlatformBackendId, PlatformBackendProvider> m_providers = [];
+    private readonly Dictionary<PlatformBackendID, PlatformBackendProvider> m_providers = [];
 
     /// <summary>
     /// Validates and captures a complete provider set without creating any service.
@@ -34,17 +34,17 @@ public sealed class PlatformBackendCatalog : IPlatformBackendFactory
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
             }
         }
-        this.supportedBackends = new ReadOnlyCollection<PlatformBackendId>([.. m_providers.Keys]);
+        this.supportedBackends = new ReadOnlyCollection<PlatformBackendID>([.. m_providers.Keys]);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<PlatformBackendId> supportedBackends { get; }
+    public IReadOnlyList<PlatformBackendID> supportedBackends { get; }
 
     /// <exception cref="InvalidOperationException">
     /// The selected provider returned no service.
     /// </exception>
     /// <inheritdoc/>
-    public IPlatformApplication CreateApplication(PlatformBackendId backend)
+    public IPlatformApplication CreateApplication(PlatformBackendID backend)
     {
         if (!m_providers.TryGetValue(backend, out PlatformBackendProvider? provider))
         {

@@ -137,7 +137,7 @@ internal static class NativeDependenciesCommand
         }
         Stopwatch phase = Stopwatch.StartNew();
         Console.WriteLine(
-            $"Native producer: {product.plan.productId}/{request.target.value}/{request.configuration}; resolving the explicit toolchain."
+            $"Native producer: {product.plan.productID}/{request.target.value}/{request.configuration}; resolving the explicit toolchain."
         );
         NativeBuildContext context = new NativeBuildContext(request.root, request.configuration.ToLowerInvariant()).WithBindingGenerator(
             request.distribution.ResolveBindingGenerator(request.target.value)

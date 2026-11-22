@@ -24,20 +24,20 @@ public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
     /// <summary>
     /// Diagnostic identifier for direct implementation namespace access.
     /// </summary>
-    public const string directImplementationNamespaceDiagnosticId = "INNO2001";
+    public const string C_DIRECT_IMPLEMENTATION_NAMESPACE_DIAGNOSTIC_ID = "INNO2001";
 
     /// <summary>
     /// Diagnostic identifier for a missing logical namespace import.
     /// </summary>
-    public const string missingLogicalNamespaceDiagnosticId = "INNO2002";
+    public const string C_MISSING_LOGICAL_NAMESPACE_DIAGNOSTIC_ID = "INNO2002";
 
     /// <summary>
     /// Diagnostic identifier for a forbidden compilation-wide namespace import.
     /// </summary>
-    public const string compilationWideUsingDiagnosticId = "INNO2003";
+    public const string C_COMPILATION_WIDE_USING_DIAGNOSTIC_ID = "INNO2003";
 
     private static readonly DiagnosticDescriptor DIRECT_IMPLEMENTATION_NAMESPACE = new(
-        directImplementationNamespaceDiagnosticId,
+        C_DIRECT_IMPLEMENTATION_NAMESPACE_DIAGNOSTIC_ID,
         "Implementation namespace is not part of the scripting API",
         "Use scripting namespace '{0}' instead of implementation namespace '{1}'",
         "Inno Scripting",
@@ -46,7 +46,7 @@ public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
     );
 
     private static readonly DiagnosticDescriptor MISSING_LOGICAL_NAMESPACE = new(
-        missingLogicalNamespaceDiagnosticId,
+        C_MISSING_LOGICAL_NAMESPACE_DIAGNOSTIC_ID,
         "Scripting API namespace is not imported",
         "Type '{0}' requires 'using {1};'",
         "Inno Scripting",
@@ -55,7 +55,7 @@ public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
     );
 
     private static readonly DiagnosticDescriptor COMPILATION_WIDE_USING = new(
-        compilationWideUsingDiagnosticId,
+        C_COMPILATION_WIDE_USING_DIAGNOSTIC_ID,
         "Compilation-wide namespace imports are not supported",
         "Use an ordinary using directive in each source file",
         "Inno Scripting",

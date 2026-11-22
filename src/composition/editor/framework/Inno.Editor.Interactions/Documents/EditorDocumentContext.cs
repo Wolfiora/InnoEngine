@@ -17,22 +17,22 @@ public sealed class EditorDocumentContext
         string assetPath,
         string providerID
     ) {
-        this.documentId = documentID;
-        this.assetId = assetID;
+        this.documentID = documentID;
+        this.assetID = assetID;
         this.assetPath = assetPath;
-        this.providerId = providerID;
+        this.providerID = providerID;
         this.title = Path.GetFileName(assetPath);
     }
 
     /// <summary>
     /// Gets the stable identity of this open source document.
     /// </summary>
-    public Guid documentId { get; }
+    public Guid documentID { get; }
 
     /// <summary>
     /// Gets the persistent asset identity, or an empty value before the source has one.
     /// </summary>
-    public Guid assetId { get; }
+    public Guid assetID { get; }
 
     /// <summary>
     /// Gets the normalized project asset path.
@@ -42,7 +42,7 @@ public sealed class EditorDocumentContext
     /// <summary>
     /// Gets the stable provider identity used to recover across extension reload.
     /// </summary>
-    public string providerId { get; }
+    public string providerID { get; }
 
     /// <summary>
     /// Gets or sets the author-facing source title used by diagnostics and dedicated editors.

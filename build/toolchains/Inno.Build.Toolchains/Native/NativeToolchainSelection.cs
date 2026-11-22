@@ -16,7 +16,7 @@ public sealed class NativeToolchainSelection
     /// <summary>
     /// Captures an immutable, explicit compiler and SDK selection supplied by a platform provider.
     /// </summary>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The exact native target identity.
     /// </param>
     /// <param name="host">
@@ -53,7 +53,7 @@ public sealed class NativeToolchainSelection
     /// A selected executable or SDK input is unavailable before preparation begins.
     /// </exception>
     public NativeToolchainSelection(
-        string targetId,
+        string targetID,
         BuildHostDescriptor host,
         IReadOnlyDictionary<string, string> tools,
         IReadOnlyDictionary<string, string> environment,
@@ -63,7 +63,7 @@ public sealed class NativeToolchainSelection
         bool multiConfiguration,
         NativeCompilerInputs? compilerInputs = null
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetID);
         ArgumentNullException.ThrowIfNull(host);
         ArgumentNullException.ThrowIfNull(tools);
         ArgumentNullException.ThrowIfNull(environment);
@@ -104,7 +104,7 @@ public sealed class NativeToolchainSelection
                 throw new FileNotFoundException("A selected native SDK input is unavailable.", input);
             }
         }
-        this.targetId = targetId;
+        this.targetID = targetID;
         this.host = host;
         m_tools = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>(tools, StringComparer.Ordinal));
         this.environment = new ReadOnlyDictionary<string, string>(
@@ -125,7 +125,7 @@ public sealed class NativeToolchainSelection
                 .Concat(this.cmakeArguments)
                 .Concat(this.compilerInputs.declarations)
                 .Concat(this.linkPlan.declarations)
-                .Concat([targetId, host.system, host.architecture, multiConfiguration.ToString()])
+                .Concat([targetID, host.system, host.architecture, multiConfiguration.ToString()])
                 .ToArray()
         );
     }
@@ -133,7 +133,7 @@ public sealed class NativeToolchainSelection
     /// <summary>
     /// Gets the target identity, without inferring it from the execution host.
     /// </summary>
-    public string targetId { get; }
+    public string targetID { get; }
 
     /// <summary>
     /// Gets the declared tool execution host.
@@ -217,7 +217,7 @@ public sealed class NativeToolchainSelection
             combined[name] = executable;
         }
         return new NativeToolchainSelection(
-            targetId,
+            targetID,
             host,
             combined,
             environment,
@@ -244,7 +244,7 @@ public sealed class NativeToolchainSelection
     public string ResolveExecutable(string name)
         => m_tools.TryGetValue(name, out string? executable)
            ? executable
-           : throw new InvalidOperationException($"Native target '{targetId}' has no '{name}' executable.");
+           : throw new InvalidOperationException($"Native target '{targetID}' has no '{name}' executable.");
 
     /// <summary>
     /// Checks an optional tool capability without discovering a command from the process environment.

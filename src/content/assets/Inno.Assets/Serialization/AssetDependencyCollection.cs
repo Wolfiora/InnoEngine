@@ -46,7 +46,7 @@ public sealed class AssetDependencyCollection
     public IReadOnlyList<AssetDependency> dependencies
         => m_dependencies is null || m_dependencies.Count == 0
            ? []
-           : m_dependencies.Values.OrderBy(static dependency => dependency.persistentId).ToArray();
+           : m_dependencies.Values.OrderBy(static dependency => dependency.persistentID).ToArray();
 
     /// <summary>
     /// Includes a dependency already captured inside a neutral nested property payload.
@@ -56,13 +56,13 @@ public sealed class AssetDependencyCollection
     /// </param>
     public void Add(AssetDependency dependency)
     {
-        if (dependency.persistentId == Guid.Empty)
+        if (dependency.persistentID == Guid.Empty)
         {
             throw new ArgumentException("A dependency requires a persistent asset identity.", nameof(dependency));
         }
-        (m_dependencies ??= [])[dependency.persistentId] = includeLastKnownPaths
+        (m_dependencies ??= [])[dependency.persistentID] = includeLastKnownPaths
                                                            ? dependency
-                                                           : new AssetDependency(dependency.persistentId, dependency.type, string.Empty);
+                                                           : new AssetDependency(dependency.persistentID, dependency.type, string.Empty);
     }
 
     internal void Add(
@@ -71,7 +71,7 @@ public sealed class AssetDependencyCollection
     ) {
         ArgumentNullException.ThrowIfNull(asset);
         ArgumentNullException.ThrowIfNull(types);
-        Guid persistentID = asset.identity.persistentId;
+        Guid persistentID = asset.identity.persistentID;
         if (persistentID == Guid.Empty)
         {
             throw new InvalidOperationException($"Asset '{asset.GetType().FullName}' has no persistent identity.");
@@ -79,7 +79,7 @@ public sealed class AssetDependencyCollection
         if (!types.TryGetTypeRef(asset.GetType(), out TypeRef typeRef))
         {
             throw new InvalidOperationException(
-                $"Asset type '{asset.GetType().FullName}' requires a StableTypeId before it can be referenced persistently."
+                $"Asset type '{asset.GetType().FullName}' requires a StableTypeID before it can be referenced persistently."
             );
         }
 

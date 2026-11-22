@@ -24,26 +24,26 @@ internal sealed class ExportWindowModule(
     internal bool isGameProgressVisible => m_gameProgressVisible && exports.isGameBusy;
     internal bool isPluginBusy => exports.isPluginBusy;
     internal bool isGameBusy => exports.isGameBusy;
-    internal string pluginID => projectSettings.projectId.value;
+    internal string pluginID => projectSettings.projectID.value;
     internal string pluginDisplayName { get; set; } = string.Empty;
     internal string pluginOutputPath { get; set; } = string.Empty;
-    internal string gameApplicationID => projectSettings.projectId.value;
+    internal string gameApplicationID => projectSettings.projectID.value;
     internal string gameProductName { get; set; } = string.Empty;
     internal string gamePersistentDataPath { get; set; } = string.Empty;
     internal string gameStartupScene { get; set; } = string.Empty;
     internal string gameOutputDirectory { get; set; } = string.Empty;
     internal int gameWindowWidth { get; set; } = 1280;
     internal int gameWindowHeight { get; set; } = 720;
-    internal BuildTargetId gameTarget { get; set; }
-    internal ManagedDeploymentId? gameManagedDeployment { get; set; }
-    internal IReadOnlyList<ManagedDeploymentId> availableManagedDeployments => exports.GetManagedDeployments(gameTarget);
-    internal IReadOnlyList<BuildTargetId> availableGameTargets => exports.availableGameTargets;
+    internal BuildTargetID gameTarget { get; set; }
+    internal ManagedDeploymentID? gameManagedDeployment { get; set; }
+    internal IReadOnlyList<ManagedDeploymentID> availableManagedDeployments => exports.GetManagedDeployments(gameTarget);
+    internal IReadOnlyList<BuildTargetID> availableGameTargets => exports.availableGameTargets;
     internal EditorExportProgress progress => exports.progress;
     internal string status => progress.status;
     internal string error => m_formError.Length == 0 ? exports.progress.error : m_formError;
     internal bool includePluginDependencies { get; set; }
 
-    internal string GetGameTargetDisplayName(BuildTargetId target) => exports.GetGameTargetDisplayName(target);
+    internal string GetGameTargetDisplayName(BuildTargetID target) => exports.GetGameTargetDisplayName(target);
 
     internal void OpenPlugin()
     {
@@ -85,7 +85,7 @@ internal sealed class ExportWindowModule(
         exports.StartPlugin(
             new PluginBuildRequest
             {
-                pluginId = pluginID,
+                pluginID = pluginID,
                 displayName = pluginDisplayName,
                 outputPath = ResolveOutputPath(pluginOutputPath),
                 includeDependencies = includePluginDependencies
@@ -125,7 +125,7 @@ internal sealed class ExportWindowModule(
     {
         if (isPluginBusy)
         {
-            exports.Cancel(exports.progress.operationId);
+            exports.Cancel(exports.progress.operationID);
         }
         isPluginVisible = false;
     }
@@ -134,7 +134,7 @@ internal sealed class ExportWindowModule(
     {
         if (isGameBusy)
         {
-            exports.Cancel(exports.progress.operationId);
+            exports.Cancel(exports.progress.operationID);
         }
         isGameVisible = false;
     }

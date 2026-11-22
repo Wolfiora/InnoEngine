@@ -23,7 +23,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
         owner.artifacts[0] = new(
             process.directory,
             process.leasePath,
-            process.targetId,
+            process.targetID,
             process.bytes,
             process.lastUseUtc,
             [],
@@ -49,7 +49,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
             [owner.descriptor],
             new(0, 0),
             retireAll: true,
-            targetId: "windows-x64"
+            targetID: "windows-x64"
         );
         Assert.Equal(obsoleteWindows.directory, Assert.Single(plan.candidates).directory);
         BuildCacheCleanupResult result = await plan.ExecuteAsync();
@@ -69,7 +69,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
             [owner.descriptor],
             new(0, 0),
             retireAll: true,
-            targetId: "windows-x64"
+            targetID: "windows-x64"
         );
         owner.artifacts[0] = new(
             original.directory,
@@ -145,7 +145,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
         owner.artifacts[0] = new(
             artifact.directory,
             producerLease,
-            artifact.targetId,
+            artifact.targetID,
             artifact.bytes,
             artifact.lastUseUtc,
             [],
@@ -173,7 +173,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
         owner.artifacts[0] = new(
             first.directory,
             Path.Combine(first.directory, "inside.lock"),
-            first.targetId,
+            first.targetID,
             first.bytes,
             first.lastUseUtc,
             [],
@@ -184,7 +184,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
         owner.artifacts[1] = new(
             second.directory,
             first.leasePath,
-            second.targetId,
+            second.targetID,
             second.bytes,
             second.lastUseUtc,
             [],
@@ -268,7 +268,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
         owner.artifacts[0] = new(
             artifact.directory,
             artifact.leasePath,
-            artifact.targetId,
+            artifact.targetID,
             4,
             artifact.lastUseUtc,
             [],
@@ -323,7 +323,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
         owner.artifacts[0] = new(
             first.directory,
             first.leasePath,
-            first.targetId,
+            first.targetID,
             first.bytes,
             first.lastUseUtc,
             [second.directory],
@@ -333,7 +333,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
         owner.artifacts[0] = new(
             first.directory,
             first.leasePath,
-            first.targetId,
+            first.targetID,
             first.bytes,
             first.lastUseUtc,
             [Path.Combine(m_root, "unregistered")],

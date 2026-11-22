@@ -38,7 +38,7 @@ public sealed partial class AssetPipeline
         if (imported)
         {
             GetFileSystem().Refresh();
-            _ = loader.TryGetPersistentId(path, out Guid persistentID);
+            _ = loader.TryGetPersistentID(path, out Guid persistentID);
             PublishMutation(new AssetChange(AssetChangeKind.Modified, persistentID, path));
         }
         return imported;
@@ -89,7 +89,7 @@ public sealed partial class AssetPipeline
         AssetLoader loader = GetLoader();
         bool imported = loader.SaveImportSettings(path, settings, expectedFingerprint);
         GetFileSystem().Refresh();
-        _ = loader.TryGetPersistentId(path, out Guid persistentID);
+        _ = loader.TryGetPersistentID(path, out Guid persistentID);
         PublishMutation(new AssetChange(AssetChangeKind.Modified, persistentID, path));
         return imported;
     }
@@ -130,12 +130,12 @@ public sealed partial class AssetPipeline
         _ = NormalizeMutationPath(path, nameof(path));
         ArgumentNullException.ThrowIfNull(asset);
         AssetLoader loader = GetLoader();
-        bool existed = loader.TryGetPersistentId(path, out _);
+        bool existed = loader.TryGetPersistentID(path, out _);
         bool saved = loader.Save(path, asset);
         if (saved)
         {
             GetFileSystem().Refresh();
-            _ = loader.TryGetPersistentId(path, out Guid persistentID);
+            _ = loader.TryGetPersistentID(path, out Guid persistentID);
             PublishMutation(
                 new AssetChange(existed ? AssetChangeKind.Modified : AssetChangeKind.Added, persistentID, path)
             );
@@ -202,14 +202,14 @@ public sealed partial class AssetPipeline
         fileSystem.Stop();
         Directory.CreateDirectory(Path.GetDirectoryName(absoluteTarget)!);
         var change = new AssetChangedEvent(targetPath, WatcherChangeTypes.Renamed, sourcePath);
-        Dictionary<string, Guid> previousIds = CapturePreviousIds(loader, [change]);
+        Dictionary<string, Guid> previousIDs = CapturePreviousIDs(loader, [change]);
         try
         {
             MovePhysicalSource(absoluteSource, absoluteTarget, isDirectory);
             loader.ApplySourceChanges([change]);
             fileSystem.Refresh();
-            AssetChange[] committed = CreateCommittedChanges(loader, [change], previousIds, requiresFullRescan: false);
-            InvokeObservers(Changed, new AssetChangeSet(Interlocked.Increment(ref m_revision), committed));
+            AssetChange[] committed = CreateCommittedChanges(loader, [change], previousIDs, requiresFullRescan: false);
+            InvokeObservers(changed, new AssetChangeSet(Interlocked.Increment(ref m_revision), committed));
         }
         catch
         {
@@ -254,7 +254,7 @@ public sealed partial class AssetPipeline
         }
 
         AssetChangedEvent[] changes = CreateDeletionEvents(fileSystem, sourcePath);
-        Dictionary<string, Guid> previousIds = CapturePreviousIds(loader, changes);
+        Dictionary<string, Guid> previousIDs = CapturePreviousIDs(loader, changes);
         string transactionRoot = Path.Combine(
             libraryRoot,
             "AssetDatabase",
@@ -277,7 +277,7 @@ public sealed partial class AssetPipeline
             }
             loader.ApplySourceChanges(changes);
             fileSystem.Refresh();
-            committed = CreateCommittedChanges(loader, changes, previousIds, requiresFullRescan: false);
+            committed = CreateCommittedChanges(loader, changes, previousIDs, requiresFullRescan: false);
         }
         catch
         {
@@ -296,7 +296,7 @@ public sealed partial class AssetPipeline
             }
         }
         DeleteTransactionDirectorySafely(transactionRoot);
-        InvokeObservers(Changed, new AssetChangeSet(Interlocked.Increment(ref m_revision), committed));
+        InvokeObservers(changed, new AssetChangeSet(Interlocked.Increment(ref m_revision), committed));
         CollectArtifactsIfDue(loader, force: true);
     }
 
@@ -352,7 +352,7 @@ public sealed partial class AssetPipeline
                 new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase),
                 requiresFullRescan: false
             );
-            InvokeObservers(Changed, new AssetChangeSet(Interlocked.Increment(ref m_revision), committed));
+            InvokeObservers(changed, new AssetChangeSet(Interlocked.Increment(ref m_revision), committed));
         }
         catch
         {
@@ -385,7 +385,7 @@ public sealed partial class AssetPipeline
         {
             throw new ArgumentException("Asset source path is required.", parameterName);
         }
-        if (path.source != AssetSourceId.project)
+        if (path.source != AssetSourceID.project)
         {
             throw new InvalidOperationException($"Asset source '{path.source}' is read-only.");
         }

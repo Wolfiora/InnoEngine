@@ -13,7 +13,7 @@ public sealed class ShaderConstantNodeCompiler : IShaderNodeCompiler
     /// <summary>
     /// Gets the definition id text used by the current instance.
     /// </summary>
-    public string definitionId => "inno.shader.constant";
+    public string definitionID => "inno.shader.constant";
 
     /// <summary>
     /// Gets a ports required by the implemented contract.
@@ -59,7 +59,7 @@ public sealed class ShaderBinaryNodeCompiler : IShaderNodeCompiler
     /// <summary>
     /// Gets the definition id text used by the current instance.
     /// </summary>
-    public string definitionId => "inno.shader.binary";
+    public string definitionID => "inno.shader.binary";
 
     /// <summary>
     /// Gets a ports required by the implemented contract.
@@ -123,7 +123,7 @@ public sealed class ShaderConstructNodeCompiler : IShaderNodeCompiler
     /// <summary>
     /// Gets the definition id text used by the current instance.
     /// </summary>
-    public string definitionId => "inno.shader.construct";
+    public string definitionID => "inno.shader.construct";
 
     /// <summary>
     /// Gets a ports required by the implemented contract.
@@ -194,7 +194,7 @@ public sealed class ShaderStageInputNodeCompiler : IShaderNodeCompiler
     /// <summary>
     /// Gets the definition id text used by the current instance.
     /// </summary>
-    public string definitionId => "inno.shader.stage-input";
+    public string definitionID => "inno.shader.stage-input";
 
     /// <summary>
     /// Gets a ports required by the implemented contract.
@@ -235,7 +235,7 @@ public sealed class ShaderSelectNodeCompiler : IShaderNodeCompiler
     /// <summary>
     /// Gets the definition id text used by the current instance.
     /// </summary>
-    public string definitionId => "inno.shader.select";
+    public string definitionID => "inno.shader.select";
 
     /// <summary>
     /// Gets a ports required by the implemented contract.
@@ -281,7 +281,7 @@ public sealed class ShaderSourceNodeCompiler : IShaderNodeCompiler
     /// <summary>
     /// Gets the definition id text used by the current instance.
     /// </summary>
-    public string definitionId => "inno.shader.source";
+    public string definitionID => "inno.shader.source";
 
     /// <summary>
     /// Gets a ports required by the implemented contract.
@@ -345,7 +345,7 @@ public sealed class ShaderSourceNodeCompiler : IShaderNodeCompiler
                 arguments.Add(parameter.name, Resolve("input." + parameter.name, parameter.type));
             }
         }
-        IReadOnlyDictionary<string, ShaderIrValue> values = context.builder.Call(module, context.description.implementationId, arguments);
+        IReadOnlyDictionary<string, ShaderIrValue> values = context.builder.Call(module, context.description.implementationID, arguments);
         var outputs = new Dictionary<string, ShaderIrValue>(StringComparer.Ordinal);
         foreach ((string name, ShaderIrValue value) in values)
         {

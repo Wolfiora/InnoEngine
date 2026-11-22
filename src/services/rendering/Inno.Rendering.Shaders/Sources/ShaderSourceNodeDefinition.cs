@@ -49,7 +49,7 @@ public sealed class ShaderSourceNodeDefinition : GraphNodeDefinition
         ) {
             ports.Add(
                 new(
-                    new GraphPortId(id),
+                    new GraphPortID(id),
                     label,
                     TypeIdentity(type),
                     direction,

@@ -26,7 +26,7 @@ public sealed class TextRuntimeFactory : IRuntimeSubsystemFactory
     /// Gets stable ordering metadata that makes text available before scene simulation.
     /// </summary>
     public RuntimeSubsystemDescriptor descriptor { get; } = new(
-        new RuntimeSubsystemId("inno.runtime.text"),
+        new RuntimeSubsystemID("inno.runtime.text"),
         order: -800
     );
 

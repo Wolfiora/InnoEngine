@@ -55,7 +55,7 @@ public sealed class ShaderParameterPresentation : ISerializable
     /// <param name="graph">
     /// Authoring graph, not a runtime Shader program.
     /// </param>
-    /// <param name="propertyId">
+    /// <param name="propertyID">
     /// Stable parameter identity shared by all its nodes.
     /// </param>
     /// <param name="serialization">
@@ -69,12 +69,12 @@ public sealed class ShaderParameterPresentation : ISerializable
     /// </returns>
     public static ShaderParameterPresentation Read(
         GraphDocument graph,
-        ShaderPropertyId propertyId,
+        ShaderPropertyID propertyID,
         SerializationRegistry serialization,
         SerializationContext context
     ) {
         ArgumentNullException.ThrowIfNull(graph);
-        return graph.metadata.TryGetValue(C_PREFIX + propertyId.value, out GraphSerializedValue? encoded)
+        return graph.metadata.TryGetValue(C_PREFIX + propertyID.value, out GraphSerializedValue? encoded)
                ? serialization.Deserialize<ShaderParameterPresentation>(
                    ShaderGraphDocument.Decode<byte[]>(encoded!, serialization, context),
                    context
@@ -88,7 +88,7 @@ public sealed class ShaderParameterPresentation : ISerializable
     /// <param name="graph">
     /// Detached graph owned by the caller's History transaction.
     /// </param>
-    /// <param name="propertyId">
+    /// <param name="propertyID">
     /// Stable parameter identity.
     /// </param>
     /// <param name="presentation">
@@ -105,21 +105,21 @@ public sealed class ShaderParameterPresentation : ISerializable
     /// </exception>
     public static void Write(
         GraphDocument graph,
-        ShaderPropertyId propertyId,
+        ShaderPropertyID propertyID,
         ShaderParameterPresentation presentation,
         SerializationRegistry serialization,
         SerializationContext context
     ) {
         ArgumentNullException.ThrowIfNull(graph);
         ArgumentNullException.ThrowIfNull(presentation);
-        if (!propertyId.isValid || !double.IsFinite(presentation.minimum) || !double.IsFinite(presentation.maximum)
+        if (!propertyID.isValid || !double.IsFinite(presentation.minimum) || !double.IsFinite(presentation.maximum)
             || presentation.minimum < -float.MaxValue || presentation.maximum > float.MaxValue
             || presentation.minimum > presentation.maximum
         ) {
             throw new ArgumentException("Parameter presentation requires a stable identity and finite ordered Float bounds.");
         }
         graph.SetMetadata(
-            C_PREFIX + propertyId.value,
+            C_PREFIX + propertyID.value,
             ShaderGraphDocument.Encode(serialization.Serialize(presentation, context), serialization, context)
         );
     }

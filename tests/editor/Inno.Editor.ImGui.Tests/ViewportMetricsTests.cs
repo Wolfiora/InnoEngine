@@ -12,9 +12,9 @@ using Inno.Native.ImGui;
 using Inno.Native.Sdl3;
 using Inno.Platform;
 
+using GuiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using NativeVector2 = Inno.Native.ImGui.ImVec2C;
-using UiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 
@@ -45,7 +45,7 @@ public sealed unsafe class ViewportMetricsTests
             new FixtureRenderer()
         );
         context.SetIniFile(null);
-        using var ui = new EditorUiSession();
+        using var ui = new EditorUISession();
         context.SetIniFile(null);
         int phase = 0;
         context.RenderFrame(
@@ -303,7 +303,7 @@ public sealed unsafe class ViewportMetricsTests
                 NativeImGui.SetNextWindowPos(requested);
                 NativeImGui.SetNextWindowSize(new Vector2(200, 120));
                 using NativeStringLease nativeTestText0 = Utf8Codec.EncodeNullTerminated("Detached movement", allowsNull: false);
-                NativeImGui.Raw.Begin((sbyte*)nativeTestText0.pointer, null, (int)(UiWindowFlags.NoFocusOnAppearing));
+                NativeImGui.Raw.Begin((sbyte*)nativeTestText0.pointer, null, (int)(GuiWindowFlags.NoFocusOnAppearing));
                 viewportID = NativeImGui.Raw.GetWindowViewport()->ID;
                 NativeImGui.TextUnformatted("Moving viewport");
                 NativeImGui.End();
@@ -322,7 +322,7 @@ public sealed unsafe class ViewportMetricsTests
             context.RenderFrame(() =>
             {
                 using NativeStringLease nativeTestText1 = Utf8Codec.EncodeNullTerminated("Detached movement", allowsNull: false);
-                NativeImGui.Raw.Begin((sbyte*)nativeTestText1.pointer, null, (int)(UiWindowFlags.NoFocusOnAppearing));
+                NativeImGui.Raw.Begin((sbyte*)nativeTestText1.pointer, null, (int)(GuiWindowFlags.NoFocusOnAppearing));
                 Assert.Equal(requested, NativeImGui.GetWindowPos());
                 NativeImGui.TextUnformatted("Moving viewport");
                 NativeImGui.End();

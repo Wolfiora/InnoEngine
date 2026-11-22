@@ -37,7 +37,7 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
     /// <summary>
     /// Opens or joins an active graph document session.
     /// </summary>
-    /// <param name="documentId">
+    /// <param name="documentID">
     /// Persistent document identity; use the Asset identity for asset-backed graphs.
     /// </param>
     /// <param name="document">
@@ -53,17 +53,17 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
     /// The bounded document owner is full.
     /// </exception>
     public GraphDocumentController OpenDocument(
-        Guid documentId,
+        Guid documentID,
         GraphDocument document,
         IEditorHistory history
     ) {
-        if (documentId == Guid.Empty)
+        if (documentID == Guid.Empty)
         {
-            throw new ArgumentException("A graph document requires a persistent identity.", nameof(documentId));
+            throw new ArgumentException("A graph document requires a persistent identity.", nameof(documentID));
         }
         ArgumentNullException.ThrowIfNull(document);
         ArgumentNullException.ThrowIfNull(history);
-        GraphDocumentSession? session = m_identities.Get<GraphDocumentSession>(documentId);
+        GraphDocumentSession? session = m_identities.Get<GraphDocumentSession>(documentID);
         if (session is null)
         {
             if (m_documents.Count >= C_DOCUMENT_CAPACITY)
@@ -71,8 +71,8 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
                 throw new InvalidOperationException("Graph document capacity has been reached; close unused documents explicitly.");
             }
             session = new GraphDocumentSession(document);
-            m_identities.Register(session, documentId);
-            m_documents.Add(documentId);
+            m_identities.Register(session, documentID);
+            m_documents.Add(documentID);
             m_ownedSessions.Add(session);
         }
         // Reattaching presentation joins the existing authoring state, including unsaved Missing nodes.
@@ -82,21 +82,21 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
     /// <summary>
     /// Closes a document explicitly; its neutral History entries remain unavailable until the identity is reopened.
     /// </summary>
-    /// <param name="documentId">
+    /// <param name="documentID">
     /// The persistent document identity to release.
     /// </param>
     /// <returns>
     /// True when a live document was closed.
     /// </returns>
-    public bool CloseDocument(Guid documentId)
+    public bool CloseDocument(Guid documentID)
     {
-        GraphDocumentSession? session = m_identities.Get<GraphDocumentSession>(documentId);
+        GraphDocumentSession? session = m_identities.Get<GraphDocumentSession>(documentID);
         if (session is null)
         {
             return false;
         }
         m_identities.Unregister(session);
-        m_documents.Remove(documentId);
+        m_documents.Remove(documentID);
         m_ownedSessions.Remove(session);
         return true;
     }
@@ -104,7 +104,7 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
     /// <summary>
     /// Resolves an already open document without replacing its authored contents.
     /// </summary>
-    /// <param name="documentId">
+    /// <param name="documentID">
     /// The persistent document identity.
     /// </param>
     /// <param name="history">
@@ -117,12 +117,12 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
     /// True when the document is still owned by this module.
     /// </returns>
     public bool TryOpenDocument(
-        Guid documentId,
+        Guid documentID,
         IEditorHistory history,
         out GraphDocumentController? controller
     ) {
         ArgumentNullException.ThrowIfNull(history);
-        GraphDocumentSession? session = m_identities.Get<GraphDocumentSession>(documentId);
+        GraphDocumentSession? session = m_identities.Get<GraphDocumentSession>(documentID);
         controller = session is null ? null : new GraphDocumentController(session, history, m_serialization);
         return controller is not null;
     }
@@ -130,24 +130,24 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
     /// <summary>
     /// Marks a temporarily Missing source without discarding its graph or advancing its History stack.
     /// </summary>
-    /// <param name="documentId">
+    /// <param name="documentID">
     /// The persistent identity of an open document.
     /// </param>
     /// <param name="available">
     /// Whether its source can be resolved in the current generation.
     /// </param>
     public void SetAvailability(
-        Guid documentId,
+        Guid documentID,
         bool available
     ) {
-        GraphDocumentSession? session = m_identities.Get<GraphDocumentSession>(documentId);
+        GraphDocumentSession? session = m_identities.Get<GraphDocumentSession>(documentID);
         session?.available = available;
     }
 
     /// <summary>
     /// Rebinds an active session to a newly imported current-generation document.
     /// </summary>
-    /// <param name="documentId">
+    /// <param name="documentID">
     /// Stable document identity.
     /// </param>
     /// <param name="document">
@@ -157,18 +157,18 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
     /// Thrown when the document has no active session.
     /// </exception>
     public void RebindDocument(
-        Guid documentId,
+        Guid documentID,
         GraphDocument document
     ) {
-        if (documentId == Guid.Empty)
+        if (documentID == Guid.Empty)
         {
-            throw new ArgumentException("A graph document requires a persistent identity.", nameof(documentId));
+            throw new ArgumentException("A graph document requires a persistent identity.", nameof(documentID));
         }
         ArgumentNullException.ThrowIfNull(document);
-        GraphDocumentSession? session = m_identities.Get<GraphDocumentSession>(documentId);
+        GraphDocumentSession? session = m_identities.Get<GraphDocumentSession>(documentID);
         if (session is null)
         {
-            throw new InvalidOperationException($"Graph document '{documentId}' is not open.");
+            throw new InvalidOperationException($"Graph document '{documentID}' is not open.");
         }
 
         if (!session.isDirty)

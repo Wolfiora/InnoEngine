@@ -28,7 +28,7 @@ public sealed class EditorStyleMetrics
     /// </summary>
     public const float C_ZOOM_STEP = 0.1f;
 
-    private readonly WeakReference<EditorUiSession>? m_owner;
+    private readonly WeakReference<EditorUISession>? m_owner;
     private float m_requestedZoom = 1f;
     private bool m_requestedCompactMode;
     private float m_zoom = 1f;
@@ -39,7 +39,7 @@ public sealed class EditorStyleMetrics
     /// </summary>
     public EditorStyleMetrics() {}
 
-    internal EditorStyleMetrics(EditorUiSession owner)
+    internal EditorStyleMetrics(EditorUISession owner)
     {
         ArgumentNullException.ThrowIfNull(owner);
         m_owner = new(owner);
@@ -68,7 +68,7 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets disabled content opacity.
     /// </summary>
-    public float disabledAlpha => EditorPalette.opacityMedium;
+    public float disabledAlpha => EditorPalette.C_OPACITY_MEDIUM;
 
     /// <summary>
     /// Gets standard window padding.
@@ -514,9 +514,9 @@ public sealed class EditorStyleMetrics
         {
             return false;
         }
-        if (!m_owner.TryGetTarget(out EditorUiSession? owner))
+        if (!m_owner.TryGetTarget(out EditorUISession? owner))
         {
-            throw new ObjectDisposedException(nameof(EditorUiSession));
+            throw new ObjectDisposedException(nameof(EditorUISession));
         }
         return owner.shouldDeferStyleChanges;
     }

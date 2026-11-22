@@ -302,7 +302,7 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
             m_reporter = m_resources.Own(
                 m_context.diagnostics.CreateReporter(
                     new DiagnosticSource(
-                        $"inno.runtime.subsystems.{m_context.identities.domainId}",
+                        $"inno.runtime.subsystems.{m_context.identities.domainID}",
                         "Runtime subsystems"
                     )
                 )
@@ -392,12 +392,12 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
 
     private string? UnavailableReason(RuntimeSubsystemDescriptor descriptor)
     {
-        RuntimeCapabilityId[] missing = descriptor.requiredCapabilities.Where(id => !m_context.capabilities.Contains(id)).ToArray();
+        RuntimeCapabilityID[] missing = descriptor.requiredCapabilities.Where(id => !m_context.capabilities.Contains(id)).ToArray();
         if (missing.Length > 0)
         {
             return $"Missing capabilities: {string.Join(", ", missing)}.";
         }
-        RuntimeSubsystemId[] dependencies = descriptor.dependencies
+        RuntimeSubsystemID[] dependencies = descriptor.dependencies
             .Where(id => !m_entries.Any(entry => entry.descriptor.id == id && entry.isAttached))
             .ToArray();
         return dependencies.Length == 0 ? null : $"Unavailable dependencies: {string.Join(", ", dependencies)}.";
@@ -415,7 +415,7 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
             "runtime.subsystem.unavailable",
             reason,
             DiagnosticSeverity.Warning,
-            semanticId: descriptor.id.value
+            semanticID: descriptor.id.value
         );
         m_startupDiagnostics.Add(diagnostic);
         m_reporter!.Publish(diagnostic);
@@ -479,7 +479,7 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
 
     private static IRuntimeSubsystemFactory[] Order(IReadOnlyList<IRuntimeSubsystemFactory> factories)
     {
-        var byID = new Dictionary<RuntimeSubsystemId, IRuntimeSubsystemFactory>();
+        var byID = new Dictionary<RuntimeSubsystemID, IRuntimeSubsystemFactory>();
         foreach (IRuntimeSubsystemFactory factory in factories)
         {
             ArgumentNullException.ThrowIfNull(factory);
@@ -492,7 +492,7 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
         }
         foreach (IRuntimeSubsystemFactory factory in factories)
         {
-            foreach (RuntimeSubsystemId dependency in factory.descriptor.dependencies)
+            foreach (RuntimeSubsystemID dependency in factory.descriptor.dependencies)
             {
                 if (!byID.ContainsKey(dependency) && factory.descriptor.requirement == RuntimeSubsystemRequirement.Required)
                 {
@@ -503,17 +503,17 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
             }
         }
 
-        Dictionary<RuntimeSubsystemId, int> incoming = factories.ToDictionary(
+        Dictionary<RuntimeSubsystemID, int> incoming = factories.ToDictionary(
             static factory => factory.descriptor.id,
             factory => factory.descriptor.dependencies.Count(byID.ContainsKey)
         );
-        Dictionary<RuntimeSubsystemId, List<IRuntimeSubsystemFactory>> dependants = factories.ToDictionary(
+        Dictionary<RuntimeSubsystemID, List<IRuntimeSubsystemFactory>> dependants = factories.ToDictionary(
             static factory => factory.descriptor.id,
             static _ => new List<IRuntimeSubsystemFactory>()
         );
         foreach (IRuntimeSubsystemFactory factory in factories)
         {
-            foreach (RuntimeSubsystemId dependency in factory.descriptor.dependencies)
+            foreach (RuntimeSubsystemID dependency in factory.descriptor.dependencies)
             {
                 if (dependants.TryGetValue(dependency, out List<IRuntimeSubsystemFactory>? consumers))
                 {

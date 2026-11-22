@@ -50,7 +50,7 @@ public sealed partial class SceneEdits
         {
             return;
         }
-        var data = new SceneOrderHistoryData(scene.identity.persistentId, beforeIndex, afterIndex);
+        var data = new SceneOrderHistoryData(scene.identity.persistentID, beforeIndex, afterIndex);
         RecordWithRollback(
             () => m_interactions.history.RecordApplied(
                 historyName,
@@ -91,7 +91,7 @@ public sealed partial class SceneEdits
         m_workspace.EnsureEditable(gameObject.scene);
         GameObject[] affected = (relatedObjects ?? Array.Empty<GameObject>())
             .Prepend(gameObject)
-            .DistinctBy(static candidate => candidate.identity.persistentId)
+            .DistinctBy(static candidate => candidate.identity.persistentID)
             .ToArray();
         foreach (GameObject affectedObject in affected)
         {
@@ -113,7 +113,7 @@ public sealed partial class SceneEdits
         {
             return false;
         }
-        var data = new SceneHierarchyHistoryData(before, after, gameObject.identity.persistentId);
+        var data = new SceneHierarchyHistoryData(before, after, gameObject.identity.persistentID);
         RecordWithRollback(
             () => Record(historyName, SceneHistoryKinds.C_HIERARCHY, data.Encode()),
             () => RestorePlacements(before)
@@ -158,9 +158,9 @@ public sealed partial class SceneEdits
         {
             GameObject gameObject = gameObjects[i];
             placements[i] = new SceneObjectPlacement(
-                gameObject.scene.identity.persistentId,
-                gameObject.identity.persistentId,
-                gameObject.transform.parent?.gameObject.identity.persistentId,
+                gameObject.scene.identity.persistentID,
+                gameObject.identity.persistentID,
+                gameObject.transform.parent?.gameObject.identity.persistentID,
                 gameObject.transform.siblingIndex
             );
         }

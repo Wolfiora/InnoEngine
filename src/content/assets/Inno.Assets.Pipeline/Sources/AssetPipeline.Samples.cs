@@ -215,7 +215,7 @@ public sealed partial class AssetPipeline
         beforePublish?.Invoke(transaction.target);
         transaction.candidate.Complete();
         FinishSampleImport(transaction);
-        InvokeObservers(Changed, new AssetChangeSet(m_revision, committed));
+        InvokeObservers(changed, new AssetChangeSet(m_revision, committed));
     }
 
     internal void RollbackSampleImport(AssetSampleImportTransaction transaction)

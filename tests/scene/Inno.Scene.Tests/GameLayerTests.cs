@@ -87,31 +87,31 @@ public sealed class GameLayerTests : IDisposable
     /// Verifies that project-scoped identities are resolved from stable local keys at the read boundary.
     /// </summary>
     [Fact]
-    public void ProjectScopedIds_FollowProjectIdentityWithoutRewritingDefinitions()
+    public void ProjectScopedIDs_FollowProjectIdentityWithoutRewritingDefinitions()
     {
-        var firstProject = new ProjectId("studio.first");
-        Assert.Equal("innoengine-rendering2d", ProjectId.FromName("InnoEngine.Rendering2D").value);
-        Assert.Equal("inno.project", ProjectId.FromName("项目").value);
+        var firstProject = new ProjectID("studio.first");
+        Assert.Equal("innoengine-rendering2d", ProjectID.FromName("InnoEngine.Rendering2D").value);
+        Assert.Equal("inno.project", ProjectID.FromName("项目").value);
 
-        var secondProject = new ProjectId("studio.second");
+        var secondProject = new ProjectID("studio.second");
         var layer = new GameLayer(1);
         var layers = new GameLayerCatalog();
         layers.Define(layer, "Player");
 
-        Assert.Equal("layer.01", layers.GetLocalId(layer)?.value);
-        Assert.Equal("studio.first.layer.01", layers.GetId(firstProject, layer)?.value);
-        Assert.Equal("studio.second.layer.01", layers.GetId(secondProject, layer)?.value);
+        Assert.Equal("layer.01", layers.GetLocalID(layer)?.value);
+        Assert.Equal("studio.first.layer.01", layers.GetID(firstProject, layer)?.value);
+        Assert.Equal("studio.second.layer.01", layers.GetID(secondProject, layer)?.value);
 
         layers.Define(layer, "Hero");
 
-        Assert.Equal("layer.01", layers.GetLocalId(layer)?.value);
-        Assert.Equal("studio.second.layer.01", layers.GetId(secondProject, layer)?.value);
+        Assert.Equal("layer.01", layers.GetLocalID(layer)?.value);
+        Assert.Equal("studio.second.layer.01", layers.GetID(secondProject, layer)?.value);
 
         var tags = new GameTagCatalog();
         Assert.True(tags.Add("Enemy Boss"));
-        Assert.Equal("enemy-boss", tags.GetLocalId("Enemy Boss").value);
-        Assert.Equal("studio.first.enemy-boss", tags.GetId(firstProject, "Enemy Boss").value);
-        Assert.Equal("studio.second.enemy-boss", tags.GetId(secondProject, "Enemy Boss").value);
+        Assert.Equal("enemy-boss", tags.GetLocalID("Enemy Boss").value);
+        Assert.Equal("studio.first.enemy-boss", tags.GetID(firstProject, "Enemy Boss").value);
+        Assert.Equal("studio.second.enemy-boss", tags.GetID(secondProject, "Enemy Boss").value);
     }
 
     /// <summary>

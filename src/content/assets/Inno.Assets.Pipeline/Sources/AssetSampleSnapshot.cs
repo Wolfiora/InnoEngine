@@ -37,7 +37,7 @@ internal static class AssetSampleSnapshot
     ) {
         var identities = new Dictionary<Guid, Guid>();
         var paths = new Dictionary<string, string>(StringComparer.Ordinal);
-        var sourceIdentities = new Dictionary<string, (Guid oldId, Guid newId)>(StringComparer.Ordinal);
+        var sourceIdentities = new Dictionary<string, (Guid oldID, Guid newID)>(StringComparer.Ordinal);
         string[] metadata = Directory.GetFiles(stagedSource, "*.imeta", SearchOption.AllDirectories);
         if (File.Exists(stagedSource + ".imeta"))
         {

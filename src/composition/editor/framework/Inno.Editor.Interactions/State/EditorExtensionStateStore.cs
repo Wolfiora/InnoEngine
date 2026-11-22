@@ -49,7 +49,7 @@ internal sealed class EditorExtensionStateStore
         IReadOnlyList<EditorExtensionCatalog.StateRegistration> registrations,
         IReadOnlyList<EditorExtensionCatalog.PanelRegistration> panels
     ) {
-        var failures = new List<(string Message, Exception Exception)>();
+        var failures = new List<(string message, Exception exception)>();
         for (int i = 0; i < registrations.Count; i++)
         {
             EditorExtensionCatalog.StateRegistration registration = registrations[i];
@@ -73,11 +73,11 @@ internal sealed class EditorExtensionStateStore
                 );
             }
         }
-        if (m_diagnostics.PublishCapture(failures.Select(static failure => failure.Message).ToArray()))
+        if (m_diagnostics.PublishCapture(failures.Select(static failure => failure.message).ToArray()))
         {
             for (int i = 0; i < failures.Count; i++)
             {
-                m_log.Write(LogLevel.Error, "{0} Full exception: {1}", [failures[i].Message, failures[i].Exception]);
+                m_log.Write(LogLevel.Error, "{0} Full exception: {1}", [failures[i].message, failures[i].exception]);
             }
         }
 
@@ -91,7 +91,7 @@ internal sealed class EditorExtensionStateStore
 
     internal void Restore(IReadOnlyList<EditorExtensionCatalog.StateRegistration> registrations)
     {
-        var failures = new List<(string Message, Exception Exception)>();
+        var failures = new List<(string message, Exception exception)>();
         for (int i = 0; i < registrations.Count; i++)
         {
             EditorExtensionCatalog.StateRegistration registration = registrations[i];
@@ -120,11 +120,11 @@ internal sealed class EditorExtensionStateStore
                 owner.isRestoring = false;
             }
         }
-        if (m_diagnostics.PublishRestore(failures.Select(static failure => failure.Message).ToArray()))
+        if (m_diagnostics.PublishRestore(failures.Select(static failure => failure.message).ToArray()))
         {
             for (int i = 0; i < failures.Count; i++)
             {
-                m_log.Write(LogLevel.Error, "{0} Full exception: {1}", [failures[i].Message, failures[i].Exception]);
+                m_log.Write(LogLevel.Error, "{0} Full exception: {1}", [failures[i].message, failures[i].exception]);
             }
         }
         SaveIfChanged();

@@ -89,9 +89,9 @@ public sealed partial class SceneHistoryTests
         GameObject child = scene.CreateObject("Child");
         GameObject other = scene.CreateObject("Other");
         child.transform.SetParent(root.transform);
-        Guid rootID = root.identity.persistentId;
-        Guid childID = child.identity.persistentId;
-        Guid otherID = other.identity.persistentId;
+        Guid rootID = root.identity.persistentID;
+        Guid childID = child.identity.persistentID;
+        Guid otherID = other.identity.persistentID;
         m_edits.DeleteGameObjects([child, root, other]);
         Assert.Null(IdentityAllocator.current.Get<GameObject>(rootID));
         Assert.Null(IdentityAllocator.current.Get<GameObject>(childID));
@@ -131,7 +131,7 @@ public sealed partial class SceneHistoryTests
     }
 }
 
-[StableTypeId("9ea6d04d-4ed3-48f3-ac3a-b09372a575ab")]
+[StableTypeID("9ea6d04d-4ed3-48f3-ac3a-b09372a575ab")]
 internal sealed class BatchValidationComponent : GameComponent
 {
     [SerializableProperty]

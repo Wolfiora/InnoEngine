@@ -44,7 +44,7 @@ public sealed unsafe partial class ImGuiWidget
 
     private void ApplyLayoutStyle(ImGuiStyle* nativeStyle)
     {
-        nativeStyle->Alpha = EditorPalette.opacityOpaque;
+        nativeStyle->Alpha = EditorPalette.C_OPACITY_OPAQUE;
         nativeStyle->DisabledAlpha = style.disabledAlpha;
         nativeStyle->FontScaleMain = style.fontScale;
         nativeStyle->WindowPadding = ImGui.ToNative(style.windowPadding);

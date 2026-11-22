@@ -50,7 +50,7 @@ public sealed class NativeAotDeploymentCompiler : IManagedDeploymentCompiler
     }
 
     /// <inheritdoc/>
-    public ManagedDeploymentId id => ManagedDeploymentId.nativeAot;
+    public ManagedDeploymentID id => ManagedDeploymentID.nativeAot;
 
     /// <inheritdoc/>
     public ManagedDeploymentCapabilities capabilities { get; }

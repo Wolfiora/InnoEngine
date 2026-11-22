@@ -7,7 +7,7 @@ using Inno.Scene;
 
 namespace Inno.Editor.Panel.Inspector;
 
-[EditorMenuSource(InspectorInteractionIds.C_COMPONENT_AREA)]
+[EditorMenuSource(InspectorInteractionIDs.C_COMPONENT_AREA)]
 internal sealed class AddComponentMenuProvider(TypeCatalog types) : EditorMenuSource
 {
     /// <summary>
@@ -35,7 +35,7 @@ internal sealed class AddComponentMenuProvider(TypeCatalog types) : EditorMenuSo
             {
                 continue;
             }
-            builder.Add(type.Name, InspectorInteractionIds.C_ADD_COMPONENT, argument: typeRef);
+            builder.Add(type.Name, InspectorInteractionIDs.C_ADD_COMPONENT, argument: typeRef);
         }
     }
 

@@ -165,7 +165,7 @@ public sealed class ArchitectureSymbolTests
 
     [Theory]
     [InlineData("public enum InputBackend { BuiltIn }", true)]
-    [InlineData("public readonly record struct InputBackendId(string value);", false)]
+    [InlineData("public readonly record struct InputBackendID(string value);", false)]
     public void ReplaceableBackendContractsUseOpenIdentifiers(
         string declaration,
         bool rejected

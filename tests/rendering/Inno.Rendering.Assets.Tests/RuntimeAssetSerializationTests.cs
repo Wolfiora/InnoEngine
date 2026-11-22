@@ -18,10 +18,10 @@ public sealed class RuntimeAssetSerializationTests
             catalogSource = new DotNetAssemblyCatalogSource(typeof(RuntimeAssetSerializationTests).Assembly)
         });
         using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
-        Assert.Equal(Guid.Parse("5bce7c89-203f-5921-8efc-1bca0f364943"), types.GetTypeRef(typeof(ShaderDefinition)).stableId);
-        Assert.Equal(Guid.Parse("0f50b92b-4d4b-55f8-a954-953630083303"), types.GetTypeRef(typeof(ShaderPassDefinition)).stableId);
-        Assert.Equal(Guid.Parse("dc64bc3e-f26f-55e0-bffe-99e98bd95b4f"), types.GetTypeRef(typeof(MaterialValue)).stableId);
-        Assert.Equal(Guid.Parse("a9af9e77-9a97-5f66-82a0-d720ac5604dc"), types.GetTypeRef(typeof(MaterialValueKind)).stableId);
+        Assert.Equal(Guid.Parse("5bce7c89-203f-5921-8efc-1bca0f364943"), types.GetTypeRef(typeof(ShaderDefinition)).stableID);
+        Assert.Equal(Guid.Parse("0f50b92b-4d4b-55f8-a954-953630083303"), types.GetTypeRef(typeof(ShaderPassDefinition)).stableID);
+        Assert.Equal(Guid.Parse("dc64bc3e-f26f-55e0-bffe-99e98bd95b4f"), types.GetTypeRef(typeof(MaterialValue)).stableID);
+        Assert.Equal(Guid.Parse("a9af9e77-9a97-5f66-82a0-d720ac5604dc"), types.GetTypeRef(typeof(MaterialValueKind)).stableID);
     }
 
     [Fact]

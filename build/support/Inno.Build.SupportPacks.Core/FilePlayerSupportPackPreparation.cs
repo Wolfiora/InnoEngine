@@ -15,7 +15,7 @@ namespace Inno.Build.SupportPacks;
 /// </summary>
 public sealed class FilePlayerSupportPackPreparation
 {
-    private readonly BuildTargetId m_target;
+    private readonly BuildTargetID m_target;
     private readonly IPlayerSupportPackValidator m_validator;
     private readonly string m_runtimeIdentifier;
     private readonly string m_nativePlatform;
@@ -78,7 +78,7 @@ public sealed class FilePlayerSupportPackPreparation
     /// The validator is null.
     /// </exception>
     public FilePlayerSupportPackPreparation(
-        BuildTargetId target,
+        BuildTargetID target,
         string runtimeIdentifier,
         string nativePlatform,
         string nativeExtension,
@@ -122,7 +122,7 @@ public sealed class FilePlayerSupportPackPreparation
     /// <summary>
     /// Gets the platform identity whose closure this source prepares.
     /// </summary>
-    public BuildTargetId target => m_target;
+    public BuildTargetID target => m_target;
 
     /// <summary>
     /// Resolves tools and validates required source inputs before any staging exists.
@@ -320,10 +320,10 @@ public sealed class FilePlayerSupportPackPreparation
     ) {
         foreach (NativeBuildProduct product in products)
         {
-            if (product.targetId != m_nativePlatform)
+            if (product.targetID != m_nativePlatform)
             {
                 throw new InvalidDataException(
-                    $"Native product '{product.component}' targets '{product.targetId}', not '{m_nativePlatform}'."
+                    $"Native product '{product.component}' targets '{product.targetID}', not '{m_nativePlatform}'."
                 );
             }
             if (!product.files.Any(file => string.Equals(Path.GetExtension(file), m_nativeExtension, StringComparison.OrdinalIgnoreCase)))

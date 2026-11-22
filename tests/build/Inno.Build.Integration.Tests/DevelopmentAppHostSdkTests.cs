@@ -26,7 +26,7 @@ public sealed class DevelopmentAppHostSdkTests
             Path.Combine(Path.GetTempPath(), "InnoSdkHostFixtures")
         );
         string project = Path.Combine(owner.directory, "SdkHostProbe.csproj");
-        Type[] references = [typeof(StandardBuildEnvironment), typeof(BuildCompositionContext), typeof(BuildTargetId)];
+        Type[] references = [typeof(StandardBuildEnvironment), typeof(BuildCompositionContext), typeof(BuildTargetID)];
         var items = new XElement("ItemGroup");
         foreach (Type reference in references)
         {
@@ -56,7 +56,7 @@ public sealed class DevelopmentAppHostSdkTests
             using System;
             using Inno.Build;
             using Inno.Build.Distribution.Standard;
-            Console.Write(StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId("sdk-probe")).dotnetHost);
+            Console.Write(StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetID("sdk-probe")).dotnetHost);
             """);
         using var buildOutput = new StringWriter();
         using var buildErrors = new StringWriter();

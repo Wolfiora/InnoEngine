@@ -17,7 +17,7 @@ public interface INativeToolchainProvider
     /// <param name="host">
     /// The explicitly declared execution host, independent of the target.
     /// </param>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The exact requested target; unsupported combinations must fail.
     /// </param>
     /// <param name="cancellationToken">
@@ -29,7 +29,7 @@ public interface INativeToolchainProvider
     ValueTask<NativeToolchainSelection> ResolveAsync(
         NativeBuildContext context,
         BuildHostDescriptor host,
-        string targetId,
+        string targetID,
         CancellationToken cancellationToken
     );
 }

@@ -39,7 +39,7 @@ public sealed class AssetSerializationServices
     /// <exception cref="InvalidOperationException">
     /// Thrown when <typeparamref name="TValue"/> has no stable type registration.
     /// </exception>
-    public Guid GetStableTypeId<TValue>() => m_types.GetTypeRef(typeof(TValue)).stableId;
+    public Guid GetStableTypeID<TValue>() => m_types.GetTypeRef(typeof(TValue)).stableID;
 
     /// <summary>
     /// Captures typed properties and their references as one neutral, owner-independent value.
@@ -67,7 +67,7 @@ public sealed class AssetSerializationServices
                 m_dependencySink(dependency);
             }
         }
-        return new(m_types.GetTypeRef(value.GetType()).stableId, data, dependencies.dependencies);
+        return new(m_types.GetTypeRef(value.GetType()).stableID, data, dependencies.dependencies);
     }
 
     /// <summary>

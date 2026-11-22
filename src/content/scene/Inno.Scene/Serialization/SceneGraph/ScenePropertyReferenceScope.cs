@@ -19,7 +19,7 @@ internal sealed class ScenePropertyReferenceScope : SceneReferenceScope
     ) : base(scene)
     {
         m_identities = IdentityAllocator.current;
-        if (scene.identity.runtimeIdentity is not { } owner || owner.domainId != m_identities.domainId
+        if (scene.identity.runtimeIdentity is not { } owner || owner.domainID != m_identities.domainID
             || scene.isDestroyed || !ReferenceEquals(m_identities.Get<GameScene>(owner), scene)
         ) {
             throw new InvalidOperationException("Scene property serialization requires its current owning identity domain.");
@@ -52,16 +52,16 @@ internal sealed class ScenePropertyReferenceScope : SceneReferenceScope
     /// <inheritdoc/>
     protected override bool TryGetSourceID(
         EngineObject engineObject,
-        out Guid sourceId
+        out Guid sourceID
     ) {
-        sourceId = default;
+        sourceID = default;
         if (!HasCurrentOwner() || engineObject.identity.runtimeIdentity is not { } identity
-            || identity.domainId != m_identities.domainId || !ReferenceEquals(m_identities.Get<EngineObject>(identity), engineObject)
+            || identity.domainID != m_identities.domainID || !ReferenceEquals(m_identities.Get<EngineObject>(identity), engineObject)
             || !BelongsToScene(engineObject)
         ) {
             return false;
         }
-        sourceId = engineObject.identity.persistentId;
+        sourceID = engineObject.identity.persistentID;
         return true;
     }
 
@@ -70,7 +70,7 @@ internal sealed class ScenePropertyReferenceScope : SceneReferenceScope
     /// </remarks>
     /// <inheritdoc/>
     protected override bool TryResolve(
-        Guid sourceId,
+        Guid sourceID,
         out EngineObject? engineObject
     ) {
         engineObject = null;
@@ -78,7 +78,7 @@ internal sealed class ScenePropertyReferenceScope : SceneReferenceScope
         {
             return false;
         }
-        Guid target = m_aliases is not null && m_aliases.TryGetValue(sourceId, out Guid alias) ? alias : sourceId;
+        Guid target = m_aliases is not null && m_aliases.TryGetValue(sourceID, out Guid alias) ? alias : sourceID;
         EngineObject? candidate = m_identities.Get<EngineObject>(target);
         if (candidate is null || !BelongsToScene(candidate))
         {

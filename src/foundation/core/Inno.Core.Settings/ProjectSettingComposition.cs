@@ -14,19 +14,19 @@ public sealed class ProjectSettingComposerAttribute : Attribute
     /// <summary>
     /// Creates a composer declaration for one stable setting protocol.
     /// </summary>
-    /// <param name="settingId">
+    /// <param name="settingID">
     /// The setting protocol composed by the attributed type.
     /// </param>
-    public ProjectSettingComposerAttribute(string settingId)
+    public ProjectSettingComposerAttribute(string settingID)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(settingId);
-        this.settingId = new ProjectSettingId(settingId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(settingID);
+        this.settingID = new ProjectSettingID(settingID);
     }
 
     /// <summary>
     /// Gets the stable setting protocol composed by the attributed type.
     /// </summary>
-    public ProjectSettingId settingId { get; }
+    public ProjectSettingID settingID { get; }
 }
 
 /// <summary>
@@ -58,7 +58,7 @@ public sealed class ProjectSettingContributionContext
         IReadOnlySet<string> dependencies,
         IReadOnlySet<string> overrides
     ) {
-        this.contributorId = contributorID;
+        this.contributorID = contributorID;
         this.source = source;
         m_dependencies = dependencies;
         m_overrides = overrides;
@@ -67,7 +67,7 @@ public sealed class ProjectSettingContributionContext
     /// <summary>
     /// Gets the stable Plugin ID, or <c>project</c> for the project-authored contribution.
     /// </summary>
-    public string contributorId { get; }
+    public string contributorID { get; }
 
     /// <summary>
     /// Gets the contribution source.
@@ -82,19 +82,19 @@ public sealed class ProjectSettingContributionContext
     /// <summary>
     /// Gets whether this contribution may explicitly replace data owned by another contributor.
     /// </summary>
-    /// <param name="ownerId">
+    /// <param name="ownerID">
     /// The stable owner whose data would be replaced.
     /// </param>
     /// <returns>
     /// <see langword="true"/> for project data, or when the Plugin both depends on and explicitly overrides
-    /// <paramref name="ownerId"/>.
+    /// <paramref name="ownerID"/>.
     /// </returns>
-    public bool CanOverride(string ownerId)
+    public bool CanOverride(string ownerID)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(ownerId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(ownerID);
         return isProject
-               || string.Equals(ownerId, "host", StringComparison.Ordinal)
-               || (m_dependencies.Contains(ownerId) && m_overrides.Contains(ownerId));
+               || string.Equals(ownerID, "host", StringComparison.Ordinal)
+               || (m_dependencies.Contains(ownerID) && m_overrides.Contains(ownerID));
     }
 }
 
@@ -251,7 +251,7 @@ public abstract class ProjectSettingComposer<TSetting, TContribution> : ProjectS
             {
                 throw new InvalidOperationException(
                     $"Composer '{GetType().FullName}' received an empty persisted contribution from "
-                    + $"'{contribution.context.contributorId}'."
+                    + $"'{contribution.context.contributorID}'."
                 );
             }
             decoded.Add(new ProjectSettingContribution<TContribution>(contribution.context, value));

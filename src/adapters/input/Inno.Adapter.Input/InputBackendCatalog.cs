@@ -10,7 +10,7 @@ namespace Inno.Adapter.Input;
 /// </summary>
 public sealed class InputBackendCatalog : IInputBackendFactory
 {
-    private readonly Dictionary<InputBackendId, InputBackendProvider> m_providers = [];
+    private readonly Dictionary<InputBackendID, InputBackendProvider> m_providers = [];
 
     /// <summary>
     /// Validates and captures a complete provider set without creating any service.
@@ -34,18 +34,18 @@ public sealed class InputBackendCatalog : IInputBackendFactory
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
             }
         }
-        this.supportedBackends = new ReadOnlyCollection<InputBackendId>([.. m_providers.Keys]);
+        this.supportedBackends = new ReadOnlyCollection<InputBackendID>([.. m_providers.Keys]);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<InputBackendId> supportedBackends { get; }
+    public IReadOnlyList<InputBackendID> supportedBackends { get; }
 
     /// <exception cref="InvalidOperationException">
     /// The selected provider returned no service.
     /// </exception>
     /// <inheritdoc/>
     public IInputEventSource CreateEventSource(
-        InputBackendId backend,
+        InputBackendID backend,
         IPlatformWindow window,
         bool acceptAllWindows
     ) {

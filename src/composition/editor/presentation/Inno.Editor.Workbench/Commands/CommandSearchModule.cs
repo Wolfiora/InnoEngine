@@ -8,7 +8,7 @@ using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Workbench;
 
-[EditorModule(GlobalInteractionIds.C_COMMAND_SEARCH_MODULE, order: 20)]
+[EditorModule(GlobalInteractionIDs.C_COMMAND_SEARCH_MODULE, order: 20)]
 internal sealed class CommandSearchModule(EditorInteractions interactions) : EditorModule
 {
     private string m_area = "editor/global";
@@ -36,11 +36,11 @@ internal sealed class CommandSearchModule(EditorInteractions interactions) : Edi
         search = string.Empty;
     }
 
-    internal bool Draw(EditorUiSession ui)
+    internal bool Draw(EditorUISession ui)
     {
-        EditorInteraction global = interactions.For(GlobalInteractionIds.C_MAIN_MENU_AREA);
+        EditorInteraction global = interactions.For(GlobalInteractionIDs.C_MAIN_MENU_AREA);
         EditorMenuModel globalMenu = global.BuildMenu();
-        var globalIds = new HashSet<string>(StringComparer.Ordinal);
+        var globalIDs = new HashSet<string>(StringComparer.Ordinal);
         Collect(globalMenu.items);
         if (ui.menus.DrawSearchItems(global, globalMenu.items, search))
         {
@@ -49,15 +49,15 @@ internal sealed class CommandSearchModule(EditorInteractions interactions) : Edi
         object? target = m_target is RuntimeIdentity id && interactions.TryResolveIdentity(id, out IdentityObject? live) ? live : null;
         EditorInteraction local = interactions.For(m_area, target);
         EditorMenuModel commands = local.BuildCommands();
-        EditorMenuItem[] localItems = Leaves(commands.items).Where(item => !globalIds.Contains(item.actionId)).ToArray();
+        EditorMenuItem[] localItems = Leaves(commands.items).Where(item => !globalIDs.Contains(item.actionID)).ToArray();
         return ui.menus.DrawSearchItems(local, localItems, search);
         void Collect(IReadOnlyList<EditorMenuItem> items)
         {
             foreach (EditorMenuItem item in items)
             {
-                if (item.actionId.Length != 0)
+                if (item.actionID.Length != 0)
                 {
-                    _ = globalIds.Add(item.actionId);
+                    _ = globalIDs.Add(item.actionID);
                 }
                 Collect(item.children);
             }

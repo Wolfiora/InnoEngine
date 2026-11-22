@@ -7,9 +7,9 @@ using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Native.ImGui;
 using Inno.Testing.Editor.Native;
 
+using Gui = Inno.Editor.ImGui.ImGui;
+using GuiInput = Inno.Editor.ImGui.EditorUIInput;
 using NativeImGui = Inno.Native.ImGui.ImGui;
-using Ui = Inno.Editor.ImGui.ImGui;
-using UiInput = Inno.Editor.ImGui.EditorUiInput;
 
 namespace Inno.Editor.PlayMode.Tests;
 
@@ -53,7 +53,7 @@ public sealed unsafe class TreeKeyboardOwnershipNativeTests
                     host.ui.widgets.SetNextTreeNodeOpen(true);
                     initialize = false;
                 }
-                TreeNodeResult row = host.ui.widgets.TreeNode("keyboard-row", _ => Ui.Text("A domain-independent row"), new()
+                TreeNodeResult row = host.ui.widgets.TreeNode("keyboard-row", _ => Gui.Text("A domain-independent row"), new()
                 {
                     requestFocus = rowFocus,
                     drawViewportOverlay = () =>
@@ -61,7 +61,7 @@ public sealed unsafe class TreeKeyboardOwnershipNativeTests
                         NativeImGui.SameLine(0f, -1f);
                         if (overlayFocus)
                         {
-                            Ui.FocusNextItem();
+                            Gui.FocusNextItem();
                         }
                         if (NativeImGui.SmallButton("Overlay"))
                         {
@@ -100,7 +100,7 @@ public sealed unsafe class TreeKeyboardOwnershipNativeTests
         Assert.Equal(0, overlayPresses);
         host.Frame(() =>
         {
-            UiInput input = Ui.GetInput();
+            GuiInput input = Gui.GetInput();
             Assert.Equal(primaryModifier == KeyModifier.Control, input.control);
             Assert.Equal(primaryModifier == KeyModifier.Super, input.super);
             draw();

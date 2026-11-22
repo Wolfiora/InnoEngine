@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Selects how texture samples are decoded for shader use.
 /// </summary>
-[StableTypeId("da42452c-1c45-5a09-8040-e72e37c00361")]
+[StableTypeID("da42452c-1c45-5a09-8040-e72e37c00361")]
 public enum TextureColorSpace
 {
     /// <summary>

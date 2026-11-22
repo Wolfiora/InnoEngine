@@ -30,7 +30,7 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
     /// <summary>
     /// Invokes optional node controls within one generation lease.
     /// </summary>
-    /// <param name="definitionId">
+    /// <param name="definitionID">
     /// Stable node definition identity.
     /// </param>
     /// <param name="context">
@@ -40,11 +40,11 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
     /// True when a registered drawer rendered the controls; false leaves presentation to the host.
     /// </returns>
     public bool TryDraw(
-        string definitionId,
+        string definitionID,
         ShaderNodeDrawContext context
     ) {
         using IDisposable operation = m_types.AcquireOperation("Draw shader node controls");
-        if (!m_registry.snapshot.drawers.TryGetValue(definitionId, out ShaderNodeDrawer? drawer))
+        if (!m_registry.snapshot.drawers.TryGetValue(definitionID, out ShaderNodeDrawer? drawer))
         {
             return false;
         }
@@ -55,22 +55,22 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
     /// <summary>
     /// Resolves an optional artist-facing name without executing a drawer or retaining its generation.
     /// </summary>
-    /// <param name="definitionId">
+    /// <param name="definitionID">
     /// Stable compiler-independent node identity.
     /// </param>
     /// <returns>
     /// The contributed name, or null when the host should use its generic presentation.
     /// </returns>
-    public string? GetDisplayName(string definitionId)
+    public string? GetDisplayName(string definitionID)
     {
         using IDisposable operation = m_types.AcquireOperation("Resolve shader node presentation");
-        return m_registry.snapshot.names.TryGetValue(definitionId, out string? name) && name.Length != 0 ? name : null;
+        return m_registry.snapshot.names.TryGetValue(definitionID, out string? name) && name.Length != 0 ? name : null;
     }
 
     /// <summary>
     /// Gets optional creation-menu presentation without executing the drawer.
     /// </summary>
-    /// <param name="definitionId">
+    /// <param name="definitionID">
     /// Stable compiler-independent node identity.
     /// </param>
     /// <param name="presentation">
@@ -80,11 +80,11 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
     /// True when the current generation contributes presentation for the node; otherwise false.
     /// </returns>
     public bool TryGetPresentation(
-        string definitionId,
+        string definitionID,
         out ShaderNodePresentation presentation
     ) {
         using IDisposable operation = m_types.AcquireOperation("Resolve shader node authoring presentation");
-        return m_registry.snapshot.presentations.TryGetValue(definitionId, out presentation);
+        return m_registry.snapshot.presentations.TryGetValue(definitionID, out presentation);
     }
 
     /// <summary>
@@ -120,7 +120,7 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
                     .Select(reference => reference.Resolve(snapshot))
                 ) {
                     ShaderNodeDrawerAttribute attribute = type.GetCustomAttribute<ShaderNodeDrawerAttribute>()!;
-                    string id = attribute.definitionId;
+                    string id = attribute.definitionID;
                     if (result.ContainsKey(id))
                     {
                         throw new InvalidOperationException($"Shader node drawer '{id}' is registered twice.");

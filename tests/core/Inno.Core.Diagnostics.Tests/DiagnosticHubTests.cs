@@ -158,11 +158,11 @@ public sealed class DiagnosticHubTests : IDisposable
         var sink = new ProbeSink();
         m_hub.RegisterSink(sink);
         using DiagnosticReporter reporter = m_hub.CreateReporter(new DiagnosticSource("tests.audio", "Audio"));
-        reporter.Publish(new Diagnostic("LOAD", "First", DiagnosticSeverity.Warning, objectId: m_assetID));
-        reporter.Publish(new Diagnostic("LOAD", "Updated", DiagnosticSeverity.Error, objectId: m_assetID));
+        reporter.Publish(new Diagnostic("LOAD", "First", DiagnosticSeverity.Warning, objectID: m_assetID));
+        reporter.Publish(new Diagnostic("LOAD", "Updated", DiagnosticSeverity.Error, objectID: m_assetID));
         Assert.Equal("Updated", Assert.Single(Assert.Single(sink.reports).diagnostics).message);
         reporter.Publish(new Diagnostic("DEVICE", "Muted", DiagnosticSeverity.Warning));
-        reporter.Resolve("LOAD", objectId: m_assetID);
+        reporter.Resolve("LOAD", objectID: m_assetID);
         Assert.Equal("DEVICE", Assert.Single(Assert.Single(sink.reports).diagnostics).code);
         reporter.Dispose();
         Assert.Empty(sink.reports);

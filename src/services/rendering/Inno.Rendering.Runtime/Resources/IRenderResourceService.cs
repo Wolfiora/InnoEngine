@@ -13,7 +13,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Resolves neutral assets and provider-owned uploads into opaque resources for the active device generation.
 /// </summary>
-[StableTypeId("8f112b16-5cda-5171-949e-e2c5c4583b34")]
+[StableTypeID("8f112b16-5cda-5171-949e-e2c5c4583b34")]
 public interface IRenderResourceService
 {
     /// <summary>
@@ -88,7 +88,7 @@ public interface IRenderResourceService
     /// A handle owned by the active device generation.
     /// </returns>
     PersistentBufferHandle AcquireBuffer(
-        RenderPersistentResourceId id,
+        RenderPersistentResourceID id,
         long revision,
         PersistentBufferDescriptor descriptor,
         ReadOnlyMemory<byte> initialData,
@@ -117,7 +117,7 @@ public interface IRenderResourceService
     /// A handle owned by the active device generation.
     /// </returns>
     PersistentTextureHandle AcquireTexture(
-        RenderPersistentResourceId id,
+        RenderPersistentResourceID id,
         long revision,
         RenderTextureDescriptor descriptor,
         IReadOnlyList<RenderTextureSubresourceData> subresources,
@@ -146,7 +146,7 @@ public interface IRenderResourceService
     /// A handle owned by the active device generation.
     /// </returns>
     PersistentTextureHandle AcquireKtxTexture(
-        RenderPersistentResourceId id,
+        RenderPersistentResourceID id,
         long revision,
         ReadOnlyMemory<byte> containerData,
         bool sRgb,
@@ -211,7 +211,7 @@ public interface IRenderResourceService
     /// A graphics pipeline owned by the active device generation.
     /// </returns>
     GraphicsPipelineHandle AcquireGraphicsPipeline(
-        RenderPersistentResourceId id,
+        RenderPersistentResourceID id,
         long revision,
         GraphicsPipelineDescriptor descriptor,
         string name
@@ -236,7 +236,7 @@ public interface IRenderResourceService
     /// A compute pipeline owned by the active device generation.
     /// </returns>
     ComputePipelineHandle AcquireComputePipeline(
-        RenderPersistentResourceId id,
+        RenderPersistentResourceID id,
         long revision,
         ComputePipelineDescriptor descriptor,
         string name
@@ -248,10 +248,10 @@ public interface IRenderResourceService
     /// <param name="material">
     /// Material asset to resolve.
     /// </param>
-    /// <param name="contractId">
+    /// <param name="contractID">
     /// Provider-owned shader contract.
     /// </param>
-    /// <param name="passRoleId">
+    /// <param name="passRoleID">
     /// Provider-owned pass role.
     /// </param>
     /// <param name="vertexLayout">
@@ -268,8 +268,8 @@ public interface IRenderResourceService
     /// </returns>
     bool TryResolveGraphicsMaterial(
         MaterialAsset material,
-        ShaderContractId contractId,
-        ShaderPassRoleId passRoleId,
+        ShaderContractID contractID,
+        ShaderPassRoleID passRoleID,
         RenderVertexLayout? vertexLayout,
         MaterialPropertyBlock? overrides,
         out RenderMaterialPass? materialPass
@@ -287,10 +287,10 @@ public interface IRenderResourceService
     /// <param name="material">
     /// Invocation-local values and a persistent Shader reference; neither asset is changed or retained.
     /// </param>
-    /// <param name="contractId">
+    /// <param name="contractID">
     /// Required provider-owned Shader contract.
     /// </param>
-    /// <param name="passRoleId">
+    /// <param name="passRoleID">
     /// Required role within the selected Technique.
     /// </param>
     /// <param name="programKind">
@@ -315,11 +315,11 @@ public interface IRenderResourceService
     /// No artifact decoder is configured, or resource retirement cannot complete.
     /// </exception>
     bool TryResolveMaterialArtifact(
-        RenderPersistentResourceId scope,
+        RenderPersistentResourceID scope,
         RenderShaderArtifact artifact,
         MaterialAsset material,
-        ShaderContractId contractId,
-        ShaderPassRoleId passRoleId,
+        ShaderContractID contractID,
+        ShaderPassRoleID passRoleID,
         ShaderProgramKind programKind,
         RenderVertexLayout? vertexLayout,
         MaterialPropertyBlock? overrides,
@@ -333,10 +333,10 @@ public interface IRenderResourceService
     /// <param name="material">
     /// Material asset to resolve.
     /// </param>
-    /// <param name="contractId">
+    /// <param name="contractID">
     /// Provider-owned shader contract.
     /// </param>
-    /// <param name="passRoleId">
+    /// <param name="passRoleID">
     /// Provider-owned pass role.
     /// </param>
     /// <param name="overrides">
@@ -350,8 +350,8 @@ public interface IRenderResourceService
     /// </returns>
     bool TryResolveComputeMaterial(
         MaterialAsset material,
-        ShaderContractId contractId,
-        ShaderPassRoleId passRoleId,
+        ShaderContractID contractID,
+        ShaderPassRoleID passRoleID,
         MaterialPropertyBlock? overrides,
         out RenderMaterialPass? materialPass
     );
@@ -417,5 +417,5 @@ public interface IRenderResourceService
     /// Calls between frames or during graph execution queue neutral identities until the next frame;
     /// runtime shutdown also retires them. Calls must occur on the rendering owner thread. Unused identities are ignored.
     /// </remarks>
-    void Release(RenderPersistentResourceId id);
+    void Release(RenderPersistentResourceID id);
 }

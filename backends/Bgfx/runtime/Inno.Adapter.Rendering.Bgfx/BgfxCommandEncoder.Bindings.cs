@@ -57,7 +57,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
     /// The sampler consumed by bind texture; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public override void BindTexture(
-        RenderBindingId binding,
+        RenderBindingID binding,
         RenderTextureHandle texture,
         RenderSamplerState sampler
     ) => BindTexture(binding, m_device.ResolveTexture(texture), sampler);
@@ -75,7 +75,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
     /// The sampler consumed by bind texture; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public override void BindTexture(
-        RenderBindingId binding,
+        RenderBindingID binding,
         PersistentTextureHandle texture,
         RenderSamplerState sampler
     ) => BindTexture(binding, m_device.ResolveTexture(texture), sampler);
@@ -93,7 +93,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
     /// The mip level consumed by bind storage texture; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public override void BindStorageTexture(
-        RenderBindingId binding,
+        RenderBindingID binding,
         RenderTextureHandle texture,
         int mipLevel = 0
     ) => BindStorageTexture(
@@ -116,7 +116,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
     /// The mip level consumed by bind storage texture; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public override void BindStorageTexture(
-        RenderBindingId binding,
+        RenderBindingID binding,
         PersistentTextureHandle texture,
         int mipLevel = 0
     ) => BindStorageTexture(
@@ -136,7 +136,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
     /// The buffer consumed by bind buffer; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public override void BindBuffer(
-        RenderBindingId binding,
+        RenderBindingID binding,
         RenderBufferHandle buffer
     ) => BindBuffer(binding, m_device.ResolveBuffer(buffer));
 
@@ -150,7 +150,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
     /// The buffer consumed by bind buffer; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public override void BindBuffer(
-        RenderBindingId binding,
+        RenderBindingID binding,
         PersistentBufferHandle buffer
     ) => BindBuffer(binding, m_device.ResolveBuffer(buffer));
 
@@ -164,7 +164,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
     /// The concrete value read or transformed by this operation.
     /// </param>
     public override void SetUniform(
-        RenderBindingId binding,
+        RenderBindingID binding,
         ReadOnlySpan<byte> value
     ) {
         BgfxShaderBindingResource resource = ResolveBinding(binding, RenderShaderBindingKind.Uniform);
@@ -196,7 +196,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
     }
 
     private void BindTexture(
-        RenderBindingId binding,
+        RenderBindingID binding,
         bgfx.TextureHandle texture,
         RenderSamplerState sampler
     ) {
@@ -211,7 +211,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
     }
 
     private void BindStorageTexture(
-        RenderBindingId binding,
+        RenderBindingID binding,
         bgfx.TextureHandle texture,
         RenderTextureDescriptor descriptor,
         int mipLevel
@@ -251,7 +251,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
     }
 
     private void BindBuffer(
-        RenderBindingId binding,
+        RenderBindingID binding,
         BgfxBufferResource buffer
     ) {
         BgfxShaderBindingResource resource = ResolveBinding(binding, RenderShaderBindingKind.StorageBuffer);
@@ -313,7 +313,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
     }
 
     private BgfxShaderBindingResource ResolveBinding(
-        RenderBindingId binding,
+        RenderBindingID binding,
         RenderShaderBindingKind requiredKind
     ) {
         if (!binding.isValid)

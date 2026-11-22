@@ -63,13 +63,13 @@ public sealed class GamePresentationSettingsTests
                 new FileByteDocumentStore(Path.GetFullPath(Path.Combine(directory, "Settings.Project.inno"))),
                 host.types,
                 host.serialization,
-                new ProjectId("tests.runtime"),
+                new ProjectID("tests.runtime"),
                 SerializationContext.empty
             );
             settings.RebuildCurrent();
 
             GamePresentationSettings presentation = settings.Get<GamePresentationSettings>(
-                GamePresentationSettings.settingId
+                GamePresentationSettings.settingID
             );
 
             Assert.True(presentation.preserveAspectRatio);

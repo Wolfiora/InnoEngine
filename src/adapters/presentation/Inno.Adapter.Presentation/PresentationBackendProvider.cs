@@ -16,7 +16,7 @@ public abstract class PresentationBackendProvider
     /// <exception cref="ArgumentException">
     /// The identifier is unassigned.
     /// </exception>
-    protected PresentationBackendProvider(PresentationBackendId id)
+    protected PresentationBackendProvider(PresentationBackendID id)
     {
         if (!id.isValid)
         {
@@ -28,7 +28,7 @@ public abstract class PresentationBackendProvider
     /// <summary>
     /// Gets this registration's immutable implementation identity.
     /// </summary>
-    public PresentationBackendId id { get; }
+    public PresentationBackendID id { get; }
 
     /// <summary>
     /// Creates a new caller-owned presentation context over the supplied host resources.

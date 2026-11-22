@@ -14,8 +14,8 @@ using Inno.Editor.ImGui.ImGuiWidget;
 
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
 
@@ -24,10 +24,10 @@ internal sealed partial class FileBrowserPanel
     private void DrawBrowser(EditorContext context)
     {
         m_navigation.SyncExternalDirectoryChange(m_assets.browser.root, m_assets.browser.currentDirectory);
-        EditorUiLayout style = Ui.GetLayout();
+        EditorUILayout style = Gui.GetLayout();
         float breadcrumbBarHeight = GetBreadcrumbBarHeight(m_assets.browser.root, m_assets.browser.currentDirectory);
         var bodySize = new Vector2(0f, -(breadcrumbBarHeight + style.itemSpacing.Y));
-        bool mainVisible = Ui.BeginChild(
+        bool mainVisible = Gui.BeginChild(
             "##FileBrowserMain",
             bodySize,
             ImGuiChildFlags.None,
@@ -42,29 +42,29 @@ internal sealed partial class FileBrowserPanel
                                              | ImGuiTableFlags.SizingFixedFit
                                              | ImGuiTableFlags.NoSavedSettings;
                 float splitterWidth = GetTreeSplitterWidth(style);
-                float availableWidth = MathF.Max(0f, Ui.GetContentRegionAvailable().X);
+                float availableWidth = MathF.Max(0f, Gui.GetContentRegionAvailable().X);
                 float treeWidth = ResolveTreeWidth(m_treePaneRatio, availableWidth, splitterWidth);
-                Ui.PushStyleVar(ImGuiStyleVar.CellPadding, Vector2.Zero);
+                Gui.PushStyleVar(ImGuiStyleVar.CellPadding, Vector2.Zero);
                 try
                 {
-                    bool splitStarted = Ui.BeginTable("##FileBrowserSplit", 3, splitFlags, default, 0f);
+                    bool splitStarted = Gui.BeginTable("##FileBrowserSplit", 3, splitFlags, default, 0f);
                     try
                     {
                         if (splitStarted)
                         {
-                            Ui.TableSetupColumn("##Tree", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), treeWidth);
-                            Ui.TableSetupColumn(
+                            Gui.TableSetupColumn("##Tree", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), treeWidth);
+                            Gui.TableSetupColumn(
                                 "##Splitter",
                                 (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize),
                                 splitterWidth
                             );
-                            Ui.TableSetupColumn("##Content", ImGuiTableColumnFlags.WidthStretch);
-                            Ui.TableNextRow();
-                            _ = Ui.TableSetColumnIndex(0);
+                            Gui.TableSetupColumn("##Content", ImGuiTableColumnFlags.WidthStretch);
+                            Gui.TableNextRow();
+                            _ = Gui.TableSetColumnIndex(0);
                             DrawTreePane(context);
-                            _ = Ui.TableSetColumnIndex(1);
+                            _ = Gui.TableSetColumnIndex(1);
                             DrawTreeSplitter(splitterWidth, availableWidth, treeWidth);
-                            _ = Ui.TableSetColumnIndex(2);
+                            _ = Gui.TableSetColumnIndex(2);
                             DrawContentPane(context);
                         }
                     }
@@ -72,19 +72,19 @@ internal sealed partial class FileBrowserPanel
                     {
                         if (splitStarted)
                         {
-                            Ui.EndTable();
+                            Gui.EndTable();
                         }
                     }
                 }
                 finally
                 {
-                    Ui.PopStyleVar();
+                    Gui.PopStyleVar();
                 }
             }
         }
         finally
         {
-            Ui.EndChild();
+            Gui.EndChild();
         }
 
         DrawBreadcrumbBar(context, breadcrumbBarHeight);
@@ -95,39 +95,39 @@ internal sealed partial class FileBrowserPanel
         float availableWidth,
         float treeWidth
     ) {
-        var size = new Vector2(width, MathF.Max(1f, Ui.GetContentRegionAvailable().Y));
-        _ = Ui.InvisibleButton("##TreeSplitterGrip", size);
-        bool hovered = Ui.IsItemHovered();
-        bool active = Ui.IsItemActive();
+        var size = new Vector2(width, MathF.Max(1f, Gui.GetContentRegionAvailable().Y));
+        _ = Gui.InvisibleButton("##TreeSplitterGrip", size);
+        bool hovered = Gui.IsItemHovered();
+        bool active = Gui.IsItemActive();
         if (hovered || active)
         {
-            Ui.SetMouseCursor(ImGuiMouseCursor.ResizeEw);
+            Gui.SetMouseCursor(ImGuiMouseCursor.ResizeEw);
         }
         if (active)
         {
-            Vector2 delta = Ui.GetMouseDragDelta(ImGuiMouseButton.Left);
+            Vector2 delta = Gui.GetMouseDragDelta(ImGuiMouseButton.Left);
             if (MathF.Abs(delta.X) > 0f)
             {
                 float requestedWidth = ClampTreeWidth(treeWidth + delta.X, availableWidth, width);
                 m_treePaneRatio = CalculateTreePaneRatio(requestedWidth, availableWidth, width);
-                Ui.ResetMouseDragDelta(ImGuiMouseButton.Left);
+                Gui.ResetMouseDragDelta(ImGuiMouseButton.Left);
             }
         }
 
-        Vector2 min = Ui.GetItemMinimum();
-        Vector2 max = Ui.GetItemMaximum();
+        Vector2 min = Gui.GetItemMinimum();
+        Vector2 max = Gui.GetItemMaximum();
         Vector4 color = active ? EditorPalette.contentAccent : hovered ? EditorPalette.contentBorder : EditorPalette.contentBorderSoft;
-        Ui.DrawFilledRectangle(min, max, Ui.ToPackedColor(color), 0f);
+        Gui.DrawFilledRectangle(min, max, Gui.ToPackedColor(color), 0f);
     }
 
     private void DrawTreePane(EditorContext context)
     {
-        Ui.PushStyleColor(ImGuiCol.ChildBg, EditorPalette.collectionHeader);
+        Gui.PushStyleColor(ImGuiCol.ChildBg, EditorPalette.collectionHeader);
         try
         {
-            EditorUiLayout style = Ui.GetLayout();
+            EditorUILayout style = Gui.GetLayout();
             var treePaneSize = new Vector2(-style.windowPadding.X, 0f);
-            bool treeVisible = Ui.BeginChild(
+            bool treeVisible = Gui.BeginChild(
                 "##TreePane",
                 treePaneSize,
                 ImGuiChildFlags.None,
@@ -137,8 +137,8 @@ internal sealed partial class FileBrowserPanel
             {
                 if (treeVisible)
                 {
-                    float footerHeight = Ui.GetFrameHeight() + style.windowPadding.Y * 2f + style.itemSpacing.Y;
-                    bool treeScrollVisible = Ui.BeginChild(
+                    float footerHeight = Gui.GetFrameHeight() + style.windowPadding.Y * 2f + style.itemSpacing.Y;
+                    bool treeScrollVisible = Gui.BeginChild(
                         "##TreeScroll",
                         new Vector2(0f, -footerHeight),
                         ImGuiChildFlags.None,
@@ -165,7 +165,7 @@ internal sealed partial class FileBrowserPanel
                     }
                     finally
                     {
-                        Ui.EndChild();
+                        Gui.EndChild();
                     }
 
                     DrawRootSwitchFooter(context);
@@ -173,7 +173,7 @@ internal sealed partial class FileBrowserPanel
             }
             finally
             {
-                Ui.EndChild();
+                Gui.EndChild();
             }
 
             if (!IsReadOnlyLocation(m_assets.edits.pipeline, m_assets.browser))
@@ -183,7 +183,7 @@ internal sealed partial class FileBrowserPanel
         }
         finally
         {
-            Ui.PopStyleColor();
+            Gui.PopStyleColor();
         }
     }
 
@@ -194,7 +194,7 @@ internal sealed partial class FileBrowserPanel
         PushButtonColors(EditorPalette.contentAccent);
         try
         {
-            if (Ui.Button($"Switch to {nextRoot}##FileBrowserRoot", new Vector2(-1f, 0f)))
+            if (Gui.Button($"Switch to {nextRoot}##FileBrowserRoot", new Vector2(-1f, 0f)))
             {
                 m_tree.RequestOpenRoot();
                 m_navigation.SwitchRoot(context, nextRoot);
@@ -202,16 +202,16 @@ internal sealed partial class FileBrowserPanel
         }
         finally
         {
-            Ui.PopStyleColor(3);
+            Gui.PopStyleColor(3);
         }
     }
 
     private void DrawContentPane(EditorContext context)
     {
-        Ui.PushStyleColor(ImGuiCol.ChildBg, EditorPalette.collectionHeader);
+        Gui.PushStyleColor(ImGuiCol.ChildBg, EditorPalette.collectionHeader);
         try
         {
-            bool contentVisible = Ui.BeginChild(
+            bool contentVisible = Gui.BeginChild(
                 "##ContentPane",
                 Vector2.Zero,
                 ImGuiChildFlags.None,
@@ -227,7 +227,7 @@ internal sealed partial class FileBrowserPanel
             }
             finally
             {
-                Ui.EndChild();
+                Gui.EndChild();
             }
 
             if (!IsReadOnlyLocation(m_assets.edits.pipeline, m_assets.browser))
@@ -237,7 +237,7 @@ internal sealed partial class FileBrowserPanel
         }
         finally
         {
-            Ui.PopStyleColor();
+            Gui.PopStyleColor();
         }
     }
 
@@ -275,7 +275,7 @@ internal sealed partial class FileBrowserPanel
         }
     }
 
-    private static float GetTreeSplitterWidth(EditorUiLayout style)
+    private static float GetTreeSplitterWidth(EditorUILayout style)
         => MathF.Max(EditorUI.current.widgets.style.splitterMinimumWidth, style.dockingSeparatorSize);
 
     private static float ClampTreeWidth(
@@ -309,20 +309,20 @@ internal sealed partial class FileBrowserPanel
 
     private static void DrawFooterTopSplitter()
     {
-        EditorUiLayout style = Ui.GetLayout();
-        Vector2 cursor = Ui.GetCursorScreenPosition();
-        float width = Ui.GetContentRegionAvailable().X;
+        EditorUILayout style = Gui.GetLayout();
+        Vector2 cursor = Gui.GetCursorScreenPosition();
+        float width = Gui.GetContentRegionAvailable().X;
         float lineY = cursor.Y + style.windowPadding.Y;
-        uint color = Ui.ToPackedColor(EditorPalette.contentBorder);
-        Ui.DrawLine(new Vector2(cursor.X, lineY), new Vector2(cursor.X + width, lineY), color, EditorUI.current.widgets.style.borderSize);
-        Ui.SetCursorPosY(Ui.GetCursorPosY() + style.windowPadding.Y * 2f);
+        uint color = Gui.ToPackedColor(EditorPalette.contentBorder);
+        Gui.DrawLine(new Vector2(cursor.X, lineY), new Vector2(cursor.X + width, lineY), color, EditorUI.current.widgets.style.borderSize);
+        Gui.SetCursorPosY(Gui.GetCursorPosY() + style.windowPadding.Y * 2f);
     }
 
     private static void DrawBreadcrumbTopSeparator()
     {
-        Vector2 min = Ui.GetWindowPos();
-        Vector2 size = Ui.GetWindowSize();
-        uint color = Ui.ToPackedColor(EditorPalette.contentBorder);
-        Ui.DrawLine(min, new Vector2(min.X + size.X, min.Y), color, EditorUI.current.widgets.style.borderSize);
+        Vector2 min = Gui.GetWindowPos();
+        Vector2 size = Gui.GetWindowSize();
+        uint color = Gui.ToPackedColor(EditorPalette.contentBorder);
+        Gui.DrawLine(min, new Vector2(min.X + size.X, min.Y), color, EditorUI.current.widgets.style.borderSize);
     }
 }

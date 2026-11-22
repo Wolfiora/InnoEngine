@@ -15,7 +15,7 @@ using Inno.Rendering.Assets.Authoring;
 using Inno.Rendering.Shaders;
 
 using EditorImGui = Inno.Editor.ImGui.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 
@@ -24,7 +24,7 @@ internal sealed partial class ShaderEditorCanvas
     private void Controls(GraphNodeRecord node)
     {
         if (owner.drawers?.TryDraw(
-            node.definitionId,
+            node.definitionID,
             new(node, owner.serialization, owner.context, (
                 key,
                 value,
@@ -34,7 +34,7 @@ internal sealed partial class ShaderEditorCanvas
         ) {
             return;
         }
-        switch (node.definitionId)
+        switch (node.definitionID)
         {
             case "inno.shader.constant":
                 Scalar(node);
@@ -98,16 +98,16 @@ internal sealed partial class ShaderEditorCanvas
             case "inno.shader.source":
                 Source(node);
                 break;
-            case ShaderGraphNodes.callDefinitionId:
+            case ShaderGraphNodes.C_CALL_DEFINITION_ID:
                 GraphCall(node);
                 break;
-            case ShaderGraphNodes.inputDefinitionId:
+            case ShaderGraphNodes.C_INPUT_DEFINITION_ID:
                 GraphInputs(node);
                 break;
-            case ShaderGraphNodes.outputDefinitionId:
+            case ShaderGraphNodes.C_OUTPUT_DEFINITION_ID:
                 GraphOutputs(node);
                 break;
-            case ShaderGraphDocument.outputDefinitionId:
+            case ShaderGraphDocument.C_OUTPUT_DEFINITION_ID:
                 Output(node);
                 break;
             case "inno.shader.storage-load":
@@ -149,7 +149,7 @@ internal sealed partial class ShaderEditorCanvas
     {
         Guid selected = Read(node, "sourceId", Guid.Empty);
         string path = Read(node, "sourcePath", string.Empty);
-        ShaderGraphNodeInterface nodeInterface = Read(node, ShaderGraphNodes.interfaceKey, new ShaderGraphNodeInterface());
+        ShaderGraphNodeInterface nodeInterface = Read(node, ShaderGraphNodes.C_INTERFACE_KEY, new ShaderGraphNodeInterface());
         InspectorRow("graph-node.asset", "Node Graph", () =>
         {
             if (!EditorUI.current.widgets.BeginBoundedCombo(
@@ -188,7 +188,7 @@ internal sealed partial class ShaderEditorCanvas
                     using EditorHistoryTransaction transaction = owner.interactions.history.BeginTransaction("Assign Graph Node");
                     Set(node, "sourceId", id);
                     Set(node, "sourcePath", entry.assetPath.ToString());
-                    Set(node, ShaderGraphNodes.interfaceKey, candidate);
+                    Set(node, ShaderGraphNodes.C_INTERFACE_KEY, candidate);
                     transaction.Commit();
                     selected = id;
                     path = entry.assetPath.ToString();
@@ -225,22 +225,22 @@ internal sealed partial class ShaderEditorCanvas
     private void GraphInputs(GraphNodeRecord node)
     {
         GraphInterfaceMetadata();
-        ShaderGraphNodeInputSettings settings = Read(node, ShaderGraphDocument.settingsKey, new ShaderGraphNodeInputSettings());
+        ShaderGraphNodeInputSettings settings = Read(node, ShaderGraphDocument.C_SETTINGS_KEY, new ShaderGraphNodeInputSettings());
         GraphPorts(node, settings.ports, inputs: true, ports =>
         {
             settings.ports = ports;
-            Set(node, ShaderGraphDocument.settingsKey, settings);
+            Set(node, ShaderGraphDocument.C_SETTINGS_KEY, settings);
         });
     }
 
     private void GraphOutputs(GraphNodeRecord node)
     {
         GraphInterfaceMetadata();
-        ShaderGraphNodeOutputSettings settings = Read(node, ShaderGraphDocument.settingsKey, new ShaderGraphNodeOutputSettings());
+        ShaderGraphNodeOutputSettings settings = Read(node, ShaderGraphDocument.C_SETTINGS_KEY, new ShaderGraphNodeOutputSettings());
         GraphPorts(node, settings.ports, inputs: false, ports =>
         {
             settings.ports = ports;
-            Set(node, ShaderGraphDocument.settingsKey, settings);
+            Set(node, ShaderGraphDocument.C_SETTINGS_KEY, settings);
         });
     }
 
@@ -363,7 +363,7 @@ internal sealed partial class ShaderEditorCanvas
         EditorImGui.SeparatorText(inputs ? "Inputs" : "Outputs");
         for (int index = 0; index < ports.Length; index++)
         {
-            EditorImGui.PushId(index);
+            EditorImGui.PushID(index);
             try
             {
                 ShaderGraphNodePortDefinition port = ports[index];
@@ -472,7 +472,7 @@ internal sealed partial class ShaderEditorCanvas
             }
             finally
             {
-                EditorImGui.PopId();
+                EditorImGui.PopID();
             }
         }
 

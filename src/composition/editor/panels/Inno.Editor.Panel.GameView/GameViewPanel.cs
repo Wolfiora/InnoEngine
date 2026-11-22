@@ -14,10 +14,10 @@ using Inno.Rendering;
 using Inno.Rendering.Runtime;
 using Inno.Runtime;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 using EngineColor = Inno.Core.Mathematics.Color;
 using EngineVector2 = Inno.Core.Mathematics.Vector2;
-using Ui = Inno.Editor.ImGui.ImGui;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.GameView;
 
@@ -28,7 +28,7 @@ namespace Inno.Editor.Panel.GameView;
 internal sealed class GameViewPanel : EditorPanel
 {
     private const string C_VIEWPORT_ID = "game-view";
-    private static readonly EditorViewportKindId KIND = new("inno.editor.viewport.game");
+    private static readonly EditorViewportKindID KIND = new("inno.editor.viewport.game");
     private static readonly Vector2 UNAVAILABLE_PADDING = new(48f, 32f);
     private readonly EditorRenderingModule m_rendering;
     private readonly IEditorGameScenePresentation m_scenePresentation;
@@ -81,13 +81,13 @@ internal sealed class GameViewPanel : EditorPanel
     {
         using IDisposable presentationScope = m_playModeLoop.EnterPresentationScope();
         _ = context;
-        Vector2 available = Ui.GetContentRegionAvailable();
+        Vector2 available = Gui.GetContentRegionAvailable();
         if (available.X <= 0f || available.Y <= 0f)
         {
             return;
         }
         RefreshPresentationSettings();
-        float framebufferScale = Ui.GetInput().framebufferScale.X;
+        float framebufferScale = Gui.GetInput().framebufferScale.X;
         if (!float.IsFinite(framebufferScale) || framebufferScale <= 0f)
         {
             framebufferScale = 1f;
@@ -101,31 +101,31 @@ internal sealed class GameViewPanel : EditorPanel
             )
         );
         m_rendering.SetContentScope(C_VIEWPORT_ID, CreateContentScope());
-        Vector2 outputOrigin = Ui.GetCursorScreenPosition() + layout.offset;
-        Vector2 mouse = Ui.GetMousePos();
+        Vector2 outputOrigin = Gui.GetCursorScreenPosition() + layout.offset;
+        Vector2 mouse = Gui.GetMousePos();
         Vector2 local = mouse - outputOrigin;
         bool inside = local.X >= 0f && local.Y >= 0f && local.X < layout.size.X && local.Y < layout.size.Y;
-        (uint id, Vector2 position) viewport = Ui.GetViewport();
-        bool gameViewFocused = m_playMode.isPlaying && Ui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows);
-        bool imageHovered = inside && Ui.IsWindowHovered(ImGuiHoveredFlags.RootAndChildWindows);
+        (uint id, Vector2 position) viewport = Gui.GetViewport();
+        bool gameViewFocused = m_playMode.isPlaying && Gui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows);
+        bool imageHovered = inside && Gui.IsWindowHovered(ImGuiHoveredFlags.RootAndChildWindows);
         bool focused = m_inputCapture.Report(viewport.id, outputOrigin - viewport.position, layout.size, gameViewFocused, imageHovered);
         bool acceptsPointer = focused && imageHovered;
-        if (!Ui.IsMouseButtonDown(ImGuiMouseButton.Left) && !Ui.IsMouseReleased(ImGuiMouseButton.Left))
+        if (!Gui.IsMouseButtonDown(ImGuiMouseButton.Left) && !Gui.IsMouseReleased(ImGuiMouseButton.Left))
         {
             m_leftPointerActive = false;
         }
 
-        bool leftPressed = acceptsPointer && Ui.IsMouseClicked(ImGuiMouseButton.Left);
+        bool leftPressed = acceptsPointer && Gui.IsMouseClicked(ImGuiMouseButton.Left);
         if (leftPressed)
         {
             m_leftPointerActive = true;
         }
-        bool leftReleased = m_leftPointerActive && Ui.IsMouseReleased(ImGuiMouseButton.Left);
+        bool leftReleased = m_leftPointerActive && Gui.IsMouseReleased(ImGuiMouseButton.Left);
         if (leftReleased || !focused)
         {
             m_leftPointerActive = false;
         }
-        EditorUiInput io = Ui.GetInput();
+        EditorUIInput io = Gui.GetInput();
         KeyModifier modifiers = KeyModifier.None;
         if (io.alt)
         {
@@ -174,16 +174,21 @@ internal sealed class GameViewPanel : EditorPanel
             return;
         }
 
-        Vector2 origin = Ui.GetCursorScreenPosition();
+        Vector2 origin = Gui.GetCursorScreenPosition();
         if (m_presentation.preserveAspectRatio)
         {
-            Ui.DrawFilledRectangle(origin, origin + available, Ui.ToPackedColor(new Vector4(0f, 0f, 0f, EditorPalette.opacityOpaque)), 0);
+            Gui.DrawFilledRectangle(
+                origin,
+                origin + available,
+                Gui.ToPackedColor(new Vector4(0f, 0f, 0f, EditorPalette.C_OPACITY_OPAQUE)),
+                0
+            );
         }
 
-        Ui.SetCursorScreenPosition(origin + layout.offset);
+        Gui.SetCursorScreenPosition(origin + layout.offset);
         m_rendering.Draw(output, layout.size);
-        Ui.SetCursorScreenPosition(origin);
-        Ui.Dummy(available);
+        Gui.SetCursorScreenPosition(origin);
+        Gui.Dummy(available);
     }
 
     /// <summary>
@@ -223,7 +228,7 @@ internal sealed class GameViewPanel : EditorPanel
         {
             return;
         }
-        m_presentation = m_projectSettings.Get<GamePresentationSettings>(GamePresentationSettings.settingId);
+        m_presentation = m_projectSettings.Get<GamePresentationSettings>(GamePresentationSettings.settingID);
         m_presentationRevision = m_projectSettings.revision;
     }
 
@@ -233,16 +238,16 @@ internal sealed class GameViewPanel : EditorPanel
         Vector2 size,
         string message
     ) {
-        Vector2 minimum = Ui.GetCursorScreenPosition();
-        Ui.DrawFilledRectangle(minimum, minimum + size, Ui.ToPackedColor(m_backgroundColor), 0);
-        Ui.PushStyleColor(ImGuiCol.Text, EditorPalette.textDisabled);
+        Vector2 minimum = Gui.GetCursorScreenPosition();
+        Gui.DrawFilledRectangle(minimum, minimum + size, Gui.ToPackedColor(m_backgroundColor), 0);
+        Gui.PushStyleColor(ImGuiCol.Text, EditorPalette.textDisabled);
         try
         {
             EditorUI.current.widgets.CenteredWrappedText(message, size, UNAVAILABLE_PADDING);
         }
         finally
         {
-            Ui.PopStyleColor();
+            Gui.PopStyleColor();
         }
     }
 

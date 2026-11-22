@@ -15,62 +15,62 @@ internal readonly struct ConsoleStyle
     /// <summary>
     /// Gets debug log color.
     /// </summary>
-    internal static Vector4 debug { get; } = new(0.8f, 0.9f, 0.85f, EditorPalette.opacityOpaque);
+    internal static Vector4 debug { get; } = new(0.8f, 0.9f, 0.85f, EditorPalette.C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets informational log color.
     /// </summary>
-    internal static Vector4 info { get; } = new(0.2f, 1f, 0.2f, EditorPalette.opacityOpaque);
+    internal static Vector4 info { get; } = new(0.2f, 1f, 0.2f, EditorPalette.C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets warning log color.
     /// </summary>
-    internal static Vector4 warning { get; } = new(1f, 1f, 0.2f, EditorPalette.opacityOpaque);
+    internal static Vector4 warning { get; } = new(1f, 1f, 0.2f, EditorPalette.C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets error log color.
     /// </summary>
-    internal static Vector4 error { get; } = new(1f, 0.2f, 0.2f, EditorPalette.opacityOpaque);
+    internal static Vector4 error { get; } = new(1f, 0.2f, 0.2f, EditorPalette.C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets fatal log color.
     /// </summary>
-    internal static Vector4 fatal { get; } = new(1f, 0.2f, 1f, EditorPalette.opacityOpaque);
+    internal static Vector4 fatal { get; } = new(1f, 0.2f, 1f, EditorPalette.C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets collapsed log card background.
     /// </summary>
-    internal static Vector4 collapsedCard { get; } = new(0.61960787f, 0.5764706f, 0.76862746f, EditorPalette.opacityMuted);
+    internal static Vector4 collapsedCard { get; } = new(0.61960787f, 0.5764706f, 0.76862746f, EditorPalette.C_OPACITY_MUTED);
 
     /// <summary>
     /// Gets collapsed log card border.
     /// </summary>
-    internal static Vector4 collapsedBorder { get; } = new(0.32f, 0.34f, 0.37f, EditorPalette.opacityMedium);
+    internal static Vector4 collapsedBorder { get; } = new(0.32f, 0.34f, 0.37f, EditorPalette.C_OPACITY_MEDIUM);
 
     /// <summary>
     /// Gets the base expanded log card background.
     /// </summary>
-    internal static Vector4 expandedBase { get; } = new(0.1f, 0.1f, 0.1f, EditorPalette.opacityOpaque);
+    internal static Vector4 expandedBase { get; } = new(0.1f, 0.1f, 0.1f, EditorPalette.C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the base expanded log card border.
     /// </summary>
-    internal static Vector4 expandedBorderBase { get; } = new(0.24f, 0.24f, 0.24f, EditorPalette.opacityOpaque);
+    internal static Vector4 expandedBorderBase { get; } = new(0.24f, 0.24f, 0.24f, EditorPalette.C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets log header button background.
     /// </summary>
-    internal static Vector4 toggle { get; } = new(0.61960787f, 0.5764706f, 0.76862746f, EditorPalette.opacityNone);
+    internal static Vector4 toggle { get; } = new(0.61960787f, 0.5764706f, 0.76862746f, EditorPalette.C_OPACITY_NONE);
 
     /// <summary>
     /// Gets hovered log header button background.
     /// </summary>
-    internal static Vector4 toggleHovered { get; } = new(0.7372549f, 0.69411767f, 0.8862745f, EditorPalette.opacityMedium);
+    internal static Vector4 toggleHovered { get; } = new(0.7372549f, 0.69411767f, 0.8862745f, EditorPalette.C_OPACITY_MEDIUM);
 
     /// <summary>
     /// Gets active log header button background.
     /// </summary>
-    internal static Vector4 toggleActive { get; } = new(0.8156863f, 0.77254903f, 0.9647059f, EditorPalette.opacityMedium);
+    internal static Vector4 toggleActive { get; } = new(0.8156863f, 0.77254903f, 0.9647059f, EditorPalette.C_OPACITY_MEDIUM);
 
     /// <summary>
     /// Gets the distance from the bottom treated as auto-scroll.

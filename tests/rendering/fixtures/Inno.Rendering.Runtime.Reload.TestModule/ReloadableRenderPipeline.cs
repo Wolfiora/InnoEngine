@@ -29,7 +29,7 @@ internal sealed class ReloadableRenderPipeline : RenderPipeline
         => context.graph
             .AddRasterPass(
                 "Reloadable Plugin Pass",
-                new RenderPhaseId("tests.runtime.reloadable-plugin.visible"),
+                new RenderPhaseID("tests.runtime.reloadable-plugin.visible"),
                 0,
                 static (
                     _,
@@ -54,7 +54,7 @@ internal sealed class ReloadableRenderFeature : RenderPipelineFeature
         => context.graph
             .AddRasterPass(
                 "Reloadable Plugin Feature Pass",
-                new RenderPhaseId("tests.runtime.reloadable-plugin-feature.visible"),
+                new RenderPhaseID("tests.runtime.reloadable-plugin-feature.visible"),
                 1,
                 static (
                     _,

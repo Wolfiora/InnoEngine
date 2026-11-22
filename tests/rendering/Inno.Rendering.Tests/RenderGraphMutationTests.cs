@@ -177,7 +177,7 @@ public sealed class RenderGraphMutationTests
         => new(
             1,
             new GraphicsCapabilities(
-                GraphicsApi.Noop,
+                GraphicsApi.noop,
                 GraphicsCapability.None,
                 new GraphicsLimits(64, 8, 16_384, 16),
                 Enum.GetValues<RenderTextureFormat>(),

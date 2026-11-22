@@ -35,7 +35,7 @@ public static class GraphDocumentCodec
             ) =>
             {
                 nodeWriter.Write("id", node.id.value);
-                nodeWriter.Write("definition", node.definitionId);
+                nodeWriter.Write("definition", node.definitionID);
                 nodeWriter.Write("positionX", node.position.x);
                 nodeWriter.Write("positionY", node.position.y);
                 nodeWriter.WriteObjectArray(
@@ -57,10 +57,10 @@ public static class GraphDocumentCodec
             ) =>
             {
                 edgeWriter.Write("id", edge.id.value);
-                edgeWriter.Write("outputNode", edge.output.nodeId.value);
-                edgeWriter.Write("outputPort", edge.output.portId.value);
-                edgeWriter.Write("inputNode", edge.input.nodeId.value);
-                edgeWriter.Write("inputPort", edge.input.portId.value);
+                edgeWriter.Write("outputNode", edge.output.nodeID.value);
+                edgeWriter.Write("outputPort", edge.output.portID.value);
+                edgeWriter.Write("inputNode", edge.input.nodeID.value);
+                edgeWriter.Write("inputPort", edge.input.portID.value);
             });
             writer.WriteObjectArray(
                 "metadata",
@@ -100,7 +100,7 @@ public static class GraphDocumentCodec
             foreach (SerializationReader nodeReader in reader.ReadObjectArray("nodes"))
             {
                 var node = new GraphNodeRecord(
-                    new GraphNodeId(nodeReader.Read<string>("id")),
+                    new GraphNodeID(nodeReader.Read<string>("id")),
                     nodeReader.Read<string>("definition")
                 )
                 {
@@ -122,14 +122,14 @@ public static class GraphDocumentCodec
             {
                 document.AddEdge(
                     new GraphEdgeRecord(
-                        new GraphEdgeId(edgeReader.Read<string>("id")),
+                        new GraphEdgeID(edgeReader.Read<string>("id")),
                         new GraphEndpoint(
-                            new GraphNodeId(edgeReader.Read<string>("outputNode")),
-                            new GraphPortId(edgeReader.Read<string>("outputPort"))
+                            new GraphNodeID(edgeReader.Read<string>("outputNode")),
+                            new GraphPortID(edgeReader.Read<string>("outputPort"))
                         ),
                         new GraphEndpoint(
-                            new GraphNodeId(edgeReader.Read<string>("inputNode")),
-                            new GraphPortId(edgeReader.Read<string>("inputPort"))
+                            new GraphNodeID(edgeReader.Read<string>("inputNode")),
+                            new GraphPortID(edgeReader.Read<string>("inputPort"))
                         )
                     )
                 );

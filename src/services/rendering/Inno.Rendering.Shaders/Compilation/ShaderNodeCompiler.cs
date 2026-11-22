@@ -37,7 +37,7 @@ public interface IShaderNodeCompiler
     /// <summary>
     /// Gets the exact graph node definition identity implemented by this compiler.
     /// </summary>
-    string definitionId { get; }
+    string definitionID { get; }
 
     /// <summary>
     /// Describes ports for the current neutral properties and resolved source/target inputs.
@@ -83,19 +83,19 @@ public sealed class ShaderNodeDescriptionContext
         m_serialization = serialization;
         m_context = context;
         this.sourceModule = sourceModule;
-        this.implementationId = implementationID;
+        this.implementationID = implementationID;
         this.stageInput = stageInput;
     }
 
     /// <summary>
     /// Gets the node's stable identity, never its editor runtime handle.
     /// </summary>
-    public GraphNodeId nodeId => m_node.id;
+    public GraphNodeID nodeID => m_node.id;
 
     /// <summary>
     /// Gets the node definition's stable identity.
     /// </summary>
-    public string definitionId => m_node.definitionId;
+    public string definitionID => m_node.definitionID;
 
     /// <summary>
     /// Gets a frozen module resolved by the asset owner; null means unassigned or unavailable.
@@ -105,7 +105,7 @@ public sealed class ShaderNodeDescriptionContext
     /// <summary>
     /// Gets the exact implementation key chosen by the target.
     /// </summary>
-    public string implementationId { get; }
+    public string implementationID { get; }
 
     /// <summary>
     /// Gets the target-assigned stage input for this node, when applicable.

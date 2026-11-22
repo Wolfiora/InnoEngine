@@ -24,7 +24,7 @@ public sealed class NativeDependencyDescriptionTests
         Directory.CreateDirectory(Path.GetDirectoryName(output)!);
         string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
             ?? Path.Combine(Environment.GetEnvironmentVariable("DOTNET_ROOT")!, OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
-        int result = await BuildApplication.Run([
+        int result = await BuildApplication.RunAsync([
             "native-dependencies",
             "--operation",
             "describe",

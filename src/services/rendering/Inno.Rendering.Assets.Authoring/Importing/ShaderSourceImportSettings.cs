@@ -7,7 +7,7 @@ namespace Inno.Rendering.Assets.Authoring;
 /// <summary>
 /// Configures one source-function library through the standard asset import-settings sidecar.
 /// </summary>
-[StableTypeId("59c92a59-ef51-4587-b917-df5d187d2717")]
+[StableTypeID("59c92a59-ef51-4587-b917-df5d187d2717")]
 public sealed class ShaderSourceImportSettings : ISerializable
 {
     /// <summary>

@@ -6,7 +6,7 @@ namespace Inno.Animation;
 /// <summary>
 /// Identifies one backend-neutral value destination inside an animation binding scope.
 /// </summary>
-public readonly record struct AnimationBindingId
+public readonly record struct AnimationBindingID
 {
     /// <summary>
     /// Creates a stable animation binding identifier.
@@ -14,7 +14,7 @@ public readonly record struct AnimationBindingId
     /// <param name="value">
     /// The non-empty binding protocol value.
     /// </param>
-    public AnimationBindingId(string value)
+    public AnimationBindingID(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         this.value = value;
@@ -336,7 +336,7 @@ public readonly record struct AnimationSample
     /// </param>
     public AnimationSample(
         AnimationTarget target,
-        AnimationBindingId binding,
+        AnimationBindingID binding,
         AnimationValue value
     ) {
         if (!target.isValid)
@@ -355,7 +355,7 @@ public readonly record struct AnimationSample
     /// <summary>
     /// Gets the stable target binding.
     /// </summary>
-    public AnimationBindingId binding { get; }
+    public AnimationBindingID binding { get; }
 
     /// <summary>
     /// Gets the generation-qualified destination for this sample.

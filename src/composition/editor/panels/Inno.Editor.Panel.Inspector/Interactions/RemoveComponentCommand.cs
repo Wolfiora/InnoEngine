@@ -5,8 +5,8 @@ using Inno.Scene.Components;
 
 namespace Inno.Editor.Panel.Inspector;
 
-[EditorAction(InspectorInteractionIds.C_REMOVE_COMPONENT, priority: 100)]
-[EditorMenu(InspectorInteractionIds.C_COMPONENT_AREA, "Remove Component", order: 200)]
+[EditorAction(InspectorInteractionIDs.C_REMOVE_COMPONENT, priority: 100)]
+[EditorMenu(InspectorInteractionIDs.C_COMPONENT_AREA, "Remove Component", order: 200)]
 internal sealed class RemoveComponentCommand(SceneEdits edits) : EditorAction<GameComponent>
 {
     /// <summary>

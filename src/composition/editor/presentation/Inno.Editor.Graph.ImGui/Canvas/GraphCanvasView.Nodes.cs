@@ -137,7 +137,7 @@ public readonly partial struct GraphCanvasView
     /// <returns>
     /// Stable graph node IDs; no live domain objects are returned.
     /// </returns>
-    public IReadOnlyList<GraphNodeId> BoxNodes(
+    public IReadOnlyList<GraphNodeID> BoxNodes(
         GraphCanvasLayout layout,
         Vector2 first,
         Vector2 second
@@ -145,7 +145,7 @@ public readonly partial struct GraphCanvasView
         ArgumentNullException.ThrowIfNull(layout);
         Vector2 minimum = Vector2.Min(first, second);
         Vector2 maximum = Vector2.Max(first, second);
-        var nodes = new List<GraphNodeId>();
+        var nodes = new List<GraphNodeID>();
         foreach (GraphCanvasNode node in layout.nodes)
         {
             (Vector2 minimum, Vector2 maximum) bounds = NodeBounds(node);
@@ -220,7 +220,7 @@ public readonly partial struct GraphCanvasView
             draw.FilledRectangle(
                 minimum + new Vector2(3, 5),
                 maximum + new Vector2(3, 5),
-                Pack(0f, 0f, 0f, EditorPalette.opacityMuted),
+                Pack(0f, 0f, 0f, EditorPalette.C_OPACITY_MUTED),
                 6f * zoom,
                 false
             );

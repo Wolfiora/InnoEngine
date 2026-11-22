@@ -327,7 +327,7 @@ public sealed class EditorHistoryTests
 public sealed class NeutralValueHistoryHandler : EditorHistoryHandler
 {
     public const string C_KIND = "tests/neutral-values";
-    private static readonly HashSet<(int Slot, EditorHistoryDirection Direction)> BLOCKED = [];
+    private static readonly HashSet<(int slot, EditorHistoryDirection direction)> BLOCKED = [];
     private static readonly Dictionary<int, int> VALUES = [];
 
     public static EditorHistoryChange CreateChange(

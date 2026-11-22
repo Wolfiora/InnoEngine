@@ -2,7 +2,7 @@ using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Workbench;
 
-[EditorAction(GlobalInteractionIds.C_CLEAR_SELECTION)]
+[EditorAction(GlobalInteractionIDs.C_CLEAR_SELECTION)]
 internal sealed class ClearEditorSelectionAction : EditorAction
 {
     /// <summary>
@@ -14,7 +14,7 @@ internal sealed class ClearEditorSelectionAction : EditorAction
     protected override void Execute(EditorActionContext context) => context.interactions.SetSelection(null);
 }
 
-[EditorAction(GlobalInteractionIds.C_SELECT)]
+[EditorAction(GlobalInteractionIDs.C_SELECT)]
 internal sealed class SelectEditorTargetAction : EditorAction<object>
 {
     /// <summary>

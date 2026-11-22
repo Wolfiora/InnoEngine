@@ -10,7 +10,7 @@ namespace Inno.Adapter.Text;
 /// </summary>
 public sealed class TextBackendCatalog : ITextBackendFactory
 {
-    private readonly Dictionary<TextBackendId, TextBackendProvider> m_providers = [];
+    private readonly Dictionary<TextBackendID, TextBackendProvider> m_providers = [];
 
     /// <summary>
     /// Validates and captures a complete provider set without creating any service.
@@ -34,17 +34,17 @@ public sealed class TextBackendCatalog : ITextBackendFactory
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
             }
         }
-        this.supportedBackends = new ReadOnlyCollection<TextBackendId>([.. m_providers.Keys]);
+        this.supportedBackends = new ReadOnlyCollection<TextBackendID>([.. m_providers.Keys]);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<TextBackendId> supportedBackends { get; }
+    public IReadOnlyList<TextBackendID> supportedBackends { get; }
 
     /// <exception cref="InvalidOperationException">
     /// The selected provider returned no service.
     /// </exception>
     /// <inheritdoc/>
-    public ITextBackend CreateBackend(TextBackendId backend)
+    public ITextBackend CreateBackend(TextBackendID backend)
     {
         if (!m_providers.TryGetValue(backend, out TextBackendProvider? provider))
         {

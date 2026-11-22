@@ -11,7 +11,7 @@ public sealed class SupportPackValidationTests : PlayerSupportPackFixture
     [Fact]
     public void PlatformPackRejectsAMissingContentSource()
     {
-        var target = new BuildTargetId("windows-x64");
+        var target = new BuildTargetID("windows-x64");
         string pack = GetSupportPackDirectory(target);
         string source = "WindowsX64PlayerContentSource.cs";
         File.Delete(Path.Combine(pack, "PlayerLink", source));
@@ -25,12 +25,12 @@ public sealed class SupportPackValidationTests : PlayerSupportPackFixture
     [Fact]
     public void PlatformValidatorRejectsForeignAbiDespiteTheExpectedFilename()
     {
-        var target = new BuildTargetId("windows-x64");
+        var target = new BuildTargetID("windows-x64");
         string directory = GetSupportPackDirectory(target);
         string library = "miniaudio-release.dll";
         File.WriteAllBytes(
             Path.Combine(directory, "native", library),
-            CreateNativeImage(new BuildTargetId("macos-arm64"))
+            CreateNativeImage(new BuildTargetID("macos-arm64"))
         );
         IPlayerSupportPackValidator validator = new WindowsX64SupportPackValidator();
         InvalidDataException failure = Assert.Throws<InvalidDataException>(() => validator.Validate(directory));

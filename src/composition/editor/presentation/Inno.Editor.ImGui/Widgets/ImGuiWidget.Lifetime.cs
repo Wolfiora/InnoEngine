@@ -8,9 +8,9 @@ namespace Inno.Editor.ImGui.ImGuiWidget;
 /// </summary>
 public sealed unsafe partial class ImGuiWidget
 {
-    private readonly EditorUiSession m_session;
+    private readonly EditorUISession m_session;
 
-    internal ImGuiWidget(EditorUiSession session)
+    internal ImGuiWidget(EditorUISession session)
     {
         m_session = session ?? throw new ArgumentNullException(nameof(session));
         this.style = new EditorStyleMetrics(session);
@@ -18,20 +18,20 @@ public sealed unsafe partial class ImGuiWidget
 
     internal void RetireOwner(string owner)
     {
-        if (m_propertyGesture is not null && m_propertyEditKey.Owner == owner)
+        if (m_propertyGesture is not null && m_propertyEditKey.owner == owner)
         {
             CancelEdits();
         }
-        var retired = new List<(string Owner, uint Window)>();
-        foreach ((string Owner, uint Window) key in m_treeStatesByWindow.Keys)
+        var retired = new List<(string owner, uint window)>();
+        foreach ((string owner, uint window) key in m_treeStatesByWindow.Keys)
         {
-            if (string.Equals(key.Owner, owner, StringComparison.Ordinal))
+            if (string.Equals(key.owner, owner, StringComparison.Ordinal))
             {
                 retired.Add(key);
             }
         }
 
-        foreach ((string Owner, uint Window) key in retired)
+        foreach ((string owner, uint window) key in retired)
         {
             m_treeStatesByWindow.Remove(key);
         }

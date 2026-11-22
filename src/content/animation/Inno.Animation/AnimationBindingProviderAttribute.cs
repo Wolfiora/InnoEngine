@@ -14,7 +14,7 @@ public sealed class AnimationBindingProviderAttribute : Attribute
     /// <param name="id">
     /// Globally unique stable extension identifier.
     /// </param>
-    /// <param name="bindingId">
+    /// <param name="bindingID">
     /// Stable track binding protocol, independent of CLR type names.
     /// </param>
     /// <param name="kind">
@@ -25,17 +25,17 @@ public sealed class AnimationBindingProviderAttribute : Attribute
     /// </exception>
     public AnimationBindingProviderAttribute(
         string id,
-        string bindingId,
+        string bindingID,
         AnimationValueKind kind
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        ArgumentException.ThrowIfNullOrWhiteSpace(bindingId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(bindingID);
         if (!Enum.IsDefined(kind))
         {
             throw new ArgumentException("A defined animation value kind is required.", nameof(kind));
         }
         this.id = id;
-        this.bindingId = new AnimationBindingId(bindingId);
+        this.bindingID = new AnimationBindingID(bindingID);
         this.kind = kind;
     }
 
@@ -47,7 +47,7 @@ public sealed class AnimationBindingProviderAttribute : Attribute
     /// <summary>
     /// Gets the supported track binding protocol.
     /// </summary>
-    public AnimationBindingId bindingId { get; }
+    public AnimationBindingID bindingID { get; }
 
     /// <summary>
     /// Gets the accepted value representation.

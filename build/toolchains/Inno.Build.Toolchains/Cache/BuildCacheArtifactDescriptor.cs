@@ -20,7 +20,7 @@ public sealed class BuildCacheArtifactDescriptor
     /// <param name="leasePath">
     /// The absolute persistent file used by this entry's actual producer and readers for Core.IO coordination.
     /// </param>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The explicit product target, or null for a shared host artifact that target-scoped cleanup must preserve.
     /// </param>
     /// <param name="bytes">
@@ -48,7 +48,7 @@ public sealed class BuildCacheArtifactDescriptor
     public BuildCacheArtifactDescriptor(
         string directory,
         string leasePath,
-        string? targetId,
+        string? targetID,
         long bytes,
         DateTime lastUseUtc,
         IReadOnlyList<string> dependencies,
@@ -66,9 +66,9 @@ public sealed class BuildCacheArtifactDescriptor
         {
             throw new ArgumentOutOfRangeException(nameof(bytes));
         }
-        if (targetId is not null && string.IsNullOrWhiteSpace(targetId))
+        if (targetID is not null && string.IsNullOrWhiteSpace(targetID))
         {
-            throw new ArgumentException("A declared cache target cannot be blank.", nameof(targetId));
+            throw new ArgumentException("A declared cache target cannot be blank.", nameof(targetID));
         }
         if (lastUseUtc.Kind != DateTimeKind.Utc)
         {
@@ -76,7 +76,7 @@ public sealed class BuildCacheArtifactDescriptor
         }
         this.directory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
         this.leasePath = Path.GetFullPath(leasePath);
-        this.targetId = targetId;
+        this.targetID = targetID;
         this.bytes = bytes;
         this.lastUseUtc = lastUseUtc;
         if (!Enum.IsDefined(role))
@@ -102,7 +102,7 @@ public sealed class BuildCacheArtifactDescriptor
     /// <summary>
     /// Gets the producer-declared target, or null when this artifact is shared by host operations.
     /// </summary>
-    public string? targetId { get; }
+    public string? targetID { get; }
 
     /// <summary>
     /// Gets the logical file size used for budgeting, without weakening content validation.

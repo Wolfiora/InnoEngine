@@ -9,7 +9,7 @@ namespace Inno.Editor.Settings;
 
 internal sealed class EditorSettingsStore
 {
-    internal const string C_FILE_NAME = SettingsFileNames.editor;
+    internal const string C_FILE_NAME = SettingsFileNames.C_EDITOR;
 
     private readonly SettingsDocumentStore<EditorSettingsDocument> m_documents;
     private Dictionary<string, EditorSettingObject> m_values;

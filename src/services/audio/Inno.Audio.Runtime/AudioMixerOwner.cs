@@ -11,9 +11,9 @@ internal sealed class AudioMixerOwner : IDisposable
     private readonly Action<Exception> m_retirementFailed;
     private readonly Action<Action> m_retire;
     private readonly List<Exception> m_retirementFailures = [];
-    private readonly Dictionary<AudioBusId, AudioBusHandle> m_buses = [];
-    private readonly Dictionary<AudioBusId, BusControlState> m_busControls = [];
-    private readonly List<Dictionary<AudioBusId, AudioBusHandle>> m_retiredBuses = [];
+    private readonly Dictionary<AudioBusID, AudioBusHandle> m_buses = [];
+    private readonly Dictionary<AudioBusID, BusControlState> m_busControls = [];
+    private readonly List<Dictionary<AudioBusID, AudioBusHandle>> m_retiredBuses = [];
     private readonly Dictionary<AudioBusHandle, bool> m_retiredMasterPauses = [];
     private AudioMixer m_activeMixer;
     private bool m_suspended;
@@ -27,7 +27,7 @@ internal sealed class AudioMixerOwner : IDisposable
     private AudioMixerOwner(
         IAudioDevice device,
         AudioMixer mixer,
-        IReadOnlyDictionary<AudioBusId, BusControlState>? controls,
+        IReadOnlyDictionary<AudioBusID, BusControlState>? controls,
         bool suspended,
         Action<Exception> retirementFailed,
         Action<Action> retire
@@ -37,7 +37,7 @@ internal sealed class AudioMixerOwner : IDisposable
         m_retire = retire;
         m_activeMixer = mixer;
         m_suspended = suspended;
-        foreach ((AudioBusId id, AudioBusHandle handle) in CreateBusSet(device, mixer, controls))
+        foreach ((AudioBusID id, AudioBusHandle handle) in CreateBusSet(device, mixer, controls))
         {
             m_buses.Add(id, handle);
         }
@@ -98,12 +98,12 @@ internal sealed class AudioMixerOwner : IDisposable
         => new(device, m_activeMixer, m_busControls, m_suspended, m_retirementFailed, m_retire);
 
     internal bool TryGetBus(
-        AudioBusId id,
+        AudioBusID id,
         out AudioBusHandle handle
     ) => m_buses.TryGetValue(id, out handle);
 
     internal bool SetBusVolume(
-        AudioBusId bus,
+        AudioBusID bus,
         float volume
     ) {
         if (volume < 0f || !float.IsFinite(volume)
@@ -117,7 +117,7 @@ internal sealed class AudioMixerOwner : IDisposable
     }
 
     internal bool SetBusMuted(
-        AudioBusId bus,
+        AudioBusID bus,
         bool muted
     ) {
         if (!m_buses.TryGetValue(bus, out AudioBusHandle handle) || !m_device.SetBusMuted(handle, muted))
@@ -129,11 +129,11 @@ internal sealed class AudioMixerOwner : IDisposable
     }
 
     internal bool SetBusPaused(
-        AudioBusId bus,
+        AudioBusID bus,
         bool paused
     ) {
         if (!m_buses.TryGetValue(bus, out AudioBusHandle handle)
-            || !m_device.SetBusPaused(handle, paused || bus == AudioBusId.master && m_suspended)
+            || !m_device.SetBusPaused(handle, paused || bus == AudioBusID.master && m_suspended)
         ) {
             return false;
         }
@@ -149,7 +149,7 @@ internal sealed class AudioMixerOwner : IDisposable
         }
         var masters = new List<KeyValuePair<AudioBusHandle, bool>>(m_retiredMasterPauses)
         {
-            new(m_buses[AudioBusId.master], m_busControls[AudioBusId.master].paused)
+            new(m_buses[AudioBusID.master], m_busControls[AudioBusID.master].paused)
         };
         int applied = 0;
         try
@@ -197,14 +197,14 @@ internal sealed class AudioMixerOwner : IDisposable
         IEnumerable<AudioBusHandle> usedBuses
     ) {
         CollectRetiredBuses(usedBuses);
-        IReadOnlyDictionary<AudioBusId, AudioBusHandle> candidate = CreateBusSet(m_device, mixer, null);
+        IReadOnlyDictionary<AudioBusID, AudioBusHandle> candidate = CreateBusSet(m_device, mixer, null);
         if (m_buses.Count > 0)
         {
-            m_retiredBuses.Add(new Dictionary<AudioBusId, AudioBusHandle>(m_buses));
-            m_retiredMasterPauses.Add(m_buses[AudioBusId.master], m_busControls[AudioBusId.master].paused);
+            m_retiredBuses.Add(new Dictionary<AudioBusID, AudioBusHandle>(m_buses));
+            m_retiredMasterPauses.Add(m_buses[AudioBusID.master], m_busControls[AudioBusID.master].paused);
         }
         m_buses.Clear();
-        foreach ((AudioBusId id, AudioBusHandle handle) in candidate)
+        foreach ((AudioBusID id, AudioBusHandle handle) in candidate)
         {
             m_buses.Add(id, handle);
         }
@@ -221,14 +221,14 @@ internal sealed class AudioMixerOwner : IDisposable
         HashSet<AudioBusHandle> retained = usedBuses.ToHashSet();
         for (int index = m_retiredBuses.Count - 1; index >= 0; index--)
         {
-            Dictionary<AudioBusId, AudioBusHandle> retired = m_retiredBuses[index];
+            Dictionary<AudioBusID, AudioBusHandle> retired = m_retiredBuses[index];
             if (retired.Values.Any(retained.Contains))
             {
                 continue;
             }
             try
             {
-                AudioBusHandle master = retired[AudioBusId.master];
+                AudioBusHandle master = retired[AudioBusID.master];
                 DestroyBusSet(m_device, retired);
                 m_retiredMasterPauses.Remove(master);
                 m_retiredBuses.RemoveAt(index);
@@ -241,17 +241,17 @@ internal sealed class AudioMixerOwner : IDisposable
         }
     }
 
-    private IReadOnlyDictionary<AudioBusId, AudioBusHandle> CreateBusSet(
+    private IReadOnlyDictionary<AudioBusID, AudioBusHandle> CreateBusSet(
         IAudioDevice device,
         AudioMixer mixer,
-        IReadOnlyDictionary<AudioBusId, BusControlState>? controls
+        IReadOnlyDictionary<AudioBusID, BusControlState>? controls
     ) {
-        var candidate = new Dictionary<AudioBusId, AudioBusHandle>();
+        var candidate = new Dictionary<AudioBusID, AudioBusHandle>();
         try
         {
             foreach (AudioBusDefinition bus in mixer.buses)
             {
-                AudioBusHandle parent = bus.parent is AudioBusId parentID
+                AudioBusHandle parent = bus.parent is AudioBusID parentID
                                         ? candidate[parentID]
                                         : default;
                 AudioBusHandle handle = device.CreateBus(bus.id, parent);
@@ -265,7 +265,7 @@ internal sealed class AudioMixerOwner : IDisposable
                                         : new BusControlState(bus.volume, bus.muted, paused: false);
                 if (!device.SetBusVolume(handle, state.volume)
                     || !device.SetBusMuted(handle, state.muted)
-                    || (state.paused || bus.id == AudioBusId.master && m_suspended)
+                    || (state.paused || bus.id == AudioBusID.master && m_suspended)
                        && !device.SetBusPaused(handle, paused: true)
                 ) {
                     throw new InvalidOperationException($"The backend rejected parameters for audio bus '{bus.id}'.");
@@ -301,10 +301,10 @@ internal sealed class AudioMixerOwner : IDisposable
 
     private static void DestroyBusSet(
         IAudioDevice device,
-        Dictionary<AudioBusId, AudioBusHandle> buses
+        Dictionary<AudioBusID, AudioBusHandle> buses
     ) {
         List<Exception> failures = [];
-        foreach ((AudioBusId id, AudioBusHandle bus) in buses.Reverse().ToArray())
+        foreach ((AudioBusID id, AudioBusHandle bus) in buses.Reverse().ToArray())
         {
             try
             {

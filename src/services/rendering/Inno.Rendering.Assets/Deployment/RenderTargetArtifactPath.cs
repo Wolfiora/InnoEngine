@@ -10,13 +10,13 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Defines deterministic relative paths shared by target-artifact producers and runtime consumers.
 /// </summary>
-[StableTypeId("85da30f1-a679-56d0-9cdf-7d6cf19b83f0")]
+[StableTypeID("85da30f1-a679-56d0-9cdf-7d6cf19b83f0")]
 public static class RenderTargetArtifactPath
 {
     /// <summary>
     /// Gets the relative deployment path for one target shader variant.
     /// </summary>
-    /// <param name="shaderId">
+    /// <param name="shaderID">
     /// The persistent shader asset identity.
     /// </param>
     /// <param name="backend">
@@ -29,23 +29,23 @@ public static class RenderTargetArtifactPath
     /// A platform-neutral path beneath the runtime content root.
     /// </returns>
     /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="shaderId"/> is empty.
+    /// Thrown when <paramref name="shaderID"/> is empty.
     /// </exception>
     public static string GetShaderPath(
-        Guid shaderId,
+        Guid shaderID,
         GraphicsApi backend,
         RenderShaderVariant variant
     ) {
-        if (shaderId == Guid.Empty)
+        if (shaderID == Guid.Empty)
         {
-            throw new ArgumentException("A target shader path requires a persistent asset identity.", nameof(shaderId));
+            throw new ArgumentException("A target shader path requires a persistent asset identity.", nameof(shaderID));
         }
         return string.Join(
             '/',
             "TargetArtifacts",
             "Shaders",
             backend.ToString(),
-            shaderId.ToString("D", CultureInfo.InvariantCulture),
+            shaderID.ToString("D", CultureInfo.InvariantCulture),
             HashVariant(variant.value) + ".shader"
         );
     }
@@ -64,7 +64,7 @@ public static class RenderTargetArtifactPath
     /// </exception>
     public static string GetTexturePath(RenderTextureArtifactReference texture)
     {
-        if (texture.assetId == Guid.Empty || string.IsNullOrWhiteSpace(texture.slot.id))
+        if (texture.assetID == Guid.Empty || string.IsNullOrWhiteSpace(texture.slot.id))
         {
             throw new ArgumentException("A target texture path requires a valid artifact reference.", nameof(texture));
         }
@@ -72,7 +72,7 @@ public static class RenderTargetArtifactPath
             '/',
             "TargetArtifacts",
             "Textures",
-            texture.assetId.ToString("D", CultureInfo.InvariantCulture),
+            texture.assetID.ToString("D", CultureInfo.InvariantCulture),
             HashSlot(texture.slot.id) + ".ktx"
         );
     }

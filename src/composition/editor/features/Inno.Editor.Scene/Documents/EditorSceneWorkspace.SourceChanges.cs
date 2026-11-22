@@ -31,7 +31,7 @@ internal sealed partial class EditorSceneWorkspace
     ) {
         if (document.sourceAssetID == Guid.Empty)
         {
-            m_diagnostics.ResolveSynchronization(scene.identity.persistentId);
+            m_diagnostics.ResolveSynchronization(scene.identity.persistentID);
             return true;
         }
         if (!m_assets.TryGetInfo(document.sourceAssetID, out AssetInfo? asset)
@@ -43,7 +43,7 @@ internal sealed partial class EditorSceneWorkspace
             return false;
         }
 
-        m_diagnostics.ResolveSynchronization(scene.identity.persistentId);
+        m_diagnostics.ResolveSynchronization(scene.identity.persistentID);
         string sourcePath = NormalizePath(asset.assetPath.ToString());
         string sourceName = GetAssetName(sourcePath);
         bool pathChanged = !string.Equals(document.sourcePath, sourcePath, StringComparison.Ordinal);
@@ -130,7 +130,7 @@ internal sealed partial class EditorSceneWorkspace
         bool wasDirty = HasSerializedChanges(document.scene, document);
         document.sourcePath = newPath;
         document.scene.name = GetAssetName(newPath);
-        if (m_assets.TryGetPersistentId(AssetPath.Parse(newPath), out Guid sourceAssetID))
+        if (m_assets.TryGetPersistentID(AssetPath.Parse(newPath), out Guid sourceAssetID))
         {
             document.sourceAssetID = sourceAssetID;
         }
@@ -170,7 +170,7 @@ internal sealed partial class EditorSceneWorkspace
         string oldPath,
         string newPath
     ) {
-        if (!m_assets.TryGetPersistentId(AssetPath.Parse(newPath), out Guid sourceAssetID))
+        if (!m_assets.TryGetPersistentID(AssetPath.Parse(newPath), out Guid sourceAssetID))
         {
             return;
         }
@@ -185,7 +185,7 @@ internal sealed partial class EditorSceneWorkspace
                 GameObject gameObject = objects[objectIndex];
                 PrefabInstanceInfo? prefab = gameObject.prefabInstance;
                 if (prefab?.isRoot == true
-                    && prefab.sourceAssetId == sourceAssetID
+                    && prefab.sourceAssetID == sourceAssetID
                     && string.Equals(gameObject.name, oldName, StringComparison.Ordinal)
                 ) {
                     gameObject.name = newName;
@@ -227,7 +227,7 @@ internal sealed partial class EditorSceneWorkspace
         for (int i = 0; i < loaded.Count; i++)
         {
             GameScene scene = loaded[i];
-            if (m_documents.TryGetValue(scene.identity.persistentId, out SceneDocument? document)
+            if (m_documents.TryGetValue(scene.identity.persistentID, out SceneDocument? document)
                 && !ReferenceEquals(document.scene, scene)
             ) {
                 document.scene = scene;

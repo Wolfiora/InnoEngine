@@ -122,7 +122,7 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
             .ThenBy(static value => value.type.FullName, StringComparer.Ordinal)
             .ToArray();
         ValidatePanels(panels);
-        ValidateExtensionIds(modules, panels);
+        ValidateExtensionIDs(modules, panels);
         ModalRegistration[] modals = types.GetTypesWithAttribute<EditorModalAttribute>()
             .Select(typeRef => typeRef.Resolve(types))
             .OrderBy(static type => type.FullName, StringComparer.Ordinal)
@@ -218,13 +218,13 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
             registration.module.Start(m_context);
         }
 
-        var retainedPanelIds = new HashSet<string>(
+        var retainedPanelIDs = new HashSet<string>(
             candidate.panels
                 .Where(registration => existing.Contains(registration.panel))
                 .Select(static registration => registration.attribute.id),
             StringComparer.Ordinal
         );
-        m_diagnostics.RetainPanels(retainedPanelIds);
+        m_diagnostics.RetainPanels(retainedPanelIDs);
         for (int i = 0; i < candidate.panels.Length; i++)
         {
             PanelRegistration registration = candidate.panels[i];
@@ -295,11 +295,11 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
 
         AttemptCleanup(() => RestorePrevious(activation), failures);
         m_activation = null;
-        HashSet<string> previousPanelIds = previous is null ? new HashSet<string>(StringComparer.Ordinal) : new HashSet<string>(
+        HashSet<string> previousPanelIDs = previous is null ? new HashSet<string>(StringComparer.Ordinal) : new HashSet<string>(
             GetAvailablePanels(previous).Select(static registration => registration.attribute.id),
             StringComparer.Ordinal
         );
-        m_diagnostics.RetainPanels(previousPanelIds);
+        m_diagnostics.RetainPanels(previousPanelIDs);
         m_diagnostics.Commit();
         ThrowCleanupFailures(failures);
     }
@@ -907,15 +907,15 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
 
     private static void ValidateActions(ActionRegistration[] actions)
     {
-        foreach (IGrouping<(string Action, string Area, Type? Target, int Priority), ActionRegistration> group in actions.GroupBy(
+        foreach (IGrouping<(string action, string area, Type? target, int priority), ActionRegistration> group in actions.GroupBy(
             static value => (value.attribute.action, value.attribute.area, value.targetType, value.attribute.priority)
         )) {
             if (group.Count() > 1)
             {
                 throw new InvalidOperationException(
-                    $"Editor action '{group.Key.Action}' has conflicting registrations for area "
-                    + $"'{(string.IsNullOrEmpty(group.Key.Area) ? "*" : group.Key.Area)}' and target "
-                    + $"'{group.Key.Target?.FullName ?? "*"}'."
+                    $"Editor action '{group.Key.action}' has conflicting registrations for area "
+                    + $"'{(string.IsNullOrEmpty(group.Key.area) ? "*" : group.Key.area)}' and target "
+                    + $"'{group.Key.target?.FullName ?? "*"}'."
                 );
             }
         }
@@ -975,7 +975,7 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
 
     private static void ValidateDrops(DropRegistration[] drops)
     {
-        foreach (IGrouping<(Type Source, Type Target, string Area, int Priority), DropRegistration> group in drops.GroupBy(
+        foreach (IGrouping<(Type source, Type target, string area, int priority), DropRegistration> group in drops.GroupBy(
             static value => (value.sourceType, value.targetType, value.area, value.priority)
         )) {
             if (group.Count() > 1)
@@ -1029,7 +1029,7 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         return result;
     }
 
-    private static void ValidateExtensionIds(
+    private static void ValidateExtensionIDs(
         IReadOnlyList<ModuleRegistration> modules,
         IReadOnlyList<PanelRegistration> panels
     ) {

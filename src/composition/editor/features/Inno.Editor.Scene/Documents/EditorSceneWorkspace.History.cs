@@ -34,7 +34,7 @@ internal sealed partial class EditorSceneWorkspace
         SceneDocumentSnapshot? playBaseline = null;
         if (m_playModeSession is PlayModeLease playModeSession)
         {
-            if (playModeSession.TryGetSnapshot(scene.identity.persistentId, out SceneDocumentSnapshot snapshot))
+            if (playModeSession.TryGetSnapshot(scene.identity.persistentID, out SceneDocumentSnapshot snapshot))
             {
                 playBaseline = snapshot;
             }
@@ -45,7 +45,7 @@ internal sealed partial class EditorSceneWorkspace
         }
         SerializationContext serializationContext = AssetSerializationContext.Create(m_assets);
         return new SceneDocumentSnapshot(
-            scene.identity.persistentId,
+            scene.identity.persistentID,
             m_serialization.Serialize(scene, serializationContext),
             document?.sourcePath ?? playBaseline?.sourcePath ?? string.Empty,
             document?.sourceAssetID ?? playBaseline?.sourceAssetID ?? Guid.Empty,
@@ -66,7 +66,7 @@ internal sealed partial class EditorSceneWorkspace
         world.SetSceneIndex(scene, snapshot.sceneIndex);
         if (canPersist)
         {
-            m_documents[scene.identity.persistentId] = new SceneDocument(
+            m_documents[scene.identity.persistentID] = new SceneDocument(
                 scene,
                 snapshot.sourcePath,
                 snapshot.sourceAssetID,
@@ -84,7 +84,7 @@ internal sealed partial class EditorSceneWorkspace
     {
         ArgumentNullException.ThrowIfNull(scene);
         using IDisposable scope = EnterPresentationScope();
-        Guid sceneID = scene.identity.persistentId;
+        Guid sceneID = scene.identity.persistentID;
         bool closed = world.UnloadScene(scene);
         if (closed && canPersist)
         {
@@ -128,7 +128,7 @@ internal sealed partial class EditorSceneWorkspace
 
     private Guid? GetSelectedSceneObjectID()
         => m_selection?.selectedTarget is EngineObject { isDestroyed: false } selected
-           ? selected.identity.persistentId
+           ? selected.identity.persistentID
            : null;
 
     internal sealed record SceneDocumentSnapshot(

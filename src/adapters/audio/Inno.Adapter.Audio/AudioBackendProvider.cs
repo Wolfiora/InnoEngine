@@ -21,7 +21,7 @@ public abstract class AudioBackendProvider
     /// <exception cref="ArgumentException">
     /// The identity is unassigned.
     /// </exception>
-    protected AudioBackendProvider(AudioBackendId id)
+    protected AudioBackendProvider(AudioBackendID id)
     {
         if (!id.isValid)
         {
@@ -33,7 +33,7 @@ public abstract class AudioBackendProvider
     /// <summary>
     /// Gets this registration's immutable implementation identity.
     /// </summary>
-    public AudioBackendId id { get; }
+    public AudioBackendID id { get; }
 
     /// <summary>
     /// Creates a caller-owned audio service using this implementation.

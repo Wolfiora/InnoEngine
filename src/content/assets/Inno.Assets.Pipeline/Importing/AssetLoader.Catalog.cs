@@ -119,7 +119,7 @@ public sealed partial class AssetLoader
     /// <summary>
     /// Tries to get a catalog snapshot by persistent identity.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The stable persistent identity used for lookup.
     /// </param>
     /// <param name="info">
@@ -129,11 +129,11 @@ public sealed partial class AssetLoader
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool TryGetInfo(
-        Guid persistentId,
+        Guid persistentID,
         out AssetInfo? info
     ) {
         AssetInfo? result = Execute(() => (
-            m_recordsByID.TryGetValue(persistentId, out AssetRecord? record)
+            m_recordsByID.TryGetValue(persistentID, out AssetRecord? record)
             ? CreateInfo(record)
             : null
         ));
@@ -147,23 +147,23 @@ public sealed partial class AssetLoader
     /// <param name="path">
     /// The isolated source path.
     /// </param>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The resolved identity.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when catalog metadata exists.
     /// </returns>
-    public bool TryGetPersistentId(
+    public bool TryGetPersistentID(
         AssetPath path,
-        out Guid persistentId
+        out Guid persistentID
     ) {
         if (!TryNormalizeCatalogPath(path, out string normalized))
         {
-            persistentId = Guid.Empty;
+            persistentID = Guid.Empty;
             return false;
         }
         Guid result = Execute(() => FindRecordLocked(normalized)?.persistentID ?? Guid.Empty);
-        persistentId = result;
+        persistentID = result;
         return result != Guid.Empty;
     }
 

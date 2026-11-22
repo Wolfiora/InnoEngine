@@ -35,7 +35,7 @@ internal sealed class BindingGenerationConfiguration
         NativeBuildContext context,
         CancellationToken cancellation
     ) {
-        if (context.toolchain is NativeToolchainSelection selected && selected.targetId != request.targetId)
+        if (context.toolchain is NativeToolchainSelection selected && selected.targetID != request.targetID)
         {
             throw new InvalidOperationException("The selected SDK does not match the binding target.");
         }
@@ -66,7 +66,7 @@ internal sealed class BindingGenerationConfiguration
                         "bindings",
                         "sdk-workspaces",
                         component.id,
-                        request.targetId
+                        request.targetID
                     )
                 }
             }
@@ -86,7 +86,7 @@ internal sealed class BindingGenerationConfiguration
 
     internal string GetOutputRoot(NativeBuildContext context)
         => request.outputMode == NativeBindingOutputMode.TargetArtifacts
-           ? Path.Combine(context.engineRoot, "artifacts", "bindings", component.id, request.targetId)
+           ? Path.Combine(context.engineRoot, "artifacts", "bindings", component.id, request.targetID)
            : Path.Combine(component.GetNativeRoot(context.engineRoot), "Generated");
 
     internal string GetHostNativeRoot(NativeBuildContext context)

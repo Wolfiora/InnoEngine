@@ -10,7 +10,7 @@ using Inno.Rendering.Assets;
 using Inno.Rendering.Assets.Authoring;
 
 using EditorImGui = Inno.Editor.ImGui.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 
@@ -67,7 +67,7 @@ internal sealed partial class ShaderEditorCanvas
                     }
                     try
                     {
-                        foreach (string language in owner.frontends.languageIds)
+                        foreach (string language in owner.frontends.languageIDs)
                         {
                             if (EditorImGui.Selectable(language, settings.languageId == language))
                             {
@@ -122,7 +122,7 @@ internal sealed partial class ShaderEditorCanvas
                 EditorImGui.SeparatorText("Exported Functions");
                 for (int i = 0; i < settings.exports.Length; i++)
                 {
-                    EditorImGui.PushId("export." + i);
+                    EditorImGui.PushID("export." + i);
                     try
                     {
                         string function = settings.exports[i];
@@ -152,7 +152,7 @@ internal sealed partial class ShaderEditorCanvas
                     }
                     finally
                     {
-                        EditorImGui.PopId();
+                        EditorImGui.PopID();
                     }
                 }
 
@@ -168,7 +168,7 @@ internal sealed partial class ShaderEditorCanvas
                 EditorImGui.SeparatorText("Alternative Implementations");
                 for (int i = 0; i < settings.implementations.Length; i++)
                 {
-                    EditorImGui.PushId(i);
+                    EditorImGui.PushID(i);
                     try
                     {
                         ShaderFunctionAsset? current = settings.implementations[i];
@@ -221,7 +221,7 @@ internal sealed partial class ShaderEditorCanvas
                     }
                     finally
                     {
-                        EditorImGui.PopId();
+                        EditorImGui.PopID();
                     }
                 }
 

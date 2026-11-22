@@ -26,7 +26,7 @@ public sealed class InputRuntimeFactory : IRuntimeSubsystemFactory
     /// Gets stable ordering metadata for the frame-scoped input service.
     /// </summary>
     public RuntimeSubsystemDescriptor descriptor { get; } = new(
-        new RuntimeSubsystemId("inno.runtime.input"),
+        new RuntimeSubsystemID("inno.runtime.input"),
         order: -1000
     );
 

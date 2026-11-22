@@ -12,12 +12,12 @@ public interface IGameBuildTarget : IPlayerSupportPackValidator
     /// <summary>
     /// Gets the stable target identity implemented by this packager.
     /// </summary>
-    BuildTargetId id { get; }
+    BuildTargetID id { get; }
 
     /// <summary>
     /// Gets the managed publisher selected when the profile does not specify an override.
     /// </summary>
-    ManagedDeploymentId defaultManagedDeployment { get; }
+    ManagedDeploymentID defaultManagedDeployment { get; }
 
     /// <summary>
     /// Gets the managed toolchain target identifier required by this platform composition.

@@ -185,7 +185,7 @@ public sealed class SceneDirtyCaptureTests
     );
 }
 
-[StableTypeId("942e794b-1c53-45a6-80e6-a641d76fdd09")]
+[StableTypeID("942e794b-1c53-45a6-80e6-a641d76fdd09")]
 [AllowMultipleComponent]
 internal sealed class DirtyCaptureComponent : GameComponent
 {

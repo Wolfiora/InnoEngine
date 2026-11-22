@@ -58,7 +58,7 @@ public static partial class NativeDependencyManifest
         AggregateAsset[] aggregate = selection.aggregates
             .Where(
                 asset => (
-                    asset.product == plan.productId
+                    asset.product == plan.productID
                     && asset.target == target
                     && asset.configuration == configuration
                     && asset.options == PlanOptions(plan)
@@ -84,7 +84,7 @@ public static partial class NativeDependencyManifest
             DependencyAsset[] matches = selection.assets
                 .Where(
                     asset => (
-                        asset.product == plan.productId
+                        asset.product == plan.productID
                         && asset.component == step.id
                         && asset.target == target
                         && asset.configuration == (step.configuration ?? configuration)
@@ -194,7 +194,7 @@ public static partial class NativeDependencyManifest
         {
             ProductNativeBuildStep step = plan.steps[index];
             NativeBuildProduct product = products[index];
-            if (product.component != step.id || product.targetId != context.RequireToolchain().targetId)
+            if (product.component != step.id || product.targetID != context.RequireToolchain().targetID)
             {
                 throw new InvalidDataException("Dependency export encountered a foreign product.");
             }
@@ -222,7 +222,7 @@ public static partial class NativeDependencyManifest
                         bindingContext,
                         new NativeBindingGenerationRequest(
                             [step.component],
-                            product.targetId,
+                            product.targetID,
                             NativeBindingOutputMode.TargetArtifacts,
                             componentOptions: new Dictionary<string, NativeComponentBuildOptions>
                             {
@@ -276,16 +276,16 @@ public static partial class NativeDependencyManifest
                 );
             }
 
-            string asset = step.id + "-" + product.targetId + "-" + product.fingerprint + ".zip";
+            string asset = step.id + "-" + product.targetID + "-" + product.fingerprint + ".zip";
             string archive = Path.Combine(output, asset);
             await NativeArtifactTransfer.ExportAsync(root, archive, cancellationToken, selected).ConfigureAwait(false);
             using FileStream payload = File.OpenRead(archive);
             string digest = Convert.ToHexStringLower(await SHA256.HashDataAsync(payload, cancellationToken).ConfigureAwait(false));
             assets.Add(
                 new(
-                    plan.productId,
+                    plan.productID,
                     step.id,
-                    product.targetId,
+                    product.targetID,
                     step.configuration ?? context.configuration,
                     step.component.nativeProject,
                     step.component.toolchainProject,
@@ -314,7 +314,7 @@ public static partial class NativeDependencyManifest
         }
         string destination = Path.Combine(
             output,
-            plan.productId + "-" + context.RequireToolchain().targetId + "-" + context.configuration + ".json"
+            plan.productID + "-" + context.RequireToolchain().targetID + "-" + context.configuration + ".json"
         );
         AtomicFile.WriteAllBytes(
             destination,
@@ -371,7 +371,7 @@ public static partial class NativeDependencyManifest
         AggregateAsset[] aggregates = selection.aggregates
             .Where(
                 asset => (
-                    asset.product == plan.productId
+                    asset.product == plan.productID
                     && asset.target == target
                     && asset.configuration == configuration
                     && asset.options == PlanOptions(plan)
@@ -584,7 +584,7 @@ public static partial class NativeDependencyManifest
             DependencyAsset[] matches = selection.assets
                 .Where(
                     asset => (
-                        asset.product == plan.productId
+                        asset.product == plan.productID
                         && asset.component == step.id
                         && asset.target == target
                         && asset.configuration == (step.configuration ?? configuration)

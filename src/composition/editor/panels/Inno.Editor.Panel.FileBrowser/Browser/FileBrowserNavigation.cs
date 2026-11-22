@@ -27,7 +27,7 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
         directory = NormalizePath(directory);
         AssetBrowserRoot root = string.IsNullOrEmpty(directory)
             ? assets.browser.root
-            : AssetPath.Parse(directory).source == AssetSourceId.project ? AssetBrowserRoot.Assets : AssetBrowserRoot.Plugins;
+            : AssetPath.Parse(directory).source == AssetSourceID.project ? AssetBrowserRoot.Assets : AssetBrowserRoot.Plugins;
         var target = new BrowserLocation(root, directory);
         if (currentLocation == target)
         {
@@ -101,7 +101,7 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
             return;
         }
 
-        _ = assets.edits.interactions.For(FileBrowserInteractionIds.C_AREA, entry).Execute(FileBrowserInteractionIds.C_OPEN);
+        _ = assets.edits.interactions.For(FileBrowserInteractionIDs.C_AREA, entry).Execute(FileBrowserInteractionIDs.C_OPEN);
     }
 
     internal void SyncExternalDirectoryChange(

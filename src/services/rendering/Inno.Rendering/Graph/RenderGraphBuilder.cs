@@ -252,7 +252,7 @@ public sealed partial class RenderGraphBuilder
     /// </returns>
     public RasterPassBuilder AddRasterPass<TPassData>(
         string name,
-        RenderPhaseId phase,
+        RenderPhaseID phase,
         TPassData passData,
         RenderPassExecute<TPassData> execute
     ) where TPassData : notnull
@@ -281,7 +281,7 @@ public sealed partial class RenderGraphBuilder
     /// </returns>
     public ComputePassBuilder AddComputePass<TPassData>(
         string name,
-        RenderPhaseId phase,
+        RenderPhaseID phase,
         TPassData passData,
         RenderPassExecute<TPassData> execute
     ) where TPassData : notnull
@@ -310,7 +310,7 @@ public sealed partial class RenderGraphBuilder
     /// </returns>
     public CopyPassBuilder AddCopyPass<TPassData>(
         string name,
-        RenderPhaseId phase,
+        RenderPhaseID phase,
         TPassData passData,
         RenderPassExecute<TPassData> execute
     ) where TPassData : notnull
@@ -409,7 +409,7 @@ public sealed partial class RenderGraphBuilder
 
     private RenderPassRecord AddPass<TPassData>(
         string name,
-        RenderPhaseId phase,
+        RenderPhaseID phase,
         RenderPassKind kind,
         TPassData passData,
         RenderPassExecute<TPassData> execute

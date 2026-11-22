@@ -31,7 +31,7 @@ public sealed unsafe class WindowOwnershipTests
         Assert.Empty(second.GetWindows());
         window.Dispose();
         Assert.Empty(first.GetWindows());
-        Assert.True(SDL.Raw.GetWindowFromId(window.windowId) is null);
+        Assert.True(SDL.Raw.GetWindowFromId(window.windowID) is null);
     }
 
     [Fact]

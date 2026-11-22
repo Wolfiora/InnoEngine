@@ -12,11 +12,11 @@ public sealed class PipelineResourceTests
     public void PipelineBindingSnapshotsRejectMutationOfPublishedStorage()
     {
         var binding = new RenderShaderBindingDescriptor(
-            new RenderBindingId("original"),
+            new RenderBindingID("original"),
             RenderShaderBindingKind.Uniform
         );
         var changed = new RenderShaderBindingDescriptor(
-            new RenderBindingId("changed"),
+            new RenderBindingID("changed"),
             RenderShaderBindingKind.Uniform
         );
         RenderShaderBindingDescriptor[] input = [binding];
@@ -245,7 +245,7 @@ public sealed class PipelineResourceTests
     public void ShaderBinding_ModelsStorageTextureAccessWithoutBackendTypes()
     {
         var binding = new RenderShaderBindingDescriptor(
-            new RenderBindingId("u_output"),
+            new RenderBindingID("u_output"),
             RenderShaderBindingKind.StorageTexture,
             slot: 3,
             storageAccess: RenderStorageAccess.ReadWrite

@@ -11,7 +11,7 @@ namespace Inno.Adapter.Rendering;
 /// </summary>
 public sealed class RenderingAuthoringBackendCatalog : IRenderingAuthoringBackendFactory
 {
-    private readonly Dictionary<RenderingBackendId, RenderingAuthoringBackendProvider> m_providers = [];
+    private readonly Dictionary<RenderingBackendID, RenderingAuthoringBackendProvider> m_providers = [];
 
     /// <summary>
     /// Validates that every runtime backend has exactly one matching authoring provider.
@@ -38,18 +38,18 @@ public sealed class RenderingAuthoringBackendCatalog : IRenderingAuthoringBacken
                 throw new ArgumentException("Authoring providers require unique, assigned backend IDs.", nameof(providers));
             }
         }
-        var runtimeIds = new HashSet<RenderingBackendId>(runtime.supportedBackends);
-        if (!runtimeIds.SetEquals(m_providers.Keys))
+        var runtimeIDs = new HashSet<RenderingBackendID>(runtime.supportedBackends);
+        if (!runtimeIDs.SetEquals(m_providers.Keys))
         {
             throw new ArgumentException("Runtime and authoring rendering providers must register the same backend IDs.", nameof(providers));
         }
-        this.supportedBackends = new ReadOnlyCollection<RenderingBackendId>([.. m_providers.Keys]);
+        this.supportedBackends = new ReadOnlyCollection<RenderingBackendID>([.. m_providers.Keys]);
     }
 
     /// <summary>
     /// Gets backend registrations available in this type generation.
     /// </summary>
-    public IReadOnlyList<RenderingBackendId> supportedBackends { get; }
+    public IReadOnlyList<RenderingBackendID> supportedBackends { get; }
 
     /// <summary>
     /// Creates a shader compiler toolchain using this implementation's validated inputs.
@@ -60,7 +60,7 @@ public sealed class RenderingAuthoringBackendCatalog : IRenderingAuthoringBacken
     /// <returns>
     /// The validated ishader compiler toolchain that represents the completed operation.
     /// </returns>
-    public IShaderCompilerToolchain CreateShaderCompilerToolchain(RenderingBackendId backend)
+    public IShaderCompilerToolchain CreateShaderCompilerToolchain(RenderingBackendID backend)
         => GetProvider(backend).CreateShaderCompilerToolchain()
            ?? throw new InvalidOperationException($"Rendering provider '{backend}' returned no shader compiler.");
 
@@ -73,11 +73,11 @@ public sealed class RenderingAuthoringBackendCatalog : IRenderingAuthoringBacken
     /// <returns>
     /// The validated itexture target compiler that represents the completed operation.
     /// </returns>
-    public ITextureTargetCompiler CreateTextureTargetCompiler(RenderingBackendId backend)
+    public ITextureTargetCompiler CreateTextureTargetCompiler(RenderingBackendID backend)
         => GetProvider(backend).CreateTextureTargetCompiler()
            ?? throw new InvalidOperationException($"Rendering provider '{backend}' returned no texture compiler.");
 
-    private RenderingAuthoringBackendProvider GetProvider(RenderingBackendId backend)
+    private RenderingAuthoringBackendProvider GetProvider(RenderingBackendID backend)
         => m_providers.TryGetValue(backend, out RenderingAuthoringBackendProvider? provider)
            ? provider
            : throw new NotSupportedException($"Rendering authoring backend '{backend}' is not registered.");

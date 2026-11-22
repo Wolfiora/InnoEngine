@@ -116,8 +116,8 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
         lock (m_lifecycleLock)
         {
             AssetSourceMount[] mounts = options.sourceMounts?.ToArray()
-                                        ?? [new AssetSourceMount(AssetSourceId.project, options.assetRoot, isReadOnly: false)];
-            AssetSourceMount projectMount = mounts.SingleOrDefault(static mount => mount.id == AssetSourceId.project)
+                                        ?? [new AssetSourceMount(AssetSourceID.project, options.assetRoot, isReadOnly: false)];
+            AssetSourceMount projectMount = mounts.SingleOrDefault(static mount => mount.id == AssetSourceID.project)
                                             ?? throw new ArgumentException("A project asset source mount is required.", nameof(options));
             if (projectMount.isReadOnly && options.mode != AssetPipelineMode.RuntimeArtifacts)
             {
@@ -151,13 +151,13 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
                 requireWritableProject: options.mode == AssetPipelineMode.Authoring,
                 identities,
                 persistentIdentityResolver: path => (
-                    loader.TryGetPersistentId(path, out Guid persistentID)
+                    loader.TryGetPersistentID(path, out Guid persistentID)
                     ? persistentID
                     : null
                 ),
                 activateIdentities: true
             );
-            loader.AssetReloaded += OnAssetReloaded;
+            loader.assetReloaded += OnAssetReloaded;
             m_loader = loader;
             m_fileSystem = fileSystem;
             m_ownerThreadID = Environment.CurrentManagedThreadId;
@@ -226,18 +226,18 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
     /// <summary>
     /// Occurs after an asset database transaction has committed.
     /// </summary>
-    public event Action<AssetChangeSet>? Changed;
+    public event Action<AssetChangeSet>? changed;
 
     /// <summary>
     /// Occurs after a canonical loaded asset has been updated in place.
     /// </summary>
-    public event Action<AssetObject>? AssetReloaded;
+    public event Action<AssetObject>? assetReloaded;
 
     /// <summary>
     /// Occurs after a complete isolated source-mount generation is atomically replaced.
     /// </summary>
     [ScriptingApiIgnore]
-    public event Action? SourceMountsChanged;
+    public event Action? sourceMountsChanged;
 
     /// <summary>
     /// Creates a detached source editor sharing this owner's mounts, native converters and references.
@@ -274,7 +274,7 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
     /// <typeparam name="TValue">
     /// Serialized asset object type receiving restored properties.
     /// </typeparam>
-    /// <param name="stableTypeId">
+    /// <param name="stableTypeID">
     /// The stable type id consumed by restore properties; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     /// <param name="propertyData">
@@ -284,14 +284,14 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
     /// The existing target that receives the validated result.
     /// </param>
     public void RestoreProperties<TValue>(
-        Guid stableTypeId,
+        Guid stableTypeID,
         byte[] propertyData,
         TValue target
     ) where TValue : class, ISerializable
     {
         ArgumentNullException.ThrowIfNull(target);
         using IDisposable operationScope = AcquireOperation();
-        if (m_types.GetTypeRef(target.GetType()).stableId != stableTypeId)
+        if (m_types.GetTypeRef(target.GetType()).stableID != stableTypeID)
         {
             throw new InvalidOperationException("The asset property payload has an incompatible stable type identity.");
         }

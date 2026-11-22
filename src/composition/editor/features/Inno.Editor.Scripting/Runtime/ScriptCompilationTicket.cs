@@ -14,7 +14,7 @@ internal sealed class ScriptCompilationTicket : IScriptCompilationTicket
         long requestID,
         string status
     ) {
-        this.requestId = requestID;
+        this.requestID = requestID;
         m_status = status;
         m_state = (int)ScriptCompilationTicketState.Queued;
     }
@@ -22,7 +22,7 @@ internal sealed class ScriptCompilationTicket : IScriptCompilationTicket
     /// <summary>
     /// Gets the scalar measurement or identity associated with the current state.
     /// </summary>
-    public long requestId { get; }
+    public long requestID { get; }
 
     /// <summary>
     /// Gets the current lifecycle state observed by callers.

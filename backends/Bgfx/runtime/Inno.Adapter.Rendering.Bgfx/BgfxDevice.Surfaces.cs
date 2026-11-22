@@ -93,8 +93,8 @@ public sealed unsafe partial class BgfxDevice
     {
         _ = ResolveSurface(surface);
         return backbufferIsSrgb
-               && capabilities.backend != GraphicsApi.Direct3D11
-               && capabilities.backend != GraphicsApi.Direct3D12;
+               && capabilities.backend != GraphicsApi.direct3D11
+               && capabilities.backend != GraphicsApi.direct3D12;
     }
 
     /// <summary>

@@ -30,7 +30,7 @@ public sealed class BuildCompositionTests
             "explicit-sdk",
             Path.GetFullPath(Path.GetTempPath()),
             new BuildHostDescriptor("Windows", "x64"),
-            new BuildTargetId("windows-x64")
+            new BuildTargetID("windows-x64")
         );
         BuildDistribution distribution = StandardBuildDistribution.Create(context).build;
         ProductNativeBuildStep editor = Assert.Single(
@@ -53,7 +53,7 @@ public sealed class BuildCompositionTests
             "explicit-sdk",
             Path.GetFullPath(Path.GetTempPath()),
             new BuildHostDescriptor("Windows", "x64"),
-            new BuildTargetId("windows-x64")
+            new BuildTargetID("windows-x64")
         );
         BuildDistribution editor = StandardBuildDistribution.Create(context).build;
         BuildDistribution cli = StandardBuildDistribution.Create(context).build;
@@ -73,7 +73,7 @@ public sealed class BuildCompositionTests
                 "sdk",
                 "relative",
                 new BuildHostDescriptor("Windows", "x64"),
-                new BuildTargetId("windows-x64")
+                new BuildTargetID("windows-x64")
             )
         );
     }
@@ -81,8 +81,8 @@ public sealed class BuildCompositionTests
     [Fact]
     public void TargetsContributeDistinctImmutableProductClosuresWithoutChangingTheInvokingHost()
     {
-        var first = new FixtureTarget(new BuildTargetId("fixture-a"));
-        var second = new FixtureTarget(new BuildTargetId("fixture-b"));
+        var first = new FixtureTarget(new BuildTargetID("fixture-a"));
+        var second = new FixtureTarget(new BuildTargetID("fixture-b"));
         ProductNativeBuildPlan complete = BuildTestProducts.Player();
         var reduced = new ProductNativeBuildPlan("player", [complete.steps[0]]);
         NativeProductContribution[] products = [new(complete, new ComponentNativeProductExecutor())];
@@ -153,15 +153,15 @@ public sealed class BuildCompositionTests
             platforms[0] = null!;
             Assert.Same(target, Assert.Single(distribution.CreateBindings(assets, engine.serialization, engine.types)).packager);
             distribution.ValidateDeployment(target, target.defaultManagedDeployment);
-            Assert.Throws<InvalidOperationException>(() => distribution.ValidateDeployment(target, ManagedDeploymentId.coreClr));
+            Assert.Throws<InvalidOperationException>(() => distribution.ValidateDeployment(target, ManagedDeploymentID.coreClr));
             Assert.Throws<ArgumentException>(() => new BuildPlatformContribution(
                 Descriptor(target),
                 factory,
-                new FixtureTarget(new BuildTargetId("different")),
+                new FixtureTarget(new BuildTargetID("different")),
                 new FixtureToolchain()
             ));
             var invalid = new BuildDistribution([Contribution(target, () =>
-                new FixtureTarget(new BuildTargetId("different")))], [new FixtureCompiler()]);
+                new FixtureTarget(new BuildTargetID("different")))], [new FixtureCompiler()]);
             Assert.Throws<InvalidOperationException>(() => invalid.CreateBindings(assets, engine.serialization, engine.types));
             var unsupported = new BuildDistribution([Contribution(target, factory)], [new FixtureCompiler("wrong-rid")]);
             Assert.Throws<InvalidOperationException>(() => unsupported.CreateBindings(assets, engine.serialization, engine.types));
@@ -206,14 +206,14 @@ public sealed class BuildCompositionTests
         public ValueTask<NativeToolchainSelection> ResolveAsync(
             NativeBuildContext context,
             BuildHostDescriptor host,
-            string targetId,
+            string targetID,
             CancellationToken cancellationToken
         ) => throw new InvalidOperationException("Composition must not resolve an SDK.");
     }
 
     private sealed class FixtureCompiler(string runtimeIdentifier = "fixture-rid") : IManagedDeploymentCompiler
     {
-        public ManagedDeploymentId id => new("fixture-managed");
+        public ManagedDeploymentID id => new("fixture-managed");
 
         public ManagedDeploymentCapabilities capabilities { get; } = new(
             [runtimeIdentifier],
@@ -228,11 +228,11 @@ public sealed class BuildCompositionTests
         ) => throw new InvalidOperationException("Composition must not start publication.");
     }
 
-    private sealed class FixtureTarget(BuildTargetId? identity = null) : IGameBuildTarget, IPlayerSupportPackSource, IGameContentCompiler
+    private sealed class FixtureTarget(BuildTargetID? identity = null) : IGameBuildTarget, IPlayerSupportPackSource, IGameContentCompiler
     {
-        public BuildTargetId id { get; } = identity ?? new BuildTargetId("fixture-platform");
-        public BuildTargetId target => id;
-        public ManagedDeploymentId defaultManagedDeployment => new("fixture-managed");
+        public BuildTargetID id { get; } = identity ?? new BuildTargetID("fixture-platform");
+        public BuildTargetID target => id;
+        public ManagedDeploymentID defaultManagedDeployment => new("fixture-managed");
         public string runtimeIdentifier => "fixture-rid";
         public string displayName => "Fixture";
 

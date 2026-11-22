@@ -113,7 +113,7 @@ public sealed unsafe class NativePanelHost : IDisposable
         console.Start();
         this.runtime = new EditorInteractionRuntime(new EditorContext(m_root, keyboard), m_types, logs, [console]);
         runtime.Start();
-        this.ui = new EditorUiSession();
+        this.ui = new EditorUISession();
         m_nativeContext = CreateNativeContext(ui, supportsVertexOffsets);
         m_clipboard = new NativeClipboard(m_nativeContext);
         logs.Flush();
@@ -122,7 +122,7 @@ public sealed unsafe class NativePanelHost : IDisposable
 
     internal NativePanelHost(
         EditorInteractionRuntime runtime,
-        EditorUiSession ui,
+        EditorUISession ui,
         EditorConsole console,
         LogRouter logs,
         DiagnosticHub diagnostics,
@@ -162,7 +162,7 @@ public sealed unsafe class NativePanelHost : IDisposable
     /// <summary>
     /// Gets the borrowed UI session owning the host's frame state.
     /// </summary>
-    public EditorUiSession ui { get; }
+    public EditorUISession ui { get; }
 
     /// <summary>
     /// Finds and opens exactly one discovered panel.
@@ -315,7 +315,7 @@ public sealed unsafe class NativePanelHost : IDisposable
     }
 
     private static ImGuiNativeContext* CreateNativeContext(
-        EditorUiSession ui,
+        EditorUISession ui,
         bool supportsVertexOffsets
     ) {
         ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
@@ -372,7 +372,7 @@ public sealed unsafe class NativePanelHost : IDisposable
         public EditorPlayModeState state => EditorPlayModeState.Editing;
         public bool isPlaying => false;
         public string? lastFailure => null;
-        public LogSessionId activeSessionId => LogSessionId.none;
+        public LogSessionID activeSessionID => LogSessionID.none;
 
         public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener) => m_events.CreateHub();
 

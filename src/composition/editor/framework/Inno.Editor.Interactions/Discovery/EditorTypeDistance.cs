@@ -22,7 +22,7 @@ internal static class EditorTypeDistance
         }
 
         var visited = new HashSet<Type> { actualType };
-        var queue = new Queue<(Type Type, int Distance)>();
+        var queue = new Queue<(Type type, int distance)>();
         queue.Enqueue((actualType, 0));
         while (queue.Count > 0)
         {

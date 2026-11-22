@@ -12,7 +12,7 @@ public sealed class FreeTypeHarfBuzzTextBackendProvider : TextBackendProvider
     /// Creates an explicitly composed registration for the bundled implementation.
     /// </summary>
     public FreeTypeHarfBuzzTextBackendProvider()
-        : base(TextBackendId.freeTypeHarfBuzz) {}
+        : base(TextBackendID.freeTypeHarfBuzz) {}
 
     /// <inheritdoc/>
     public override ITextBackend CreateBackend() => new FreeTypeHarfBuzzTextBackend();

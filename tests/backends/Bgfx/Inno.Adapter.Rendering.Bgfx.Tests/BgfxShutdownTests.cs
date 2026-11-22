@@ -22,7 +22,7 @@ public sealed class BgfxShutdownTests
 
         string? requestedBackend = Environment.GetEnvironmentVariable("INNO_TEST_GRAPHICS_API");
         GraphicsApi backend = requestedBackend is null
-                              ? OperatingSystem.IsWindows() ? GraphicsApi.Direct3D11 : GraphicsApi.Metal
+                              ? OperatingSystem.IsWindows() ? GraphicsApi.direct3D11 : GraphicsApi.metal
                               : new GraphicsApi(requestedBackend);
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using Sdl3PlatformWindow window = application.CreateWindow(new PlatformWindowOptions
@@ -51,7 +51,7 @@ public sealed class BgfxShutdownTests
             );
             RenderTextureHandle target = builder.CreateTexture("Retired target", descriptor);
             builder
-                .AddRasterPass("Offscreen clear", new RenderPhaseId("tests.shutdown"), 0, static (
+                .AddRasterPass("Offscreen clear", new RenderPhaseID("tests.shutdown"), 0, static (
                     _,
                     _
                 ) => {})

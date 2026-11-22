@@ -292,7 +292,7 @@ public sealed class EditorSettingsTests : IDisposable
         public EditorPlayModeState state => EditorPlayModeState.Editing;
         public bool isPlaying => false;
         public string? lastFailure => null;
-        public LogSessionId activeSessionId => LogSessionId.none;
+        public LogSessionID activeSessionID => LogSessionID.none;
 
         public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener) => m_stateDispatcher.CreateHub();
 

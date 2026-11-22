@@ -116,7 +116,7 @@ public sealed class ShaderBuildInputsTests : IDisposable
             compilation,
             "invalid.ishader",
             WindowsX64BgfxIntegration.shaderProfile,
-            GraphicsApi.Direct3D12,
+            GraphicsApi.direct3D12,
             output
         ));
         Assert.Equal(original, Directory.GetFiles(sources));
@@ -140,7 +140,7 @@ public sealed class ShaderBuildInputsTests : IDisposable
             compilation,
             "graph.ishader",
             WindowsX64BgfxIntegration.shaderProfile,
-            GraphicsApi.Direct3D12,
+            GraphicsApi.direct3D12,
             output,
             cancellationToken: canceled.Token
         ));

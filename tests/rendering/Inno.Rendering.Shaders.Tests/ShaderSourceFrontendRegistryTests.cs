@@ -18,8 +18,8 @@ public sealed class ShaderSourceFrontendRegistryTests
         using var fixture = new Fixture();
         using (var registry = new ShaderSourceFrontendRegistry(fixture.types))
         {
-            Assert.Contains("inno.shader-language.bgfx-sc", registry.languageIds);
-            Assert.Contains("tests.registry.language", registry.languageIds);
+            Assert.Contains("inno.shader-language.bgfx-sc", registry.languageIDs);
+            Assert.Contains("tests.registry.language", registry.languageIDs);
             var request = new ShaderSourceRequest(new("value.ishadersource", "source"), "Value", new NoIncludes());
             Assert.True(registry.Analyze("tests.registry.language", request).succeeded);
             fixture.modules.Rebuild();
@@ -36,7 +36,7 @@ public sealed class ShaderSourceFrontendRegistryTests
         _ = new BgfxShaderSourceFrontend();
         using var fixture = new Fixture();
         using var registry = new ShaderSourceFrontendRegistry(fixture.types);
-        Assert.Contains("tests.registry.language", registry.languageIds);
+        Assert.Contains("tests.registry.language", registry.languageIDs);
         RegistryFrontendProbe.conflict = true;
         try
         {
@@ -46,7 +46,7 @@ public sealed class ShaderSourceFrontendRegistryTests
         {
             RegistryFrontendProbe.conflict = false;
         }
-        Assert.Contains("tests.registry.language", registry.languageIds);
+        Assert.Contains("tests.registry.language", registry.languageIDs);
         Assert.Equal(1, RegistryFrontendProbe.created - RegistryFrontendProbe.disposed);
     }
 
@@ -98,7 +98,7 @@ internal sealed class RegistryFrontendProbe : IShaderSourceFrontend, IDisposable
         m_languageID = conflict ? "inno.shader-language.bgfx-sc" : "tests.registry.language";
     }
 
-    public string languageId => m_languageID;
+    public string languageID => m_languageID;
 
     public ShaderSourceAnalysis Analyze(ShaderSourceRequest request)
         => new(new(request.entryPoint, ShaderSourceType.Atomic("float"), [], new(request.source.assetPath, 1, 1)), [], []);

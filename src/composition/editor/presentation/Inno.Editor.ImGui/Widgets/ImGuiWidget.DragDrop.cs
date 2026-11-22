@@ -217,7 +217,7 @@ public sealed unsafe partial class ImGuiWidget
     /// <param name="maximum">
     /// Maximum screen coordinate of the complete target.
     /// </param>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// ImGui identifier unique within the current window.
     /// </param>
     /// <param name="payload">
@@ -239,7 +239,7 @@ public sealed unsafe partial class ImGuiWidget
         string payloadType,
         Vector2 minimum,
         Vector2 maximum,
-        uint targetId,
+        uint targetID,
         out TPayload payload,
         out bool isPreviewing,
         bool drawDefaultHighlight = true
@@ -257,7 +257,7 @@ public sealed unsafe partial class ImGuiWidget
             Min = ImGui.ToNative(minimum),
             Max = ImGui.ToNative(maximum)
         };
-        if (NativeImGui.Raw.BeginDragDropTargetCustom(&bounds, targetId) == 0)
+        if (NativeImGui.Raw.BeginDragDropTargetCustom(&bounds, targetID) == 0)
         {
             return false;
         }

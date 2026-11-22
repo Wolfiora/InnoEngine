@@ -38,7 +38,7 @@ public sealed class ReloadableContributor : IRenderFrameGraphContributor
     ) {
         graph.AddRasterPass(
             "Collectible Callback",
-            new RenderPhaseId("tests.collectible.contributor"),
+            new RenderPhaseID("tests.collectible.contributor"),
             0,
             Encode
         ).HasSideEffect();

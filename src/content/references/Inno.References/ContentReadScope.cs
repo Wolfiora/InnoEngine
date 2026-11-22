@@ -39,11 +39,11 @@ public sealed class ContentReadScope : IDisposable
         {
             throw new ArgumentException("Content roots must belong to live identity domains.", nameof(contents));
         }
-        if (snapshot.Select(static identity => identity.persistentId).Distinct().Count() != snapshot.Length)
+        if (snapshot.Select(static identity => identity.persistentID).Distinct().Count() != snapshot.Length)
         {
             throw new ArgumentException("Content root persistent identities must be unique.", nameof(contents));
         }
-        if (activeContent is Guid active && !snapshot.Any(identity => identity.persistentId == active))
+        if (activeContent is Guid active && !snapshot.Any(identity => identity.persistentID == active))
         {
             throw new ArgumentException("The active content must belong to this scope.", nameof(activeContent));
         }
@@ -121,7 +121,7 @@ public sealed class ContentReadScope : IDisposable
         EnsureActive();
         foreach (Identity identity in m_contents)
         {
-            if (identity.persistentId != id)
+            if (identity.persistentID != id)
             {
                 continue;
             }

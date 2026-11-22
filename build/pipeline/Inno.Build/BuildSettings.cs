@@ -70,7 +70,7 @@ public sealed class BuildSettings : ISerializable
     /// <summary>
     /// Gets or sets the default game build target.
     /// </summary>
-    public BuildTargetId gameTarget
+    public BuildTargetID gameTarget
     {
         get => new(m_gameTargetId);
         set => m_gameTargetId = value.value;
@@ -82,9 +82,9 @@ public sealed class BuildSettings : ISerializable
     /// <summary>
     /// Gets or sets the default managed publisher; null follows the selected platform's default.
     /// </summary>
-    public ManagedDeploymentId? gameManagedDeployment
+    public ManagedDeploymentID? gameManagedDeployment
     {
-        get => m_gameManagedDeploymentId.Length == 0 ? null : new ManagedDeploymentId(m_gameManagedDeploymentId);
+        get => m_gameManagedDeploymentId.Length == 0 ? null : new ManagedDeploymentID(m_gameManagedDeploymentId);
         set => m_gameManagedDeploymentId = value?.value ?? string.Empty;
     }
 
@@ -112,7 +112,7 @@ public sealed class BuildSettings : ISerializable
     public static BuildSettings CreateDefault(
         string projectName,
         string startupScene,
-        BuildTargetId target
+        BuildTargetID target
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(projectName);
         ArgumentNullException.ThrowIfNull(startupScene);
@@ -120,7 +120,7 @@ public sealed class BuildSettings : ISerializable
         {
             throw new ArgumentException("A default build target is required.", nameof(target));
         }
-        string portableID = ProjectId.FromName(projectName).value;
+        string portableID = ProjectID.FromName(projectName).value;
         return new BuildSettings
         {
             pluginDisplayName = projectName,
@@ -138,16 +138,16 @@ public sealed class BuildSettings : ISerializable
     /// <summary>
     /// Creates an isolated game profile from the current defaults.
     /// </summary>
-    /// <param name="projectId">
+    /// <param name="projectID">
     /// The authoritative project identity copied into the game profile.
     /// </param>
     /// <returns>
     /// A newly owned profile that may be changed for one build without mutating these settings.
     /// </returns>
-    public BuildProfile CreateGameProfile(ProjectId projectId)
+    public BuildProfile CreateGameProfile(ProjectID projectID)
         => new()
     {
-        applicationId = projectId.value,
+        applicationId = projectID.value,
         productName = gameProductName,
         persistentDataPath = gamePersistentDataPath,
         startupScene = gameStartupScene,

@@ -240,7 +240,7 @@ public sealed class ShaderResourceIrTests
     ) {
         var toolchain = new BgfxShadercToolchain(MacOSArm64BgfxShaderProfiles.target);
         var capabilities = new GraphicsCapabilities(
-            GraphicsApi.Metal,
+            GraphicsApi.metal,
             features,
             new GraphicsLimits(256, 8, 8192, 16),
             Enum.GetValues<RenderTextureFormat>(),

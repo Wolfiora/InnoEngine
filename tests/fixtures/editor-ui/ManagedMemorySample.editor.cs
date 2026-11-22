@@ -1,6 +1,6 @@
 using System;
 
-namespace EditorUiAcceptance;
+namespace EditorUIAcceptance;
 
 internal readonly record struct ManagedMemorySample(
     long liveBytes,

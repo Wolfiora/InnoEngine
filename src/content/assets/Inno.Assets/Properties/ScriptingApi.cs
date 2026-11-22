@@ -18,7 +18,7 @@ using Inno.Scripting.Api;
 [assembly: ScriptingApiExport(typeof(RetentionScope), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AssetResidencyStatistics), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(Assets), ScriptingApiScope.Runtime)]
-[assembly: ScriptingApiExport(typeof(AssetSourceId), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(AssetSourceID), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AssetPath), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AssetReferenceInfo), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AssetReferenceKind), ScriptingApiScope.Runtime)]

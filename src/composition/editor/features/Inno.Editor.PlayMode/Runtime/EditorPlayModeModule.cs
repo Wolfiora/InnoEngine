@@ -65,7 +65,7 @@ internal sealed class EditorPlayModeModule : EditorModule, IEditorPlayMode
     /// <summary>
     /// Gets the isolated log session that owns the current Play Mode request.
     /// </summary>
-    public LogSessionId activeSessionId => m_controller.activeSessionId;
+    public LogSessionID activeSessionID => m_controller.activeSessionID;
 
     /// <inheritdoc/>
     public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener) => m_controller.ListenStateChanges(listener);

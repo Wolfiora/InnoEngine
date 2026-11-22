@@ -33,7 +33,7 @@ internal sealed class PrefabConnectionRecord
         GameObject gameObject
     ) {
         ArgumentNullException.ThrowIfNull(gameObject);
-        m_objectIdentities[sourceID] = gameObject.identity.persistentId;
+        m_objectIdentities[sourceID] = gameObject.identity.persistentID;
     }
 
     internal void MapComponent(
@@ -41,7 +41,7 @@ internal sealed class PrefabConnectionRecord
         GameComponent component
     ) {
         ArgumentNullException.ThrowIfNull(component);
-        m_componentIdentities[sourceID] = component.identity.persistentId;
+        m_componentIdentities[sourceID] = component.identity.persistentID;
     }
 
     internal void RemoveObject(Guid sourceID) => m_objectIdentities.Remove(sourceID);

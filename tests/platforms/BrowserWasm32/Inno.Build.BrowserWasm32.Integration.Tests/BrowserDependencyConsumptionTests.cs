@@ -25,12 +25,12 @@ public sealed class BrowserDependencyConsumptionTests
         string dotnet = StandardBuildEnvironment.ResolveManagedHost();
         BuildCompositionContext context = StandardBuildEnvironment.Capture(
             AppContext.BaseDirectory,
-            new BuildTargetId("windows-x64"),
+            new BuildTargetID("windows-x64"),
             dotnet,
             manifest
         );
         BuildDistribution distribution = StandardBuildDistribution.Create(context).build;
-        var target = new BuildTargetId("browser-wasm");
+        var target = new BuildTargetID("browser-wasm");
         string output = Path.Combine(root, "artifacts", "validation", "browser-support-pack");
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(20));
         using PlayerSupportPackPublication pack = await distribution.supportPacks.PublishAsync(

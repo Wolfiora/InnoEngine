@@ -116,17 +116,17 @@ public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnaps
     /// <inheritdoc/>
     [ScriptingApiIgnore]
     public ArtifactLease AcquireArtifact(
-        Guid persistentId,
+        Guid persistentID,
         string outputName
     ) {
         EnsureOpen();
-        return candidateLoader.AcquireArtifact(persistentId, outputName);
+        return candidateLoader.AcquireArtifact(persistentID, outputName);
     }
 
     /// <summary>
     /// Tries to resolve one named candidate artifact.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// Candidate asset identity.
     /// </param>
     /// <param name="outputName">
@@ -140,12 +140,12 @@ public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnaps
     /// </returns>
     [ScriptingApiIgnore]
     public bool TryGetArtifact(
-        Guid persistentId,
+        Guid persistentID,
         string outputName,
         out AssetArtifactInfo? artifact
     ) {
         EnsureOpen();
-        return candidateLoader.TryGetArtifact(persistentId, outputName, out artifact);
+        return candidateLoader.TryGetArtifact(persistentID, outputName, out artifact);
     }
 
     /// <summary>

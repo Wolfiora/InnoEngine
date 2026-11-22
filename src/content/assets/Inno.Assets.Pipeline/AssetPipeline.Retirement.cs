@@ -42,8 +42,8 @@ public sealed partial class AssetPipeline
 
     private void PruneRetiredObservers()
     {
-        RemoveRetiredObservers(Changed, observer => Changed -= observer);
-        RemoveRetiredObservers(AssetReloaded, observer => AssetReloaded -= observer);
+        RemoveRetiredObservers(changed, observer => changed -= observer);
+        RemoveRetiredObservers(assetReloaded, observer => assetReloaded -= observer);
     }
 
     private void RemoveRetiredObservers<T>(
@@ -93,7 +93,7 @@ public sealed partial class AssetPipeline
             m_shutdown = new LifetimeScope();
             if (m_loader is not null)
             {
-                m_loader.AssetReloaded -= OnAssetReloaded;
+                m_loader.assetReloaded -= OnAssetReloaded;
                 m_shutdown.Own(m_loader);
             }
             if (m_fileSystem is not null)
@@ -143,8 +143,8 @@ public sealed partial class AssetPipeline
         m_options = default;
         m_lastArtifactCollectionTimestamp = 0;
         isInitialized = false;
-        Changed = null;
-        AssetReloaded = null;
-        SourceMountsChanged = null;
+        changed = null;
+        assetReloaded = null;
+        sourceMountsChanged = null;
     }
 }

@@ -415,7 +415,7 @@ public readonly record struct AudioPlayOptions
     /// Creates default playback parameters.
     /// </summary>
     public AudioPlayOptions()
-        : this(1f, 1f, 0f, false, 0, AudioBusId.master, AudioClipLoadMode.Automatic, null) {}
+        : this(1f, 1f, 0f, false, 0, AudioBusID.master, AudioClipLoadMode.Automatic, null) {}
 
     /// <summary>
     /// Creates playback parameters.
@@ -456,7 +456,7 @@ public readonly record struct AudioPlayOptions
         float pan = 0f,
         bool loop = false,
         int priority = 0,
-        AudioBusId? bus = null,
+        AudioBusID? bus = null,
         AudioClipLoadMode loadMode = AudioClipLoadMode.Automatic,
         AudioSpatialOptions? spatial = null
     ) {
@@ -476,7 +476,7 @@ public readonly record struct AudioPlayOptions
         {
             throw new ArgumentOutOfRangeException(nameof(loadMode));
         }
-        AudioBusId resolvedBus = bus ?? AudioBusId.master;
+        AudioBusID resolvedBus = bus ?? AudioBusID.master;
         if (!resolvedBus.isValid)
         {
             throw new ArgumentException("A valid destination bus is required.", nameof(bus));
@@ -524,7 +524,7 @@ public readonly record struct AudioPlayOptions
     /// <summary>
     /// Gets the destination mixer bus.
     /// </summary>
-    public AudioBusId bus { get; }
+    public AudioBusID bus { get; }
 
     /// <summary>
     /// Gets the clip preparation override.

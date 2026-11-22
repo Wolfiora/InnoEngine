@@ -97,7 +97,7 @@ public static class GraphicsProgramArtifactCodec
             for (int index = 0; index < count; index++)
             {
                 bindings[index] = new RenderShaderBindingDescriptor(
-                    new RenderBindingId(ReadName(reader)),
+                    new RenderBindingID(ReadName(reader)),
                     ReadEnum<RenderShaderBindingKind>(reader),
                     reader.ReadInt32(),
                     ReadEnum<RenderUniformType>(reader),

@@ -54,7 +54,7 @@ public sealed class BgfxShaderCompilerProfile
         ArgumentException.ThrowIfNullOrWhiteSpace(fragmentProfile);
         ArgumentNullException.ThrowIfNull(computeProfile);
         string[] snapshot = defines?.ToArray() ?? [];
-        if (snapshot.Any(string.IsNullOrWhiteSpace) || capabilities.backend == GraphicsApi.Noop
+        if (snapshot.Any(string.IsNullOrWhiteSpace) || capabilities.backend == GraphicsApi.noop
             || capabilities.Supports(GraphicsCapability.Compute) != !string.IsNullOrWhiteSpace(computeProfile)
         ) {
             throw new ArgumentException("A shader profile requires valid defines, a renderer and consistent compute support.");

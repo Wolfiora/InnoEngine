@@ -53,8 +53,8 @@ internal sealed class EditorHost : ShellHost
 
     private readonly EditorLaunchOptions m_launch;
     private readonly IAuthoringAdapterCatalog m_authoringAdapters;
-    private readonly HashSet<uint> m_focusedWindowIds = [];
-    private readonly PresentationBackendId m_presentationBackend;
+    private readonly HashSet<uint> m_focusedWindowIDs = [];
+    private readonly PresentationBackendID m_presentationBackend;
     private readonly EditorHostResourceStack m_resources;
     private readonly string m_bootLogPath;
     private RuntimeSession? m_editSession;
@@ -118,7 +118,7 @@ internal sealed class EditorHost : ShellHost
         }
 
         bool shouldExit = evnt is WindowCloseEvent closeEvent
-                          && closeEvent.windowId == primaryWindow.windowId;
+                          && closeEvent.windowID == primaryWindow.windowID;
         if (shouldExit)
         {
             BootLog($"Exit requested by event: {evnt.GetType().Name}.");
@@ -155,7 +155,7 @@ internal sealed class EditorHost : ShellHost
             authoring.Update();
             editSession.Tick(frame.deltaTime);
             using (editSession.EnterExecutionScope())
-            using (editSession.subsystems.GetRequiredSubsystem<UiRuntime>().EnterExecutionScope())
+            using (editSession.subsystems.GetRequiredSubsystem<UIRuntime>().EnterExecutionScope())
             {
                 layers.OnUpdate(frame.deltaTime);
                 m_gameInputCapture?.BeginFrame();
@@ -215,7 +215,7 @@ internal sealed class EditorHost : ShellHost
     protected override void OnPresentation(ShellFrame frame)
     {
         using IDisposable scope = editSession.EnterExecutionScope();
-        using IDisposable uiScope = editSession.subsystems.GetRequiredSubsystem<UiRuntime>().EnterExecutionScope();
+        using IDisposable uiScope = editSession.subsystems.GetRequiredSubsystem<UIRuntime>().EnterExecutionScope();
         layers.RenderFrame(frame.deltaTime);
     }
 
@@ -305,7 +305,7 @@ internal sealed class EditorHost : ShellHost
         InitializeAdapterResources();
         if (primaryWindow.isFocused)
         {
-            m_focusedWindowIds.Add(primaryWindow.windowId);
+            m_focusedWindowIDs.Add(primaryWindow.windowID);
         }
 
         EngineHost engineHost = m_resources.Acquire(m_launch.createEngineHost, static host => host.Dispose());
@@ -340,7 +340,7 @@ internal sealed class EditorHost : ShellHost
                 engineHost.diagnostics,
                 () => adapters.audio.CreateDevice(adapterSelection.audio, new AudioBackendOptions()),
                 () => (
-                    activeAuthoring.settings.TryGet(AudioProjectSettings.settingId, out AudioProjectSettings? configured)
+                    activeAuthoring.settings.TryGet(AudioProjectSettings.settingID, out AudioProjectSettings? configured)
                     && configured is not null
                     ? configured
                     : new AudioProjectSettings()
@@ -353,7 +353,7 @@ internal sealed class EditorHost : ShellHost
             () => engineHost.CreateSession(new RuntimeSessionOptions
             {
                 kind = RuntimeSessionKind.Edit,
-                applicationId = "inno.editor",
+                applicationID = "inno.editor",
                 createLogSink = m_launch.createSessionLogSink is null
                                 ? null
                                 : session => m_launch.createSessionLogSink(RuntimeSessionKind.Edit, session),
@@ -385,7 +385,7 @@ internal sealed class EditorHost : ShellHost
             m_launch.defaultBuildTarget
         );
         var buildSettings = new BuildSettingsStore(
-            Path.Combine(projectDirectory, SettingsFileNames.build),
+            Path.Combine(projectDirectory, SettingsFileNames.C_BUILD),
             engineHost.serialization,
             defaultBuildSettings
         );
@@ -444,8 +444,8 @@ internal sealed class EditorHost : ShellHost
         );
         m_gameInputCapture = new EditorGameInputCapture(
             viewportID => (
-                presentation.TryGetWindowId(viewportID, out uint windowID)
-                && m_focusedWindowIds.Contains(windowID)
+                presentation.TryGetWindowID(viewportID, out uint windowID)
+                && m_focusedWindowIDs.Contains(windowID)
                 ? windowID
                 : null
             )
@@ -480,7 +480,7 @@ internal sealed class EditorHost : ShellHost
         var playOptions = new RuntimeSessionOptions
         {
             kind = RuntimeSessionKind.Play,
-            applicationId = "inno.editor.play",
+            applicationID = "inno.editor.play",
             createLogSink = m_launch.createSessionLogSink is null
                             ? null
                             : session => m_launch.createSessionLogSink(RuntimeSessionKind.Play, session),
@@ -573,13 +573,13 @@ internal sealed class EditorHost : ShellHost
                 activeInputSource,
                 authoring.assets,
                 () => (
-                    authoring.settings.TryGet(AudioProjectSettings.settingId, out AudioProjectSettings? settings) && settings is not null
+                    authoring.settings.TryGet(AudioProjectSettings.settingID, out AudioProjectSettings? settings) && settings is not null
                     ? settings
                     : new AudioProjectSettings()
                 ),
                 () => adapters.storage.CreateStorage(
                     adapterSelection.storage,
-                    new StorageScope(owner.options.applicationId)
+                    new StorageScope(owner.options.applicationID)
                 ),
                 activeAudio.CreateRuntimeSubsystemFactory(owner)
             )
@@ -595,7 +595,7 @@ internal sealed class EditorHost : ShellHost
         }
     }
 
-    private bool HasEditorFocus() => m_focusedWindowIds.Count > 0;
+    private bool HasEditorFocus() => m_focusedWindowIDs.Count > 0;
 
     private void SaveBeforeShutdown()
     {
@@ -617,16 +617,16 @@ internal sealed class EditorHost : ShellHost
         {
             if (focusChanged.isFocused)
             {
-                m_focusedWindowIds.Add(focusChanged.windowId);
+                m_focusedWindowIDs.Add(focusChanged.windowID);
             }
             else
             {
-                m_focusedWindowIds.Remove(focusChanged.windowId);
+                m_focusedWindowIDs.Remove(focusChanged.windowID);
             }
         }
         else if (evnt is WindowCloseEvent closeEvent)
         {
-            m_focusedWindowIds.Remove(closeEvent.windowId);
+            m_focusedWindowIDs.Remove(closeEvent.windowID);
         }
     }
 
@@ -650,7 +650,7 @@ internal sealed class EditorHost : ShellHost
     private static string FindDefaultStartupScene(AssetPipeline assets)
     {
         foreach (AssetFileEntry entry in assets.GetFileSystemEntries(includeDirectories: false)
-            .Where(static entry => entry.source == AssetSourceId.project)
+            .Where(static entry => entry.source == AssetSourceID.project)
             .Where(static entry => !AssetSample.IsRuntimeExcluded(entry.assetPath, isDirectory: false))
             .OrderBy(static entry => entry.assetPath.localPath, StringComparer.Ordinal)
         ) {

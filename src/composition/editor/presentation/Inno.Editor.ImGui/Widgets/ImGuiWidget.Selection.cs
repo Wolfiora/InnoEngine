@@ -170,8 +170,8 @@ public sealed unsafe partial class ImGuiWidget
             return false;
         }
         bool ownsActiveRow = context->ActiveId != 0
-                             && context->ActiveIdSource == ImGuiInputSource.Keyboard && state.navigationItemIds.Contains(context->ActiveId);
-        if (state.navigationItemIds.Contains(context->NavId) && (context->ActiveId == 0 || ownsActiveRow))
+                             && context->ActiveIdSource == ImGuiInputSource.Keyboard && state.navigationItemIDs.Contains(context->ActiveId);
+        if (state.navigationItemIDs.Contains(context->NavId) && (context->ActiveId == 0 || ownsActiveRow))
         {
             // Native navigation must not activate the disclosure while the list owns selection/activation.
             // A distinct owner preserves text fields and overlay buttons, including their native navigation.
@@ -187,7 +187,7 @@ public sealed unsafe partial class ImGuiWidget
         EditorKeyboardPolicy keyboard,
         ImGuiIO* io
     ) {
-        var input = new EditorUiInput(io);
+        var input = new EditorUIInput(io);
         KeyModifier modifiers = KeyModifier.None;
         if (input.control)
         {

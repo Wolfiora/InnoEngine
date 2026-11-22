@@ -71,11 +71,11 @@ public sealed class AudioClipImporterTests : IDisposable
         AudioClipAsset flac = Load(loader, "tone.flac");
         AudioClipAsset mp3 = Load(loader, "tone.mp3");
 
-        Assert.Equal(AudioCodecId.wav, wav.metadata!.Value.codec);
+        Assert.Equal(AudioCodecID.wav, wav.metadata!.Value.codec);
         Assert.Equal(4, wav.metadata.Value.frameCount);
-        Assert.Equal(AudioCodecId.flac, flac.metadata!.Value.codec);
+        Assert.Equal(AudioCodecID.flac, flac.metadata!.Value.codec);
         Assert.Equal(48_000, flac.metadata.Value.frameCount);
-        Assert.Equal(AudioCodecId.mp3, mp3.metadata!.Value.codec);
+        Assert.Equal(AudioCodecID.mp3, mp3.metadata!.Value.codec);
         Assert.Equal(1152, mp3.metadata.Value.frameCount);
         AssertSeparateArtifact(loader, wav, CreateWav());
         AssertSeparateArtifact(loader, flac, CreateFlac());
@@ -89,7 +89,7 @@ public sealed class AudioClipImporterTests : IDisposable
         using AssetLoader loader = CreateLoader();
 
         Assert.False(loader.Import(AssetPath.Project("broken.wav")));
-        Assert.True(loader.TryGetPersistentId(AssetPath.Project("broken.wav"), out Guid persistentID));
+        Assert.True(loader.TryGetPersistentID(AssetPath.Project("broken.wav"), out Guid persistentID));
         Assert.False(loader.TryGetArtifact(persistentID, "audio-data", out _));
     }
 
@@ -111,13 +111,13 @@ public sealed class AudioClipImporterTests : IDisposable
         AudioClipAsset asset,
         byte[] expected
     ) {
-        Assert.True(loader.TryGetArtifact(asset.identity.persistentId, "runtime", out AssetArtifactInfo? runtime));
-        Assert.True(loader.TryGetArtifact(asset.identity.persistentId, "audio-data", out AssetArtifactInfo? data));
+        Assert.True(loader.TryGetArtifact(asset.identity.persistentID, "runtime", out AssetArtifactInfo? runtime));
+        Assert.True(loader.TryGetArtifact(asset.identity.persistentID, "audio-data", out AssetArtifactInfo? data));
         Assert.NotNull(runtime);
         Assert.NotNull(data);
         Assert.InRange(runtime.length, 1, 127);
         Assert.NotEqual(runtime.outputName, data.outputName);
-        using ArtifactLease encoded = loader.AcquireArtifact(asset.identity.persistentId, "audio-data");
+        using ArtifactLease encoded = loader.AcquireArtifact(asset.identity.persistentID, "audio-data");
         Assert.Equal(expected, encoded.ReadAllBytes());
     }
 

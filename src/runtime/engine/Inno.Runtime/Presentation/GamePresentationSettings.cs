@@ -9,19 +9,19 @@ namespace Inno.Runtime;
 /// Defines the project-wide game presentation area shared by Editor previews and deployed Players.
 /// </summary>
 [GenerateSerializationConverter]
-[StableTypeId("4068d172-87ac-41b3-ae64-247d25889336")]
-[ProjectSettingDefinition(GamePresentationSettings.settingProtocolId)]
+[StableTypeID("4068d172-87ac-41b3-ae64-247d25889336")]
+[ProjectSettingDefinition(GamePresentationSettings.C_SETTING_PROTOCOL_ID)]
 public sealed class GamePresentationSettings : ISerializable
 {
     /// <summary>
     /// Gets the immutable project-setting protocol value used by discovery metadata.
     /// </summary>
-    public const string settingProtocolId = "inno.runtime.game-presentation";
+    public const string C_SETTING_PROTOCOL_ID = "inno.runtime.game-presentation";
 
     /// <summary>
     /// Gets the stable project-setting identity for game presentation.
     /// </summary>
-    public static ProjectSettingId settingId => new(settingProtocolId);
+    public static ProjectSettingID settingID => new(C_SETTING_PROTOCOL_ID);
 
     /// <summary>
     /// Gets or sets whether the complete reference frame is fitted inside the available surface.

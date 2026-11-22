@@ -25,7 +25,7 @@ public static class BuildMaintenanceApplication
     /// <returns>
     /// Zero on success, two on cancellation, or one with a diagnostic on failure.
     /// </returns>
-    public static async Task<int> Run(
+    public static async Task<int> RunAsync(
         string[] arguments,
         CancellationToken cancellationToken
     ) {
@@ -119,7 +119,7 @@ public static class BuildMaintenanceApplication
     /// <param name="dryRun">
     /// Whether to report the plan without retiring it.
     /// </param>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// An optional exact producer target filter; shared dependencies remain protected.
     /// </param>
     /// <param name="cancellationToken">
@@ -145,7 +145,7 @@ public static class BuildMaintenanceApplication
         BuildCachePolicy policy,
         bool retireAll,
         bool dryRun,
-        string? targetId,
+        string? targetID,
         CancellationToken cancellationToken
     ) {
         ArgumentNullException.ThrowIfNull(policy);
@@ -178,7 +178,7 @@ public static class BuildMaintenanceApplication
             owners,
             remainingPolicy,
             retireAll,
-            targetId,
+            targetID,
             cancellationToken
         );
         if (dryRun)

@@ -231,7 +231,7 @@ public interface IAudioDevice : IDisposable
     /// A bus handle owned by the current device generation.
     /// </returns>
     AudioBusHandle CreateBus(
-        AudioBusId id,
+        AudioBusID id,
         AudioBusHandle parent = default
     );
 

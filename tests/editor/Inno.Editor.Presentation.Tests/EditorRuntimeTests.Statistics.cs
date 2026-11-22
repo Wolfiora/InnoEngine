@@ -33,15 +33,15 @@ public sealed partial class EditorRuntimeTests
         Assert.Same(first, statistics.GetSnapshot());
         statistics.Publish(new EditorStatistic(new("second"), new("sampling"), "Sampling", "Second", "2"));
         IReadOnlyList<EditorStatistic> combined = statistics.GetSnapshot();
-        Assert.Equal(2, combined.Count(value => value.groupId == new EditorStatisticGroupId("sampling")));
+        Assert.Equal(2, combined.Count(value => value.groupID == new EditorStatisticGroupID("sampling")));
         m_runtime.Update(new EditorFrame(0.016f, 2f, isFocused: true));
         Assert.Equal(
             "second",
-            Assert.Single(statistics.GetSnapshot().Where(value => value.groupId == new EditorStatisticGroupId("sampling"))).id.value
+            Assert.Single(statistics.GetSnapshot().Where(value => value.groupID == new EditorStatisticGroupID("sampling"))).id.value
         );
         Assert.Equal(2, combined.Count);
         m_runtime.Update(new EditorFrame(0.016f, 3f, isFocused: true));
-        Assert.DoesNotContain(statistics.GetSnapshot(), value => value.groupId == new EditorStatisticGroupId("sampling"));
+        Assert.DoesNotContain(statistics.GetSnapshot(), value => value.groupID == new EditorStatisticGroupID("sampling"));
     }
 
     [Fact]

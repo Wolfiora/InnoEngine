@@ -58,7 +58,7 @@ public sealed partial class AssetLoader
     ) {
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(inputs);
-        Guid targetID = definition.identity.persistentId;
+        Guid targetID = definition.identity.persistentID;
         string displayName = string.IsNullOrWhiteSpace(definition.assetPath.ToString())
                              ? definition.GetType().Name
                              : definition.assetPath.ToString();
@@ -130,7 +130,7 @@ public sealed partial class AssetLoader
             );
         }
         Guid persistentID = existingRecord?.persistentID
-                            ?? m_pendingImportIds.GetValueOrDefault(relativePath);
+                            ?? m_pendingImportIDs.GetValueOrDefault(relativePath);
         if (persistentID == Guid.Empty
             && TryReadSourceMeta(GetMetaPath(relativePath), out AssetSourceMeta sourceMeta)
         ) {
@@ -160,7 +160,7 @@ public sealed partial class AssetLoader
         {
             persistentID = Guid.NewGuid();
         }
-        m_pendingImportIds[relativePath] = persistentID;
+        m_pendingImportIDs[relativePath] = persistentID;
         m_activeImports.Add(relativePath);
         try
         {
@@ -225,7 +225,7 @@ public sealed partial class AssetLoader
         finally
         {
             m_activeImports.Remove(relativePath);
-            m_pendingImportIds.Remove(relativePath);
+            m_pendingImportIDs.Remove(relativePath);
         }
     }
 
@@ -343,7 +343,7 @@ public sealed partial class AssetLoader
         if (!m_types.TryGetTypeRef(product.asset.GetType(), out TypeRef assetTypeRef))
         {
             throw new InvalidOperationException(
-                $"Imported asset type '{product.asset.GetType().FullName}' requires a StableTypeId."
+                $"Imported asset type '{product.asset.GetType().FullName}' requires a StableTypeID."
             );
         }
 
@@ -368,9 +368,9 @@ public sealed partial class AssetLoader
             persistentId = persistentID,
             relativePath = relativePath,
             sourceHash = sourceHash,
-            importerId = importer.importerId,
+            importerId = importer.importerID,
             deploymentScope = (int)deploymentScope,
-            stableAssetTypeId = assetTypeRef.stableId,
+            stableAssetTypeId = assetTypeRef.stableID,
             assetStateBytes = state,
             runtimeDependencies = runtimeDependencies.Select(ToData).ToArray(),
             importDependencies = context.importDependencies

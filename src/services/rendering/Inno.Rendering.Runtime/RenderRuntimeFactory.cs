@@ -26,7 +26,7 @@ public sealed class RenderRuntimeFactory : IRuntimeSubsystemFactory
     /// Gets stable ordering metadata that places rendering after simulation features.
     /// </summary>
     public RuntimeSubsystemDescriptor descriptor { get; } = new(
-        new RuntimeSubsystemId("inno.runtime.rendering"),
+        new RuntimeSubsystemID("inno.runtime.rendering"),
         order: 1000,
         lifetime: RuntimeSubsystemLifetime.Host
     );

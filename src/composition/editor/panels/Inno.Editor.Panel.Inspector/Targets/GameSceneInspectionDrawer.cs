@@ -12,8 +12,8 @@ using Inno.Editor.Scene;
 using Inno.Editor.Settings;
 using Inno.Scene;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
 
@@ -60,7 +60,7 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
     /// <summary>
     /// Gets the icon glyph used to represent this item in the editor.
     /// </summary>
-    public override string icon => m_settings.Get("Editor/Appearance/Icons/Scene").GetAsString("value", ImGuiIcon.Cubes)!;
+    public override string icon => m_settings.Get("Editor/Appearance/Icons/Scene").GetAsString("value", ImGuiIcon.C_CUBES)!;
 
     /// <summary>
     /// Binds a caller-visible label to the current inspection target.
@@ -91,7 +91,7 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
     protected override void DrawHeader(
         InspectionDrawContext context,
         GameScene target
-    ) => Ui.Text(target.isLoaded ? "Loaded Scene" : "Scene");
+    ) => Gui.Text(target.isLoaded ? "Loaded Scene" : "Scene");
 
     /// <summary>
     /// Renders the value presentation for the current editor frame.
@@ -109,12 +109,12 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
         if (!scene.isLoaded || scene.isDestroyed)
         {
             _ = context.interactions.For(context.interactions.focusedArea).Select();
-            Ui.Text("Selected scene is no longer loaded.");
+            Gui.Text("Selected scene is no longer loaded.");
             return;
         }
 
-        Ui.PushStyleVar((ImGuiStyleVar.ItemSpacing), EditorUI.current.widgets.style.compactItemSpacing);
-        Ui.PushStyleVar((ImGuiStyleVar.FramePadding), EditorUI.current.widgets.style.compactFramePadding);
+        Gui.PushStyleVar((ImGuiStyleVar.ItemSpacing), EditorUI.current.widgets.style.compactItemSpacing);
+        Gui.PushStyleVar((ImGuiStyleVar.FramePadding), EditorUI.current.widgets.style.compactFramePadding);
         try
         {
             DrawSystems(context, scene);
@@ -122,7 +122,7 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
         }
         finally
         {
-            Ui.PopStyleVar(2);
+            Gui.PopStyleVar(2);
         }
     }
 
@@ -138,7 +138,7 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
             IReadOnlyList<SerializedProperty> properties = missing is null
                                                            ? m_serialization.GetProperties(system)
                                                            : Array.Empty<SerializedProperty>();
-            string systemID = system.identity.persistentId.ToString("N");
+            string systemID = system.identity.persistentID.ToString("N");
             GameSystem editorTarget = system;
             string title = missing?.missingTypeName ?? system.GetType().Name;
             bool dimmed = !system.enabled;
@@ -171,18 +171,18 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
                     scene,
                     system,
                     () => context.interactions
-                        .For(InspectorInteractionIds.C_SYSTEM_AREA, editorTarget)
-                        .Enqueue(InspectorInteractionIds.C_REMOVE_SYSTEM)
+                        .For(InspectorInteractionIDs.C_SYSTEM_AREA, editorTarget)
+                        .Enqueue(InspectorInteractionIDs.C_REMOVE_SYSTEM)
                 ),
                 dimmed: dimmed,
                 trailingControlWidth: m_cardControls.GetWidth(canRemove: true),
                 drawContextMenu: () =>
                 {
-                    cardMinimum = Ui.GetItemMinimum();
-                    headerMaximum = Ui.GetItemMaximum();
+                    cardMinimum = Gui.GetItemMinimum();
+                    headerMaximum = Gui.GetItemMaximum();
                     _ = EditorUI.current.menus.ContextMenu(
                         $"##system_menu_{systemID}",
-                        context.interactions.For(InspectorInteractionIds.C_SYSTEM_AREA, editorTarget)
+                        context.interactions.For(InspectorInteractionIDs.C_SYSTEM_AREA, editorTarget)
                     );
                     m_cardControls.DrawSystemDragSource(system, title, dimmed);
                 }
@@ -190,16 +190,16 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
             Vector2 cardMaximum = headerMaximum;
             if (open)
             {
-                Ui.Unindent();
+                Gui.Unindent();
                 EditorUI.current.widgets.CardBody(systemID, () => EditorUI.current.widgets.SectionLayout(() =>
                 {
                     if (missing is not null)
                     {
-                        Ui.PushStyleColor((ImGuiCol.Text), EditorPalette.error);
+                        Gui.PushStyleColor((ImGuiCol.Text), EditorPalette.error);
                         EditorUI.current.widgets.WrappedText(
-                            $"Missing system script ({missing.missingType.stableId:D}). " + "Its serialized state is preserved and will recover automatically when the type returns."
+                            $"Missing system script ({missing.missingType.stableID:D}). " + "Its serialized state is preserved and will recover automatically when the type returns."
                         );
-                        Ui.PopStyleColor();
+                        Gui.PopStyleColor();
                         return;
                     }
 
@@ -214,18 +214,18 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
                         context.properties.Draw(
                             context.editorContext,
                             system,
-                            $"scene.{scene.identity.persistentId:N}.{systemID}",
+                            $"scene.{scene.identity.persistentID:N}.{systemID}",
                             properties[propertyIndex]
                         );
                     }
                 }), dimmed: dimmed);
-                cardMaximum = Ui.GetItemMaximum();
-                Ui.Indent();
-                Ui.TreePop();
+                cardMaximum = Gui.GetItemMaximum();
+                Gui.Indent();
+                Gui.TreePop();
             }
 
             m_cardControls.DrawSystemDropTarget(context.interactions, m_edits, scene, system, i, cardMinimum, cardMaximum);
-            Ui.Dummy(new Vector2(0f, EditorUI.current.widgets.style.cardSpacing));
+            Gui.Dummy(new Vector2(0f, EditorUI.current.widgets.style.cardSpacing));
         }
     }
 
@@ -236,7 +236,7 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
         if (EditorUI.current.widgets.CenteredButton("Add System", EditorUI.current.widgets.style.addButtonTopPadding))
         {
             m_systemSearch = string.Empty;
-            Ui.OpenPopup("##add_system_popup");
+            Gui.OpenPopup("##add_system_popup");
         }
 
         if (!EditorUI.current.widgets.BeginSearchPopup("##add_system_popup", ref m_systemSearch, "Search systems...", C_SEARCH_BUFFER_SIZE))
@@ -245,10 +245,10 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
         }
         try
         {
-            EditorInteraction interaction = context.interactions.For(InspectorInteractionIds.C_SYSTEM_AREA, scene);
+            EditorInteraction interaction = context.interactions.For(InspectorInteractionIDs.C_SYSTEM_AREA, scene);
             if (EditorUI.current.menus.DrawSearchItems(interaction, interaction.BuildMenu().items, m_systemSearch))
             {
-                Ui.CloseCurrentPopup();
+                Gui.CloseCurrentPopup();
             }
         }
         finally

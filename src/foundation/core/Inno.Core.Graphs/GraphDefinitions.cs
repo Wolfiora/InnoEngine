@@ -47,7 +47,7 @@ public sealed class GraphPortDefinition
     /// <param name="displayName">
     /// Artist-facing display name.
     /// </param>
-    /// <param name="valueTypeId">
+    /// <param name="valueTypeID">
     /// Stable value type identifier.
     /// </param>
     /// <param name="direction">
@@ -60,18 +60,18 @@ public sealed class GraphPortDefinition
     /// Whether an input must be connected.
     /// </param>
     public GraphPortDefinition(
-        GraphPortId id,
+        GraphPortID id,
         string displayName,
-        string valueTypeId,
+        string valueTypeID,
         GraphPortDirection direction,
         GraphPortCapacity capacity = GraphPortCapacity.Single,
         bool required = false
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(displayName);
-        ArgumentException.ThrowIfNullOrWhiteSpace(valueTypeId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(valueTypeID);
         this.id = id;
         this.displayName = displayName;
-        this.valueTypeId = valueTypeId;
+        this.valueTypeID = valueTypeID;
         this.direction = direction;
         this.capacity = capacity;
         this.required = required;
@@ -80,7 +80,7 @@ public sealed class GraphPortDefinition
     /// <summary>
     /// Gets the stable node-local port identifier.
     /// </summary>
-    public GraphPortId id { get; }
+    public GraphPortID id { get; }
 
     /// <summary>
     /// Gets the artist-facing display name.
@@ -90,7 +90,7 @@ public sealed class GraphPortDefinition
     /// <summary>
     /// Gets the stable value type identifier.
     /// </summary>
-    public string valueTypeId { get; }
+    public string valueTypeID { get; }
 
     /// <summary>
     /// Gets the value-flow direction.
@@ -173,7 +173,7 @@ public interface IGraphNodeDefinitionResolver
     /// <summary>
     /// Tries to resolve an active node definition.
     /// </summary>
-    /// <param name="definitionId">
+    /// <param name="definitionID">
     /// Stable definition identifier.
     /// </param>
     /// <param name="definition">
@@ -183,7 +183,7 @@ public interface IGraphNodeDefinitionResolver
     /// <see langword="true"/> when active; otherwise <see langword="false"/>.
     /// </returns>
     bool TryResolve(
-        string definitionId,
+        string definitionID,
         out GraphNodeDefinition? definition
     );
 }
@@ -196,17 +196,17 @@ public interface IGraphTypeConversion
     /// <summary>
     /// Tests a directed value conversion.
     /// </summary>
-    /// <param name="sourceTypeId">
+    /// <param name="sourceTypeID">
     /// Source value type identifier.
     /// </param>
-    /// <param name="destinationTypeId">
+    /// <param name="destinationTypeID">
     /// Destination value type identifier.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when the conversion is valid; otherwise <see langword="false"/>.
     /// </returns>
     bool CanConvert(
-        string sourceTypeId,
-        string destinationTypeId
+        string sourceTypeID,
+        string destinationTypeID
     );
 }

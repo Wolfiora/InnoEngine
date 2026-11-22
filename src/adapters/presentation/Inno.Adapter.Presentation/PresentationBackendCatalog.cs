@@ -9,7 +9,7 @@ namespace Inno.Adapter.Presentation;
 /// </summary>
 public sealed class PresentationBackendCatalog : IPresentationBackendFactory
 {
-    private readonly Dictionary<PresentationBackendId, PresentationBackendProvider> m_providers = [];
+    private readonly Dictionary<PresentationBackendID, PresentationBackendProvider> m_providers = [];
 
     /// <summary>
     /// Validates and captures a complete provider set without creating any service.
@@ -33,18 +33,18 @@ public sealed class PresentationBackendCatalog : IPresentationBackendFactory
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
             }
         }
-        this.supportedBackends = new ReadOnlyCollection<PresentationBackendId>([.. m_providers.Keys]);
+        this.supportedBackends = new ReadOnlyCollection<PresentationBackendID>([.. m_providers.Keys]);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<PresentationBackendId> supportedBackends { get; }
+    public IReadOnlyList<PresentationBackendID> supportedBackends { get; }
 
     /// <exception cref="InvalidOperationException">
     /// The selected provider returned no service.
     /// </exception>
     /// <inheritdoc/>
     public IPresentationContext CreateContext(
-        PresentationBackendId backend,
+        PresentationBackendID backend,
         PresentationBackendOptions options
     ) {
         ArgumentNullException.ThrowIfNull(options);

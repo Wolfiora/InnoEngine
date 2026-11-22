@@ -12,7 +12,7 @@ namespace Inno.Editor.Rendering;
 /// <summary>
 /// Identifies one open Editor viewport purpose without prescribing rendering semantics.
 /// </summary>
-public readonly record struct EditorViewportKindId
+public readonly record struct EditorViewportKindID
 {
     /// <summary>
     /// Creates a stable viewport purpose identifier.
@@ -20,7 +20,7 @@ public readonly record struct EditorViewportKindId
     /// <param name="value">
     /// Globally stable viewport purpose.
     /// </param>
-    public EditorViewportKindId(string value)
+    public EditorViewportKindID(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         this.value = value.Trim();
@@ -75,7 +75,7 @@ public sealed class EditorViewportContributorExtensionAttribute : Attribute
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentException.ThrowIfNullOrWhiteSpace(kind);
         this.id = id.Trim();
-        this.kind = new EditorViewportKindId(kind);
+        this.kind = new EditorViewportKindID(kind);
         this.order = order;
         this.controllerPriority = controllerPriority;
     }
@@ -88,7 +88,7 @@ public sealed class EditorViewportContributorExtensionAttribute : Attribute
     /// <summary>
     /// Gets the open viewport purpose handled by the contributor.
     /// </summary>
-    public EditorViewportKindId kind { get; }
+    public EditorViewportKindID kind { get; }
 
     /// <summary>
     /// Gets ascending model-composition order.
@@ -109,7 +109,7 @@ public sealed class EditorViewportContext
     internal EditorViewportContext(
         EditorContext editor,
         EditorInteractions interactions,
-        EditorViewportKindId kind,
+        EditorViewportKindID kind,
         string viewportID,
         int pixelWidth,
         int pixelHeight,
@@ -123,7 +123,7 @@ public sealed class EditorViewportContext
         this.editor = editor;
         this.interactions = interactions;
         this.kind = kind;
-        this.viewportId = viewportID;
+        this.viewportID = viewportID;
         this.pixelWidth = pixelWidth;
         this.pixelHeight = pixelHeight;
         this.navigation = navigation;
@@ -147,12 +147,12 @@ public sealed class EditorViewportContext
     /// <summary>
     /// Gets the open viewport purpose.
     /// </summary>
-    public EditorViewportKindId kind { get; }
+    public EditorViewportKindID kind { get; }
 
     /// <summary>
     /// Gets the stable panel viewport identity.
     /// </summary>
-    public string viewportId { get; }
+    public string viewportID { get; }
 
     /// <summary>
     /// Gets target width in physical pixels.
@@ -201,13 +201,13 @@ public sealed class EditorViewportContext
             editor,
             interactions,
             kind,
-            viewportId,
+            viewportID,
             pixelWidth,
             pixelHeight,
             navigation,
             content,
             presentation,
-            new SelectedViewContentCollector(viewContent, layer.sourceIds),
+            new SelectedViewContentCollector(viewContent, layer.sourceIDs),
             frameIndex,
             input
         );

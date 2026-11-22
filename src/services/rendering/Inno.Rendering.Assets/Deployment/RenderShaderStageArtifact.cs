@@ -10,7 +10,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Stores one immutable target shader stage without retaining authoring source or compiler state.
 /// </summary>
-[StableTypeId("617ca942-9bab-528c-8052-e9cfb2ae0df5")]
+[StableTypeID("617ca942-9bab-528c-8052-e9cfb2ae0df5")]
 public sealed class RenderShaderStageArtifact
 {
     private readonly byte[] m_bytes;

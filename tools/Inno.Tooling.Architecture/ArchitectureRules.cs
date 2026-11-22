@@ -231,7 +231,7 @@ internal static partial class ArchitectureRules
         }
         if (relative.StartsWith("src/services/platform/", StringComparison.Ordinal)
             && (source.Contains("PlatformNativeHandles", StringComparison.Ordinal)
-                || source.Contains("PlatformNativeHandleId", StringComparison.Ordinal)
+                || source.Contains("PlatformNativeHandleID", StringComparison.Ordinal)
                 || source.Contains("INativeWindowSurface", StringComparison.Ordinal))
         ) {
             failures.Add($"{relative}: native surface ABI belongs to platform adapters, not the shared platform service.");

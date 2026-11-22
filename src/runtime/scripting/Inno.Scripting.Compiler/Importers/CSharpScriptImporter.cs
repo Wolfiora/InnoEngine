@@ -84,7 +84,7 @@ internal sealed class CSharpScriptImporter : AssetImporter<ScriptSourceAsset>
             cancellationToken
         ).ConfigureAwait(false);
         var typeManifest = new ScriptSourceTypeManifest(
-            context.persistentId,
+            context.persistentID,
             context.assetPath.ToString(),
             declarations.Select(CreateTypeDeclaration).ToArray()
         );

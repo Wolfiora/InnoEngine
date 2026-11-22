@@ -7,8 +7,8 @@ using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
 using Inno.Scene;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
 
@@ -71,10 +71,10 @@ internal sealed class GameObjectTagSelector
             preview = "Mixed values";
         }
         EditorUI.current.widgets.LabelChip("Tag", InspectorTargetStyle.tagLabel);
-        Ui.SameLine(0f, 0f);
+        Gui.SameLine(0f, 0f);
         float selectorWidth = MathF.Max(1f, width);
         if (!EditorUI.current.widgets.BeginMenuSelector(
-            $"game_object_tag_{target.identity.persistentId:N}",
+            $"game_object_tag_{target.identity.persistentID:N}",
             preview,
             selectorWidth,
             selectorWidth
@@ -87,7 +87,7 @@ internal sealed class GameObjectTagSelector
             for (int i = 0; i < tags.Count; i++)
             {
                 string tag = tags[i];
-                if (Ui.Selectable(tag, string.Equals(target.tag, tag, StringComparison.Ordinal)))
+                if (Gui.Selectable(tag, string.Equals(target.tag, tag, StringComparison.Ordinal)))
                 {
                     using EditorHistoryTransaction transaction = interactions.history.BeginTransaction("Set Selection Tag");
                     foreach (GameObject selected in targets)

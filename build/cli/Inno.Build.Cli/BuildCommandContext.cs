@@ -23,8 +23,8 @@ internal sealed class BuildCommandContext
         this.configuration = options.Read("configuration", "Release");
         ToolchainEnvironment.ValidateConfiguration(configuration.ToLowerInvariant());
         this.configuration = configuration.Equals("debug", StringComparison.OrdinalIgnoreCase) ? "Debug" : "Release";
-        this.toolsTarget = new BuildTargetId(options.Require("tools-target"));
-        this.target = new BuildTargetId(options.Read("target", toolsTarget.value));
+        this.toolsTarget = new BuildTargetID(options.Require("tools-target"));
+        this.target = new BuildTargetID(options.Read("target", toolsTarget.value));
         string dotnet = ToolchainEnvironment.ResolveExecutable(options.Read("dotnet", "dotnet"));
         this.composition = StandardBuildEnvironment.Capture(
             Path.GetDirectoryName(typeof(BuildApplication).Assembly.Location)!,
@@ -38,8 +38,8 @@ internal sealed class BuildCommandContext
     internal string nativeDependencies { get; }
     internal string root { get; }
     internal string configuration { get; }
-    internal BuildTargetId target { get; }
-    internal BuildTargetId toolsTarget { get; }
+    internal BuildTargetID target { get; }
+    internal BuildTargetID toolsTarget { get; }
     internal BuildCompositionContext composition { get; }
     internal BuildDistribution distribution { get; }
 

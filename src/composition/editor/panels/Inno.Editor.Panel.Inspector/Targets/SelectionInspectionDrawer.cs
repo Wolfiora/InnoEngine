@@ -11,7 +11,7 @@ using Inno.Editor.Scene;
 using Inno.Scene;
 using Inno.Scene.Components;
 
-using Ui = Inno.Editor.ImGui.ImGui;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
 
@@ -27,7 +27,7 @@ internal sealed class SelectionInspectionDrawer(
     private string m_componentSearch = string.Empty;
 
     /// <inheritdoc/>
-    public override string icon => ImGuiIcon.LayerGroup;
+    public override string icon => ImGuiIcon.C_LAYER_GROUP;
 
     /// <inheritdoc/>
     protected override (string name, Action<string>? setter) BindName(
@@ -44,7 +44,7 @@ internal sealed class SelectionInspectionDrawer(
         target.CopyTargets(context.interactions, values);
         if (values.Count != target.identities.Count)
         {
-            EditorUiSession.current.widgets.Hint(
+            EditorUISession.current.widgets.Hint(
                 "The selection includes unavailable or different content. Select compatible scene objects or assets to edit common values."
             );
             return;
@@ -64,13 +64,13 @@ internal sealed class SelectionInspectionDrawer(
         bool readOnly = values.Any(value => !edits.CanEdit(value));
         if (readOnly)
         {
-            EditorUiSession.current.widgets.HelpBox(
+            EditorUISession.current.widgets.HelpBox(
                 "The selection includes a read-only owner. No batch changes will be applied.",
-                ImGuiIcon.Lock,
+                ImGuiIcon.C_LOCK,
                 EditorPalette.warning
             );
         }
-        EditorUiSession.current.widgets.Disabled(readOnly, () =>
+        EditorUISession.current.widgets.Disabled(readOnly, () =>
         {
             if (values.All(value => value is GameObject))
             {
@@ -90,9 +90,9 @@ internal sealed class SelectionInspectionDrawer(
     ) {
         bool active = targets[0].activeSelf;
         bool mixed = targets.Any(value => value.activeSelf != active);
-        EditorUiSession.current.widgets.MixedValue(mixed, () =>
+        EditorUISession.current.widgets.MixedValue(mixed, () =>
         {
-            if (!EditorUiSession.current.widgets.CompactCheckbox(
+            if (!EditorUISession.current.widgets.CompactCheckbox(
                 "selection.active",
                 ref active,
                 tooltip: "Set the active state of every selected object."
@@ -106,8 +106,8 @@ internal sealed class SelectionInspectionDrawer(
             }
             transaction.Commit();
         });
-        EditorUiSession.current.widgets.Hint(mixed ? "Active \u00b7 Mixed values" : "Active");
-        float width = MathF.Max(1, Ui.GetContentRegionAvailable().X);
+        EditorUISession.current.widgets.Hint(mixed ? "Active \u00b7 Mixed values" : "Active");
+        float width = MathF.Max(1, Gui.GetContentRegionAvailable().X);
         m_tags.Draw(targets, context.interactions, width);
         m_layers.Draw(targets, context.interactions, width);
         IReadOnlyList<GameComponent> primary = targets[0].GetComponents();
@@ -124,13 +124,13 @@ internal sealed class SelectionInspectionDrawer(
             {
                 continue;
             }
-            if (EditorUiSession.current.widgets.SectionHeader(
+            if (EditorUISession.current.widgets.SectionHeader(
                 $"{type.Name} ({occurrence + 1})",
                 "Common component values. Changes apply atomically to the entire selection."
             )) {
                 string id = $"selection.{type.FullName}.{occurrence}";
                 DrawCommon(context, state, matches.Cast<EngineObject>().ToArray(), id);
-                if (Ui.Button("Reset Selected##" + id))
+                if (Gui.Button("Reset Selected##" + id))
                 {
                     using EditorHistoryTransaction transaction = context.interactions.history.BeginTransaction("Reset Components");
                     foreach (GameComponent match in matches.Cast<GameComponent>())
@@ -142,8 +142,8 @@ internal sealed class SelectionInspectionDrawer(
 
                 if (matches.All(value => value is not Transform))
                 {
-                    Ui.SameLine(0, -1);
-                    if (Ui.Button("Remove Selected##" + id))
+                    Gui.SameLine(0, -1);
+                    if (Gui.Button("Remove Selected##" + id))
                     {
                         using EditorHistoryTransaction transaction = context.interactions.history.BeginTransaction("Remove Components");
                         foreach (GameComponent match in matches.Cast<GameComponent>())
@@ -164,11 +164,11 @@ internal sealed class SelectionInspectionDrawer(
         InspectionDrawContext context,
         GameObject primary
     ) {
-        ImGuiWidget widgets = EditorUiSession.current.widgets;
+        ImGuiWidget widgets = EditorUISession.current.widgets;
         if (widgets.CenteredButton("Add Component to Selection", widgets.style.addButtonTopPadding))
         {
             m_componentSearch = string.Empty;
-            Ui.OpenPopup("selection.add-component");
+            Gui.OpenPopup("selection.add-component");
         }
 
         if (!widgets.BeginSearchPopup("selection.add-component", ref m_componentSearch, "Search components...", 256))
@@ -177,10 +177,10 @@ internal sealed class SelectionInspectionDrawer(
         }
         try
         {
-            EditorInteraction interaction = context.interactions.For(InspectorInteractionIds.C_COMPONENT_AREA, primary);
-            if (EditorUiSession.current.menus.DrawSearchItems(interaction, interaction.BuildMenu().items, m_componentSearch))
+            EditorInteraction interaction = context.interactions.For(InspectorInteractionIDs.C_COMPONENT_AREA, primary);
+            if (EditorUISession.current.menus.DrawSearchItems(interaction, interaction.BuildMenu().items, m_componentSearch))
             {
-                Ui.CloseCurrentPopup();
+                Gui.CloseCurrentPopup();
             }
         }
         finally
@@ -197,7 +197,7 @@ internal sealed class SelectionInspectionDrawer(
     ) {
         if (targets.Any(value => value is not ISerializable))
         {
-            EditorUiSession.current.widgets.Hint("These objects expose no common serialized properties.");
+            EditorUISession.current.widgets.Hint("These objects expose no common serialized properties.");
             return;
         }
 
@@ -225,7 +225,7 @@ internal sealed class SelectionInspectionDrawer(
             bool readOnly = availability.Any(value => value.isReadOnly);
             common++;
             bool mixed = !edits.HaveSamePropertyValues(targets, property.name);
-            EditorUiSession.current.widgets.MixedValue(
+            EditorUISession.current.widgets.MixedValue(
                 mixed,
                 () => context.properties.DrawDraftProperty(
                     context.editorContext,
@@ -239,13 +239,13 @@ internal sealed class SelectionInspectionDrawer(
             );
             if (mixed)
             {
-                EditorUiSession.current.widgets.Hint("Mixed values");
+                EditorUISession.current.widgets.Hint("Mixed values");
             }
         }
 
         if (common == 0)
         {
-            EditorUiSession.current.widgets.Hint("No common editable properties.");
+            EditorUISession.current.widgets.Hint("No common editable properties.");
         }
     }
 

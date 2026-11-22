@@ -10,7 +10,7 @@ namespace Inno.Adapter.Rendering;
 /// </summary>
 public sealed class RenderingBackendCatalog : IRenderingBackendFactory
 {
-    private readonly Dictionary<RenderingBackendId, RenderingBackendProvider> m_providers = [];
+    private readonly Dictionary<RenderingBackendID, RenderingBackendProvider> m_providers = [];
 
     /// <summary>
     /// Validates and captures a complete set of runtime providers.
@@ -31,13 +31,13 @@ public sealed class RenderingBackendCatalog : IRenderingBackendFactory
                 throw new ArgumentException("Rendering providers require unique, assigned backend IDs.", nameof(providers));
             }
         }
-        this.supportedBackends = new ReadOnlyCollection<RenderingBackendId>([.. m_providers.Keys]);
+        this.supportedBackends = new ReadOnlyCollection<RenderingBackendID>([.. m_providers.Keys]);
     }
 
     /// <summary>
     /// Gets backend registrations available in this type generation.
     /// </summary>
-    public IReadOnlyList<RenderingBackendId> supportedBackends { get; }
+    public IReadOnlyList<RenderingBackendID> supportedBackends { get; }
 
     /// <summary>
     /// Creates a device using this implementation's validated inputs.
@@ -55,7 +55,7 @@ public sealed class RenderingBackendCatalog : IRenderingBackendFactory
     /// No provider is registered for this exact backend ID.
     /// </exception>
     public IRenderDevice CreateDevice(
-        RenderingBackendId backend,
+        RenderingBackendID backend,
         RenderingBackendOptions options
     ) {
         ArgumentNullException.ThrowIfNull(options);
@@ -79,7 +79,7 @@ public sealed class RenderingBackendCatalog : IRenderingBackendFactory
     /// <exception cref="NotSupportedException">
     /// No provider is registered for this exact backend identity.
     /// </exception>
-    public IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider(RenderingBackendId backend)
+    public IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider(RenderingBackendID backend)
     {
         if (!m_providers.TryGetValue(backend, out RenderingBackendProvider? provider))
         {

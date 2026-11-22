@@ -24,7 +24,7 @@ public interface IPlayerSupportPackProvisioner
     /// An operation that completes after the pack has been installed.
     /// </returns>
     ValueTask ProvisionAsync(
-        BuildTargetId target,
+        BuildTargetID target,
         string supportPackRoot,
         CancellationToken cancellationToken = default
     );

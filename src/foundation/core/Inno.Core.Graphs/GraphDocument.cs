@@ -18,28 +18,28 @@ public sealed class GraphNodeRecord
     /// <param name="id">
     /// Stable identifier within the document.
     /// </param>
-    /// <param name="definitionId">
+    /// <param name="definitionID">
     /// Stable node definition identifier.
     /// </param>
     public GraphNodeRecord(
-        GraphNodeId id,
-        string definitionId
+        GraphNodeID id,
+        string definitionID
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(definitionId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(definitionID);
         this.id = id;
-        this.definitionId = definitionId;
+        this.definitionID = definitionID;
         m_valueView = new(m_values);
     }
 
     /// <summary>
     /// Gets the stable node identifier.
     /// </summary>
-    public GraphNodeId id { get; }
+    public GraphNodeID id { get; }
 
     /// <summary>
     /// Gets the stable node definition identifier.
     /// </summary>
-    public string definitionId { get; }
+    public string definitionID { get; }
 
     /// <summary>
     /// Gets or sets the graph-space node position.
@@ -54,25 +54,25 @@ public sealed class GraphNodeRecord
     /// <summary>
     /// Creates or replaces a neutral serialized property value.
     /// </summary>
-    /// <param name="propertyId">
+    /// <param name="propertyID">
     /// Stable property identifier.
     /// </param>
     /// <param name="value">
     /// Serialized value.
     /// </param>
     public void SetValue(
-        string propertyId,
+        string propertyID,
         GraphSerializedValue value
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(propertyId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(propertyID);
         ArgumentNullException.ThrowIfNull(value);
-        m_values[propertyId] = value;
+        m_values[propertyID] = value;
     }
 
     /// <summary>
     /// Tries to read a neutral serialized property value.
     /// </summary>
-    /// <param name="propertyId">
+    /// <param name="propertyID">
     /// Stable property identifier.
     /// </param>
     /// <param name="value">
@@ -82,26 +82,26 @@ public sealed class GraphNodeRecord
     /// <see langword="true"/> when the property exists; otherwise <see langword="false"/>.
     /// </returns>
     public bool TryGetValue(
-        string propertyId,
+        string propertyID,
         out GraphSerializedValue? value
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(propertyId);
-        return m_values.TryGetValue(propertyId, out value);
+        ArgumentException.ThrowIfNullOrWhiteSpace(propertyID);
+        return m_values.TryGetValue(propertyID, out value);
     }
 
     /// <summary>
     /// Removes a neutral serialized property value.
     /// </summary>
-    /// <param name="propertyId">
+    /// <param name="propertyID">
     /// Stable property identifier.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when a property was removed; otherwise <see langword="false"/>.
     /// </returns>
-    public bool RemoveValue(string propertyId)
+    public bool RemoveValue(string propertyID)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(propertyId);
-        return m_values.Remove(propertyId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(propertyID);
+        return m_values.Remove(propertyID);
     }
 }
 
@@ -113,29 +113,29 @@ public readonly record struct GraphEndpoint
     /// <summary>
     /// Creates a graph edge endpoint.
     /// </summary>
-    /// <param name="nodeId">
+    /// <param name="nodeID">
     /// Owning node identifier.
     /// </param>
-    /// <param name="portId">
+    /// <param name="portID">
     /// Port identifier within the node definition.
     /// </param>
     public GraphEndpoint(
-        GraphNodeId nodeId,
-        GraphPortId portId
+        GraphNodeID nodeID,
+        GraphPortID portID
     ) {
-        this.nodeId = nodeId;
-        this.portId = portId;
+        this.nodeID = nodeID;
+        this.portID = portID;
     }
 
     /// <summary>
     /// Gets the owning node identifier.
     /// </summary>
-    public GraphNodeId nodeId { get; }
+    public GraphNodeID nodeID { get; }
 
     /// <summary>
     /// Gets the node-local port identifier.
     /// </summary>
-    public GraphPortId portId { get; }
+    public GraphPortID portID { get; }
 }
 
 /// <summary>
@@ -156,7 +156,7 @@ public sealed class GraphEdgeRecord
     /// Destination endpoint.
     /// </param>
     public GraphEdgeRecord(
-        GraphEdgeId id,
+        GraphEdgeID id,
         GraphEndpoint output,
         GraphEndpoint input
     ) {
@@ -168,7 +168,7 @@ public sealed class GraphEdgeRecord
     /// <summary>
     /// Gets the stable edge identifier.
     /// </summary>
-    public GraphEdgeId id { get; }
+    public GraphEdgeID id { get; }
 
     /// <summary>
     /// Gets the source endpoint.
@@ -189,7 +189,7 @@ public sealed class GraphDocument
     private readonly List<GraphNodeRecord> m_nodes = [];
     private readonly List<GraphEdgeRecord> m_edges = [];
     private readonly Dictionary<string, GraphSerializedValue> m_metadata = new(StringComparer.Ordinal);
-    private readonly Dictionary<GraphNodeId, GraphNodeRecord> m_nodeIndex = [];
+    private readonly Dictionary<GraphNodeID, GraphNodeRecord> m_nodeIndex = [];
     private readonly ReadOnlyCollection<GraphNodeRecord> m_nodeView;
     private readonly ReadOnlyCollection<GraphEdgeRecord> m_edgeView;
     private readonly ReadOnlyDictionary<string, GraphSerializedValue> m_metadataView;
@@ -250,10 +250,10 @@ public sealed class GraphDocument
         }
 
         List<GraphNodeRecord> nodes = [];
-        Dictionary<GraphNodeId, GraphNodeRecord> nodeIndex = [];
+        Dictionary<GraphNodeID, GraphNodeRecord> nodeIndex = [];
         foreach (GraphNodeRecord sourceNode in source.nodes)
         {
-            var node = new GraphNodeRecord(sourceNode.id, sourceNode.definitionId)
+            var node = new GraphNodeRecord(sourceNode.id, sourceNode.definitionID)
             {
                 position = sourceNode.position
             };
@@ -281,7 +281,7 @@ public sealed class GraphDocument
         m_nodes.Clear();
         m_nodes.AddRange(nodes);
         m_nodeIndex.Clear();
-        foreach ((GraphNodeId id, GraphNodeRecord node) in nodeIndex)
+        foreach ((GraphNodeID id, GraphNodeRecord node) in nodeIndex)
         {
             m_nodeIndex.Add(id, node);
         }
@@ -317,34 +317,34 @@ public sealed class GraphDocument
     /// <summary>
     /// Removes a node and every edge connected to it.
     /// </summary>
-    /// <param name="nodeId">
+    /// <param name="nodeID">
     /// Node identifier to remove.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when the node existed; otherwise <see langword="false"/>.
     /// </returns>
-    public bool RemoveNode(GraphNodeId nodeId)
+    public bool RemoveNode(GraphNodeID nodeID)
     {
-        if (!m_nodeIndex.Remove(nodeId, out GraphNodeRecord? node))
+        if (!m_nodeIndex.Remove(nodeID, out GraphNodeRecord? node))
         {
             return false;
         }
 
         m_nodes.Remove(node);
-        m_edges.RemoveAll(edge => edge.output.nodeId == nodeId || edge.input.nodeId == nodeId);
+        m_edges.RemoveAll(edge => edge.output.nodeID == nodeID || edge.input.nodeID == nodeID);
         return true;
     }
 
     /// <summary>
     /// Finds a node by stable identifier.
     /// </summary>
-    /// <param name="nodeId">
+    /// <param name="nodeID">
     /// Node identifier to find.
     /// </param>
     /// <returns>
     /// The node record, or <see langword="null"/> when absent.
     /// </returns>
-    public GraphNodeRecord? FindNode(GraphNodeId nodeId) => m_nodeIndex.GetValueOrDefault(nodeId);
+    public GraphNodeRecord? FindNode(GraphNodeID nodeID) => m_nodeIndex.GetValueOrDefault(nodeID);
 
     /// <summary>
     /// Adds an edge while preserving document order.
@@ -369,15 +369,15 @@ public sealed class GraphDocument
     /// <summary>
     /// Removes an edge by stable identifier.
     /// </summary>
-    /// <param name="edgeId">
+    /// <param name="edgeID">
     /// Edge identifier to remove.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when the edge existed; otherwise <see langword="false"/>.
     /// </returns>
-    public bool RemoveEdge(GraphEdgeId edgeId)
+    public bool RemoveEdge(GraphEdgeID edgeID)
     {
-        int index = m_edges.FindIndex(edge => edge.id == edgeId);
+        int index = m_edges.FindIndex(edge => edge.id == edgeID);
         if (index < 0)
         {
             return false;

@@ -20,7 +20,7 @@ public sealed class ImGuiPresentationProvider : PresentationBackendProvider
     /// Interaction configuration is absent.
     /// </exception>
     public ImGuiPresentationProvider(ImGuiInteractionOptions interaction)
-        : base(PresentationBackendId.imGui)
+        : base(PresentationBackendID.imGui)
     {
         ArgumentNullException.ThrowIfNull(interaction);
         m_interaction = interaction;

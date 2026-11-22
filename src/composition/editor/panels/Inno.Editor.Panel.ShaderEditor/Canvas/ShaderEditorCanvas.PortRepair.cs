@@ -3,7 +3,7 @@ using System.Linq;
 using Inno.Core.Graphs;
 using Inno.Rendering.Shaders;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 using ImGuiApi = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.ShaderEditor;
@@ -12,7 +12,7 @@ internal sealed partial class ShaderEditorCanvas
 {
     private void RepairPorts(GraphNodeRecord node)
     {
-        GraphEndpoint[] missing = draft.missingPorts.Where(endpoint => endpoint.nodeId == node.id).ToArray();
+        GraphEndpoint[] missing = draft.missingPorts.Where(endpoint => endpoint.nodeID == node.id).ToArray();
         if (missing.Length == 0)
         {
             return;
@@ -33,10 +33,10 @@ internal sealed partial class ShaderEditorCanvas
             foreach (GraphEndpoint endpoint in missing)
             {
                 ShaderNodePort old = Port(endpoint);
-                ImGuiApi.PushId(endpoint.portId.value);
+                ImGuiApi.PushID(endpoint.portID.value);
                 try
                 {
-                    ImGuiApi.Text(endpoint.portId.value + " · " + old.type.id);
+                    ImGuiApi.Text(endpoint.portID.value + " · " + old.type.id);
                     if (!EditorUI.current.widgets.BeginBoundedCombo("##replacement", "Reconnect to…"))
                     {
                         continue;
@@ -87,7 +87,7 @@ internal sealed partial class ShaderEditorCanvas
                 }
                 finally
                 {
-                    ImGuiApi.PopId();
+                    ImGuiApi.PopID();
                 }
             }
         }

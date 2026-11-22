@@ -26,7 +26,7 @@ internal static class NativeWorkspaceIdentity
                 .Select(bindings.NormalizeDeclaration)
                 .Prepend("executionRoot=" + (context.toolchain?.host.services.workspaces.identity ?? "physical"))
                 .Prepend(context.configuration)
-                .Prepend(recipe.targetId)
+                .Prepend(recipe.targetID)
                 .Prepend("workspace"),
             configuration
         );

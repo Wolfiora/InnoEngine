@@ -16,7 +16,7 @@ public sealed class AssetReferenceInfo
     /// <summary>
     /// Freezes one diagnostic view of the engine-known references to an asset.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The persistent asset identity.
     /// </param>
     /// <param name="assetPath">
@@ -35,14 +35,14 @@ public sealed class AssetReferenceInfo
     /// Reference locations copied into this immutable snapshot.
     /// </param>
     public AssetReferenceInfo(
-        Guid persistentId,
+        Guid persistentID,
         AssetPath assetPath,
         long contentVersion,
         bool isLoaded,
         bool? lastSweepReachability,
         IReadOnlyList<AssetReferenceLocation> references
     ) {
-        this.persistentId = persistentId;
+        this.persistentID = persistentID;
         this.assetPath = assetPath;
         this.contentVersion = contentVersion;
         this.isLoaded = isLoaded;
@@ -54,7 +54,7 @@ public sealed class AssetReferenceInfo
     /// <summary>
     /// Gets the persistent asset identity.
     /// </summary>
-    public Guid persistentId { get; }
+    public Guid persistentID { get; }
 
     /// <summary>
     /// Gets the current mount-qualified asset path.

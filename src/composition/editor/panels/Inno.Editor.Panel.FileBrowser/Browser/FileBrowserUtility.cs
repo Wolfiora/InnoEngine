@@ -10,8 +10,8 @@ using Inno.Editor.Assets.ImGui;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
 
@@ -21,36 +21,36 @@ internal static class FileBrowserUtility
 
     internal static void PushBrowserStyle()
     {
-        Ui.PushStyleColor((ImGuiCol.Text), EditorPalette.contentText);
-        Ui.PushStyleColor((ImGuiCol.WindowBg), EditorPalette.collectionHeader);
-        Ui.PushStyleColor((ImGuiCol.ChildBg), EditorPalette.collectionHeader);
-        Ui.PushStyleColor((ImGuiCol.Border), EditorPalette.contentBorder);
-        Ui.PushStyleColor((ImGuiCol.TableHeaderBg), EditorPalette.collectionHeader);
-        Ui.PushStyleColor((ImGuiCol.TableBorderStrong), EditorPalette.contentBorder);
-        Ui.PushStyleColor((ImGuiCol.TableBorderLight), EditorPalette.contentBorderSoft);
-        Ui.PushStyleColor((ImGuiCol.TableRowBg), EditorPalette.collectionRow);
-        Ui.PushStyleColor((ImGuiCol.TableRowBgAlt), EditorPalette.collectionRowAlternate);
-        Ui.PushStyleColor((ImGuiCol.Header), EditorPalette.contentAccent);
-        Ui.PushStyleColor((ImGuiCol.HeaderHovered), EditorPalette.contentAccent);
-        Ui.PushStyleColor((ImGuiCol.HeaderActive), EditorPalette.contentAccent);
-        Ui.PushStyleVar((ImGuiStyleVar.WindowPadding), currentBrowserStyle.windowPadding);
-        Ui.PushStyleVar((ImGuiStyleVar.ChildBorderSize), EditorUI.current.widgets.style.borderSize);
-        Ui.PushStyleVar((ImGuiStyleVar.CellPadding), currentBrowserStyle.cellPadding);
-        Ui.PushStyleVar((ImGuiStyleVar.ItemSpacing), currentBrowserStyle.itemSpacing);
-        Ui.PushStyleVar((ImGuiStyleVar.FrameRounding), currentBrowserStyle.frameRounding);
+        Gui.PushStyleColor((ImGuiCol.Text), EditorPalette.contentText);
+        Gui.PushStyleColor((ImGuiCol.WindowBg), EditorPalette.collectionHeader);
+        Gui.PushStyleColor((ImGuiCol.ChildBg), EditorPalette.collectionHeader);
+        Gui.PushStyleColor((ImGuiCol.Border), EditorPalette.contentBorder);
+        Gui.PushStyleColor((ImGuiCol.TableHeaderBg), EditorPalette.collectionHeader);
+        Gui.PushStyleColor((ImGuiCol.TableBorderStrong), EditorPalette.contentBorder);
+        Gui.PushStyleColor((ImGuiCol.TableBorderLight), EditorPalette.contentBorderSoft);
+        Gui.PushStyleColor((ImGuiCol.TableRowBg), EditorPalette.collectionRow);
+        Gui.PushStyleColor((ImGuiCol.TableRowBgAlt), EditorPalette.collectionRowAlternate);
+        Gui.PushStyleColor((ImGuiCol.Header), EditorPalette.contentAccent);
+        Gui.PushStyleColor((ImGuiCol.HeaderHovered), EditorPalette.contentAccent);
+        Gui.PushStyleColor((ImGuiCol.HeaderActive), EditorPalette.contentAccent);
+        Gui.PushStyleVar((ImGuiStyleVar.WindowPadding), currentBrowserStyle.windowPadding);
+        Gui.PushStyleVar((ImGuiStyleVar.ChildBorderSize), EditorUI.current.widgets.style.borderSize);
+        Gui.PushStyleVar((ImGuiStyleVar.CellPadding), currentBrowserStyle.cellPadding);
+        Gui.PushStyleVar((ImGuiStyleVar.ItemSpacing), currentBrowserStyle.itemSpacing);
+        Gui.PushStyleVar((ImGuiStyleVar.FrameRounding), currentBrowserStyle.frameRounding);
     }
 
     internal static void PopBrowserStyle()
     {
-        Ui.PopStyleVar(5);
-        Ui.PopStyleColor(12);
+        Gui.PopStyleVar(5);
+        Gui.PopStyleColor(12);
     }
 
     internal static void PushButtonColors(Vector4 color)
     {
-        Ui.PushStyleColor((ImGuiCol.Button), color);
-        Ui.PushStyleColor((ImGuiCol.ButtonHovered), EditorPalette.GetHovered(color));
-        Ui.PushStyleColor((ImGuiCol.ButtonActive), EditorPalette.GetActive(color));
+        Gui.PushStyleColor((ImGuiCol.Button), color);
+        Gui.PushStyleColor((ImGuiCol.ButtonHovered), EditorPalette.GetHovered(color));
+        Gui.PushStyleColor((ImGuiCol.ButtonActive), EditorPalette.GetActive(color));
     }
 
     internal static bool IsDirectoryPath(
@@ -116,7 +116,7 @@ internal static class FileBrowserUtility
     {
         if (entry.isDirectory && AssetSample.HasSampleDirectoryName(entry.assetPath))
         {
-            return AssetSample.fileType.TrimStart('.').ToUpperInvariant();
+            return AssetSample.C_FILE_TYPE.TrimStart('.').ToUpperInvariant();
         }
         if (entry.isDirectory)
         {
@@ -180,7 +180,7 @@ internal static class FileBrowserUtility
         AssetPipeline assets,
         string relativePath
     ) {
-        AssetSourceId source = AssetPath.Parse(NormalizePath(relativePath)).source;
+        AssetSourceID source = AssetPath.Parse(NormalizePath(relativePath)).source;
         for (int i = 0; i < assets.sourceMounts.Count; i++)
         {
             AssetSourceMount mount = assets.sourceMounts[i];
@@ -259,7 +259,7 @@ internal static class FileBrowserUtility
         for (int lineIndex = 0; lineIndex < maxLines && offset < elements.Count; lineIndex++)
         {
             string remaining = string.Concat(elements.GetRange(offset, elements.Count - offset));
-            if (Ui.MeasureText(remaining).X <= maxWidth)
+            if (Gui.MeasureText(remaining).X <= maxWidth)
             {
                 lines.Add(remaining);
                 break;
@@ -272,7 +272,7 @@ internal static class FileBrowserUtility
             while (offset + count < elements.Count)
             {
                 string next = candidate + elements[offset + count];
-                if (Ui.MeasureText(next + suffix).X > maxWidth)
+                if (Gui.MeasureText(next + suffix).X > maxWidth)
                 {
                     break;
                 }
@@ -282,7 +282,7 @@ internal static class FileBrowserUtility
 
             if (count == 0)
             {
-                lines.Add(isLastLine && Ui.MeasureText("...").X <= maxWidth ? "..." : elements[offset]);
+                lines.Add(isLastLine && Gui.MeasureText("...").X <= maxWidth ? "..." : elements[offset]);
                 offset++;
                 continue;
             }
@@ -313,13 +313,13 @@ internal static class FileBrowserUtility
                && descendant.localPath[ancestor.localPath.Length] == '/';
     }
 
-    private static string GetSourceRootLabel(AssetSourceId source) => source == AssetSourceId.project ? "Assets" : source.value;
+    private static string GetSourceRootLabel(AssetSourceID source) => source == AssetSourceID.project ? "Assets" : source.value;
 
     private static string FormatSourcePath(
-        AssetSourceId source,
+        AssetSourceID source,
         string localPath
     ) {
-        string root = source == AssetSourceId.project ? GetSourceRootLabel(source) : $"Plugins/{GetSourceRootLabel(source)}";
+        string root = source == AssetSourceID.project ? GetSourceRootLabel(source) : $"Plugins/{GetSourceRootLabel(source)}";
         return string.IsNullOrEmpty(localPath) ? root : $"{root}/{localPath}";
     }
 

@@ -12,7 +12,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Builds view requests from host output sessions without owning a host window.
 /// </summary>
-[StableTypeId("52f335d4-64e4-5a11-96f3-c52e44295830")]
+[StableTypeID("52f335d4-64e4-5a11-96f3-c52e44295830")]
 public interface IRenderModel : IDisposable
 {
     /// <summary>

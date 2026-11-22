@@ -34,7 +34,7 @@ public sealed unsafe partial class PlatformImGuiContext
     private readonly PlatformImGuiViewportBackend? m_viewports;
     private readonly IPlatformImGuiRenderer m_renderer;
     private readonly Dictionary<ImGuiMouseCursor, nint> m_cursors = [];
-    private readonly HashSet<uint> m_pendingLiveResizeWindowIds = [];
+    private readonly HashSet<uint> m_pendingLiveResizeWindowIDs = [];
     private readonly Stopwatch m_frameTimer = Stopwatch.StartNew();
     private readonly bool m_enableSmoothResize;
     private ImGuiMouseCursor m_currentCursor = ImGuiMouseCursor.None;
@@ -148,7 +148,7 @@ public sealed unsafe partial class PlatformImGuiContext
         ImGuiNative.Raw.SetCurrentContext(m_context);
         if (viewportID == ImGuiNative.Raw.GetMainViewport()->ID)
         {
-            windowID = m_window.windowId;
+            windowID = m_window.windowID;
             return true;
         }
         if (m_viewports is not null && m_viewports.TryGetWindowID(viewportID, out windowID))
@@ -430,7 +430,7 @@ public sealed unsafe partial class PlatformImGuiContext
         m_mouseButtonsDown = 0;
         m_mouseWindowID = 0;
         m_mousePendingLeaveFrame = 0;
-        m_pendingLiveResizeWindowIds.Clear();
+        m_pendingLiveResizeWindowIDs.Clear();
 
         if ((io->ConfigFlags & (int)ImGuiConfigFlags.ViewportsEnable) != 0)
         {
@@ -480,7 +480,7 @@ public sealed unsafe partial class PlatformImGuiContext
             return;
         }
 
-        if (eventWindowID != m_window.windowId && (m_viewports is null || !m_viewports.OwnsWindow(eventWindowID)))
+        if (eventWindowID != m_window.windowID && (m_viewports is null || !m_viewports.OwnsWindow(eventWindowID)))
         {
             return;
         }
@@ -623,14 +623,14 @@ public sealed unsafe partial class PlatformImGuiContext
             return;
         }
 
-        bool ownsMainWindow = windowID == m_window.windowId;
+        bool ownsMainWindow = windowID == m_window.windowID;
         bool ownsViewportWindow = m_viewports?.OwnsWindow(windowID) == true;
         if (!ownsMainWindow && !ownsViewportWindow)
         {
             return;
         }
 
-        m_pendingLiveResizeWindowIds.Add(windowID);
+        m_pendingLiveResizeWindowIDs.Add(windowID);
         TimeSpan now = m_frameTimer.Elapsed;
         m_liveResizeLockedWindowID = windowID;
         m_lastLiveResizeLockTime = now;
@@ -836,7 +836,7 @@ public sealed unsafe partial class PlatformImGuiContext
         }
 
         uint focusedWindowID = SDL.Raw.GetWindowId(keyboardFocus);
-        if (focusedWindowID == m_window.windowId || (m_viewports is not null && m_viewports.OwnsWindow(focusedWindowID)))
+        if (focusedWindowID == m_window.windowID || (m_viewports is not null && m_viewports.OwnsWindow(focusedWindowID)))
         {
             return keyboardFocus;
         }
@@ -846,16 +846,16 @@ public sealed unsafe partial class PlatformImGuiContext
 
     private void SynchronizePendingLiveResizeWindows()
     {
-        if (m_pendingLiveResizeWindowIds.Count == 0)
+        if (m_pendingLiveResizeWindowIDs.Count == 0)
         {
             return;
         }
 
-        uint[] windowIds = [.. m_pendingLiveResizeWindowIds];
-        m_pendingLiveResizeWindowIds.Clear();
-        foreach (uint windowID in windowIds)
+        uint[] windowIDs = [.. m_pendingLiveResizeWindowIDs];
+        m_pendingLiveResizeWindowIDs.Clear();
+        foreach (uint windowID in windowIDs)
         {
-            if (windowID == m_window.windowId)
+            if (windowID == m_window.windowID)
             {
                 int pixelWidth = 0;
                 int pixelHeight = 0;

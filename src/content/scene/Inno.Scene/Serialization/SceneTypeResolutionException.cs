@@ -11,33 +11,33 @@ public sealed class SceneTypeResolutionException : Exception
     /// <summary>
     /// Creates an exception for one unresolved serialized scene type.
     /// </summary>
-    /// <param name="stableTypeId">
+    /// <param name="stableTypeID">
     /// The stable identity stored by the serialized scene element.
     /// </param>
     /// <param name="elementKind">
     /// The human-readable scene element kind, such as component or system.
     /// </param>
     /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="stableTypeId"/> is empty or <paramref name="elementKind"/> is empty.
+    /// Thrown when <paramref name="stableTypeID"/> is empty or <paramref name="elementKind"/> is empty.
     /// </exception>
     public SceneTypeResolutionException(
-        Guid stableTypeId,
+        Guid stableTypeID,
         string elementKind
-    ) : base($"Scene {elementKind} stable type id '{stableTypeId}' is not loaded.")
+    ) : base($"Scene {elementKind} stable type id '{stableTypeID}' is not loaded.")
     {
-        if (stableTypeId == Guid.Empty)
+        if (stableTypeID == Guid.Empty)
         {
-            throw new ArgumentException("A stable scene type identity is required.", nameof(stableTypeId));
+            throw new ArgumentException("A stable scene type identity is required.", nameof(stableTypeID));
         }
         ArgumentException.ThrowIfNullOrWhiteSpace(elementKind);
-        this.stableTypeId = stableTypeId;
+        this.stableTypeID = stableTypeID;
         this.elementKind = elementKind;
     }
 
     /// <summary>
     /// Gets the unresolved stable type identity.
     /// </summary>
-    public Guid stableTypeId { get; }
+    public Guid stableTypeID { get; }
 
     /// <summary>
     /// Gets the scene element kind that expected the missing type.

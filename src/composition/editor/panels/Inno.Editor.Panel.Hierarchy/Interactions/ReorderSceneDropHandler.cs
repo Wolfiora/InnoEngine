@@ -7,7 +7,7 @@ using Inno.Scene;
 
 namespace Inno.Editor.Panel.Hierarchy;
 
-[EditorDrop(HierarchyInteractionIds.C_AREA)]
+[EditorDrop(HierarchyInteractionIDs.C_AREA)]
 internal sealed class ReorderSceneDropHandler(
     IEditorSceneWorkspace workspace,
     SceneEdits edits

@@ -74,12 +74,12 @@ public static class Sdl3PlatformApplicationImGuiExtensions
         {
             throw new InvalidOperationException("The application presentation state is retiring and cannot create another context.");
         }
-        if (state.contexts.ContainsKey(window.windowId))
+        if (state.contexts.ContainsKey(window.windowID))
         {
             throw new InvalidOperationException("This window already owns an ImGui context.");
         }
 
-        uint windowID = window.windowId;
+        uint windowID = window.windowID;
         var context = new PlatformImGuiContext(
             application,
             window,
@@ -118,7 +118,7 @@ public static class Sdl3PlatformApplicationImGuiExtensions
         {
             return;
         }
-        if (!state.contexts.TryGetValue(window.windowId, out PlatformImGuiContext? context))
+        if (!state.contexts.TryGetValue(window.windowID, out PlatformImGuiContext? context))
         {
             return;
         }
@@ -161,11 +161,11 @@ public static class Sdl3PlatformApplicationImGuiExtensions
 
         void ISdl3ApplicationExtension.PrepareLiveResizeWindow(
             Sdl3PlatformApplication application,
-            uint windowId
+            uint windowID
         ) {
             foreach (PlatformImGuiContext context in contexts.Values)
             {
-                context.PrepareLiveResizeWindow(windowId);
+                context.PrepareLiveResizeWindow(windowID);
             }
         }
 

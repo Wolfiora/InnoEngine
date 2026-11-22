@@ -3,8 +3,8 @@ using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Workbench;
 
-[EditorAction(GlobalInteractionIds.C_FIND_COMMAND)]
-[EditorMenu(GlobalInteractionIds.C_MAIN_MENU_AREA, "Tools/Find Command...", order: 0)]
+[EditorAction(GlobalInteractionIDs.C_FIND_COMMAND)]
+[EditorMenu(GlobalInteractionIDs.C_MAIN_MENU_AREA, "Tools/Find Command...", order: 0)]
 [EditorShortcut(KeyCode.P, KeyModifier.Shift, primary: true)]
 internal sealed class CommandSearchAction(CommandSearchModule commands) : EditorAction
 {

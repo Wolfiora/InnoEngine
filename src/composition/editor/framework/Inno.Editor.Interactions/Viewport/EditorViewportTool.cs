@@ -113,7 +113,7 @@ public readonly record struct EditorViewportPointerEvent
     /// <summary>
     /// Creates one viewport pointer sample.
     /// </summary>
-    /// <param name="pointerId">
+    /// <param name="pointerID">
     /// Platform pointer identity.
     /// </param>
     /// <param name="phase">
@@ -132,14 +132,14 @@ public readonly record struct EditorViewportPointerEvent
     /// Active keyboard modifiers.
     /// </param>
     public EditorViewportPointerEvent(
-        int pointerId,
+        int pointerID,
         EditorViewportPointerPhase phase,
         Vector2 screenPosition,
         Vector2 worldPosition,
         int button,
         KeyModifier modifiers
     ) {
-        this.pointerId = pointerId;
+        this.pointerID = pointerID;
         this.phase = phase;
         this.screenPosition = screenPosition;
         this.worldPosition = worldPosition;
@@ -150,7 +150,7 @@ public readonly record struct EditorViewportPointerEvent
     /// <summary>
     /// Gets the platform pointer identity.
     /// </summary>
-    public int pointerId { get; }
+    public int pointerID { get; }
 
     /// <summary>
     /// Gets the gesture lifecycle phase.

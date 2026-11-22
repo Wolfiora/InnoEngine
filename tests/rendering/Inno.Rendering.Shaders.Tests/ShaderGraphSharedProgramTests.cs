@@ -66,7 +66,7 @@ public sealed partial class ShaderGraphProgramTests
             definition.passes.Select(pass => new ShaderTechniquePass(new(pass.name.ToLowerInvariant()), pass.name))
         )];
         graph.SetMetadata(
-            ShaderGraphDocument.definitionKey,
+            ShaderGraphDocument.C_DEFINITION_KEY,
             ShaderGraphDocument.Encode(m_serialization.Serialize(definition), m_serialization, SerializationContext.empty)
         );
         byte[] original = GraphDocumentCodec.Encode(graph, m_serialization);
@@ -133,7 +133,7 @@ public sealed partial class ShaderGraphProgramTests
             return pass;
         }).ToArray();
         graph.SetMetadata(
-            ShaderGraphDocument.definitionKey,
+            ShaderGraphDocument.C_DEFINITION_KEY,
             ShaderGraphDocument.Encode(m_serialization.Serialize(definition), m_serialization, SerializationContext.empty)
         );
         foreach (ShaderPassDefinition pass in definition.passes)

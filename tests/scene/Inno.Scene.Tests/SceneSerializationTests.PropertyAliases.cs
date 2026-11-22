@@ -20,12 +20,12 @@ public sealed partial class SceneSerializationTests
         byte[] source = SceneElementSerialization.CaptureState(probe, m_serialization, assets);
         // The fixture uses the ordinary serializer and verifies its complete current envelope before mutation.
         PropertyElementEnvelope envelope = m_serialization.Deserialize<PropertyElementEnvelope>(source, m_serializationContext);
-        Assert.Equal(m_types.GetTypeRef(typeof(PropertyReferenceProbe)).stableId, envelope.typeId);
+        Assert.Equal(m_types.GetTypeRef(typeof(PropertyReferenceProbe)).stableID, envelope.typeId);
         probe.targetObject = null;
         SceneElementSerialization.RestoreState(probe, m_serialization.Serialize(envelope, m_serializationContext), m_serialization, assets);
         Assert.Same(original, probe.targetObject);
-        envelope.aliasIds = [original.identity.persistentId];
-        envelope.aliasTargets = [replacement.identity.persistentId];
+        envelope.aliasIds = [original.identity.persistentID];
+        envelope.aliasTargets = [replacement.identity.persistentID];
         scene.DestroyObject(original);
         probe.targetObject = null;
         SceneElementSerialization.RestoreState(probe, m_serialization.Serialize(envelope, m_serializationContext), m_serialization, assets);
@@ -46,8 +46,8 @@ public sealed partial class SceneSerializationTests
             SceneElementSerialization.CaptureState(probe, m_serialization, assets),
             m_serializationContext
         );
-        envelope.aliasIds = [original.identity.persistentId];
-        envelope.aliasTargets = [replacement.identity.persistentId];
+        envelope.aliasIds = [original.identity.persistentID];
+        envelope.aliasTargets = [replacement.identity.persistentID];
         probe.targetObject = null;
         Exception collision = Assert.ThrowsAny<Exception>(Restore);
         Assert.Contains("Duplicate scene graph local identity", collision.ToString());
@@ -58,7 +58,7 @@ public sealed partial class SceneSerializationTests
         Assert.Contains("targets missing object", missing.ToString());
         Assert.Null(probe.targetObject);
         envelope.aliasIds = [Guid.Empty];
-        envelope.aliasTargets = [replacement.identity.persistentId];
+        envelope.aliasTargets = [replacement.identity.persistentID];
         Exception malformed = Assert.ThrowsAny<Exception>(Restore);
         Assert.Contains("invalid type, dependency or alias metadata", malformed.ToString());
         Assert.Null(probe.targetObject);
@@ -113,7 +113,7 @@ public sealed partial class SceneSerializationTests
             .Single(value => value.name == nameof(PropertyReferenceProbe.targetComponent));
         byte[] original = property.data.ToArray();
         PropertyReferenceTokenFixture token = m_serialization.Deserialize<PropertyReferenceTokenFixture>(original, m_serializationContext);
-        Assert.Equal(owner.transform.identity.persistentId, token.sourceId);
+        Assert.Equal(owner.transform.identity.persistentID, token.sourceId);
         token.kind = int.MaxValue;
         byte[] invalid = m_serialization.Serialize(token, m_serializationContext);
         Assert.Equal(original.Length, invalid.Length);

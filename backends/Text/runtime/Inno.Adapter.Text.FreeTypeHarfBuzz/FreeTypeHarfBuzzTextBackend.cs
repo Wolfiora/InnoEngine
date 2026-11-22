@@ -191,7 +191,7 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
     /// <param name="font">
     /// The loaded face.
     /// </param>
-    /// <param name="glyphId">
+    /// <param name="glyphID">
     /// The font-specific glyph identifier.
     /// </param>
     /// <param name="fontSize">
@@ -202,7 +202,7 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
     /// </returns>
     public GlyphBitmap Rasterize(
         TextFontHandle font,
-        uint glyphId,
+        uint glyphID,
         float fontSize
     ) {
         EnsureActive();
@@ -216,7 +216,7 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
         }
         InnoTextFontAdapterBitmap bitmap = default;
         ThrowIfFailed(
-            TextNativeOperations.RasterizeGlyph(m_context, font.value, glyphId, fontSize, null, 0, &bitmap),
+            TextNativeOperations.RasterizeGlyph(m_context, font.value, glyphID, fontSize, null, 0, &bitmap),
             "query glyph bitmap"
         );
         var pixels = new byte[checked((int)bitmap.ByteLength)];
@@ -228,7 +228,7 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
                     TextNativeOperations.RasterizeGlyph(
                         m_context,
                         font.value,
-                        glyphId,
+                        glyphID,
                         fontSize,
                         pixelPointer,
                         checked((uint)pixels.Length),

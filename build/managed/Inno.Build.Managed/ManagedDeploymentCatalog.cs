@@ -9,7 +9,7 @@ namespace Inno.Build.Managed;
 /// </summary>
 public sealed class ManagedDeploymentCatalog
 {
-    private readonly IReadOnlyDictionary<ManagedDeploymentId, IManagedDeploymentCompiler> m_compilers;
+    private readonly IReadOnlyDictionary<ManagedDeploymentID, IManagedDeploymentCompiler> m_compilers;
 
     /// <summary>
     /// Copies providers and rejects ambiguous identities before any publication starts.
@@ -42,7 +42,7 @@ public sealed class ManagedDeploymentCatalog
     /// <summary>
     /// Gets the immutable provider identities in stable order.
     /// </summary>
-    public IReadOnlyList<ManagedDeploymentId> availableDeployments { get; }
+    public IReadOnlyList<ManagedDeploymentID> availableDeployments { get; }
 
     /// <summary>
     /// Returns the registered deployment identities that support one managed target.
@@ -53,7 +53,7 @@ public sealed class ManagedDeploymentCatalog
     /// <returns>
     /// A new immutable list in stable identity order; unsupported targets produce an empty list.
     /// </returns>
-    public IReadOnlyList<ManagedDeploymentId> GetSupportedDeployments(string runtimeIdentifier)
+    public IReadOnlyList<ManagedDeploymentID> GetSupportedDeployments(string runtimeIdentifier)
         => Array.AsReadOnly(
             availableDeployments.Where(id =>
                 m_compilers[id].capabilities.runtimeIdentifiers.Contains(runtimeIdentifier, StringComparer.Ordinal)).ToArray()
@@ -75,7 +75,7 @@ public sealed class ManagedDeploymentCatalog
     /// No provider is registered, or the selected provider cannot publish the requested target.
     /// </exception>
     public IManagedDeploymentCompiler Resolve(
-        ManagedDeploymentId deployment,
+        ManagedDeploymentID deployment,
         string runtimeIdentifier
     ) {
         if (!m_compilers.TryGetValue(deployment, out IManagedDeploymentCompiler? compiler))

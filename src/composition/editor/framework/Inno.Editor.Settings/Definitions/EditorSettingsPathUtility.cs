@@ -4,7 +4,7 @@ namespace Inno.Editor.Settings;
 
 internal static class EditorSettingsPathUtility
 {
-    internal static (string Path, string ParentPath, string Label) Parse(string path)
+    internal static (string path, string parentPath, string label) Parse(string path)
     {
         string normalized = Normalize(path);
         int separator = normalized.LastIndexOf('/');

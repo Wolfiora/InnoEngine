@@ -6,7 +6,7 @@ using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Panel.FileBrowser;
 
-[EditorAction(FileBrowserInteractionIds.C_OPEN, FileBrowserInteractionIds.C_AREA, priority: 100)]
+[EditorAction(FileBrowserInteractionIDs.C_OPEN, FileBrowserInteractionIDs.C_AREA, priority: 100)]
 internal sealed class OpenAssetCommand(AssetBrowserModule assets) : EditorAction<AssetFileEntry>
 {
     /// <summary>
@@ -45,8 +45,8 @@ internal sealed class OpenAssetCommand(AssetBrowserModule assets) : EditorAction
         )
             && asset is not null
             && context.interactions
-                .For(FileBrowserInteractionIds.C_AREA, asset)
-                .Execute(FileBrowserInteractionIds.C_OPEN, assetContext.relativePath)
+                .For(FileBrowserInteractionIDs.C_AREA, asset)
+                .Execute(FileBrowserInteractionIDs.C_OPEN, assetContext.relativePath)
         ) {
             return;
         }

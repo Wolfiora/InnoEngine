@@ -30,7 +30,7 @@ public sealed class ProductNativeCostTests
         m_host = new WindowsBuildHostProvider().TryCapture()
                  ?? throw new PlatformNotSupportedException("Native cost acceptance requires its declared Windows host.");
         m_distribution = StandardBuildDistribution.Create(
-            new BuildCompositionContext("explicit-sdk", Path.GetTempPath(), m_host, new BuildTargetId("windows-x64"))
+            new BuildCompositionContext("explicit-sdk", Path.GetTempPath(), m_host, new BuildTargetID("windows-x64"))
         ).build;
     }
 

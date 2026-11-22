@@ -10,7 +10,7 @@ namespace Inno.Editor.Scripting.Tests;
 
 public sealed class ProjectSettingsExecutionContextTests
 {
-    private static readonly ProjectSettingId SETTING_ID = new("tests.execution-context");
+    private static readonly ProjectSettingID SETTING_ID = new("tests.execution-context");
 
     [Fact]
     public void Settings_WithoutAnExecutionScope_FailsExplicitly()
@@ -77,10 +77,10 @@ public sealed class ProjectSettingsExecutionContextTests
 
     private sealed class FixedSettingsLookup(int value) : IProjectSettingsLookup
     {
-        public Guid ownerId { get; } = Guid.NewGuid();
+        public Guid ownerID { get; } = Guid.NewGuid();
         public long revision => value;
 
-        public TSetting Get<TSetting>(ProjectSettingId id)
+        public TSetting Get<TSetting>(ProjectSettingID id)
             where TSetting : class, ISerializable
         {
             if (typeof(TSetting) != typeof(TestSetting))
@@ -91,7 +91,7 @@ public sealed class ProjectSettingsExecutionContextTests
         }
 
         public bool TryGet<TSetting>(
-            ProjectSettingId id,
+            ProjectSettingID id,
             out TSetting? setting
         ) where TSetting : class, ISerializable
         {

@@ -23,11 +23,11 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     private const int C_INITIAL_VERTEX_CAPACITY = 4096;
     private const int C_INITIAL_INDEX_CAPACITY = 8192;
 
-    private static readonly RenderBindingId TEXTURE_BINDING = new("s_tex");
-    private static readonly RenderBindingId OUTPUT_ENCODING = new("outputEncoding");
+    private static readonly RenderBindingID TEXTURE_BINDING = new("s_tex");
+    private static readonly RenderBindingID OUTPUT_ENCODING = new("outputEncoding");
     private static readonly byte[] LINEAR_OUTPUT = new byte[16];
     private static readonly byte[] ENCODED_OUTPUT = CreateOutputEncoding();
-    private static readonly RenderPhaseId USER_INTERFACE_PHASE = new("inno.imgui.compose");
+    private static readonly RenderPhaseID USER_INTERFACE_PHASE = new("inno.imgui.compose");
 
     private static readonly RenderClearColor PRESENTATION_CLEAR_COLOR = new(
         SrgbToLinear(0.08f),

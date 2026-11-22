@@ -12,7 +12,7 @@ using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Assets.Authoring;
 
-[StableTypeId("c2a6add7-0201-527c-87a4-137904623ee6")]
+[StableTypeID("c2a6add7-0201-527c-87a4-137904623ee6")]
 internal static partial class MeshSourceParser
 {
     private const uint C_GLB_MAGIC = 0x4654_6C67;

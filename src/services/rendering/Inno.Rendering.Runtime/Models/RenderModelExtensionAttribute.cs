@@ -13,7 +13,7 @@ namespace Inno.Rendering.Runtime;
 /// Marks a reloadable rendering model with a stable identity.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-[StableTypeId("eccab85a-0b21-55e1-b581-885c4bbc5192")]
+[StableTypeID("eccab85a-0b21-55e1-b581-885c4bbc5192")]
 public sealed class RenderModelExtensionAttribute : Attribute
 {
     /// <summary>

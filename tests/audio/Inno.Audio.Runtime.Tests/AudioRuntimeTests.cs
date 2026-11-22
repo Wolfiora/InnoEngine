@@ -54,9 +54,9 @@ public sealed class AudioRuntimeTests : IDisposable
         var suspension = new ApplicationSuspensionChangedEvent(true);
         m_events.Emit(suspension);
         Assert.True(suspension.isGlobalHandled);
-        Assert.True(device.GetBusPaused(AudioBusId.master));
+        Assert.True(device.GetBusPaused(AudioBusID.master));
         m_events.Emit(new ApplicationSuspensionChangedEvent(false));
-        Assert.False(device.GetBusPaused(AudioBusId.master));
+        Assert.False(device.GetBusPaused(AudioBusID.master));
         runtime.Dispose();
         int callsAfterStop = device.busPauseCalls;
         m_events.Emit(new ApplicationSuspensionChangedEvent(true));
@@ -93,23 +93,23 @@ public sealed class AudioRuntimeTests : IDisposable
         using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.suspension", "Suspension"));
         using var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter);
         runtime.Attach();
-        Assert.True(runtime.SetBusPaused(AudioBusId.master, true));
+        Assert.True(runtime.SetBusPaused(AudioBusID.master, true));
         m_events.Emit(new ApplicationSuspensionChangedEvent(true));
         m_events.Emit(new ApplicationSuspensionChangedEvent(false));
-        Assert.True(device.GetBusPaused(AudioBusId.master));
+        Assert.True(device.GetBusPaused(AudioBusID.master));
 
-        Assert.True(runtime.SetBusPaused(AudioBusId.master, false));
+        Assert.True(runtime.SetBusPaused(AudioBusID.master, false));
         m_events.Emit(new ApplicationSuspensionChangedEvent(true));
-        Assert.True(runtime.SetBusPaused(AudioBusId.master, false));
-        Assert.True(device.GetBusPaused(AudioBusId.master));
+        Assert.True(runtime.SetBusPaused(AudioBusID.master, false));
+        Assert.True(device.GetBusPaused(AudioBusID.master));
         Assert.True(runtime.ApplyMixer(new AudioMixerAsset { mixerTypeId = "tests.audio.mixer" }));
-        Assert.True(device.GetBusPaused(AudioBusId.master));
+        Assert.True(device.GetBusPaused(AudioBusID.master));
 
         var replacement = new ReadyAudioDevice();
         runtime.ReplaceDevice(replacement);
-        Assert.True(replacement.GetBusPaused(AudioBusId.master));
+        Assert.True(replacement.GetBusPaused(AudioBusID.master));
         m_events.Emit(new ApplicationSuspensionChangedEvent(false));
-        Assert.False(replacement.GetBusPaused(AudioBusId.master));
+        Assert.False(replacement.GetBusPaused(AudioBusID.master));
         runtime.Dispose();
         m_events.Emit(new ApplicationSuspensionChangedEvent(true));
         Assert.Equal(1, replacement.disposals);
@@ -169,7 +169,7 @@ public sealed class AudioRuntimeTests : IDisposable
         runtime.Update(0);
         AudioClipAsset next = CreateClip(48_000);
         events.Enqueue(new AudioVoiceCompletedEvent(new AudioVoiceAllocator().Allocate(), AudioCompletionReason.Stopped));
-        m_artifacts.pendingReleaseID = next.identity.persistentId;
+        m_artifacts.pendingReleaseID = next.identity.persistentID;
         m_artifacts.pendingReleases = 1;
         Assert.Throws<InvalidOperationException>(() => runtime.Play(next));
         Assert.Empty(m_artifacts.retainedKeys);
@@ -223,10 +223,10 @@ public sealed class AudioRuntimeTests : IDisposable
         using var device = new MutedAudioDevice();
         IAudioDevice backend = device;
         AudioClipAsset asset = CreateClip(48_000);
-        using ArtifactLease artifact = m_artifacts.AcquireArtifact(asset.identity.persistentId, "audio-data");
-        AudioBusHandle master = backend.CreateBus(AudioBusId.master);
+        using ArtifactLease artifact = m_artifacts.AcquireArtifact(asset.identity.persistentID, "audio-data");
+        AudioBusHandle master = backend.CreateBus(AudioBusID.master);
         AudioClipHandle clip = backend.CreateClip(
-            new AudioClipDescriptor(            AudioCodecId.wav, AudioClipLoadMode.Decode, 2, 48_000, 48_000, artifact.info.length),
+            new AudioClipDescriptor(            AudioCodecID.wav, AudioClipLoadMode.Decode, 2, 48_000, 48_000, artifact.info.length),
             new LeaseAudioTestSource(artifact)
         );
         Assert.False(backend.Play(clip, master, default).isValid);
@@ -767,11 +767,11 @@ public sealed class AudioRuntimeTests : IDisposable
         var mixer = new AudioMixerAsset { mixerTypeId = "tests.audio.mixer" };
 
         Assert.True(runtime.ApplyMixer(mixer));
-        Assert.True(runtime.SetBusVolume(new AudioBusId("tests.audio.bus.music"), 0.5f));
+        Assert.True(runtime.SetBusVolume(new AudioBusID("tests.audio.bus.music"), 0.5f));
 
         mixer.mixerTypeId = "tests.audio.missing";
         Assert.False(runtime.ApplyMixer(mixer));
-        Assert.True(runtime.SetBusMuted(new AudioBusId("tests.audio.bus.music"), true));
+        Assert.True(runtime.SetBusMuted(new AudioBusID("tests.audio.bus.music"), true));
     }
 
     [Fact]
@@ -797,7 +797,7 @@ public sealed class AudioRuntimeTests : IDisposable
         using AudioRuntime runtime = CreateRuntime();
         var mixer = new AudioMixerAsset { mixerTypeId = "tests.audio.mixer" };
         Assert.True(runtime.ApplyMixer(mixer));
-        var music = new AudioBusId("tests.audio.bus.music");
+        var music = new AudioBusID("tests.audio.bus.music");
         Assert.True(runtime.SetBusVolume(music, 0.25f));
         Assert.True(runtime.SetBusPaused(music, true));
         var replacement = new ReadyAudioDevice();
@@ -847,7 +847,7 @@ public sealed class AudioRuntimeTests : IDisposable
         using var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter);
         AudioClipAsset clip = CreateClip(4800);
         await runtime.PreloadAsync(clip);
-        m_artifacts.pendingReleaseID = clip.identity.persistentId;
+        m_artifacts.pendingReleaseID = clip.identity.persistentID;
         m_artifacts.pendingReleases = 1;
         Action release = shutdown ? runtime.Dispose : () => runtime.ReleasePreload(clip);
         Assert.Throws<RetirementPendingException>(release);
@@ -879,7 +879,7 @@ public sealed class AudioRuntimeTests : IDisposable
         AudioClipAsset clip = CreateClip(4800);
         using var cancellation = new CancellationTokenSource();
         Task pending = runtime.PreloadAsync(clip, cancellationToken: cancellation.Token).AsTask();
-        m_artifacts.pendingReleaseID = clip.identity.persistentId;
+        m_artifacts.pendingReleaseID = clip.identity.persistentID;
         m_artifacts.pendingReleases = 1;
         cancellation.Cancel();
         Assert.Throws<RetirementPendingException>(() => runtime.Update(0));
@@ -901,7 +901,7 @@ public sealed class AudioRuntimeTests : IDisposable
         using var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter);
         AudioClipAsset clip = CreateClip(4800);
         await runtime.PreloadAsync(clip);
-        m_artifacts.pendingReleaseID = clip.identity.persistentId;
+        m_artifacts.pendingReleaseID = clip.identity.persistentID;
         m_artifacts.pendingReleases = 1;
         Assert.Throws<RetirementPendingException>(() => runtime.ReleasePreload(clip));
         AudioVoiceHandle voice = runtime.Play(clip, new AudioPlayOptions(loop: true));
@@ -922,7 +922,7 @@ public sealed class AudioRuntimeTests : IDisposable
         using AudioRuntime runtime = CreateRuntime();
         AudioClipAsset clip = CreateClip(4800);
         await runtime.PreloadAsync(clip);
-        m_artifacts.pendingReleaseID = clip.identity.persistentId;
+        m_artifacts.pendingReleaseID = clip.identity.persistentID;
         m_artifacts.pendingReleases = 1;
         await runtime.PreloadAsync(clip);
         Assert.Equal(2, m_artifacts.releaseAttempts);
@@ -939,7 +939,7 @@ public sealed class AudioRuntimeTests : IDisposable
         AudioClipAsset clip = CreateClip(4800);
         await runtime.PreloadAsync(clip, AudioClipLoadMode.Decode);
         await runtime.PreloadAsync(clip, AudioClipLoadMode.Stream);
-        m_artifacts.pendingReleaseID = clip.identity.persistentId;
+        m_artifacts.pendingReleaseID = clip.identity.persistentID;
         m_artifacts.pendingReleases = 1;
         Assert.Throws<RetirementPendingException>(() => runtime.ReleasePreload(clip));
         runtime.ReleasePreload(clip);
@@ -975,7 +975,7 @@ public sealed class AudioRuntimeTests : IDisposable
         {
             device.clipState = AudioClipState.Failed;
         }
-        m_artifacts.pendingReleaseID = clip.identity.persistentId;
+        m_artifacts.pendingReleaseID = clip.identity.persistentID;
         m_artifacts.pendingReleases = 1;
         InvalidOperationException failure = Assert.Throws<InvalidOperationException>(() => runtime.PreloadAsync(clip));
         Assert.Contains(queryThrows ? "query failure" : "preparation failed", failure.Message);
@@ -1040,17 +1040,17 @@ public sealed class AudioRuntimeTests : IDisposable
     {
         var clip = new AudioClipAsset();
         byte[] payload = AudioClipMetadataCodec.Encode(
-            new AudioClipMetadata(AudioCodecId.wav, 2, 48_000, frameCount, 256)
+            new AudioClipMetadata(AudioCodecID.wav, 2, 48_000, frameCount, 256)
         );
         new AssetRuntimeOwner().Initialize(
             clip,
-            AssetPath.Project($"Audio/{clip.identity.persistentId:N}.wav"),
+            AssetPath.Project($"Audio/{clip.identity.persistentID:N}.wav"),
             "TEST",
             payload,
             isMissing: false,
             version: 1
         );
-        m_artifacts.Add(clip.identity.persistentId, Path.Combine(m_root, $"{clip.identity.persistentId:N}.wav"));
+        m_artifacts.Add(clip.identity.persistentID, Path.Combine(m_root, $"{clip.identity.persistentID:N}.wav"));
         return clip;
     }
 
@@ -1155,10 +1155,10 @@ public sealed class AudioRuntimeTests : IDisposable
             AudioMixerBuilder builder,
             SerializedAudioExtensionState state
         ) {
-            builder.AddBus(new AudioBusId("tests.audio.bus.music"), AudioBusId.master);
+            builder.AddBus(new AudioBusID("tests.audio.bus.music"), AudioBusID.master);
             builder.AddProcessor(
-                new AudioBusId("tests.audio.bus.music"),
-                new AudioProcessorConfiguration(AudioProcessorId.lowPass)
+                new AudioBusID("tests.audio.bus.music"),
+                new AudioProcessorConfiguration(AudioProcessorID.lowPass)
             );
         }
     }
@@ -1175,7 +1175,7 @@ public sealed class AudioRuntimeTests : IDisposable
         internal int releaseAttempts;
 
         public ArtifactLease AcquireArtifact(
-            Guid persistentId,
+            Guid persistentID,
             string outputName
         ) {
             acquisitions++;
@@ -1184,13 +1184,13 @@ public sealed class AudioRuntimeTests : IDisposable
                 throw acquisitionFailure;
             }
             ArtifactLease retained = m_retention.Retain(
-                m_artifacts[persistentId],
-                () => File.OpenRead(m_paths[persistentId])
+                m_artifacts[persistentID],
+                () => File.OpenRead(m_paths[persistentID])
             );
             return CreateArtifactLease(retained.info, retained.OpenRead, () =>
             {
                 releaseAttempts++;
-                if (persistentId == pendingReleaseID && pendingReleases-- > 0)
+                if (persistentID == pendingReleaseID && pendingReleases-- > 0)
                 {
                     throw new RetirementPendingException("Expected admitted artifact drain.");
                 }
@@ -1199,11 +1199,11 @@ public sealed class AudioRuntimeTests : IDisposable
         }
 
         public bool TryGetArtifact(
-            Guid persistentId,
+            Guid persistentID,
             string outputName,
             out AssetArtifactInfo? artifact
         ) {
-            if (outputName == "audio-data" && m_artifacts.TryGetValue(persistentId, out AssetArtifactInfo? found))
+            if (outputName == "audio-data" && m_artifacts.TryGetValue(persistentID, out AssetArtifactInfo? found))
             {
                 artifact = found;
                 return true;
@@ -1232,9 +1232,9 @@ public sealed class AudioRuntimeTests : IDisposable
 
     private sealed class ReadyAudioDevice : IAudioDevice
     {
-        private readonly Dictionary<AudioBusHandle, AudioBusId> m_busIds = [];
-        private readonly Dictionary<AudioBusId, bool> m_busPaused = [];
-        private readonly Dictionary<AudioBusId, float> m_busVolumes = [];
+        private readonly Dictionary<AudioBusHandle, AudioBusID> m_busIDs = [];
+        private readonly Dictionary<AudioBusID, bool> m_busPaused = [];
+        private readonly Dictionary<AudioBusID, float> m_busVolumes = [];
         private readonly IAudioDevice m_inner = new MutedAudioDevice();
         private readonly Dictionary<AudioBusHandle, bool> m_pausedHandles = [];
         internal int busPauseCalls;
@@ -1322,13 +1322,13 @@ public sealed class AudioRuntimeTests : IDisposable
         ) => m_inner.TryGetVoiceState(voice, out playbackState);
 
         public AudioBusHandle CreateBus(
-            AudioBusId id,
+            AudioBusID id,
             AudioBusHandle parent = default
         ) {
             AudioBusHandle handle = m_inner.CreateBus(id, parent);
             if (handle.isValid)
             {
-                m_busIds.Add(handle, id);
+                m_busIDs.Add(handle, id);
                 m_pausedHandles.Add(handle, false);
             }
             return handle;
@@ -1357,7 +1357,7 @@ public sealed class AudioRuntimeTests : IDisposable
             {
                 return false;
             }
-            m_busVolumes[m_busIds[bus]] = volume;
+            m_busVolumes[m_busIDs[bus]] = volume;
             return true;
         }
 
@@ -1378,7 +1378,7 @@ public sealed class AudioRuntimeTests : IDisposable
             {
                 return false;
             }
-            m_busPaused[m_busIds[bus]] = paused;
+            m_busPaused[m_busIDs[bus]] = paused;
             m_pausedHandles[bus] = paused;
             return true;
         }
@@ -1416,12 +1416,12 @@ public sealed class AudioRuntimeTests : IDisposable
             }
         }
 
-        internal float GetBusVolume(AudioBusId id) => m_busVolumes[id];
+        internal float GetBusVolume(AudioBusID id) => m_busVolumes[id];
 
-        internal bool GetBusPaused(AudioBusId id) => m_busPaused[id];
+        internal bool GetBusPaused(AudioBusID id) => m_busPaused[id];
 
         internal IReadOnlyList<bool> GetMasterPauses()
-            => m_pausedHandles.Where(pair => m_busIds[pair.Key] == AudioBusId.master)
+            => m_pausedHandles.Where(pair => m_busIDs[pair.Key] == AudioBusID.master)
                 .Select(pair => pair.Value)
                 .ToArray();
     }

@@ -38,7 +38,7 @@ internal sealed class EditorTargetReference
         {
             return this;
         }
-        if (interactions.TryResolveIdentity(runtime.domainId, persistentID, out IdentityObject? replacement) && replacement is not null)
+        if (interactions.TryResolveIdentity(runtime.domainID, persistentID, out IdentityObject? replacement) && replacement is not null)
         {
             return Capture(replacement);
         }
@@ -63,7 +63,7 @@ internal sealed class EditorTargetReference
         {
             RuntimeIdentity runtime = target.identity.runtimeIdentity
                 ?? throw new InvalidOperationException("An editor interaction target must belong to a live identity domain.");
-            return new EditorTargetReference(runtime, target.identity.persistentId, null, null);
+            return new EditorTargetReference(runtime, target.identity.persistentID, null, null);
         }
 
         if (value is null or string or decimal or Guid or DateTime or DateTimeOffset

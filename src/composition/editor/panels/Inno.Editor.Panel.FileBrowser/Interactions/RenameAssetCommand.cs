@@ -9,13 +9,13 @@ using Inno.Editor.Interactions;
 
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 
 namespace Inno.Editor.Panel.FileBrowser;
 
-[EditorAction(FileBrowserInteractionIds.C_RENAME, priority: 100)]
-[EditorMenu(FileBrowserInteractionIds.C_AREA, "Rename", order: 100)]
-[EditorShortcut(FileBrowserInteractionIds.C_AREA, KeyCode.F2)]
+[EditorAction(FileBrowserInteractionIDs.C_RENAME, priority: 100)]
+[EditorMenu(FileBrowserInteractionIDs.C_AREA, "Rename", order: 100)]
+[EditorShortcut(FileBrowserInteractionIDs.C_AREA, KeyCode.F2)]
 internal sealed class RenameAssetCommand(
     AssetBrowserModule assets,
     LogRouter logs

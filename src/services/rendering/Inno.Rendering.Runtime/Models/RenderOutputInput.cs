@@ -10,7 +10,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Frame-local input located in the output viewport's physical pixels.
 /// </summary>
-[StableTypeId("0fe2e29e-4826-5e41-9ebd-a3110e673b5e")]
+[StableTypeID("0fe2e29e-4826-5e41-9ebd-a3110e673b5e")]
 public sealed class RenderOutputInput
 {
     /// <summary>

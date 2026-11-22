@@ -57,7 +57,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
         NativeBuildContext context = Context().WithComponentOptions(owner, new(NativeLibraryKind.Shared));
         NativeBuildRecipe recipe = audio ? MiniAudioToolchain.CreateRecipe(context) : Sdl3Toolchain.CreateRecipe(context);
         Assert.Equal(owner.id, recipe.component);
-        Assert.Equal("fixture-target", recipe.targetId);
+        Assert.Equal("fixture-target", recipe.targetID);
         Assert.Contains(recipe.declarations, value => value == (audio ? "-DBUILD_SHARED_LIBS=ON" : "-DSDL_SHARED=ON"));
         Assert.DoesNotContain(recipe.inputs, input => (
             input.physicalPath.Contains("BuildUtils", StringComparison.Ordinal)
@@ -118,7 +118,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
                         return new NativeBuildRecipe(
                             owner,
                             id,
-                            context.RequireToolchain().targetId,
+                            context.RequireToolchain().targetID,
                             [NativeBuildInput.FromPath(m_root, "input.cpp")],
                             ["selected=" + id]
                         );
@@ -166,7 +166,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
                 completed,
                 cancellation
             ) => throw new XunitException("Validation must not compile."),
-            context => new NativeBuildRecipe(m_owner, "foreign", context.RequireToolchain().targetId, [], []),
+            context => new NativeBuildRecipe(m_owner, "foreign", context.RequireToolchain().targetID, [], []),
             static (
                 relative,
                 target

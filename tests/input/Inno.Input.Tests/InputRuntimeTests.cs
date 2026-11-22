@@ -60,7 +60,7 @@ public sealed class InputRuntimeTests
     [Fact]
     public void ApplicationSuspensionClearsTransientInputAndRejectsBackgroundPresses()
     {
-        using var source = new EventInputSource(windowId: 7);
+        using var source = new EventInputSource(windowID: 7);
         using IInputBackend backend = source.CreateBackend();
         source.ProcessEvent(new KeyPressedEvent(7, KeyCode.Space));
         source.ProcessEvent(new MouseButtonPressedEvent(7, MouseButton.Left));
@@ -82,7 +82,7 @@ public sealed class InputRuntimeTests
     [Fact]
     public void GloballyConsumedPlatformEventsNeverReachSessionInput()
     {
-        using var source = new EventInputSource(windowId: 0);
+        using var source = new EventInputSource(windowID: 0);
         using IInputBackend backend = source.CreateBackend();
         var consumed = new KeyPressedEvent(42, KeyCode.Space);
         consumed.HandleInGlobal();
@@ -95,7 +95,7 @@ public sealed class InputRuntimeTests
     [Fact]
     public void DisposingOneSessionDoesNotDisconnectOtherSessionSubscriptions()
     {
-        using var source = new EventInputSource(windowId: 0);
+        using var source = new EventInputSource(windowID: 0);
         IInputBackend retired = source.CreateBackend();
         using IInputBackend current = source.CreateBackend();
         retired.Dispose();
@@ -108,7 +108,7 @@ public sealed class InputRuntimeTests
     [Fact]
     public void EventBackendCapturesTransitionsAndClearsTransientState()
     {
-        using var backend = new EventInputBackend(windowId: 7);
+        using var backend = new EventInputBackend(windowID: 7);
         backend.ProcessEvent(new KeyPressedEvent(7, KeyCode.Space));
         backend.ProcessEvent(new MouseMovedEvent(7, 10f, 20f));
         backend.ProcessEvent(new MouseScrolledEvent(7, 0f, 2f));
@@ -129,7 +129,7 @@ public sealed class InputRuntimeTests
     [Fact]
     public void AllWindowSourceAcceptsDetachedWindowAndClearsItOnFocusLoss()
     {
-        using var source = new EventInputSource(windowId: 0);
+        using var source = new EventInputSource(windowID: 0);
         using IInputBackend backend = source.CreateBackend();
 
         source.ProcessEvent(new KeyPressedEvent(42, KeyCode.Space));
@@ -149,7 +149,7 @@ public sealed class InputRuntimeTests
     public void RuntimeSubsystemBindsSnapshotAcrossSimulationPhases()
     {
         string root = Path.Combine(Path.GetTempPath(), "InnoInputRuntimeTests", Guid.NewGuid().ToString("N"));
-        using var source = new EventInputSource(windowId: 1);
+        using var source = new EventInputSource(windowID: 1);
         var observations = new List<bool>();
         using EngineHost host = new EngineHostBuilder()
             .UseMetadataSources(
@@ -161,7 +161,7 @@ public sealed class InputRuntimeTests
         var options = new RuntimeSessionOptions
         {
             kind = RuntimeSessionKind.Play,
-            applicationId = "tests.input",
+            applicationID = "tests.input",
             createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(root, "tests.input"), "Logs")),
             jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
             createSubsystems = owner =>
@@ -188,8 +188,8 @@ public sealed class InputRuntimeTests
     private sealed class InputProbeFactory(List<bool> observations) : IRuntimeSubsystemFactory
     {
         public RuntimeSubsystemDescriptor descriptor { get; } = new(
-            new RuntimeSubsystemId("tests.input.probe"),
-            dependencies: [new RuntimeSubsystemId("inno.runtime.input")]
+            new RuntimeSubsystemID("tests.input.probe"),
+            dependencies: [new RuntimeSubsystemID("inno.runtime.input")]
         );
 
         public IRuntimeSubsystem Create(RuntimeSubsystemContext context) => new InputProbe(observations);

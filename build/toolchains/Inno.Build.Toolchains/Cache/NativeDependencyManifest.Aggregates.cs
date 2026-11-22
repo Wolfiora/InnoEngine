@@ -83,7 +83,7 @@ public static partial class NativeDependencyManifest
             .Append(Relative(product.directory))
             .ToHashSet(StringComparer.Ordinal);
         Directory.CreateDirectory(output);
-        string assetName = product.component + "-" + product.targetId + "-" + product.fingerprint + ".zip";
+        string assetName = product.component + "-" + product.targetID + "-" + product.fingerprint + ".zip";
         string archive = Path.Combine(output, assetName);
         await NativeArtifactTransfer.ExportAsync(context.engineRoot, archive, cancellation, directories).ConfigureAwait(false);
         using FileStream payload = File.OpenRead(archive);
@@ -95,9 +95,9 @@ public static partial class NativeDependencyManifest
             cancellation
         ).ConfigureAwait(false)).Trim();
         var asset = new AggregateAsset(
-            plan.productId,
+            plan.productID,
             product.component,
-            product.targetId,
+            product.targetID,
             context.configuration,
             PlanOptions(plan),
             Relative(product.directory),
@@ -111,7 +111,7 @@ public static partial class NativeDependencyManifest
             hash,
             revision
         );
-        string path = Path.Combine(output, plan.productId + "-" + product.targetId + "-" + context.configuration + ".json");
+        string path = Path.Combine(output, plan.productID + "-" + product.targetID + "-" + context.configuration + ".json");
         await VerifySourcesAsync(context.engineRoot, sources, cancellation).ConfigureAwait(false);
         AtomicFile.WriteAllBytes(
             path,

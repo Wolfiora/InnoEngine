@@ -4,7 +4,7 @@ using Inno.Rendering;
 using Inno.Rendering.Assets;
 
 using EditorImGui = Inno.Editor.ImGui.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 
@@ -22,7 +22,7 @@ internal sealed partial class ShaderEditorCanvas
         bool changed = false;
         for (int i = 0; i < definition.techniques.Length; i++)
         {
-            EditorImGui.PushId("technique-" + i);
+            EditorImGui.PushID("technique-" + i);
             try
             {
                 ShaderTechniqueDefinition technique = definition.techniques[i];
@@ -65,7 +65,7 @@ internal sealed partial class ShaderEditorCanvas
 
                 for (int j = 0; j < technique.passes.Length; j++)
                 {
-                    EditorImGui.PushId(j);
+                    EditorImGui.PushID(j);
                     try
                     {
                         ShaderTechniquePass mapping = technique.passes[j];
@@ -119,7 +119,7 @@ internal sealed partial class ShaderEditorCanvas
                     }
                     finally
                     {
-                        EditorImGui.PopId();
+                        EditorImGui.PopID();
                     }
                 }
 
@@ -152,7 +152,7 @@ internal sealed partial class ShaderEditorCanvas
             }
             finally
             {
-                EditorImGui.PopId();
+                EditorImGui.PopID();
             }
         }
 

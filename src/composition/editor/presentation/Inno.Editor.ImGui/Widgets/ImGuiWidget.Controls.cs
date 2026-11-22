@@ -115,9 +115,9 @@ public sealed unsafe partial class ImGuiWidget
         Vector2 textSize = NativeImGui.CalcTextSize(label);
         ImDrawList* draw = NativeImGui.Raw.GetWindowDrawList();
         Vector4 background = Vector4.Lerp(EditorPalette.windowBackground, accent, 0.14f);
-        background.W = EditorPalette.opacityOpaque;
+        background.W = EditorPalette.C_OPACITY_OPAQUE;
         Vector4 outline = accent;
-        outline.W = EditorPalette.opacityStrong;
+        outline.W = EditorPalette.C_OPACITY_STRONG;
         ImGui.DrawNativeFilledRectangle(
             draw,
             minimum,

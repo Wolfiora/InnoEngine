@@ -3,7 +3,7 @@ namespace Inno.Editor.Exporting;
 /// <summary>
 /// Contains one owner-thread export presentation snapshot.
 /// </summary>
-/// <param name="operationId">
+/// <param name="operationID">
 /// The export identity within this service.
 /// </param>
 /// <param name="fraction">
@@ -22,7 +22,7 @@ namespace Inno.Editor.Exporting;
 /// Whether cancellation is draining work.
 /// </param>
 public readonly record struct EditorExportProgress(
-    long operationId,
+    long operationID,
     float? fraction,
     string status,
     string error,

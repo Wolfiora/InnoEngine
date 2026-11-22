@@ -6,7 +6,7 @@ namespace Inno.Build.Managed.DotNet;
 
 internal sealed record DotNetPublishRequest(
     DotNetSdkDescriptor sdk,
-    ManagedDeploymentId deployment,
+    ManagedDeploymentID deployment,
     ManagedDeploymentRequest publication,
     IReadOnlyList<string> properties,
     IToolchainWorkspaceProvider workspaces

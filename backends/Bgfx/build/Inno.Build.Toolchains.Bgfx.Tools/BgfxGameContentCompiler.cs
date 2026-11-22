@@ -71,7 +71,7 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
         {
             throw new ArgumentException("At least one Player graphics backend is required.", nameof(backends));
         }
-        if (snapshot.Contains(GraphicsApi.Noop))
+        if (snapshot.Contains(GraphicsApi.noop))
         {
             throw new ArgumentException("A deployable Player cannot target the Noop graphics backend.", nameof(backends));
         }
@@ -88,7 +88,7 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
     }
 
     /// <inheritdoc/>
-    public BuildTargetId target => new(m_platform.id);
+    public BuildTargetID target => new(m_platform.id);
 
     /// <summary>
     /// Captures the active Asset generation and compiles every required runtime variant.
@@ -160,7 +160,7 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
                     }
                     string destination = ResolveOutput(
                         outputRoot,
-                        RenderTargetArtifactPath.GetShaderPath(shader.asset.identity.persistentId, backend, variant)
+                        RenderTargetArtifactPath.GetShaderPath(shader.asset.identity.persistentID, backend, variant)
                     );
                     Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
                     await File
@@ -180,7 +180,7 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
             cancellationToken.ThrowIfCancellationRequested();
             byte[] bytes;
             using (ArtifactLease source = m_assets.AcquireArtifact(
-                texture.reference.assetId,
+                texture.reference.assetID,
                 texture.reference.slot.sourceOutputName
             )) {
                 using Stream encoded = source.OpenRead();
@@ -200,7 +200,7 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
         {
             throw new InvalidOperationException("BGFX target compilation requires an active authoring Asset database.");
         }
-        Dictionary<AssetSourceId, AssetSourceMount> mounts = m_assets.sourceMounts.ToDictionary(
+        Dictionary<AssetSourceID, AssetSourceMount> mounts = m_assets.sourceMounts.ToDictionary(
             static mount => mount.id
         );
         var shaders = new Dictionary<Guid, ShaderInput>();
@@ -243,9 +243,9 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
             AddShader(shaders, mounts, shader, variant);
         }
         return new ContentSnapshot(
-            shaders.Values.OrderBy(static value => value.asset.identity.persistentId).ToArray(),
+            shaders.Values.OrderBy(static value => value.asset.identity.persistentID).ToArray(),
             textures.Values
-                .OrderBy(static value => value.reference.assetId)
+                .OrderBy(static value => value.reference.assetID)
                 .ThenBy(static value => value.reference.slot.id, StringComparer.Ordinal)
                 .ToArray()
         );
@@ -282,7 +282,7 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
 
     private static void AddShader(
         IDictionary<Guid, ShaderInput> shaders,
-        IReadOnlyDictionary<AssetSourceId, AssetSourceMount> mounts,
+        IReadOnlyDictionary<AssetSourceID, AssetSourceMount> mounts,
         ShaderAsset shader,
         RenderShaderVariant variant
     ) {
@@ -298,7 +298,7 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
 
     private static Guid RequireIdentity(AssetObject asset)
     {
-        Guid id = asset.identity.persistentId;
+        Guid id = asset.identity.persistentID;
         if (id == Guid.Empty)
         {
             throw new InvalidOperationException($"Runtime asset '{asset.assetPath}' has no persistent identity.");
@@ -307,7 +307,7 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
     }
 
     private static void RequireMount(
-        IReadOnlyDictionary<AssetSourceId, AssetSourceMount> mounts,
+        IReadOnlyDictionary<AssetSourceID, AssetSourceMount> mounts,
         AssetPath path
     ) {
         if (!mounts.ContainsKey(path.source))

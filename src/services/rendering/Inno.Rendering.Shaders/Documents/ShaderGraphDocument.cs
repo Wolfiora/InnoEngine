@@ -13,32 +13,32 @@ public static class ShaderGraphDocument
     /// <summary>
     /// Identifies the graph metadata containing the source-free material and pass contract.
     /// </summary>
-    public const string definitionKey = "inno.shader.definition";
+    public const string C_DEFINITION_KEY = "inno.shader.definition";
 
     /// <summary>
     /// Identifies the optional domain target; absent means explicitly authored generic stages.
     /// </summary>
-    public const string targetKey = "inno.shader.target";
+    public const string C_TARGET_KEY = "inno.shader.target";
 
     /// <summary>
     /// Identifies a stage output node; its incoming edges name the stage's GPU outputs.
     /// </summary>
-    public const string outputDefinitionId = "inno.shader.stage-output";
+    public const string C_OUTPUT_DEFINITION_ID = "inno.shader.stage-output";
 
     /// <summary>
     /// Identifies a node property containing its owning stage output node identity.
     /// </summary>
-    public const string stageKey = "stage";
+    public const string C_STAGE_KEY = "stage";
 
     /// <summary>
     /// Identifies the structured settings stored on a stage output node.
     /// </summary>
-    public const string settingsKey = "settings";
+    public const string C_SETTINGS_KEY = "settings";
 
     /// <summary>
     /// Prefixes stable port IDs storing explicit typed defaults for unconnected inputs.
     /// </summary>
-    public const string inputDefaultPrefix = "input-default.";
+    public const string C_INPUT_DEFAULT_PREFIX = "input-default.";
 
     /// <summary>
     /// Reads the stable domain target assignment without resolving extension instances.
@@ -59,7 +59,7 @@ public static class ShaderGraphDocument
         GraphDocument graph,
         SerializationRegistry serialization,
         SerializationContext context
-    ) => graph.metadata.TryGetValue(targetKey, out GraphSerializedValue? value)
+    ) => graph.metadata.TryGetValue(C_TARGET_KEY, out GraphSerializedValue? value)
          ? Decode<string>(value, serialization, context)
          : string.Empty;
 
@@ -69,7 +69,7 @@ public static class ShaderGraphDocument
     /// <param name="graph">
     /// Document being authored.
     /// </param>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// Stable target identity; empty selects explicit generic stage authoring.
     /// </param>
     /// <param name="serialization">
@@ -80,18 +80,18 @@ public static class ShaderGraphDocument
     /// </param>
     public static void SetTarget(
         GraphDocument graph,
-        string targetId,
+        string targetID,
         SerializationRegistry serialization,
         SerializationContext context
     ) {
-        ArgumentNullException.ThrowIfNull(targetId);
-        if (targetId.Length == 0)
+        ArgumentNullException.ThrowIfNull(targetID);
+        if (targetID.Length == 0)
         {
-            graph.RemoveMetadata(targetKey);
+            graph.RemoveMetadata(C_TARGET_KEY);
         }
         else
         {
-            graph.SetMetadata(targetKey, Encode(targetId, serialization, context));
+            graph.SetMetadata(C_TARGET_KEY, Encode(targetID, serialization, context));
         }
     }
 
@@ -117,7 +117,7 @@ public static class ShaderGraphDocument
     ) {
         ArgumentNullException.ThrowIfNull(definition);
         var graph = new GraphDocument();
-        graph.SetMetadata(definitionKey, Encode(serialization.Serialize(definition, context), serialization, context));
+        graph.SetMetadata(C_DEFINITION_KEY, Encode(serialization.Serialize(definition, context), serialization, context));
         ShaderGraphPrograms.Write(graph, [], serialization, context);
         return graph;
     }
@@ -143,7 +143,7 @@ public static class ShaderGraphDocument
         SerializationContext context
     ) {
         ArgumentNullException.ThrowIfNull(graph);
-        if (!graph.metadata.TryGetValue(definitionKey, out GraphSerializedValue? value))
+        if (!graph.metadata.TryGetValue(C_DEFINITION_KEY, out GraphSerializedValue? value))
         {
             throw new InvalidOperationException("The shader graph has no program definition.");
         }

@@ -21,7 +21,7 @@ public sealed partial class RenderRuntime
 
     private void PublishFrameIssue(Diagnostic diagnostic)
     {
-        var key = new FrameIssueKey(diagnostic.code, diagnostic.semanticId, diagnostic.objectId);
+        var key = new FrameIssueKey(diagnostic.code, diagnostic.semanticID, diagnostic.objectID);
         m_currentFrameIssues[key] = diagnostic;
         m_diagnostics.Publish(diagnostic);
     }

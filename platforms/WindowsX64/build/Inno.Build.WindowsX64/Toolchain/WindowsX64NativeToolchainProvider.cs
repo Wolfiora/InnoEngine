@@ -34,15 +34,15 @@ public sealed class WindowsX64NativeToolchainProvider : INativeToolchainProvider
     public async ValueTask<NativeToolchainSelection> ResolveAsync(
         NativeBuildContext context,
         BuildHostDescriptor host,
-        string targetId,
+        string targetID,
         CancellationToken cancellationToken
     ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(host);
         cancellationToken.ThrowIfCancellationRequested();
-        if (!(host.system == "Windows" && host.architecture == "x64" && targetId == "windows-x64"))
+        if (!(host.system == "Windows" && host.architecture == "x64" && targetID == "windows-x64"))
         {
-            throw new PlatformNotSupportedException($"The Windows SDK cannot build '{targetId}' on {host.system}/{host.architecture}.");
+            throw new PlatformNotSupportedException($"The Windows SDK cannot build '{targetID}' on {host.system}/{host.architecture}.");
         }
         var tools = new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -122,7 +122,7 @@ public sealed class WindowsX64NativeToolchainProvider : INativeToolchainProvider
 
         cmakeArguments.InsertRange(0, ["-G", "Visual Studio 17 2022", "-A", "x64"]);
         return NativeToolchainPreparation.Freeze(
-            targetId,
+            targetID,
             host,
             tools,
             environment,

@@ -19,8 +19,8 @@ public sealed partial class ScriptingPipelineTests
         Assert.True(reload.TryCompilePending(out Task<ScriptCompilationResult>? running));
         reload.RecompileScripting();
         ScriptReloadProgress queued = reload.progress;
-        Assert.True(queued.operationId > first.operationId);
-        Assert.False(reload.CancelCompilation(first.operationId));
+        Assert.True(queued.operationID > first.operationID);
+        Assert.False(reload.CancelCompilation(first.operationID));
         _ = CompleteCompilationOnOwner(running!);
         Assert.Same(queued, reload.progress);
         Assert.Equal(0f, queued.fraction);
@@ -29,7 +29,7 @@ public sealed partial class ScriptingPipelineTests
         Assert.True(reload.TryCompilePending(out Task<ScriptCompilationResult>? replacement));
         Assert.True(CompleteCompilationOnOwner(replacement!).success);
         ScriptReloadProgress compiled = reload.progress;
-        Assert.Equal(queued.operationId, compiled.operationId);
+        Assert.Equal(queued.operationID, compiled.operationID);
         Assert.Equal(0.8f, compiled.fraction);
         Assert.Contains("waiting for generation activation", compiled.stage);
         Assert.False(compiled.canCancel);

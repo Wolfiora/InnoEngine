@@ -46,7 +46,7 @@ public sealed unsafe partial class BgfxDevice
         if (m_resetPending)
         {
             m_resetPending = false;
-            if (capabilities.backend != GraphicsApi.Noop)
+            if (capabilities.backend != GraphicsApi.noop)
             {
                 bgfx.reset(
                     checked((uint)m_backbufferWidth),

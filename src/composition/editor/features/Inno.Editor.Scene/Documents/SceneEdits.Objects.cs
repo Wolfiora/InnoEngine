@@ -64,7 +64,7 @@ public sealed partial class SceneEdits
                     subtree,
                     [],
                     selectedBefore,
-                    gameObject.identity.persistentId
+                    gameObject.identity.persistentID
                 );
             },
             () =>
@@ -134,7 +134,7 @@ public sealed partial class SceneEdits
                     subtree,
                     [],
                     selectedBefore,
-                    instance.identity.persistentId
+                    instance.identity.persistentID
                 );
             },
             () =>
@@ -175,9 +175,9 @@ public sealed partial class SceneEdits
         GameScene scene = gameObject.scene;
         byte[] subtree = SceneSubtreeSerialization.Capture(gameObject, m_workspace.serialization, m_workspace.assets);
         SceneIncomingReferenceState[] incoming = SceneReferenceIndex.CaptureIncoming(gameObject, m_workspace);
-        Guid? parentID = gameObject.transform.parent?.gameObject.identity.persistentId;
+        Guid? parentID = gameObject.transform.parent?.gameObject.identity.persistentID;
         int siblingIndex = gameObject.transform.siblingIndex;
-        Guid rootID = gameObject.identity.persistentId;
+        Guid rootID = gameObject.identity.persistentID;
         Guid? selectedBefore = GetSelectionID();
         try
         {
@@ -186,7 +186,7 @@ public sealed partial class SceneEdits
                 return false;
             }
             var data = new SceneSubtreeHistoryData(
-                scene.identity.persistentId,
+                scene.identity.persistentID,
                 rootID,
                 parentID,
                 siblingIndex,

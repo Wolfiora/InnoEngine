@@ -5,8 +5,8 @@ using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Extensibility.Types;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
 
@@ -38,12 +38,12 @@ internal sealed class SerializableObjectPropertyDrawer : IPropertyDrawer
         value = context.GetValue();
         if (value is not ISerializable serializable)
         {
-            Ui.Text("Null");
+            Gui.Text("Null");
             return;
         }
 
         string header = $"{value.GetType().Name}##{context.path}_foldout";
-        if (!Ui.TreeNode(header, (ImGuiTreeNodeFlags.SpanAvailWidth)))
+        if (!Gui.TreeNode(header, (ImGuiTreeNodeFlags.SpanAvailWidth)))
         {
             return;
         }
@@ -56,7 +56,7 @@ internal sealed class SerializableObjectPropertyDrawer : IPropertyDrawer
                 context.DrawChild(serializable, properties[i]);
             }
         });
-        Ui.TreePop();
+        Gui.TreePop();
     }
 
     private void DrawTypeSelector(
@@ -69,7 +69,7 @@ internal sealed class SerializableObjectPropertyDrawer : IPropertyDrawer
             return;
         }
 
-        if (Ui.Selectable("Null", value is null))
+        if (Gui.Selectable("Null", value is null))
         {
             context.SetValue(null);
         }
@@ -83,7 +83,7 @@ internal sealed class SerializableObjectPropertyDrawer : IPropertyDrawer
                 continue;
             }
 
-            if (Ui.Selectable(candidate.Name, candidate == runtimeType && value is not null))
+            if (Gui.Selectable(candidate.Name, candidate == runtimeType && value is not null))
             {
                 context.SetValue(Activator.CreateInstance(candidate, nonPublic: true));
             }

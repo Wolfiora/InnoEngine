@@ -22,8 +22,8 @@ public abstract class PlayerSupportPackFixture : IDisposable
         m_referenceAssemblies = referenceAssemblies;
         m_supportPackRoot = Path.Combine(m_root, "SupportPacks");
         Directory.CreateDirectory(m_root);
-        CreateSupportPack(new BuildTargetId("macos-arm64"), "Inno.Player.MacOSArm64");
-        CreateSupportPack(new BuildTargetId("windows-x64"), "Inno.Player.WindowsX64.exe");
+        CreateSupportPack(new BuildTargetID("macos-arm64"), "Inno.Player.MacOSArm64");
+        CreateSupportPack(new BuildTargetID("windows-x64"), "Inno.Player.WindowsX64.exe");
     }
 
     public virtual void Dispose()
@@ -43,7 +43,7 @@ public abstract class PlayerSupportPackFixture : IDisposable
     }
 
     protected void CreateSupportPack(
-        BuildTargetId target,
+        BuildTargetID target,
         string executable
     ) {
         string directory = Path.Combine(m_root, "pack-candidate-" + Guid.NewGuid().ToString("N"));
@@ -57,7 +57,7 @@ public abstract class PlayerSupportPackFixture : IDisposable
         File.WriteAllBytes(Path.Combine(directory, executable), [0x49, 0x4E, 0x4E, 0x4F]);
         string link = Path.Combine(directory, "PlayerLink");
         Directory.CreateDirectory(link);
-        string platform = target == new BuildTargetId("macos-arm64") ? "MacOSArm64" : "WindowsX64";
+        string platform = target == new BuildTargetID("macos-arm64") ? "MacOSArm64" : "WindowsX64";
         File.WriteAllText(
             Path.Combine(link, "Player.csproj"),
             "<Project><PropertyGroup><AssemblyName>Inno.Player." + platform + "</AssemblyName></PropertyGroup></Project>"
@@ -86,7 +86,7 @@ public abstract class PlayerSupportPackFixture : IDisposable
         File.WriteAllBytes(Path.Combine(link, executable), [0x49, 0x4E, 0x4E, 0x4F]);
         string native = Path.Combine(directory, "native");
         Directory.CreateDirectory(native);
-        string[] required = target == new BuildTargetId("macos-arm64")
+        string[] required = target == new BuildTargetID("macos-arm64")
                             ? ["libbgfx-shared-lib-release.dylib", "SDL3-release.dylib", "libminiaudio-release.dylib",
                                 "libinno-text-release.dylib", "libinno-ui-release.dylib"]
                             : ["bgfx-shared-lib-release.dll", "SDL3-release.dll", "miniaudio-release.dll",
@@ -98,7 +98,7 @@ public abstract class PlayerSupportPackFixture : IDisposable
             File.WriteAllBytes(Path.Combine(native, file), CreateNativeImage(target));
             File.WriteAllBytes(Path.Combine(linkNative, file), CreateNativeImage(target));
         }
-        IPlayerSupportPackValidator validator = target == new BuildTargetId("macos-arm64")
+        IPlayerSupportPackValidator validator = target == new BuildTargetID("macos-arm64")
                                                 ? new MacOSArm64SupportPackValidator()
                                                 : new WindowsX64SupportPackValidator();
         using PlayerSupportPackLease published = new PlayerSupportPackCatalog(m_supportPackRoot).PublishAsync(
@@ -108,17 +108,17 @@ public abstract class PlayerSupportPackFixture : IDisposable
         ).AsTask().GetAwaiter().GetResult();
     }
 
-    protected string GetSupportPackDirectory(BuildTargetId target)
+    protected string GetSupportPackDirectory(BuildTargetID target)
     {
         string targetRoot = Path.Combine(m_supportPackRoot, target.value);
         return Path.Combine(targetRoot, File.ReadAllText(Path.Combine(targetRoot, "current")));
     }
 
-    protected static byte[] CreateNativeImage(BuildTargetId target)
+    protected static byte[] CreateNativeImage(BuildTargetID target)
     {
         using var output = new MemoryStream();
         using var writer = new BinaryWriter(output);
-        if (target == new BuildTargetId("macos-arm64"))
+        if (target == new BuildTargetID("macos-arm64"))
         {
             writer.Write(0xFEED_FACFu);
             writer.Write(0x0100_000Cu);

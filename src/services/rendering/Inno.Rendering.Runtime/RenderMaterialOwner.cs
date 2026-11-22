@@ -90,8 +90,8 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
 
     internal bool TryResolveMaterial(
         MaterialAsset material,
-        ShaderContractId contractID,
-        ShaderPassRoleId passRoleID,
+        ShaderContractID contractID,
+        ShaderPassRoleID passRoleID,
         ShaderProgramKind expectedKind,
         RenderVertexLayout? vertexLayout,
         MaterialPropertyBlock? overrides,
@@ -105,7 +105,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
         diagnostics ??= m_diagnostics;
         materialPass = null;
         ShaderAsset? shader = material.shader;
-        if (shader is null || shader.identity.persistentId == Guid.Empty)
+        if (shader is null || shader.identity.persistentID == Guid.Empty)
         {
             Publish(
                 "RENDER_SHADER_ID_MISSING",
@@ -116,7 +116,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
             return false;
         }
 
-        Guid shaderID = shader.identity.persistentId;
+        Guid shaderID = shader.identity.persistentID;
         RenderShaderVariant variant;
         try
         {
@@ -313,7 +313,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
         ShaderAsset shader,
         RenderShaderVariant variant
     ) {
-        var key = new LookupKey(shader.identity.persistentId, variant.value, string.Empty);
+        var key = new LookupKey(shader.identity.persistentID, variant.value, string.Empty);
         if (m_frameArtifacts.TryGetValue(key, out ArtifactResult result))
         {
             return result;
@@ -370,8 +370,8 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
     private bool TryUseLastGood(
         MaterialAsset material,
         Guid shaderID,
-        ShaderContractId contract,
-        ShaderPassRoleId role,
+        ShaderContractID contract,
+        ShaderPassRoleID role,
         ShaderProgramKind kind,
         RenderVertexLayout? layout,
         MaterialPropertyBlock? overrides,
@@ -406,8 +406,8 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
     private bool TryUsePublication(
         MaterialAsset material,
         ProgramPublication publication,
-        ShaderContractId contract,
-        ShaderPassRoleId role,
+        ShaderContractID contract,
+        ShaderPassRoleID role,
         ShaderProgramKind kind,
         RenderVertexLayout? layout,
         MaterialPropertyBlock? overrides,
@@ -473,8 +473,8 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
 
     private bool Unavailable(
         MaterialAsset material,
-        ShaderContractId contract,
-        ShaderPassRoleId role,
+        ShaderContractID contract,
+        ShaderPassRoleID role,
         IDiagnosticReporter diagnostics
     ) {
         Publish(
@@ -557,7 +557,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
                 throw new InvalidOperationException(diagnostic.message);
             }
         }
-        Dictionary<ShaderPropertyId, ShaderPropertyDefinition> properties = definition.properties.ToDictionary(
+        Dictionary<ShaderPropertyID, ShaderPropertyDefinition> properties = definition.properties.ToDictionary(
             static property => property.id
         );
         foreach (RenderShaderPassArtifact pass in artifact.passes)
@@ -617,7 +617,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
         IDiagnosticReporter diagnostics
     ) {
         var result = new List<MaterialBinding>();
-        Dictionary<ShaderPropertyId, ShaderPropertyDefinition> definitions = publication.properties;
+        Dictionary<ShaderPropertyID, ShaderPropertyDefinition> definitions = publication.properties;
         foreach (ShaderInterfaceBinding binding in shaderInterface.bindings)
         {
             if (!definitions.TryGetValue(binding.id, out ShaderPropertyDefinition property))
@@ -658,7 +658,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
                     bindings = [];
                     return false;
                 }
-                result.Add(CreateTextureBinding(new RenderBindingId(binding.id.value), texture, value.sampler));
+                result.Add(CreateTextureBinding(new RenderBindingID(binding.id.value), texture, value.sampler));
                 continue;
             }
             if (binding.bindingKind is ShaderPropertyBindingKind.StorageBuffer
@@ -677,7 +677,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
                 bindings = [];
                 return false;
             }
-            result.Add(CreateUniformBinding(new RenderBindingId(binding.id.value), bytes));
+            result.Add(CreateUniformBinding(new RenderBindingID(binding.id.value), bytes));
         }
         bindings = result.ToArray();
         return true;
@@ -767,7 +767,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
         }
         foreach (ShaderInterfaceBinding binding in shaderInterface.bindings)
         {
-            var id = new RenderBindingId(binding.id.value);
+            var id = new RenderBindingID(binding.id.value);
             switch (binding.bindingKind)
             {
                 case ShaderPropertyBindingKind.Uniform:
@@ -852,8 +852,8 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
 
         internal RenderShaderArtifact artifact { get; }
         internal ShaderDefinition definition { get; }
-        internal Dictionary<ShaderPropertyId, ShaderPropertyDefinition> properties { get; } = [];
-        internal Dictionary<ShaderPropertyId, RenderTextureArtifactReference> textureDefaults { get; } = [];
+        internal Dictionary<ShaderPropertyID, ShaderPropertyDefinition> properties { get; } = [];
+        internal Dictionary<ShaderPropertyID, RenderTextureArtifactReference> textureDefaults { get; } = [];
         internal Dictionary<ProgramLayout, ProgramEntry> programs { get; } = [];
         internal ulong lastUsedFrame { get; set; }
         internal RenderRetirementQueue? retirement { get; set; }

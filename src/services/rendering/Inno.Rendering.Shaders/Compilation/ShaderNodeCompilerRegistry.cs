@@ -30,12 +30,12 @@ public sealed class ShaderNodeCompilerRegistry : TypeRegistry<ShaderNodeCompiler
     /// <summary>
     /// Gets stable compiler identities without exposing provider instances.
     /// </summary>
-    public IReadOnlyList<string> definitionIds
+    public IReadOnlyList<string> definitionIDs
     {
         get
         {
             using IDisposable operation = m_types.AcquireOperation("Query shader node compilers");
-            return current.definitionIds;
+            return current.definitionIDs;
         }
     }
 
@@ -82,7 +82,7 @@ public sealed class ShaderNodeCompilerRegistry : TypeRegistry<ShaderNodeCompiler
     /// <param name="source">
     /// Resolved frozen source function, or null.
     /// </param>
-    /// <param name="implementationId">
+    /// <param name="implementationID">
     /// Selected source implementation identity.
     /// </param>
     /// <param name="input">
@@ -96,11 +96,11 @@ public sealed class ShaderNodeCompilerRegistry : TypeRegistry<ShaderNodeCompiler
         SerializationRegistry serialization,
         SerializationContext context,
         ShaderSourceModuleAnalysis? source = null,
-        string implementationId = "",
+        string implementationID = "",
         ShaderIrStageInput? input = null
     ) {
         using IDisposable operation = m_types.AcquireOperation("Describe shader node ports");
-        return current.DescribePorts(node, serialization, context, source, implementationId, input);
+        return current.DescribePorts(node, serialization, context, source, implementationID, input);
     }
 
     /// <summary>

@@ -64,13 +64,13 @@ public sealed class PluginManifest : ISerializable
     {
         try
         {
-            _ = new AssetSourceId(pluginId);
+            _ = new AssetSourceID(pluginId);
         }
         catch (ArgumentException exception)
         {
             throw new InvalidDataException("Plugin.inno contains an invalid Plugin ID.", exception);
         }
-        if (string.Equals(pluginId, AssetSourceId.project.value, StringComparison.Ordinal))
+        if (string.Equals(pluginId, AssetSourceID.project.value, StringComparison.Ordinal))
         {
             throw new InvalidDataException("Plugin ID 'project' is reserved by the writable project source.");
         }
@@ -78,8 +78,8 @@ public sealed class PluginManifest : ISerializable
         {
             throw new InvalidDataException("Plugin.inno requires a display name.");
         }
-        EnsureUniquePluginIds(dependencies, nameof(dependencies));
-        EnsureUniquePluginIds(overrides, nameof(overrides));
+        EnsureUniquePluginIDs(dependencies, nameof(dependencies));
+        EnsureUniquePluginIDs(overrides, nameof(overrides));
         EnsureUniquePaths(contentRoots, nameof(contentRoots));
         EnsureUniquePaths(assemblyDefinitions, nameof(assemblyDefinitions));
         if (dependencies.Contains(pluginId, StringComparer.Ordinal))
@@ -114,7 +114,7 @@ public sealed class PluginManifest : ISerializable
         }
     }
 
-    private static void EnsureUniquePluginIds(
+    private static void EnsureUniquePluginIDs(
         string[] values,
         string name
     ) {
@@ -128,7 +128,7 @@ public sealed class PluginManifest : ISerializable
         }
         foreach (string value in values)
         {
-            _ = new AssetSourceId(value);
+            _ = new AssetSourceID(value);
         }
     }
 

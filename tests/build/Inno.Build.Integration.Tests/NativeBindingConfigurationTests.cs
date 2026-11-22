@@ -33,7 +33,7 @@ public sealed class NativeBindingConfigurationTests
     public async Task EveryDeclaredComponentConfigurationCanBeReadByTheInstalledSdk()
     {
         string root = TestRepository.GetRoot(typeof(NativeBindingConfigurationTests).Assembly);
-        BuildCompositionContext environment = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId("windows-x64"));
+        BuildCompositionContext environment = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetID("windows-x64"));
         ProductNativeBuildPlan product = StandardBuildDistribution.Create(environment).build
             .ResolveNativeProduct("windows-x64", "editor").plan;
         using HostServices services = new HostServicesProvider().Create(new(root, JsonSerializer.SerializeToElement(new { })));

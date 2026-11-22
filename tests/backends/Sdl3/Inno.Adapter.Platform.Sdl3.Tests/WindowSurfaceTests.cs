@@ -28,7 +28,7 @@ public sealed class WindowSurfaceTests
         });
         Assert.Equal(host.ResolveNativeSurface(window.sdlWindowHandle), window.nativeHandles);
         Assert.Equal(
-            OperatingSystem.IsWindows() ? PlatformNativeHandleId.win32 : PlatformNativeHandleId.cocoa,
+            OperatingSystem.IsWindows() ? PlatformNativeHandleID.win32 : PlatformNativeHandleID.cocoa,
             window.nativeHandles.handleKind
         );
         Assert.True(window.pixelWidth > 0);

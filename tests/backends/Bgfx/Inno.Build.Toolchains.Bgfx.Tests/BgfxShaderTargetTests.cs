@@ -15,7 +15,7 @@ public sealed class BgfxShaderTargetTests
     [Fact]
     public void MetalProfileIsOwnedByMacBgfxToolchain()
     {
-        GraphicsCapabilities capabilities = CreateCapabilities(GraphicsApi.Metal, GraphicsCapability.Compute);
+        GraphicsCapabilities capabilities = CreateCapabilities(GraphicsApi.metal, GraphicsCapability.Compute);
         var toolchain = new BgfxShadercToolchain(ShaderProfileFixture.mac);
 
         ShaderCompileTarget target = toolchain.CreateTarget(capabilities);
@@ -29,12 +29,12 @@ public sealed class BgfxShaderTargetTests
     public void Direct3DAndMetalTargetsSelectProfilesWithoutForkingShaderSource()
     {
         ShaderCompileTarget metal = new BgfxShadercToolchain(ShaderProfileFixture.mac)
-            .CreateTarget(CreateCapabilities(GraphicsApi.Metal, GraphicsCapability.Compute));
+            .CreateTarget(CreateCapabilities(GraphicsApi.metal, GraphicsCapability.Compute));
         ShaderCompileTarget direct3D = new BgfxShadercToolchain(ShaderProfileFixture.windows)
-            .CreateTarget(CreateCapabilities(GraphicsApi.Direct3D11, GraphicsCapability.Compute));
+            .CreateTarget(CreateCapabilities(GraphicsApi.direct3D11, GraphicsCapability.Compute));
 
-        Assert.Equal(GraphicsApi.Metal, metal.capabilities.backend);
-        Assert.Equal(GraphicsApi.Direct3D11, direct3D.capabilities.backend);
+        Assert.Equal(GraphicsApi.metal, metal.capabilities.backend);
+        Assert.Equal(GraphicsApi.direct3D11, direct3D.capabilities.backend);
         Assert.NotEqual(metal.profileKey, direct3D.profileKey);
     }
 
@@ -44,15 +44,15 @@ public sealed class BgfxShaderTargetTests
         var toolchain = new BgfxShadercToolchain(ShaderProfileFixture.browser);
 
         ShaderCompileTarget target = toolchain.CreateTarget(
-            CreateCapabilities(GraphicsApi.OpenGLES, GraphicsCapability.None)
+            CreateCapabilities(GraphicsApi.openGLES, GraphicsCapability.None)
         );
 
         Assert.Contains("bgfx-shaderc:fixture-browser:", target.profileKey, StringComparison.Ordinal);
         Assert.Throws<NotSupportedException>(() => toolchain.CreateTarget(
-            CreateCapabilities(GraphicsApi.OpenGLES, GraphicsCapability.Compute)
+            CreateCapabilities(GraphicsApi.openGLES, GraphicsCapability.Compute)
         ));
         Assert.Throws<NotSupportedException>(() => toolchain.CreateTarget(
-            CreateCapabilities(GraphicsApi.OpenGL, GraphicsCapability.None)
+            CreateCapabilities(GraphicsApi.openGL, GraphicsCapability.None)
         ));
     }
 }

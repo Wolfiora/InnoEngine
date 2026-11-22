@@ -12,11 +12,11 @@ namespace Inno.Editor.ImGui;
 /// </summary>
 public readonly unsafe struct EditorDrawList
 {
-    private readonly EditorUiSession m_session;
+    private readonly EditorUISession m_session;
     private readonly int m_frame;
     private readonly uint m_window;
 
-    internal EditorDrawList(EditorUiSession session)
+    internal EditorDrawList(EditorUISession session)
     {
         ImGuiNativeContext* context = session.RequireDrawingFrame();
         m_session = session;

@@ -162,7 +162,7 @@ public sealed class EditorShaderCompilation
     /// <summary>
     /// Compiles a detached document through the same graph toolchain in an isolated preview cache.
     /// </summary>
-    /// <param name="documentId">
+    /// <param name="documentID">
     /// Preview owner identity, independent of canonical artifact lookup.
     /// </param>
     /// <param name="graph">
@@ -178,13 +178,13 @@ public sealed class EditorShaderCompilation
     /// Preview-only state and artifact; calling this method cannot publish to Scene/Game.
     /// </returns>
     public EditorShaderDraftCompilationSnapshot RequestDraft(
-        Guid documentId,
+        Guid documentID,
         GraphDocument graph,
         ulong revision,
         RenderShaderVariant variant
     ) {
         EditorShaderDraftCompilationSnapshot compiled = m_provider.RequestDraft(
-            documentId,
+            documentID,
             graph,
             revision,
             variant,
@@ -196,7 +196,7 @@ public sealed class EditorShaderCompilation
             return compiled;
         }
 
-        EditorShaderArtifactValidationSnapshot validated = m_validator.Request(documentId, revision, compiled.artifact);
+        EditorShaderArtifactValidationSnapshot validated = m_validator.Request(documentID, revision, compiled.artifact);
         IReadOnlyList<ShaderDiagnostic> diagnostics = compiled.diagnostics
             .Concat(validated.diagnostics)
             .ToArray();
@@ -211,12 +211,12 @@ public sealed class EditorShaderCompilation
     /// <summary>
     /// Cancels a document's preview work and retires its cached candidate without touching canonical artifacts.
     /// </summary>
-    /// <param name="documentId">
+    /// <param name="documentID">
     /// Closing preview owner identity.
     /// </param>
-    public void ReleaseDraft(Guid documentId)
+    public void ReleaseDraft(Guid documentID)
     {
-        m_validator?.Release(documentId);
-        m_provider.ReleaseDraft(documentId);
+        m_validator?.Release(documentID);
+        m_provider.ReleaseDraft(documentID);
     }
 }

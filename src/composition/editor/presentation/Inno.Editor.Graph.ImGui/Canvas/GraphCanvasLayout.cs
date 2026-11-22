@@ -12,7 +12,7 @@ namespace Inno.Editor.Graph.ImGui;
 public sealed class GraphCanvasLayout
 {
     private IReadOnlyList<GraphCanvasNode> m_nodes = Array.Empty<GraphCanvasNode>();
-    private Dictionary<GraphNodeId, GraphCanvasNode> m_byID = [];
+    private Dictionary<GraphNodeID, GraphCanvasNode> m_byID = [];
 
     /// <summary>
     /// Gets nodes in draw order; reverse order determines overlapping-node hit priority.
@@ -38,7 +38,7 @@ public sealed class GraphCanvasLayout
     {
         ArgumentNullException.ThrowIfNull(nodes);
         GraphCanvasNode[] candidate = nodes.ToArray();
-        var byID = new Dictionary<GraphNodeId, GraphCanvasNode>(candidate.Length);
+        var byID = new Dictionary<GraphNodeID, GraphCanvasNode>(candidate.Length);
         int changes = 0;
         for (int index = 0; index < candidate.Length; index++)
         {
@@ -80,7 +80,7 @@ public sealed class GraphCanvasLayout
     /// True when the current snapshot contains the node.
     /// </returns>
     public bool TryGetNode(
-        GraphNodeId id,
+        GraphNodeID id,
         [NotNullWhen(true)] out GraphCanvasNode? node
     ) => m_byID.TryGetValue(id, out node);
 

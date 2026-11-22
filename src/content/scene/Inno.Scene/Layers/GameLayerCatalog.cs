@@ -12,14 +12,14 @@ namespace Inno.Scene.Layers;
 /// Stores the named layer catalog and symmetric layer-interaction matrix used by a project.
 /// </summary>
 [RequiresSerializationConverter]
-[StableTypeId("bd64db72-60b2-4c79-af70-c6276202ad48")]
-[ProjectSettingDefinition(GameLayerCatalog.settingProtocolId)]
+[StableTypeID("bd64db72-60b2-4c79-af70-c6276202ad48")]
+[ProjectSettingDefinition(GameLayerCatalog.C_SETTING_PROTOCOL_ID)]
 public sealed class GameLayerCatalog : ISerializable
 {
     /// <summary>
     /// Gets the immutable project-setting protocol value used by discovery metadata.
     /// </summary>
-    public const string settingProtocolId = "inno.scene.layers";
+    public const string C_SETTING_PROTOCOL_ID = "inno.scene.layers";
 
     private const string C_DEFAULT_LAYER_NAME = "Default";
 
@@ -47,7 +47,7 @@ public sealed class GameLayerCatalog : ISerializable
     /// <summary>
     /// Gets the stable project setting protocol for the project-wide layer catalog.
     /// </summary>
-    public static ProjectSettingId settingId => new(settingProtocolId);
+    public static ProjectSettingID settingID => new(C_SETTING_PROTOCOL_ID);
 
     /// <summary>
     /// Gets the number of currently named layer slots.
@@ -75,7 +75,7 @@ public sealed class GameLayerCatalog : ISerializable
         {
             if (m_names[index] is string name)
             {
-                result.Add(new GameLayerDefinition(new ProjectLocalId(m_localIds[index]!), new GameLayer(index), name));
+                result.Add(new GameLayerDefinition(new ProjectLocalID(m_localIds[index]!), new GameLayer(index), name));
             }
         }
         return result;
@@ -120,17 +120,17 @@ public sealed class GameLayerCatalog : ISerializable
     /// <returns>
     /// The local identity, or <see langword="null"/>.
     /// </returns>
-    public ProjectLocalId? GetLocalId(GameLayer layer)
+    public ProjectLocalID? GetLocalID(GameLayer layer)
     {
         ValidateState();
         string? value = m_localIds[layer.index];
-        return value is null ? null : new ProjectLocalId(value);
+        return value is null ? null : new ProjectLocalID(value);
     }
 
     /// <summary>
     /// Gets the complete identity assigned to a layer slot.
     /// </summary>
-    /// <param name="projectId">
+    /// <param name="projectID">
     /// The current project namespace.
     /// </param>
     /// <param name="layer">
@@ -139,18 +139,18 @@ public sealed class GameLayerCatalog : ISerializable
     /// <returns>
     /// The qualified identity, or <see langword="null"/>.
     /// </returns>
-    public GameLayerId? GetId(
-        ProjectId projectId,
+    public GameLayerID? GetID(
+        ProjectID projectID,
         GameLayer layer
     ) {
-        ProjectLocalId? localID = GetLocalId(layer);
-        return localID is ProjectLocalId value ? new GameLayerId(projectId, value) : null;
+        ProjectLocalID? localID = GetLocalID(layer);
+        return localID is ProjectLocalID value ? new GameLayerID(projectID, value) : null;
     }
 
     /// <summary>
     /// Tries to resolve a local identity to its compact runtime slot.
     /// </summary>
-    /// <param name="localId">
+    /// <param name="localID">
     /// The stable project-local identity.
     /// </param>
     /// <param name="layer">
@@ -160,17 +160,17 @@ public sealed class GameLayerCatalog : ISerializable
     /// <see langword="true"/> when the identity is defined.
     /// </returns>
     public bool TryGetLayer(
-        ProjectLocalId localId,
+        ProjectLocalID localID,
         out GameLayer layer
     ) {
-        if (string.IsNullOrEmpty(localId.value))
+        if (string.IsNullOrEmpty(localID.value))
         {
-            throw new ArgumentException("A valid project-local layer ID is required.", nameof(localId));
+            throw new ArgumentException("A valid project-local layer ID is required.", nameof(localID));
         }
         ValidateState();
         for (int index = 0; index < m_localIds.Length; index++)
         {
-            if (!string.Equals(m_localIds[index], localId.value, StringComparison.Ordinal))
+            if (!string.Equals(m_localIds[index], localID.value, StringComparison.Ordinal))
             {
                 continue;
             }
@@ -215,7 +215,7 @@ public sealed class GameLayerCatalog : ISerializable
     /// <summary>
     /// Tries to resolve a qualified identity to its compact runtime slot.
     /// </summary>
-    /// <param name="projectId">
+    /// <param name="projectID">
     /// The current project namespace.
     /// </param>
     /// <param name="id">
@@ -228,8 +228,8 @@ public sealed class GameLayerCatalog : ISerializable
     /// <see langword="true"/> when the identity belongs to this project and is defined.
     /// </returns>
     public bool TryGetLayer(
-        ProjectId projectId,
-        GameLayerId id,
+        ProjectID projectID,
+        GameLayerID id,
         out GameLayer layer
     ) {
         if (!id.isValid)
@@ -243,7 +243,7 @@ public sealed class GameLayerCatalog : ISerializable
             {
                 continue;
             }
-            var candidate = new GameLayerId(projectId, new ProjectLocalId(local));
+            var candidate = new GameLayerID(projectID, new ProjectLocalID(local));
             if (candidate != id)
             {
                 continue;
@@ -306,8 +306,8 @@ public sealed class GameLayerCatalog : ISerializable
         GameLayer layer,
         string name
     ) {
-        ProjectLocalId localID = GetLocalId(layer)
-                                 ?? new ProjectLocalId($"layer.{layer.index.ToString("00", CultureInfo.InvariantCulture)}");
+        ProjectLocalID localID = GetLocalID(layer)
+                                 ?? new ProjectLocalID($"layer.{layer.index.ToString("00", CultureInfo.InvariantCulture)}");
         DefineLocal(layer, localID, name);
     }
 
@@ -422,7 +422,7 @@ public sealed class GameLayerCatalog : ISerializable
 
     internal void DefineLocal(
         GameLayer layer,
-        ProjectLocalId localID,
+        ProjectLocalID localID,
         string name
     ) {
         if (string.IsNullOrEmpty(localID.value))
@@ -451,7 +451,7 @@ public sealed class GameLayerCatalog : ISerializable
             }
         }
         if (layer == GameLayer.defaultLayer
-            && (localID != new ProjectLocalId("default")
+            && (localID != new ProjectLocalID("default")
                 || !string.Equals(normalized, C_DEFAULT_LAYER_NAME, StringComparison.Ordinal))
         ) {
             throw new ArgumentException("The built-in default layer cannot be replaced.", nameof(layer));
@@ -460,7 +460,7 @@ public sealed class GameLayerCatalog : ISerializable
         m_names[layer.index] = normalized;
     }
 
-    internal string?[] CaptureLocalIds()
+    internal string?[] CaptureLocalIDs()
     {
         ValidateState();
         return (string?[])m_localIds.Clone();
@@ -490,16 +490,16 @@ public sealed class GameLayerCatalog : ISerializable
     }
 
     internal static GameLayerCatalog Restore(
-        string?[] localIds,
+        string?[] localIDs,
         string?[] names,
         uint[] interactionMasks
     ) {
-        ArgumentNullException.ThrowIfNull(localIds);
+        ArgumentNullException.ThrowIfNull(localIDs);
         ArgumentNullException.ThrowIfNull(names);
         ArgumentNullException.ThrowIfNull(interactionMasks);
         var stack = new GameLayerCatalog
         {
-            m_localIds = (string?[])localIds.Clone(),
+            m_localIds = (string?[])localIDs.Clone(),
             m_names = (string?[])names.Clone(),
             m_interactionMasks = (uint[])interactionMasks.Clone()
         };
@@ -541,7 +541,7 @@ public sealed class GameLayerCatalog : ISerializable
             {
                 continue;
             }
-            var normalizedID = new ProjectLocalId(localID);
+            var normalizedID = new ProjectLocalID(localID);
             if (!ids.Add(normalizedID.value))
             {
                 throw new InvalidOperationException($"GameLayer local ID '{localID}' is assigned more than once.");

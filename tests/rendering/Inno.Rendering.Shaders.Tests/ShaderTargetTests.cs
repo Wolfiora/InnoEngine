@@ -39,7 +39,7 @@ public sealed class ShaderTargetTests : IDisposable
         ShaderGraphProgramResult result = new ShaderGraphProgramCompiler(nodes).Lower(
             expanded,
             "bgfx",
-            new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis>(),
+            new Dictionary<GraphNodeID, ShaderSourceModuleAnalysis>(),
             m_serialization,
             SerializationContext.empty
         );
@@ -86,7 +86,7 @@ public sealed class ShaderTargetTests : IDisposable
         GraphDocument first = templates.Create("tests.surface-template", m_serialization, SerializationContext.empty);
         GraphDocument second = templates.Create("tests.surface-template", m_serialization, SerializationContext.empty);
         Assert.Equal("tests.surface-target", ShaderGraphDocument.ReadTarget(first, m_serialization, SerializationContext.empty));
-        first.RemoveMetadata(ShaderGraphDocument.targetKey);
+        first.RemoveMetadata(ShaderGraphDocument.C_TARGET_KEY);
         Assert.Equal("tests.surface-target", ShaderGraphDocument.ReadTarget(second, m_serialization, SerializationContext.empty));
         Assert.Throws<InvalidOperationException>(() => templates.Create("missing", m_serialization, SerializationContext.empty));
     }

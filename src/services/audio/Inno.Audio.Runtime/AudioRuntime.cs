@@ -350,7 +350,7 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     /// <see langword="true"/> when the active mixer contains the bus.
     /// </returns>
     public bool SetBusVolume(
-        AudioBusId bus,
+        AudioBusID bus,
         float volume
     ) {
         EnsureActive();
@@ -370,7 +370,7 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     /// <see langword="true"/> when the active mixer contains the bus.
     /// </returns>
     public bool SetBusMuted(
-        AudioBusId bus,
+        AudioBusID bus,
         bool muted
     ) {
         EnsureActive();
@@ -390,7 +390,7 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     /// <see langword="true"/> when the active mixer contains the bus.
     /// </returns>
     public bool SetBusPaused(
-        AudioBusId bus,
+        AudioBusID bus,
         bool paused
     ) {
         EnsureActive();

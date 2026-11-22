@@ -340,8 +340,8 @@ public sealed class EditorPlayModeTests : IDisposable
         IEditorSceneWorkspace workspace = workspaceHost.workspace;
         var editScene = new GameScene("Edit Scene");
         GameObject editObject = editScene.CreateObject("Edit Object");
-        Guid sceneID = editScene.identity.persistentId;
-        Guid objectID = editObject.identity.persistentId;
+        Guid sceneID = editScene.identity.persistentID;
+        Guid objectID = editObject.identity.persistentID;
         SceneManager.LoadScene(editScene);
         selection.SetSelection(editObject);
         using RuntimeSession runtimeSession = m_engineHost.CreateSession(CreateSessionOptions(RuntimeSessionKind.Play));
@@ -356,8 +356,8 @@ public sealed class EditorPlayModeTests : IDisposable
 
         Assert.NotSame(editScene, runtimeScene);
         Assert.NotSame(editObject, runtimeObject);
-        Assert.Equal(sceneID, runtimeScene.identity.persistentId);
-        Assert.Equal(objectID, runtimeObject.identity.persistentId);
+        Assert.Equal(sceneID, runtimeScene.identity.persistentID);
+        Assert.Equal(objectID, runtimeObject.identity.persistentID);
         Assert.Same(runtimeScene, Assert.Single(workspace.scenes));
         Assert.Same(runtimeScene, workspace.activeScene);
         Assert.Same(runtimeObject, selection.selectedTarget);
@@ -455,7 +455,7 @@ public sealed class EditorPlayModeTests : IDisposable
         SceneManager.LoadScene(editScene);
         using ContentReadScope editing = presentation.Capture();
         Assert.Same(editScene, Assert.Single(editing.GetValues<GameScene>()));
-        Assert.Equal(editScene.identity.persistentId, editing.activeContent);
+        Assert.Equal(editScene.identity.persistentID, editing.activeContent);
         using RuntimeSession runtimeSession = m_engineHost.CreateSession(CreateSessionOptions(RuntimeSessionKind.Play));
         IDisposable playLease = workspaceHost.playMode.BeginPlayMode(runtimeSession);
         using ContentReadScope playing = presentation.Capture();
@@ -463,7 +463,7 @@ public sealed class EditorPlayModeTests : IDisposable
         GameObject runtimeObject = Assert.Single(runtimeScene.GetObjects());
         Assert.NotSame(editScene, runtimeScene);
         Assert.NotSame(editObject, runtimeObject);
-        Assert.Equal(runtimeScene.identity.persistentId, playing.activeContent);
+        Assert.Equal(runtimeScene.identity.persistentID, playing.activeContent);
         runtimeObject.name = "Runtime Object";
         runtimeObject.transform.localRotation = Quaternion.FromEulerAnglesXYZDegrees(new Vector3(0f, 0f, 90f));
         Assert.Equal("Runtime Object", Assert.Single(Assert.Single(playing.GetValues<GameScene>()).GetObjects()).name);
@@ -477,7 +477,7 @@ public sealed class EditorPlayModeTests : IDisposable
         playLease.Dispose();
         using ContentReadScope restored = presentation.Capture();
         Assert.Same(editScene, Assert.Single(restored.GetValues<GameScene>()));
-        Assert.Equal(editScene.identity.persistentId, restored.activeContent);
+        Assert.Equal(editScene.identity.persistentID, restored.activeContent);
         Assert.Equal("Edit Object", Assert.Single(editScene.GetObjects()).name);
     }
 
@@ -502,7 +502,7 @@ public sealed class EditorPlayModeTests : IDisposable
         Assert.Throws<InvalidOperationException>(() => workspaceHost.playMode.BeginPlayMode(runtimeSession));
         using ContentReadScope snapshot = presentation.Capture();
         Assert.Same(editScene, Assert.Single(snapshot.GetValues<GameScene>()));
-        Assert.Equal(editScene.identity.persistentId, snapshot.activeContent);
+        Assert.Equal(editScene.identity.persistentID, snapshot.activeContent);
         Assert.True(workspaceHost.workspace.canPersist);
     }
 
@@ -522,12 +522,12 @@ public sealed class EditorPlayModeTests : IDisposable
         IDisposable playLease = workspaceHost.playMode.BeginPlayMode(runtimeSession);
         using ContentReadScope playing = workspaceHost.gamePresentation.Capture();
         Identity captured = Assert.Single(playing.contents);
-        Assert.Equal(editScene.identity.persistentId, captured.persistentId);
+        Assert.Equal(editScene.identity.persistentID, captured.persistentID);
         Assert.NotEqual(editScene.identity.runtimeIdentity, captured.runtimeIdentity);
         playLease.Dispose();
         runtimeSession.Dispose();
         Assert.Empty(playing.GetValues<GameScene>());
-        Assert.False(playing.TryGetValue<GameScene>(captured.persistentId, out _));
+        Assert.False(playing.TryGetValue<GameScene>(captured.persistentID, out _));
         using ContentReadScope editing = workspaceHost.gamePresentation.Capture();
         Assert.Same(editScene, Assert.Single(editing.GetValues<GameScene>()));
         playing.Dispose();
@@ -540,7 +540,7 @@ public sealed class EditorPlayModeTests : IDisposable
         return new RuntimeSessionOptions
         {
             kind = kind,
-            applicationId = applicationID,
+            applicationID = applicationID,
             createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(m_projectRoot, "PersistentData", applicationID), "Logs")),
             jobExecutionMode = RuntimeJobExecutionMode.SingleThread
         };
@@ -581,7 +581,7 @@ public sealed class EditorPlayModeTests : IDisposable
                 new RuntimeSessionOptions
                 {
                     kind = RuntimeSessionKind.Play,
-                    applicationId = "inno.tests.play",
+                    applicationID = "inno.tests.play",
                     createLogSink = _ => new FileLogSink(
                         Path.Combine(Path.Combine(projectRoot, "PersistentData", "inno.tests.play"), "Logs")
                     ),
@@ -627,7 +627,7 @@ public sealed class EditorPlayModeTests : IDisposable
 
         public ScriptCompilationResult? lastCompilation => null;
 
-        public void CancelCompilation(long operationId) {}
+        public void CancelCompilation(long operationID) {}
 
         public IScriptCompilationTicket RequestCompilation()
         {
@@ -639,7 +639,7 @@ public sealed class EditorPlayModeTests : IDisposable
 
     private sealed class PendingPlayFactory(PendingPlaySubsystem subsystem) : IRuntimeSubsystemFactory
     {
-        public RuntimeSubsystemDescriptor descriptor { get; } = new(new RuntimeSubsystemId("test.pending-play"));
+        public RuntimeSubsystemDescriptor descriptor { get; } = new(new RuntimeSubsystemID("test.pending-play"));
 
         public IRuntimeSubsystem Create(RuntimeSubsystemContext context) => subsystem;
     }
@@ -657,7 +657,7 @@ public sealed class EditorPlayModeTests : IDisposable
 
     private sealed class FakeCompilationTicket : IScriptCompilationTicket
     {
-        public long requestId => 1;
+        public long requestID => 1;
         public ScriptCompilationTicketState state { get; private set; }
         public string status => "Test compilation ticket.";
         public ScriptCompilationResult? result => null;
@@ -742,7 +742,7 @@ public sealed class EditorPlayModeTests : IDisposable
     }
 }
 
-[StableTypeId("9afec1fd-c1ef-45fa-9bcc-0b3e2877d613")]
+[StableTypeID("9afec1fd-c1ef-45fa-9bcc-0b3e2877d613")]
 internal sealed class PlayModeAssetReferenceBehavior : GameBehavior
 {
     /// <summary>

@@ -21,7 +21,7 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
 {
     private const int C_MAX_QUEUED_REQUESTS = 4096;
 
-    private static readonly RenderPhaseId PRESENTATION_BACKGROUND_PHASE = new("inno.runtime.presentation-background");
+    private static readonly RenderPhaseID PRESENTATION_BACKGROUND_PHASE = new("inno.runtime.presentation-background");
 
     private static readonly RenderClearColor PRESENTATION_BACKGROUND_COLOR = new(0f, 0f, 0f, 1f);
 
@@ -205,8 +205,8 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
         var sink = new ViewContentSink();
         foreach (RenderExtensionRegistry.ContentSourceEntry entry in m_extensions.extensions.sources.sources)
         {
-            if (context.sourceIds is { } sourceIds
-                && !sourceIds.Contains(entry.id, StringComparer.Ordinal)
+            if (context.sourceIDs is { } sourceIDs
+                && !sourceIDs.Contains(entry.id, StringComparer.Ordinal)
             ) {
                 continue;
             }

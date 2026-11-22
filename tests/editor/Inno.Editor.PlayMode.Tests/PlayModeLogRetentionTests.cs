@@ -39,7 +39,7 @@ public sealed class PlayModeLogRetentionTests : IDisposable
     public void ClearOnPlayRemovesOldLogsButRetainsCurrentDiagnostics()
     {
         Assert.True(m_console.clearOnPlay);
-        Dispatch(LogLevel.Info, LogSessionId.none, "before-play");
+        Dispatch(LogLevel.Info, LogSessionID.none, "before-play");
         m_diagnosticHub.Set(
             new DiagnosticSource("test.compiler", "Test Compiler"),
             [Diagnostic.Error("TEST001", "compiler-diagnostic")]
@@ -57,7 +57,7 @@ public sealed class PlayModeLogRetentionTests : IDisposable
     [Fact]
     public void ManualClearRemovesHistoryButKeepsCurrentIssuesUntilResolved()
     {
-        Dispatch(LogLevel.Error, LogSessionId.none, "old failure");
+        Dispatch(LogLevel.Error, LogSessionID.none, "old failure");
         using DiagnosticReporter reporter = m_diagnosticHub.CreateReporter(
             new DiagnosticSource("tests.current", "Current issue")
         );
@@ -74,7 +74,7 @@ public sealed class PlayModeLogRetentionTests : IDisposable
     [Fact]
     public void CompletedPlaySessionRetainsEveryRuntimeSeverity()
     {
-        LogSessionId sessionID = m_playMode.Begin();
+        LogSessionID sessionID = m_playMode.Begin();
         Dispatch(LogLevel.Debug, sessionID, "runtime-debug");
         Dispatch(LogLevel.Info, sessionID, "runtime-info");
         Dispatch(LogLevel.Warn, sessionID, "runtime-warning");
@@ -97,7 +97,7 @@ public sealed class PlayModeLogRetentionTests : IDisposable
     [Fact]
     public void FailedEntryRetainsPreparationDiagnosticsBecauseSimulationNeverStarted()
     {
-        LogSessionId sessionID = m_playMode.Begin();
+        LogSessionID sessionID = m_playMode.Begin();
         Dispatch(LogLevel.Info, sessionID, "entry-diagnostic");
         m_playMode.SetState(EditorPlayModeState.Failed);
         m_logRouter.Flush();
@@ -109,7 +109,7 @@ public sealed class PlayModeLogRetentionTests : IDisposable
     public void DisabledClearOnPlayRetainsExistingLogs()
     {
         m_console.clearOnPlay = false;
-        Dispatch(LogLevel.Info, LogSessionId.none, "before-play");
+        Dispatch(LogLevel.Info, LogSessionID.none, "before-play");
         m_logRouter.Flush();
 
         _ = m_playMode.Begin();
@@ -120,10 +120,10 @@ public sealed class PlayModeLogRetentionTests : IDisposable
     [Fact]
     public void CollapseGroupsEquivalentNonConsecutiveOccurrencesGlobally()
     {
-        Dispatch(LogLevel.Info, LogSessionId.none, "repeated", file: "A.cs", line: 10);
-        Dispatch(LogLevel.Warn, LogSessionId.none, "middle", file: "B.cs", line: 20);
-        Dispatch(LogLevel.Info, LogSessionId.none, "repeated", file: "A.cs", line: 10);
-        Dispatch(LogLevel.Info, LogSessionId.none, "repeated", file: "C.cs", line: 30);
+        Dispatch(LogLevel.Info, LogSessionID.none, "repeated", file: "A.cs", line: 10);
+        Dispatch(LogLevel.Warn, LogSessionID.none, "middle", file: "B.cs", line: 20);
+        Dispatch(LogLevel.Info, LogSessionID.none, "repeated", file: "A.cs", line: 10);
+        Dispatch(LogLevel.Info, LogSessionID.none, "repeated", file: "C.cs", line: 30);
         m_logRouter.Flush();
 
         EditorConsoleSnapshot snapshot = m_console.Capture();
@@ -139,8 +139,8 @@ public sealed class PlayModeLogRetentionTests : IDisposable
     [Fact]
     public void CollapseDoesNotMergeEquivalentEntriesAcrossRuntimeSessions()
     {
-        LogSessionId first = LogSessionId.Create();
-        LogSessionId second = LogSessionId.Create();
+        LogSessionID first = LogSessionID.Create();
+        LogSessionID second = LogSessionID.Create();
         Dispatch(LogLevel.Info, first, "session-entry", file: "A.cs", line: 10);
         Dispatch(LogLevel.Info, second, "session-entry", file: "A.cs", line: 10);
         m_logRouter.Flush();
@@ -153,8 +153,8 @@ public sealed class PlayModeLogRetentionTests : IDisposable
     [Fact]
     public void ConsoleTimelineAppendsTheNewestEntryAtTheBottom()
     {
-        Dispatch(LogLevel.Info, LogSessionId.none, "first");
-        Dispatch(LogLevel.Error, LogSessionId.none, "latest");
+        Dispatch(LogLevel.Info, LogSessionID.none, "first");
+        Dispatch(LogLevel.Error, LogSessionID.none, "latest");
         m_logRouter.Flush();
 
         EditorConsoleSnapshot snapshot = m_console.Capture();
@@ -167,7 +167,7 @@ public sealed class PlayModeLogRetentionTests : IDisposable
 
     private void Dispatch(
         LogLevel level,
-        LogSessionId sessionID,
+        LogSessionID sessionID,
         string message,
         string file = nameof(PlayModeLogRetentionTests),
         int line = 0
@@ -201,7 +201,7 @@ public sealed class PlayModeLogRetentionTests : IDisposable
 
         public string? lastFailure => null;
 
-        public LogSessionId activeSessionId { get; private set; }
+        public LogSessionID activeSessionID { get; private set; }
 
         public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener)
             => m_stateEvents.Listen<StateNotification>(notification => listener(notification.state));
@@ -210,17 +210,17 @@ public sealed class PlayModeLogRetentionTests : IDisposable
 
         public bool ExitPlayMode() => false;
 
-        internal LogSessionId Begin()
+        internal LogSessionID Begin()
         {
-            activeSessionId = LogSessionId.Create();
+            activeSessionID = LogSessionID.Create();
             SetState(EditorPlayModeState.Compiling);
-            return activeSessionId;
+            return activeSessionID;
         }
 
         internal void End()
         {
             SetState(EditorPlayModeState.Editing);
-            activeSessionId = LogSessionId.none;
+            activeSessionID = LogSessionID.none;
         }
 
         internal void SetState(EditorPlayModeState value)

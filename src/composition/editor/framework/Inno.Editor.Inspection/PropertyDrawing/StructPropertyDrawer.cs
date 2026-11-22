@@ -6,8 +6,8 @@ using System.Runtime.CompilerServices;
 using Inno.Core.Serialization;
 using Inno.Editor.ImGui;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Ui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
 
@@ -28,11 +28,11 @@ internal sealed class StructPropertyDrawer : IPropertyDrawer
         MemberInfo[] members = GetMembers(context.propertyType);
         if (members.Length == 0)
         {
-            Ui.Text(boxedValue.ToString() ?? context.propertyType.Name);
+            Gui.Text(boxedValue.ToString() ?? context.propertyType.Name);
             return;
         }
 
-        if (!Ui.TreeNode($"{context.propertyType.Name}##{context.path}", (ImGuiTreeNodeFlags.SpanAvailWidth)))
+        if (!Gui.TreeNode($"{context.propertyType.Name}##{context.path}", (ImGuiTreeNodeFlags.SpanAvailWidth)))
         {
             return;
         }
@@ -60,7 +60,7 @@ internal sealed class StructPropertyDrawer : IPropertyDrawer
                 );
             }
         });
-        Ui.TreePop();
+        Gui.TreePop();
     }
 
     private static MemberInfo[] GetMembers(Type type)

@@ -114,7 +114,7 @@ public abstract class EngineObject : IdentityObject
     internal Guid ReleaseIdentityForReplacement()
     {
         ValidateIdentityForReplacement();
-        Guid persistentID = identity.persistentId;
+        Guid persistentID = identity.persistentID;
         if (!IdentityAllocator.current.Unregister(this))
         {
             throw new InvalidOperationException($"Identity release failed for '{GetType().FullName}'.");
@@ -130,12 +130,12 @@ public abstract class EngineObject : IdentityObject
         }
         RuntimeIdentity? owner = identity.runtimeIdentity;
         IdentityAllocator allocator = IdentityAllocator.current;
-        if (owner is not RuntimeIdentity registered || registered.domainId != allocator.domainId
+        if (owner is not RuntimeIdentity registered || registered.domainID != allocator.domainID
             || !ReferenceEquals(allocator.Get<EngineObject>(registered), this)
         ) {
             throw new InvalidOperationException(
                 $"Identity replacement for '{GetType().FullName}' requires its owning domain "
-                + $"'{owner?.domainId.ToString() ?? "detached"}', but the current domain is '{allocator.domainId}'."
+                + $"'{owner?.domainID.ToString() ?? "detached"}', but the current domain is '{allocator.domainID}'."
             );
         }
     }

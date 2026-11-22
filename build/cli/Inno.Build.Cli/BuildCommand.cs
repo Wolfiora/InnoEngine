@@ -44,13 +44,13 @@ internal sealed class BuildCommand
 
     internal string? engineRoot => m_values.ContainsKey("engine-root") ? Require(m_values, "engine-root") : null;
 
-    internal BuildTargetId toolsTarget => new(Require(m_values, "tools-target"));
+    internal BuildTargetID toolsTarget => new(Require(m_values, "tools-target"));
 
     internal string? nativeDependencies => m_values.GetValueOrDefault("native-dependencies");
 
     internal string? dotnetHost => m_values.GetValueOrDefault("dotnet");
 
-    internal BuildTargetId gameTarget => new(Require(m_values, "target"));
+    internal BuildTargetID gameTarget => new(Require(m_values, "target"));
 
     internal string? profilePath => m_values.GetValueOrDefault("profile");
 
@@ -69,11 +69,11 @@ internal sealed class BuildCommand
         }
         if (m_values.TryGetValue("target", out string? target))
         {
-            profile.target = new BuildTargetId(target);
+            profile.target = new BuildTargetID(target);
         }
         if (m_values.TryGetValue("deployment", out string? deployment))
         {
-            profile.managedDeployment = new ManagedDeploymentId(deployment);
+            profile.managedDeployment = new ManagedDeploymentID(deployment);
         }
         return new GameBuildRequest
         {
@@ -82,10 +82,10 @@ internal sealed class BuildCommand
         };
     }
 
-    internal PluginBuildRequest CreatePluginRequest(ProjectId projectID)
+    internal PluginBuildRequest CreatePluginRequest(ProjectID projectID)
         => new()
     {
-        pluginId = projectID.value,
+        pluginID = projectID.value,
         displayName = Require(m_values, "display-name"),
         outputPath = Require(m_values, "output"),
         dependencies = m_values.TryGetValue("dependencies", out string? dependencyList)

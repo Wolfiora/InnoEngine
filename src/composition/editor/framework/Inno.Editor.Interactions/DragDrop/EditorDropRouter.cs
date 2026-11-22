@@ -7,7 +7,7 @@ namespace Inno.Editor.Interactions;
 
 internal sealed class EditorDropRouter(
     EditorExtensionCatalog catalog,
-    IReadOnlyDictionary<IdentityDomainId, IdentityAllocator> identityDomains,
+    IReadOnlyDictionary<IdentityDomainID, IdentityAllocator> identityDomains,
     Logger log
 ) {
     private readonly HashSet<string> m_queryFailures = new(StringComparer.Ordinal);
@@ -164,7 +164,7 @@ internal sealed class EditorDropRouter(
     }
 
     private IdentityObject? Resolve(RuntimeIdentity identity)
-        => identityDomains.TryGetValue(identity.domainId, out IdentityAllocator? allocator)
+        => identityDomains.TryGetValue(identity.domainID, out IdentityAllocator? allocator)
            ? allocator.Get<IdentityObject>(identity)
            : null;
 }

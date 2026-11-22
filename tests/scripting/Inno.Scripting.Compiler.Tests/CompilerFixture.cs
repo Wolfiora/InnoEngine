@@ -69,7 +69,7 @@ internal sealed class CompilerFixture : IDisposable
             new FileByteDocumentStore(Path.Combine(projectRoot, "Settings.Project.inno")),
             m_host.types,
             m_host.serialization,
-            new ProjectId("tests.compiler"),
+            new ProjectID("tests.compiler"),
             AssetSerializationContext.Create(m_assets)
         );
         m_plugins = new PluginEnvironment(

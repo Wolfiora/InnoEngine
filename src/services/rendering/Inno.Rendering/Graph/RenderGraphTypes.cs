@@ -7,7 +7,7 @@ namespace Inno.Rendering;
 /// <summary>
 /// Identifies an open render phase protocol value.
 /// </summary>
-public readonly record struct RenderPhaseId
+public readonly record struct RenderPhaseID
 {
     /// <summary>
     /// Creates an open render phase identifier.
@@ -15,7 +15,7 @@ public readonly record struct RenderPhaseId
     /// <param name="value">
     /// Globally stable phase value.
     /// </param>
-    public RenderPhaseId(string value)
+    public RenderPhaseID(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         this.value = value;
@@ -274,7 +274,7 @@ internal sealed class RenderPassRecord
     /// <summary>
     /// Gets the render phase that owns this pass declaration.
     /// </summary>
-    public required RenderPhaseId phase { get; init; }
+    public required RenderPhaseID phase { get; init; }
 
     /// <summary>
     /// Gets the operation kind that determines how this value is interpreted.
@@ -289,12 +289,12 @@ internal sealed class RenderPassRecord
     /// <summary>
     /// Gets the render phases that must execute after this pass.
     /// </summary>
-    public List<RenderPhaseId> before { get; } = [];
+    public List<RenderPhaseID> before { get; } = [];
 
     /// <summary>
     /// Gets the render phases that must execute before this pass.
     /// </summary>
-    public List<RenderPhaseId> after { get; } = [];
+    public List<RenderPhaseID> after { get; } = [];
 
     /// <summary>
     /// Gets the complete resource access declarations used for graph dependency analysis.

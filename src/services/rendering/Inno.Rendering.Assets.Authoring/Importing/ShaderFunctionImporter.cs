@@ -14,7 +14,7 @@ using Inno.Rendering.Shaders;
 namespace Inno.Rendering.Assets.Authoring;
 
 [AssetImporter("inno.rendering.shader-function")]
-[StableTypeId("17f67477-6d9c-5b85-9c98-f1c9df4961d3")]
+[StableTypeID("17f67477-6d9c-5b85-9c98-f1c9df4961d3")]
 internal sealed class ShaderFunctionImporter : AssetImporter<ShaderFunctionAsset>
 {
     /// <summary>
@@ -84,8 +84,8 @@ internal sealed class ShaderFunctionImporter : AssetImporter<ShaderFunctionAsset
                         "An alternate shader implementation is missing; its reference must be repaired before compilation."
                     );
                 }
-                context.DependsOnArtifact(implementation.identity.persistentId);
-                using ArtifactLease lease = context.AcquireArtifact(implementation.identity.persistentId, ShaderSourceBundle.outputName);
+                context.DependsOnArtifact(implementation.identity.persistentID);
+                using ArtifactLease lease = context.AcquireArtifact(implementation.identity.persistentID, ShaderSourceBundle.C_OUTPUT_NAME);
                 requests.AddRange(ShaderSourceBundle.Decode(lease.ReadAllBytes(), export, context.serialization));
             }
             ShaderSourceModuleAnalysis module = frontends.AnalyzeModule(requests);
@@ -110,7 +110,7 @@ internal sealed class ShaderFunctionImporter : AssetImporter<ShaderFunctionAsset
             catalogOrder = settings.catalogOrder
         });
         await output.WriteArtifactAsync(
-            ShaderSourceBundle.outputName,
+            ShaderSourceBundle.C_OUTPUT_NAME,
             ShaderSourceBundle.Encode(modules, context.serialization),
             cancellationToken,
             AssetDeploymentScope.AuthoringOnly

@@ -3,7 +3,7 @@ using Inno.Core.Graphs;
 using Inno.Editor.Core;
 using Inno.Rendering.Shaders;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 using ImGuiApi = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.ShaderEditor;
@@ -16,16 +16,16 @@ internal sealed partial class ShaderEditorCanvas
     ) {
         var endpoint = new GraphEndpoint(node.id, new(port.id));
         GraphEdgeRecord? edge = controller.document.edges.FirstOrDefault(value => value.input == endpoint);
-        ImGuiApi.PushId(port.id);
+        ImGuiApi.PushID(port.id);
         try
         {
             if (edge is not null)
             {
-                InspectorPortStatusRow("port." + port.id, port, null, "From " + edge.output.nodeId.value + "." + edge.output.portId.value);
+                InspectorPortStatusRow("port." + port.id, port, null, "From " + edge.output.nodeID.value + "." + edge.output.portID.value);
                 return;
             }
 
-            if (node.definitionId == ShaderGraphDocument.outputDefinitionId || draft.missingPorts.Contains(endpoint))
+            if (node.definitionID == ShaderGraphDocument.C_OUTPUT_DEFINITION_ID || draft.missingPorts.Contains(endpoint))
             {
                 InspectorPortStatusRow("port." + port.id, port, null, "Connect an available output");
                 return;
@@ -52,7 +52,7 @@ internal sealed partial class ShaderEditorCanvas
         }
         finally
         {
-            ImGuiApi.PopId();
+            ImGuiApi.PopID();
         }
     }
 

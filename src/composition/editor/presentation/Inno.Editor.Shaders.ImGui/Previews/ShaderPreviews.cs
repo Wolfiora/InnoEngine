@@ -11,7 +11,7 @@ using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 using ImGuiApi = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Shaders.ImGui;
@@ -43,7 +43,7 @@ public sealed class ShaderPreviews : EditorModule
     /// <summary>
     /// Draws detached Material overrides using its Shader's compiled contract.
     /// </summary>
-    /// <param name="ownerId">
+    /// <param name="ownerID">
     /// Persistent document identity; no Material is retained under this identity.
     /// </param>
     /// <param name="material">
@@ -53,7 +53,7 @@ public sealed class ShaderPreviews : EditorModule
     /// Positive square image size in logical pixels.
     /// </param>
     public void DrawMaterial(
-        Guid ownerId,
+        Guid ownerID,
         MaterialAsset material,
         float logicalSize
     ) {
@@ -66,7 +66,7 @@ public sealed class ShaderPreviews : EditorModule
         try
         {
             Draw(
-                ownerId,
+                ownerID,
                 material,
                 m_compilation.RequestArtifact(material.shader, RenderShaderVariant.FromMaterial(material)),
                 logicalSize
@@ -81,7 +81,7 @@ public sealed class ShaderPreviews : EditorModule
     /// <summary>
     /// Draws a compiled draft without modifying the source Shader or its canonical runtime publication.
     /// </summary>
-    /// <param name="ownerId">
+    /// <param name="ownerID">
     /// Persistent document identity, independent of the canonical Shader publication.
     /// </param>
     /// <param name="material">
@@ -94,14 +94,14 @@ public sealed class ShaderPreviews : EditorModule
     /// Positive square image size in logical pixels.
     /// </param>
     public void Draw(
-        Guid ownerId,
+        Guid ownerID,
         MaterialAsset material,
         EditorShaderDraftCompilationSnapshot compilation,
         float logicalSize
     ) {
-        if (ownerId == Guid.Empty)
+        if (ownerID == Guid.Empty)
         {
-            throw new ArgumentException("A preview owner identity is required.", nameof(ownerId));
+            throw new ArgumentException("A preview owner identity is required.", nameof(ownerID));
         }
         ArgumentNullException.ThrowIfNull(material);
         ArgumentNullException.ThrowIfNull(compilation);
@@ -115,9 +115,9 @@ public sealed class ShaderPreviews : EditorModule
             return;
         }
 
-        if (!m_states.TryGetValue(ownerId, out State? state))
+        if (!m_states.TryGetValue(ownerID, out State? state))
         {
-            m_states.Add(ownerId, state = new("shader-preview/" + ownerId.ToString("N")));
+            m_states.Add(ownerID, state = new("shader-preview/" + ownerID.ToString("N")));
         }
         state.frame = m_frame;
         try
@@ -180,12 +180,12 @@ public sealed class ShaderPreviews : EditorModule
     /// <summary>
     /// Releases this document's viewport and scoped GPU publication without touching other consumers.
     /// </summary>
-    /// <param name="ownerId">
+    /// <param name="ownerID">
     /// Closing or disabled preview owner.
     /// </param>
-    public void Release(Guid ownerId)
+    public void Release(Guid ownerID)
     {
-        if (m_states.Remove(ownerId, out State? state))
+        if (m_states.Remove(ownerID, out State? state))
         {
             m_previews.ReleaseRendered(state.viewportID);
         }
@@ -228,7 +228,7 @@ public sealed class ShaderPreviews : EditorModule
     private sealed class State(string viewportID) : IDiagnosticReporter
     {
         internal readonly string viewportID = viewportID;
-        internal readonly Dictionary<(string code, string? semanticId, Guid? objectId), Diagnostic> errors = [];
+        internal readonly Dictionary<(string code, string? semanticID, Guid? objectID), Diagnostic> errors = [];
         internal ulong frame;
 
         /// <summary>
@@ -237,7 +237,7 @@ public sealed class ShaderPreviews : EditorModule
         /// <param name="diagnostic">
         /// The diagnostic consumed by publish; ownership remains with the caller unless explicitly stated otherwise.
         /// </param>
-        public void Publish(Diagnostic diagnostic) => errors[(diagnostic.code, diagnostic.semanticId, diagnostic.objectId)] = diagnostic;
+        public void Publish(Diagnostic diagnostic) => errors[(diagnostic.code, diagnostic.semanticID, diagnostic.objectID)] = diagnostic;
 
         /// <summary>
         /// Resolves the requested stable identity to its current-generation value.
@@ -245,17 +245,17 @@ public sealed class ShaderPreviews : EditorModule
         /// <param name="code">
         /// The code text validated by the resolve operation.
         /// </param>
-        /// <param name="semanticId">
+        /// <param name="semanticID">
         /// The semantic id text validated by the resolve operation.
         /// </param>
-        /// <param name="objectId">
+        /// <param name="objectID">
         /// The object id consumed by resolve; ownership remains with the caller unless explicitly stated otherwise.
         /// </param>
         public void Resolve(
             string code,
-            string? semanticId = null,
-            Guid? objectId = null
-        ) => errors.Remove((code, semanticId, objectId));
+            string? semanticID = null,
+            Guid? objectID = null
+        ) => errors.Remove((code, semanticID, objectID));
 
         /// <summary>
         /// Records errors from the current diagnostic report.
@@ -295,7 +295,7 @@ public sealed class ShaderPreviews : EditorModule
                     .GetTypesWithAttribute<ShaderPreviewProviderAttribute>()
                     .Select(value => value.Resolve(snapshot))
                 ) {
-                    string id = type.GetCustomAttribute<ShaderPreviewProviderAttribute>()!.contractId;
+                    string id = type.GetCustomAttribute<ShaderPreviewProviderAttribute>()!.contractID;
                     if (result.ContainsKey(id))
                     {
                         throw new InvalidOperationException("Duplicate Shader preview contract: " + id);

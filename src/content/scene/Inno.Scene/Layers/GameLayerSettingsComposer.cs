@@ -28,28 +28,28 @@ internal sealed class GameLayerSettingsComposer : ProjectSettingComposer<GameLay
         GameLayerCatalog value
     ) {
         var removedSlots = new List<int>();
-        var removedLocalIds = new List<string>();
+        var removedLocalIDs = new List<string>();
         var upsertSlots = new List<int>();
-        var upsertLocalIds = new List<string>();
+        var upsertLocalIDs = new List<string>();
         var upsertNames = new List<string>();
         for (int index = 0; index < GameLayer.C_MAX_COUNT; index++)
         {
             var layer = new GameLayer(index);
-            ProjectLocalId? baselineID = baseline.GetLocalId(layer);
-            ProjectLocalId? valueID = value.GetLocalId(layer);
+            ProjectLocalID? baselineID = baseline.GetLocalID(layer);
+            ProjectLocalID? valueID = value.GetLocalID(layer);
             string? baselineName = baseline.GetName(layer);
             string? valueName = value.GetName(layer);
-            if (baselineID is ProjectLocalId oldID && oldID != valueID)
+            if (baselineID is ProjectLocalID oldID && oldID != valueID)
             {
                 removedSlots.Add(index);
-                removedLocalIds.Add(oldID.value);
+                removedLocalIDs.Add(oldID.value);
             }
-            if (valueID is ProjectLocalId newID
+            if (valueID is ProjectLocalID newID
                 && (baselineID != valueID
                     || !string.Equals(baselineName, valueName, StringComparison.Ordinal))
             ) {
                 upsertSlots.Add(index);
-                upsertLocalIds.Add(newID.value);
+                upsertLocalIDs.Add(newID.value);
                 upsertNames.Add(valueName!);
             }
         }
@@ -78,9 +78,9 @@ internal sealed class GameLayerSettingsComposer : ProjectSettingComposer<GameLay
         return new GameLayerSettingContribution
         {
             removedSlots = removedSlots.ToArray(),
-            removedLocalIds = removedLocalIds.ToArray(),
+            removedLocalIds = removedLocalIDs.ToArray(),
             upsertSlots = upsertSlots.ToArray(),
-            upsertLocalIds = upsertLocalIds.ToArray(),
+            upsertLocalIds = upsertLocalIDs.ToArray(),
             upsertNames = upsertNames.ToArray(),
             interactionFirstSlots = interactionFirstSlots.ToArray(),
             interactionSecondSlots = interactionSecondSlots.ToArray(),
@@ -119,12 +119,12 @@ internal sealed class GameLayerSettingsComposer : ProjectSettingComposer<GameLay
         IReadOnlyList<ProjectSettingContribution<GameLayerSettingContribution>> contributions
     ) {
         var slotOwners = new string?[GameLayer.C_MAX_COUNT];
-        var localIDOwners = new Dictionary<ProjectLocalId, string>();
+        var localIDOwners = new Dictionary<ProjectLocalID, string>();
         var interactionOwners = new string[GameLayer.C_MAX_COUNT, GameLayer.C_MAX_COUNT];
         for (int index = 0; index < GameLayer.C_MAX_COUNT; index++)
         {
             var layer = new GameLayer(index);
-            if (target.GetLocalId(layer) is ProjectLocalId localID)
+            if (target.GetLocalID(layer) is ProjectLocalID localID)
             {
                 slotOwners[index] = "host";
                 localIDOwners.Add(localID, "host");
@@ -148,13 +148,13 @@ internal sealed class GameLayerSettingsComposer : ProjectSettingComposer<GameLay
         GameLayerCatalog target,
         ProjectSettingContribution<GameLayerSettingContribution> contribution,
         string?[] slotOwners,
-        Dictionary<ProjectLocalId, string> localIDOwners
+        Dictionary<ProjectLocalID, string> localIDOwners
     ) {
         for (int index = 0; index < contribution.value.removedSlots.Length; index++)
         {
             var layer = new GameLayer(contribution.value.removedSlots[index]);
-            var expected = new ProjectLocalId(contribution.value.removedLocalIds[index]);
-            ProjectLocalId? current = target.GetLocalId(layer);
+            var expected = new ProjectLocalID(contribution.value.removedLocalIds[index]);
+            ProjectLocalID? current = target.GetLocalID(layer);
             if (current is null)
             {
                 continue;
@@ -181,14 +181,14 @@ internal sealed class GameLayerSettingsComposer : ProjectSettingComposer<GameLay
         GameLayerCatalog target,
         ProjectSettingContribution<GameLayerSettingContribution> contribution,
         string?[] slotOwners,
-        Dictionary<ProjectLocalId, string> localIDOwners
+        Dictionary<ProjectLocalID, string> localIDOwners
     ) {
         for (int index = 0; index < contribution.value.upsertSlots.Length; index++)
         {
             var layer = new GameLayer(contribution.value.upsertSlots[index]);
-            var localID = new ProjectLocalId(contribution.value.upsertLocalIds[index]);
+            var localID = new ProjectLocalID(contribution.value.upsertLocalIds[index]);
             string name = contribution.value.upsertNames[index];
-            ProjectLocalId? currentID = target.GetLocalId(layer);
+            ProjectLocalID? currentID = target.GetLocalID(layer);
             string? currentName = target.GetName(layer);
             if (currentID == localID && string.Equals(currentName, name, StringComparison.Ordinal))
             {
@@ -210,7 +210,7 @@ internal sealed class GameLayerSettingsComposer : ProjectSettingComposer<GameLay
                 localIDOwners.Remove(localID);
             }
 
-            if (currentID is ProjectLocalId replacedID)
+            if (currentID is ProjectLocalID replacedID)
             {
                 string owner = slotOwners[layer.index] ?? localIDOwners[replacedID];
                 if (!contribution.context.CanOverride(owner))
@@ -223,8 +223,8 @@ internal sealed class GameLayerSettingsComposer : ProjectSettingComposer<GameLay
                 localIDOwners.Remove(replacedID);
             }
             target.DefineLocal(layer, localID, name);
-            slotOwners[layer.index] = contribution.context.contributorId;
-            localIDOwners[localID] = contribution.context.contributorId;
+            slotOwners[layer.index] = contribution.context.contributorID;
+            localIDOwners[localID] = contribution.context.contributorID;
         }
     }
 
@@ -251,15 +251,15 @@ internal sealed class GameLayerSettingsComposer : ProjectSettingComposer<GameLay
                 );
             }
             target.SetInteraction(first, second, value);
-            interactionOwners[first.index, second.index] = contribution.context.contributorId;
-            interactionOwners[second.index, first.index] = contribution.context.contributorId;
+            interactionOwners[first.index, second.index] = contribution.context.contributorID;
+            interactionOwners[second.index, first.index] = contribution.context.contributorID;
         }
     }
 
     private static InvalidOperationException Conflict(
         ProjectSettingContributionContext context,
         string message
-    ) => new($"GameLayer contribution '{context.contributorId}' {message}");
+    ) => new($"GameLayer contribution '{context.contributorID}' {message}");
 }
 
 /// <summary>
@@ -322,7 +322,7 @@ internal sealed class GameLayerSettingContribution : ISerializable
         for (int index = 0; index < removedSlots.Length; index++)
         {
             _ = new GameLayer(removedSlots[index]);
-            _ = new ProjectLocalId(removedLocalIds[index]);
+            _ = new ProjectLocalID(removedLocalIds[index]);
             if (!slots.Add(removedSlots[index]))
             {
                 throw new InvalidOperationException($"GameLayer slot {removedSlots[index]} is removed more than once.");
@@ -332,7 +332,7 @@ internal sealed class GameLayerSettingContribution : ISerializable
         for (int index = 0; index < upsertSlots.Length; index++)
         {
             _ = new GameLayer(upsertSlots[index]);
-            _ = new ProjectLocalId(upsertLocalIds[index]);
+            _ = new ProjectLocalID(upsertLocalIds[index]);
             _ = GameLayerCatalog.NormalizeName(upsertNames[index]);
             if (!slots.Add(upsertSlots[index]))
             {

@@ -5,13 +5,13 @@ using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
 using Inno.Scene;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 
 namespace Inno.Editor.Panel.Hierarchy;
 
-[EditorAction(HierarchyInteractionIds.C_RENAME, priority: 100)]
-[EditorMenu(HierarchyInteractionIds.C_AREA, "Rename", order: 200)]
-[EditorShortcut(HierarchyInteractionIds.C_AREA, KeyCode.F2)]
+[EditorAction(HierarchyInteractionIDs.C_RENAME, priority: 100)]
+[EditorMenu(HierarchyInteractionIDs.C_AREA, "Rename", order: 200)]
+[EditorShortcut(HierarchyInteractionIDs.C_AREA, KeyCode.F2)]
 internal sealed class RenameHierarchyTargetCommand(SceneEdits edits) : EditorPresentationAction<EngineObject, InlineRenamePresentation>
 {
     private string m_buffer = string.Empty;

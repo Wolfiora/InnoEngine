@@ -3,7 +3,7 @@ namespace Inno.Editor.Scripting;
 /// <summary>
 /// Captures the progress and cancellation policy of one editor script request.
 /// </summary>
-/// <param name="operationId">
+/// <param name="operationID">
 /// The request identity within the owning script host.
 /// </param>
 /// <param name="fraction">
@@ -19,7 +19,7 @@ namespace Inno.Editor.Scripting;
 /// Whether this exact operation currently admits cancellation.
 /// </param>
 public readonly record struct EditorScriptCompilationProgress(
-    long operationId,
+    long operationID,
     float fraction,
     string status,
     bool cancellationRequested,

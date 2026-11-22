@@ -80,10 +80,10 @@ public sealed class ProjectSettingsEditor : EditorModule
     public ISerializable Get(ProjectSettingEditor definition)
     {
         ArgumentNullException.ThrowIfNull(definition);
-        if (!m_settings.TryClone(definition.settingId, out ISerializable? setting) || setting is null)
+        if (!m_settings.TryClone(definition.settingID, out ISerializable? setting) || setting is null)
         {
             throw new InvalidOperationException(
-                $"Project setting '{definition.settingId}' has no active runtime definition."
+                $"Project setting '{definition.settingID}' has no active runtime definition."
             );
         }
         definition.ValidateValue(setting);
@@ -108,10 +108,10 @@ public sealed class ProjectSettingsEditor : EditorModule
     public ISerializable GetComposedDefault(ProjectSettingEditor definition)
     {
         ArgumentNullException.ThrowIfNull(definition);
-        if (!m_settings.TryCloneComposedDefault(definition.settingId, out ISerializable? setting) || setting is null)
+        if (!m_settings.TryCloneComposedDefault(definition.settingID, out ISerializable? setting) || setting is null)
         {
             throw new InvalidOperationException(
-                $"Project setting '{definition.settingId}' has no active runtime definition."
+                $"Project setting '{definition.settingID}' has no active runtime definition."
             );
         }
         definition.ValidateValue(setting);
@@ -134,8 +134,8 @@ public sealed class ProjectSettingsEditor : EditorModule
     /// Thrown when <paramref name="values"/> is <see langword="null"/>.
     /// </exception>
     public bool Apply(
-        IReadOnlyDictionary<ProjectSettingId, ISerializable> values,
-        IReadOnlySet<ProjectSettingId>? resets = null
+        IReadOnlyDictionary<ProjectSettingID, ISerializable> values,
+        IReadOnlySet<ProjectSettingID>? resets = null
     ) {
         ArgumentNullException.ThrowIfNull(values);
         byte[] before = m_settings.CaptureDocument();

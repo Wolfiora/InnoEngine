@@ -3,9 +3,9 @@ using Inno.Core.Mathematics;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 using NumericsVector4 = System.Numerics.Vector4;
-using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
 
@@ -13,8 +13,8 @@ internal static unsafe class ComponentFieldDrawer
 {
     internal static float GetWidth(int count)
     {
-        float spacing = Ui.GetLayout().itemSpacing.X;
-        return MathF.Max(1f, (Ui.GetContentRegionAvailable().X - spacing * (count - 1)) / count);
+        float spacing = Gui.GetLayout().itemSpacing.X;
+        return MathF.Max(1f, (Gui.GetContentRegionAvailable().X - spacing * (count - 1)) / count);
     }
 
     internal static bool Float(
@@ -31,7 +31,7 @@ internal static unsafe class ComponentFieldDrawer
         float width
     ) => EditorUI.current.widgets.AxisDragInt(path, label, ref value, width);
 
-    internal static void Next() => Ui.SameLine(0f, -1f);
+    internal static void Next() => Gui.SameLine(0f, -1f);
 }
 
 [PropertyDrawer(typeof(Vector2))]
@@ -303,7 +303,7 @@ internal sealed unsafe class ColorPropertyDrawer : IPropertyDrawer
                                       | ImGuiColorEditFlags.InputRgb
                                       | ImGuiColorEditFlags.DisplayRgb
                                     : ImGuiColorEditFlags.None;
-        if (Ui.ColorEditLinear4($"##{context.path}", ref nativeValue, flags))
+        if (Gui.ColorEditLinear4($"##{context.path}", ref nativeValue, flags))
         {
             context.SetValue(new Color(nativeValue.X, nativeValue.Y, nativeValue.Z, nativeValue.W));
         }

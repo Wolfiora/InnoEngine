@@ -25,7 +25,7 @@ public sealed class ImportSettingsTests
         using var fixture = new Fixture();
         using AssetLoader loader = fixture.CreateLoader();
         ConfiguredAsset asset = Assert.IsType<ConfiguredAsset>(loader.Load(Fixture.path, typeof(ConfiguredAsset)));
-        Guid identity = asset.identity.persistentId;
+        Guid identity = asset.identity.persistentID;
         AssetImportSettingsSnapshot snapshot = loader.GetImportSettings(Fixture.path);
         ConfiguredSettings settings = Assert.IsType<ConfiguredSettings>(snapshot.value);
         Assert.Equal(1, settings.multiplier);
@@ -33,7 +33,7 @@ public sealed class ImportSettingsTests
         Assert.Equal(1, Assert.IsType<ConfiguredSettings>(loader.GetImportSettings(Fixture.path).value).multiplier);
         Assert.True(loader.SaveImportSettings(Fixture.path, settings, snapshot.fingerprint));
         Assert.Equal("7:source", asset.value);
-        Assert.Equal(identity, asset.identity.persistentId);
+        Assert.Equal(identity, asset.identity.persistentID);
         Assert.Equal("source", File.ReadAllText(fixture.sourcePath));
         AssetImportSettingsSnapshot updated = loader.GetImportSettings(Fixture.path);
         Assert.NotEqual(snapshot.fingerprint, updated.fingerprint);
@@ -51,12 +51,12 @@ public sealed class ImportSettingsTests
             Assert.True(loader.Import(Fixture.path));
             AssetImportSettingsSnapshot snapshot = loader.GetImportSettings(Fixture.path);
             Assert.True(loader.SaveImportSettings(Fixture.path, new ConfiguredSettings { multiplier = 12 }, snapshot.fingerprint));
-            identity = loader.Load(Fixture.path, typeof(ConfiguredAsset))!.identity.persistentId;
+            identity = loader.Load(Fixture.path, typeof(ConfiguredAsset))!.identity.persistentID;
         }
         using AssetLoader cold = fixture.CreateLoader("OtherLibrary");
         ConfiguredAsset asset = Assert.IsType<ConfiguredAsset>(cold.Load(Fixture.path, typeof(ConfiguredAsset)));
         Assert.Equal("12:source", asset.value);
-        Assert.Equal(identity, asset.identity.persistentId);
+        Assert.Equal(identity, asset.identity.persistentID);
     }
 
     [Fact]
@@ -139,7 +139,7 @@ public sealed class ImportSettingsTests
             Assert.True(writer.Import(Fixture.path));
         }
         byte[] metadata = File.ReadAllBytes(fixture.sourcePath + ".imeta");
-        var source = new AssetSourceId("tests.readonly.settings");
+        var source = new AssetSourceID("tests.readonly.settings");
         using AssetLoader reader = fixture.CreateReadOnlyLoader(source);
         var path = new AssetPath(source, "value.configured");
         AssetImportSettingsSnapshot snapshot = reader.GetImportSettings(path);
@@ -202,7 +202,7 @@ public sealed class ImportSettingsTests
         internal AssetLoader CreateLoader(string library = "Library")
             => new(m_types, m_serialization, m_identities, m_diagnostics, m_logs, assetRoot, Path.Combine(m_root, library));
 
-        internal AssetLoader CreateReadOnlyLoader(AssetSourceId id)
+        internal AssetLoader CreateReadOnlyLoader(AssetSourceID id)
             => new(
                 m_types,
                 m_serialization,
@@ -210,7 +210,7 @@ public sealed class ImportSettingsTests
                 m_diagnostics,
                 m_logs,
                 [
-                    new AssetSourceMount(AssetSourceId.project, Path.Combine(m_root, "EmptyProject"), false),
+                    new AssetSourceMount(AssetSourceID.project, Path.Combine(m_root, "EmptyProject"), false),
                     new AssetSourceMount(id, assetRoot, true)
                 ],
                 Path.Combine(m_root, "ReadOnlyLibrary")
@@ -218,7 +218,7 @@ public sealed class ImportSettingsTests
     }
 }
 
-[StableTypeId("f58eaeea-4bd5-4f3a-a7c0-c5a5414a6bb4")]
+[StableTypeID("f58eaeea-4bd5-4f3a-a7c0-c5a5414a6bb4")]
 internal sealed class ConfiguredSettings : ISerializable
 {
     [SerializableProperty]
@@ -228,7 +228,7 @@ internal sealed class ConfiguredSettings : ISerializable
     internal TextAsset? lookup { get; set; }
 }
 
-[StableTypeId("bdb3db71-e9cb-4d46-839b-3cbe302c5555")]
+[StableTypeID("bdb3db71-e9cb-4d46-839b-3cbe302c5555")]
 internal sealed class ConfiguredAsset : AssetObject
 {
     [SerializableProperty]

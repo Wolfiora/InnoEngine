@@ -24,5 +24,5 @@ namespace Inno.Adapter.Platform;
 public readonly record struct PlatformNativeHandles(
     nint windowHandle,
     nint displayHandle = default,
-    PlatformNativeHandleId handleKind = default
+    PlatformNativeHandleID handleKind = default
 );

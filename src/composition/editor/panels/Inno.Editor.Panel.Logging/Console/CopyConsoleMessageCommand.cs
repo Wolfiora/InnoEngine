@@ -1,13 +1,13 @@
 using Inno.Core.Input;
 using Inno.Editor.Interactions;
 
-using Ui = Inno.Editor.ImGui.ImGui;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Logging;
 
-[EditorAction(LoggingInteractionIds.C_COPY_MESSAGE, LoggingInteractionIds.C_ENTRY_AREA)]
-[EditorMenu(LoggingInteractionIds.C_ENTRY_AREA, "Copy Message", order: 100)]
-[EditorShortcut(LoggingInteractionIds.C_ENTRY_AREA, KeyCode.C, primary: true)]
+[EditorAction(LoggingInteractionIDs.C_COPY_MESSAGE, LoggingInteractionIDs.C_ENTRY_AREA)]
+[EditorMenu(LoggingInteractionIDs.C_ENTRY_AREA, "Copy Message", order: 100)]
+[EditorShortcut(LoggingInteractionIDs.C_ENTRY_AREA, KeyCode.C, primary: true)]
 internal sealed class CopyConsoleMessageCommand : EditorAction<ConsoleEntryCopyTarget>
 {
     /// <summary>
@@ -16,5 +16,5 @@ internal sealed class CopyConsoleMessageCommand : EditorAction<ConsoleEntryCopyT
     /// <param name="context">
     /// The operation scope that provides state, services, and ownership boundaries.
     /// </param>
-    protected override void Execute(EditorActionContext<ConsoleEntryCopyTarget> context) => Ui.SetClipboardText(context.target.message);
+    protected override void Execute(EditorActionContext<ConsoleEntryCopyTarget> context) => Gui.SetClipboardText(context.target.message);
 }

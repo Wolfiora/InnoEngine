@@ -67,9 +67,9 @@ public sealed class TextServiceTests : IDisposable
 
         Assert.Equal(1, font.metadata!.Value.faceCount);
         Assert.Equal(source.Length, font.metadata.Value.encodedByteLength);
-        Assert.True(loader.TryGetArtifact(font.identity.persistentId, "font-data", out AssetArtifactInfo? data));
+        Assert.True(loader.TryGetArtifact(font.identity.persistentID, "font-data", out AssetArtifactInfo? data));
         Assert.NotNull(data);
-        using ArtifactLease encoded = loader.AcquireArtifact(font.identity.persistentId, "font-data");
+        using ArtifactLease encoded = loader.AcquireArtifact(font.identity.persistentID, "font-data");
         Assert.Equal(source, encoded.ReadAllBytes());
     }
 
@@ -84,7 +84,7 @@ public sealed class TextServiceTests : IDisposable
         Assert.NotEmpty(layout.glyphs);
         Assert.True(layout.width > 0f);
         Assert.True(layout.metrics.lineHeight > 0f);
-        GlyphBitmap bitmap = backend.Rasterize(font, layout.glyphs[0].glyphId, 28f);
+        GlyphBitmap bitmap = backend.Rasterize(font, layout.glyphs[0].glyphID, 28f);
         Assert.True(bitmap.width > 0);
         Assert.True(bitmap.height > 0);
         Assert.Equal(bitmap.width * bitmap.height, bitmap.pixels.Length);

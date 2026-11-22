@@ -17,7 +17,7 @@ public sealed class UIRuntimeTests
     public void FrameScopeCapturesInputAndBindsTheScriptFacade()
     {
         var backend = new CapturingBackend();
-        using var runtime = new UiRuntime(backend, new RejectingArtifacts());
+        using var runtime = new UIRuntime(backend, new RejectingArtifacts());
         var snapshot = new InputSnapshot(
             7,
             keysPressed: [KeyCode.Enter],
@@ -32,15 +32,15 @@ public sealed class UIRuntimeTests
         runtime.Attach();
 
         runtime.BeginFrame(frame);
-        UI.Update(new UiContextHandle(10));
+        UI.Update(new UIContextHandle(10));
 
-        UiInputSnapshot captured = Assert.IsType<UiInputSnapshot>(backend.lastInput);
+        UIInputSnapshot captured = Assert.IsType<UIInputSnapshot>(backend.lastInput);
         Assert.Equal(new Vector2(12f, 34f), captured.mousePosition);
         Assert.Contains(KeyCode.Enter, captured.keysPressed);
         Assert.Contains(MouseButton.Left, captured.buttonsReleased);
         Assert.Equal("界", Assert.Single(captured.textInput));
         runtime.EndFrame(frame);
-        Assert.Throws<InvalidOperationException>(() => _ = UiExecutionContext.current);
+        Assert.Throws<InvalidOperationException>(() => _ = UIExecutionContext.current);
     }
 
     private sealed class FixedInput(InputSnapshot snapshot) : IInputService
@@ -51,12 +51,12 @@ public sealed class UIRuntimeTests
     private sealed class RejectingArtifacts : IAssetArtifactLookup
     {
         public ArtifactLease AcquireArtifact(
-            Guid persistentId,
+            Guid persistentID,
             string outputName
         ) => throw new InvalidOperationException("No asset access was expected.");
 
         public bool TryGetArtifact(
-            Guid persistentId,
+            Guid persistentID,
             string outputName,
             out AssetArtifactInfo? artifact
         ) {
@@ -65,96 +65,96 @@ public sealed class UIRuntimeTests
         }
     }
 
-    private sealed class CapturingBackend : IUiBackend
+    private sealed class CapturingBackend : IUIBackend
     {
-        public string implementationId => "tests.ui";
-        public UiBackendCapabilities capabilities { get; } = new([new("tests.ui-language")], true);
+        public string implementationID => "tests.ui";
+        public UIBackendCapabilities capabilities { get; } = new([new("tests.ui-language")], true);
 
-        public UiContextHandle CreateContext(UiContextOptions options) => new(1);
+        public UIContextHandle CreateContext(UIContextOptions options) => new(1);
 
-        public void DestroyContext(UiContextHandle context) {}
+        public void DestroyContext(UIContextHandle context) {}
 
         public void SetViewport(
-            UiContextHandle context,
+            UIContextHandle context,
             int width,
             int height,
             float density
         ) {}
 
-        public UiDocumentHandle LoadDocument(
-            UiContextHandle context,
-            UiDocumentSource source
+        public UIDocumentHandle LoadDocument(
+            UIContextHandle context,
+            UIDocumentSource source
         ) => new(1);
 
         public void ShowDocument(
-            UiContextHandle context,
-            UiDocumentHandle document
+            UIContextHandle context,
+            UIDocumentHandle document
         ) {}
 
         public void HideDocument(
-            UiContextHandle context,
-            UiDocumentHandle document
+            UIContextHandle context,
+            UIDocumentHandle document
         ) {}
 
         public void CloseDocument(
-            UiContextHandle context,
-            UiDocumentHandle document
+            UIContextHandle context,
+            UIDocumentHandle document
         ) {}
 
         public bool SetText(
-            UiContextHandle context,
-            UiDocumentHandle document,
-            string elementId,
+            UIContextHandle context,
+            UIDocumentHandle document,
+            string elementID,
             string text
         ) => true;
 
         public bool SetContent(
-            UiContextHandle context,
-            UiDocumentHandle document,
-            string elementId,
-            UiDocumentFragment content
+            UIContextHandle context,
+            UIDocumentHandle document,
+            string elementID,
+            UIDocumentFragment content
         ) => true;
 
         public bool SetAttribute(
-            UiContextHandle context,
-            UiDocumentHandle document,
-            string elementId,
+            UIContextHandle context,
+            UIDocumentHandle document,
+            string elementID,
             string name,
             string value
         ) => true;
 
         public bool SetClass(
-            UiContextHandle context,
-            UiDocumentHandle document,
-            string elementId,
+            UIContextHandle context,
+            UIDocumentHandle document,
+            string elementID,
             string className,
             bool active
         ) => true;
 
-        public void RegisterFont(UiFontRegistration registration) {}
+        public void RegisterFont(UIFontRegistration registration) {}
 
         public void RegisterTexture(
-            UiContextHandle context,
+            UIContextHandle context,
             string source,
-            UiTextureData texture
+            UITextureData texture
         ) {}
 
         public bool HasElementAtPoint(
-            UiContextHandle context,
+            UIContextHandle context,
             Vector2 position
         ) => false;
 
         public void Update(
-            UiContextHandle context,
-            UiInputSnapshot input
+            UIContextHandle context,
+            UIInputSnapshot input
         ) => lastInput = input;
 
-        public UiRenderFrame Render(UiContextHandle context) => UiRenderFrame.empty;
+        public UIRenderFrame Render(UIContextHandle context) => UIRenderFrame.empty;
 
-        public IReadOnlyList<UiEvent> DrainEvents(UiContextHandle context) => [];
+        public IReadOnlyList<UIEvent> DrainEvents(UIContextHandle context) => [];
 
         public void Dispose() {}
 
-        internal UiInputSnapshot? lastInput { get; private set; }
+        internal UIInputSnapshot? lastInput { get; private set; }
     }
 }

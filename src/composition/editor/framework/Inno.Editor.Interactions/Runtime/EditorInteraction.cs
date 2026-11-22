@@ -53,7 +53,7 @@ public readonly struct EditorInteraction
     /// <returns>
     /// <see langword="true"/> when the built-in selection action executed; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool Select() => Execute(target is null ? EditorBuiltInInteractionIds.C_CLEAR_SELECTION : EditorBuiltInInteractionIds.C_SELECT);
+    public bool Select() => Execute(target is null ? EditorBuiltInInteractionIDs.C_CLEAR_SELECTION : EditorBuiltInInteractionIDs.C_SELECT);
 
     /// <summary>
     /// Queries an action for this area and target.

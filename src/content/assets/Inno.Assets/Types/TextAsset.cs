@@ -7,7 +7,7 @@ namespace Inno.Assets;
 /// <summary>
 /// Stores decoded text content and its language hint.
 /// </summary>
-[StableTypeId("907c91cf-215b-42f4-9243-26d9666b231a")]
+[StableTypeID("907c91cf-215b-42f4-9243-26d9666b231a")]
 public sealed class TextAsset : AssetObject
 {
     /// <summary>

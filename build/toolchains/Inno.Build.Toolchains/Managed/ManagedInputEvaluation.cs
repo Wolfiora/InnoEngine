@@ -79,7 +79,7 @@ internal sealed class ManagedInputEvaluation : IDisposable
         ).ConfigureAwait(false);
         try
         {
-            string? target = properties.TryGetValue("InnoNativeTarget", out string? selected) ? selected : context.toolchain?.targetId;
+            string? target = properties.TryGetValue("InnoNativeTarget", out string? selected) ? selected : context.toolchain?.targetID;
             cache.BeginWorkingDirectory(directory, directory + ".lock", target, cancellation);
             Dictionary<string, string> isolated = properties.ToDictionary(
                 static pair => pair.Key,

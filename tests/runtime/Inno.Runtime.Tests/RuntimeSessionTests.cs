@@ -114,12 +114,12 @@ public sealed class RuntimeSessionTests : IDisposable
         using EngineHost host = CreateHost("Features");
         var events = new List<string>();
         var first = new ProbeFeatureFactory("tests.first", [], events);
-        var second = new ProbeFeatureFactory("tests.second", [new RuntimeSubsystemId("tests.first")], events);
+        var second = new ProbeFeatureFactory("tests.second", [new RuntimeSubsystemID("tests.first")], events);
         RuntimeSessionOptions baseline = CreateOptions("features", RuntimeSessionKind.Play);
         var options = new RuntimeSessionOptions
         {
             kind = baseline.kind,
-            applicationId = baseline.applicationId,
+            applicationID = baseline.applicationID,
             createLogSink = baseline.createLogSink,
             fixedDeltaTime = baseline.fixedDeltaTime,
             jobExecutionMode = baseline.jobExecutionMode,
@@ -162,12 +162,12 @@ public sealed class RuntimeSessionTests : IDisposable
     {
         using EngineHost host = CreateHost("References");
         RuntimeSessionOptions baseline = CreateOptions("references", RuntimeSessionKind.Play);
-        var kind = new ReferenceKindId("tests.runtime.reference");
+        var kind = new ReferenceKindID("tests.runtime.reference");
         var resolver = new MissingResolver(kind);
         var options = new RuntimeSessionOptions
         {
             kind = baseline.kind,
-            applicationId = baseline.applicationId,
+            applicationID = baseline.applicationID,
             createLogSink = baseline.createLogSink,
             assetResidencyBudgetBytes = 4096,
             fixedDeltaTime = baseline.fixedDeltaTime,
@@ -219,7 +219,7 @@ public sealed class RuntimeSessionTests : IDisposable
     ) => new()
     {
         kind = kind,
-        applicationId = applicationID,
+        applicationID = applicationID,
         createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(m_root, "Persistent", applicationID), "Logs")),
         fixedDeltaTime = 0.02f,
         jobExecutionMode = RuntimeJobExecutionMode.SingleThread
@@ -227,12 +227,12 @@ public sealed class RuntimeSessionTests : IDisposable
 
     private sealed class ProbeFeatureFactory(
         string id,
-        IReadOnlyList<RuntimeSubsystemId> dependencies,
+        IReadOnlyList<RuntimeSubsystemID> dependencies,
         List<string> events
     ) : IRuntimeSubsystemFactory
     {
         public RuntimeSubsystemDescriptor descriptor { get; } = new(
-            new RuntimeSubsystemId(id),
+            new RuntimeSubsystemID(id),
             dependencies: dependencies
         );
 
@@ -268,9 +268,9 @@ public sealed class RuntimeSessionTests : IDisposable
         }
     }
 
-    private sealed class MissingResolver(ReferenceKindId kind) : IReferenceResolver
+    private sealed class MissingResolver(ReferenceKindID kind) : IReferenceResolver
     {
-        public ReferenceKindId kindId { get; } = kind;
+        public ReferenceKindID kindID { get; } = kind;
 
         public ReferenceResolution Resolve(ReferenceDescriptor descriptor)
             => new(descriptor, ReferenceResolutionState.Missing);

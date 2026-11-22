@@ -92,7 +92,7 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
             new FileByteDocumentStore(Path.GetFullPath(Path.Combine(m_projectRoot, "Settings.Project.inno"))),
             m_engine.types,
             m_engine.serialization,
-            new ProjectId("tests.build"),
+            new ProjectID("tests.build"),
             AssetSerializationContext.Create(m_assets)
         );
         m_plugins = new PluginEnvironment(
@@ -164,7 +164,7 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
                     m_engine.serialization,
                     m_engine.types,
                     MacOSArm64BgfxIntegration.shaderProfile,
-                    [GraphicsApi.Metal],
+                    [GraphicsApi.metal],
                     new ToolRunner()
                 )
             ),
@@ -176,10 +176,10 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
                     m_engine.types,
                     WindowsX64BgfxIntegration.shaderProfile,
                     [
-                        GraphicsApi.Direct3D11,
-                        GraphicsApi.Direct3D12,
-                        GraphicsApi.Vulkan,
-                        GraphicsApi.OpenGL
+                        GraphicsApi.direct3D11,
+                        GraphicsApi.direct3D12,
+                        GraphicsApi.vulkan,
+                        GraphicsApi.openGL
                     ],
                     new ToolRunner()
                 )
@@ -190,7 +190,7 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
     );
 
     protected static BuildProfile CreateProfile(
-        BuildTargetId target,
+        BuildTargetID target,
         string productName = "Test Game"
     ) => new()
     {
@@ -226,7 +226,7 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
             );
         }
 
-        public ManagedDeploymentId id => ManagedDeploymentId.coreClr;
+        public ManagedDeploymentID id => ManagedDeploymentID.coreClr;
 
         public ManagedDeploymentCapabilities capabilities { get; }
 
@@ -265,7 +265,7 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
         private readonly TaskCompletionSource m_completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public ValueTask ProvisionAsync(
-            BuildTargetId target,
+            BuildTargetID target,
             string supportPackRoot,
             CancellationToken cancellationToken = default
         ) => new(m_completion.Task.WaitAsync(cancellationToken));
@@ -279,7 +279,7 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
         public bool completed { get; private set; }
 
         public async ValueTask ProvisionAsync(
-            BuildTargetId target,
+            BuildTargetID target,
             string supportPackRoot,
             CancellationToken cancellationToken = default
         ) {
@@ -291,12 +291,12 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
         }
     }
 
-    protected sealed class TestSupportPackProvisioner(Action<BuildTargetId> provision) : IPlayerSupportPackProvisioner
+    protected sealed class TestSupportPackProvisioner(Action<BuildTargetID> provision) : IPlayerSupportPackProvisioner
     {
         public int callCount { get; private set; }
 
         public ValueTask ProvisionAsync(
-            BuildTargetId target,
+            BuildTargetID target,
             string supportPackRoot,
             CancellationToken cancellationToken = default
         ) {
@@ -314,10 +314,10 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
 
         public TaskCompletionSource release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public BuildTargetId id => new BuildTargetId("macos-arm64");
-        public BuildTargetId target => id;
+        public BuildTargetID id => new BuildTargetID("macos-arm64");
+        public BuildTargetID target => id;
 
-        public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.coreClr;
+        public ManagedDeploymentID defaultManagedDeployment => ManagedDeploymentID.coreClr;
 
         public string runtimeIdentifier => "osx-arm64";
 

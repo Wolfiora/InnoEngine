@@ -81,7 +81,7 @@ public sealed partial class AssetLoader
         ISerializable? defaults = importer.CreateImportSettings();
         if (settings is not null && (defaults is null || settings.GetType() != defaults.GetType()))
         {
-            throw new ArgumentException($"Settings do not match importer '{importer.importerId}'.", nameof(settings));
+            throw new ArgumentException($"Settings do not match importer '{importer.importerID}'.", nameof(settings));
         }
         byte[] encoded = settings is null ? [] : CaptureImportSettingsLocked(settings, normalized, null);
         string metaPath = GetMetaPath(normalized);
@@ -94,11 +94,11 @@ public sealed partial class AssetLoader
                                  ? new AssetSourceMeta
                                  {
                                      persistentId = FindRecordLocked(normalized)?.persistentID ?? Guid.NewGuid(),
-                                     importerId = importer.importerId
+                                     importerId = importer.importerID
                                  }
                                  : m_serialization.Deserialize<AssetSourceMeta>(metadata);
         if (source.persistentId == Guid.Empty
-            || !string.Equals(source.importerId, importer.importerId, StringComparison.Ordinal)
+            || !string.Equals(source.importerId, importer.importerID, StringComparison.Ordinal)
         ) {
             throw new InvalidDataException($"Source metadata for '{normalized}' does not match its importer.");
         }
@@ -157,9 +157,9 @@ public sealed partial class AssetLoader
         }
         AssetSourceMeta source = m_serialization.Deserialize<AssetSourceMeta>(metadata);
         if (source.importerSettingsBytes.Length > 0
-            && !string.Equals(source.importerId, importer.importerId, StringComparison.Ordinal)
+            && !string.Equals(source.importerId, importer.importerID, StringComparison.Ordinal)
         ) {
-            throw new InvalidDataException($"Stored import settings belong to '{source.importerId}', not '{importer.importerId}'.");
+            throw new InvalidDataException($"Stored import settings belong to '{source.importerId}', not '{importer.importerID}'.");
         }
         return source.importerSettingsBytes;
     }
@@ -176,11 +176,11 @@ public sealed partial class AssetLoader
         {
             if (bytes.Length != 0)
             {
-                throw new InvalidDataException($"Importer '{importer.importerId}' no longer declares the persisted settings type.");
+                throw new InvalidDataException($"Importer '{importer.importerID}' no longer declares the persisted settings type.");
             }
             return null;
         }
-        Guid typeID = m_types.GetTypeRef(value.GetType()).stableId;
+        Guid typeID = m_types.GetTypeRef(value.GetType()).stableID;
         if (bytes.Length > 0)
         {
             SerializedImportSettings saved = m_serialization.Deserialize<SerializedImportSettings>(bytes);
@@ -214,7 +214,7 @@ public sealed partial class AssetLoader
         DeclareSettingsDependenciesLocked(descriptors, ownerPath, context);
         return m_serialization.Serialize(new SerializedImportSettings
         {
-            stableTypeId = m_types.GetTypeRef(settings.GetType()).stableId,
+            stableTypeId = m_types.GetTypeRef(settings.GetType()).stableID,
             properties = properties,
             dependencies = descriptors
         });
@@ -227,14 +227,14 @@ public sealed partial class AssetLoader
     ) {
         foreach (AssetDependency dependency in dependencies)
         {
-            AssetRecord? record = FindRecordByIDWithoutLoading(dependency.persistentId);
+            AssetRecord? record = FindRecordByIDWithoutLoading(dependency.persistentID);
             string path = record?.relativePath ?? dependency.lastKnownPath;
             if (!string.IsNullOrWhiteSpace(path))
             {
                 ValidateSourceReferenceLocked(ownerPath, NormalizeRelativePath(path));
                 context?.DependsOnSource(AssetPath.Parse(path));
             }
-            context?.DependsOnArtifact(dependency.persistentId);
+            context?.DependsOnArtifact(dependency.persistentID);
         }
     }
 

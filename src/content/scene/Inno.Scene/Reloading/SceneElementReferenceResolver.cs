@@ -9,30 +9,30 @@ internal sealed class SceneElementReferenceResolver(
     TypeCacheSnapshot types
 ) : IReferenceResolver
 {
-    ReferenceKindId IReferenceResolver.kindId => id;
+    ReferenceKindID IReferenceResolver.kindID => id;
 
     ReferenceResolution IReferenceResolver.Resolve(ReferenceDescriptor descriptor)
     {
-        EngineObject? target = world.Find<EngineObject>(descriptor.targetPersistentId);
+        EngineObject? target = world.Find<EngineObject>(descriptor.targetPersistentID);
         if (target is null || target.isDestroyed || target is MissingGameComponent or MissingGameSystem)
         {
             return new ReferenceResolution(
                 descriptor,
                 ReferenceResolutionState.Missing,
-                diagnostic: $"Scene element '{descriptor.targetPersistentId:D}' or its type is unavailable."
+                diagnostic: $"Scene element '{descriptor.targetPersistentID:D}' or its type is unavailable."
             );
         }
-        if (descriptor.expectedStableTypeId != Guid.Empty
-            && types.GetTypeRef(target.GetType()).stableId != descriptor.expectedStableTypeId
+        if (descriptor.expectedStableTypeID != Guid.Empty
+            && types.GetTypeRef(target.GetType()).stableID != descriptor.expectedStableTypeID
         ) {
             return new ReferenceResolution(
                 descriptor,
                 ReferenceResolutionState.TypeMismatch,
-                diagnostic: $"Scene element '{descriptor.targetPersistentId:D}' does not implement stable type '{descriptor.expectedStableTypeId:D}'."
+                diagnostic: $"Scene element '{descriptor.targetPersistentID:D}' does not implement stable type '{descriptor.expectedStableTypeID:D}'."
             );
         }
         return new ReferenceResolution(descriptor, ReferenceResolutionState.Resolved, target.identity.runtimeIdentity);
     }
 
-    internal static ReferenceKindId id { get; } = new("inno.reference.scene-element");
+    internal static ReferenceKindID id { get; } = new("inno.reference.scene-element");
 }

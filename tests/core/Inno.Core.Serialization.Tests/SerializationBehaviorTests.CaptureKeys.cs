@@ -86,7 +86,7 @@ public sealed partial class SerializationBehaviorTests
         var original = new CaptureKeyRoot();
         var replacement = new CaptureKeyRoot();
         Assert.True(first.Register(original));
-        Assert.True(second.Register(replacement, original.identity.persistentId));
+        Assert.True(second.Register(replacement, original.identity.persistentID));
         SerializationSnapshot before = m_serialization.CaptureSnapshot(original);
         SerializationSnapshot changed = m_serialization.CaptureSnapshot(replacement, previous: before);
         Assert.NotSame(before, changed);
