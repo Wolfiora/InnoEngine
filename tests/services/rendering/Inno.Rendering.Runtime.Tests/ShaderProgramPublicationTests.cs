@@ -1,13 +1,32 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Assets;
+using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
+using Inno.Core.Identity;
+using Inno.Core.Input;
+using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Reload;
+using Inno.Extensibility.Types;
+using Inno.Input;
+using Inno.References;
+using Inno.Rendering;
 using Inno.Rendering.Assets;
+using Inno.Testing.Source;
 
 namespace Inno.Rendering.Runtime.Tests;
 
-public sealed partial class RenderRuntimeGenerationTests
+[Collection(nameof(RenderRuntimeFixture))]
+public sealed class ShaderProgramPublicationTests : RenderRuntimeFixture
 {
     [Fact]
     public void ExplicitArtifactScopesDoNotPublishIntoCanonicalMaterialCachesAndReleaseIndependently()

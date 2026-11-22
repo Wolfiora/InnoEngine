@@ -6,15 +6,29 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Xunit;
 using Inno.Adapter.Modules.DotNet;
+using Inno.Assets;
+using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
+using Inno.Core.Identity;
+using Inno.Core.Input;
+using Inno.Core.Mathematics;
+using Inno.Core.Serialization;
+using Inno.Extensibility.Modules;
 using Inno.Extensibility.Reload;
+using Inno.Input;
+using Inno.References;
 using Inno.Rendering;
+using Inno.Rendering.Assets;
+using Inno.Runtime.Contracts;
 using Inno.Testing.Source;
 
 namespace Inno.Rendering.Runtime.Tests;
 
-public sealed partial class RenderRuntimeGenerationTests
+[Collection(nameof(RenderRuntimeFixture))]
+public sealed class RenderContributorTests : RenderRuntimeFixture
 {
     [Theory]
     [InlineData(false)]
@@ -148,7 +162,7 @@ public sealed partial class RenderRuntimeGenerationTests
         Assert.Equal(C_FRAMES + 16, proxy.endFrameCount);
         Assert.Equal(contributorCount != 0 && !fail ? C_FRAMES + 16 : 0, proxy.executeCount);
         string directory = Path.Combine(
-            TestRepository.GetRoot(typeof(RenderRuntimeGenerationTests).Assembly),
+            TestRepository.GetRoot(typeof(RenderRuntimeFixture).Assembly),
             "artifacts/acceptance/architecture-cleanup/results"
         );
         Directory.CreateDirectory(directory);
@@ -208,7 +222,7 @@ public sealed partial class RenderRuntimeGenerationTests
         Assert.Equal(contributorCount == 0 ? 0 : C_CYCLES + 16, proxy.executeCount);
 
         string directory = Path.Combine(
-            TestRepository.GetRoot(typeof(RenderRuntimeGenerationTests).Assembly),
+            TestRepository.GetRoot(typeof(RenderRuntimeFixture).Assembly),
             "artifacts/acceptance/architecture-cleanup/results"
         );
         Directory.CreateDirectory(directory);

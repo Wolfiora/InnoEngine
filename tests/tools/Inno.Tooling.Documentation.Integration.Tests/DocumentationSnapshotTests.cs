@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -13,57 +12,9 @@ using Inno.Core.IO;
 
 namespace Inno.Tooling.Documentation.Integration.Tests;
 
-public sealed class DocumentationSnapshotTests : IDisposable
+[Collection(nameof(DocumentationSnapshotFixture))]
+public sealed class DocumentationSnapshotTests : DocumentationSnapshotFixture
 {
-    private const string C_SYMBOL = "M:Inno.Probe.Read(System.String)";
-    private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoDocumentationSnapshots", Guid.NewGuid().ToString("N"));
-
-    public DocumentationSnapshotTests()
-    {
-        byte[] projects = JsonSerializer.SerializeToUtf8Bytes(new[]
-        {
-            new
-            {
-                name = "Inno.Probe",
-                path = "src/Inno.Probe.csproj",
-                entry = "probe",
-                surfaces = new[] { "host-runtime", "runtime-script" }
-            }
-        });
-        Write("reference/projects/catalog.json", Encoding.UTF8.GetString(projects));
-        Write(
-            "reference/engine.lock.json",
-            JsonSerializer.Serialize(new
-            {
-                repository = "https://github.com/Wolfiora/InnoEngine",
-                revision = new string('a', 40),
-                sourceTree = new string('b', 40),
-                projectManifest = "reference/projects/catalog.json",
-                projectManifestIdentity = Hash(projects),
-                toolingRevision = new string('a', 40)
-            })
-        );
-        Write(
-            "content/en/probe.md",
-            Page(
-                "probe",
-                "Probe",
-                "## Ownership\n\nBorrow the lease; the owner releases it after the final consumer.\n",
-                "kind: project\nowners: [Inno.Probe]\naliases: [ProbeStyle, 控制台颜色]\n"
-            )
-        );
-        Write("content/en/api.md", Api("probe-api", "host-runtime"));
-    }
-
-    public void Dispose()
-    {
-        // All test-owned sessions are disposed before removing this uniquely allocated fixture boundary.
-        if (Directory.Exists(m_root))
-        {
-            Directory.Delete(m_root, recursive: true);
-        }
-    }
-
     [Fact]
     public async Task RestoredImmutablePayloadsAcquireLocalOwnershipBeforeOpening()
     {
@@ -88,37 +39,6 @@ public sealed class DocumentationSnapshotTests : IDisposable
         // Confirming an already protected snapshot must not wait on its reading lease.
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(20));
         Assert.Equal(restored.snapshot, (await DocumentationStore.IndexAsync(m_root, source, imported, cancellation.Token)).snapshot);
-    }
-
-    [Fact]
-    public async Task PlatformInventoryDoesNotRequireOrExposeImplementationGuides()
-    {
-        JsonNode projects = JsonNode.Parse(File.ReadAllText(Path.Combine(source, "reference/projects/catalog.json")))!;
-        JsonNode platform = projects[0]!.DeepClone();
-        platform["name"] = "Inno.Platform.Probe";
-        platform["path"] = "platforms/Probe/Inno.Platform.Probe.csproj";
-        platform["entry"] = null;
-        projects.AsArray().Add(platform);
-        string text = projects.ToJsonString();
-        Write("reference/projects/catalog.json", text);
-        JsonNode binding = JsonNode.Parse(File.ReadAllText(Path.Combine(source, "reference/engine.lock.json")))!;
-        binding["projectManifestIdentity"] = Hash(Encoding.UTF8.GetBytes(text));
-        Write("reference/engine.lock.json", binding.ToJsonString());
-        DocumentationResult indexed = await IndexAsync();
-        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
-        DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
-        Assert.Contains("Inno.Probe", catalog.projects.Keys);
-        Assert.DoesNotContain("Inno.Platform.Probe", catalog.projects.Keys);
-        Write(
-            "content/en/platform.md",
-            Page(
-                "platform",
-                "Platform implementation",
-                "Platform-specific internals.",
-                "kind: project\nowners: [Inno.Platform.Probe]\n"
-            )
-        );
-        await Assert.ThrowsAsync<InvalidDataException>(IndexAsync);
     }
 
     [Fact]
@@ -230,63 +150,6 @@ public sealed class DocumentationSnapshotTests : IDisposable
         Assert.False(File.Exists(Path.Combine(cache, "current.json")));
     }
 
-    [Fact]
-    public async Task CatalogUsesThePreparedSnapshotAndReportsMissingProjectCoverage()
-    {
-        await IndexAsync();
-        using DocumentationSnapshot initial = await DocumentationStore.OpenAsync(cache);
-        DocumentationCatalogReport first = await initial.ExportCatalogAsync();
-        Assert.Equal("probe", first.projects["Inno.Probe"]);
-        DocumentationPageInfo page = Assert.Single(first.pages, item => item.id == "probe");
-        Assert.Contains("ownership", page.sections.Keys);
-        Assert.Equal("Unverified", first.sourceApiStatus);
-        DocumentationSymbolInfo symbol = Assert.Single(first.pages, item => item.id == "probe-api").symbols[C_SYMBOL];
-        Assert.Equal(new string('a', 64), symbol.signatureIdentity);
-        Assert.Contains("Read(string key)", symbol.code);
-        Directory.Move(source, Path.Combine(m_root, "unavailable-source"));
-        DocumentationCatalogReport repeated = await initial.ExportCatalogAsync();
-        Assert.Equal(first.contentIdentity, repeated.contentIdentity);
-        Assert.Equal(first.pages.Select(item => item.contentIdentity), repeated.pages.Select(item => item.contentIdentity));
-        using DocumentationSnapshot mismatch = await DocumentationStore.OpenAsync(cache, expectedSourceTree: new string('c', 40));
-        await Assert.ThrowsAsync<InvalidOperationException>(() => mismatch.ExportCatalogAsync());
-    }
-
-    [Fact]
-    public async Task CatalogPreservesSectionDeclarationsWithoutTreatingExamplesAsCertification()
-    {
-        const string C_DECLARATION = "public string? Read(string key = \"default\");";
-        Write(
-            "content/en/api.md",
-            Page(
-                "probe-api",
-                "Probe API",
-                "## Read\n\n<!-- api: " + C_SYMBOL + " " + Hash(Encoding.UTF8.GetBytes(C_DECLARATION))
-                + " -->\n\n```csharp\n" + C_DECLARATION + "\n```\n\nThe caller retains ownership.\n"
-                + "\n## Other task\n\n```csharp\nUnrelatedExample();\n```\n",
-                "kind: api\nowners: [Inno.Probe]\napiSurface: host-runtime\ncontracts: [probe#ownership]\n"
-            )
-        );
-        await IndexAsync();
-        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
-        DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
-        DocumentationPageInfo page = Assert.Single(catalog.pages, page => page.id == "probe-api");
-        DocumentationSymbolInfo symbol = page.symbols[C_SYMBOL];
-        Assert.Equal("public string? Read(string key = \"default\");", Assert.Single(symbol.code));
-        Assert.Equal(2, page.codeBlocks.Count);
-        Assert.Equal(C_SYMBOL, Assert.Single(page.codeBlocks[0].declarationSymbols));
-        Assert.Equal(C_DECLARATION, page.codeBlocks[0].text);
-        Assert.Empty(page.codeBlocks[1].declarationSymbols);
-        Assert.Equal("UnrelatedExample();", page.codeBlocks[1].text);
-        Assert.Equal("other-task", page.codeBlocks[1].section);
-        Assert.Equal("csharp", page.codeBlocks[1].language);
-        Assert.True(page.codeBlocks[1].line > page.codeBlocks[0].line);
-        Assert.Equal("Unverified", catalog.sourceApiStatus);
-        DocumentationResult result = await snapshot.QueryAsync(new DocumentationRequest("symbol", C_SYMBOL, "Inno.Probe", "host-runtime"));
-        Assert.Contains("caller retains ownership", Assert.Single(result.hits).text);
-        Assert.DoesNotContain("UnrelatedExample", Assert.Single(result.hits).text);
-        Assert.Single(result.continuations);
-    }
-
     [Theory]
     [InlineData("<script>alert('unexpected')</script>")]
     [InlineData("A <img src=x onerror=alert(1)> side effect.")]
@@ -300,29 +163,6 @@ public sealed class DocumentationSnapshotTests : IDisposable
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
         Assert.Equal(initial.snapshot, snapshot.identity);
         Assert.Equal("Missing", (await snapshot.QueryAsync(new DocumentationRequest("read", "unsafe"))).status);
-    }
-
-    [Fact]
-    public async Task AMemberNameDoesNotPolluteEveryOtherSectionOnItsTypePage()
-    {
-        Write(
-            "content/en/api.md",
-            Page(
-                "probe-api",
-                "Probe API",
-                "## ReadOnly\n\n<!-- api: M:Inno.Probe.ReadOnly " + new string('a', 64)
-                + " -->\n\n```csharp\npublic void ReadOnly();\n```\n\nRead the current value.\n"
-                + "\n## WriteOnly\n\n<!-- api: M:Inno.Probe.WriteOnly " + new string('b', 64)
-                + " -->\n\n```csharp\npublic void WriteOnly();\n```\n\nWrite a replacement value.\n",
-                "kind: api\nowners: [Inno.Probe]\napiSurface: host-runtime\n"
-            )
-        );
-        await IndexAsync();
-        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
-        DocumentationResult result = await snapshot.QueryAsync(new DocumentationRequest("search", "WriteOnly"));
-        Assert.Equal("writeonly", Assert.Single(result.hits).section);
-        DocumentationResult exact = await snapshot.QueryAsync(new DocumentationRequest("search", "M:Inno.Probe.WriteOnly"));
-        Assert.Equal("M:Inno.Probe.WriteOnly", Assert.Single(exact.hits).symbol);
     }
 
     [Theory]
@@ -452,49 +292,6 @@ public sealed class DocumentationSnapshotTests : IDisposable
     }
 
     [Fact]
-    public async Task ExactSymbolsReturnExplicitContractRelationshipsAndSurfaceAmbiguity()
-    {
-        await IndexAsync();
-        using (DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache))
-        {
-            DocumentationResult symbol = await snapshot.QueryAsync(
-                new DocumentationRequest("symbol", C_SYMBOL, "Inno.Probe", "host-runtime")
-            );
-            Assert.Equal("Partial", symbol.status);
-            Assert.Contains("Read(string key)", symbol.hits.Single().text);
-            Assert.Contains(symbol.continuations, next => next.pageId == "probe" && next.section == "ownership");
-            DocumentationResult resource = await snapshot.QueryAsync(new DocumentationRequest("resource", symbol.hits.Single().resource));
-            Assert.Equal(symbol.hits.Single().text, resource.hits.Single().text);
-        }
-        Write("content/en/script.md", Api("probe-script", "runtime-script"));
-        await IndexAsync();
-        using DocumentationSnapshot updated = await DocumentationStore.OpenAsync(cache);
-        DocumentationResult ambiguous = await updated.QueryAsync(new DocumentationRequest("symbol", C_SYMBOL, "Inno.Probe"));
-        Assert.Equal("Ambiguous", ambiguous.status);
-        Assert.Equal(2, ambiguous.hits.Count);
-        Assert.Equal("Ambiguous", (await updated.QueryAsync(new DocumentationRequest("symbol", "Read", "Inno.Probe"))).status);
-    }
-
-    [Fact]
-    public async Task EmptyMissingMismatchAndCancellationRemainDistinct()
-    {
-        await IndexAsync();
-        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
-        Assert.Equal("Empty", (await snapshot.QueryAsync(new DocumentationRequest("search", "NoSuchConcept"))).status);
-        Assert.Equal("Missing", (await snapshot.QueryAsync(new DocumentationRequest("read", "../../private.md"))).status);
-        Assert.Equal("Missing", (await snapshot.QueryAsync(new DocumentationRequest("symbol", "M:Missing"))).status);
-        Assert.Equal("Found", (await snapshot.QueryAsync(new DocumentationRequest("search", "控制台颜色"))).status);
-        using DocumentationSnapshot mismatched = await DocumentationStore.OpenAsync(cache, expectedSourceTree: new string('c', 40));
-        Assert.Equal("Mismatched", (await mismatched.QueryAsync(new DocumentationRequest("read", "probe"))).status);
-        using var canceled = new CancellationTokenSource();
-        canceled.Cancel();
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            () => snapshot.QueryAsync(new DocumentationRequest("read", "probe"), canceled.Token)
-        );
-        Assert.Equal("Found", (await snapshot.QueryAsync(new DocumentationRequest("read", "probe"))).status);
-    }
-
-    [Fact]
     public async Task CorruptionFailsReadsAndExplicitRefreshRepairsOnlyTheOwnedPayload()
     {
         DocumentationResult initial = await IndexAsync();
@@ -546,34 +343,6 @@ public sealed class DocumentationSnapshotTests : IDisposable
         using DocumentationSnapshot deleted = await DocumentationStore.OpenAsync(cache);
         Assert.Equal("Missing", (await deleted.QueryAsync(new DocumentationRequest("read", "movable"))).status);
         Assert.Equal("Found", (await before.QueryAsync(new DocumentationRequest("read", "movable"))).status);
-    }
-
-    [Fact]
-    public async Task LargeSectionsRoundTripWithoutLosingTextOrSurrogatePairs()
-    {
-        string body = "## Long contract\n\n"
-                      + string.Concat(Enumerable.Repeat("The caller retains ownership until every consumer exits. 🦊\n", 700));
-        Write("content/en/long.md", Page("long", "Long page", body));
-        await IndexAsync();
-        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
-        var recovered = new StringBuilder();
-        int offset = 0;
-        do
-        {
-            DocumentationResult read = await snapshot.QueryAsync(
-                new DocumentationRequest("read", "long", section: "long-contract", offset: offset)
-            );
-            recovered.Append(read.hits.Single().text);
-            if (read.continuations.Count == 0)
-            {
-                break;
-            }
-            int next = read.continuations.Single().offset;
-            Assert.True(next > offset);
-            offset = next;
-        }
-        while (true);
-        Assert.Equal(body, recovered.ToString());
     }
 
     [Fact]
@@ -719,165 +488,6 @@ public sealed class DocumentationSnapshotTests : IDisposable
     }
 
     [Fact]
-    public async Task CatalogRetainsExplicitScriptContextWithoutPreparingItsReferences()
-    {
-        Write(
-            "content/en/example.md",
-            Page(
-                "example",
-                "Example",
-                "```csharp\npublic class Example { }\n```\n",
-                "kind: tutorial\nexampleMode: editor-script\nexampleProjects: [Inno.Probe]\n"
-            )
-        );
-        await IndexAsync();
-        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
-        DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages, page => page.id == "example");
-        Assert.Equal("editor-script", page.examples!.mode);
-        Assert.Equal("Inno.Probe", Assert.Single(page.examples.projects));
-        Assert.Single(page.codeBlocks);
-    }
-
-    [Fact]
-    public async Task TaskHeadingsRankAboveTutorialsThatMerelyDemonstrateTheQuery()
-    {
-        Write("content/en/task.md", Page("z-task", "Customize Console **presentation**", "Inspect the panel style owner.\n"));
-        Write("content/en/query.md", Page("a-query", "Search documentation", "Example: search Console presentation.\n"));
-        await IndexAsync();
-        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
-        DocumentationResult result = await snapshot.QueryAsync(new DocumentationRequest("search", "Console presentation"));
-        Assert.Equal("z-task", result.hits[0].pageId);
-        Assert.Equal("customize-console-presentation", result.hits[0].section);
-    }
-
-    [Fact]
-    public async Task TaskHeadingTermsOutrankAssemblyIndexesWithoutAnExactPhrase()
-    {
-        Write(
-            "content/en/probe.md",
-            Page(
-                "probe",
-                "Probe",
-                "Read keyboard, pointer and text input in the task guide.\n\n## Ownership\n\nBorrow the lease.\n",
-                "kind: project\nowners: [Inno.Probe]\n"
-            )
-        );
-        Write(
-            "content/en/task.md",
-            Page(
-                "z-task",
-                "Read keyboard, pointer and text input",
-                "Observe one immutable frame.\n",
-                "kind: how-to\nowners: [Inno.Probe]\n"
-            )
-        );
-        Write(
-            "content/en/index.md",
-            Page("a-index", "All members", "Read data. Keyboard values. Pointer fields. Text formatting. Input functions.\n")
-        );
-        await IndexAsync();
-        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
-        Dictionary<string, string> before = Files();
-        DocumentationResult result = await snapshot.QueryAsync(new DocumentationRequest("search", "read keyboard pointer text input"));
-        Assert.Equal("z-task", result.hits[0].pageId);
-        Assert.Equal("All query terms in heading", result.hits[0].reason);
-        Assert.Equal("Excerpt", result.hits[0].completeness);
-        Assert.Contains(result.hits, hit => hit.pageId == "probe");
-        Assert.Contains(result.hits, hit => hit.pageId == "a-index");
-        Assert.Equal(before.OrderBy(static pair => pair.Key), Files().OrderBy(static pair => pair.Key));
-    }
-
-    [Fact]
-    public async Task NaturalTaskTiesPreferGuidesWhileIdentifiersKeepReferencePriority()
-    {
-        const string C_PREFAB_SYMBOL = "M:Inno.Probe.InstantiatePrefab";
-        Write(
-            "content/en/prefab-api.md",
-            Page(
-                "a-prefab-api",
-                "Prefab API",
-                "## InstantiatePrefab\n\n<!-- api: " + C_PREFAB_SYMBOL + " " + new string('a', 64)
-                + " -->\n\n```csharp\npublic void InstantiatePrefab();\n```\n\nCreate an owned instance.\n",
-                "kind: api\nowners: [Inno.Probe]\napiSurface: host-runtime\n"
-            )
-        );
-        Write(
-            "content/en/prefab-task.md",
-            Page(
-                "z-prefab-task",
-                "Instantiate a prefab in its owning scene",
-                "Supply the current scene and asset.\n",
-                "kind: how-to\nowners: [Inno.Probe]\n"
-            )
-        );
-        Write(
-            "content/en/body-only.md",
-            Page("a-body-only", "Other task", "Instantiate a prefab.\n", "kind: tutorial\nowners: [Inno.Probe]\n")
-        );
-        await IndexAsync();
-        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
-        Dictionary<string, string> before = Files();
-        DocumentationResult task = await snapshot.QueryAsync(
-            new DocumentationRequest("search", "instantiate prefab", "Inno.Probe", limit: 1)
-        );
-        Assert.Equal("z-prefab-task", Assert.Single(task.hits).pageId);
-        Assert.Equal("Excerpt", task.hits[0].completeness);
-        DocumentationResult next = await snapshot.QueryAsync(Assert.IsType<DocumentationRequest>(task.nextRequest));
-        Assert.Equal("a-prefab-api", Assert.Single(next.hits).pageId);
-        DocumentationResult identifier = await snapshot.QueryAsync(new DocumentationRequest("search", "InstantiatePrefab"));
-        Assert.Equal("a-prefab-api", identifier.hits[0].pageId);
-        DocumentationResult exact = await snapshot.QueryAsync(new DocumentationRequest("search", C_PREFAB_SYMBOL));
-        Assert.Equal(C_PREFAB_SYMBOL, Assert.Single(exact.hits).symbol);
-        Assert.Equal(before.OrderBy(static pair => pair.Key), Files().OrderBy(static pair => pair.Key));
-    }
-
-    [Fact]
-    public async Task StructuredPaginationAndExactSymbolSearchNeedNoConsoleParsing()
-    {
-        Write("content/en/second.md", Page("second", "Ownership details", "Borrow the lease; observe the ownership contract.\n"));
-        await IndexAsync();
-        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
-        DocumentationResult first = await snapshot.QueryAsync(new DocumentationRequest("search", "ownership", limit: 1));
-        Assert.NotNull(first.nextRequest);
-        DocumentationResult second = await snapshot.QueryAsync(first.nextRequest!);
-        Assert.NotEqual(first.hits.Single().resource, second.hits.Single().resource);
-        DocumentationResult exact = await snapshot.QueryAsync(new DocumentationRequest("search", C_SYMBOL));
-        Assert.Equal(C_SYMBOL, exact.hits.Single().symbol);
-        Assert.Equal("Excerpt", exact.hits.Single().completeness);
-        Assert.Equal("Exact qualified symbol", exact.hits.Single().reason);
-    }
-
-    [Fact]
-    public async Task CommandReadsRequireExplicitPreparationAndNeverRefreshAuthoringInputs()
-    {
-        await Assert.ThrowsAsync<ArgumentException>(() => DocumentationCommand.ExecuteAsync(["index", "--engine-root", m_root]));
-        await Assert.ThrowsAsync<ArgumentException>(
-            () => DocumentationCommand.ExecuteAsync(["read", "--engine-root", m_root, "--docs-root", source, "--page", "probe"])
-        );
-        Assert.Equal(
-            0,
-            await DocumentationCommand.ExecuteAsync(
-                ["index", "--engine-root", m_root, "--docs-root", source, "--cache-root", cache, "--format", "json"]
-            )
-        );
-        Dictionary<string, string> prepared = Files();
-        Write("content/en/probe.md", "Invalid mutable authoring content cannot silently replace the selected snapshot.");
-        Assert.Equal(
-            0,
-            await DocumentationCommand.ExecuteAsync(
-                ["read", "--engine-root", m_root, "--cache-root", cache, "--page", "probe", "--format", "json"]
-            )
-        );
-        Assert.Equal(
-            2,
-            await DocumentationCommand.ExecuteAsync(
-                ["read", "--engine-root", m_root, "--cache-root", cache, "--page", "missing", "--format", "json"]
-            )
-        );
-        Assert.Equal(prepared.OrderBy(static pair => pair.Key), Files().OrderBy(static pair => pair.Key));
-    }
-
-    [Fact]
     public async Task OrphanSymbolsAndDuplicateProjectIdentitiesCannotReplaceThePublishedGeneration()
     {
         DocumentationResult original = await IndexAsync();
@@ -908,37 +518,6 @@ public sealed class DocumentationSnapshotTests : IDisposable
         Assert.Contains("src/moved/Inno.Probe.csproj", Encoding.UTF8.GetString(bytes));
         Assert.Equal("probe", catalog.projects["Inno.Probe"]);
     }
-
-    [Fact]
-    public async Task LargePageReadsPreservePreambleAndNestedSectionsThroughExplicitContinuation()
-    {
-        string body = "---\nuid: long-contract\nkind: explanation\n---\nPreamble ownership contract.\n\n# First\nOwner contract.\n\n### Deep\n"
-                      + new string('x', 18_000) + "\n\n## Second\nRetirement contract.\n";
-        Write("content/en/long.md", body);
-        await IndexAsync();
-        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
-        var text = new StringBuilder();
-        var request = new DocumentationRequest("read", "long-contract");
-        do
-        {
-            DocumentationResult result = await snapshot.QueryAsync(request);
-            text.Append(Assert.Single(result.hits).text);
-            request = result.nextRequest;
-        }
-        while (request is not null);
-        Assert.Equal(body, text.ToString());
-        DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
-        Assert.Equal(new[] { "first", "deep", "second" }, catalog.pages.Single(page => page.id == "long-contract").sections.Keys);
-        Assert.Contains(
-            "Retirement contract.",
-            (await snapshot.QueryAsync(new DocumentationRequest("read", "long-contract", section: "second"))).hits.Single().text
-        );
-    }
-
-    private string source => Path.Combine(m_root, "source");
-    private string cache => Path.Combine(m_root, "artifacts", "documentation");
-
-    private Task<DocumentationResult> IndexAsync() => DocumentationStore.IndexAsync(m_root, source, cache);
 
     private void SetProjectInventory(JsonNode projects)
     {
@@ -981,39 +560,4 @@ public sealed class DocumentationSnapshotTests : IDisposable
         Write("reference/engine.lock.json", binding.ToJsonString());
         return bytes;
     }
-
-    private void Write(
-        string path,
-        string text
-    ) {
-        string target = Path.Combine(source, path);
-        Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-        File.WriteAllText(target, text, new UTF8Encoding(false));
-    }
-
-    private Dictionary<string, string> Files()
-        => Directory.GetFiles(cache, "*", SearchOption.AllDirectories)
-            .Where(static path => !path.EndsWith(".lock", StringComparison.Ordinal))
-            .ToDictionary(path => Path.GetRelativePath(cache, path), path => Hash(File.ReadAllBytes(path)), StringComparer.Ordinal);
-
-    private static string Hash(byte[] bytes) => Convert.ToHexStringLower(SHA256.HashData(bytes));
-
-    private static string Page(
-        string uid,
-        string title,
-        string body,
-        string metadata = "kind: explanation\n"
-    ) => "---\nuid: " + uid + "\ntitle: " + title + "\n" + metadata + "---\n# " + title + "\n\n" + body;
-
-    private static string Api(
-        string uid,
-        string surface
-    ) => Page(
-        uid,
-        "Probe API",
-        "## Read\n\n<!-- api: " + C_SYMBOL + " " + new string('a', 64)
-        + " -->\n\n| Declaration | Contract |\n| --- | --- |\n| <a id=\"api-" + Hash(Encoding.UTF8.GetBytes(C_SYMBOL))[..16]
-        + "\"></a>`Read(string key)` | Returns the value; caller owns the lease. |\n",
-        "kind: api\nowners: [Inno.Probe]\napiSurface: " + surface + "\ncontracts: [probe#ownership]\n"
-    );
 }

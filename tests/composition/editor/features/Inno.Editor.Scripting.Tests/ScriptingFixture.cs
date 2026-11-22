@@ -52,7 +52,7 @@ internal sealed class ScriptingFixture : IDisposable
         Directory.CreateDirectory(libraryRoot);
         m_identityScope = m_identities.EnterScope();
         this.host = new EngineHostBuilder().UseMetadataSources(
-            new DotNetAssemblyCatalogSource(typeof(ScriptingPipelineTests).Assembly),
+            new DotNetAssemblyCatalogSource(typeof(ScriptingFixture).Assembly),
             new ReflectionTypeCatalogSource(),
             new ReflectionSerializationMetadataSource()
         ).Build();
