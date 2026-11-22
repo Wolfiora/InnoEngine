@@ -67,7 +67,8 @@ internal static class StyleEngine
         new NamespaceStyleRule(),
         new UsingPlacementStyleRule(),
         new BuiltInTypeStyleRule(),
-        new MemberOrderStyleRule()
+        new MemberOrderStyleRule(),
+        new NamingStyleRule()
     ];
 
     internal static IEnumerable<string> EnumerateSources(string root)
@@ -113,7 +114,7 @@ internal static class StyleEngine
         IReadOnlyCollection<string> ruleIDs,
         bool fix
     ) {
-        StyleRule[] rules = RULES.Where(rule => ruleIDs.Count == 0 || ruleIDs.Contains(rule.id)).ToArray();
+        StyleRule[] rules = RULES.Where(rule => ruleIDs.Count == 0 || ruleIDs.Any(rule.Covers)).ToArray();
         var findings = new ConcurrentBag<StyleFinding>();
         var rejections = new ConcurrentBag<StyleRejection>();
         int files = 0;
@@ -142,7 +143,7 @@ internal static class StyleEngine
 
                 foreach (StyleFinding finding in local)
                 {
-                    findings.Add(finding);
+                    if (ruleIDs.Count == 0 || ruleIDs.Contains(finding.rule)) findings.Add(finding);
                 }
             }
         );

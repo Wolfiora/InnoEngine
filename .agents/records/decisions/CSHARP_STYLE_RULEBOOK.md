@@ -40,7 +40,7 @@ The rulebook resolves these points where the approved revisions allowed more tha
 
 ## Consequences
 
-Existing source does not yet conform. Formatting and renaming are separate, later changes: formatting-only changes preserve syntax tokens, and acronym or field renames that touch public members are API changes. `.editorconfig` and the style validator still express the previous static-readonly naming and must follow the rulebook before they are used as gates.
+Formatting and renaming are separate changes: formatting-only changes preserve syntax tokens, and acronym or field renames that touch public members are API changes. `.editorconfig` and the style validator express the naming table of the rulebook.
 
 ## Tooling status
 
@@ -51,8 +51,11 @@ The engine currently enforces these rules. A finding is reported under the first
 | Reported ID | Also covers |
 | --- | --- |
 | F-01, F-03, F-04, F-05 | |
-| N-04 | |
-| M-03 | |
+| N-01, N-03, N-04 | |
+| NM-01 to NM-13 | |
+| T-01, T-02, T-03, T-04 | |
+| M-03, M-04, M-05 | |
+| O-01 | O-02 |
 | B-01, B-04, B-05, B-07 | B-06, B-08 |
 | B-03 | T-06 |
 | B-09 | M-01 |
@@ -61,5 +64,7 @@ The engine currently enforces these rules. A finding is reported under the first
 | W-01, W-03, W-05 | W-02 |
 | I-01, I-05 | I-03, I-04 |
 | S-03, S-04 | |
+| E-01, E-03, E-07, E-10, E-11 | |
+| D-02, D-05 | D-04 |
 
-Every other rule is not yet checked by the tool and is enforced in review: F-02, N-01 to N-03, N-05, N-06, all NM rules, T-01 to T-05, T-07, T-08, M-02, M-04, M-05, B-02, P-03, A-04, W-04, I-02, S-01, S-02, all E, X, D and TS rules. Naming rules (NM) need symbol-level renames; `.editorconfig` keeps the previous static-readonly naming until those renames land.
+Every other rule is not yet checked by the tool and is enforced in review: F-02, N-02, N-05, N-06, T-05, T-07, T-08, M-02, B-02, P-03, A-04, W-04, I-02, S-01, S-02, E-02, E-04 to E-06, E-08, E-09, E-12, all X rules, D-01, D-03, D-06 and all TS rules. The naming check reads syntax only: it trusts the names of overrides, interface implementations, native interop declarations and serialized members, and it exempts test methods from the `Async` suffix. `.editorconfig` states the same naming table for editors.

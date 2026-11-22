@@ -65,6 +65,27 @@ public sealed class StyleCommandTests
     [InlineData("N-03", "global using System;")]
     [InlineData("N-03", "namespace Probe;\n\nusing System;")]
     [InlineData("N-03", "internal sealed class Probe\n{\n    private readonly global::System.Text.StringBuilder m_text = new();\n}")]
+    [InlineData("NM-01", "internal sealed class probe;")]
+    [InlineData("NM-02", "internal interface Probe;")]
+    [InlineData("NM-02", "internal sealed class Probe<Value>;")]
+    [InlineData("NM-03", "internal sealed class Probe\n{\n    internal void run() {}\n}")]
+    [InlineData("NM-04", "internal sealed class Probe\n{\n    internal Task Run() => Task.CompletedTask;\n}")]
+    [InlineData("NM-05", "internal sealed class Probe\n{\n    internal int Count => 0;\n}")]
+    [InlineData("NM-06", "internal sealed class Probe\n{\n    private int count;\n}")]
+    [InlineData("NM-06", "internal sealed class Probe\n{\n    internal int m_count;\n}")]
+    [InlineData("NM-06", "internal sealed class Probe\n{\n    private int m_first, m_second;\n}")]
+    [InlineData("NM-07", "internal sealed class Probe\n{\n    private const int LIMIT = 1;\n}")]
+    [InlineData("NM-07", "internal sealed class Probe\n{\n    internal void Run()\n    {\n        const int limit = 1;\n    }\n}")]
+    [InlineData("NM-08", "internal sealed class Probe\n{\n    private static readonly int[] S_SIZES = [];\n}")]
+    [InlineData("NM-08", "internal sealed class Probe\n{\n    private static readonly int[] sizes = [];\n}")]
+    [InlineData("NM-09", "internal sealed class Probe\n{\n    private static int m_next;\n}")]
+    [InlineData("NM-10", "internal sealed class Probe\n{\n    internal event Action Changed;\n}")]
+    [InlineData("NM-11", "internal enum Probe\n{\n    first\n}")]
+    [InlineData("NM-12", "internal sealed class Probe\n{\n    internal void Run(int Count) {}\n}")]
+    [InlineData("NM-12", "internal sealed class Probe\n{\n    internal (int Width, int height) size => (0, 0);\n}")]
+    [InlineData("NM-13", "internal sealed class UiProbe;")]
+    [InlineData("NM-13", "internal sealed class Probe\n{\n    internal int assetId => 0;\n}")]
+    [InlineData("NM-13", "internal sealed class Probe\n{\n    internal void Run(int[] assetIds) {}\n}")]
     public void FindingsThatNeedTheAuthorAreReportedAndLeftUnchanged(
         string rule,
         string text
@@ -130,6 +151,28 @@ public sealed class StyleCommandTests
             File.WriteAllText(path, content);
 
             Assert.Equal(1, StyleCommand.Execute(["check", root]));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ARuleFilterReportsOnlyTheRequestedRuleOfARuleFamily()
+    {
+        string root = CreateRoot();
+        try
+        {
+            string report = Path.Combine(root, "report.tsv");
+            File.WriteAllText(
+                Path.Combine(root, "src", "Probe.cs"),
+                Source("internal sealed class Probe\n{\n    internal int Count => 0;\n\n    internal int assetId => 0;\n}")
+            );
+
+            Assert.Equal(1, StyleCommand.Execute(["check", root, "--rule", "NM-13", "--report", report]));
+            string line = Assert.Single(File.ReadAllLines(report));
+            Assert.StartsWith("NM-13\tsrc/Probe.cs\t5\t", line, StringComparison.Ordinal);
         }
         finally
         {
@@ -1560,7 +1603,7 @@ public sealed class StyleCommandTests
 
                 internal sealed class Probe
                 {
-                    internal object String => this;
+                    internal object String() => this;
 
                     internal string Describe() => nameof(Int32) + typeof(System.String).Name;
 
@@ -1615,6 +1658,110 @@ public sealed class StyleCommandTests
                     private const int C_LIMIT = 1;
                 #endif
                 }
+                """
+            )
+        },
+        {
+            "NM-03",
+            Source(
+                """
+                internal static partial class NativeProbe
+                {
+                    [LibraryImport("probe")]
+                    internal static partial int probe_open(int Handle);
+                }
+                """
+            )
+        },
+        {
+            "NM-04",
+            Source(
+                """
+                internal sealed class ProbeTests
+                {
+                    [Fact]
+                    public Task RunCompletes() => Task.CompletedTask;
+
+                    [MetalShaderFact]
+                    public Task ShaderCompiles() => Task.CompletedTask;
+                }
+
+                internal sealed class Worker : IWorker
+                {
+                    public Task Run() => Task.CompletedTask;
+                }
+                """
+            )
+        },
+        {
+            "NM-05",
+            Source(
+                """
+                internal sealed class ProbeList : ICollection
+                {
+                    public int Count => 0;
+                }
+                """
+            )
+        },
+        {
+            "NM-06",
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    [SerializableProperty]
+                    internal string m_targetId = string.Empty;
+                }
+
+                [StructLayout(LayoutKind.Sequential)]
+                internal struct NativeProbe
+                {
+                    public int Width;
+                    public int Height;
+                }
+                """
+            )
+        },
+        {
+            "NM-11",
+            Source(
+                """
+                internal enum ProbeKey
+                {
+                    _0,
+                    _1,
+                    A
+                }
+                """
+            )
+        },
+        {
+            "NM-12",
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    internal Func<int, int> zero => static _ => 0;
+                }
+                """
+            )
+        },
+        {
+            "NM-13",
+            Source(
+                """
+                internal sealed class ImGuiProbe
+                {
+                    [SerializableProperty]
+                    internal Guid persistentId { get; set; }
+
+                    internal Guid stableTypeId { get; set; }
+
+                    internal RmlUiHandle rmlUiHandle { get; set; }
+                }
+
+                internal sealed record PageReference(string pageId);
                 """
             )
         }
