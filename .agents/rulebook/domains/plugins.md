@@ -1,5 +1,5 @@
 ---
-paths: ["src/runtime/plugins/**", "tests/plugins/**"]
+paths: ["src/runtime/plugins/**", "tests/runtime/plugins/**"]
 tags: [plugins]
 ---
 # Plugins

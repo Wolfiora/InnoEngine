@@ -7,7 +7,7 @@ $dotnet = if ($env:DOTNET_HOST_PATH) { $env:DOTNET_HOST_PATH } else { (Get-Comma
 $pwsh = (Get-Command pwsh).Source
 $null = New-Item -ItemType Directory -Path $root
 try {
-    Copy-Item -LiteralPath (Join-Path $repository 'tests/fixtures/editor-ui/ManagedMemorySample.editor.cs') -Destination $root
+    Copy-Item -LiteralPath (Join-Path $repository 'tests/product/fixtures/editor-ui/ManagedMemorySample.editor.cs') -Destination $root
     [IO.File]::WriteAllText((Join-Path $root 'Fixture.csproj'), '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings></PropertyGroup></Project>')
     [IO.File]::WriteAllText((Join-Path $root 'Program.cs'), @'
 using System.Runtime.CompilerServices;
@@ -246,7 +246,7 @@ int main(int argc, const char *argv[])
             $output = Join-Path $root "$($case.scenario)-$($case.name)-$($case.cycles)"
             $hostExecutable = if ($case.name.StartsWith('appkit-', [StringComparison]::Ordinal)) { $cocoa } else { $dotnet }
             $deadline = if ($hostExecutable -ceq $cocoa) { 30 } else { 5 }
-            & $pwsh -NoProfile -File (Join-Path $repository 'tests/Invoke-EditorUiProductJourney.ps1') `
+            & $pwsh -NoProfile -File (Join-Path $repository 'tests/product/Invoke-EditorUiProductJourney.ps1') `
                 -EditorAssembly (Join-Path $root 'bin/Debug/net10.0/Fixture.dll') `
                 -ResultsDirectory $output -Dotnet $hostExecutable -GraphicsApi ProtocolFixture -Scenario $case.scenario `
                 -Cycles $case.cycles -TimeoutSeconds $deadline *> "$output.log"

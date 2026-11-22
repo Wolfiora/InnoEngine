@@ -1,5 +1,5 @@
 ---
-paths: ["src/content/assets/**", "src/content/scene/**", "src/content/references/**", "src/foundation/core/Inno.Core.Identity/**", "src/foundation/extensibility/Inno.Extensibility.Reload/**", "tests/assets/**", "tests/scene/**", "src/runtime/plugins/**", "tests/plugins/**", "src/foundation/scripting/**", "src/runtime/scripting/**", "tests/scripting/**", "**/*ScriptingApi*"]
+paths: ["src/content/assets/**", "src/content/scene/**", "src/content/references/**", "src/foundation/core/Inno.Core.Identity/**", "src/foundation/extensibility/Inno.Extensibility.Reload/**", "tests/content/assets/**", "tests/content/scene/**", "src/runtime/plugins/**", "tests/runtime/plugins/**", "src/foundation/scripting/**", "src/runtime/scripting/**", "tests/runtime/scripting/**", "tests/composition/editor/features/Inno.Editor.Scripting.Tests/**", "**/*ScriptingApi*"]
 tags: [identity-reload, serialization, reload, identity-standard]
 ---
 # Identity and reload

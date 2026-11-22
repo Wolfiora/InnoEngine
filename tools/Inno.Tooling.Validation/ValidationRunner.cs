@@ -535,7 +535,7 @@ internal static class ValidationRunner
                                 // Each product step starts the Editor on its own empty project inside the results.
                                 string project = Path.Combine(productDirectory, "Smoke");
                                 await ShellAsync(
-                                    "tests/Invoke-EditorSmoke.ps1",
+                                    "tests/product/Invoke-EditorSmoke.ps1",
                                     [
                                         "-EditorAssembly",
                                         assembly,
@@ -563,7 +563,7 @@ internal static class ValidationRunner
                                 foreach (string scenario in new[] { "Workflows", "Lifecycle" })
                                 {
                                     await ShellAsync(
-                                        "tests/Invoke-EditorUiProductJourney.ps1",
+                                        "tests/product/Invoke-EditorUiProductJourney.ps1",
                                         [
                                             "-EditorAssembly",
                                             assembly,

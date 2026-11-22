@@ -138,7 +138,7 @@ $projects = @($selectedProjects | ForEach-Object {
         }
 })
 
-$loggerProject = Join-Path $PSScriptRoot 'process/Inno.Testing.Discovery.TestLogger/Inno.Testing.Discovery.TestLogger.csproj'
+$loggerProject = Join-Path $PSScriptRoot 'support/Inno.Testing.Discovery.TestLogger/Inno.Testing.Discovery.TestLogger.csproj'
 $logger = @($snapshots | Where-Object { [IO.Path]::GetFullPath($_.Path) -eq $loggerProject })
 $assemblies = [Collections.Generic.Dictionary[string,object]]::new($(if ($IsWindows) { [StringComparer]::OrdinalIgnoreCase } else { [StringComparer]::Ordinal }))
 $contracts = @{}

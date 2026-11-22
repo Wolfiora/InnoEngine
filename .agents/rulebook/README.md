@@ -33,7 +33,7 @@ Every rule file starts with front matter that states when it applies:
 
 ```markdown
 ---
-paths: ["src/services/rendering/**", "tests/rendering/**"]
+paths: ["src/services/rendering/**", "tests/services/rendering/**"]
 tags: [rendering]
 ---
 # Rendering

@@ -11,7 +11,7 @@
   { "path": "src/services/audio/Inno.Audio/Properties/ScriptingApi.cs", "includes": ["domains/scripting", "domains/identity-reload"], "excludes": ["domains/plugins"] },
   { "path": "src/runtime/plugins/Inno.Plugins/PluginCatalog.cs", "includes": ["domains/plugins", "no-legacy", "domains/identity-reload"] },
   { "path": "src/content/scene/Inno.Scene/Scene.cs", "includes": ["domains/identity-reload"], "excludes": ["domains/rendering", "domains/plugins"] },
-  { "path": "tests/rendering/Inno.Rendering.Tests/FrameTests.cs", "includes": ["validation", "coding", "domains/rendering"] },
+  { "path": "tests/services/rendering/Inno.Rendering.Tests/FrameTests.cs", "includes": ["validation", "coding", "domains/rendering"] },
   { "path": "Directory.Build.props", "includes": ["projects", "domains/build-native/hosts"] },
   { "path": ".github/workflows/validation.yml", "includes": ["domains/build-native/hosts"], "excludes": ["validation"] },
   { "path": ".agents/rulebook/coding.md", "includes": ["validation"], "excludes": ["coding"] },

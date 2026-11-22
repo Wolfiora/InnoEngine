@@ -855,8 +855,8 @@ internal static partial class ValidationPlanner
                     editorBuild.inputs
                         .Concat(
                             inputs.Keys.Where(static path => (
-                                path.StartsWith("tests/fixtures/editor-ui/", StringComparison.Ordinal)
-                                || path is "tests/Invoke-EditorSmoke.ps1" or "tests/Invoke-EditorUiProductJourney.ps1"
+                                path.StartsWith("tests/product/fixtures/editor-ui/", StringComparison.Ordinal)
+                                || path is "tests/product/Invoke-EditorSmoke.ps1" or "tests/product/Invoke-EditorUiProductJourney.ps1"
                             ))
                         )
                         .Distinct()
@@ -1665,8 +1665,8 @@ internal static partial class ValidationPlanner
 
     private static bool IsCiContractInput(string path)
         => path.StartsWith("tests/ci/", StringComparison.Ordinal)
-           || path.StartsWith("tests/fixtures/editor-ui/", StringComparison.Ordinal)
-           || path == "tests/Invoke-EditorUiProductJourney.ps1";
+           || path.StartsWith("tests/product/fixtures/editor-ui/", StringComparison.Ordinal)
+           || path == "tests/product/Invoke-EditorUiProductJourney.ps1";
 
     private static bool IsDocumentation(string path)
         => path.EndsWith(".md", StringComparison.OrdinalIgnoreCase)

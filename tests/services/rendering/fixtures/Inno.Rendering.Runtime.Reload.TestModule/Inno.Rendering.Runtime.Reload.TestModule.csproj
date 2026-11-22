@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Inno.Rendering.Runtime.Reload.TestModule</AssemblyName>
+    <InnoAssemblyDomain>InnoPlugin</InnoAssemblyDomain>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../../src/services/rendering/Inno.Rendering/Inno.Rendering.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../../src/services/rendering/Inno.Rendering.Runtime/Inno.Rendering.Runtime.csproj" />
+  </ItemGroup>
+</Project>
