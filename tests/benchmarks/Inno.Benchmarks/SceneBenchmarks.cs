@@ -130,7 +130,7 @@ public class SceneLifecycleBenchmarks
 {
     private SceneHarness m_harness = null!;
 
-    [Params(1_000)]
+    [Params(250, 1_000, 4_000)]
     public int objectCount;
 
     [GlobalSetup]
