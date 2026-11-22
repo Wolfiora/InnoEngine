@@ -21,6 +21,7 @@ The following cases follow an external contract. Do not rename or reformat them 
 | Generator templates and their tests | `global::` and fully qualified names required by the generation protocol | |
 | Source text used as test data | Its own formatting (TS-03) | |
 | Serialized value types | Property setters that the serializer writes, so the record struct is not `readonly` (T-04) | `AssetPath`, `ShaderPropertyID` |
+| Synchronous contract boundaries | A blocking wait on an asynchronous result inside a member whose synchronous signature is fixed (X-05) | MSBuild `Execute`, `Dispose`, `Main`, a synchronous interface member or public API over an asynchronous implementation |
 | Overloaded equality operators | `== null` and `!= null` where the type defines the result of the comparison (E-04) | `EngineObject`, whose destroyed instances compare equal to `null` |
 
 Keep each exception as small as possible: it covers the name or the layout bound by the contract, and the rest of the file follows the rulebook.

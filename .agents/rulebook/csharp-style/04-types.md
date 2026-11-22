@@ -156,7 +156,7 @@ public abstract class EditorDrop<TSource, TTarget>
 
 ## T-07 Primary constructors
 
-- A record always uses a primary constructor.
+- A record uses a primary constructor. A record whose constructor validates or normalizes its arguments uses an ordinary constructor, and a record populated through `init` or `required` properties declares none.
 - A class or struct may use a primary constructor to receive its dependencies. When it does, it uses the parameters directly and does not copy them into `m_` fields.
 - Use an ordinary constructor with `m_` fields when arguments need validation or the fields must be `readonly`.
 - Primary constructor parameters follow P-01. A base list follows the closing parenthesis as `) : Base`, with the opening brace on its own line. Without a base list the type body starts with `) {`.
