@@ -15,9 +15,12 @@ tags: [tests, compilation, completion, review, new-boundary, public-api, ownersh
 
 ## 10. Tests and acceptance
 
+- Tests are functional and minimal. For every supported function, keep the smallest set of tests that proves it works through its real public contract, plus its edge cases: failure, cancellation, boundaries and lifecycle. Coverage is complete by function, not by line or by count.
+- A test must fail when the behavior it names is broken. Do not write tests that repeat the implementation, assert only on their own doubles, restate another test, or otherwise pass without exercising the behavior.
+- Hands-on acceptance on real machines belongs to the owner. Do not add automated product runs, soak checks or extra tests to stand in for it.
+- Benchmarks are not tests. Performance measurement belongs to separate benchmark tooling; test projects carry no timing or throughput assertions.
 - Use real public contracts and replaceable public boundaries.
 - InternalsVisibleTo, test backdoors, reflection bypasses and widening internal visibility for tests are prohibited.
-- Cover real success, failure, cancellation, boundary and lifecycle behavior. Do not write tests that merely repeat the implementation.
 - Native calls, AOT, trimming and platform support require actual artifact evidence.
 - Report build, test, SDK, host and device status separately. Unexecuted checks are not passes.
 
