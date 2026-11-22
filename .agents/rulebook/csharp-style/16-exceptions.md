@@ -13,14 +13,14 @@ The following cases follow an external contract. Do not rename or reformat them 
 | Overrides and interface implementations | The name declared by the base type or interface | `Stream.CanRead`, `IEnumerator.Current` |
 | Special CLR members | Names required by the language or runtime | operators, `GetEnumerator`, `Deconstruct`, `Dispose` |
 | Native interop signatures | Field names, enum values and imported function names from the native header | `SDL_Event`, bgfx enums |
-| Serialized wire names | The serialized name; source property names and wire names are declared separately | |
+| Serialized wire names | The persisted key. The engine serializer and reflection-based JSON models write the member name as the key, so a serialized member keeps the name stored in existing assets, scenes, settings and manifests | `AssetMeta.persistentId`, `PluginManifest.pluginId` |
 | Third-party product names | The spelling used by the product | `RmlUi`, `ImGui`, `MiniAudio` |
 | Keyboard and input code enums | Single-letter and digit members | `KeyCode.A`, `KeyCode.F1` |
 | Numeric matrices and lookup tables | Several elements per line, column alignment (S-02) | a 4×4 matrix literal |
 | Unsplittable string literals | Length beyond the line width (F-04) | paths, URLs |
 | Generator templates and their tests | `global::` and fully qualified names required by the generation protocol | |
 | Source text used as test data | Its own formatting (TS-03) | |
-| Serialized value types | Property setters that the serializer writes, so the record struct is not `readonly` (T-04) | `AssetPath`, `ShaderPropertyId` |
+| Serialized value types | Property setters that the serializer writes, so the record struct is not `readonly` (T-04) | `AssetPath`, `ShaderPropertyID` |
 | Overloaded equality operators | `== null` and `!= null` where the type defines the result of the comparison (E-04) | `EngineObject`, whose destroyed instances compare equal to `null` |
 
 Keep each exception as small as possible: it covers the name or the layout bound by the contract, and the rest of the file follows the rulebook.
