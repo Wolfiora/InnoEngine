@@ -1,7 +1,7 @@
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
 
-namespace Inno.Editor.PlayMode.Tests;
+namespace Inno.Editor.Panels.Native.Tests;
 
 [GenerateSerializationConverter]
 [ProjectSettingDefinition("tests.ui.atomic-settings")]

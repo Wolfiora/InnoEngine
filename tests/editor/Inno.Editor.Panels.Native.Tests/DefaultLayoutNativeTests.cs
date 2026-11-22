@@ -19,7 +19,7 @@ using Inno.Testing.Editor.Native;
 
 using NativeGui = Inno.Native.ImGui.ImGui;
 
-namespace Inno.Editor.PlayMode.Tests;
+namespace Inno.Editor.Panels.Native.Tests;
 
 public sealed unsafe class DefaultLayoutNativeTests
 {

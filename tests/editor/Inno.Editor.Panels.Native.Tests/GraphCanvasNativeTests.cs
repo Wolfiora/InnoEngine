@@ -15,7 +15,7 @@ using GuiHoveredFlags = Inno.Editor.ImGui.ImGuiHoveredFlags;
 using GuiMouseButton = Inno.Editor.ImGui.ImGuiMouseButton;
 using NativeGui = Inno.Native.ImGui.ImGui;
 
-namespace Inno.Editor.PlayMode.Tests;
+namespace Inno.Editor.Panels.Native.Tests;
 
 public sealed unsafe class GraphCanvasNativeTests
 {

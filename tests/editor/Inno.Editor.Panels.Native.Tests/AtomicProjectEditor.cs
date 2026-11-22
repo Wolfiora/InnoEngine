@@ -1,6 +1,6 @@
 using Inno.Editor.Settings;
 
-namespace Inno.Editor.PlayMode.Tests;
+namespace Inno.Editor.Panels.Native.Tests;
 
 [ProjectSettingPath("Project/Atomic Project/Value")]
 public sealed class AtomicProjectEditor : ProjectSettingEditor<AtomicProjectSetting>

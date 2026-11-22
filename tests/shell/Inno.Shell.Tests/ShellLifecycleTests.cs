@@ -24,7 +24,7 @@ using Inno.UI;
 
 using ShellHost = Inno.Shell.Shell;
 
-namespace Inno.Input.Tests;
+namespace Inno.Shell.Tests;
 
 public sealed class ShellLifecycleTests
 {

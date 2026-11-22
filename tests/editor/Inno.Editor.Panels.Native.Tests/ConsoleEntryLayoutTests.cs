@@ -8,7 +8,7 @@ using Inno.Native.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 
-namespace Inno.Editor.PlayMode.Tests;
+namespace Inno.Editor.Panels.Native.Tests;
 
 public sealed unsafe class ConsoleEntryLayoutTests
 {

@@ -7,7 +7,7 @@ using Inno.Editor.Interactions;
 using Inno.Scene;
 using Inno.Testing.Editor.Native;
 
-namespace Inno.Editor.PlayMode.Tests;
+namespace Inno.Editor.Panels.Native.Tests;
 
 public sealed class SceneDocumentLifecycleNativeTests
 {

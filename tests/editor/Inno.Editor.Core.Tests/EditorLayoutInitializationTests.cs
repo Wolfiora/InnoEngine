@@ -8,7 +8,7 @@ using Inno.Core.IO;
 using Inno.Core.Input;
 using Inno.Editor.Core;
 
-namespace Inno.Editor.PlayMode.Tests;
+namespace Inno.Editor.Core.Tests;
 
 public sealed class EditorLayoutInitializationTests : IDisposable
 {

@@ -17,7 +17,7 @@ using Inno.Testing.Editor.Native;
 using NativeGui = Inno.Native.ImGui.ImGui;
 using NativeVector = Inno.Native.ImGui.ImVec2C;
 
-namespace Inno.Editor.PlayMode.Tests;
+namespace Inno.Editor.Panels.Native.Tests;
 
 public sealed class LargePanelWorkflowTests
 {

@@ -9,7 +9,7 @@ using Gui = Inno.Editor.ImGui.ImGui;
 using GuiCol = Inno.Editor.ImGui.ImGuiCol;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
-namespace Inno.Editor.PlayMode.Tests;
+namespace Inno.Editor.Panels.Native.Tests;
 
 public sealed unsafe class StatisticsPanelNativeTests
 {

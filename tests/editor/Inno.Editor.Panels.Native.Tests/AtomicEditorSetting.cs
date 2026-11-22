@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Inno.Editor.Settings;
 
-namespace Inno.Editor.PlayMode.Tests;
+namespace Inno.Editor.Panels.Native.Tests;
 
 [EditorSettingPath("Editor/Atomic Editor/Value")]
 public sealed class AtomicEditorSetting : EditorSetting

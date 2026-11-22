@@ -11,7 +11,7 @@ using Gui = Inno.Editor.ImGui.ImGui;
 using GuiInput = Inno.Editor.ImGui.EditorUIInput;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
-namespace Inno.Editor.PlayMode.Tests;
+namespace Inno.Editor.Panels.Native.Tests;
 
 public sealed unsafe class TreeKeyboardOwnershipNativeTests
 {

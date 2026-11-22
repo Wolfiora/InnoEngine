@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Inno.Shell;
 
-namespace Inno.Input.Tests;
+namespace Inno.Shell.Tests;
 
 public sealed class ShellFrameDriverTests
 {

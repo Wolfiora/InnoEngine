@@ -3,7 +3,7 @@ using Xunit;
 using Inno.Adapter.Platform;
 using Inno.Platform;
 
-namespace Inno.Input.Tests;
+namespace Inno.Shell.Tests;
 
 public sealed class NativeWindowSurfaceTests
 {
