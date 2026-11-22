@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <InnoValidationLayer>contract</InnoValidationLayer>
+    <InnoValidationLayer>domain</InnoValidationLayer>
     <InnoValidationReusable>false</InnoValidationReusable>
     <InnoAssemblyScope>Editor</InnoAssemblyScope>
   </PropertyGroup>

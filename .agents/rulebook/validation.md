@@ -8,6 +8,7 @@ tags: [tests, compilation, completion, review, new-boundary, public-api, ownersh
 
 - Changes to regression, public-contract and validation-tool tests required by the task are permitted. Preserve existing assertions and failure scenarios. Unrelated test rewrites, weaker assertions, production entry points only for tests, InternalsVisibleTo and reflection bypasses are prohibited.
 - Select tests from the actual impact graph, behavioral contracts and execution prerequisites. Test filters must not conceal native build dependencies.
+- Every test project declares the execution layer it actually needs, and its name says the same: `domain` and `contract` suites end with `.Tests`, `integration` with `.Integration.Tests`, `native` with `.Native.Tests` and `product` with `.Product.Tests`. A binding suite named `Inno.Native.*` is already native. A `domain` suite has no native preparation anywhere in its build closure; a suite that deploys a native product is `native` or `product`.
 
 ## 9. Compilation safety
 - Before ending a conversation, do not leave visible compilation errors introduced within the changed target scope, including non-test code.

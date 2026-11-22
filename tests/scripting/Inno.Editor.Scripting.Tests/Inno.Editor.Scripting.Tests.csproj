@@ -6,12 +6,9 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <InnoValidationLayer>contract</InnoValidationLayer>
+    <InnoValidationLayer>domain</InnoValidationLayer>
     <InnoValidationReusable>false</InnoValidationReusable>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <InnoAssemblyScope>Editor</InnoAssemblyScope>
-    <InnoTestNativeProduct>editor</InnoTestNativeProduct>
-    <InnoTestNativeTarget>$(InnoNativeTarget)</InnoTestNativeTarget>
     <DefineConstants>$(DefineConstants);INNO_EDITOR</DefineConstants>
   </PropertyGroup>
 

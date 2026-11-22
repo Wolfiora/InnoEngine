@@ -319,7 +319,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "runtime", "runtime", "{A93D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Adapter.Rendering.Bgfx", "backends\Bgfx\runtime\Inno.Adapter.Rendering.Bgfx\Inno.Adapter.Rendering.Bgfx.csproj", "{A2CA697E-FF0A-4BC4-96C1-CC2E0D1DA33E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Adapter.Rendering.Bgfx.Tests", "tests\backends\Bgfx\Inno.Adapter.Rendering.Bgfx.Tests\Inno.Adapter.Rendering.Bgfx.Tests.csproj", "{D761B4FA-8716-4203-A21D-F51084537107}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Adapter.Rendering.Bgfx.Native.Tests", "tests\backends\Bgfx\Inno.Adapter.Rendering.Bgfx.Native.Tests\Inno.Adapter.Rendering.Bgfx.Native.Tests.csproj", "{D761B4FA-8716-4203-A21D-F51084537107}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DotNet", "DotNet", "{54E32F6D-3305-5852-983A-5B44079F2545}"
 EndProject
@@ -387,7 +387,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "runtime", "runtime", "{AF3F
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Adapter.Audio.MiniAudio", "backends\MiniAudio\runtime\Inno.Adapter.Audio.MiniAudio\Inno.Adapter.Audio.MiniAudio.csproj", "{3716F71C-09E7-44B8-ACFA-D910A934783A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Adapter.Audio.MiniAudio.Tests", "tests\backends\MiniAudio\Inno.Adapter.Audio.MiniAudio.Tests\Inno.Adapter.Audio.MiniAudio.Tests.csproj", "{A7B51F36-D7C9-48A1-8C05-6D4939292736}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Adapter.Audio.MiniAudio.Native.Tests", "tests\backends\MiniAudio\Inno.Adapter.Audio.MiniAudio.Native.Tests\Inno.Adapter.Audio.MiniAudio.Native.Tests.csproj", "{A7B51F36-D7C9-48A1-8C05-6D4939292736}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Native.MiniAudio.Tests", "tests\backends\MiniAudio\Inno.Native.MiniAudio.Tests\Inno.Native.MiniAudio.Tests.csproj", "{FC817548-B626-452B-9505-48E7A9F5E273}"
 EndProject
@@ -421,7 +421,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "runtime", "runtime", "{A4D2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Adapter.Platform.Sdl3", "backends\Sdl3\runtime\Inno.Adapter.Platform.Sdl3\Inno.Adapter.Platform.Sdl3.csproj", "{6092DB32-4A29-410B-B7D7-0842F76427A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Adapter.Platform.Sdl3.Tests", "tests\backends\Sdl3\Inno.Adapter.Platform.Sdl3.Tests\Inno.Adapter.Platform.Sdl3.Tests.csproj", "{8CDC7538-F772-4C4B-97E1-E11ACD378543}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Adapter.Platform.Sdl3.Native.Tests", "tests\backends\Sdl3\Inno.Adapter.Platform.Sdl3.Native.Tests\Inno.Adapter.Platform.Sdl3.Native.Tests.csproj", "{8CDC7538-F772-4C4B-97E1-E11ACD378543}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Native.Sdl3.Tests", "tests\backends\Sdl3\Inno.Native.Sdl3.Tests\Inno.Native.Sdl3.Tests.csproj", "{6FB47C97-B108-4B66-BE34-69437A4FC91D}"
 EndProject
@@ -633,17 +633,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Editor.Settings.Tests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Editor.Features.Tests", "tests\editor\Inno.Editor.Features.Tests\Inno.Editor.Features.Tests.csproj", "{77A79B2A-5F74-528B-B697-5DFA648C56AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Editor.Shaders.Tests", "tests\editor\Inno.Editor.Shaders.Tests\Inno.Editor.Shaders.Tests.csproj", "{9FD1267D-0E10-5166-B183-B694E78A1354}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Editor.Shaders.Native.Tests", "tests\editor\Inno.Editor.Shaders.Native.Tests\Inno.Editor.Shaders.Native.Tests.csproj", "{9FD1267D-0E10-5166-B183-B694E78A1354}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Editor.Hosting.Tests", "tests\editor\Inno.Editor.Hosting.Tests\Inno.Editor.Hosting.Tests.csproj", "{9FBDECA6-5685-5F02-A148-9FA47735E7A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Editor.ImGui.Tests", "tests\editor\Inno.Editor.ImGui.Tests\Inno.Editor.ImGui.Tests.csproj", "{397DB5A1-FFCE-4D81-AD36-E4F9B94058D8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Editor.ImGui.Native.Tests", "tests\editor\Inno.Editor.ImGui.Native.Tests\Inno.Editor.ImGui.Native.Tests.csproj", "{397DB5A1-FFCE-4D81-AD36-E4F9B94058D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Editor.Inspection.Tests", "tests\editor\Inno.Editor.Inspection.Tests\Inno.Editor.Inspection.Tests.csproj", "{DF62BA99-CC07-4E30-9881-A585E7B060E0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Editor.Inspection.Native.Tests", "tests\editor\Inno.Editor.Inspection.Native.Tests\Inno.Editor.Inspection.Native.Tests.csproj", "{DF62BA99-CC07-4E30-9881-A585E7B060E0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Editor.Interactions.Tests", "tests\editor\Inno.Editor.Interactions.Tests\Inno.Editor.Interactions.Tests.csproj", "{4116F28D-FA32-4D06-AFC6-13D975FB46C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Editor.PlayMode.Tests", "tests\editor\Inno.Editor.PlayMode.Tests\Inno.Editor.PlayMode.Tests.csproj", "{A5788F8E-70F6-497C-AF52-91A467D0ADE7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Editor.PlayMode.Native.Tests", "tests\editor\Inno.Editor.PlayMode.Native.Tests\Inno.Editor.PlayMode.Native.Tests.csproj", "{A5788F8E-70F6-497C-AF52-91A467D0ADE7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Editor.Panels.Native.Tests", "tests\editor\Inno.Editor.Panels.Native.Tests\Inno.Editor.Panels.Native.Tests.csproj", "{BBB707A0-B453-5FC4-98B2-4B01D0FA1642}"
 EndProject
@@ -693,7 +693,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Rendering.Assets.Autho
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Rendering.Runtime.Tests", "tests\rendering\Inno.Rendering.Runtime.Tests\Inno.Rendering.Runtime.Tests.csproj", "{CA45BD48-F2DC-4126-907F-CFF7E263C258}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Rendering.Shaders.Tests", "tests\rendering\Inno.Rendering.Shaders.Tests\Inno.Rendering.Shaders.Tests.csproj", "{8FF691E4-EFB5-47D4-8B99-3D3C2B49D266}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Rendering.Shaders.Native.Tests", "tests\rendering\Inno.Rendering.Shaders.Native.Tests\Inno.Rendering.Shaders.Native.Tests.csproj", "{8FF691E4-EFB5-47D4-8B99-3D3C2B49D266}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Rendering.Tests", "tests\rendering\Inno.Rendering.Tests\Inno.Rendering.Tests.csproj", "{4EE08789-5C77-4C79-BD1B-80FF0E59434F}"
 EndProject
@@ -721,11 +721,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Storage.Tests", "tests
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "text", "text", "{270B3F56-DA5E-5156-A21F-DC62C154B714}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Text.Tests", "tests\text\Inno.Text.Tests\Inno.Text.Tests.csproj", "{5AC513C6-FC22-4DF2-AE59-41AE5924E489}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Text.Native.Tests", "tests\text\Inno.Text.Native.Tests\Inno.Text.Native.Tests.csproj", "{5AC513C6-FC22-4DF2-AE59-41AE5924E489}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tooling", "tooling", "{A92BE6B3-5A5B-5DDA-A8BA-E9404DE1A098}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Tooling.Architecture.Tests", "tests\tooling\Inno.Tooling.Architecture.Tests\Inno.Tooling.Architecture.Tests.csproj", "{24A449B0-2513-4331-9C4B-57E4FE8A3A2A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Tooling.Architecture.Integration.Tests", "tests\tooling\Inno.Tooling.Architecture.Integration.Tests\Inno.Tooling.Architecture.Integration.Tests.csproj", "{24A449B0-2513-4331-9C4B-57E4FE8A3A2A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ui", "ui", "{D4C23A22-17B6-5056-88BE-886C28E04A9C}"
 EndProject
@@ -741,7 +741,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Testing.Discovery.Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Testing.Processes.Tests", "tests\process\Inno.Testing.Processes.Tests\Inno.Testing.Processes.Tests.csproj", "{A76C40F7-DC01-4EB9-A4D4-FCB75534CAF7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.Toolchains.Tests", "tests\build\Inno.Build.Toolchains.Tests\Inno.Build.Toolchains.Tests.csproj", "{45FCDED9-D3FB-4759-AF85-B2AF872A6AAE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.Toolchains.Integration.Tests", "tests\build\Inno.Build.Toolchains.Integration.Tests\Inno.Build.Toolchains.Integration.Tests.csproj", "{45FCDED9-D3FB-4759-AF85-B2AF872A6AAE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "source", "source", "{31EF3A85-75BC-4287-6C9B-2C8BFD83A326}"
 EndProject
@@ -765,7 +765,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Editor.Shaders.ImGui",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Tooling.Validation", "tools\Inno.Tooling.Validation\Inno.Tooling.Validation.csproj", "{7922650B-C185-42E3-AB67-16CA5F60DE69}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Adapter.UI.RmlUi.Tests", "tests\backends\RmlUi\Inno.Adapter.UI.RmlUi.Tests\Inno.Adapter.UI.RmlUi.Tests.csproj", "{318F836E-F48E-41E2-9746-0D527F18857C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Adapter.UI.RmlUi.Native.Tests", "tests\backends\RmlUi\Inno.Adapter.UI.RmlUi.Native.Tests\Inno.Adapter.UI.RmlUi.Native.Tests.csproj", "{318F836E-F48E-41E2-9746-0D527F18857C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Tooling.Validation.Tests", "tests\tooling\Inno.Tooling.Validation.Tests\Inno.Tooling.Validation.Tests.csproj", "{23419CE1-1747-4340-B5D0-679C64699971}"
 EndProject
@@ -777,13 +777,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Testing.Editor.Native"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "fixtures", "fixtures", "{36FD1D0B-950F-C9DC-7824-A5D4D1CD50D6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.Bindings.Tests", "tests\build\Inno.Build.Bindings.Tests\Inno.Build.Bindings.Tests.csproj", "{856026DD-A708-444D-83F4-D248A26CF2CA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.Bindings.Integration.Tests", "tests\build\Inno.Build.Bindings.Integration.Tests\Inno.Build.Bindings.Integration.Tests.csproj", "{856026DD-A708-444D-83F4-D248A26CF2CA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Tooling.Documentation", "tools\Inno.Tooling.Documentation\Inno.Tooling.Documentation.csproj", "{3A2D57A5-A632-48AA-98E5-73998582255D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Tooling.Documentation.Tests", "tests\tooling\Inno.Tooling.Documentation.Tests\Inno.Tooling.Documentation.Tests.csproj", "{0DADF78A-E3F8-435A-8C63-7232105A52E8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Tooling.Documentation.Integration.Tests", "tests\tooling\Inno.Tooling.Documentation.Integration.Tests\Inno.Tooling.Documentation.Integration.Tests.csproj", "{0DADF78A-E3F8-435A-8C63-7232105A52E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.Cli.Tests", "tests\build\Inno.Build.Cli.Tests\Inno.Build.Cli.Tests.csproj", "{98F9706C-8207-4A5D-9873-F23E0B5B69AE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.Cli.Integration.Tests", "tests\build\Inno.Build.Cli.Integration.Tests\Inno.Build.Cli.Integration.Tests.csproj", "{98F9706C-8207-4A5D-9873-F23E0B5B69AE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "backends", "backends", "{E053ADF0-3380-46D4-8DE4-E9E0C3B26EFE}"
 EndProject
@@ -819,9 +819,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "platforms", "platforms", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BrowserWasm32", "BrowserWasm32", "{46FDF465-29D5-4344-9398-4C8122F7C646}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.BrowserWasm32.Tests", "tests\platforms\BrowserWasm32\Inno.Build.BrowserWasm32.Tests\Inno.Build.BrowserWasm32.Tests.csproj", "{A0BDF371-925A-470D-952C-AC77890BE322}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.BrowserWasm32.Integration.Tests", "tests\platforms\BrowserWasm32\Inno.Build.BrowserWasm32.Integration.Tests\Inno.Build.BrowserWasm32.Integration.Tests.csproj", "{A0BDF371-925A-470D-952C-AC77890BE322}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.BrowserWasm32.Integration.Tests", "tests\platforms\BrowserWasm32\Inno.Build.BrowserWasm32.Integration.Tests\Inno.Build.BrowserWasm32.Integration.Tests.csproj", "{FF650E04-A7FA-47BD-95E8-84EED4D96502}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.BrowserWasm32.Product.Tests", "tests\platforms\BrowserWasm32\Inno.Build.BrowserWasm32.Product.Tests\Inno.Build.BrowserWasm32.Product.Tests.csproj", "{FF650E04-A7FA-47BD-95E8-84EED4D96502}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WindowsX64", "WindowsX64", "{CDDE29D3-E5C1-4168-85FF-46A8A62140C6}"
 EndProject
@@ -841,7 +841,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.MacOSArm64.Tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Testing.SupportPacks", "tests\build\fixtures\Inno.Testing.SupportPacks\Inno.Testing.SupportPacks.csproj", "{2A3B409D-2CD9-4867-BE02-ADF5C22B1B32}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.Toolchains.Bgfx.Integration.Tests", "tests\backends\Bgfx\Inno.Build.Toolchains.Bgfx.Integration.Tests\Inno.Build.Toolchains.Bgfx.Integration.Tests.csproj", "{13A23530-F73E-4E47-8052-2A305441B055}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.Toolchains.Bgfx.Native.Tests", "tests\backends\Bgfx\Inno.Build.Toolchains.Bgfx.Native.Tests\Inno.Build.Toolchains.Bgfx.Native.Tests.csproj", "{13A23530-F73E-4E47-8052-2A305441B055}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "fixtures", "fixtures", "{BBC6FA1B-EC3B-48D8-B7DA-C527F9D61BA4}"
 EndProject

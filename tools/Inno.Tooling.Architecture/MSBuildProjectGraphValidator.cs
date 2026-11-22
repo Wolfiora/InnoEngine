@@ -16,6 +16,23 @@ internal static class MSBuildProjectGraphValidator
         "InnoEngine.Editor", "InnoEngine.Build"
     };
 
+    // Suites that prove one behavior across several production projects, so no single project names them.
+    private static readonly HashSet<string> CROSS_PROJECT_TEST_SUBJECTS = new(StringComparer.Ordinal)
+    {
+        // Native producer selection, caching and publication across the Build pipeline and its toolchains.
+        "Inno.Build.NativeProducer",
+        // Declared product profiles resolved through the Build pipeline and every registered platform.
+        "Inno.Build.ProductProfiles",
+        // Product composition across the Build pipeline, packaging and platform contributions.
+        "Inno.Build.Products",
+        // Support pack production and consumption across the Build pipeline and the Editor exporter.
+        "Inno.Build.SupportPacks",
+        // Editor feature projects that each carry fewer than five tests.
+        "Inno.Editor.Features",
+        // Native layout, keyboard and lifecycle behavior of the Editor panels composed together.
+        "Inno.Editor.Panels"
+    };
+
     internal static async Task<IReadOnlyDictionary<string, string>> ValidateAsync(
         string root,
         string configuration,
@@ -35,6 +52,9 @@ internal static class MSBuildProjectGraphValidator
             .Where(project => selectedOwners is null || selectedOwners.Contains(Relative(root, project)))
             .Order(StringComparer.Ordinal)
             .ToArray();
+        HashSet<string> owners = RepositorySourceInventory.Projects(root)
+            .Select(static project => Path.GetFileNameWithoutExtension(project))
+            .ToHashSet(StringComparer.Ordinal);
         List<EvaluatedProject> evaluated = [];
         var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -64,13 +84,13 @@ internal static class MSBuildProjectGraphValidator
             {
                 continue;
             }
-            ValidateProject(root, project, failures);
+            ValidateProject(root, project, owners, failures);
             if (snapshot.TryGetProperty("Variants", out JsonElement variants))
             {
                 EvaluatedProject[] effective = variants.EnumerateArray().Select(variant => ReadSnapshot(root, variant)).ToArray();
                 foreach (EvaluatedProject variant in effective)
                 {
-                    ValidateProject(root, variant, failures);
+                    ValidateProject(root, variant, owners, failures);
                 }
                 project = project with
                 {
@@ -144,13 +164,15 @@ internal static class MSBuildProjectGraphValidator
             Value(properties, "IsTestSupportProject").Equals("true", StringComparison.OrdinalIgnoreCase)
             || items.TryGetProperty("PackageReference", out JsonElement packages)
                && packages.EnumerateArray().Any(static item => RepositorySourceInventory.IsTestPackage(Value(item, "Identity"))),
-            Value(properties, "InnoTestNativeProduct").Length != 0 || Value(properties, "InnoProductId").Length != 0
+            Value(properties, "InnoTestNativeProduct").Length != 0 || Value(properties, "InnoProductId").Length != 0,
+            Value(properties, "InnoTestNativeProduct").Length != 0
         );
     }
 
     private static void ValidateProject(
         string root,
         EvaluatedProject project,
+        IReadOnlySet<string> owners,
         ICollection<string> failures
     ) {
         bool test = RepositorySourceInventory.IsTestPath(project.path);
@@ -161,6 +183,10 @@ internal static class MSBuildProjectGraphValidator
         if (project.isTest && project.layer is not ("domain" or "contract" or "integration" or "native" or "product"))
         {
             failures.Add($"{project.path}: test execution layer must declare its actual execution requirements.");
+        }
+        if (project.isTest)
+        {
+            ValidateTestIdentity(project, owners, failures);
         }
         if (project.implicitUsings.Equals("enable", StringComparison.OrdinalIgnoreCase)
             || project.implicitUsings.Equals("true", StringComparison.OrdinalIgnoreCase)
@@ -208,6 +234,47 @@ internal static class MSBuildProjectGraphValidator
             {
                 failures.Add($"{project.path}: effective hand-authored Compile source has a second owner: {source.path}.");
             }
+        }
+    }
+
+    private static void ValidateTestIdentity(
+        EvaluatedProject project,
+        IReadOnlySet<string> owners,
+        ICollection<string> failures
+    ) {
+        const string C_TESTS = ".Tests";
+        string name = Path.GetFileNameWithoutExtension(project.path);
+        if (!name.EndsWith(C_TESTS, StringComparison.Ordinal))
+        {
+            failures.Add($"{project.path}: test project name must end with {C_TESTS}.");
+            return;
+        }
+        string subject = name[..^C_TESTS.Length];
+        // A binding project already names the native layer.
+        string named = subject.StartsWith("Inno.Native.", StringComparison.Ordinal) ? "native" : string.Empty;
+        foreach (string layer in new[] { "integration", "native", "product" })
+        {
+            if (subject.EndsWith("." + layer, StringComparison.OrdinalIgnoreCase))
+            {
+                named = layer;
+                subject = subject[..^(layer.Length + 1)];
+                break;
+            }
+        }
+        if (named.Length == 0 ? project.layer is not ("domain" or "contract") : project.layer != named)
+        {
+            failures.Add(
+                $"{project.path}: test project name and execution layer '{project.layer}' must agree; "
+                + "integration, native and product suites end with .Integration.Tests, .Native.Tests and .Product.Tests."
+            );
+        }
+        if (project.nativeProduct && project.layer is not ("native" or "product"))
+        {
+            failures.Add($"{project.path}: a test that deploys a native product must declare the native or product execution layer.");
+        }
+        if (!owners.Contains(subject) && !CROSS_PROJECT_TEST_SUBJECTS.Contains(subject))
+        {
+            failures.Add($"{project.path}: test project must be named after the project it tests or a declared cross-project suite.");
         }
     }
 
@@ -338,7 +405,8 @@ internal static class MSBuildProjectGraphValidator
         string layer,
         bool isTest,
         bool testSupport,
-        bool native
+        bool native,
+        bool nativeProduct
     );
 
     private sealed record EvaluatedReference(

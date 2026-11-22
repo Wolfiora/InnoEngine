@@ -15,6 +15,7 @@ tags: [solution, directories, new-boundary]
 - `src/composition`: default engine, Shell, Player and Editor composition entries.
 - `entry`: the two lightweight development entries and current-host routing. Other production layers must not reference it. `Inno.Packages.props` pins NuGet versions for the BGCS package family; no source-dependency entry is provided.
 - `build`, `tools`, `tests`: neutral unified builds, concrete distribution registration, validation libraries and tests. All engine-owned tests, fixtures and test support belong to the root `tests` tree; upstream tests inside `extern` retain their upstream owner. Production projects must not reference test projects or test support.
+- A test project is named after the production project it tests: `<Project>.Tests`, or `<Project>.Integration.Tests`, `<Project>.Native.Tests` and `<Project>.Product.Tests` for the heavier execution layers. A suite that proves one behavior across several projects is named after that behavior and listed with its reason in the architecture validator.
 - Place new files in directories matching the existing layers and responsibilities wherever possible.
 
 ## 26. Solutions and project files

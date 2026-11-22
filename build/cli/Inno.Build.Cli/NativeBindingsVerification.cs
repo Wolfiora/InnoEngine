@@ -312,7 +312,7 @@ internal static partial class NativeBindingsVerification
             ))
             .Order(StringComparer.Ordinal)
             .ToList();
-        projects.Add(Path.Combine(repositoryRoot, "tests", "text", "Inno.Text.Tests", "Inno.Text.Tests.csproj"));
+        projects.Add(Path.Combine(repositoryRoot, "tests", "text", "Inno.Text.Native.Tests", "Inno.Text.Native.Tests.csproj"));
         projects.Add(Path.Combine(repositoryRoot, "tests", "ui", "Inno.UI.Tests", "Inno.UI.Tests.csproj"));
         if (projects.Count == 0)
         {

@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
-    <InnoValidationLayer>contract</InnoValidationLayer>
+    <InnoValidationLayer>domain</InnoValidationLayer>
   </PropertyGroup>
 
   <Import Project="../../RepositoryInput.targets" />

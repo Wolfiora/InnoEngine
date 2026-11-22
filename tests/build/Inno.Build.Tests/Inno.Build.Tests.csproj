@@ -5,7 +5,7 @@
     <IsPackable>false</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsTestProject>true</IsTestProject>
-    <InnoValidationLayer>contract</InnoValidationLayer>
+    <InnoValidationLayer>domain</InnoValidationLayer>
   </PropertyGroup>
   <Import Project="../../RepositoryInput.targets" />
   <ItemGroup>
