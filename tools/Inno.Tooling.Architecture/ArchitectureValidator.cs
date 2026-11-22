@@ -157,6 +157,7 @@ public static partial class ArchitectureValidator
         {
             throw new ArgumentException("Source-only validation cannot claim compiled API evidence.", nameof(arguments));
         }
+        List<StyleSuppression> suppressions = [];
         if (expandXml)
         {
             int changedFileCount = ExpandXmlDocumentation(repositoryRoot);
@@ -207,13 +208,21 @@ public static partial class ArchitectureValidator
                 continue;
             }
             ValidateDirectories(repositoryRoot, root, failures);
-            ValidateSources(repositoryRoot, root, failures, documentationModels, sourceTrees, sourceOnly);
+            ValidateSources(
+                repositoryRoot,
+                root,
+                failures,
+                documentationModels,
+                sourceTrees,
+                sourceOnly,
+                suppressions: suppressions
+            );
         }
         }
 
         if (!metadataOnly)
         {
-            ValidateTestStyle(repositoryRoot, failures);
+            ValidateTestStyle(repositoryRoot, failures, suppressions);
             UsingPolicyValidator.Validate(repositoryRoot, failures, sourceTrees);
             ValidateProjectReferences(repositoryRoot, failures);
             ValidateProductionSolutionFolders(repositoryRoot, failures);
@@ -263,6 +272,16 @@ public static partial class ArchitectureValidator
                     sourceTrees,
                     semanticOnly: true
                 );
+            }
+        }
+        if (suppressions.Count > 0)
+        {
+            Console.WriteLine($"Style suppressions: {suppressions.Count}.");
+            foreach (StyleSuppression suppression in suppressions
+                .OrderBy(static suppression => suppression.path, StringComparer.Ordinal)
+                .ThenBy(static suppression => suppression.line)
+            ) {
+                Console.WriteLine($"  {suppression.path}:{suppression.line}: {suppression.rule}: {suppression.justification}");
             }
         }
         if (failures.Count == 0)
@@ -318,11 +337,12 @@ public static partial class ArchitectureValidator
     // Test sources follow the style rulebook; the production contracts below do not apply to them.
     private static void ValidateTestStyle(
         string repositoryRoot,
-        ICollection<string> failures
+        ICollection<string> failures,
+        ICollection<StyleSuppression> suppressions
     ) {
         foreach (string path in EnumerateFiles(Path.Combine(repositoryRoot, "tests"), "*.cs"))
         {
-            CSharpStyleValidator.ValidateStyle(Relative(repositoryRoot, path), File.ReadAllText(path), failures);
+            CSharpStyleValidator.ValidateStyle(Relative(repositoryRoot, path), File.ReadAllText(path), failures, suppressions);
         }
     }
 
@@ -333,7 +353,8 @@ public static partial class ArchitectureValidator
         DocumentationSourceModels documentationModels,
         IDictionary<string, SyntaxTree> sourceTrees,
         bool sourceOnly = false,
-        bool semanticOnly = false
+        bool semanticOnly = false,
+        ICollection<StyleSuppression>? suppressions = null
     ) {
         foreach (string path in EnumerateFiles(root, "*.cs"))
         {
@@ -350,7 +371,7 @@ public static partial class ArchitectureValidator
             }
             if (!semanticOnly)
             {
-                CSharpStyleValidator.Validate(relative, source, syntax, failures);
+                CSharpStyleValidator.Validate(relative, source, syntax, failures, suppressions);
             }
             if (relative.StartsWith("tools/Inno.Tooling.Architecture/", StringComparison.Ordinal)
                 || RepositorySourceInventory.IsTestPath(relative)

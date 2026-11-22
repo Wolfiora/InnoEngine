@@ -18,6 +18,8 @@ internal sealed class AttributeStyleRule : StyleRule
 
     internal override StyleRuleKind kind => StyleRuleKind.Rewrite;
 
+    internal override bool isFixable => true;
+
     internal override void Check(
         StyleSource source,
         ICollection<StyleFinding> findings

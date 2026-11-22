@@ -18,6 +18,8 @@ internal sealed class LineWidthStyleRule : StyleRule
 
     internal override StyleRuleKind kind => StyleRuleKind.Layout;
 
+    internal override bool isFixable => true;
+
     internal override void Check(
         StyleSource source,
         ICollection<StyleFinding> findings

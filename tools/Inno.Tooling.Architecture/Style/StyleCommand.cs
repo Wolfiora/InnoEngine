@@ -17,7 +17,7 @@ public static class StyleCommand
     /// The operation, the repository root, and the optional <c>--rule</c>, <c>--paths-from</c> and <c>--report</c> options.
     /// </param>
     /// <returns>
-    /// Zero when no finding and no rejected fix remains; otherwise one.
+    /// Zero when no finding and no rejected fix remains; otherwise one. A suppression does not change the result.
     /// </returns>
     /// <exception cref="ArgumentException">
     /// The arguments do not name an operation and a repository root, or an option is unknown.
@@ -70,6 +70,13 @@ public static class StyleCommand
                 .Select(static finding => $"{finding.rule}\t{finding.path}\t{finding.line}\t{finding.message}")
                 .Concat(
                     result.rejections.Select(static rejection => $"REJECTED:{rejection.rule}\t{rejection.path}\t0\t{rejection.reason}")
+                )
+                .Concat(
+                    result.suppressions.Select(
+                        static suppression => (
+                            $"SUPPRESSED:{suppression.rule}\t{suppression.path}\t{suppression.line}\t{suppression.justification}"
+                        )
+                    )
                 );
             File.WriteAllLines(report, lines);
         }
@@ -80,6 +87,15 @@ public static class StyleCommand
         foreach (IGrouping<string, StyleFinding> group in result.findings.GroupBy(static finding => finding.rule))
         {
             Console.WriteLine($"{group.Key}\t{group.Count()}\t{group.Select(static finding => finding.path).Distinct().Count()} files");
+        }
+
+        if (result.suppressions.Count > 0)
+        {
+            Console.WriteLine($"Suppressions: {result.suppressions.Count}.");
+            foreach (StyleSuppression suppression in result.suppressions)
+            {
+                Console.WriteLine($"{suppression.rule}\t{suppression.path}:{suppression.line}\t{suppression.justification}");
+            }
         }
 
         return result.findings.Count == 0 && result.rejections.Count == 0 ? 0 : 1;

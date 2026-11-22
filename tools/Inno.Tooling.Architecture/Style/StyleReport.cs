@@ -6,5 +6,6 @@ internal sealed record StyleReport(
     int files,
     int changedFiles,
     IReadOnlyList<StyleFinding> findings,
-    IReadOnlyList<StyleRejection> rejections
+    IReadOnlyList<StyleRejection> rejections,
+    IReadOnlyList<StyleSuppression> suppressions
 );

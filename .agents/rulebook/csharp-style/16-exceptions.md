@@ -25,3 +25,21 @@ The following cases follow an external contract. Do not rename or reformat them 
 | Overloaded equality operators | `== null` and `!= null` where the type defines the result of the comparison (E-04) | `EngineObject`, whose destroyed instances compare equal to `null` |
 
 Keep each exception as small as possible: it covers the name or the layout bound by the contract, and the rest of the file follows the rulebook.
+
+## EX-01 Suppressing a finding in source
+
+When a declaration must break a rule that the style check reports and no row above covers the case, mark the declaration with `SuppressMessage`.
+
+```csharp
+[SuppressMessage("InnoStyle", "P-03", Justification = "The delegate type of the plug-in host fixes this parameter order.")]
+private Task LoadAsync(CancellationToken cancellationToken, string path) => m_loader.LoadAsync(path, cancellationToken);
+```
+
+- The category is `InnoStyle`. The check ID is exactly one rule ID. No form suppresses every rule.
+- `Justification` states the reason as a complete English sentence.
+- The attribute goes on the smallest member or type that contains the finding, and it covers only that declaration. An attribute on an assembly, a module, a parameter or a return value does not suppress.
+- A rule that `style fix` corrects cannot be suppressed.
+- A suppression that hides no finding is itself a finding. Remove it when the code changes.
+- `style check` and the architecture validation list every suppression with its rule, location and justification.
+
+`SuppressMessage` is conditional on `CODE_ANALYSIS`, so the attribute does not reach the compiled assembly.

@@ -9,19 +9,21 @@ internal static class CSharpStyleValidator
         string relativePath,
         string content,
         SyntaxTree tree,
-        ICollection<string> failures
+        ICollection<string> failures,
+        ICollection<StyleSuppression>? suppressions = null
     ) {
         EditorPresentationSourceValidator.Validate(relativePath, tree, failures);
-        ValidateStyle(relativePath, content, failures);
+        ValidateStyle(relativePath, content, failures, suppressions);
     }
 
     // Reports each finding of the style rulebook as '<path>:<line>: <rule>: <message>'.
     internal static void ValidateStyle(
         string relativePath,
         string content,
-        ICollection<string> failures
+        ICollection<string> failures,
+        ICollection<StyleSuppression>? suppressions = null
     ) {
-        foreach (StyleFinding finding in StyleEngine.Check(relativePath, content))
+        foreach (StyleFinding finding in StyleEngine.Check(relativePath, content, suppressions))
         {
             failures.Add($"{finding.path}:{finding.line}: {finding.rule}: {finding.message}");
         }

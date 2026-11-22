@@ -66,8 +66,11 @@ The engine currently enforces these rules. A finding is reported under the first
 | S-03, S-04 | |
 | E-01, E-03, E-04, E-05, E-06, E-07, E-08, E-09, E-10, E-11, E-12 | |
 | D-02, D-05, D-06 | D-04 |
+| EX-01 | |
 
 Every other rule is not yet checked by the tool and is enforced in review: N-02, T-05, T-07, T-08, B-02, A-04, S-01, S-02, E-02, all X rules, D-03 and all TS rules. The compiler enforces D-01 through `CS1591`. The checks for N-05, E-04 and E-08 read syntax only: N-05 recognizes a qualified name by its root namespace, E-04 reports a negated `is null` and leaves `==` comparisons to review because an overloaded operator is not visible in syntax, and E-08 knows the members that the same type declaration declares. The naming check reads syntax only: it trusts the names of overrides, interface implementations, native interop declarations and serialized members, and it exempts test methods from the `Async` suffix. `.editorconfig` states the same naming table for editors.
+
+A `SuppressMessage("InnoStyle", "<rule ID>", Justification = "...")` attribute on a member or a type hides the findings of that rule inside the declaration (EX-01). The engine reports a suppression that names no checked rule, names a rule that `style fix` corrects, has no justification, sits on another target or hides no finding. `style check` and the architecture validation list every suppression.
 
 These checks read syntax only and report the part of a rule that syntax decides:
 

@@ -304,6 +304,125 @@ public sealed class StyleCommandTests
     }
 
     [Fact]
+    public void ASuppressionHidesTheFindingsOfItsRuleInsideItsDeclaration()
+    {
+        string root = CreateRoot();
+        try
+        {
+            string report = Path.Combine(root, "report.tsv");
+            File.WriteAllText(
+                Path.Combine(root, "src", "Probe.cs"),
+                Source(
+                    """
+                    using System.Diagnostics.CodeAnalysis;
+
+                    internal sealed class Probe
+                    {
+                        [SuppressMessage("InnoStyle", "NM-13", Justification = "The JSON model writes this name as the key.")]
+                        internal int assetId => 0;
+
+                        [SuppressMessage("Performance", "CA1822")]
+                        internal int nodeId => 0;
+                    }
+                    """
+                )
+            );
+
+            Assert.Equal(1, StyleCommand.Execute(["check", root, "--report", report]));
+            string[] lines = File.ReadAllLines(report);
+            Assert.Equal(2, lines.Length);
+            Assert.StartsWith("NM-13\tsrc/Probe.cs\t9\t", lines[0], StringComparison.Ordinal);
+            Assert.Equal("SUPPRESSED:NM-13\tsrc/Probe.cs\t5\tThe JSON model writes this name as the key.", lines[1]);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData("[SuppressMessage(\"InnoStyle\", \"NM-13\")]", "State the reason")]
+    [InlineData("[SuppressMessage(\"InnoStyle\", \"NM-13\", Justification = \" \")]", "State the reason")]
+    [InlineData("[SuppressMessage(\"InnoStyle\", \"\", Justification = \"The name is a key.\")]", "Name one rule ID")]
+    [InlineData("[SuppressMessage(\"InnoStyle\", \"X-99\", Justification = \"The name is a key.\")]", "does not report")]
+    [InlineData("[SuppressMessage(\"InnoStyle\", \"B-05\", Justification = \"The name is a key.\")]", "`style fix` corrects")]
+    [InlineData(
+        "[return: SuppressMessage(\"InnoStyle\", \"NM-13\", Justification = \"The name is a key.\")]",
+        "on a member or a type"
+    )]
+    public void ASuppressionThatBreaksItsContractIsReportedAndHidesNothing(
+        string attribute,
+        string message
+    ) {
+        string root = CreateRoot();
+        try
+        {
+            string report = Path.Combine(root, "report.tsv");
+            File.WriteAllText(
+                Path.Combine(root, "src", "Probe.cs"),
+                Source(
+                    "using System.Diagnostics.CodeAnalysis;\n\ninternal sealed class Probe\n{\n    "
+                    + attribute
+                    + "\n    internal int assetId => 0;\n}"
+                )
+            );
+
+            Assert.Equal(1, StyleCommand.Execute(["check", root, "--report", report]));
+            string[] lines = File.ReadAllLines(report);
+            Assert.Contains(
+                lines,
+                line => (
+                    line.StartsWith("EX-01\tsrc/Probe.cs\t5\t", StringComparison.Ordinal)
+                    && line.Contains(message, StringComparison.Ordinal)
+                )
+            );
+            Assert.DoesNotContain(lines, static line => line.StartsWith("SUPPRESSED:", StringComparison.Ordinal));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ASuppressionThatHidesNoFindingIsReported()
+    {
+        string root = CreateRoot();
+        try
+        {
+            string report = Path.Combine(root, "report.tsv");
+            File.WriteAllText(
+                Path.Combine(root, "src", "Probe.cs"),
+                Source(
+                    """
+                    using System.Diagnostics.CodeAnalysis;
+
+                    internal sealed class Probe
+                    {
+                        [SuppressMessage("InnoStyle", "NM-13", Justification = "The name is a key.")]
+                        internal int assetID => 0;
+                    }
+                    """
+                )
+            );
+
+            Assert.Equal(1, StyleCommand.Execute(["check", root, "--report", report]));
+            Assert.Contains(
+                File.ReadAllLines(report),
+                static line => (
+                    line.StartsWith("EX-01\tsrc/Probe.cs\t5\t", StringComparison.Ordinal)
+                    && line.Contains("hides no finding", StringComparison.Ordinal)
+                )
+            );
+            Assert.Equal(0, StyleCommand.Execute(["check", root, "--rule", "P-03"]));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public void PathsFromLimitsTheRunToTheListedSources()
     {
         string root = CreateRoot();

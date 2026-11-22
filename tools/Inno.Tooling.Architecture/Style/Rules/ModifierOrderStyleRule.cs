@@ -41,6 +41,8 @@ internal sealed class ModifierOrderStyleRule : StyleRule
 
     internal override StyleRuleKind kind => StyleRuleKind.Reorder;
 
+    internal override bool isFixable => true;
+
     internal override void Check(
         StyleSource source,
         ICollection<StyleFinding> findings

@@ -130,6 +130,7 @@ internal static class StyleEngine
         StyleRule[] rules = RULES.Where(rule => ruleIDs.Count == 0 || ruleIDs.Any(rule.Covers)).ToArray();
         var findings = new ConcurrentBag<StyleFinding>();
         var rejections = new ConcurrentBag<StyleRejection>();
+        var suppressions = new ConcurrentBag<StyleSuppression>();
         int files = 0;
         int changedFiles = 0;
         Parallel.ForEach(
@@ -154,9 +155,15 @@ internal static class StyleEngine
                     rule.Check(source, local);
                 }
 
-                foreach (StyleFinding finding in local)
+                List<StyleSuppression> localSuppressions = [];
+                foreach (StyleFinding finding in StyleSuppressions.Apply(source, local, rules, localSuppressions))
                 {
                     if (ruleIDs.Count == 0 || ruleIDs.Contains(finding.rule)) findings.Add(finding);
+                }
+
+                foreach (StyleSuppression suppression in localSuppressions)
+                {
+                    suppressions.Add(suppression);
                 }
             }
         );
@@ -169,13 +176,19 @@ internal static class StyleEngine
             .OrderBy(static rejection => rejection.path, StringComparer.Ordinal)
             .ThenBy(static rejection => rejection.rule, StringComparer.Ordinal)
             .ToArray();
-        return new StyleReport(files, changedFiles, ordered, rejected);
+        StyleSuppression[] suppressed = suppressions
+            .OrderBy(static suppression => suppression.rule, StringComparer.Ordinal)
+            .ThenBy(static suppression => suppression.path, StringComparer.Ordinal)
+            .ThenBy(static suppression => suppression.line)
+            .ToArray();
+        return new StyleReport(files, changedFiles, ordered, rejected, suppressed);
     }
 
-    // Reports every finding of every rule for one source; a generated source has none.
+    // Reports every finding of every rule for one source and collects its suppressions; a generated source has none.
     internal static IReadOnlyList<StyleFinding> Check(
         string relativePath,
-        string content
+        string content,
+        ICollection<StyleSuppression>? suppressions = null
     ) {
         List<StyleFinding> findings = [];
         if (!IsHandwritten(relativePath, content)) return findings;
@@ -186,7 +199,7 @@ internal static class StyleEngine
             rule.Check(source, findings);
         }
 
-        return findings;
+        return StyleSuppressions.Apply(source, findings, RULES, suppressions);
     }
 
     // Applies every fix until the text is stable. A fix is kept only when it provably preserves the tokens.
