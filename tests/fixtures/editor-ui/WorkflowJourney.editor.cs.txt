@@ -62,7 +62,10 @@ public sealed class WorkflowJourney(
         {
             foreach (string id in new[] { "scene.inspector", "scene.hierarchy", "asset.file-browser" })
                 Require(interactions.OpenPanel(id), "The product could not open " + id);
-            _ = workspace.Open("FlappyBird/FlappyBird.iscene");
+            // A saved scene stays loaded beside the acceptance scene for the whole journey.
+            GameScene baseline = edits.CreateScene();
+            edits.RenameScene(baseline, "UI Workflow Baseline");
+            _ = workspace.Save(baseline, string.Empty);
             GameScene created = edits.CreateScene();
             edits.RenameScene(created, "UI Workflow Acceptance");
             GameObject first = edits.CreateGameObject(created);

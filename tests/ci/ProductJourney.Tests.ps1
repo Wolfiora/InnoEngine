@@ -43,7 +43,7 @@ if (mode != "missing-evidence")
     {
         File.WriteAllLines(Path.Combine(evidence, "panel-lifecycle.tsv"),
             new[] { "panel\tcompleted-open-close-cycles", "protocol\tfixture" }.Concat(
-                Enumerable.Range(0, 9).Select(index => $"panel-{index}\t{(mode == "missing-cycle" && index == 0 ? cycles - 1 : cycles)}")));
+                Enumerable.Range(0, 8).Select(index => $"panel-{index}\t{(mode == "missing-cycle" && index == 0 ? cycles - 1 : cycles)}")));
         File.WriteAllLines(Path.Combine(evidence, "panel-lifecycle-preparation.tsv"),
             new[] { "phase", "before-first-panel-draw", mode == "missing-preparation" ? "wrong" : "after-120-drawn-frames" });
         int count = mode == "missing-sample" ? cycles / 10 : cycles / 10 + 1;

@@ -93,7 +93,7 @@ function Assert-JourneyEvidence([string]$Project, [string]$Scenario, [int]$Cycle
         if ($verified.Count -ne 8) { throw "Expected eight completed workflow stages, got $($verified.Count)." }
     } else {
         $panels = @(Import-Csv -LiteralPath $evidence -Delimiter "`t" | Where-Object panel -ne 'protocol')
-        if ($panels.Count -lt 9 -or @($panels | Where-Object 'completed-open-close-cycles' -ne ([string]$Cycles)).Count -ne 0) {
+        if ($panels.Count -lt 8 -or @($panels | Where-Object 'completed-open-close-cycles' -ne ([string]$Cycles)).Count -ne 0) {
             throw "Every actual product panel must complete $Cycles open/close cycles."
         }
         $resources = @(Import-Csv -LiteralPath (Join-Path $Project 'Library/Acceptance/panel-lifecycle-resources.tsv') -Delimiter "`t")

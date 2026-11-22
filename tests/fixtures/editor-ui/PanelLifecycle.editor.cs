@@ -6,6 +6,7 @@ using System.Linq;
 using InnoEditor.Core;
 using InnoEditor.Interactions;
 using InnoEditor.Scene;
+using InnoEngine.Scene;
 
 namespace EditorUIAcceptance;
 
@@ -18,10 +19,14 @@ namespace EditorUIAcceptance;
 /// <param name="workspace">
 /// The current Edit workspace whose loaded scenes must survive window-only operations.
 /// </param>
+/// <param name="edits">
+/// The public scene edits that create the scene the panels draw.
+/// </param>
 [EditorModule("tests.editor-ui.panel-lifecycle", order: 10_000)]
 public sealed class PanelLifecycle(
     EditorInteractions interactions,
-    IEditorSceneWorkspace workspace
+    IEditorSceneWorkspace workspace,
+    SceneEdits edits
 ) : EditorModule
 {
     private const string C_RESOURCE_COLUMNS = "managed-bytes-after-full-gc\tprivate-bytes\tselection-count\tscene-count\thistory-resident-bytes\thistory-disk-bytes\tpending-events"
@@ -60,7 +65,12 @@ public sealed class PanelLifecycle(
         {
             if (workspace.scenes.Count == 0)
             {
-                workspace.Open("FlappyBird/FlappyBird.iscene");
+                // The panels draw a saved, clean scene with real objects, as they would for an opened scene asset.
+                GameScene scene = edits.CreateScene();
+                edits.RenameScene(scene, "Panel Lifecycle Acceptance");
+                edits.RenameGameObject(edits.CreateGameObject(scene), "Lifecycle First");
+                edits.RenameGameObject(edits.CreateGameObject(scene), "Lifecycle Second");
+                _ = workspace.Save(scene, string.Empty);
             }
             m_panels = interactions.GetPanelDeclarations().Select(static panel => panel.id).Order(StringComparer.Ordinal).ToArray();
             if (m_panels.Length < 8)

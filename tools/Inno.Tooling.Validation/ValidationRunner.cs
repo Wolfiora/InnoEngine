@@ -532,13 +532,9 @@ internal static class ValidationRunner
                                 }
                                 string productDirectory = Path.Combine(directory, check.id);
                                 Directory.CreateDirectory(productDirectory);
+                                // The engine owns its product input: an empty project whose journeys create their scenes.
                                 string project = Path.Combine(productDirectory, "Source");
-                                await ValidationProductInput.PrepareAsync(
-                                    plan,
-                                    productDirectory,
-                                    project,
-                                    cancellationToken
-                                ).ConfigureAwait(false);
+                                Directory.CreateDirectory(Path.Combine(project, "Assets"));
                                 await ShellAsync(
                                     "tests/Invoke-EditorSmoke.ps1",
                                     [
