@@ -58,8 +58,8 @@ public sealed class TestRepositoryInputsTests
                 dotnet,
                 arguments,
                 root,
-                timeout.Token,
-                DotNetSdkEnvironment.Create(dotnet)
+                DotNetSdkEnvironment.Create(dotnet),
+                timeout.Token
             );
             using JsonDocument result = JsonDocument.Parse(output);
             string? artifacts = result.RootElement.GetProperty("Properties").GetProperty("ArtifactsPath").GetString();

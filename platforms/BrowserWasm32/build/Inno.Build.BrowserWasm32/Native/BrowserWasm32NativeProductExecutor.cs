@@ -71,8 +71,8 @@ public sealed class BrowserWasm32NativeProductExecutor : INativeProductExecutor
         NativeBindingGenerationResult generations = await NativeBindingPreparation.PrepareAsync(
             context,
             plan.steps.Select(static step => step.component).ToArray(),
-            cancellationToken,
-            plan.steps.ToDictionary(static step => step.component.nativeProject, static step => step.options, StringComparer.Ordinal)
+            plan.steps.ToDictionary(static step => step.component.nativeProject, static step => step.options, StringComparer.Ordinal),
+            cancellationToken
         ).ConfigureAwait(false);
         try
         {

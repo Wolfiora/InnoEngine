@@ -23,8 +23,8 @@ internal static class EditorBuildCommand
             context.composition.dotnetHost,
             ["build", ..context.ProductArguments(project), "-p:InnoSuppressBuildMaintenance=true"],
             context.root,
-            cancellationToken,
-            DotNetSdkEnvironment.Create(context.composition.dotnetHost)
+            DotNetSdkEnvironment.Create(context.composition.dotnetHost),
+            cancellationToken
         ).ConfigureAwait(false);
     }
 }

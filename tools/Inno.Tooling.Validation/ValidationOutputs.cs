@@ -13,8 +13,8 @@ internal static class ValidationOutputs
     internal static Dictionary<string, string> Capture(
         ValidationPlan plan,
         ValidationCheck check,
-        CancellationToken cancellationToken,
-        Dictionary<string, string>? directoryCache = null
+        Dictionary<string, string>? directoryCache = null,
+        CancellationToken cancellationToken = default
     ) {
         var outputs = new Dictionary<string, string>(StringComparer.Ordinal);
         if (check.kind is not ("build"
@@ -93,8 +93,8 @@ internal static class ValidationOutputs
         ValidationPlan plan,
         ValidationCheck check,
         ValidationResult result,
-        CancellationToken cancellationToken,
-        Dictionary<string, string>? directoryCache = null
+        Dictionary<string, string>? directoryCache = null,
+        CancellationToken cancellationToken = default
     ) {
         if (result.outputs is null)
         {
@@ -103,7 +103,7 @@ internal static class ValidationOutputs
         try
         {
             return ValidationInputs.Identity(
-                Capture(plan, check, cancellationToken, directoryCache)
+                Capture(plan, check, directoryCache, cancellationToken)
             ) == ValidationInputs.Identity(result.outputs);
         }
         catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)

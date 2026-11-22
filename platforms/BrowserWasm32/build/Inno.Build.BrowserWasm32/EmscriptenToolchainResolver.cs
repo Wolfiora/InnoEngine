@@ -71,8 +71,8 @@ public static class EmscriptenToolchainResolver
                 "-getProperty:EmscriptenSdkToolsPath,EmscriptenNodeToolsPath,EmscriptenPythonToolsPath,EmscriptenCacheSdkCacheDir"
             ],
             Path.GetDirectoryName(project)!,
-            cancellationToken,
-            DotNetSdkEnvironment.Create(host, new Dictionary<string, string> { ["DOTNET_NOLOGO"] = "true" })
+            DotNetSdkEnvironment.Create(host, new Dictionary<string, string> { ["DOTNET_NOLOGO"] = "true" }),
+            cancellationToken
         ).ConfigureAwait(false);
         using JsonDocument document = JsonDocument.Parse(output);
         JsonElement properties = document.RootElement.GetProperty("Properties");

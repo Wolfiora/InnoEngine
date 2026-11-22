@@ -124,8 +124,8 @@ public sealed class BindingGenerationProcessTests
                 C_OUTPUT + "=" + output
             ],
             root,
-            timeout.Token,
-            DotNetSdkEnvironment.Create(dotnet)
+            DotNetSdkEnvironment.Create(dotnet),
+            timeout.Token
         );
         return File.ReadAllText(output);
     }

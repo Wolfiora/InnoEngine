@@ -62,7 +62,7 @@ public sealed class WindowsX64NativeToolchainProvider : INativeToolchainProvider
             ["-latest", "-products", "*", "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
                 "-property", "installationPath"],
             context.engineRoot,
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false)).Trim();
         if (!Directory.Exists(installation))
         {

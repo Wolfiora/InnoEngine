@@ -41,8 +41,8 @@ internal static class ManagedBuildInputReader
                 .. evaluation.properties.Select(static pair => "-p:" + pair.Key + "=" + pair.Value)
             ],
             context.engineRoot,
-            cancellationToken,
-            DotNetSdkEnvironment.Create(sdk.hostPath, context.toolchain?.environment)
+            DotNetSdkEnvironment.Create(sdk.hostPath, context.toolchain?.environment),
+            cancellationToken
         ).ConfigureAwait(false);
         _ = await EvaluateAsync(context, sdk, project, evaluation.properties, true, cancellationToken).ConfigureAwait(false);
         XElement captured = await EvaluateAsync(
@@ -159,8 +159,8 @@ internal static class ManagedBuildInputReader
                 sdk.hostPath,
                 [sdk.cliPath, "msbuild", entry, "-t:CaptureManagedInputs", "-nologo", "-v:quiet", "-m:1", "-nodeReuse:false"],
                 context.engineRoot,
-                cancellationToken,
-                DotNetSdkEnvironment.Create(sdk.hostPath, context.toolchain?.environment)
+                DotNetSdkEnvironment.Create(sdk.hostPath, context.toolchain?.environment),
+                cancellationToken
             ).ConfigureAwait(false);
             XElement captured = XElement.Load(manifest);
             captured.SetAttributeValue("EvaluatorFingerprint", evaluator.fingerprint);

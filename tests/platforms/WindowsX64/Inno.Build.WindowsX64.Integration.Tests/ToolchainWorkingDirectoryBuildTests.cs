@@ -101,8 +101,8 @@ public sealed class ToolchainWorkingDirectoryBuildTests
                 dotnet,
                 ["build", project, "--disable-build-servers", "-m:1", "-nr:false", "-p:UseSharedCompilation=false"],
                 repository,
-                timeout.Token,
-                environment
+                environment,
+                timeout.Token
             );
             string physical = Path.Combine(root, "Workspace with spaces", new string('x', 70), new string('y', 70), new string('z', 70));
             string? firstExecution = null;
@@ -128,8 +128,8 @@ public sealed class ToolchainWorkingDirectoryBuildTests
                     dotnet,
                     [Path.Combine(root, "bin/Debug/net10.0/Runner.dll"), physical, cmake, report, call.value, call.hit ? "hit" : "build"],
                     repository,
-                    timeout.Token,
-                    processEnvironment
+                    processEnvironment,
+                    timeout.Token
                 );
                 string current = await File.ReadAllTextAsync(report);
                 if (call.hit)

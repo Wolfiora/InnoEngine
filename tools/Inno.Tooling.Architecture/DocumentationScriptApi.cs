@@ -88,7 +88,7 @@ internal static class DocumentationScriptApi
             options.GetValueOrDefault("--editor-reference"),
             sdk.GetFrameworkReferences(cancellationToken),
             sources.Values,
-            cancellationToken
+            cancellationToken: cancellationToken
         );
         capture = capture with { target = options.GetValueOrDefault("--target") };
         HashSet<string> inventory = RepositorySourceInventory.Projects(root).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -132,8 +132,8 @@ internal static class DocumentationScriptApi
         string? editorPath,
         IReadOnlyList<MetadataReference> frameworkReferences,
         IEnumerable<byte[]> sourceReferences,
-        CancellationToken cancellationToken,
-        IReadOnlySet<string>? selectedOwners = null
+        IReadOnlySet<string>? selectedOwners = null,
+        CancellationToken cancellationToken = default
     ) {
         bool editor = surface switch
         {
@@ -454,8 +454,8 @@ internal static class DocumentationScriptApi
                     editorPath,
                     frameworkReferences(),
                     sourceFacts,
-                    cancellationToken,
-                    reference.projects.ToHashSet(StringComparer.Ordinal)
+                    reference.projects.ToHashSet(StringComparer.Ordinal),
+                    cancellationToken
                 );
                 identities = actual.projectionIdentities;
                 xmlIdentity = actual.documentationIdentity;

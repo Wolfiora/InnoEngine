@@ -22,9 +22,15 @@ internal static class ValidationInputs
             ["ls-files", "-z", "--cached", "--others", "--exclude-standard"],
             root,
             null,
-            cancellationToken
+            cancellationToken: cancellationToken
         );
-        Task<string> stageCapture = ValidationProcess.RunAsync("git", ["ls-files", "--stage", "-z"], root, null, cancellationToken);
+        Task<string> stageCapture = ValidationProcess.RunAsync(
+            "git",
+            ["ls-files", "--stage", "-z"],
+            root,
+            null,
+            cancellationToken: cancellationToken
+        );
         await Task.WhenAll(fileCapture, stageCapture).ConfigureAwait(false);
         string files = await fileCapture.ConfigureAwait(false);
         string staged = await stageCapture.ConfigureAwait(false);
@@ -100,7 +106,7 @@ internal static class ValidationInputs
             ["ls-tree", "-r", "-z", commit],
             root,
             null,
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
         var changes = new HashSet<string>(StringComparer.Ordinal);
         List<KeyValuePair<string, string>> blobs = [];
@@ -145,8 +151,8 @@ internal static class ValidationInputs
                         ["hash-object", "--stdin", "--no-filters"],
                         root,
                         null,
-                        cancellationToken,
-                        new UTF8Encoding(false, true).GetString(link)
+                        new UTF8Encoding(false, true).GetString(link),
+                        cancellationToken
                     ).ConfigureAwait(false);
                     if (identity.Trim() != metadata[2])
                     {
@@ -171,8 +177,8 @@ internal static class ValidationInputs
                 ["hash-object", "--stdin-paths"],
                 root,
                 null,
-                cancellationToken,
-                string.Join('\n', blobs.Select(static pair => QuoteGitPath(pair.Key))) + "\n"
+                string.Join('\n', blobs.Select(static pair => QuoteGitPath(pair.Key))) + "\n",
+                cancellationToken
             ).ConfigureAwait(false);
             string[] identities = content.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
             if (identities.Length != blobs.Count)
@@ -191,8 +197,8 @@ internal static class ValidationInputs
                     ["hash-object", "--no-filters", "--stdin-paths"],
                     root,
                     null,
-                    cancellationToken,
-                    string.Join('\n', different.Select(static pair => QuoteGitPath(pair.Key))) + "\n"
+                    string.Join('\n', different.Select(static pair => QuoteGitPath(pair.Key))) + "\n",
+                    cancellationToken
                 ).ConfigureAwait(false);
                 string[] rawIdentities = raw.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
                 if (rawIdentities.Length != different.Length)
@@ -360,14 +366,14 @@ internal static class ValidationInputs
             ["rev-parse", "HEAD"],
             path,
             null,
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false)).Trim();
         string dirty = await ValidationProcess.RunAsync(
             "git",
             ["status", "--porcelain"],
             path,
             null,
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
         if (dirty.Length != 0
             || (await FindContentChangesAsync(

@@ -68,8 +68,8 @@ internal static class ProjectBuildWorkflow
         using ProductNativeBuildResult products = await BuildComposition.PrepareNativeAsync(
             context,
             engineRoot,
-            cancellationToken,
-            command.nativeDependencies
+            command.nativeDependencies,
+            cancellationToken
         ).ConfigureAwait(false);
         NativeBuildProduct product = products.Single();
         string extension = context.host.services.executableExtension;

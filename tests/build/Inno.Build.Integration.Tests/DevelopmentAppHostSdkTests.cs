@@ -92,8 +92,8 @@ public sealed class DevelopmentAppHostSdkTests
             appHost,
             [],
             owner.directory,
-            CancellationToken.None,
-            environment
+            environment,
+            CancellationToken.None
         );
         Assert.Equal(host, selected.Trim());
     }

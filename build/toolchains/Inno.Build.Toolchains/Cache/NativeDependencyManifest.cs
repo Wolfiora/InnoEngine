@@ -187,7 +187,7 @@ public static partial class NativeDependencyManifest
             "git",
             ["rev-parse", "HEAD"],
             root,
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false)).Trim();
         List<DependencyAsset> assets = [];
         for (int index = 0; index < products.Count; index++)

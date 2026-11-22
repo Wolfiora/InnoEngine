@@ -70,8 +70,8 @@ public sealed class HostRuntimeClosureBuildTests
                 dotnet,
                 ["build", application, "-c", "Release", "--disable-build-servers", "-m:1", "-nr:false", ..properties],
                 root,
-                CancellationToken.None,
-                DotNetSdkEnvironment.Create(dotnet)
+                DotNetSdkEnvironment.Create(dotnet),
+                CancellationToken.None
             );
             string executable = (await ToolchainEnvironment.CaptureOutputAsync(
                 dotnet,
@@ -86,8 +86,8 @@ public sealed class HostRuntimeClosureBuildTests
                     ..properties
                 ],
                 root,
-                CancellationToken.None,
-                DotNetSdkEnvironment.Create(dotnet)
+                DotNetSdkEnvironment.Create(dotnet),
+                CancellationToken.None
             )).Trim();
             string output = Path.GetDirectoryName(executable)!;
             Assert.Equal(exposeClosure, File.Exists(Path.Combine(output, "Inno.Fixture.Extension.dll")));
@@ -98,8 +98,8 @@ public sealed class HostRuntimeClosureBuildTests
                     dotnet,
                     [executable],
                     root,
-                    CancellationToken.None,
-                    DotNetSdkEnvironment.Create(dotnet)
+                    DotNetSdkEnvironment.Create(dotnet),
+                    CancellationToken.None
                 );
             }
             else
@@ -109,8 +109,8 @@ public sealed class HostRuntimeClosureBuildTests
                         dotnet,
                         [executable],
                         root,
-                        CancellationToken.None,
-                        DotNetSdkEnvironment.Create(dotnet)
+                        DotNetSdkEnvironment.Create(dotnet),
+                        CancellationToken.None
                     ));
                 Assert.EndsWith("exit code 13.", unavailable.Message);
             }
@@ -136,8 +136,8 @@ public sealed class HostRuntimeClosureBuildTests
                         ..properties
                     ],
                     root,
-                    CancellationToken.None,
-                    DotNetSdkEnvironment.Create(dotnet)
+                    DotNetSdkEnvironment.Create(dotnet),
+                    CancellationToken.None
                 ));
             Assert.Contains("CS0234", File.ReadAllText(compilerLog));
         }

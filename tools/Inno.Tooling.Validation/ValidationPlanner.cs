@@ -22,7 +22,6 @@ internal static partial class ValidationPlanner
         string configuration,
         string artifacts,
         bool full,
-        CancellationToken cancellationToken,
         bool extended = false,
         string? documentationCache = null,
         string? documentationSnapshot = null,
@@ -30,7 +29,8 @@ internal static partial class ValidationPlanner
         ValidationProfile profile = ValidationProfile.PullRequest,
         string? nativeDependencies = null,
         string? backendStore = null,
-        string? baselinePlan = null
+        string? baselinePlan = null,
+        CancellationToken cancellationToken = default
     ) {
         if (backendStore is not null)
         {
@@ -158,8 +158,8 @@ internal static partial class ValidationPlanner
             documentationCache,
             documentationSnapshot,
             byPath,
-            cancellationToken,
-            documentationBaseline
+            documentationBaseline,
+            cancellationToken
         ).ConfigureAwait(false);
         List<string> diagnostics = [];
         foreach (string change in changes)
@@ -1154,9 +1154,9 @@ internal static partial class ValidationPlanner
         string environmentIdentity = await ValidationEnvironment.CaptureAsync(
             root,
             sdk.hostPath,
-            cancellationToken,
             contexts.Values,
-            toolSnapshot
+            toolSnapshot,
+            cancellationToken
         ).ConfigureAwait(false);
         RecordStage("execution-environment");
         Dictionary<string, int> phases = contexts.Keys
@@ -1619,7 +1619,8 @@ internal static partial class ValidationPlanner
             }
         }
 
-        Task<string> GitAsync(params string[] arguments) => ValidationProcess.RunAsync("git", arguments, root, null, cancellationToken);
+        Task<string> GitAsync(params string[] arguments)
+            => ValidationProcess.RunAsync("git", arguments, root, null, cancellationToken: cancellationToken);
 
         string[] CapturedInputs(IEnumerable<string> declared)
         {

@@ -92,7 +92,7 @@ public static partial class NativeDependencyManifest
             "git",
             ["rev-parse", "HEAD"],
             context.engineRoot,
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false)).Trim();
         var asset = new AggregateAsset(
             plan.productID,

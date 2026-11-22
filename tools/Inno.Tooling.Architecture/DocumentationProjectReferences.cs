@@ -129,7 +129,7 @@ internal sealed class DocumentationProjectReferences
                                         "*.csproj"
                                     )).Order(StringComparer.Ordinal)
         ) {
-            _ = Evaluate(project, cancellationToken, frameworkOnly: true);
+            _ = Evaluate(project, frameworkOnly: true, cancellationToken: cancellationToken);
             if (m_frameworkReferences is not null)
             {
                 return m_frameworkReferences;
@@ -142,7 +142,7 @@ internal sealed class DocumentationProjectReferences
         string project,
         CancellationToken cancellationToken
     ) {
-        CSharpCompilation compilation = Evaluate(project, cancellationToken);
+        CSharpCompilation compilation = Evaluate(project, cancellationToken: cancellationToken);
         string target = m_outputs[project];
         if (!File.Exists(target))
         {
@@ -162,7 +162,7 @@ internal sealed class DocumentationProjectReferences
         string project,
         CancellationToken cancellationToken
     ) {
-        CSharpCompilation contract = Evaluate(project, cancellationToken, sourceOnly: true);
+        CSharpCompilation contract = Evaluate(project, sourceOnly: true, cancellationToken: cancellationToken);
         List<SyntaxTree> trees = [];
         foreach (string source in m_sources[project])
         {
@@ -288,9 +288,9 @@ internal sealed class DocumentationProjectReferences
 
     private CSharpCompilation Evaluate(
         string project,
-        CancellationToken cancellationToken,
         bool frameworkOnly = false,
-        bool sourceOnly = false
+        bool sourceOnly = false,
+        CancellationToken cancellationToken = default
     ) {
         if (m_compilations.TryGetValue(project, out CSharpCompilation? compilation))
         {

@@ -87,8 +87,8 @@ public sealed class CompilerToolBuildScopeTests
                         "-bl:" + binlog
                     ],
                     root,
-                    timeout.Token,
-                    DotNetSdkEnvironment.Create(dotnet)
+                    DotNetSdkEnvironment.Create(dotnet),
+                    timeout.Token
                 );
                 int compilations = 0;
                 var identities = new HashSet<string>(StringComparer.Ordinal);

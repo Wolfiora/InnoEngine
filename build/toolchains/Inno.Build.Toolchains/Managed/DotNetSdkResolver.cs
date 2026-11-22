@@ -91,11 +91,11 @@ public static class DotNetSdkResolver
             hostPath,
             ["--info"],
             directory,
-            cancellationToken,
             DotNetSdkEnvironment.Create(hostPath, new Dictionary<string, string>
             {
                 ["DOTNET_CLI_UI_LANGUAGE"] = "en-US"
-            })
+            }),
+            cancellationToken
         ).ConfigureAwait(false);
         string identity = string.Empty;
         string sdkDirectory = string.Empty;

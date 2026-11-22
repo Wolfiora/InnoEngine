@@ -129,8 +129,8 @@ public sealed class BrowserWasm32PlayerSupportPackSource : IPlayerSupportPackSou
                 .. properties.Select(static pair => "-p:" + pair.Key + "=" + pair.Value)
             ],
             context.engineRoot,
-            cancellationToken,
-            DotNetSdkEnvironment.Create(sdk.hostPath, tools.environment)
+            DotNetSdkEnvironment.Create(sdk.hostPath, tools.environment),
+            cancellationToken
         ).ConfigureAwait(false);
         string owner = BrowserWasm32NativeProductExecutor.componentDescriptor.GetToolchainRoot(context.engineRoot);
         PlayerSupportPackPreparationIdentity identity = await PlayerSupportPackPreparationIdentity.CaptureAsync(
@@ -209,15 +209,15 @@ public sealed class BrowserWasm32PlayerSupportPackSource : IPlayerSupportPackSou
             context.sdk.hostPath,
             [context.sdk.cliPath, "build", project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "--nologo", .. properties],
             context.engineRoot,
-            cancellationToken,
-            DotNetSdkEnvironment.Create(context.sdk.hostPath, tools.environment)
+            DotNetSdkEnvironment.Create(context.sdk.hostPath, tools.environment),
+            cancellationToken
         ).ConfigureAwait(false);
         string buildOutput = (await ToolchainEnvironment.CaptureOutputAsync(
             context.sdk.hostPath,
             [context.sdk.cliPath, "msbuild", project, "-getProperty:TargetDir", "-p:DesignTimeBuild=true", "-nologo", .. properties],
             context.engineRoot,
-            cancellationToken,
-            DotNetSdkEnvironment.Create(context.sdk.hostPath, tools.environment)
+            DotNetSdkEnvironment.Create(context.sdk.hostPath, tools.environment),
+            cancellationToken
         ).ConfigureAwait(false)).Trim();
         PlayerSupportPackFiles.CopyReferences(
             buildOutput,
@@ -229,8 +229,8 @@ public sealed class BrowserWasm32PlayerSupportPackSource : IPlayerSupportPackSou
             context,
             project,
             Path.Combine(context.stagingDirectory, "PlayerLink"),
-            cancellationToken,
-            tools.environment
+            tools.environment,
+            cancellationToken
         ).ConfigureAwait(false);
         await execution.VerifyAsync(cancellationToken).ConfigureAwait(false);
     }

@@ -78,8 +78,8 @@ public sealed class FileProductPublicationTests : IDisposable
             selectedSdk.hostPath,
             [selectedSdk.cliPath, "msbuild", project, "-getItem:Content", "-nologo"],
             projectRoot,
-            timeout.Token,
-            DotNetSdkEnvironment.Create(selectedSdk.hostPath)
+            DotNetSdkEnvironment.Create(selectedSdk.hostPath),
+            timeout.Token
         );
         using (JsonDocument items = JsonDocument.Parse(evaluated))
         {
@@ -126,8 +126,8 @@ public sealed class FileProductPublicationTests : IDisposable
                 "-nodeReuse:false"
             ],
             projectRoot,
-            timeout.Token,
-            DotNetSdkEnvironment.Create(selectedSdk.hostPath)
+            DotNetSdkEnvironment.Create(selectedSdk.hostPath),
+            timeout.Token
         );
         string[] executionPaths = File.ReadAllLines(Path.Combine(m_root, "Logs", "managed-working-directory.txt"));
         Assert.Equal(projectRoot, executionPaths[0]);

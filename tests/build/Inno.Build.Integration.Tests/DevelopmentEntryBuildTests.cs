@@ -38,8 +38,8 @@ public sealed class DevelopmentEntryBuildTests
                 "-getItem:ProjectReference"
             ],
             root,
-            timeout.Token,
-            DotNetSdkEnvironment.Create(dotnet)
+            DotNetSdkEnvironment.Create(dotnet),
+            timeout.Token
         );
         using JsonDocument document = JsonDocument.Parse(output);
         JsonElement properties = document.RootElement.GetProperty("Properties");

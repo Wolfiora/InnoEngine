@@ -230,9 +230,9 @@ public static partial class ArchitectureValidator
                 artifactsPath,
                 projectGraphPath,
                 failures,
-                cancellationToken,
                 sdkSnapshot,
-                apiProjects.Count == 0 ? null : apiProjects
+                apiProjects.Count == 0 ? null : apiProjects,
+                cancellationToken
             ).GetAwaiter().GetResult();
         }
         if (!sourceOnly)

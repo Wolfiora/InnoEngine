@@ -43,8 +43,8 @@ internal static class ScriptCompilerEngine
         bool includeEditor,
         string? targetRuntimeDirectory,
         Action<float, string>? reportProgress,
-        CancellationToken cancellationToken,
-        IAssetSourceSnapshot? sourceSnapshot = null
+        IAssetSourceSnapshot? sourceSnapshot = null,
+        CancellationToken cancellationToken = default
     ) {
         if (includeEditor == (targetRuntimeDirectory is not null))
         {

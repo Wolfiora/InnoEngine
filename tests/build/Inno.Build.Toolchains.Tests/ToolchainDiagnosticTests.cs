@@ -37,8 +37,8 @@ public sealed class ToolchainDiagnosticTests
                     host,
                     ["msbuild", project, "-t:Diagnose", "-nologo", "-nr:false"],
                     root,
-                    CancellationToken.None,
-                    DotNetSdkEnvironment.Create(host)
+                    DotNetSdkEnvironment.Create(host),
+                    CancellationToken.None
                 ));
             Assert.Contains("failed with exit code", failure.Message);
             Assert.Contains("Original SDK diagnostic before failure.", failure.Message);

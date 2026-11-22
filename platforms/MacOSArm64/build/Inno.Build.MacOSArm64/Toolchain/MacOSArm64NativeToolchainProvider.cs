@@ -56,19 +56,19 @@ public sealed class MacOSArm64NativeToolchainProvider : INativeToolchainProvider
             xcrun,
             ["--find", "clang"],
             context.engineRoot,
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false)).Trim();
         tools["clang++"] = (await ToolchainEnvironment.CaptureOutputAsync(
             xcrun,
             ["--find", "clang++"],
             context.engineRoot,
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false)).Trim();
         string sdk = (await ToolchainEnvironment.CaptureOutputAsync(
             xcrun,
             ["--sdk", "macosx", "--show-sdk-path"],
             context.engineRoot,
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false)).Trim();
         environment["SDKROOT"] = sdk;
         inputs.AddRange([xcrun, Path.Combine(sdk, "usr", "include"), Path.Combine(sdk, "usr", "lib")]);

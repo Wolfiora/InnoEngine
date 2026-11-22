@@ -65,7 +65,12 @@ internal static class NativeDependencySource
         await VerifyWorkingTreeAsync(root, "HEAD", roots, cancellationToken).ConfigureAwait(false);
         return result;
         Task<string> GitAsync(string[] arguments)
-            => ToolchainEnvironment.CaptureOutputAsync("git", ["--literal-pathspecs", ..arguments], root, cancellationToken);
+            => ToolchainEnvironment.CaptureOutputAsync(
+                "git",
+                ["--literal-pathspecs", ..arguments],
+                root,
+                cancellationToken: cancellationToken
+            );
     }
 
     private static async Task VerifyWorkingTreeAsync(
@@ -107,7 +112,7 @@ internal static class NativeDependencySource
                             "git",
                             ["rev-parse", "HEAD"],
                             path,
-                            cancellationToken
+                            cancellationToken: cancellationToken
                         ).ConfigureAwait(false);
                         if (head.Trim() != metadata[2])
                         {
@@ -174,6 +179,11 @@ internal static class NativeDependencySource
             }
         }
         Task<string> GitAsync(string[] arguments)
-            => ToolchainEnvironment.CaptureOutputAsync("git", ["--literal-pathspecs", ..arguments], root, cancellationToken);
+            => ToolchainEnvironment.CaptureOutputAsync(
+                "git",
+                ["--literal-pathspecs", ..arguments],
+                root,
+                cancellationToken: cancellationToken
+            );
     }
 }

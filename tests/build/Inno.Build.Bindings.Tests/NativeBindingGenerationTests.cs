@@ -141,7 +141,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
         static Task<string> GitAsync(
             string root,
             params string[] arguments
-        ) => ToolchainEnvironment.CaptureOutputAsync("git", arguments, root, CancellationToken.None);
+        ) => ToolchainEnvironment.CaptureOutputAsync("git", arguments, root, cancellationToken: CancellationToken.None);
     }
 
     [Fact]

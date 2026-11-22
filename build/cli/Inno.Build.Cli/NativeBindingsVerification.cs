@@ -105,8 +105,8 @@ internal static partial class NativeBindingsVerification
                         "--nologo"
                     ],
                     repositoryRoot,
-                    cancellationToken,
-                    DotNetSdkEnvironment.Create(options.dotnet)
+                    DotNetSdkEnvironment.Create(options.dotnet),
+                    cancellationToken
                 ).ConfigureAwait(false);
             }
 
@@ -127,8 +127,8 @@ internal static partial class NativeBindingsVerification
                     "--nologo"
                 ],
                 repositoryRoot,
-                cancellationToken,
-                DotNetSdkEnvironment.Create(options.dotnet)
+                DotNetSdkEnvironment.Create(options.dotnet),
+                cancellationToken
             ).ConfigureAwait(false);
 
             (ProductNativeBuildPlan plan, ProductNativeBuildResult products) native = await BuildNativeDependenciesAsync(
@@ -156,8 +156,8 @@ internal static partial class NativeBindingsVerification
                     "--nologo"
                 ],
                 repositoryRoot,
-                cancellationToken,
-                DotNetSdkEnvironment.Create(options.dotnet)
+                DotNetSdkEnvironment.Create(options.dotnet),
+                cancellationToken
             ).ConfigureAwait(false);
 
             IReadOnlyList<string> testProjects = DiscoverTestProjects(repositoryRoot);
@@ -353,8 +353,8 @@ internal static partial class NativeBindingsVerification
                     $"-p:ArtifactsPath={artifactsPath}"
                 ],
                 repositoryRoot,
-                cancellationToken,
-                DotNetSdkEnvironment.Create(options.dotnet)
+                DotNetSdkEnvironment.Create(options.dotnet),
+                cancellationToken
             ).ConfigureAwait(false)).Trim();
             if (!Path.IsPathFullyQualified(output))
             {
@@ -404,8 +404,8 @@ internal static partial class NativeBindingsVerification
                 artifactsPath
             ],
             repositoryRoot,
-            cancellationToken,
-            DotNetSdkEnvironment.Create(options.dotnet)
+            DotNetSdkEnvironment.Create(options.dotnet),
+            cancellationToken
         ).ConfigureAwait(false);
         return Path.GetRelativePath(repositoryRoot, results).Replace('\\', '/');
     }
@@ -423,7 +423,7 @@ internal static partial class NativeBindingsVerification
             "git",
             ["-C", repositoryRoot, "rev-parse", "HEAD"],
             repositoryRoot,
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false)).Trim();
         Assembly bindingImplementation = typeof(NativeBindingGenerator).Assembly;
         string packageVersion = bindingImplementation.GetCustomAttributes<AssemblyMetadataAttribute>()
@@ -435,7 +435,7 @@ internal static partial class NativeBindingsVerification
                 "git",
                 ["-C", repositoryRoot, "status", "--porcelain", "--untracked-files=all"],
                 repositoryRoot,
-                cancellationToken
+                cancellationToken: cancellationToken
             ).ConfigureAwait(false)
         );
         DateTimeOffset generatedAt = DateTimeOffset.UtcNow;

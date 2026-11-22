@@ -82,7 +82,7 @@ public sealed class ToolchainProcessTests : IDisposable
         using var cancellation = new CancellationTokenSource();
         Task running = rawArguments
                        ? ToolchainEnvironment.RunAsync(executable, string.Join(' ', arguments.Select(Quote)), m_root, cancellation.Token)
-                       : ToolchainEnvironment.RunAsync(executable, arguments, m_root, cancellation.Token);
+                       : ToolchainEnvironment.RunAsync(executable, arguments, m_root, cancellationToken: cancellation.Token);
         int[] processes = [];
         try
         {
@@ -188,7 +188,7 @@ public sealed class ToolchainProcessTests : IDisposable
             {
                 Console.SetOut(failing);
             }
-            running = ToolchainEnvironment.RunAsync(executable, arguments, m_root, cancellation.Token);
+            running = ToolchainEnvironment.RunAsync(executable, arguments, m_root, cancellationToken: cancellation.Token);
 
             IOException failure = await Assert.ThrowsAsync<IOException>(() => running.WaitAsync(TimeSpan.FromSeconds(10)));
 

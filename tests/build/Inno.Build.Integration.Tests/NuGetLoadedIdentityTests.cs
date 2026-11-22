@@ -77,8 +77,8 @@ public sealed class NuGetLoadedIdentityTests
                     "-getProperty:InnoBgcsPackageVersion"
                 ],
                 repository,
-                cancellation.Token,
-                DotNetSdkEnvironment.Create(sdk)
+                DotNetSdkEnvironment.Create(sdk),
+                cancellation.Token
             )).Trim();
             string project = Path.Combine(root, "Consumer.csproj");
             new XDocument(
@@ -113,8 +113,8 @@ public sealed class NuGetLoadedIdentityTests
                 sdk,
                 ["msbuild", project, "-t:Restore", "-nologo", "-nr:false", "-v:quiet", "-getProperty:ProjectAssetsFile", .. owner],
                 root,
-                cancellation.Token,
-                DotNetSdkEnvironment.Create(sdk)
+                DotNetSdkEnvironment.Create(sdk),
+                cancellation.Token
             );
             string assetsPath = evaluated.Trim();
             Assert.True(File.Exists(assetsPath), evaluated);
@@ -195,8 +195,8 @@ public sealed class NuGetLoadedIdentityTests
                 C_PROBE_RESULT + "=" + result
             ],
             root,
-            cancellationToken,
-            DotNetSdkEnvironment.Create(sdk)
+            DotNetSdkEnvironment.Create(sdk),
+            cancellationToken
         );
         Assert.True(File.Exists(result), output);
         Assert.Equal(C_VERIFIED_PROBE, File.ReadAllText(result));

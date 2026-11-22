@@ -52,7 +52,7 @@ public static class ToolchainEnvironment
             Arguments = arguments,
             WorkingDirectory = workingDirectory
         };
-        return RunProcessAsync(start, cancellationToken, null, Console.Out);
+        return RunProcessAsync(start, null, Console.Out, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -93,7 +93,7 @@ public static class ToolchainEnvironment
                                          ?? throw new InvalidOperationException("Host native tools must be resolved before execution.");
         string executable = Path.IsPathFullyQualified(fileName) ? fileName : tools.ResolveExecutable(fileName);
         context.inputState.RecordProcess();
-        return RunAsync(executable, arguments, workingDirectory, cancellationToken, CaptureEnvironmentOverrides(tools.environment));
+        return RunAsync(executable, arguments, workingDirectory, CaptureEnvironmentOverrides(tools.environment), cancellationToken);
     }
 
     /// <summary>
@@ -135,7 +135,7 @@ public static class ToolchainEnvironment
         string executable = Path.IsPathFullyQualified(fileName) ? fileName : tools.ResolveExecutable(fileName);
         var start = new ProcessStartInfo(executable) { Arguments = arguments, WorkingDirectory = workingDirectory };
         context.inputState.RecordProcess();
-        return RunProcessAsync(start, cancellationToken, CaptureEnvironmentOverrides(tools.environment), Console.Out);
+        return RunProcessAsync(start, CaptureEnvironmentOverrides(tools.environment), Console.Out, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -150,12 +150,12 @@ public static class ToolchainEnvironment
     /// <param name="workingDirectory">
     /// The repository or staging directory owned by the operation.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels the child process and its complete process tree.
-    /// </param>
     /// <param name="environment">
     /// Optional process-local toolchain variables; the parent environment is unchanged.
     /// Null values remove inherited variables, while empty values remain explicitly empty.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels the child process and its complete process tree.
     /// </param>
     /// <returns>
     /// Completion after both output streams have drained and the process succeeds.
@@ -173,8 +173,8 @@ public static class ToolchainEnvironment
         string fileName,
         IReadOnlyList<string> arguments,
         string workingDirectory,
-        CancellationToken cancellationToken,
-        IReadOnlyDictionary<string, string?>? environment = null
+        IReadOnlyDictionary<string, string?>? environment = null,
+        CancellationToken cancellationToken = default
     ) => RunCoreAsync(fileName, arguments, workingDirectory, environment, Console.Out, cancellationToken);
 
     /// <summary>
@@ -225,7 +225,7 @@ public static class ToolchainEnvironment
             throw new ArgumentException("An explicit SDK tool must have an absolute path.", nameof(fileName));
         }
         context.inputState.RecordProcess();
-        return RunAsync(fileName, arguments, workingDirectory, cancellationToken, CaptureEnvironmentOverrides(environment));
+        return RunAsync(fileName, arguments, workingDirectory, CaptureEnvironmentOverrides(environment), cancellationToken);
     }
 
     /// <summary>
@@ -281,7 +281,7 @@ public static class ToolchainEnvironment
         {
             start.ArgumentList.Add(argument);
         }
-        return RunProcessAsync(start, cancellationToken, environment, standardOutput, standardError);
+        return RunProcessAsync(start, environment, standardOutput, standardError, cancellationToken);
     }
 
     /// <summary>
@@ -346,7 +346,7 @@ public static class ToolchainEnvironment
     ) {
         ArgumentNullException.ThrowIfNull(start);
         using var output = new StringWriter();
-        await RunProcessAsync(start, cancellationToken, null, output).ConfigureAwait(false);
+        await RunProcessAsync(start, null, output, cancellationToken: cancellationToken).ConfigureAwait(false);
         return output.ToString();
     }
 
@@ -362,12 +362,12 @@ public static class ToolchainEnvironment
     /// <param name="workingDirectory">
     /// The directory used for project and SDK resolution.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels the child process tree and waits for its complete exit.
-    /// </param>
     /// <param name="environment">
     /// Optional child-only environment variables. Null values remove inherited variables;
     /// empty values remain explicitly empty.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels the child process tree and waits for its complete exit.
     /// </param>
     /// <returns>
     /// The complete standard output after successful exit. Unsuccessful exits retain captured output in the exception.
@@ -385,8 +385,8 @@ public static class ToolchainEnvironment
         string fileName,
         IReadOnlyList<string> arguments,
         string workingDirectory,
-        CancellationToken cancellationToken,
-        IReadOnlyDictionary<string, string?>? environment = null
+        IReadOnlyDictionary<string, string?>? environment = null,
+        CancellationToken cancellationToken = default
     ) {
         using var output = new StringWriter();
         try
@@ -555,15 +555,15 @@ public static class ToolchainEnvironment
         {
             start.ArgumentList.Add(argument);
         }
-        await RunProcessAsync(start, cancellationToken, environment, standardOutput).ConfigureAwait(false);
+        await RunProcessAsync(start, environment, standardOutput, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     private static async Task RunProcessAsync(
         ProcessStartInfo start,
-        CancellationToken cancellationToken,
         IReadOnlyDictionary<string, string?>? environment,
         TextWriter standardOutput,
-        TextWriter? standardError = null
+        TextWriter? standardError = null,
+        CancellationToken cancellationToken = default
     ) {
         cancellationToken.ThrowIfCancellationRequested();
         start.UseShellExecute = false;

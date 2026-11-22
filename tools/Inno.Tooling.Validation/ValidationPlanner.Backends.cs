@@ -17,8 +17,8 @@ internal static partial class ValidationPlanner
     internal static async Task<ValidationPlan> BindBackendsAsync(
         ValidationPlan plan,
         string packages,
-        CancellationToken cancellationToken,
-        string? evidence = null
+        string? evidence = null,
+        CancellationToken cancellationToken = default
     ) {
         if (plan.backendStore is null || plan.backendPackages is not null || plan.nativeDependencies is null)
         {
@@ -138,9 +138,9 @@ internal static partial class ValidationPlanner
             BackendInputPlan expected = await BackendInputsAsync(
                 plan,
                 target,
-                cancellationToken,
                 selectionBytes,
-                configuration
+                configuration,
+                cancellationToken
             ).ConfigureAwait(false);
             if (expected.missingNativeProducts.Length != 0)
             {
@@ -199,9 +199,9 @@ internal static partial class ValidationPlanner
     internal static async Task<BackendInputPlan> BackendInputsAsync(
         ValidationPlan plan,
         string target,
-        CancellationToken cancellationToken,
         byte[]? selectionBytes = null,
-        string? configuration = null
+        string? configuration = null,
+        CancellationToken cancellationToken = default
     ) {
         configuration ??= plan.configuration;
         if (selectionBytes is null && plan.nativeDependencies is not null && File.Exists(Path.Combine(plan.root, plan.nativeDependencies)))

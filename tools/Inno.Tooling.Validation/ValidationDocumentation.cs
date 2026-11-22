@@ -16,8 +16,8 @@ internal static class ValidationDocumentation
         string? cache,
         string? identity,
         IReadOnlyDictionary<string, ValidationProject> projects,
-        CancellationToken cancellationToken,
-        string? baseline = null
+        string? baseline = null,
+        CancellationToken cancellationToken = default
     ) {
         if ((cache is null) != (identity is null))
         {

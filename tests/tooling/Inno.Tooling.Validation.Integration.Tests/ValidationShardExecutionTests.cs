@@ -388,12 +388,12 @@ public sealed class ValidationShardExecutionTests
             consumer.dotnet,
             [assembly],
             consumer.PathOf("."),
-            CancellationToken.None,
             new Dictionary<string, string?>
             {
                 ["INNO_TESTING_REPOSITORY_ROOT"] = consumer.PathOf("."),
                 ["INNO_TESTING_ARTIFACTS_PATH"] = outputs
-            }
+            },
+            CancellationToken.None
         );
         Assert.Equal(new[] { consumer.PathOf("."), outputs }, actual.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries));
         string originalAssembly = repository.BindWorkspace(
@@ -410,12 +410,12 @@ public sealed class ValidationShardExecutionTests
             repository.dotnet,
             [originalAssembly],
             repository.PathOf("."),
-            CancellationToken.None,
             new Dictionary<string, string?>
             {
                 ["INNO_TESTING_REPOSITORY_ROOT"] = consumer.PathOf("."),
                 ["INNO_TESTING_ARTIFACTS_PATH"] = outputs
-            }
+            },
+            CancellationToken.None
         );
         Assert.Equal(
             new[] { repository.PathOf("."), originalOutputs },

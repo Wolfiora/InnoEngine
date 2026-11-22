@@ -42,8 +42,8 @@ public sealed class IdeProjectIsolationTests
             sdk.hostPath,
             [sdk.cliPath, "build", "InnoProject.sln", "--disable-build-servers", "-m:1", "-nr:false", "-v:quiet"],
             fixture.projectRoot,
-            CancellationToken.None,
-            DotNetSdkEnvironment.Create(sdk.hostPath)
+            DotNetSdkEnvironment.Create(sdk.hostPath),
+            CancellationToken.None
         );
     }
 
@@ -81,22 +81,22 @@ public sealed class IdeProjectIsolationTests
             sdk.hostPath,
             [sdk.cliPath, "new", "sln", "--format", "sln", "--name", "Nested"],
             owner.directory,
-            CancellationToken.None,
-            DotNetSdkEnvironment.Create(sdk.hostPath)
+            DotNetSdkEnvironment.Create(sdk.hostPath),
+            CancellationToken.None
         );
         await ToolchainEnvironment.RunAsync(
             sdk.hostPath,
             [sdk.cliPath, "sln", "Nested.sln", "add", "Nested.csproj"],
             owner.directory,
-            CancellationToken.None,
-            DotNetSdkEnvironment.Create(sdk.hostPath)
+            DotNetSdkEnvironment.Create(sdk.hostPath),
+            CancellationToken.None
         );
         await ToolchainEnvironment.RunAsync(
             sdk.hostPath,
             [sdk.cliPath, "restore", "Nested.sln", "--disable-build-servers", "-m:1", "-nr:false"],
             owner.directory,
-            CancellationToken.None,
-            DotNetSdkEnvironment.Create(sdk.hostPath)
+            DotNetSdkEnvironment.Create(sdk.hostPath),
+            CancellationToken.None
         );
         Assert.True(File.Exists(Path.Combine(owner.directory, "obj", "project.assets.json")));
     }

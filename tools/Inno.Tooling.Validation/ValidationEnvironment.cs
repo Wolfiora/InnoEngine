@@ -95,9 +95,9 @@ internal static class ValidationEnvironment
     internal static async Task<string> CaptureAsync(
         string root,
         string dotnet,
-        CancellationToken cancellationToken,
         IEnumerable<ValidationContext>? contexts = null,
-        ToolSnapshot? tools = null
+        ToolSnapshot? tools = null,
+        CancellationToken cancellationToken = default
     ) {
         tools ??= await CaptureToolsAsync(root, dotnet, cancellationToken).ConfigureAwait(false);
         var inputs = new Dictionary<string, string>(tools.inputs, StringComparer.Ordinal);

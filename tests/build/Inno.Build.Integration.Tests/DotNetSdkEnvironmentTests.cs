@@ -40,8 +40,8 @@ public sealed class DotNetSdkEnvironmentTests
                 host,
                 ["msbuild", project, "-nologo", "-nodeReuse:false", "-getProperty:TargetFramework"],
                 root,
-                CancellationToken.None,
-                selected
+                selected,
+                CancellationToken.None
             );
             Assert.Equal("net10.0", output.Trim());
             string resolvedHost = ToolchainEnvironment.ResolveExecutable(host);
@@ -52,8 +52,8 @@ public sealed class DotNetSdkEnvironmentTests
                 sdk.hostPath,
                 [sdk.cliPath, "--version"],
                 root,
-                CancellationToken.None,
-                DotNetSdkEnvironment.Create(sdk.hostPath)
+                DotNetSdkEnvironment.Create(sdk.hostPath),
+                CancellationToken.None
             );
             Assert.Equal(sdk.sdkIdentity, sdkVersion.Trim());
             Assert.Equal(parent, Environment.GetEnvironmentVariable("MSBuildSDKsPath"));

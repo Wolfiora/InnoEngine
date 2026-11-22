@@ -110,7 +110,7 @@ public sealed class BuildCacheWorkspaceLinkTests
                     "New-Item -ItemType Junction -Path '" + escapedLink + "' -Target '" + escapedTarget + "' | Out-Null"
                 ],
                 root,
-                CancellationToken.None
+                cancellationToken: CancellationToken.None
             );
         }
         else

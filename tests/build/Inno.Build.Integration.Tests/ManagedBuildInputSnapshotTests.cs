@@ -73,8 +73,8 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
             sdk.hostPath,
             [sdk.cliPath, "restore", project, "--nologo", "-v:quiet"],
             m_root,
-            CancellationToken.None,
-            DotNetSdkEnvironment.Create(sdk.hostPath)
+            DotNetSdkEnvironment.Create(sdk.hostPath),
+            CancellationToken.None
         );
 
         ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
@@ -111,8 +111,8 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
             sdk.hostPath,
             [sdk.cliPath, "restore", project, "--disable-build-servers", "-v:quiet"],
             m_root,
-            cancellation.Token,
-            DotNetSdkEnvironment.Create(sdk.hostPath)
+            DotNetSdkEnvironment.Create(sdk.hostPath),
+            cancellation.Token
         );
         ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
             new NativeBuildContext(m_root, "release"),
@@ -173,8 +173,8 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
                 sdk.hostPath,
                 [sdk.cliPath, "restore", project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "--nologo", "-v:quiet"],
                 m_root,
-                CancellationToken.None,
-                DotNetSdkEnvironment.Create(sdk.hostPath)
+                DotNetSdkEnvironment.Create(sdk.hostPath),
+                CancellationToken.None
             );
     }
 
@@ -195,7 +195,7 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
                         "New-Item -ItemType Junction -Path '" + alias + "' -Target '" + m_root + "' | Out-Null"
                     ],
                     m_root,
-                    CancellationToken.None
+                    cancellationToken: CancellationToken.None
                 );
             }
             else
@@ -209,8 +209,8 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
                 sdk.hostPath,
                 [sdk.cliPath, "restore", project, "--nologo", "-v:quiet"],
                 alias,
-                CancellationToken.None,
-                DotNetSdkEnvironment.Create(sdk.hostPath)
+                DotNetSdkEnvironment.Create(sdk.hostPath),
+                CancellationToken.None
             );
             var context = new NativeBuildContext(alias, "release");
             ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
@@ -258,8 +258,8 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
             sdk.hostPath,
             [sdk.cliPath, "restore", project, "--nologo", "-v:quiet"],
             m_root,
-            CancellationToken.None,
-            DotNetSdkEnvironment.Create(sdk.hostPath)
+            DotNetSdkEnvironment.Create(sdk.hostPath),
+            CancellationToken.None
         );
         var context = new NativeBuildContext(m_root, "release");
         ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
@@ -292,8 +292,8 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
                 "-v:quiet"
             ],
             execution.engineRoot,
-            CancellationToken.None,
-            DotNetSdkEnvironment.Create(sdk.hostPath)
+            DotNetSdkEnvironment.Create(sdk.hostPath),
+            CancellationToken.None
         );
         File.WriteAllText(original, "public sealed class App { }");
         await snapshot.VerifyAsync();
@@ -322,15 +322,15 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
             sdk.hostPath,
             [sdk.cliPath, "restore", project, "--nologo", "-v:quiet"],
             m_root,
-            CancellationToken.None,
-            DotNetSdkEnvironment.Create(sdk.hostPath)
+            DotNetSdkEnvironment.Create(sdk.hostPath),
+            CancellationToken.None
         );
         await ToolchainEnvironment.RunAsync(
             sdk.hostPath,
             [sdk.cliPath, "restore", Path.Combine(m_root, "Tool", "Tool.csproj"), "--nologo", "-v:quiet"],
             m_root,
-            CancellationToken.None,
-            DotNetSdkEnvironment.Create(sdk.hostPath)
+            DotNetSdkEnvironment.Create(sdk.hostPath),
+            CancellationToken.None
         );
         File.WriteAllText(
             project,
@@ -420,8 +420,8 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
                 sdk.hostPath,
                 [sdk.cliPath, "restore", project, "--nologo", "-v:quiet"],
                 m_root,
-                CancellationToken.None,
-                DotNetSdkEnvironment.Create(sdk.hostPath)
+                DotNetSdkEnvironment.Create(sdk.hostPath),
+                CancellationToken.None
             );
             ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
                 new NativeBuildContext(m_root, "release"),

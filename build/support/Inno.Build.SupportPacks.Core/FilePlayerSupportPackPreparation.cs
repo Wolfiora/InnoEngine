@@ -267,8 +267,8 @@ public sealed class FilePlayerSupportPackPreparation
                    : Array.Empty<string>())
             ],
             context.engineRoot,
-            cancellationToken,
-            DotNetSdkEnvironment.Create(context.sdk.hostPath)
+            DotNetSdkEnvironment.Create(context.sdk.hostPath),
+            cancellationToken
         ).ConfigureAwait(false);
         string buildOutput = (await ToolchainEnvironment.CaptureOutputAsync(
             context.sdk.hostPath,
@@ -285,8 +285,8 @@ public sealed class FilePlayerSupportPackPreparation
                 "-nologo"
             ],
             context.engineRoot,
-            cancellationToken,
-            DotNetSdkEnvironment.Create(context.sdk.hostPath)
+            DotNetSdkEnvironment.Create(context.sdk.hostPath),
+            cancellationToken
         ).ConfigureAwait(false)).Trim();
         PlayerSupportPackFiles.CopyReferences(
             buildOutput,
@@ -301,7 +301,7 @@ public sealed class FilePlayerSupportPackPreparation
             context,
             project,
             link,
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
         PlayerSupportPackFiles.CopyCompositionInputs(context.engineRoot, link);
         string references = Path.Combine(link, "References");

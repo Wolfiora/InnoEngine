@@ -172,8 +172,8 @@ public sealed class ArchitectureOutputOwnerTests
                     host,
                     ["build", project, "--disable-build-servers", "-m:1", "-nr:false", "-v:quiet", .. properties],
                     root,
-                    cancellation.Token,
-                    DotNetSdkEnvironment.Create(host)
+                    DotNetSdkEnvironment.Create(host),
+                    cancellation.Token
                 );
         }
         finally

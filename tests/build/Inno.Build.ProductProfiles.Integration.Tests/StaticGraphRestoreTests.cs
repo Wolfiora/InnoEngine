@@ -49,8 +49,8 @@ public sealed class StaticGraphRestoreTests
                 "-nr:false"
             ],
             root,
-            cancellation.Token,
-            DotNetSdkEnvironment.Create(host)
+            DotNetSdkEnvironment.Create(host),
+            cancellation.Token
         );
         using JsonDocument evaluation = JsonDocument.Parse(output);
         JsonElement properties = evaluation.RootElement.GetProperty("Properties");
@@ -99,8 +99,8 @@ public sealed class StaticGraphRestoreTests
                 host,
                 ["msbuild", entry, "-t:RestoreProductTargetGraph", "-v:quiet", .. common],
                 root,
-                cancellation.Token,
-                DotNetSdkEnvironment.Create(host)
+                DotNetSdkEnvironment.Create(host),
+                cancellation.Token
             );
 
             var references = new HashSet<string>(StringComparer.Ordinal);
@@ -167,8 +167,8 @@ public sealed class StaticGraphRestoreTests
                 host,
                 ["msbuild", driver, "-t:Verify", "-m:1", "-nodeReuse:false", "-nologo", "-v:minimal"],
                 root,
-                cancellation.Token,
-                environment
+                environment,
+                cancellation.Token
             );
         }
         finally

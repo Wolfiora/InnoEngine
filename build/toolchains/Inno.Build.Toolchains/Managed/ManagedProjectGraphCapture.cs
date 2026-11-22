@@ -234,8 +234,8 @@ public static class ManagedProjectGraphCapture
             sdk.hostPath,
             [sdk.cliPath, "msbuild", entry, "-t:Capture", "-nologo", "-v:minimal", "-m:1", "-nodeReuse:false"],
             context.engineRoot,
-            cancellationToken,
-            DotNetSdkEnvironment.Create(sdk.hostPath)
+            DotNetSdkEnvironment.Create(sdk.hostPath),
+            cancellationToken
         ).ConfigureAwait(false);
         return await File.ReadAllTextAsync(output, cancellationToken).ConfigureAwait(false);
     }

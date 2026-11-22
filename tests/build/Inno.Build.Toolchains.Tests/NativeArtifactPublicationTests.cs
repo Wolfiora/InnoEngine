@@ -636,7 +636,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
                 $"$ErrorActionPreference='Stop'; New-Item -ItemType Junction -Path '{escapedPath}' -Target '{escapedTarget}' | Out-Null"
             ],
             Path.GetDirectoryName(path)!,
-            CancellationToken.None
+            cancellationToken: CancellationToken.None
         );
     }
 }

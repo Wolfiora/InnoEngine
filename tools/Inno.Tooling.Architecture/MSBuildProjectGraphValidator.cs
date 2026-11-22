@@ -23,9 +23,9 @@ internal static class MSBuildProjectGraphValidator
         string? artifactsPath,
         string? outputPath,
         ICollection<string> failures,
-        CancellationToken cancellationToken,
         string? capturedGraph = null,
-        IReadOnlySet<string>? selectedOwners = null
+        IReadOnlySet<string>? selectedOwners = null,
+        CancellationToken cancellationToken = default
     ) {
         if (!Path.IsPathFullyQualified(dotnetHost) || !File.Exists(dotnetHost))
         {

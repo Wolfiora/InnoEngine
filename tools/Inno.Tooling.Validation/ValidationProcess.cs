@@ -18,8 +18,8 @@ internal static class ValidationProcess
         IEnumerable<string> arguments,
         string directory,
         string? log,
-        CancellationToken cancellationToken,
-        string? input = null
+        string? input = null,
+        CancellationToken cancellationToken = default
     ) {
         var start = new ProcessStartInfo(executable)
         {

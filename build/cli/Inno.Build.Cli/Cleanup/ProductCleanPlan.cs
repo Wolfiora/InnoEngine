@@ -40,8 +40,8 @@ internal sealed record ProductCleanPlan(
                     "-p:Configuration=" + context.configuration
                 ],
                 context.root,
-                cancellationToken,
-                DotNetSdkEnvironment.Create(context.composition.dotnetHost)
+                DotNetSdkEnvironment.Create(context.composition.dotnetHost),
+                cancellationToken
             ).ConfigureAwait(false);
             using JsonDocument document = JsonDocument.Parse(result);
             JsonElement properties = document.RootElement.GetProperty("Properties");

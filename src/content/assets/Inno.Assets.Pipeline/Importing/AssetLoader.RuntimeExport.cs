@@ -65,7 +65,7 @@ public sealed partial class AssetLoader
     public AssetRuntimeContentInfo ExportRuntimeArtifacts(
         string destinationLibraryRoot,
         CancellationToken cancellationToken
-    ) => Execute(() => ExportRuntimeArtifactsLocked(destinationLibraryRoot, cancellationToken));
+    ) => Execute(() => ExportRuntimeArtifactsLocked(destinationLibraryRoot, cancellationToken: cancellationToken));
 
     internal AssetRuntimeContentInfo ExportRuntimeArtifacts(
         string destinationLibraryRoot,
@@ -73,13 +73,13 @@ public sealed partial class AssetLoader
         CancellationToken cancellationToken
     ) {
         ArgumentNullException.ThrowIfNull(serialization);
-        return Execute(() => ExportRuntimeArtifactsLocked(destinationLibraryRoot, cancellationToken, serialization));
+        return Execute(() => ExportRuntimeArtifactsLocked(destinationLibraryRoot, serialization, cancellationToken));
     }
 
     private AssetRuntimeContentInfo ExportRuntimeArtifactsLocked(
         string destinationLibraryRoot,
-        CancellationToken cancellationToken,
-        SerializationGeneration? serialization = null
+        SerializationGeneration? serialization = null,
+        CancellationToken cancellationToken = default
     ) {
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentException.ThrowIfNullOrWhiteSpace(destinationLibraryRoot);

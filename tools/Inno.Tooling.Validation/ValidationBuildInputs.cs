@@ -67,8 +67,8 @@ internal sealed class ValidationBuildInputs
                 m_plan,
                 check,
                 new ValidationResult(check.id, "Passed", previous.inputs, 0, string.Empty, previous.outputs),
-                m_cancellation,
-                m_outputDigests
+                m_outputDigests,
+                m_cancellation
             )
         ));
 
@@ -84,8 +84,8 @@ internal sealed class ValidationBuildInputs
                                    m_plan,
                                    check,
                                    new ValidationResult(check.id, "Passed", previous.inputs, 0, string.Empty, previous.outputs),
-                                   m_cancellation,
-                                   m_outputDigests
+                                   m_outputDigests,
+                                   m_cancellation
                                ) ? "compiled output content changed" : null;
             if (reason is not null)
             {
@@ -103,7 +103,7 @@ internal sealed class ValidationBuildInputs
         {
             m_completed[check.owner] = new(
                 Identity(check, dependencies),
-                ValidationOutputs.Capture(m_plan, check, m_cancellation, m_outputDigests),
+                ValidationOutputs.Capture(m_plan, check, m_outputDigests, m_cancellation),
                 Identity(check, dependencies, excludeSelectedSources: true)
             );
         }

@@ -20,11 +20,11 @@ public static class NativeBindingPreparation
     /// <param name="components">
     /// The declared component closure; components without bindings are excluded.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels generation and drains active work before returning.
-    /// </param>
     /// <param name="componentOptions">
     /// Exact per-owner component choices, or null for component defaults.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels generation and drains active work before returning.
     /// </param>
     /// <returns>
     /// An owned generation closure, empty for a product without bindings. Retain it through final consumption.
@@ -35,8 +35,8 @@ public static class NativeBindingPreparation
     public static async Task<NativeBindingGenerationResult> PrepareAsync(
         NativeBuildContext context,
         IReadOnlyList<NativeComponentDescriptor> components,
-        CancellationToken cancellationToken,
-        IReadOnlyDictionary<string, NativeComponentBuildOptions>? componentOptions = null
+        IReadOnlyDictionary<string, NativeComponentBuildOptions>? componentOptions = null,
+        CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(components);

@@ -73,8 +73,8 @@ public sealed class SdkRestoreTests
                     "-v:quiet"
                 ],
                 root,
-                cancellation.Token,
-                DotNetSdkEnvironment.Create(host)
+                DotNetSdkEnvironment.Create(host),
+                cancellation.Token
             );
             string assetsPath = output.Trim();
             Assert.StartsWith(

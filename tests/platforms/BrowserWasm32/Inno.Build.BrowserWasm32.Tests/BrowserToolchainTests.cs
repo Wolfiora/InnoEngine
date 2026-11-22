@@ -91,8 +91,8 @@ public sealed class BrowserToolchainTests : IDisposable
             "dotnet",
             ["msbuild", project, "-nologo", "-nodeReuse:false", "-getProperty:Result"],
             m_root,
-            CancellationToken.None,
-            new Dictionary<string, string?> { [C_VARIABLE] = C_VALUE }
+            new Dictionary<string, string?> { [C_VARIABLE] = C_VALUE },
+            CancellationToken.None
         );
 
         Assert.Equal(C_VALUE, output.Trim());
@@ -108,7 +108,7 @@ public sealed class BrowserToolchainTests : IDisposable
             "dotnet",
             ["--inno-invalid-option"],
             m_root,
-            CancellationToken.None
+            cancellationToken: CancellationToken.None
         ));
     }
 
@@ -122,7 +122,7 @@ public sealed class BrowserToolchainTests : IDisposable
             "inno-tool-that-does-not-exist",
             [],
             m_root,
-            cancellation.Token
+            cancellationToken: cancellation.Token
         ));
     }
 

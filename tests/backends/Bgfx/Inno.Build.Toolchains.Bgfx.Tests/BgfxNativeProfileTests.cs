@@ -94,7 +94,7 @@ public sealed class BgfxNativeProfileTests : IDisposable
         using NativeBindingGenerationResult generations = await NativeBindingPreparation.PrepareAsync(
             CreateContext("fixture-new-target"),
             [tools],
-            CancellationToken.None
+            cancellationToken: CancellationToken.None
         );
         Assert.Empty(generations);
     }

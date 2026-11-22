@@ -63,7 +63,7 @@ public sealed class NativeToolchainPreparationTests
                         $"$ErrorActionPreference='Stop'; New-Item -ItemType Junction -Path '{escapedAlias}' -Target '{escapedTarget}' | Out-Null"
                     ],
                     root,
-                    CancellationToken.None
+                    cancellationToken: CancellationToken.None
                 );
             }
             else

@@ -30,10 +30,10 @@ public sealed class ComponentNativeProductExecutor : INativeProductExecutor
         NativeBindingGenerationResult bindings = await NativeBindingPreparation.PrepareAsync(
             context,
             plan.steps.Select(static step => step.component).ToArray(),
-            cancellationToken,
             plan.steps.Where(static step => step.component.bindingDefinition is not null)
                 .GroupBy(static step => step.component.nativeProject, StringComparer.Ordinal)
-                .ToDictionary(static group => group.Key, static group => group.First().options, StringComparer.Ordinal)
+                .ToDictionary(static group => group.Key, static group => group.First().options, StringComparer.Ordinal),
+            cancellationToken
         ).ConfigureAwait(false);
         var completed = new Dictionary<string, NativeBuildProduct>(StringComparer.Ordinal);
         var borrowed = new ReadOnlyDictionary<string, NativeBuildProduct>(completed);

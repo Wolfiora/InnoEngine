@@ -172,22 +172,22 @@ public sealed class TaskRegistrationBuildTests
                 dotnet,
                 ["build", project, "--disable-build-servers", "-m:1", "-nr:false", "-p:UseSharedCompilation=false"],
                 repository,
-                timeout.Token,
-                environment
+                environment,
+                timeout.Token
             );
             string sdk = (await ToolchainEnvironment.CaptureOutputAsync(
                 dotnet,
                 ["msbuild", project, "-nologo", "-getProperty:MSBuildBinPath"],
                 repository,
-                timeout.Token,
-                environment
+                environment,
+                timeout.Token
             )).Trim();
             await ToolchainEnvironment.RunAsync(
                 dotnet,
                 [Path.Combine(root, "bin/Debug/net10.0/Runner.dll"), fixture, sdk, report, repository],
                 repository,
-                timeout.Token,
-                environment
+                environment,
+                timeout.Token
             );
             using JsonDocument results = JsonDocument.Parse(await File.ReadAllTextAsync(report));
             Assert.Equal(2, results.RootElement.GetArrayLength());

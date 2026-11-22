@@ -49,14 +49,14 @@ internal static class ValidationProductInput
                 ["-C", checkout, "remote", "get-url", "origin"],
                 plan.root,
                 null,
-                cancellationToken
+                cancellationToken: cancellationToken
             ).ConfigureAwait(false);
             string bare = await ValidationProcess.RunAsync(
                 "git",
                 ["-C", checkout, "rev-parse", "--is-bare-repository"],
                 plan.root,
                 null,
-                cancellationToken
+                cancellationToken: cancellationToken
             ).ConfigureAwait(false);
             if (origin.Trim() != repository || bare.Trim() != "true")
             {
@@ -69,7 +69,7 @@ internal static class ValidationProductInput
                     ["-C", checkout, "fsck", "--full", "--strict"],
                     plan.root,
                     Path.Combine(directory, "consumer-integrity.log"),
-                    cancellationToken
+                    cancellationToken: cancellationToken
                 ).ConfigureAwait(false);
             }
             catch (InvalidOperationException)
@@ -87,21 +87,21 @@ internal static class ValidationProductInput
                 ["-c", "core.longpaths=true", "init", "--bare", staging],
                 plan.root,
                 Path.Combine(directory, "consumer-initialize.log"),
-                cancellationToken
+                cancellationToken: cancellationToken
             ).ConfigureAwait(false);
             await ValidationProcess.RunAsync(
                 "git",
                 ["-c", "core.longpaths=true", "-C", staging, "config", "core.longpaths", "true"],
                 plan.root,
                 null,
-                cancellationToken
+                cancellationToken: cancellationToken
             ).ConfigureAwait(false);
             await ValidationProcess.RunAsync(
                 "git",
                 ["-C", staging, "remote", "add", "origin", repository],
                 plan.root,
                 null,
-                cancellationToken
+                cancellationToken: cancellationToken
             ).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
             Directory.Move(staging, checkout);
@@ -117,7 +117,7 @@ internal static class ValidationProductInput
                     ["-C", adjacent, "remote", "get-url", "origin"],
                     plan.root,
                     null,
-                    cancellationToken
+                    cancellationToken: cancellationToken
                 ).ConfigureAwait(false);
                 if (origin.Trim().Equals(repository, StringComparison.OrdinalIgnoreCase)
                     && await HasCommitAsync(adjacent).ConfigureAwait(false)
@@ -136,14 +136,14 @@ internal static class ValidationProductInput
                 ["-C", checkout, "fetch", "--no-tags", "--depth=1", input, commit],
                 plan.root,
                 Path.Combine(directory, "consumer-fetch.log"),
-                cancellationToken
+                cancellationToken: cancellationToken
             ).ConfigureAwait(false);
             await ValidationProcess.RunAsync(
                 "git",
                 ["-C", checkout, "fsck", "--full", "--strict"],
                 plan.root,
                 Path.Combine(directory, "consumer-import-integrity.log"),
-                cancellationToken
+                cancellationToken: cancellationToken
             ).ConfigureAwait(false);
         }
         string revision = await ValidationProcess.RunAsync(
@@ -151,7 +151,7 @@ internal static class ValidationProductInput
             ["-C", checkout, "rev-parse", commit + "^{commit}"],
             plan.root,
             null,
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
         if (revision.Trim() != commit)
         {
@@ -163,7 +163,7 @@ internal static class ValidationProductInput
             ["-C", checkout, "archive", "--format=zip", "--output=" + archive, commit, "--", prefix],
             plan.root,
             Path.Combine(directory, "consumer-archive.log"),
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
         using ZipArchive contents = ZipFile.OpenRead(archive);
         foreach (ZipArchiveEntry entry in contents.Entries)
@@ -198,7 +198,7 @@ internal static class ValidationProductInput
                     ["-C", input, "cat-file", "-e", commit + "^{commit}"],
                     plan.root,
                     null,
-                    cancellationToken
+                    cancellationToken: cancellationToken
                 ).ConfigureAwait(false);
                 return true;
             }

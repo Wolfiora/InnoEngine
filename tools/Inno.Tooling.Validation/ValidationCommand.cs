@@ -139,8 +139,8 @@ public static class ValidationCommand
                 ValidationPlan bound = await ValidationPlanner.BindBackendsAsync(
                     frozen,
                     options["--packages"],
-                    cancellationToken,
-                    options.GetValueOrDefault("--test-evidence")
+                    options.GetValueOrDefault("--test-evidence"),
+                    cancellationToken
                 ).ConfigureAwait(false);
                 AtomicFile.WriteAllBytes(options["--output"], ValidationPlanTransport.Write(bound));
             }
@@ -154,9 +154,9 @@ public static class ValidationCommand
                 BackendInputPlan selection = await ValidationPlanner.BackendInputsAsync(
                     frozen,
                     options["--target"],
-                    cancellationToken,
                     native,
-                    options.GetValueOrDefault("--configuration")
+                    options.GetValueOrDefault("--configuration"),
+                    cancellationToken
                 ).ConfigureAwait(false);
                 AtomicFile.WriteAllBytes(options["--output"], JsonSerializer.SerializeToUtf8Bytes(selection));
             }
@@ -228,7 +228,6 @@ public static class ValidationCommand
                 options.GetValueOrDefault("--configuration", "Debug"),
                 artifacts,
                 full,
-                cancellationToken,
                 extended,
                 options.GetValueOrDefault("--docs-cache-root"),
                 options.GetValueOrDefault("--docs-snapshot"),
@@ -236,7 +235,8 @@ public static class ValidationCommand
                 profile,
                 options.GetValueOrDefault("--native-dependencies"),
                 options.GetValueOrDefault("--backend-store"),
-                options.GetValueOrDefault("--baseline-plan")
+                options.GetValueOrDefault("--baseline-plan"),
+                cancellationToken
             ).ConfigureAwait(false);
             if (selected.preparation is not null)
             {
@@ -336,8 +336,8 @@ public static class ValidationCommand
             && plan.environment != await ValidationEnvironment.CaptureAsync(
                 root,
                 plan.dotnet,
-                cancellationToken,
-                plan.contexts.Values
+                plan.contexts.Values,
+                cancellationToken: cancellationToken
             ).ConfigureAwait(false)
         ) {
             if (arguments[0] == "plan")
@@ -413,8 +413,8 @@ public static class ValidationCommand
                     plan,
                     check,
                     previous.results.Single(result => result.id == check.id),
-                    cancellationToken,
-                    outputDigests
+                    outputDigests,
+                    cancellationToken
                 )
                     || !dependencies.Matches(check, previous.results.Single(result => result.id == check.id).dependencyIdentity)
                 ) {
@@ -444,11 +444,11 @@ public static class ValidationCommand
             plan,
             output,
             previous,
-            cancellationToken,
             shard,
             options.TryGetValue("--prerequisites", out string? receipts) ? ReadReceipts(receipts) : null,
             continuation,
-            retainedOutputs
+            retainedOutputs,
+            cancellationToken
         ).ConfigureAwait(false);
         _ = ValidationShards.ValidateEvidence(plan, evidence, shard?.id);
         if (options.TryGetValue("--cache-output", out string? cacheOutput) && plan.contexts.ContainsKey("native"))

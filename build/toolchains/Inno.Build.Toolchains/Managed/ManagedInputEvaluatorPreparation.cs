@@ -149,8 +149,8 @@ internal static class ManagedInputEvaluatorPreparation
                             "-v:quiet"
                         ],
                         context.engineRoot,
-                        cancellationToken,
-                        DotNetSdkEnvironment.Create(sdk.hostPath)
+                        DotNetSdkEnvironment.Create(sdk.hostPath),
+                        cancellationToken
                     ).ConfigureAwait(false);
                     Verify("managed-evaluator-build");
                     File.Delete(project);

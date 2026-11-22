@@ -25,8 +25,8 @@ internal static class BuildComposition
     internal static async Task<ProductNativeBuildResult> PrepareNativeAsync(
         BuildCompositionContext context,
         string engineRoot,
-        CancellationToken cancellationToken,
-        string? nativeDependencies = null
+        string? nativeDependencies = null,
+        CancellationToken cancellationToken = default
     ) {
         BuildDistribution distribution = StandardBuildDistribution.Create(context).build;
         NativeProductContribution contribution = distribution.ResolveNativeProduct(context.toolsTarget.value, "shader-tools");

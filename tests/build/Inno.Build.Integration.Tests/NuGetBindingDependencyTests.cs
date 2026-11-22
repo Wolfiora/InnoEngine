@@ -33,8 +33,8 @@ public sealed class NuGetBindingDependencyTests
                 "-getProperty:InnoBgcsPackageVersion"
             ],
             root,
-            CancellationToken.None,
-            DotNetSdkEnvironment.Create(host)
+            DotNetSdkEnvironment.Create(host),
+            CancellationToken.None
         );
         using JsonDocument document = JsonDocument.Parse(output);
         JsonElement items = document.RootElement.GetProperty("Items");
@@ -76,8 +76,8 @@ public sealed class NuGetBindingDependencyTests
                     "-v:quiet"
                 ],
                 root,
-                cancellation.Token,
-                DotNetSdkEnvironment.Create(host)
+                DotNetSdkEnvironment.Create(host),
+                cancellation.Token
             );
             using JsonDocument evaluation = JsonDocument.Parse(output);
             JsonElement properties = evaluation.RootElement.GetProperty("Properties");

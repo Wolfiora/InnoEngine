@@ -391,5 +391,5 @@ public sealed class NativeDependencyManifestTests : IDisposable
     private static Task<string> GitAsync(
         string root,
         params string[] arguments
-    ) => ToolchainEnvironment.CaptureOutputAsync("git", arguments, root, CancellationToken.None);
+    ) => ToolchainEnvironment.CaptureOutputAsync("git", arguments, root, cancellationToken: CancellationToken.None);
 }

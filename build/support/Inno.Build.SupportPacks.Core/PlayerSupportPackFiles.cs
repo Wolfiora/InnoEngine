@@ -28,11 +28,11 @@ public static class PlayerSupportPackFiles
     /// <param name="destination">
     /// The isolated source input directory.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels evaluation and source preparation.
-    /// </param>
     /// <param name="environment">
     /// Optional explicitly selected SDK environment.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels evaluation and source preparation.
     /// </param>
     /// <returns>
     /// Completion after all sources have contained, unique publication paths.
@@ -44,8 +44,8 @@ public static class PlayerSupportPackFiles
         PlayerSupportPackBuildContext context,
         string project,
         string destination,
-        CancellationToken cancellationToken,
-        IReadOnlyDictionary<string, string>? environment = null
+        IReadOnlyDictionary<string, string>? environment = null,
+        CancellationToken cancellationToken = default
     ) {
         string evaluated = await ToolchainEnvironment.CaptureOutputAsync(
             context.sdk.hostPath,
@@ -60,8 +60,8 @@ public static class PlayerSupportPackFiles
                 "-nologo"
             ],
             context.engineRoot,
-            cancellationToken,
-            DotNetSdkEnvironment.Create(context.sdk.hostPath, environment)
+            DotNetSdkEnvironment.Create(context.sdk.hostPath, environment),
+            cancellationToken
         ).ConfigureAwait(false);
         using JsonDocument document = JsonDocument.Parse(evaluated);
         JsonElement sources = document.RootElement.GetProperty("Items").GetProperty("Compile");

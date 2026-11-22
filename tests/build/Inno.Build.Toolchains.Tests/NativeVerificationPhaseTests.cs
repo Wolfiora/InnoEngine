@@ -33,7 +33,7 @@ public sealed class NativeVerificationPhaseTests
                         "New-Item -ItemType Junction -Path '" + alias + "' -Target '" + physical + "' | Out-Null"
                     ],
                     root,
-                    CancellationToken.None
+                    cancellationToken: CancellationToken.None
                 );
             }
             else

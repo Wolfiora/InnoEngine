@@ -23,11 +23,11 @@ internal static class ValidationRunner
         ValidationPlan plan,
         string directory,
         ValidationEvidence? previous,
-        CancellationToken cancellationToken,
         ValidationShard? shard = null,
         IReadOnlyList<ValidationEvidence>? prerequisites = null,
         bool continuation = false,
-        string? retainedOutputs = null
+        string? retainedOutputs = null,
+        CancellationToken cancellationToken = default
     ) {
         HashSet<string>? selectedChecks = shard?.checks.ToHashSet(StringComparer.Ordinal);
         ValidationCheck[] checks = plan.checks.Where(check => selectedChecks is null || selectedChecks.Contains(check.id)).ToArray();
@@ -109,7 +109,7 @@ internal static class ValidationRunner
                     ],
                     plan.root,
                     Path.Combine(directory, solution.Key + "-restore-retained.log"),
-                    cancellationToken
+                    cancellationToken: cancellationToken
                 ).ConfigureAwait(false);
             }
         }
@@ -260,7 +260,7 @@ internal static class ValidationRunner
                                     ],
                                     plan.root,
                                     Path.Combine(directory, "native-aot-restore.log"),
-                                    cancellationToken
+                                    cancellationToken: cancellationToken
                                 ).ConfigureAwait(false);
                             }
                             break;
@@ -455,7 +455,7 @@ internal static class ValidationRunner
                                     ],
                                     plan.root,
                                     Path.Combine(directory, contextID + "-documentation-projection.log"),
-                                    cancellationToken
+                                    cancellationToken: cancellationToken
                                 ).ConfigureAwait(false);
                                 XDocument projection = XDocument.Load(Path.Combine(project, "Inno.EditorScripts.csproj"));
                                 foreach (string scope in new[] { "Runtime", "Editor" })
@@ -618,7 +618,7 @@ internal static class ValidationRunner
                                     ],
                                     plan.root,
                                     Path.Combine(directory, "support-pack.log"),
-                                    cancellationToken
+                                    cancellationToken: cancellationToken
                                 ).ConfigureAwait(false);
                                 await ShellAsync(
                                     "tests/ci/Test-SupportPackClosure.ps1",
@@ -669,7 +669,7 @@ internal static class ValidationRunner
                                             ],
                                             plan.root,
                                             Path.Combine(directory, contextID + "-clean.log"),
-                                            cancellationToken
+                                            cancellationToken: cancellationToken
                                         ).ConfigureAwait(false);
                                     }
                                     await ValidationProcess.RunAsync(
@@ -690,7 +690,7 @@ internal static class ValidationRunner
                                         ],
                                         plan.root,
                                         Path.Combine(directory, contextID + "-build.log"),
-                                        cancellationToken
+                                        cancellationToken: cancellationToken
                                     ).ConfigureAwait(false);
                                     built.Add(contextID);
                                     outputDigests.Clear();
@@ -827,7 +827,7 @@ internal static class ValidationRunner
                     }
                     if (status != "Blocked")
                     {
-                        outputs = ValidationOutputs.Capture(plan, check, cancellationToken, outputDigests);
+                        outputs = ValidationOutputs.Capture(plan, check, outputDigests, cancellationToken);
                         dependencyIdentity = dependencyInputs.Capture(check);
                         documentationInputs = ValidationDocumentationInputs.Capture(plan, check, dependencyInputs);
                         status = "Passed";
@@ -917,8 +917,8 @@ internal static class ValidationRunner
             Task<string> environmentCapture = Task.Run(() => ValidationEnvironment.CaptureAsync(
                 plan.root,
                 plan.dotnet,
-                cancellationToken,
-                plan.contexts.Values
+                plan.contexts.Values,
+                cancellationToken: cancellationToken
             ), cancellationToken);
             await Task.WhenAll(sourceCapture, environmentCapture).ConfigureAwait(false);
             Dictionary<string, string> after = await sourceCapture.ConfigureAwait(false);
@@ -929,7 +929,7 @@ internal static class ValidationRunner
             {
                 ValidationResult result = results.Single(record => record.id == check.id);
                 if (result.status is "Passed" or "Reused"
-                    && (!ValidationOutputs.Matches(plan, check, result, cancellationToken, outputDigests)
+                    && (!ValidationOutputs.Matches(plan, check, result, outputDigests, cancellationToken)
                         || !dependencyInputs.Matches(check, result.dependencyIdentity))
                 ) {
                     if (check.kind == "build")
@@ -983,7 +983,7 @@ internal static class ValidationRunner
             ["-NoProfile", "-File", Path.Combine(plan.root, script), ..arguments],
             plan.root,
             Path.Combine(directory, log),
-            cancellationToken
+            cancellationToken: cancellationToken
         );
 
         async Task<string> ResolveCompilationGraphAsync(string context)
@@ -1130,7 +1130,7 @@ internal static class ValidationRunner
             if (retained is not { status: "Passed" or "Reused" }
                 || retained.inputIdentity != ValidationInputs.CheckIdentity(plan, candidate, current)
                 || !dependencyInputs.Matches(candidate, retained.dependencyIdentity)
-                || !ValidationOutputs.Matches(plan, candidate, retained, cancellationToken, outputDigests)
+                || !ValidationOutputs.Matches(plan, candidate, retained, outputDigests, cancellationToken)
             ) {
                 return false;
             }

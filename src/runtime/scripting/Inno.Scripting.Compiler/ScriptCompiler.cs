@@ -116,8 +116,8 @@ public sealed class ScriptCompiler
             fraction,
             stage
         ) => progress.Report(new ScriptCompilationProgress(fraction, stage)),
-        cancellationToken,
-        sourceSnapshot
+        sourceSnapshot,
+        cancellationToken
     );
 
     /// <summary>
@@ -179,7 +179,7 @@ public sealed class ScriptCompiler
                 fraction,
                 stage
             ) => progress.Report(new ScriptCompilationProgress(fraction, stage)),
-            cancellationToken
+            cancellationToken: cancellationToken
         );
     }
 

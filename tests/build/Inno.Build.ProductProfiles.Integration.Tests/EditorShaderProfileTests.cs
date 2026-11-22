@@ -50,8 +50,8 @@ public sealed class EditorShaderProfileTests
             host,
             ["restore", backend, "--disable-build-servers", "-m:1", "-nr:false", ..buildProperties],
             root,
-            cancellation.Token,
-            DotNetSdkEnvironment.Create(host)
+            DotNetSdkEnvironment.Create(host),
+            cancellation.Token
         );
         string output = await ToolchainEnvironment.CaptureOutputAsync(
             host,
@@ -65,8 +65,8 @@ public sealed class EditorShaderProfileTests
                 ..buildProperties
             ],
             root,
-            cancellation.Token,
-            DotNetSdkEnvironment.Create(host)
+            DotNetSdkEnvironment.Create(host),
+            cancellation.Token
         );
         using JsonDocument document = JsonDocument.Parse(output);
         JsonElement references = document.RootElement.GetProperty("Items").GetProperty("ProjectReference");
@@ -131,8 +131,8 @@ public sealed class EditorShaderProfileTests
                 "-p:InnoNativeTarget=fixture-new-cpu"
             ],
             root,
-            CancellationToken.None,
-            DotNetSdkEnvironment.Create(host)
+            DotNetSdkEnvironment.Create(host),
+            CancellationToken.None
         );
         using JsonDocument document = JsonDocument.Parse(output);
         Assert.Equal(
@@ -177,8 +177,8 @@ public sealed class EditorShaderProfileTests
                 "-p:InnoNativeTarget=" + nativeTarget
             ],
             root,
-            CancellationToken.None,
-            DotNetSdkEnvironment.Create(host)
+            DotNetSdkEnvironment.Create(host),
+            CancellationToken.None
         );
         using JsonDocument document = JsonDocument.Parse(output);
         Assert.Equal(
@@ -230,8 +230,8 @@ public sealed class EditorShaderProfileTests
                 "-getProperty:InnoShaderToolSourceRoot"
             ],
             root,
-            CancellationToken.None,
-            DotNetSdkEnvironment.Create(host)
+            DotNetSdkEnvironment.Create(host),
+            CancellationToken.None
         );
         Assert.Equal(selectedOwner, selected.Trim());
     }

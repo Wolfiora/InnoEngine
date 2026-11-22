@@ -144,9 +144,9 @@ public static class DocumentationReferences
             configuration,
             options.GetValueOrDefault("--target"),
             requested,
-            cancellationToken,
             options.GetValueOrDefault("--artifacts-path"),
-            options.TryGetValue("--sdk-snapshot", out string? graphPath) ? File.ReadAllText(graphPath) : null
+            options.TryGetValue("--sdk-snapshot", out string? graphPath) ? File.ReadAllText(graphPath) : null,
+            cancellationToken
         );
         cancellationToken.ThrowIfCancellationRequested();
         AtomicFile.WriteAllBytes(
@@ -359,11 +359,11 @@ public static class DocumentationReferences
             configuration!,
             target,
             expected.Keys,
-            cancellationToken,
             options.GetValueOrDefault("--artifacts-path"),
             options.TryGetValue("--sdk-snapshot", out string? graphPath)
             ? await File.ReadAllTextAsync(graphPath, cancellationToken).ConfigureAwait(false)
-            : null
+            : null,
+            cancellationToken
         );
         List<object> results = [];
         bool passed = true;
@@ -550,9 +550,9 @@ public static class DocumentationReferences
         string configuration,
         string? target,
         IEnumerable<string> requested,
-        CancellationToken cancellationToken,
         string? artifactsPath = null,
-        string? sdkSnapshot = null
+        string? sdkSnapshot = null,
+        CancellationToken cancellationToken = default
     ) {
         string[] projects = RepositorySourceInventory.Projects(root).ToArray();
         var selected = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

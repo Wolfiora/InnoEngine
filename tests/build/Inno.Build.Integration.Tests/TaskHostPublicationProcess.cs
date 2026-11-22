@@ -140,8 +140,8 @@ internal sealed class TaskHostPublicationProcess : IAsyncDisposable
             dotnet,
             ["msbuild", path, "-t:Publish", "-nologo", "-m:1", "-nr:false"],
             worker,
-            budget.Token,
-            DotNetSdkEnvironment.Create(dotnet)
+            DotNetSdkEnvironment.Create(dotnet),
+            budget.Token
         );
         var result = new TaskHostPublicationProcess(load, publisher, ready, release, running, budget);
         try

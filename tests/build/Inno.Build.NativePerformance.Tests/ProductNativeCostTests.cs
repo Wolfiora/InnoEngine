@@ -87,10 +87,10 @@ public sealed class ProductNativeCostTests
         using (NativeBindingGenerationResult bindings = await NativeBindingPreparation.PrepareAsync(
             serial,
             plan.steps.Select(static step => step.component).ToArray(),
-            cancellation.Token,
             plan.steps.Where(static step => step.component.bindingDefinition is not null)
                 .GroupBy(static step => step.component.nativeProject, StringComparer.Ordinal)
-                .ToDictionary(static group => group.Key, static group => group.First().options, StringComparer.Ordinal)
+                .ToDictionary(static group => group.Key, static group => group.First().options, StringComparer.Ordinal),
+            cancellation.Token
         )) {
             serial = serial.WithBindings(bindings);
             var products = new Dictionary<string, NativeBuildProduct>(StringComparer.Ordinal);
