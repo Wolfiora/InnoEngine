@@ -37,20 +37,6 @@ public sealed class SupportPackValidationTests : PlayerSupportPackFixture
     }
 
     [Fact]
-    public void SupportPackRejectsMissingMiniAudioRuntime()
-    {
-        string supportPack = GetSupportPackDirectory(new BuildTargetID("macos-arm64"));
-        File.Delete(Path.Combine(supportPack, "native", "libminiaudio-release.dylib"));
-        var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
-
-        InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Acquire(new BuildTargetID("macos-arm64"), new MacOSArm64SupportPackValidator())
-        );
-
-        Assert.Contains("no longer matches", exception.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void PlatformValidatorRejectsForeignAbiDespiteTheExpectedFilename()
     {
         var target = new BuildTargetID("macos-arm64");
@@ -80,9 +66,10 @@ public sealed class SupportPackValidationTests : PlayerSupportPackFixture
     }
 
     [Theory]
+    [InlineData("libminiaudio-release.dylib")]
     [InlineData("libinno-text-release.dylib")]
     [InlineData("libinno-ui-release.dylib")]
-    public void SupportPackRejectsMissingTextOrUIRuntime(string nativeRuntime)
+    public void SupportPackRejectsMissingNativeRuntime(string nativeRuntime)
     {
         string supportPack = GetSupportPackDirectory(new BuildTargetID("macos-arm64"));
         File.Delete(Path.Combine(supportPack, "native", nativeRuntime));

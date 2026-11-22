@@ -43,9 +43,11 @@ public sealed class BgfxToolchainTests : IDisposable
         Directory.CreateDirectory(m_root);
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     [SupportedOSPlatform("windows")]
-    public async Task BrowserProfileCompilesTheCommonGraphOnWindows()
+    public async Task BrowserAndDirect3DProfilesCompileTheCommonGraphOnWindows(bool browser)
     {
         if (!OperatingSystem.IsWindows())
         {
@@ -66,56 +68,16 @@ public sealed class BgfxToolchainTests : IDisposable
             serialization,
             SerializationContext.empty
         );
-        var compiler = new ShaderCompiler(new BgfxShadercToolchain(ShaderProfileFixture.browser));
+        var compiler = new ShaderCompiler(
+            new BgfxShadercToolchain(browser ? ShaderProfileFixture.browser : ShaderProfileFixture.windows)
+        );
 
         ShaderCompilationResult result = await compiler.CompileAsync(
             ShaderGraphDocument.ReadDefinition(graph, serialization, SerializationContext.empty),
             program,
-            compiler.CreateTarget(CreateCapabilities(GraphicsApi.openGLES, GraphicsCapability.None)),
-            RenderShaderVariant.empty,
-            serialization,
-            SerializationContext.empty
-        );
-
-        Assert.True(
-            result.succeeded,
-            string.Join(
-                Environment.NewLine,
-                result.diagnostics.Select(static diagnostic => $"{diagnostic.code}: {diagnostic.message}")
-            )
-        );
-        Assert.Single(result.artifact!.passes);
-    }
-
-    [Fact]
-    [SupportedOSPlatform("windows")]
-    public async Task Direct3DProfileCompilesTheCommonGraphOnWindows()
-    {
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-        using var modules = new ModuleHost(new ModuleHostOptions()
-        {
-            catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderNodeCompilerRegistry).Assembly)
-        });
-        using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
-        using var serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
-        using var nodes = new ShaderNodeCompilerRegistry(types);
-        GraphDocument graph = ShaderGraphTemplates.CreateRaster(serialization, SerializationContext.empty);
-        ShaderGraphProgramResult program = new ShaderGraphProgramCompiler(nodes).Lower(
-            graph,
-            "bgfx",
-            new Dictionary<GraphNodeID, ShaderSourceModuleAnalysis>(),
-            serialization,
-            SerializationContext.empty
-        );
-        var compiler = new ShaderCompiler(new BgfxShadercToolchain(ShaderProfileFixture.windows));
-
-        ShaderCompilationResult result = await compiler.CompileAsync(
-            ShaderGraphDocument.ReadDefinition(graph, serialization, SerializationContext.empty),
-            program,
-            compiler.CreateTarget(CreateCapabilities(GraphicsApi.direct3D11, GraphicsCapability.None)),
+            compiler.CreateTarget(
+                CreateCapabilities(browser ? GraphicsApi.openGLES : GraphicsApi.direct3D11, GraphicsCapability.None)
+            ),
             RenderShaderVariant.empty,
             serialization,
             SerializationContext.empty

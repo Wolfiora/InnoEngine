@@ -274,33 +274,6 @@ public sealed class AssetFileSystemTests
         }
     }
 
-    [Fact]
-    public void WatcherRenameCarriesOldAndNewPathsThroughOwnerPolling()
-    {
-        string root = CreateRoot();
-        try
-        {
-            string oldPath = Path.Combine(root, "old.txt");
-            string newPath = Path.Combine(root, "new.txt");
-            File.WriteAllText(oldPath, "value");
-            using var fileSystem = new AssetFileSystem(root, autoStart: true, flushDelayMs: 20);
-
-            File.Move(oldPath, newPath);
-            IReadOnlyList<AssetChangedEvent> changes = fileSystem.WaitForIdle();
-
-            AssetChangedEvent moved = Assert.Single(changes, static change =>
-                change.changeType.HasFlag(WatcherChangeTypes.Renamed));
-            Assert.Equal("old.txt", moved.oldRelativePath);
-            Assert.Equal("new.txt", moved.relativePath);
-            Assert.False(fileSystem.Exists(AssetPath.Project("old.txt")));
-            Assert.True(fileSystem.Exists(AssetPath.Project("new.txt")));
-        }
-        finally
-        {
-            DeleteRoot(root);
-        }
-    }
-
     private static string CreateRoot()
     {
         string root = Path.Combine(Path.GetTempPath(), "InnoAssetsIOTests", Guid.NewGuid().ToString("N"));

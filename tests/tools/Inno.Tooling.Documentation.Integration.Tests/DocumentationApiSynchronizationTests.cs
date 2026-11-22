@@ -174,13 +174,15 @@ public sealed class DocumentationApiSynchronizationTests : DocumentationApiFixtu
         Assert.Equal(type, File.ReadAllText(Fragment(C_TYPE)));
     }
 
-    [Fact]
-    public async Task RegisteredPathCannotEscapeApiOwnership()
+    [Theory]
+    [InlineData("content/en/manual/task.md")]
+    [InlineData("content/en/api/engine/../../manual/task.md")]
+    public async Task RegisteredPathCannotEscapeApiOwnership(string registeredPath)
     {
         await SyncAsync();
         string path = Path.Combine(m_root, "reference/api/content.json");
         JsonNode registry = JsonNode.Parse(File.ReadAllText(path))!;
-        registry["entries"]![0]!["path"] = "content/en/manual/task.md";
+        registry["entries"]![0]!["path"] = registeredPath;
         Write("content/en/manual/task.md", "Preserve this independent guide.");
         File.WriteAllText(path, registry.ToJsonString());
         await Assert.ThrowsAsync<InvalidDataException>(SyncAsync);
@@ -193,19 +195,6 @@ public sealed class DocumentationApiSynchronizationTests : DocumentationApiFixtu
         Write("content/en/api/engine/probe/value/index.md", "Unregistered authored prose.");
         await Assert.ThrowsAsync<InvalidDataException>(SyncAsync);
         Assert.Equal("Unregistered authored prose.", File.ReadAllText(Path.Combine(m_root, "content/en/api/engine/probe/value/index.md")));
-    }
-
-    [Fact]
-    public async Task AnApiPrefixCannotAuthorizeTraversalIntoManualContent()
-    {
-        await SyncAsync();
-        string path = Path.Combine(m_root, "reference/api/content.json");
-        JsonNode registry = JsonNode.Parse(File.ReadAllText(path))!;
-        registry["entries"]![0]!["path"] = "content/en/api/engine/../../manual/task.md";
-        Write("content/en/manual/task.md", "Preserve the independent guide.");
-        File.WriteAllText(path, registry.ToJsonString());
-        await Assert.ThrowsAsync<InvalidDataException>(SyncAsync);
-        Assert.Equal("Preserve the independent guide.", File.ReadAllText(Path.Combine(m_root, "content/en/manual/task.md")));
     }
 
     [Fact]

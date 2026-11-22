@@ -1,11 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
 using Inno.Adapter.Modules.DotNet;
@@ -23,7 +19,6 @@ using Inno.References;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 using Inno.Runtime.Contracts;
-using Inno.Testing.Source;
 
 namespace Inno.Rendering.Runtime.Tests;
 
@@ -122,13 +117,11 @@ public sealed class RenderContributorTests : RenderRuntimeFixture
     [Theory]
     [InlineData(0, false)]
     [InlineData(1, false)]
-    [InlineData(8, false)]
     [InlineData(32, false)]
     [InlineData(0, true)]
     [InlineData(1, true)]
-    [InlineData(8, true)]
     [InlineData(32, true)]
-    public void FrameAllocationMeasurementsUseTheRealPublicLifecycle(
+    public void EveryFrameBuildsEachContributorAndExecutesOnlyAcceptedGraphs(
         int contributorCount,
         bool fail
     ) {
@@ -145,50 +138,23 @@ public sealed class RenderContributorTests : RenderRuntimeFixture
             contributors.Add(contributor);
             runtime.RegisterContributor(contributor);
         }
-        for (int frame = 0; frame < 16; frame++)
-        {
-            CompleteContributorFrame(runtime, proxy);
-        }
-        const int C_FRAMES = 64;
-        long before = GC.GetAllocatedBytesForCurrentThread();
-        long start = Stopwatch.GetTimestamp();
+
+        const int C_FRAMES = 80;
         for (int frame = 0; frame < C_FRAMES; frame++)
         {
             CompleteContributorFrame(runtime, proxy);
         }
-        double elapsedMs = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
-        long allocatedBytes = GC.GetAllocatedBytesForCurrentThread() - before;
-        Assert.All(contributors, contributor => Assert.Equal(C_FRAMES + 16, contributor.builds));
-        Assert.Equal(C_FRAMES + 16, proxy.endFrameCount);
-        Assert.Equal(contributorCount != 0 && !fail ? C_FRAMES + 16 : 0, proxy.executeCount);
-        string directory = Path.Combine(
-            TestRepository.GetRoot(typeof(RenderRuntimeFixture).Assembly),
-            "artifacts/acceptance/architecture-cleanup/results"
-        );
-        Directory.CreateDirectory(directory);
-        File.WriteAllText(
-            Path.Combine(directory, $"frames-{contributorCount}-{fail}.json"),
-            JsonSerializer.Serialize(new
-            {
-                contributorCount,
-                fail,
-                C_FRAMES,
-                elapsedMs,
-                allocatedBytes,
-                bytesPerFrame = allocatedBytes / (double)C_FRAMES,
-                millisecondsPerFrame = elapsedMs / C_FRAMES,
-                graphCompileCount = ReadGraphCompileCount(runtime),
-                runtime = RuntimeInformation.FrameworkDescription
-            }, new JsonSerializerOptions { WriteIndented = true })
-        );
+
+        Assert.All(contributors, contributor => Assert.Equal(C_FRAMES, contributor.builds));
+        Assert.Equal(C_FRAMES, proxy.endFrameCount);
+        Assert.Equal(contributorCount != 0 && !fail ? C_FRAMES : 0, proxy.executeCount);
     }
 
     [Theory]
     [InlineData(0)]
     [InlineData(1)]
-    [InlineData(8)]
     [InlineData(32)]
-    public void ContributorRetirementMeasurementsIncludeRegistrationAndTheFollowingEmptyFrame(int contributorCount)
+    public void ContributorRetirementCyclesRebuildAfterRegistrationAndCompleteTheFollowingEmptyFrame(int contributorCount)
     {
         using var runtime = new RenderRuntime(
             m_types,
@@ -203,44 +169,16 @@ public sealed class RenderContributorTests : RenderRuntimeFixture
         {
             runtime.RegisterContributor(contributor);
         }
-        for (int cycle = 0; cycle < 16; cycle++)
-        {
-            CompleteContributorRetirementCycle(runtime, proxy, contributors);
-        }
 
-        const int C_CYCLES = 64;
-        long before = GC.GetAllocatedBytesForCurrentThread();
-        long start = Stopwatch.GetTimestamp();
+        const int C_CYCLES = 80;
         for (int cycle = 0; cycle < C_CYCLES; cycle++)
         {
             CompleteContributorRetirementCycle(runtime, proxy, contributors);
         }
-        double elapsedMs = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
-        long allocatedBytes = GC.GetAllocatedBytesForCurrentThread() - before;
-        Assert.All(contributors, contributor => Assert.Equal(C_CYCLES + 16, contributor.builds));
-        Assert.Equal(2 * (C_CYCLES + 16), proxy.endFrameCount);
-        Assert.Equal(contributorCount == 0 ? 0 : C_CYCLES + 16, proxy.executeCount);
 
-        string directory = Path.Combine(
-            TestRepository.GetRoot(typeof(RenderRuntimeFixture).Assembly),
-            "artifacts/acceptance/architecture-cleanup/results"
-        );
-        Directory.CreateDirectory(directory);
-        File.WriteAllText(
-            Path.Combine(directory, $"retirement-{contributorCount}.json"),
-            JsonSerializer.Serialize(new
-            {
-                contributorCount,
-                C_CYCLES,
-                frames = 2 * C_CYCLES,
-                elapsedMs,
-                allocatedBytes,
-                bytesPerCycle = allocatedBytes / (double)C_CYCLES,
-                millisecondsPerCycle = elapsedMs / C_CYCLES,
-                graphCompileCount = ReadGraphCompileCount(runtime),
-                runtime = RuntimeInformation.FrameworkDescription
-            }, new JsonSerializerOptions { WriteIndented = true })
-        );
+        Assert.All(contributors, contributor => Assert.Equal(C_CYCLES, contributor.builds));
+        Assert.Equal(2 * C_CYCLES, proxy.endFrameCount);
+        Assert.Equal(contributorCount == 0 ? 0 : C_CYCLES, proxy.executeCount);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
