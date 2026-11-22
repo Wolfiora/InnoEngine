@@ -123,6 +123,11 @@ public sealed class StyleCommandTests
         "internal sealed class Probe\n{\n    internal object Run(object value)\n    {\n        return value ?? throw new ArgumentNullException(nameof(value));\n    }\n}"
     )]
     [InlineData("P-03", "internal sealed class Probe\n{\n    internal void Run(CancellationToken token) {}\n}")]
+    [InlineData("P-03", "internal sealed class Probe\n{\n    internal void Run(CancellationToken cancellationToken, int count) {}\n}")]
+    [InlineData(
+        "P-03",
+        "internal sealed class Probe\n{\n    internal void Run(CancellationToken cancellationToken = default, int count = 0) {}\n}"
+    )]
     [InlineData("D-06", "internal sealed class Probe\n{\n    #region State\n    internal int count => 0;\n    #endregion\n}")]
     [InlineData("D-06", "#nullable disable\ninternal sealed class Probe;")]
     [InlineData("D-06", "internal sealed class Probe\n{\n    /* The count. */\n    internal int count => 0;\n}")]
@@ -2160,6 +2165,17 @@ public sealed class StyleCommandTests
                         Func<CancellationToken, Task> step = token => Task.Delay(1, token);
                         return step(cancellationToken);
                     }
+
+                    internal Task WaitAsync(
+                        int count,
+                        CancellationToken cancellationToken,
+                        string? label = null
+                    ) => Task.Delay(count, cancellationToken);
+
+                    internal Task WaitAllAsync(
+                        CancellationToken cancellationToken,
+                        params int[] counts
+                    ) => Task.Delay(counts.Length, cancellationToken);
                 }
                 """
             )
