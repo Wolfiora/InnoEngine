@@ -233,7 +233,7 @@ public sealed class ValidationPlanningTests
         Assert.False(File.Exists(Path.Combine(output, "preparation.json")));
         using JsonDocument selection = JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "plan.json")));
         string[] owners = selection.RootElement.GetProperty("owners").EnumerateArray().Select(value => value.GetString()!).ToArray();
-        Assert.Contains("tests/editor/Inno.Editor.Presentation.Tests/Inno.Editor.Presentation.Tests.csproj", owners);
+        Assert.Contains("tests/editor/Inno.Editor.Settings.Tests/Inno.Editor.Settings.Tests.csproj", owners);
         Assert.DoesNotContain("tests/build/Inno.Build.Tests/Inno.Build.Tests.csproj", owners);
         Assert.DoesNotContain("tests/build/Inno.Build.Integration.Tests/Inno.Build.Integration.Tests.csproj", owners);
         Assert.DoesNotContain("tests/input/Inno.Input.Tests/Inno.Input.Tests.csproj", owners);

@@ -1,0 +1,1345 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Runtime.CompilerServices;
+using BGCS.Runtime;
+using Xunit;
+using Inno.Editor.Assets.ImGui;
+using Inno.Editor.ImGui;
+using Inno.Native.ImGui;
+
+using EditorImGui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
+using GuiChildFlags = Inno.Editor.ImGui.ImGuiChildFlags;
+using GuiCol = Inno.Editor.ImGui.ImGuiCol;
+using GuiCond = Inno.Editor.ImGui.ImGuiCond;
+using GuiInlineRenameResult = Inno.Editor.ImGui.ImGuiWidget.InlineRenameResult;
+using GuiMouseButton = Inno.Editor.ImGui.ImGuiMouseButton;
+using GuiStyleVar = Inno.Editor.ImGui.ImGuiStyleVar;
+using GuiTableRowFlags = Inno.Editor.ImGui.ImGuiTableRowFlags;
+using GuiTreeNodeOptions = Inno.Editor.ImGui.ImGuiWidget.TreeNodeOptions;
+using GuiTreeNodeResult = Inno.Editor.ImGui.ImGuiWidget.TreeNodeResult;
+using GuiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
+using NativeCond = Inno.Native.ImGui.ImGuiCond;
+using NativeImGui = Inno.Native.ImGui.ImGui;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+
+namespace Inno.Editor.ImGui.Tests;
+
+public sealed unsafe class EditorStyleMetricsTests
+{
+    [Fact]
+    public void BrowserLayoutCapturesTheSharedScaleWithoutRetainingMutableMetrics()
+    {
+        var metrics = new EditorStyleMetrics();
+        var browser = new AssetBrowserStyle(metrics);
+        Assert.Equal(32f, browser.gridMinimumCellSize);
+        metrics.SetZoom(1.5f);
+        Assert.Equal(32f, browser.gridMinimumCellSize);
+        var scaled = new AssetBrowserStyle(metrics);
+        Assert.Equal(48f, scaled.gridMinimumCellSize);
+        Assert.Equal(browser.gridDefaultScale, scaled.gridDefaultScale);
+        Assert.Equal(browser.listNameSeparatorPosition, scaled.listNameSeparatorPosition);
+        Assert.Equal(32f, default(AssetBrowserStyle).gridMinimumCellSize);
+        Assert.Equal(7.5f, metrics.toolbarSectionSpacing);
+        Assert.Equal(24f, metrics.paneMinimumVisibleWidth);
+        Assert.Throws<ArgumentNullException>(() => new AssetBrowserStyle(null!));
+    }
+
+    [Fact]
+    public void ZoomScalesDimensionsAndFontWhilePreservingRatios()
+    {
+        var metrics = new EditorStyleMetrics();
+        Assert.True(metrics.SetZoom(1.5f));
+        Assert.Equal(1.5f, metrics.zoom, 3);
+        Assert.Equal(12f, metrics.windowPadding.X, 3);
+        Assert.Equal(10.5f, metrics.windowPadding.Y, 3);
+        Assert.Equal(3f, metrics.frameRounding, 3);
+        Assert.Equal(1.8f, metrics.fontScale, 3);
+        Assert.Equal(0.4f, metrics.propertyLabelRatio, 3);
+        Assert.Equal(3f, new AssetBrowserStyle(metrics).gridDefaultScale, 3);
+        Assert.Equal(new Vector2(7.5f, 4.5f), metrics.cellPadding);
+    }
+
+    [Fact]
+    public void ZoomCommandsClampAndResetToTheSupportedRange()
+    {
+        var metrics = new EditorStyleMetrics();
+        Assert.True(metrics.SetZoom(100f));
+        Assert.Equal(EditorStyleMetrics.C_MAX_ZOOM, metrics.zoom);
+        Assert.False(metrics.ZoomIn());
+        Assert.True(metrics.SetZoom(-100f));
+        Assert.Equal(EditorStyleMetrics.C_MIN_ZOOM, metrics.zoom);
+        Assert.False(metrics.ZoomOut());
+        Assert.True(metrics.ResetZoom());
+        Assert.Equal(1f, metrics.zoom);
+        Assert.Throws<ArgumentOutOfRangeException>(() => metrics.SetZoom(float.NaN));
+    }
+
+    [Fact]
+    public void WrappedTextRendersThroughTheSafeLiteralTextPath()
+    {
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
+        try
+        {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
+            using var uiSession = new EditorUI();
+            using IDisposable uiScope = uiSession.Enter();
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            NativeImGui.NewFrame();
+            NativeImGui.SetNextWindowSize(new Vector2(260f, 180f), (int)(GuiCond.Always));
+            using NativeStringLease nativeTestText0 = Utf8Codec.EncodeNullTerminated("Wrapped Text Test", allowsNull: false);
+            _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText0.pointer, null, 0);
+            float lineHeight = NativeImGui.GetTextLineHeight();
+            EditorUI.current.widgets.WrappedText(
+                "Literal %s text remains safe and wraps. This deliberately long compilation status " + "must stay inside the modal content width instead of extending beyond its right edge."
+            );
+            Assert.True(NativeImGui.GetItemRectSize().Y > lineHeight);
+            ImDrawList* windowDrawList = NativeImGui.Raw.GetWindowDrawList();
+            ImDrawList* foregroundDrawList = NativeImGui.Raw.GetForegroundDrawList(NativeImGui.Raw.GetMainViewport());
+            int windowVertexCount = windowDrawList->VtxBuffer.Size;
+            int foregroundVertexCount = foregroundDrawList->VtxBuffer.Size;
+            EditorUI.current.widgets.DropTargetHighlight(new Vector2(20f, 20f), new Vector2(120f, 80f));
+            Assert.Equal(windowVertexCount, windowDrawList->VtxBuffer.Size);
+            Assert.True(foregroundDrawList->VtxBuffer.Size > foregroundVertexCount);
+            NativeImGui.End();
+            NativeImGui.Render();
+        }
+        finally
+        {
+            NativeImGui.Raw.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void CenteredWrappedTextStaysInsidePaddingAndUsesMultipleLines()
+    {
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
+        try
+        {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
+            using var uiSession = new EditorUI();
+            using IDisposable uiScope = uiSession.Enter();
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            NativeImGui.NewFrame();
+            NativeImGui.SetNextWindowSize(new Vector2(420f, 260f), (int)(GuiCond.Always));
+            using NativeStringLease nativeTestText1 = Utf8Codec.EncodeNullTerminated("Centered Wrapped Text Test", allowsNull: false);
+            _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText1.pointer, null, 0);
+            Vector2 origin = NativeImGui.GetCursorScreenPos();
+            var area = new Vector2(320f, 180f);
+            var padding = new Vector2(36f, 24f);
+            ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
+            int vertexStart = drawList->VtxBuffer.Size;
+            uint textColor = NativeImGui.GetColorU32((int)(GuiCol.Text));
+            EditorUI.current.widgets.CenteredWrappedText(
+                "A deliberately long viewport diagnostic wraps into several centered lines " + "without touching either horizontal edge of the presentation area.",
+                area,
+                padding
+            );
+            Assert.Equal(area, NativeImGui.GetItemRectSize());
+            var minimum = new Vector2(float.MaxValue);
+            var maximum = new Vector2(float.MinValue);
+            for (int i = vertexStart; i < drawList->VtxBuffer.Size; i++)
+            {
+                ImDrawVert vertex = drawList->VtxBuffer.Data[i];
+                if (vertex.Col != textColor)
+                {
+                    continue;
+                }
+                minimum = Vector2.Min(minimum, Unsafe.BitCast<NativeVector2, Vector2>(vertex.Pos));
+                maximum = Vector2.Max(maximum, Unsafe.BitCast<NativeVector2, Vector2>(vertex.Pos));
+            }
+
+            Assert.NotEqual(float.MaxValue, minimum.X);
+            Assert.True(minimum.X >= origin.X + padding.X - 1f);
+            Assert.True(maximum.X <= origin.X + area.X - padding.X + 1f);
+            Assert.True(minimum.Y >= origin.Y + padding.Y - 1f);
+            Assert.True(maximum.Y <= origin.Y + area.Y - padding.Y + 1f);
+            Assert.True(maximum.Y - minimum.Y > NativeImGui.GetTextLineHeight());
+            NativeImGui.End();
+            NativeImGui.Render();
+        }
+        finally
+        {
+            NativeImGui.Raw.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void InlineRenameIsCenteredAndSelectsTheCompleteValueWhenFocused()
+    {
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
+        try
+        {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
+            using var uiSession = new EditorUI();
+            using IDisposable uiScope = uiSession.Enter();
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            string value = "Scene";
+            bool requestFocus = true;
+            NativeImGui.NewFrame();
+            using NativeStringLease nativeTestText2 = Utf8Codec.EncodeNullTerminated("Inline Rename Test", allowsNull: false);
+            _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText2.pointer, null, 0);
+            Vector2 rowMin = NativeImGui.GetCursorScreenPos();
+            float rowHeight = NativeImGui.GetFrameHeight() + 8f;
+            _ = EditorUI.current.widgets.InlineRename("scene", ref value, ref requestFocus, rowHeight, width: 180f);
+            Vector2 fieldMin = NativeImGui.GetItemRectMin();
+            Vector2 fieldMax = NativeImGui.GetItemRectMax();
+            Assert.True(fieldMin.Y >= rowMin.Y);
+            Assert.True(fieldMax.Y <= rowMin.Y + rowHeight);
+            Assert.True(fieldMax.Y - fieldMin.Y < rowHeight);
+            Assert.Equal(rowMin.Y + rowHeight * 0.5f, (fieldMin.Y + fieldMax.Y) * 0.5f, 3);
+            NativeImGui.TextUnformatted("Content after inline rename.");
+            Assert.NotEqual(0u, NativeImGui.Raw.GetCurrentWindow()->ID);
+            NativeImGui.End();
+            NativeImGui.Render();
+            NativeImGui.NewFrame();
+            using NativeStringLease nativeTestText3 = Utf8Codec.EncodeNullTerminated("Inline Rename Test", allowsNull: false);
+            _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText3.pointer, null, 0);
+            _ = EditorUI.current.widgets.InlineRename("scene", ref value, ref requestFocus, rowHeight, width: 180f);
+            Vector2 focusedFieldMin = NativeImGui.GetItemRectMin();
+            Vector2 focusedFieldMax = NativeImGui.GetItemRectMax();
+            uint inputID = NativeImGui.GetItemID();
+            ImGuiInputTextState* inputState = NativeImGui.Raw.GetInputTextState(inputID);
+            Assert.False(requestFocus);
+            Assert.False((inputState is null));
+            Assert.Equal(0, NativeImGui.Raw.GetSelectionStart(inputState));
+            Assert.Equal(value.Length, NativeImGui.Raw.GetSelectionEnd(inputState));
+            uint navCursorColor = NativeImGui.GetColorU32((int)(GuiCol.NavCursor));
+            AssertDrawListDoesNotContainColor(
+                NativeImGui.Raw.GetWindowDrawList(),
+                navCursorColor,
+                "The inline rename focus outline was submitted to the window draw list."
+            );
+            AssertColorBoundsStayCloseToItem(
+                NativeImGui.Raw.GetForegroundDrawList(NativeImGui.Raw.GetMainViewport()),
+                navCursorColor,
+                focusedFieldMin,
+                focusedFieldMax,
+                1f + EditorUI.current.widgets.style.interactionOverlayThickness
+            );
+            NativeImGui.End();
+            NativeImGui.Render();
+        }
+        finally
+        {
+            NativeImGui.Raw.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void InlineRenameReleasesFocusBeforeAContextMenuCanOpen()
+    {
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
+        try
+        {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
+            using var uiSession = new EditorUI();
+            using IDisposable uiScope = uiSession.Enter();
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            string value = "Untitled Scene";
+            bool requestFocus = true;
+            GuiInlineRenameResult result = GuiInlineRenameResult.None;
+            Vector2 center = default;
+            void Frame()
+            {
+                NativeImGui.NewFrame();
+                NativeImGui.SetNextWindowPos(new Vector2(30f, 30f), (int)(GuiCond.Always), default);
+                NativeImGui.SetNextWindowSize(new Vector2(320f, 180f), (int)(GuiCond.Always));
+                using NativeStringLease nativeTestText4 = Utf8Codec.EncodeNullTerminated("Inline Rename Context Test", allowsNull: false);
+                _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText4.pointer, null, 0);
+                result = EditorUI.current.widgets.InlineRename(
+                    "created_asset",
+                    ref value,
+                    ref requestFocus,
+                    NativeImGui.GetFrameHeight(),
+                    width: 220f
+                );
+                center = (NativeImGui.GetItemRectMin() + NativeImGui.GetItemRectMax()) * 0.5f;
+                NativeImGui.End();
+                NativeImGui.Render();
+            }
+
+            Frame();
+            Frame();
+            Assert.False(requestFocus);
+            Assert.NotEqual(0u, NativeImGui.Raw.GetActiveID());
+            NativeImGui.Raw.AddMousePosEvent(io, center.X, center.Y);
+            NativeImGui.Raw.AddMouseButtonEvent(io, (int)GuiMouseButton.Right, (true ? (byte)1 : (byte)0));
+            Frame();
+            NativeImGui.Raw.AddMouseButtonEvent(io, (int)GuiMouseButton.Right, (false ? (byte)1 : (byte)0));
+            Frame();
+            Assert.Equal(GuiInlineRenameResult.FocusLost, result);
+            Assert.Equal(0u, NativeImGui.Raw.GetActiveID());
+        }
+        finally
+        {
+            NativeImGui.Raw.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void InlineRenameCentersWithinTheNativeTableRowBounds()
+    {
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
+        try
+        {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
+            using var uiSession = new EditorUI();
+            using IDisposable uiScope = uiSession.Enter();
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            string value = "Scene";
+            bool requestFocus = false;
+            NativeImGui.NewFrame();
+            using NativeStringLease nativeTestText5 = Utf8Codec.EncodeNullTerminated("Inline Rename Table Test", allowsNull: false);
+            _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText5.pointer, null, 0);
+            NativeImGui.PushStyleVar((int)(GuiStyleVar.CellPadding), new Vector2(6f, 3f));
+            Assert.True(NativeImGui.BeginTable("##rename_table", 1, 0, default, 0f));
+            float rowHeight = NativeImGui.GetTextLineHeight() + NativeImGui.Raw.GetStyle()->CellPadding.Y * 2f;
+            NativeImGui.TableNextRow((int)(GuiTableRowFlags.None), rowHeight);
+            _ = NativeImGui.TableSetColumnIndex(0);
+            ImGuiTable* table = NativeImGui.Raw.GetCurrentTable();
+            Vector2 cursor = NativeImGui.GetCursorScreenPos();
+            NativeImGui.SetCursorScreenPos(new Vector2(cursor.X, table->RowPosY1));
+            _ = EditorUI.current.widgets.InlineRename(
+                "table_scene",
+                ref value,
+                ref requestFocus,
+                table->RowPosY2 - table->RowPosY1,
+                width: 180f
+            );
+            Vector2 fieldMin = NativeImGui.GetItemRectMin();
+            Vector2 fieldMax = NativeImGui.GetItemRectMax();
+            Assert.True(fieldMin.Y >= table->RowPosY1);
+            Assert.True(fieldMax.Y <= table->RowPosY2);
+            Assert.Equal((table->RowPosY1 + table->RowPosY2) * 0.5f, (fieldMin.Y + fieldMax.Y) * 0.5f, 3);
+            NativeImGui.EndTable();
+            NativeImGui.PopStyleVar();
+            NativeImGui.End();
+            NativeImGui.Render();
+        }
+        finally
+        {
+            NativeImGui.Raw.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void TreeGuideDepthRemainsBalancedAcrossSupportedZoomLevels()
+    {
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
+        try
+        {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
+            using var uiSession = new EditorUI();
+            using IDisposable uiScope = uiSession.Enter();
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            foreach (float zoom in new[]
+            {
+                0.75f,
+                1f,
+                1.25f,
+                1.5f
+            }
+
+            ) {
+                _ = EditorUI.current.widgets.style.SetZoom(zoom);
+                EditorUI.current.widgets.SetupStyle();
+                DrawTreeFrame();
+            }
+        }
+        finally
+        {
+            NativeImGui.Raw.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void MenuSelectorPopupIsBoundedAndScrollsLongContent()
+    {
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
+        try
+        {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
+            using var uiSession = new EditorUI();
+            using IDisposable uiScope = uiSession.Enter();
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            for (int frame = 0; frame < 2; frame++)
+            {
+                NativeImGui.NewFrame();
+                NativeImGui.SetNextWindowPos(new Vector2(40f, 40f), (int)(GuiCond.Always), default);
+                NativeImGui.SetNextWindowSize(new Vector2(480f, 320f), (int)(GuiCond.Always));
+                using NativeStringLease nativeTestText6 = Utf8Codec.EncodeNullTerminated("Menu Selector Test", allowsNull: false);
+                _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText6.pointer, null, 0);
+                if (frame == 0)
+                {
+                    NativeImGui.OpenPopup("##menu_selector_popup_test");
+                }
+                Assert.True(EditorUI.current.widgets.BeginMenuSelector("test", "Untagged", 180f, 240f));
+                GuiWindowFlags flags = (GuiWindowFlags)NativeImGui.Raw.GetCurrentWindow()->Flags;
+                Assert.True(flags.HasFlag(GuiWindowFlags.AlwaysAutoResize));
+                Assert.False(flags.HasFlag(GuiWindowFlags.NoScrollbar));
+                Assert.False(flags.HasFlag(GuiWindowFlags.NoScrollWithMouse));
+                Assert.True(flags.HasFlag(GuiWindowFlags.NoSavedSettings));
+                Assert.True(NativeImGui.GetWindowSize().X >= 240f);
+                string newTag = string.Empty;
+                NativeImGui.SetNextItemWidth(160f);
+                _ = EditorImGui.InputTextWithHint("##new_tag", "Add tag...", ref newTag, 128);
+                float inputCenterY = (NativeImGui.GetItemRectMin().Y + NativeImGui.GetItemRectMax().Y) * 0.5f;
+                NativeImGui.SameLine(0f, -1f);
+                _ = EditorUI.current.widgets.ClickableText(
+                    "add_tag",
+                    "+",
+                    new Vector2(EditorUI.current.widgets.GetCompactIconSize().X, NativeImGui.GetFrameHeight())
+                );
+                float actionCenterY = (NativeImGui.GetItemRectMin().Y + NativeImGui.GetItemRectMax().Y) * 0.5f;
+                Assert.Equal(inputCenterY, actionCenterY, 3);
+                for (int index = 0; index < 64; index++)
+                {
+                    NativeImGui.Selectable($"Entry {index:D2}");
+                }
+                if (frame == 1)
+                {
+                    Assert.True(NativeImGui.GetWindowSize().Y <= io->DisplaySize.Y + 1f);
+                    Assert.True(NativeImGui.GetScrollMaxY() > 0f);
+                }
+
+                EditorUI.current.widgets.EndMenuSelector();
+                NativeImGui.End();
+                NativeImGui.Render();
+            }
+        }
+        finally
+        {
+            NativeImGui.Raw.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void SmallMenuSelectorDoesNotReserveAScrollbar()
+    {
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
+        try
+        {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
+            using var uiSession = new EditorUI();
+            using IDisposable uiScope = uiSession.Enter();
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            for (int frame = 0; frame < 3; frame++)
+            {
+                NativeImGui.NewFrame();
+                NativeImGui.SetNextWindowPos(new Vector2(40f, 40f), (int)(GuiCond.Always), default);
+                NativeImGui.SetNextWindowSize(new Vector2(480f, 320f), (int)(GuiCond.Always));
+                using NativeStringLease nativeTestText7 = Utf8Codec.EncodeNullTerminated("Small Menu Selector Test", allowsNull: false);
+                _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText7.pointer, null, 0);
+                if (frame == 0)
+                {
+                    NativeImGui.OpenPopup("##menu_selector_popup_small");
+                }
+                Assert.True(EditorUI.current.widgets.BeginMenuSelector("small", "Current", 180f, 240f));
+                for (int index = 0; index < 3; index++)
+                {
+                    NativeImGui.Selectable($"Entry {index}");
+                }
+                if (frame == 2)
+                {
+                    Assert.False((NativeImGui.Raw.GetCurrentWindow()->ScrollbarY != 0));
+                    Assert.Equal(0f, NativeImGui.GetScrollMaxY(), 3);
+                }
+
+                EditorUI.current.widgets.EndMenuSelector();
+                NativeImGui.End();
+                NativeImGui.Render();
+            }
+        }
+        finally
+        {
+            NativeImGui.Raw.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void SmallContextMenuDoesNotReserveScrollbars()
+    {
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
+        try
+        {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
+            using var uiSession = new EditorUI();
+            using IDisposable uiScope = uiSession.Enter();
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            for (int frame = 0; frame < 3; frame++)
+            {
+                NativeImGui.NewFrame();
+                using NativeStringLease nativeTestText8 = Utf8Codec.EncodeNullTerminated("Small Context Menu Test", allowsNull: false);
+                _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText8.pointer, null, 0);
+                NativeImGui.Selectable("Target");
+                if (frame == 0)
+                {
+                    NativeImGui.OpenPopup("context");
+                }
+                Assert.True(EditorUI.current.widgets.BeginContextMenu("context"));
+                NativeImGui.MenuItem("Rename", string.Empty, false, true);
+                NativeImGui.MenuItem("Delete", string.Empty, false, true);
+                if (frame == 2)
+                {
+                    Assert.False((NativeImGui.Raw.GetCurrentWindow()->ScrollbarX != 0));
+                    Assert.False((NativeImGui.Raw.GetCurrentWindow()->ScrollbarY != 0));
+                }
+
+                EditorUI.current.widgets.EndContextMenu();
+                NativeImGui.End();
+                NativeImGui.Render();
+            }
+        }
+        finally
+        {
+            NativeImGui.Raw.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void BoundedComboPopupUsesTheSharedScrollingContract()
+    {
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
+        try
+        {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
+            using var uiSession = new EditorUI();
+            using IDisposable uiScope = uiSession.Enter();
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            List<float> popupWidths = [];
+            int openFrames = 0;
+            for (int frame = 0; frame < 5; frame++)
+            {
+                NativeImGui.NewFrame();
+                NativeImGui.SetNextWindowPos(new Vector2(400f, 340f), (int)(GuiCond.Always), default);
+                NativeImGui.SetNextWindowSize(new Vector2(220f, 120f), (int)(GuiCond.Always));
+                using NativeStringLease nativeTestText9 = Utf8Codec.EncodeNullTerminated("Bounded Combo Test", allowsNull: false);
+                _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText9.pointer, null, 0);
+                uint parentViewportID = NativeImGui.Raw.GetWindowViewport()->ID;
+                if (frame == 0)
+                {
+                    NativeImGui.OpenPopup("##menu_selector_popup_##asset");
+                }
+
+                NativeImGui.SetNextItemWidth(180f);
+                bool open = EditorUI.current.widgets.BeginBoundedCombo("##asset", "project:Material");
+                if (open)
+                {
+                    openFrames++;
+                    Assert.Equal(parentViewportID, NativeImGui.Raw.GetWindowViewport()->ID);
+                    string search = string.Empty;
+                    _ = EditorUI.current.widgets.SearchInput("assets", "Search assets...", ref search);
+                    for (int index = 0; index < 64; index++)
+                    {
+                        NativeImGui.Selectable($"project:Material{index:D2}");
+                    }
+                    popupWidths.Add(NativeImGui.GetWindowSize().X);
+                    if (openFrames >= 2)
+                    {
+                        Assert.InRange(NativeImGui.GetWindowSize().X, 179f, 181f);
+                        Assert.True(NativeImGui.GetWindowSize().Y <= io->DisplaySize.Y + 1f);
+                        Assert.True(NativeImGui.GetScrollMaxY() > 0f);
+                        ImGuiViewport* popupViewport = NativeImGui.Raw.GetWindowViewport();
+                        Vector2 popupMinimum = NativeImGui.GetWindowPos();
+                        Vector2 popupMaximum = popupMinimum + NativeImGui.GetWindowSize();
+                        Assert.True(popupMinimum.X >= popupViewport->WorkPos.X - 1f);
+                        Assert.True(popupMinimum.Y >= popupViewport->WorkPos.Y - 1f);
+                        Assert.True(popupMaximum.X <= popupViewport->WorkPos.X + popupViewport->WorkSize.X + 1f);
+                        Assert.True(popupMaximum.Y <= popupViewport->WorkPos.Y + popupViewport->WorkSize.Y + 1f);
+                    }
+
+                    EditorUI.current.widgets.EndBoundedCombo();
+                }
+
+                NativeImGui.End();
+                NativeImGui.Render();
+            }
+
+            Assert.True(openFrames >= 2);
+            Assert.All(popupWidths, width => Assert.InRange(width, 179f, 181f));
+        }
+        finally
+        {
+            NativeImGui.Raw.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void TreeRegionScrollsHorizontallyOnlyForRealContentOverflow()
+    {
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
+        try
+        {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
+            using var uiSession = new EditorUI();
+            using IDisposable uiScope = uiSession.Enter();
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            DrawTreeOverflowFrame(assertRanges: false);
+            DrawTreeOverflowFrame(assertRanges: true);
+            DrawHorizontallyScrolledTreeFrame(0f, assertGeometry: false);
+            DrawHorizontallyScrolledTreeFrame(48f, assertGeometry: false);
+            DrawHorizontallyScrolledTreeFrame(48f, assertGeometry: true);
+        }
+        finally
+        {
+            NativeImGui.Raw.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void TreeRegionReleasesViewportWidthAfterItShrinks()
+    {
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
+        try
+        {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
+            using var uiSession = new EditorUI();
+            using IDisposable uiScope = uiSession.Enter();
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            DrawResizableTreeFrame(420f, 0f, assertNoOverflow: false);
+            DrawResizableTreeFrame(220f, 48f, assertNoOverflow: false);
+            DrawResizableTreeFrame(220f, 48f, assertNoOverflow: true);
+        }
+        finally
+        {
+            NativeImGui.Raw.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void TreeGuideSegmentsRemainVisibleAcrossCompactRows()
+    {
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
+        try
+        {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
+            using var uiSession = new EditorUI();
+            using IDisposable uiScope = uiSession.Enter();
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            EditorUI.current.widgets.SetupStyle();
+            DrawTreeFrame();
+            DrawTreeFrame(assertContinuousGuides: true);
+        }
+        finally
+        {
+            NativeImGui.Raw.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void ChildGuideRetainsAVisualGapBelowTheParentWithoutChangingCompactRowHeight()
+    {
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
+        try
+        {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
+            using var uiSession = new EditorUI();
+            using IDisposable uiScope = uiSession.Enter();
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            EditorUI.current.widgets.SetupStyle();
+            NativeImGui.NewFrame();
+            NativeImGui.SetNextWindowSize(new Vector2(480f, 320f), (int)(GuiCond.Always));
+            using NativeStringLease nativeTestText10 = Utf8Codec.EncodeNullTerminated("Gapped Parent Guide Test", allowsNull: false);
+            _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText10.pointer, null, 0);
+            float expectedHeight = NativeImGui.GetTextLineHeight();
+            EditorUI.current.widgets.SetNextTreeNodeOpen(true);
+            GuiTreeNodeResult parent = EditorUI.current.widgets.TreeNode(
+                "connected_parent",
+                static _ => NativeImGui.TextUnformatted("Parent"),
+                new GuiTreeNodeOptions()
+            );
+            Assert.True(parent.isOpen);
+            GuiTreeNodeResult child = EditorUI.current.widgets.TreeNode(
+                "connected_child",
+                static _ => NativeImGui.TextUnformatted("Child"),
+                new GuiTreeNodeOptions { isLeaf = true }
+            );
+            NativeImGui.TreePop();
+            Assert.Equal(expectedHeight, parent.max.Y - parent.min.Y, 3);
+            Assert.Equal(expectedHeight, child.max.Y - child.min.Y, 3);
+            AssertCurrentTreeGuideDoesNotTouchY((parent.min.Y + parent.max.Y) * 0.5f);
+            NativeImGui.End();
+            NativeImGui.Render();
+        }
+        finally
+        {
+            NativeImGui.Raw.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void TreeGuidesAreDrawnFromTheCurrentFrameWhileDragging()
+    {
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
+        try
+        {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
+            using var uiSession = new EditorUI();
+            using IDisposable uiScope = uiSession.Enter();
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            EditorUI.current.widgets.SetupStyle();
+            NativeImGui.NewFrame();
+            NativeImGui.SetNextWindowSize(new Vector2(480f, 320f), (int)(GuiCond.Always));
+            using NativeStringLease nativeTestText11 = Utf8Codec.EncodeNullTerminated("Dragging Tree Guide Test", allowsNull: false);
+            _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText11.pointer, null, 0);
+            ImGuiNativeContext* currentContext = NativeImGui.Raw.GetCurrentContext();
+            currentContext->DragDropActive = 1;
+            EditorUI.current.widgets.SetNextTreeNodeOpen(true);
+            GuiTreeNodeResult root = EditorUI.current.widgets.TreeNode(
+                "drag_root",
+                static _ => NativeImGui.TextUnformatted("Assets"),
+                new GuiTreeNodeOptions()
+            );
+            if (root.isOpen)
+            {
+                _ = EditorUI.current.widgets.TreeNode(
+                    "drag_child",
+                    static _ => NativeImGui.TextUnformatted("Scene"),
+                    new GuiTreeNodeOptions { isLeaf = true }
+                );
+                NativeImGui.TreePop();
+            }
+
+            AssertCurrentDrawListContainsTreeGuideColor();
+            currentContext->DragDropActive = 0;
+            NativeImGui.End();
+            NativeImGui.Render();
+        }
+        finally
+        {
+            NativeImGui.Raw.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void TreeRowBackgroundsUseCurrentGeometryWhileTheWindowChanges()
+    {
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
+        try
+        {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
+            using var uiSession = new EditorUI();
+            using IDisposable uiScope = uiSession.Enter();
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            EditorUI.current.widgets.SetupStyle();
+            DrawCurrentTreeBackgroundFrame(new Vector2(20f, 20f), new Vector2(480f, 320f));
+            DrawCurrentTreeBackgroundFrame(new Vector2(80f, 60f), new Vector2(300f, 220f));
+        }
+        finally
+        {
+            NativeImGui.Raw.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void TreeRowsRetainTheirCompactContentHeight()
+    {
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
+        try
+        {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
+            using var uiSession = new EditorUI();
+            using IDisposable uiScope = uiSession.Enter();
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            EditorUI.current.widgets.SetupStyle();
+            NativeImGui.NewFrame();
+            NativeImGui.SetNextWindowSize(new Vector2(320f, 240f), (int)(GuiCond.Always));
+            using NativeStringLease nativeTestText12 = Utf8Codec.EncodeNullTerminated("Compact Tree Row Test", allowsNull: false);
+            _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText12.pointer, null, 0);
+            float expectedHeight = NativeImGui.GetTextLineHeight();
+            GuiTreeNodeResult row = EditorUI.current.widgets.TreeNode(
+                "compact_row",
+                static _ => NativeImGui.TextUnformatted("GameObject"),
+                new GuiTreeNodeOptions { isLeaf = true }
+            );
+            Assert.Equal(expectedHeight, row.max.Y - row.min.Y, 3);
+            NativeImGui.End();
+            NativeImGui.Render();
+        }
+        finally
+        {
+            NativeImGui.Raw.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void DoubleClickingTreeContentTogglesNonLeafExpansion()
+    {
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
+        try
+        {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
+            using var uiSession = new EditorUI();
+            using IDisposable uiScope = uiSession.Enter();
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            EditorUI.current.widgets.SetupStyle();
+            GuiTreeNodeResult initial = DrawDoubleClickTreeFrame();
+            var contentCenter = new Vector2(initial.contentMin.X + 20f, (initial.min.Y + initial.max.Y) * 0.5f);
+            NativeImGui.Raw.AddMousePosEvent(io, contentCenter.X, contentCenter.Y);
+            NativeImGui.Raw.AddMouseButtonEvent(io, 0, (true ? (byte)1 : (byte)0));
+            _ = DrawDoubleClickTreeFrame();
+            NativeImGui.Raw.AddMouseButtonEvent(io, 0, (false ? (byte)1 : (byte)0));
+            _ = DrawDoubleClickTreeFrame();
+            NativeImGui.Raw.AddMouseButtonEvent(io, 0, (true ? (byte)1 : (byte)0));
+            GuiTreeNodeResult doubleClicked = DrawDoubleClickTreeFrame();
+            NativeImGui.Raw.AddMouseButtonEvent(io, 0, (false ? (byte)1 : (byte)0));
+            GuiTreeNodeResult expanded = DrawDoubleClickTreeFrame();
+            Assert.True(doubleClicked.isDoubleClicked);
+            Assert.True(expanded.isOpen);
+        }
+        finally
+        {
+            NativeImGui.Raw.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void InspectorContentPreservesStandardPaddingWithoutArtificialHorizontalOverflow()
+    {
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
+        try
+        {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
+            using var uiSession = new EditorUI();
+            using IDisposable uiScope = uiSession.Enter();
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            EditorUI.current.widgets.SetupStyle();
+            DrawInspectorCardFrame(assertHorizontalRange: false);
+            DrawInspectorCardFrame(assertHorizontalRange: true);
+        }
+        finally
+        {
+            NativeImGui.Raw.DestroyContext(context);
+        }
+    }
+
+    private static void DrawTreeFrame(bool assertContinuousGuides = false)
+    {
+        NativeImGui.NewFrame();
+        NativeImGui.SetNextWindowSize(new Vector2(480f, 320f), (int)(NativeCond.Always));
+        using NativeStringLease nativeTestText13 = Utf8Codec.EncodeNullTerminated("Tree Zoom Test", allowsNull: false);
+        _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText13.pointer, null, 0);
+        EditorUI.current.widgets.SetNextTreeNodeOpen(true);
+        GuiTreeNodeResult root = EditorUI.current.widgets.TreeNode(
+            "root",
+            static _ => NativeImGui.TextUnformatted("Assets"),
+            new GuiTreeNodeOptions()
+        );
+        if (root.isOpen)
+        {
+            EditorUI.current.widgets.SetNextTreeNodeOpen(true);
+            GuiTreeNodeResult folder = EditorUI.current.widgets.TreeNode(
+                "folder",
+                static _ => NativeImGui.TextUnformatted("Scene"),
+                new GuiTreeNodeOptions()
+            );
+            if (folder.isOpen)
+            {
+                _ = EditorUI.current.widgets.TreeNode(
+                    "nested-file",
+                    static _ => NativeImGui.TextUnformatted("TestScene1.iscene"),
+                    new GuiTreeNodeOptions { isLeaf = true }
+                );
+                NativeImGui.TreePop();
+            }
+
+            _ = EditorUI.current.widgets.TreeNode(
+                "sibling-folder",
+                static _ => NativeImGui.TextUnformatted("Settings"),
+                new GuiTreeNodeOptions { isLeaf = true }
+            );
+            NativeImGui.TreePop();
+        }
+
+        if (assertContinuousGuides)
+        {
+            AssertCurrentDrawListContainsTreeGuideColor();
+        }
+        NativeImGui.End();
+        NativeImGui.Render();
+    }
+
+    private static GuiTreeNodeResult DrawDoubleClickTreeFrame()
+    {
+        NativeImGui.NewFrame();
+        NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), (int)(GuiCond.Always), default);
+        NativeImGui.SetNextWindowSize(new Vector2(320f, 240f), (int)(GuiCond.Always));
+        using NativeStringLease nativeTestText14 = Utf8Codec.EncodeNullTerminated("Double Click Tree Test", allowsNull: false);
+        _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText14.pointer, null, 0);
+        GuiTreeNodeResult result = EditorUI.current.widgets.TreeNode(
+            "double_click_parent",
+            static _ => NativeImGui.TextUnformatted("Parent"),
+            new GuiTreeNodeOptions()
+        );
+        if (result.isOpen)
+        {
+            _ = EditorUI.current.widgets.TreeNode(
+                "double_click_child",
+                static _ => NativeImGui.TextUnformatted("Child"),
+                new GuiTreeNodeOptions { isLeaf = true }
+            );
+            NativeImGui.TreePop();
+        }
+
+        NativeImGui.End();
+        NativeImGui.Render();
+        return result;
+    }
+
+    private static void DrawTreeOverflowFrame(bool assertRanges)
+    {
+        NativeImGui.NewFrame();
+        NativeImGui.SetNextWindowSize(new Vector2(560f, 320f), (int)(GuiCond.Always));
+        using NativeStringLease nativeTestText15 = Utf8Codec.EncodeNullTerminated("Tree Overflow Test", allowsNull: false);
+        _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText15.pointer, null, 0);
+        if (NativeImGui.BeginChild(
+            "##short_tree",
+            new Vector2(220f, 100f),
+            (int)(GuiChildFlags.None),
+            (int)(GuiWindowFlags.HorizontalScrollbar)
+        )) {
+            _ = EditorUI.current.widgets.TreeNode(
+                "short",
+                static _ => NativeImGui.TextUnformatted("Object"),
+                new GuiTreeNodeOptions { isLeaf = true }
+            );
+            if (assertRanges)
+            {
+                Assert.Equal(0f, NativeImGui.GetScrollMaxX(), 3);
+                Assert.False((NativeImGui.Raw.GetCurrentWindow()->ScrollbarX != 0));
+                Assert.True((NativeImGui.Raw.GetCurrentWindow()->Flags & (int)GuiWindowFlags.HorizontalScrollbar) != 0);
+            }
+        }
+
+        NativeImGui.EndChild();
+        if (NativeImGui.BeginChild(
+            "##long_tree",
+            new Vector2(220f, 100f),
+            (int)(GuiChildFlags.None),
+            (int)(GuiWindowFlags.HorizontalScrollbar)
+        )) {
+            _ = EditorUI.current.widgets.TreeNode(
+                "long",
+                static _ => NativeImGui.TextUnformatted("Object_With_A_Name_That_Is_Intentionally_Wider_Than_The_Tree_Viewport"),
+                new GuiTreeNodeOptions { isLeaf = true }
+            );
+            if (assertRanges)
+            {
+                Assert.True(NativeImGui.GetScrollMaxX() > 0f);
+                Assert.True((NativeImGui.Raw.GetCurrentWindow()->ScrollbarX != 0));
+                Assert.True((NativeImGui.Raw.GetCurrentWindow()->Flags & (int)GuiWindowFlags.HorizontalScrollbar) != 0);
+            }
+        }
+
+        NativeImGui.EndChild();
+        NativeImGui.End();
+        NativeImGui.Render();
+    }
+
+    private static void DrawHorizontallyScrolledTreeFrame(
+        float requestedScroll,
+        bool assertGeometry
+    ) {
+        NativeImGui.NewFrame();
+        NativeImGui.SetNextWindowSize(new Vector2(360f, 220f), (int)(GuiCond.Always));
+        using NativeStringLease nativeTestText16 = Utf8Codec.EncodeNullTerminated("Scrolled Tree Test", allowsNull: false);
+        _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText16.pointer, null, 0);
+        NativeImGui.SetNextWindowScroll(new Vector2(requestedScroll, 0f));
+        if (NativeImGui.BeginChild(
+            "##scrolled_tree",
+            new Vector2(220f, 120f),
+            (int)(GuiChildFlags.None),
+            (int)(GuiWindowFlags.HorizontalScrollbar)
+        )) {
+            Vector2 contentCursor = default;
+            GuiTreeNodeResult row = EditorUI.current.widgets.TreeNode("scrolled", _ =>
+            {
+                contentCursor = NativeImGui.GetCursorScreenPos();
+                NativeImGui.TextUnformatted("Scene_With_A_Name_That_Is_Intentionally_Wider_Than_The_Tree_Viewport");
+            }, new GuiTreeNodeOptions { isLeaf = true, showBackground = true, backgroundColor = EditorPalette.title });
+            if (assertGeometry)
+            {
+                ImGuiWindow* window = NativeImGui.Raw.GetCurrentWindow();
+                Assert.True(NativeImGui.GetScrollX() > 0f);
+                Assert.True((window->ScrollbarX != 0));
+                Assert.Equal(row.contentMin.X, contentCursor.X, 3);
+                AssertCurrentTreeBackgroundSpansViewport(window, NativeImGui.ColorConvertFloat4ToU32(EditorPalette.title));
+            }
+        }
+
+        NativeImGui.EndChild();
+        NativeImGui.End();
+        NativeImGui.Render();
+    }
+
+    private static void DrawResizableTreeFrame(
+        float width,
+        float requestedScroll,
+        bool assertNoOverflow
+    ) {
+        NativeImGui.NewFrame();
+        NativeImGui.SetNextWindowSize(new Vector2(560f, 260f), (int)(GuiCond.Always));
+        using NativeStringLease nativeTestText17 = Utf8Codec.EncodeNullTerminated("Resizable Tree Test", allowsNull: false);
+        _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText17.pointer, null, 0);
+        NativeImGui.SetNextWindowScroll(new Vector2(requestedScroll, 0f));
+        if (NativeImGui.BeginChild(
+            "##resizable_tree",
+            new Vector2(width, 120f),
+            (int)(GuiChildFlags.None),
+            (int)(GuiWindowFlags.HorizontalScrollbar)
+        )) {
+            _ = EditorUI.current.widgets.TreeNode(
+                "resizable_row",
+                static _ => NativeImGui.TextUnformatted("GameObject"),
+                new GuiTreeNodeOptions
+                {
+                    isLeaf = true,
+                    drawViewportOverlay = static () =>
+                    {
+                        ImGuiWindow* window = NativeImGui.Raw.GetCurrentWindow();
+                        var overlaySize = new Vector2(NativeImGui.GetFontSize(), NativeImGui.GetTextLineHeight());
+                        NativeImGui.SameLine(0f, -1f);
+                        Vector2 cursor = NativeImGui.GetCursorScreenPos();
+                        NativeImGui.SetCursorScreenPos(new Vector2(MathF.Max(cursor.X, window->WorkRect.Max.X - overlaySize.X), cursor.Y));
+                        NativeImGui.Dummy(overlaySize);
+                    }
+                }
+            );
+            if (assertNoOverflow)
+            {
+                Assert.Equal(0f, NativeImGui.GetScrollX(), 3);
+                Assert.Equal(0f, NativeImGui.GetScrollMaxX(), 3);
+                Assert.False((NativeImGui.Raw.GetCurrentWindow()->ScrollbarX != 0));
+            }
+        }
+
+        NativeImGui.EndChild();
+        NativeImGui.End();
+        NativeImGui.Render();
+    }
+
+    private static void AssertCurrentDrawListContainsTreeGuideColor()
+    {
+        uint guideColor = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.treeGuide);
+        AssertCurrentDrawListContainsColor(guideColor, "The current drag frame did not submit any tree-guide vertices.");
+    }
+
+    private static void AssertCurrentTreeGuideDoesNotTouchY(float excludedY)
+    {
+        ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
+        uint guideColor = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.treeGuide);
+        for (int i = 0; i < drawList->VtxBuffer.Size; i++)
+        {
+            ImDrawVert vertex = drawList->VtxBuffer.Data[i];
+            Assert.False(
+                vertex.Col == guideColor && MathF.Abs(vertex.Pos.Y - excludedY) <= 1f,
+                "The child guide overlapped the parent disclosure row instead of retaining its visual gap."
+            );
+        }
+    }
+
+    private static void DrawCurrentTreeBackgroundFrame(
+        Vector2 position,
+        Vector2 size
+    ) {
+        NativeImGui.NewFrame();
+        NativeImGui.SetNextWindowPos(position, (int)(GuiCond.Always), default);
+        NativeImGui.SetNextWindowSize(size, (int)(GuiCond.Always));
+        using NativeStringLease nativeTestText18 = Utf8Codec.EncodeNullTerminated("Current Tree Background Test", allowsNull: false);
+        _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText18.pointer, null, 0);
+        EditorUI.current.widgets.SetNextTreeNodeOpen(true);
+        GuiTreeNodeResult root = EditorUI.current.widgets.TreeNode(
+            "current_background_root",
+            static _ => NativeImGui.TextUnformatted("TestScene"),
+            new GuiTreeNodeOptions { showBackground = true, backgroundColor = EditorPalette.title, suppressHoverHighlight = true }
+        );
+        if (root.isOpen)
+        {
+            _ = EditorUI.current.widgets.TreeNode(
+                "current_background_child",
+                static _ => NativeImGui.TextUnformatted("GameObject"),
+                new GuiTreeNodeOptions { isLeaf = true, selected = true }
+            );
+            NativeImGui.TreePop();
+        }
+
+        AssertCurrentDrawListContainsColor(
+            NativeImGui.ColorConvertFloat4ToU32(EditorPalette.title),
+            "The current frame did not submit the Scene row background."
+        );
+        AssertCurrentDrawListContainsColor(
+            NativeImGui.GetColorU32((int)(GuiCol.Header)),
+            "The current frame did not submit the selected row highlight."
+        );
+        NativeImGui.End();
+        NativeImGui.Render();
+    }
+
+    private static void AssertCurrentDrawListContainsColor(
+        uint color,
+        string failureMessage
+    ) {
+        ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
+        for (int i = 0; i < drawList->VtxBuffer.Size; i++)
+        {
+            if (drawList->VtxBuffer.Data[i].Col == color)
+            {
+                return;
+            }
+        }
+
+        Assert.Fail(failureMessage);
+    }
+
+    private static void AssertDrawListDoesNotContainColor(
+        ImDrawList* drawList,
+        uint color,
+        string failureMessage
+    ) {
+        for (int i = 0; i < drawList->VtxBuffer.Size; i++)
+        {
+            if (drawList->VtxBuffer.Data[i].Col == color)
+            {
+                Assert.Fail(failureMessage);
+            }
+        }
+    }
+
+    private static void AssertColorBoundsStayCloseToItem(
+        ImDrawList* drawList,
+        uint color,
+        Vector2 itemMin,
+        Vector2 itemMax,
+        float maximumExpansion
+    ) {
+        var colorMin = new Vector2(float.MaxValue);
+        var colorMax = new Vector2(float.MinValue);
+        for (int i = 0; i < drawList->VtxBuffer.Size; i++)
+        {
+            ImDrawVert vertex = drawList->VtxBuffer.Data[i];
+            if (vertex.Col != color)
+            {
+                continue;
+            }
+            colorMin = Vector2.Min(colorMin, Unsafe.BitCast<NativeVector2, Vector2>(vertex.Pos));
+            colorMax = Vector2.Max(colorMax, Unsafe.BitCast<NativeVector2, Vector2>(vertex.Pos));
+        }
+
+        Assert.NotEqual(float.MaxValue, colorMin.X);
+        Assert.True(colorMin.X < itemMin.X);
+        Assert.True(colorMin.Y < itemMin.Y);
+        Assert.True(colorMax.X > itemMax.X);
+        Assert.True(colorMax.Y > itemMax.Y);
+        Assert.True(colorMin.X >= itemMin.X - maximumExpansion);
+        Assert.True(colorMin.Y >= itemMin.Y - maximumExpansion);
+        Assert.True(colorMax.X <= itemMax.X + maximumExpansion);
+        Assert.True(colorMax.Y <= itemMax.Y + maximumExpansion);
+    }
+
+    private static void AssertCurrentTreeBackgroundSpansViewport(
+        ImGuiWindow* window,
+        uint color
+    ) {
+        ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
+        float minimumX = float.MaxValue;
+        float maximumX = float.MinValue;
+        for (int i = 0; i < drawList->VtxBuffer.Size; i++)
+        {
+            ImDrawVert vertex = drawList->VtxBuffer.Data[i];
+            if (vertex.Col != color)
+            {
+                continue;
+            }
+            minimumX = MathF.Min(minimumX, vertex.Pos.X);
+            maximumX = MathF.Max(maximumX, vertex.Pos.X);
+        }
+
+        Assert.NotEqual(float.MaxValue, minimumX);
+        Assert.Equal(NativeImGui.GetWindowPos().X, minimumX, 3);
+        Assert.Equal(window->WorkRect.Max.X, maximumX, 3);
+    }
+
+    private static void DrawInspectorCardFrame(bool assertHorizontalRange)
+    {
+        NativeImGui.NewFrame();
+        NativeImGui.SetNextWindowSize(new Vector2(320f, 260f), (int)(GuiCond.Always));
+        bool isOpen = true;
+        EditorUI.current.widgets.PanelWindow(
+            "Inspector Width Test",
+            ref isOpen,
+            () => DrawInspectorCardBody(assertHorizontalRange),
+            GuiWindowFlags.NoSavedSettings,
+            useWindowPadding: false
+        );
+        NativeImGui.Render();
+    }
+
+    private static void DrawInspectorCardBody(bool assertHorizontalRange)
+    {
+        ImGuiWindow* panelWindow = NativeImGui.Raw.GetCurrentWindow();
+        Vector2 panelBodyMinimum = NativeImGui.GetCursorScreenPos();
+        Vector2 panelBodySize = NativeImGui.GetContentRegionAvail();
+        if (assertHorizontalRange)
+        {
+            Assert.Equal(Vector2.Zero, Unsafe.BitCast<NativeVector2, Vector2>(panelWindow->WindowPadding));
+            Assert.Equal(NativeImGui.GetWindowPos().X, panelBodyMinimum.X);
+        }
+
+        if (NativeImGui.BeginChild("##inspector_scroll", Vector2.Zero, 0, 0))
+        {
+            if (assertHorizontalRange)
+            {
+                Assert.Equal(panelBodyMinimum, NativeImGui.GetWindowPos());
+                Assert.Equal(panelBodySize, NativeImGui.GetWindowSize());
+            }
+
+            EditorUI.current.widgets.ConstrainedContent("##inspector_content", () =>
+            {
+                if (assertHorizontalRange)
+                {
+                    Assert.Equal(
+                        EditorUI.current.widgets.style.windowPadding,
+                        Unsafe.BitCast<NativeVector2, Vector2>(NativeImGui.Raw.GetCurrentWindow()->WindowPadding)
+                    );
+                    Assert.Equal(
+                        NativeImGui.GetWindowPos() + EditorUI.current.widgets.style.windowPadding,
+                        NativeImGui.GetCursorScreenPos()
+                    );
+                }
+
+                EditorUI.current.widgets.LabelChip("Tag", new Vector4(0.34f, 0.29f, 0.44f, 1f));
+                float tagMaximumX = NativeImGui.GetItemRectMax().X;
+                NativeImGui.SameLine(0f, 0f);
+                NativeImGui.Dummy(new Vector2(80f, NativeImGui.GetFrameHeight()));
+                if (assertHorizontalRange)
+                {
+                    Assert.Equal(tagMaximumX, NativeImGui.GetItemRectMin().X, 3);
+                }
+                NativeImGui.SameLine(0f, EditorUI.current.widgets.style.headerSectionSpacing);
+                EditorUI.current.widgets.LabelChip("Layer", new Vector4(0.24f, 0.34f, 0.4f, 1f));
+                float layerMaximumX = NativeImGui.GetItemRectMax().X;
+                NativeImGui.SameLine(0f, 0f);
+                NativeImGui.Dummy(new Vector2(80f, NativeImGui.GetFrameHeight()));
+                if (assertHorizontalRange)
+                {
+                    Assert.Equal(layerMaximumX, NativeImGui.GetItemRectMin().X, 3);
+                }
+                bool open = EditorUI.current.widgets.CollapsingCard(
+                    "long_behavior",
+                    "BehaviorWithAnIntentionallyLongTypeNameThatMustBeClipped",
+                    drawLeadingControl: static () => NativeImGui.Dummy(new Vector2(NativeImGui.GetFrameHeight())),
+                    drawTrailingControl: static () => NativeImGui.Dummy(new Vector2(48f, NativeImGui.GetFrameHeight())),
+                    trailingControlWidth: 48f
+                );
+                if (open)
+                {
+                    NativeImGui.Unindent();
+                    EditorUI.current.widgets.CardBody(
+                        "long_behavior",
+                        static () => EditorUI.current.widgets.PropertyRow(
+                            "long_property",
+                            "Property With A Very Long Display Name",
+                            static () => NativeImGui.Dummy(
+                                new Vector2(MathF.Max(1f, NativeImGui.GetContentRegionAvail().X), NativeImGui.GetFrameHeight())
+                            )
+                        )
+                    );
+                    NativeImGui.Indent();
+                    NativeImGui.TreePop();
+                    NativeImGui.Dummy(Vector2.Zero);
+                }
+
+                if (assertHorizontalRange)
+                {
+                    Assert.Equal(0f, NativeImGui.GetScrollMaxX(), 3);
+                }
+            });
+            if (assertHorizontalRange)
+            {
+                Assert.Equal(0f, NativeImGui.GetScrollMaxX(), 3);
+            }
+        }
+
+        NativeImGui.EndChild();
+    }
+}

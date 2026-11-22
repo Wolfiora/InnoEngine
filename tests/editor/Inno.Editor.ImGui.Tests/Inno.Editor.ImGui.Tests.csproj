@@ -8,6 +8,7 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <InnoValidationLayer>native</InnoValidationLayer>
+    <InnoValidationReusable>false</InnoValidationReusable>
     <OutputType>Exe</OutputType>
     <GenerateProgramFile>false</GenerateProgramFile>
     <StartupObject>Inno.Editor.ImGui.Tests.NativeWindowTestHost</StartupObject>
@@ -26,6 +27,7 @@
     <ProjectReference Include="../../../platforms/WindowsX64/integrations/Inno.Integration.WindowsX64.Sdl3/Inno.Integration.WindowsX64.Sdl3.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/composition/editor/presentation/Inno.Editor.ImGui/Inno.Editor.ImGui.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/ImGui/native/Inno.Native.ImGui/Inno.Native.ImGui.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Inno.Editor.Assets.ImGui.csproj" PrivateAssets="compile" />
   </ItemGroup>
 
   <ItemGroup>

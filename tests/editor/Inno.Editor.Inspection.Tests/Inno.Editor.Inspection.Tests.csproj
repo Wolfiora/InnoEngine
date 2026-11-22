@@ -7,7 +7,11 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <InnoValidationLayer>contract</InnoValidationLayer>
+    <InnoValidationReusable>false</InnoValidationReusable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <InnoAssemblyScope>Editor</InnoAssemblyScope>
+    <InnoTestNativeProduct>editor</InnoTestNativeProduct>
+    <InnoTestNativeTarget>$(InnoNativeTarget)</InnoTestNativeTarget>
     <DefineConstants>$(DefineConstants);INNO_EDITOR</DefineConstants>
   </PropertyGroup>
 
@@ -21,6 +25,9 @@
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Logging/Inno.Core.Logging.csproj" />
     <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" />
     <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj" />
+    <ProjectReference Include="../../../backends/ImGui/native/Inno.Native.ImGui/Inno.Native.ImGui.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/presentation/Inno.Editor.ImGui/Inno.Editor.ImGui.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Input/Inno.Core.Input.csproj" PrivateAssets="compile" />
   </ItemGroup>
 
   <ItemGroup>
