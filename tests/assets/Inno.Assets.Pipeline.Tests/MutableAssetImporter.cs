@@ -25,7 +25,7 @@ internal sealed class MutableAssetImporter : AssetImporter<MutableAsset>
             throw new InvalidDataException("The mutable asset source is invalid.");
         }
         output.SetAsset(new MutableAsset { value = value });
-        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken);
     }
 
     protected override ValueTask<ReadOnlyMemory<byte>?> ExportAsync(

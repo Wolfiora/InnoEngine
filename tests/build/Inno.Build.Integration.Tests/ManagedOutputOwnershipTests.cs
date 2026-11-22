@@ -221,10 +221,10 @@ public sealed class ManagedOutputOwnershipTests
             host,
             arguments,
             directory,
-            cancellation.Token,
             DotNetSdkEnvironment.Create(host),
             output ?? captured,
-            error
+            error,
+            cancellation.Token
         ));
         Assert.True(failure is null, $"{failure}{Environment.NewLine}{output ?? captured}{Environment.NewLine}{error}");
     }

@@ -87,7 +87,6 @@ public static class ImGuiToolchain
                     File.Copy(import, Path.Combine(link, Path.GetFileName(import)));
                 }
             },
-            cancellationToken,
             describeOutputs: static (
                 @scoped,
                 output
@@ -99,7 +98,8 @@ public static class ImGuiToolchain
                         Path.GetRelativePath(output, file).StartsWith("Link" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
                         ? NativeArtifactRole.ImportLibrary
                         : NativeArtifactRole.SharedLibrary
-                    )).ToArray()
+                    )).ToArray(),
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
     }
 

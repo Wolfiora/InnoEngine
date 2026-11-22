@@ -22,6 +22,6 @@ internal sealed class ExtensionDependentImporter : AssetImporter<ExtensionDepend
             throw new AssetImportExtensionUnavailableException("tests.target", "tests.surface");
         }
         output.SetAsset(new ExtensionDependentAsset());
-        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken);
     }
 }

@@ -77,7 +77,6 @@ internal sealed class ShaderAssetImporter : AssetImporter<ShaderAsset>
                     );
                     return sourceLease.ReadAllBytes();
                 },
-                cancellationToken,
                 (
                     id,
                     path
@@ -97,7 +96,8 @@ internal sealed class ShaderAssetImporter : AssetImporter<ShaderAsset>
                     }
                     using ArtifactLease graphLease = context.AcquireArtifact(node.identity.persistentID, ShaderGraphArtifact.C_OUTPUT_NAME);
                     return ShaderGraphArtifact.ReadDocument(graphLease.ReadAllBytes(), context.serialization);
-                }
+                },
+                cancellationToken
             );
         }
         catch (ShaderTargetUnavailableException exception)
@@ -120,13 +120,17 @@ internal sealed class ShaderAssetImporter : AssetImporter<ShaderAsset>
         }
         else
         {
-            await output.WriteArtifactAsync("runtime", ReadOnlyMemory<byte>.Empty, cancellationToken).ConfigureAwait(false);
+            await output.WriteArtifactAsync(
+                "runtime",
+                ReadOnlyMemory<byte>.Empty,
+                cancellationToken: cancellationToken
+            ).ConfigureAwait(false);
         }
         await output.WriteArtifactAsync(
             ShaderGraphArtifact.C_OUTPUT_NAME,
             captured,
-            cancellationToken,
-            AssetDeploymentScope.AuthoringOnly
+            AssetDeploymentScope.AuthoringOnly,
+            cancellationToken
         ).ConfigureAwait(false);
     }
 

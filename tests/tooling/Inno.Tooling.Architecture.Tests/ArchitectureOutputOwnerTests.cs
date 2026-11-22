@@ -103,7 +103,7 @@ public sealed class ArchitectureOutputOwnerTests
                         ["BuildProjectReferences"] = "false",
                         ["InnoProductRestore"] = "false"
                     },
-                    cancellation.Token
+                    cancellationToken: cancellation.Token
                 )
             );
             string captured = ArchitectureCommandFixture.Run(

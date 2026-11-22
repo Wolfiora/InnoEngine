@@ -20,6 +20,6 @@ internal sealed class DependencyAssetImporter : AssetImporter<DependencyAsset>
             output.DependsOnAsset(AssetPath.Parse(dependency));
         }
         output.SetAsset(new DependencyAsset());
-        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken);
     }
 }

@@ -36,6 +36,6 @@ public sealed class DuplicateImporterB : AssetImporter<DuplicateImporterAsset>
         CancellationToken cancellationToken
     ) {
         output.SetAsset(new DuplicateImporterAsset());
-        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken);
     }
 }

@@ -46,10 +46,10 @@ public sealed class BindingSelectionLifetimeTests
                 sdk,
                 ["msbuild", project, "-t:PublishProductNativeDeployment", "-nodeReuse:false", "-v:minimal"],
                 root,
-                timeout.Token,
                 null,
                 output,
-                error
+                error,
+                timeout.Token
             ));
             Assert.NotNull(failure);
             string messages = output.ToString() + error;
@@ -140,10 +140,10 @@ public sealed class BindingSelectionLifetimeTests
                     sdk,
                     [command, project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "-v:minimal"],
                     root,
-                    timeout.Token,
                     null,
                     output,
-                    error
+                    error,
+                    timeout.Token
                 ));
                 Assert.True(failure is null, output.ToString() + error + failure);
             }

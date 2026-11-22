@@ -39,11 +39,11 @@ public sealed class BuildArtifactReadLease : IDisposable
     /// <param name="outputDirectories">
     /// The complete relative output roots declared by the publisher.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels ownership acquisition without releasing another reader's protection.
-    /// </param>
     /// <param name="statistics">
     /// Optional borrowed operation receiving output-integrity read statistics; its input cache is not used.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels ownership acquisition without releasing another reader's protection.
     /// </param>
     /// <returns>
     /// Reading ownership which the caller must retain until all artifact access completes.
@@ -65,8 +65,8 @@ public sealed class BuildArtifactReadLease : IDisposable
         string ownerDirectory,
         string fingerprint,
         IReadOnlyList<string> outputDirectories,
-        CancellationToken cancellationToken = default,
-        NativeBuildContext? statistics = null
+        NativeBuildContext? statistics = null,
+        CancellationToken cancellationToken = default
     ) => await TryAcquireAsync(
         directory,
         ownerDirectory,

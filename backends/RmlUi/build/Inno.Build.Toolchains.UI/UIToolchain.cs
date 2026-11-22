@@ -82,7 +82,6 @@ public static class UIToolchain
                 string name = ToolchainEnvironment.NormalizeOutputName(Path.GetFileName(library), scoped.configuration);
                 File.Copy(library, Path.Combine(output, name));
             },
-            cancellationToken,
             describeOutputs: static (
                 @scoped,
                 output
@@ -94,7 +93,8 @@ public static class UIToolchain
                         Path.GetRelativePath(output, file).StartsWith("Link" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
                         ? NativeArtifactRole.ImportLibrary
                         : NativeArtifactRole.SharedLibrary
-                    )).ToArray()
+                    )).ToArray(),
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
     }
 

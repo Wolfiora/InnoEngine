@@ -196,10 +196,10 @@ public sealed class StaticGraphRestoreTests
                 "-getItem:ProjectReference"
             ],
             Path.GetDirectoryName(project)!,
-            cancellation.Token,
             DotNetSdkEnvironment.Create(host),
             output,
-            error
+            error,
+            cancellation.Token
         );
         return JsonDocument.Parse(output.ToString());
     }

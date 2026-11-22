@@ -1021,8 +1021,8 @@ internal static class ValidationRunner
                 plan.dotnet,
                 projects,
                 plan.contexts[context].properties,
-                cancellationToken,
-                resolveReferences: true
+                resolveReferences: true,
+                cancellationToken: cancellationToken
             ).ConfigureAwait(false);
             string destination = Path.Combine(directory, context + "-resolved-sdk-graph.json");
             await File.WriteAllTextAsync(destination, graph, cancellationToken).ConfigureAwait(false);

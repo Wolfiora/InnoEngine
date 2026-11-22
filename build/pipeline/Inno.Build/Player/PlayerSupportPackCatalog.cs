@@ -190,12 +190,12 @@ public sealed class PlayerSupportPackCatalog
     /// <param name="validator">
     /// The target validator for runtime and linker inputs.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels validation or lease acquisition before selecting the completed pack.
-    /// </param>
     /// <param name="verifyInputs">
     /// Optional final source-input gate after output validation and any publication wait.
     /// Omit only when the caller exclusively owns a fully prepared tree with no external preparation inputs.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels validation or lease acquisition before selecting the completed pack.
     /// </param>
     /// <returns>
     /// Reading ownership of the selected immutable pack; earlier readers retain their own protection.
@@ -213,8 +213,8 @@ public sealed class PlayerSupportPackCatalog
         BuildTargetID target,
         string stagingDirectory,
         IPlayerSupportPackValidator validator,
-        CancellationToken cancellationToken = default,
-        Func<CancellationToken, ValueTask>? verifyInputs = null
+        Func<CancellationToken, ValueTask>? verifyInputs = null,
+        CancellationToken cancellationToken = default
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(stagingDirectory);
         ArgumentNullException.ThrowIfNull(validator);

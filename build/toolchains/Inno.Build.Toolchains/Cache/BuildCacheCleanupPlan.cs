@@ -161,7 +161,7 @@ public sealed class BuildCacheCleanupPlan
         Stopwatch elapsed = Stopwatch.StartNew();
         try
         {
-            BuildCacheCleanupPlan plan = CreateCore(workspace, owners, policy, retireAll, targetID, bounded.Token, elapsed);
+            BuildCacheCleanupPlan plan = CreateCore(workspace, owners, policy, retireAll, targetID, elapsed, bounded.Token);
             if (elapsed.Elapsed >= policy.timeBudget)
             {
                 throw new TimeoutException("Cache inventory exceeded its operation time budget; no artifact was retired.");
@@ -204,8 +204,8 @@ public sealed class BuildCacheCleanupPlan
         BuildCachePolicy policy,
         bool retireAll,
         string? targetID,
-        CancellationToken cancellationToken,
-        Stopwatch elapsed
+        Stopwatch elapsed,
+        CancellationToken cancellationToken
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(workspace);
         ArgumentNullException.ThrowIfNull(owners);

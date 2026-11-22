@@ -278,7 +278,7 @@ public static partial class NativeDependencyManifest
 
             string asset = step.id + "-" + product.targetID + "-" + product.fingerprint + ".zip";
             string archive = Path.Combine(output, asset);
-            await NativeArtifactTransfer.ExportAsync(root, archive, cancellationToken, selected).ConfigureAwait(false);
+            await NativeArtifactTransfer.ExportAsync(root, archive, selected, cancellationToken).ConfigureAwait(false);
             using FileStream payload = File.OpenRead(archive);
             string digest = Convert.ToHexStringLower(await SHA256.HashDataAsync(payload, cancellationToken).ConfigureAwait(false));
             assets.Add(

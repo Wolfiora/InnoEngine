@@ -154,11 +154,11 @@ public sealed class NativeProductExecutorTests : IDisposable
             m_productions++;
             return File.WriteAllTextAsync(Path.Combine(output, "probe-output.data"), "archive", token);
         },
-        cancellationToken,
         describeOutputs: static (
             operation,
             output
-        ) => [new NativeArtifact("probe-archive", Path.Combine(output, "probe-output.data"), NativeArtifactRole.StaticArchive)]
+        ) => [new NativeArtifact("probe-archive", Path.Combine(output, "probe-output.data"), NativeArtifactRole.StaticArchive)],
+        cancellationToken: cancellationToken
     );
 
     private sealed class SelectedExecutor : INativeProductExecutor

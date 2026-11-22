@@ -17,6 +17,6 @@ internal sealed class BuildConsumerAssetImporter : AssetImporter<DependencyAsset
     ) {
         context.DependsOnArtifact(Guid.Parse(context.ReadUtf8Text()));
         output.SetAsset(new DependencyAsset());
-        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken);
     }
 }

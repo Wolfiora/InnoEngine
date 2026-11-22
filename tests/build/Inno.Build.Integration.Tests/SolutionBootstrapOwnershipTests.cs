@@ -49,10 +49,10 @@ public sealed class SolutionBootstrapOwnershipTests
                     "-nr:false"
                 ],
                 repository,
-                cancellation.Token,
                 DotNetSdkEnvironment.Create(host),
                 output,
-                error
+                error,
+                cancellation.Token
             ));
             Assert.True(failure is null, $"{failure}\n{output}\n{error}");
             Assert.False(Directory.Exists(tasks), output.ToString());
@@ -110,10 +110,10 @@ public sealed class SolutionBootstrapOwnershipTests
                     host,
                     ["msbuild", project, "-t:Build", "-nr:false", "-p:InnoTaskBootstrapOwner=" + owner],
                     root,
-                    cancellation.Token,
                     DotNetSdkEnvironment.Create(host),
                     output,
-                    error
+                    error,
+                    cancellation.Token
                 ));
                 if (failure is not null)
                 {
@@ -178,10 +178,10 @@ public sealed class SolutionBootstrapOwnershipTests
                     host,
                     ["msbuild", solution, "-m:2", "-nodeReuse:false", "-v:quiet"],
                     fixture,
-                    cancellation.Token,
                     DotNetSdkEnvironment.Create(host),
                     output,
-                    error
+                    error,
+                    cancellation.Token
                 ));
                 Assert.True(failure is null, $"{failure}{Environment.NewLine}{output}{Environment.NewLine}{error}");
                 string first = File.ReadAllText(Path.Combine(fixture, "First.owner")).Trim();

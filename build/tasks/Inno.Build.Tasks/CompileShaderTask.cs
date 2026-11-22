@@ -105,7 +105,7 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
             {
                 throw new ArgumentException("The shader platform or rendering API is invalid.");
             }
-            ToolRunner tools = PrepareTools(cancellation.Token, out string compilerFingerprint, out BuildArtifactReadLease toolLease);
+            ToolRunner tools = PrepareTools(out string compilerFingerprint, out BuildArtifactReadLease toolLease, cancellation.Token);
             using BuildArtifactReadLease toolOwnership = toolLease;
             CompileProduct(tools, compilerFingerprint, platform, renderer, cancellation.Token);
             return true;
@@ -137,9 +137,9 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
     }
 
     private ToolRunner PrepareTools(
-        CancellationToken cancellationToken,
         out string compilerFingerprint,
-        out BuildArtifactReadLease reading
+        out BuildArtifactReadLease reading,
+        CancellationToken cancellationToken
     ) {
         var context = new NativeBuildContext(EngineRoot, "release");
         BuildCompositionContext execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetID(ToolTarget));
@@ -235,7 +235,7 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
                 Path.Combine(EngineRoot, "artifacts", "native"),
                 record[1],
                 ["Outputs", "Metadata"],
-                cancellationToken
+                cancellationToken: cancellationToken
             )
             .AsTask()
             .GetAwaiter()

@@ -38,8 +38,8 @@ public sealed class BrowserDependencyConsumptionTests
             output,
             target,
             dotnet,
-            cancellation.Token,
-            manifest
+            manifest,
+            cancellation.Token
         );
         distribution.platforms.Single(platform => platform.descriptor.id == target).supportPackSource.Validate(pack.directory);
         Assert.True(File.Exists(Path.Combine(pack.directory, "References", "Inno.Player.Runtime.dll")));

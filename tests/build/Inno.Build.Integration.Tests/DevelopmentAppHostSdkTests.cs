@@ -66,10 +66,10 @@ public sealed class DevelopmentAppHostSdkTests
                 host,
                 ["build", project, "-nologo", "-nodeReuse:false"],
                 owner.directory,
-                CancellationToken.None,
                 DotNetSdkEnvironment.Create(host),
                 buildOutput,
-                buildErrors
+                buildErrors,
+                CancellationToken.None
             );
         }
         catch (InvalidOperationException failure)

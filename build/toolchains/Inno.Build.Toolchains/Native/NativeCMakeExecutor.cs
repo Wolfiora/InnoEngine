@@ -156,8 +156,8 @@ public static class NativeCMakeExecutor
             selection.ResolveExecutable("cmake"),
             configure,
             sources.root,
-            cancellationToken,
-            environment
+            environment,
+            cancellationToken
         ).ConfigureAwait(false);
         List<string> build = ["--build", buildDirectory, "--config", buildType];
         if (target is not null)
@@ -169,8 +169,8 @@ public static class NativeCMakeExecutor
             selection.ResolveExecutable("cmake"),
             build,
             sources.root,
-            cancellationToken,
-            environment
+            environment,
+            cancellationToken
         ).ConfigureAwait(false);
         return buildDirectory;
     }

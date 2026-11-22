@@ -576,7 +576,7 @@ public static class DocumentationReferences
             selectedProjects: selected,
             sdkSnapshot: sdkSnapshot
         );
-        var models = new DocumentationSourceModels(root, configuration, references, cancellationToken, failures);
+        var models = new DocumentationSourceModels(root, configuration, references, failures, cancellationToken);
         List<ApiProject> inventory = [];
         using var cache = new DocumentationExportCache(root, cancellationToken);
         foreach (string project in selected.Order(StringComparer.Ordinal))

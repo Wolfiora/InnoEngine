@@ -74,7 +74,6 @@ public sealed partial class EditorRenderTargetArtifactProvider
                             using ArtifactLease lease = m_assets.AcquireArtifact(id, ShaderSourceBundle.C_OUTPUT_NAME);
                             return lease.ReadAllBytes();
                         },
-                        m_lifetime.Token,
                         (
                             id,
                             _
@@ -85,7 +84,8 @@ public sealed partial class EditorRenderTargetArtifactProvider
                                 throw new InvalidDataException($"Shader graph node '{id}' has no current successful import.");
                             }
                             return ShaderGraphArtifact.ReadDocument(ShaderGraphArtifact.Read(node, m_assets), m_serialization);
-                        }
+                        },
+                        m_lifetime.Token
                     );
                     string hash = ShaderGraphArtifact.GetSemanticHash(captured, m_serialization);
                     if (environmentChanged || entry.semanticHash != hash)

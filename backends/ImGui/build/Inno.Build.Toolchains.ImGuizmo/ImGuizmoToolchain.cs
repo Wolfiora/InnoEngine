@@ -94,7 +94,6 @@ public static class ImGuizmoToolchain
                 File.Copy(library, Path.Combine(output, name));
                 token.ThrowIfCancellationRequested();
             },
-            cancellationToken,
             describeOutputs: static (
                 @scoped,
                 output
@@ -106,7 +105,8 @@ public static class ImGuizmoToolchain
                         Path.GetRelativePath(output, file).StartsWith("Link" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
                         ? NativeArtifactRole.ImportLibrary
                         : NativeArtifactRole.SharedLibrary
-                    )).ToArray()
+                    )).ToArray(),
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
     }
 

@@ -65,7 +65,6 @@ internal static class BgfxBuildSession
                     );
                 }
             },
-            cancellationToken,
             describeOutputs: (
                 @scoped,
                 output
@@ -75,7 +74,8 @@ internal static class BgfxBuildSession
                     file,
                     includeTools ? NativeArtifactRole.SupportFile : NativeArtifactRole.SharedLibrary
                 ))
-                .ToArray()
+                .ToArray(),
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
     }
 

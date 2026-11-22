@@ -340,12 +340,12 @@ public static class DocumentationStore
     /// <param name="expectedSourceTree">
     /// Expected engine input tree, or null when the caller only needs the explicitly bound documentation snapshot.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels reading lease acquisition and manifest loading.
-    /// </param>
     /// <param name="sourceEvidence">
     /// Explicit certificate authenticated during preparation, or null for an unverified session.
     /// A certificate must cover the exact source tree and every protected API reference.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels reading lease acquisition and manifest loading.
     /// </param>
     /// <returns>
     /// A caller-owned query session. Dispose it after the final query to release its generation reading lease.
@@ -360,8 +360,8 @@ public static class DocumentationStore
         string cacheRoot,
         string? snapshot = null,
         string? expectedSourceTree = null,
-        CancellationToken cancellationToken = default,
-        DocumentationEvidence? sourceEvidence = null
+        DocumentationEvidence? sourceEvidence = null,
+        CancellationToken cancellationToken = default
     ) {
         string output = Path.GetFullPath(cacheRoot);
         PathBoundary.RequireUnlinkedPath(output, output);

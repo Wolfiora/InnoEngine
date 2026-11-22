@@ -71,12 +71,12 @@ public sealed class ScriptCompiler
     /// <param name="progress">
     /// Optional observer for monotonic compiler progress.
     /// </param>
-    /// <param name="cancellationToken">
-    /// The token that cancels compilation before an artifact generation is committed.
-    /// </param>
     /// <param name="sourceSnapshot">
     /// Optional isolated authoring sources. Capture on its owner thread and keep its transaction
     /// alive until compilation drains; null selects the current Plugin candidate or active sources.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// The token that cancels compilation before an artifact generation is committed.
     /// </param>
     /// <returns>
     /// The immutable diagnostics and artifacts produced by the compilation attempt.
@@ -102,8 +102,8 @@ public sealed class ScriptCompiler
     /// </remarks>
     public ValueTask<ScriptCompilationResult> CompileAuthoringGenerationAsync(
         IProgress<ScriptCompilationProgress>? progress = null,
-        CancellationToken cancellationToken = default,
-        IAssetSourceSnapshot? sourceSnapshot = null
+        IAssetSourceSnapshot? sourceSnapshot = null,
+        CancellationToken cancellationToken = default
     ) => ScriptCompilerEngine.CompileAsync(
         m_options,
         m_assets,

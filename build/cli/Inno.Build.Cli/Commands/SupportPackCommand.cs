@@ -21,8 +21,8 @@ internal static class SupportPackCommand
             output,
             context.target,
             context.composition.dotnetHost,
-            cancellationToken,
-            context.nativeDependencies.Length == 0 ? null : context.nativeDependencies
+            context.nativeDependencies.Length == 0 ? null : context.nativeDependencies,
+            cancellationToken
         ).ConfigureAwait(false);
         string archive = options.Read("archive", string.Empty);
         if (archive.Length != 0)

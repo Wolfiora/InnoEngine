@@ -329,7 +329,7 @@ public static class ValidationCommand
             && plan.contexts.ContainsKey("native")
         ) {
             Console.WriteLine(
-                $"Retained {await NativeArtifactTransfer.ExportAsync(root, retentionArchive, cancellationToken).ConfigureAwait(false)} complete immutable generations; reconciliation must still succeed independently."
+                $"Retained {await NativeArtifactTransfer.ExportAsync(root, retentionArchive, cancellationToken: cancellationToken).ConfigureAwait(false)} complete immutable generations; reconciliation must still succeed independently."
             );
         }
         if (planPath is not null
@@ -454,7 +454,7 @@ public static class ValidationCommand
         if (options.TryGetValue("--cache-output", out string? cacheOutput) && plan.contexts.ContainsKey("native"))
         {
             Console.WriteLine(
-                $"Exported {await NativeArtifactTransfer.ExportAsync(root, cacheOutput, cancellationToken).ConfigureAwait(false)} verified immutable generations."
+                $"Exported {await NativeArtifactTransfer.ExportAsync(root, cacheOutput, cancellationToken: cancellationToken).ConfigureAwait(false)} verified immutable generations."
             );
         }
         return 0;

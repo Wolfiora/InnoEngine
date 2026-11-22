@@ -18,6 +18,6 @@ internal sealed class ImporterConflictAssetImporterA : AssetImporter<ImporterCon
         CancellationToken cancellationToken
     ) {
         output.SetAsset(new ImporterConflictAsset());
-        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken);
     }
 }

@@ -110,7 +110,7 @@ public sealed class SupportPackPublisherTests : IDisposable
         });
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => new PlayerSupportPackPublisher([source])
-            .PublishAsync(m_root, output, TARGET, "unused", cancellation.Token)
+            .PublishAsync(m_root, output, TARGET, "unused", cancellationToken: cancellation.Token)
             .AsTask());
 
         Assert.False(Directory.Exists(output));
@@ -183,7 +183,7 @@ public sealed class SupportPackPublisherTests : IDisposable
         var publisher = new PlayerSupportPackPublisher([new TestSource(null)]);
         string output = Path.Combine(m_root, "Packs");
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            () => publisher.PublishAsync(m_root, output, TARGET, "unused", cancellation.Token).AsTask()
+            () => publisher.PublishAsync(m_root, output, TARGET, "unused", cancellationToken: cancellation.Token).AsTask()
         );
         Assert.False(Directory.Exists(output));
     }
@@ -207,7 +207,7 @@ public sealed class SupportPackPublisherTests : IDisposable
         var publisher = new PlayerSupportPackPublisher([new TestSource(null, cancellation.Cancel)]);
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            () => publisher.PublishAsync(m_root, output, TARGET, "unused", cancellation.Token).AsTask()
+            () => publisher.PublishAsync(m_root, output, TARGET, "unused", cancellationToken: cancellation.Token).AsTask()
         );
 
         Assert.Equal("candidate", File.ReadAllText(Path.Combine(installed, "References", "Inno.Test.dll")));
@@ -273,7 +273,7 @@ public sealed class SupportPackPublisherTests : IDisposable
             output,
             TARGET,
             "unused",
-            cancellation.Token
+            cancellationToken: cancellation.Token
         ).AsTask());
 
         Assert.Equal("changed externally", File.ReadAllText(file));
@@ -299,7 +299,9 @@ public sealed class SupportPackPublisherTests : IDisposable
         var second = new PlayerSupportPackPublisher(
             [new TestSource(new InvalidOperationException("Preparation must not run."))]
         );
-        Task<PlayerSupportPackPublication> waiting = second.PublishAsync(m_root, output, TARGET, "unused", cancellation.Token).AsTask();
+        Task<PlayerSupportPackPublication> waiting = second
+            .PublishAsync(m_root, output, TARGET, "unused", cancellationToken: cancellation.Token)
+            .AsTask();
         try
         {
             cancellation.Cancel();

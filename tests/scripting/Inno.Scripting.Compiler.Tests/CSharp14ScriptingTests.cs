@@ -56,10 +56,10 @@ public sealed class CSharp14ScriptingTests
             sdk.hostPath,
             [sdk.cliPath, "build", project, "--disable-build-servers", "-m:1", "-nr:false", "-p:" + property + "=" + value],
             fixture.projectRoot,
-            CancellationToken.None,
             DotNetSdkEnvironment.Create(sdk.hostPath),
             output,
-            errors
+            errors,
+            CancellationToken.None
         ));
         Assert.Contains("IDE compiler input '" + property + "' differs", output.ToString() + errors, StringComparison.Ordinal);
     }
@@ -368,10 +368,10 @@ public sealed class CSharp14ScriptingTests
                 sdk.hostPath,
                 [sdk.cliPath, "build", project, "--disable-build-servers", "-m:1", "-nr:false", "-v:quiet"],
                 directory,
-                CancellationToken.None,
                 DotNetSdkEnvironment.Create(sdk.hostPath),
                 output,
-                errors
+                errors,
+                CancellationToken.None
             );
             return output.ToString();
         }

@@ -154,8 +154,8 @@ public sealed class AssetSampleImportModule : EditorModule
                 {
                     ScriptCompilationResult result = await m_compiler.CompileAuthoringGenerationAsync(
                         new ImportProgress(this, operation),
-                        cancellationToken,
-                        sources
+                        sources,
+                        cancellationToken
                     ).ConfigureAwait(false);
                     if (!result.success)
                     {

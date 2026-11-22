@@ -44,7 +44,12 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         using NativeBuildProduct first = await NativeArtifactPublisher.PublishAsync(context, recipe, ProduceAsync);
         File.WriteAllText(first.files[0], "damaged");
         using var cancellation = new CancellationTokenSource();
-        Task<NativeBuildProduct> waiting = NativeArtifactPublisher.PublishAsync(CreateContext(), recipe, ProduceAsync, cancellation.Token);
+        Task<NativeBuildProduct> waiting = NativeArtifactPublisher.PublishAsync(
+            CreateContext(),
+            recipe,
+            ProduceAsync,
+            cancellationToken: cancellation.Token
+        );
         await prepared.Task.WaitAsync(TimeSpan.FromSeconds(5));
         await Task.Delay(80);
         Assert.False(waiting.IsCompleted);
@@ -570,7 +575,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
                 await File.WriteAllTextAsync(Path.Combine(output, "api.native"), "candidate", token);
                 cancellation.Cancel();
             },
-            cancellation.Token
+            cancellationToken: cancellation.Token
         ));
         Assert.Empty(Directory.EnumerateFiles(Path.Combine(m_root, "artifacts"), "api.native", SearchOption.AllDirectories));
         Assert.Empty(Directory.GetDirectories(m_root, "*.staging-*", SearchOption.AllDirectories));

@@ -138,8 +138,8 @@ internal sealed class BindingGenerationOperation : IDisposable
                             Path.Combine(m_context.engineRoot, "artifacts", "bindings"),
                             fingerprint,
                             ["Native", "Generated"],
-                            cancellationToken,
-                            m_context
+                            m_context,
+                            cancellationToken
                         ).ConfigureAwait(false)
                     );
                     protectedTargets.Add(destination);
@@ -233,8 +233,8 @@ internal sealed class BindingGenerationOperation : IDisposable
                             Path.Combine(m_context.engineRoot, "artifacts", "bindings"),
                             descriptor.fingerprint,
                             ["Native", "Generated"],
-                            cancellationToken,
-                            m_context
+                            m_context,
+                            cancellationToken
                         ).ConfigureAwait(false)
                     );
                 }

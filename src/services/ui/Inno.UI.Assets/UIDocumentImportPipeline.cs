@@ -84,7 +84,7 @@ public static class UIDocumentImportPipeline
         await output.WriteArtifactAsync(
             "runtime",
             UIDocumentAsset.CreateRuntimePayload(implementationID, source, fonts),
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
     }
 }

@@ -76,8 +76,8 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
         await CopyDirectoryAsync(
             context.managedDeployment.outputDirectory,
             application,
-            cancellationToken,
-            excludeCompilerReferences: true
+            excludeCompilerReferences: true,
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
         string player = Path.Combine(application, "Inno.Player.WindowsX64.exe");
         if (!File.Exists(player))
@@ -88,8 +88,8 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
         await CopyDirectoryAsync(
             context.contentDirectory,
             Path.Combine(application, "Content"),
-            cancellationToken,
-            excludeCompilerReferences: false
+            excludeCompilerReferences: false,
+            cancellationToken: cancellationToken
         )
             .ConfigureAwait(false);
         return application;
@@ -98,8 +98,8 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
     private static async ValueTask CopyDirectoryAsync(
         string source,
         string destination,
-        CancellationToken cancellationToken,
-        bool excludeCompilerReferences
+        bool excludeCompilerReferences,
+        CancellationToken cancellationToken
     ) {
         Directory.CreateDirectory(destination);
         foreach (string directory in Directory.EnumerateDirectories(source, "*", SearchOption.AllDirectories))

@@ -123,10 +123,10 @@ public sealed class TaskPublisherBootstrapTests
                     "-p:WasmBuildNative=true"
                 ],
                 repository,
-                timeout.Token,
                 DotNetSdkEnvironment.Create(dotnet),
                 output,
-                errors
+                errors,
+                timeout.Token
             ));
             Assert.True(failure is null, $"{failure}\n{output}\n{errors}");
             int requests = 0;

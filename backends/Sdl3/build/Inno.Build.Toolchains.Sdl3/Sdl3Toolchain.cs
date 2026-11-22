@@ -76,7 +76,6 @@ public static class Sdl3Toolchain
                 string name = ToolchainEnvironment.NormalizeOutputName(Path.GetFileName(library), scoped.configuration);
                 File.Copy(library, Path.Combine(output, name));
             },
-            cancellationToken,
             describeOutputs: static (
                 @scoped,
                 output
@@ -88,7 +87,8 @@ public static class Sdl3Toolchain
                         Path.GetRelativePath(output, file).StartsWith("Link" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
                         ? NativeArtifactRole.ImportLibrary
                         : NativeArtifactRole.SharedLibrary
-                    )).ToArray()
+                    )).ToArray(),
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
     }
 

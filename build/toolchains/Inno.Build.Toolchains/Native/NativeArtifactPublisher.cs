@@ -27,11 +27,11 @@ public static class NativeArtifactPublisher
     /// Producer receiving an identity-scoped context, private output directory and cancellation token.
     /// It must await all work and validate required outputs before returning.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels ownership acquisition or candidate preparation before publication.
-    /// </param>
     /// <param name="describeOutputs">
     /// The producer's exact role inventory, or null for generic support payloads.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels ownership acquisition or candidate preparation before publication.
     /// </param>
     /// <returns>
     /// A complete native product with an exact, read-only output closure.
@@ -52,8 +52,8 @@ public static class NativeArtifactPublisher
         NativeBuildContext context,
         NativeBuildRecipe recipe,
         Func<NativeBuildContext, string, CancellationToken, Task> build,
-        CancellationToken cancellationToken = default,
-        Func<NativeBuildContext, string, IReadOnlyList<NativeArtifact>>? describeOutputs = null
+        Func<NativeBuildContext, string, IReadOnlyList<NativeArtifact>>? describeOutputs = null,
+        CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(recipe);

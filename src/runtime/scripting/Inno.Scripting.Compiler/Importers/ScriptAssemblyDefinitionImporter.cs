@@ -58,7 +58,7 @@ internal sealed class ScriptAssemblyDefinitionImporter : AssetImporter<ScriptAss
             throw new InvalidOperationException("Assembly definition scope must be Runtime or Editor.");
         }
         output.SetAsset(asset);
-        await output.WriteArtifactAsync("source", context.sourceBytes, cancellationToken)
+        await output.WriteArtifactAsync("source", context.sourceBytes, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }
 

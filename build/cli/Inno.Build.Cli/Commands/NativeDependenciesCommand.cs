@@ -29,7 +29,11 @@ internal static class NativeDependenciesCommand
 
         if (operation == "export-cache")
         {
-            await NativeArtifactTransfer.ExportAsync(request.root, options.Require("output"), cancellationToken).ConfigureAwait(false);
+            await NativeArtifactTransfer.ExportAsync(
+                request.root,
+                options.Require("output"),
+                cancellationToken: cancellationToken
+            ).ConfigureAwait(false);
             return;
         }
 

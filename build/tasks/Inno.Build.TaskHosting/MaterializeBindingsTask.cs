@@ -161,7 +161,7 @@ public sealed class MaterializeBindingsTask : BuildTask, ICancelableTask
                 throw new ArgumentException("The selected source is outside its declared binding artifact.");
             }
             return BuildArtifactReadLease
-                .AcquireAsync(directory, ArtifactOwnerDirectory, Fingerprint, ["Native", "Generated"], cancellationToken)
+                .AcquireAsync(directory, ArtifactOwnerDirectory, Fingerprint, ["Native", "Generated"], cancellationToken: cancellationToken)
                 .AsTask()
                 .GetAwaiter()
                 .GetResult();

@@ -780,8 +780,8 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         ) =>
         {
             ScriptCompilationResult candidate = await fixture.compiler.CompileAuthoringGenerationAsync(
-                cancellationToken: cancellationToken,
-                sourceSnapshot: sources
+                sourceSnapshot: sources,
+                cancellationToken: cancellationToken
             );
             Assert.True(candidate.success, FormatDiagnostics(candidate));
         });
@@ -823,8 +823,8 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         ) =>
         {
             ScriptCompilationResult candidate = await fixture.compiler.CompileAuthoringGenerationAsync(
-                cancellationToken: cancellationToken,
-                sourceSnapshot: sources
+                sourceSnapshot: sources,
+                cancellationToken: cancellationToken
             );
             if (!candidate.success)
             {
@@ -1218,8 +1218,8 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             {
                 ScriptCompilationResult result = await fixture.compiler.CompileAuthoringGenerationAsync(
                     progress,
-                    cancellationToken,
-                    sources
+                    sources,
+                    cancellationToken
                 ).ConfigureAwait(false);
                 Assert.True(result.success, FormatDiagnostics(result));
             });

@@ -274,7 +274,7 @@ public sealed class ProductNativePreparationTests : IDisposable
             {
                 Interlocked.Increment(ref m_productions);
                 await File.WriteAllTextAsync(Path.Combine(output, "result.fixture"), "result", token);
-            }, cancellation),
+            }, cancellationToken: cancellation),
             Recipe,
             (
                 path,

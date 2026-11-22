@@ -15,6 +15,6 @@ internal sealed class HookAssetImporter : AssetImporter<HookAsset>
         CancellationToken cancellationToken
     ) {
         output.SetAsset(new HookAsset());
-        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken);
     }
 }

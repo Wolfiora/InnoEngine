@@ -11,8 +11,8 @@ internal static class BindingInputPlanning
     internal static ValueTask<string> ComputeAsync(
         NativeBuildContext context,
         NativeBindingGenerationRequest request,
-        CancellationToken cancellationToken,
-        NativeBindingProfile profile
+        NativeBindingProfile profile,
+        CancellationToken cancellationToken
     ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(request);

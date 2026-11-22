@@ -220,7 +220,7 @@ public sealed class NativeArtifactImportTests : IDisposable
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            () => NativeArtifactTransfer.ExportAsync(producer, archive, cancellation.Token)
+            () => NativeArtifactTransfer.ExportAsync(producer, archive, cancellationToken: cancellation.Token)
         );
         Assert.Equal(before, File.ReadAllBytes(archive));
         Assert.Empty(Directory.GetFiles(Path.GetDirectoryName(archive)!, "*.staging-*"));

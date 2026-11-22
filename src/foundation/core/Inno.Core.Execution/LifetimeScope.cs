@@ -172,7 +172,7 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         ArgumentNullException.ThrowIfNull(operation);
         var completion = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
         TrackCore(completion.Task, observeCompletion: false);
-        _ = CompleteOperationAsync(operation, cancellationToken, completion);
+        _ = CompleteOperationAsync(operation, completion, cancellationToken);
         return completion.Task;
     }
 
@@ -465,8 +465,8 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
 
     private async Task CompleteOperationAsync<TResult>(
         Func<CancellationToken, ValueTask<TResult>> operation,
-        CancellationToken cancellationToken,
-        TaskCompletionSource<TResult> completion
+        TaskCompletionSource<TResult> completion,
+        CancellationToken cancellationToken
     ) {
         try
         {

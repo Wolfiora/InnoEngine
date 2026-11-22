@@ -28,8 +28,8 @@ internal sealed class DocumentationSourceModels
         string repositoryRoot,
         string configuration,
         DocumentationProjectReferences? projectReferences = null,
-        CancellationToken cancellationToken = default,
-        ICollection<string>? failures = null
+        ICollection<string>? failures = null,
+        CancellationToken cancellationToken = default
     ) {
         m_projectReferences = projectReferences;
         m_cancellation = cancellationToken;

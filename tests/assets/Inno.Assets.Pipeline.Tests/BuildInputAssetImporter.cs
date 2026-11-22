@@ -27,6 +27,6 @@ internal sealed class BuildInputAssetImporter : AssetImporter<DependencyAsset>
             context.DependsOnArtifact(dependency);
         }
         output.SetAsset(new DependencyAsset());
-        return output.WriteArtifactAsync("authoring", context.sourceBytes, cancellationToken, AssetDeploymentScope.AuthoringOnly);
+        return output.WriteArtifactAsync("authoring", context.sourceBytes, AssetDeploymentScope.AuthoringOnly, cancellationToken);
     }
 }

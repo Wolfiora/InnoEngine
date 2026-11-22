@@ -86,8 +86,8 @@ internal sealed class BuildWorkspace : IDisposable
             ) =>
             {
                 ScriptCompilationResult result = await m_compiler.CompileAuthoringGenerationAsync(
-                    cancellationToken: cancellationToken,
-                    sourceSnapshot: sources
+                    sourceSnapshot: sources,
+                    cancellationToken: cancellationToken
                 ).ConfigureAwait(false);
                 if (!result.success)
                 {

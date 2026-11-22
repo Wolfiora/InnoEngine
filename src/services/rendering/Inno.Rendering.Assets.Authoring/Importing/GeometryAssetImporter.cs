@@ -76,8 +76,8 @@ internal sealed class GeometryAssetImporter : AssetImporter<GeometryAsset>
         );
         output.SetAsset(asset);
         byte[] artifact = GeometryArtifact.Encode(data);
-        await output.WriteArtifactAsync("runtime", artifact, cancellationToken).ConfigureAwait(false);
-        await output.WriteArtifactAsync("geometry", artifact, cancellationToken).ConfigureAwait(false);
+        await output.WriteArtifactAsync("runtime", artifact, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await output.WriteArtifactAsync("geometry", artifact, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     private static (Vector3 center, Vector3 extents) CalculateBounds(GeometryData data)

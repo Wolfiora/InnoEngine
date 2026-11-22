@@ -117,7 +117,7 @@ public sealed class ProductNativeCacheLookupTests : IDisposable
                 {
                     Interlocked.Increment(ref m_builds);
                     await File.WriteAllTextAsync(Path.Combine(output, "result.native"), "complete", token);
-                }, cancellation),
+                }, cancellationToken: cancellation),
                 context => Recipe(context, id),
                 static (
                     relative,

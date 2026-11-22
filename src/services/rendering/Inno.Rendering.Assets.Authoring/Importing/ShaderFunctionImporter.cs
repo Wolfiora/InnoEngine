@@ -113,8 +113,8 @@ internal sealed class ShaderFunctionImporter : AssetImporter<ShaderFunctionAsset
         await output.WriteArtifactAsync(
             ShaderSourceBundle.C_OUTPUT_NAME,
             ShaderSourceBundle.Encode(modules, context.serialization),
-            cancellationToken,
-            AssetDeploymentScope.AuthoringOnly
+            AssetDeploymentScope.AuthoringOnly,
+            cancellationToken
         ).ConfigureAwait(false);
     }
 

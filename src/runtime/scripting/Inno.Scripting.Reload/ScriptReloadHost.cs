@@ -680,7 +680,7 @@ public sealed class ScriptReloadHost : IDisposable
                             operation,
                             isCompilerUpdate: true
                         )),
-                        effectiveCancellation
+                        cancellationToken: effectiveCancellation
                     )
                     .ConfigureAwait(false);
             }

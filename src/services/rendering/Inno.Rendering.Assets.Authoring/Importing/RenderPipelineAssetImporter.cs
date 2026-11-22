@@ -51,7 +51,7 @@ internal sealed class RenderPipelineAssetImporter : AssetImporter<RenderPipeline
         }
         Validate(asset);
         output.SetAsset(asset);
-        await output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken)
+        await output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }
 

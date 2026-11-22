@@ -89,8 +89,8 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
             supportPackRoot,
             target,
             m_dotnetHost,
-            cancellationToken,
-            m_nativeDependencies
+            m_nativeDependencies,
+            cancellationToken
         ).ConfigureAwait(false);
         foreach (string diagnostic in installed.diagnostics)
         {

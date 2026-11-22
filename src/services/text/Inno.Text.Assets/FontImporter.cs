@@ -44,9 +44,9 @@ public sealed class FontImporter : AssetImporter<FontAsset>
         await output.WriteArtifactAsync(
             "runtime",
             FontMetadataCodec.Encode(metadata),
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
-        await output.WriteArtifactAsync("font-data", context.sourceBytes, cancellationToken).ConfigureAwait(false);
+        await output.WriteArtifactAsync("font-data", context.sourceBytes, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     private static FontMetadata ReadMetadata(ReadOnlySpan<byte> source)

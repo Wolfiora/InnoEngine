@@ -31,6 +31,6 @@ internal sealed class ExtensionConsumerImporter : AssetImporter<ExtensionDepende
             _ = context.ResolveDependency<ExtensionDependentAsset>(AssetPath.Project(source));
         }
         output.SetAsset(new ExtensionDependentAsset());
-        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken);
     }
 }

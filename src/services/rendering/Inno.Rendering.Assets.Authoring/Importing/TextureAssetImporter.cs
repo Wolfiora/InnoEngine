@@ -57,8 +57,8 @@ internal sealed partial class TextureAssetImporter : AssetImporter<TextureAsset>
             context.extension.TrimStart('.').ToLowerInvariant()
         );
         output.SetAsset(asset);
-        await output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken).ConfigureAwait(false);
-        await output.WriteArtifactAsync("source", context.sourceBytes, cancellationToken).ConfigureAwait(false);
+        await output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await output.WriteArtifactAsync("source", context.sourceBytes, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     internal static (int width, int height) ReadPngSize(ReadOnlySpan<byte> bytes)

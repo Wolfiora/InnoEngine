@@ -53,7 +53,7 @@ internal sealed class SceneAssetImporter : AssetImporter<SceneAsset>
             output.DependsOnAsset(dependencies[i]);
         }
         output.SetAsset(asset);
-        await output.WriteArtifactAsync("runtime", envelope.payload, cancellationToken).ConfigureAwait(false);
+        await output.WriteArtifactAsync("runtime", envelope.payload, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

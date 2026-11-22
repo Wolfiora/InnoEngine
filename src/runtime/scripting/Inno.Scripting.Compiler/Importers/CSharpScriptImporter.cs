@@ -76,12 +76,12 @@ internal sealed class CSharpScriptImporter : AssetImporter<ScriptSourceAsset>
         await output.WriteArtifactAsync(
             "source",
             Encoding.UTF8.GetBytes(source),
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
         await output.WriteArtifactAsync(
             "diagnostics",
             Encoding.UTF8.GetBytes(string.Join(Environment.NewLine, diagnostics)),
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
         var typeManifest = new ScriptSourceTypeManifest(
             context.persistentID,
@@ -91,7 +91,7 @@ internal sealed class CSharpScriptImporter : AssetImporter<ScriptSourceAsset>
         await output.WriteArtifactAsync(
             "type-manifest",
             context.serialization.Serialize(typeManifest),
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
     }
 

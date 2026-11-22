@@ -77,7 +77,6 @@ public static class MiniAudioToolchain
                 string name = ToolchainEnvironment.NormalizeOutputName(Path.GetFileName(library), scoped.configuration);
                 File.Copy(library, Path.Combine(output, name));
             },
-            cancellationToken,
             describeOutputs: static (
                 @scoped,
                 output
@@ -89,7 +88,8 @@ public static class MiniAudioToolchain
                         Path.GetRelativePath(output, file).StartsWith("Link" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
                         ? NativeArtifactRole.ImportLibrary
                         : NativeArtifactRole.SharedLibrary
-                    )).ToArray()
+                    )).ToArray(),
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
     }
 

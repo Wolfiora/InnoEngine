@@ -74,7 +74,7 @@ internal static class DocumentationExportPlan
                 dotnet,
                 graphProjects,
                 properties,
-                cancellationToken
+                cancellationToken: cancellationToken
             ).ConfigureAwait(false);
             using JsonDocument graph = JsonDocument.Parse(graphText);
             foreach (JsonElement node in graph.RootElement.EnumerateArray())

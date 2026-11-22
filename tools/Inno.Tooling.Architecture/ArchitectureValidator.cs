@@ -193,8 +193,8 @@ public static partial class ArchitectureValidator
             repositoryRoot,
             configuration,
             evaluatedReferences,
-            cancellationToken,
-            failures
+            failures,
+            cancellationToken
         );
         var sourceTrees = new Dictionary<string, SyntaxTree>(StringComparer.Ordinal);
         if (!metadataOnly)

@@ -21,10 +21,10 @@ internal sealed class MixedScopeAssetImporter : AssetImporter<DependencyAsset>
             return output.WriteArtifactAsync(
                 "graph",
                 context.sourceBytes,
-                cancellationToken,
-                AssetDeploymentScope.AuthoringOnly
+                AssetDeploymentScope.AuthoringOnly,
+                cancellationToken
             );
         }
-        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken);
     }
 }

@@ -77,12 +77,12 @@ public sealed class ValidationCompletionTests
             }
 
             """);
-        Assert.Equal(0, await repository.RunCurrentAsync(cancellation.Token, "artifacts/warmup"));
+        Assert.Equal(0, await repository.RunCurrentAsync("artifacts/warmup", cancellation.Token));
         repository.Write(C_PROBE, File.ReadAllText(source) + "\n// Change this owner's compilation input.\n");
         byte[] original = File.ReadAllBytes(source);
         DateTime timestamp = File.GetLastWriteTimeUtc(source);
         File.WriteAllText(gate, "mutate after planning");
-        await Assert.ThrowsAsync<InvalidDataException>(() => repository.RunCurrentAsync(cancellation.Token, "artifacts/run"));
+        await Assert.ThrowsAsync<InvalidDataException>(() => repository.RunCurrentAsync("artifacts/run", cancellation.Token));
         using (JsonDocument failed = JsonDocument.Parse(File.ReadAllText(repository.PathOf("artifacts/run/results.json"))))
         {
             JsonElement[] results = failed.RootElement.GetProperty("results").EnumerateArray().ToArray();
@@ -100,7 +100,7 @@ public sealed class ValidationCompletionTests
         }
         File.WriteAllBytes(source, original);
         File.SetLastWriteTimeUtc(source, timestamp);
-        Assert.Equal(0, await repository.RunCurrentAsync(cancellation.Token, "artifacts/repaired"));
+        Assert.Equal(0, await repository.RunCurrentAsync("artifacts/repaired", cancellation.Token));
         Assert.Equal(
             0,
             await repository.EvidenceAsync(repository.PathOf("artifacts/repaired/results.json"), "artifacts/repaired/plan.json")
@@ -122,7 +122,7 @@ public sealed class ValidationCompletionTests
         dependencyOutput = repository.BindWorkspace(dependencyOutput);
         DateTime outputTimestamp = File.GetLastWriteTimeUtc(dependencyOutput);
         byte[] dependencyBytes = File.ReadAllBytes(dependencyOutput);
-        Assert.Equal(0, await repository.RunAsync(cancellation.Token, "artifacts/owner-only"));
+        Assert.Equal(0, await repository.RunAsync("artifacts/owner-only", cancellationToken: cancellation.Token));
         Assert.Equal(dependencyBytes, File.ReadAllBytes(dependencyOutput));
         Assert.Equal(outputTimestamp, File.GetLastWriteTimeUtc(dependencyOutput));
 
@@ -137,7 +137,9 @@ public sealed class ValidationCompletionTests
         {
             Assert.Single(plan.RootElement.GetProperty("owners").EnumerateArray());
         }
-        await Assert.ThrowsAsync<InvalidDataException>(() => repository.RunAsync(cancellation.Token, "artifacts/dependency-changed"));
+        await Assert.ThrowsAsync<InvalidDataException>(
+            () => repository.RunAsync("artifacts/dependency-changed", cancellationToken: cancellation.Token)
+        );
         using JsonDocument changed = JsonDocument.Parse(File.ReadAllText(repository.PathOf("artifacts/dependency-changed/results.json")));
         Assert.Contains(changed.RootElement.GetProperty("results").EnumerateArray(), result => (
             result.GetProperty("id").GetString() == "test:tests/input/Inno.Input.Tests/Inno.Input.Tests.csproj"
@@ -180,7 +182,7 @@ public sealed class ValidationCompletionTests
         using JsonDocument plan = await repository.PlanAsync();
         Assert.Empty(plan.RootElement.GetProperty("owners").EnumerateArray());
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(5));
-        Task<int> execution = repository.RunAsync(cancellation.Token);
+        Task<int> execution = repository.RunAsync(cancellationToken: cancellation.Token);
         try
         {
             while (!File.Exists(signal))
@@ -211,7 +213,7 @@ public sealed class ValidationCompletionTests
             await Assert.ThrowsAsync<InvalidDataException>(() => repository.EvidenceAsync(evidence));
             // Recovery starts after the failed run and its evidence have been inspected. It owns its full execution budget.
             using var recovery = new CancellationTokenSource(TimeSpan.FromMinutes(5));
-            Assert.Equal(0, await repository.RunAsync(recovery.Token, "artifacts/completed"));
+            Assert.Equal(0, await repository.RunAsync("artifacts/completed", cancellationToken: recovery.Token));
             Assert.Equal(0, await repository.EvidenceAsync(repository.PathOf("artifacts/completed/results.json")));
         }
         finally
@@ -472,7 +474,7 @@ public sealed class ValidationCompletionTests
             string output = "artifacts/union-" + value;
             try
             {
-                Assert.Equal(0, await repository.RunAsync(cancellation.Token, output));
+                Assert.Equal(0, await repository.RunAsync(output, cancellationToken: cancellation.Token));
             }
             catch (Exception failure)
             {

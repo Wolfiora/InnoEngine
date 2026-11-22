@@ -191,8 +191,8 @@ public sealed class ValidationRepository : IDisposable
     ]);
 
     public Task<int> RunCurrentAsync(
-        CancellationToken cancellationToken,
-        string output
+        string output,
+        CancellationToken cancellationToken
     ) => ValidationCommand.ExecuteAsync([
         "run",
         "--engine-root",
@@ -206,9 +206,9 @@ public sealed class ValidationRepository : IDisposable
     ], cancellationToken);
 
     public Task<int> RunAsync(
-        CancellationToken cancellationToken = default,
         string output = "artifacts/run",
-        string? evidence = null
+        string? evidence = null,
+        CancellationToken cancellationToken = default
     ) => ValidationCommand.ExecuteAsync([
         "run",
         "--engine-root",

@@ -1520,7 +1520,7 @@ public sealed class ValidationPlanningTests
         string parent = Path.GetDirectoryName(artifacts)!;
         using FileLease writer = await FileLease.AcquireAsync(artifacts + ".lock", TimeSpan.FromSeconds(5));
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        Task<int> competing = repository.RunAsync(cancellation.Token);
+        Task<int> competing = repository.RunAsync(cancellationToken: cancellation.Token);
         while (!BuildCacheOwnerCatalog.ReadOwners(repository.PathOf(".")).Any(owner => owner.directory == parent))
         {
             cancellation.Token.ThrowIfCancellationRequested();

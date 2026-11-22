@@ -80,8 +80,8 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
         await CopyDirectoryAsync(
             context.managedDeployment.outputDirectory,
             executableRoot,
-            cancellationToken,
-            excludeCompilerReferences: true
+            excludeCompilerReferences: true,
+            cancellationToken: cancellationToken
         )
             .ConfigureAwait(false);
         string player = Path.Combine(executableRoot, "Inno.Player.MacOSArm64");
@@ -93,8 +93,8 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
         await CopyDirectoryAsync(
             context.contentDirectory,
             Path.Combine(resources, "Content"),
-            cancellationToken,
-            excludeCompilerReferences: false
+            excludeCompilerReferences: false,
+            cancellationToken: cancellationToken
         )
             .ConfigureAwait(false);
         Directory.CreateDirectory(contents);
@@ -123,8 +123,8 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
     private static async ValueTask CopyDirectoryAsync(
         string source,
         string destination,
-        CancellationToken cancellationToken,
-        bool excludeCompilerReferences
+        bool excludeCompilerReferences,
+        CancellationToken cancellationToken
     ) {
         Directory.CreateDirectory(destination);
         foreach (string directory in Directory.EnumerateDirectories(source, "*", SearchOption.AllDirectories))

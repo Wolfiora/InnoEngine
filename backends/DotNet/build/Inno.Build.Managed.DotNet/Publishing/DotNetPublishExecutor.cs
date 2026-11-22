@@ -77,10 +77,10 @@ internal static class DotNetPublishExecutor
                 request.sdk.hostPath,
                 arguments,
                 workspace.toolPath,
-                cancellationToken,
                 DotNetSdkEnvironment.Create(request.sdk.hostPath),
                 output,
-                error
+                error,
+                cancellationToken
             ).ConfigureAwait(false);
         }
         catch (InvalidOperationException exception)

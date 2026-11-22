@@ -48,7 +48,7 @@ public sealed class ScriptCachePublicationTests
         );
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         Task<ScriptCompilationResult> compilation = fixture.compiler
-            .CompileAuthoringGenerationAsync(observer, cancellation.Token)
+            .CompileAuthoringGenerationAsync(observer, cancellationToken: cancellation.Token)
             .AsTask();
         Exception? compilationFailure = null;
         bool captured = false;
@@ -197,7 +197,7 @@ public sealed class ScriptCachePublicationTests
         );
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         Task<ScriptCompilationResult> compilation = fixture.compiler
-            .CompileAuthoringGenerationAsync(observer, cancellation.Token)
+            .CompileAuthoringGenerationAsync(observer, cancellationToken: cancellation.Token)
             .AsTask();
         try
         {

@@ -83,12 +83,12 @@ public sealed class NativeBindingGenerationTests : IDisposable
                     productions++;
                     return File.WriteAllTextAsync(Path.Combine(output, "fixture.data"), "native payload", token);
                 },
-                cancellation,
                 describeOutputs: static (
                     _,
                     output
                 ) =>
-                    [new NativeArtifact("fixture", Path.Combine(output, "fixture.data"), NativeArtifactRole.SharedLibrary)]
+                    [new NativeArtifact("fixture", Path.Combine(output, "fixture.data"), NativeArtifactRole.SharedLibrary)],
+                cancellationToken: cancellation
             ),
             Recipe,
             static (

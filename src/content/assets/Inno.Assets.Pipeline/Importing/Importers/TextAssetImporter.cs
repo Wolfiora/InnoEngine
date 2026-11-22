@@ -53,7 +53,7 @@ internal sealed class TextAssetImporter : AssetImporter<TextAsset>
         await output.WriteArtifactAsync(
             "runtime",
             Encoding.UTF8.GetBytes(content),
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
     }
 

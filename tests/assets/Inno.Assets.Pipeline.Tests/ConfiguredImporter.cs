@@ -24,6 +24,6 @@ internal sealed class ConfiguredImporter : AssetImporter<ConfiguredAsset>
         string value = $"{settings.multiplier}:{context.ReadUtf8Text()}";
         if (settings.lookup is not null) value += ":" + settings.lookup.content;
         output.SetAsset(new ConfiguredAsset { value = value });
-        return output.WriteArtifactAsync("runtime", Encoding.UTF8.GetBytes(value), cancellationToken);
+        return output.WriteArtifactAsync("runtime", Encoding.UTF8.GetBytes(value), cancellationToken: cancellationToken);
     }
 }

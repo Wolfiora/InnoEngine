@@ -39,7 +39,7 @@ public sealed class ValidationProgressTests
         Task<int>? running = null;
         try
         {
-            running = repository.RunAsync(cancellation.Token);
+            running = repository.RunAsync(cancellationToken: cancellation.Token);
             string activity = await capture.activity.Task.WaitAsync(TimeSpan.FromMinutes(2));
             Assert.False(running.IsCompleted);
             Assert.StartsWith("Process active: instructions.log;", activity);

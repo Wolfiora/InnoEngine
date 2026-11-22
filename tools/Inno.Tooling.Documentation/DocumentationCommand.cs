@@ -130,8 +130,8 @@ public static class DocumentationCommand
                 cache,
                 options.GetValueOrDefault("--snapshot"),
                 options.GetValueOrDefault("--source-tree"),
-                cancellationToken,
-                sourceEvidence
+                sourceEvidence,
+                cancellationToken
             ).ConfigureAwait(false);
             if (operation == "catalog")
             {

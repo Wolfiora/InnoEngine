@@ -26,7 +26,7 @@ internal sealed class SlowAssetImporter : AssetImporter<SlowAsset>
             throw new TimeoutException("The slow importer test gate was not released.");
         }
         output.SetAsset(new SlowAsset { value = context.ReadUtf8Text() });
-        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken);
     }
 
     internal static void Reset()

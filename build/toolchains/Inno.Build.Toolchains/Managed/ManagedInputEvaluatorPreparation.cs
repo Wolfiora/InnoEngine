@@ -186,8 +186,8 @@ internal static class ManagedInputEvaluatorPreparation
             Path.GetDirectoryName(directory)!,
             fingerprint,
             ["Outputs"],
-            cancellationToken,
-            context
+            context,
+            cancellationToken
         ).ConfigureAwait(false);
         try
         {

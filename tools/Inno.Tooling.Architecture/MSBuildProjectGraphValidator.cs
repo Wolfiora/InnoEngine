@@ -53,7 +53,7 @@ internal static class MSBuildProjectGraphValidator
                            dotnetHost,
                            projects,
                            properties,
-                           cancellationToken
+                           cancellationToken: cancellationToken
                        ).ConfigureAwait(false);
         using JsonDocument snapshots = JsonDocument.Parse(graph);
         foreach (JsonElement snapshot in snapshots.RootElement.EnumerateArray())

@@ -50,9 +50,9 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
         await output.WriteArtifactAsync(
             "runtime",
             AudioClipMetadataCodec.Encode(metadata),
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
-        await output.WriteArtifactAsync("audio-data", context.sourceBytes, cancellationToken).ConfigureAwait(false);
+        await output.WriteArtifactAsync("audio-data", context.sourceBytes, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     private static AudioClipMetadata ReadWav(ReadOnlySpan<byte> bytes)

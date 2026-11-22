@@ -176,7 +176,6 @@ public sealed partial class AssetDatabase
         m_pendingLoads.Add(
             new PendingAcquisition(
                 shared.preparation,
-                cancellationToken,
                 payloads =>
                 {
                     TAsset asset = LoadRecord<TAsset>(record, pin: false, payloads);
@@ -187,7 +186,8 @@ public sealed partial class AssetDatabase
                 () => completion.TrySetCanceled(
                     cancellationToken.IsCancellationRequested ? cancellationToken : new CancellationToken(true)
                 ),
-                () => ReleasePreparation(record.persistentID, shared)
+                () => ReleasePreparation(record.persistentID, shared),
+                cancellationToken
             )
         );
         m_peakPendingLoads = Math.Max(m_peakPendingLoads, m_pendingLoads.Count);
@@ -290,8 +290,8 @@ public sealed partial class AssetDatabase
     private static async Task<byte[]> ReadPayloadAsync(
         PayloadRead read,
         ContentReadLease lease,
-        CancellationToken cancellationToken,
-        SemaphoreSlim slots
+        SemaphoreSlim slots,
+        CancellationToken cancellationToken
     ) {
         await slots.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -368,13 +368,13 @@ public sealed partial class AssetDatabase
             {
                 if (ExecutionContext.IsFlowSuppressed())
                 {
-                    this.preparation = Task.Run(() => PrepareAsync(read, lease, cancellation.Token, slots));
+                    this.preparation = Task.Run(() => PrepareAsync(read, lease, slots, cancellation.Token));
                 }
                 else
                 {
                     using (ExecutionContext.SuppressFlow())
                     {
-                        this.preparation = Task.Run(() => PrepareAsync(read, lease, cancellation.Token, slots));
+                        this.preparation = Task.Run(() => PrepareAsync(read, lease, slots, cancellation.Token));
                     }
                 }
             }
@@ -394,23 +394,23 @@ public sealed partial class AssetDatabase
         private static async Task<byte[]> PrepareAsync(
             PayloadRead read,
             ContentReadLease lease,
-            CancellationToken cancellationToken,
-            SemaphoreSlim slots
+            SemaphoreSlim slots,
+            CancellationToken cancellationToken
         ) {
             using (lease)
             {
-                return await ReadPayloadAsync(read, lease, cancellationToken, slots).ConfigureAwait(false);
+                return await ReadPayloadAsync(read, lease, slots, cancellationToken).ConfigureAwait(false);
             }
         }
     }
 
     private sealed class PendingAcquisition(
         Task<Dictionary<Guid, byte[]>> preparation,
-        CancellationToken cancellationToken,
         Action<Dictionary<Guid, byte[]>> publish,
         Action<Exception> fail,
         Action cancel,
-        Action release
+        Action release,
+        CancellationToken cancellationToken
     ) {
         internal Task<Dictionary<Guid, byte[]>> preparation { get; } = preparation;
 

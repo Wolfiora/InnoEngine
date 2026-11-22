@@ -80,11 +80,11 @@ public sealed class AssetImportWriter<TAsset>
     /// <param name="bytes">
     /// The output content.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancellation for the write operation.
-    /// </param>
     /// <param name="deploymentScope">
     /// Whether this output is retained in runtime packages. Runtime payload and asset state cannot be authoring-only.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancellation for the write operation.
     /// </param>
     /// <returns>
     /// A completed operation after the output has been staged.
@@ -92,8 +92,8 @@ public sealed class AssetImportWriter<TAsset>
     public ValueTask WriteArtifactAsync(
         string outputName,
         ReadOnlyMemory<byte> bytes,
-        CancellationToken cancellationToken = default,
-        AssetDeploymentScope deploymentScope = AssetDeploymentScope.Runtime
+        AssetDeploymentScope deploymentScope = AssetDeploymentScope.Runtime,
+        CancellationToken cancellationToken = default
     ) {
         cancellationToken.ThrowIfCancellationRequested();
         if (string.IsNullOrWhiteSpace(outputName))

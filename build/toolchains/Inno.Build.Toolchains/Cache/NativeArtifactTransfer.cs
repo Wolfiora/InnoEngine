@@ -23,11 +23,11 @@ public static class NativeArtifactTransfer
     /// <param name="archivePath">
     /// The explicit transport file, atomically replaced after complete export.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels copying before the completed archive replaces its previous version.
-    /// </param>
     /// <param name="selectedArtifacts">
     /// Optional exact artifact paths relative to the artifacts root. Every selected generation must be exported.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels copying before the completed archive replaces its previous version.
     /// </param>
     /// <returns>
     /// The number of verified generations exported.
@@ -41,8 +41,8 @@ public static class NativeArtifactTransfer
     public static async Task<int> ExportAsync(
         string engineRoot,
         string archivePath,
-        CancellationToken cancellationToken = default,
-        IReadOnlySet<string>? selectedArtifacts = null
+        IReadOnlySet<string>? selectedArtifacts = null,
+        CancellationToken cancellationToken = default
     ) {
         string root = Path.GetFullPath(engineRoot);
         string destination = PathBoundary.RequireUnlinkedPath(root, Path.GetFullPath(archivePath));
@@ -85,7 +85,7 @@ public static class NativeArtifactTransfer
                             owner.directory,
                             parts[3],
                             OutputRoots(parts[0]),
-                            cancellationToken
+                            cancellationToken: cancellationToken
                         ).ConfigureAwait(false);
                         foreach (string file in PathBoundary.EnumerateFiles(artifact.directory).Order(StringComparer.Ordinal))
                         {

@@ -13,6 +13,6 @@ internal sealed class TestBuildProcessor : AssetBuildProcessor<TestBuildDefiniti
         CancellationToken cancellationToken
     ) {
         string value = context.definition.label + ":" + context.inputs.Count;
-        return output.WriteAsync("result", Encoding.UTF8.GetBytes(value), cancellationToken);
+        return output.WriteAsync("result", Encoding.UTF8.GetBytes(value), cancellationToken: cancellationToken);
     }
 }

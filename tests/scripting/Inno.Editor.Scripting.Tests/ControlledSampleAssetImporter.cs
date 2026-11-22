@@ -57,7 +57,7 @@ internal sealed class ControlledSampleAssetImporter : AssetImporter<TextAsset>
             await Task.Delay(Timeout.Infinite, cancellationToken).ConfigureAwait(false);
         }
         output.SetAsset(new TextAsset(context.ReadUtf8Text()));
-        await output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken).ConfigureAwait(false);
+        await output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     internal sealed class Control : IDisposable

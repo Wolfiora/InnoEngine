@@ -24,11 +24,11 @@ public sealed class AssetArtifactWriter
     /// <param name="bytes">
     /// The output content.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancellation for the write operation.
-    /// </param>
     /// <param name="deploymentScope">
     /// Whether runtime packages retain this output.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancellation for the write operation.
     /// </param>
     /// <returns>
     /// A completed operation after the output has been staged.
@@ -36,8 +36,8 @@ public sealed class AssetArtifactWriter
     public ValueTask WriteAsync(
         string outputName,
         ReadOnlyMemory<byte> bytes,
-        CancellationToken cancellationToken = default,
-        AssetDeploymentScope deploymentScope = AssetDeploymentScope.Runtime
+        AssetDeploymentScope deploymentScope = AssetDeploymentScope.Runtime,
+        CancellationToken cancellationToken = default
     ) {
         cancellationToken.ThrowIfCancellationRequested();
         if (string.IsNullOrWhiteSpace(outputName))

@@ -381,11 +381,11 @@ public sealed class NativeDependencyManifestTests : IDisposable
             m_productions++;
             return File.WriteAllTextAsync(Path.Combine(output, "output.data"), "payload", token);
         },
-        cancellationToken,
         describeOutputs: static (
             _,
             output
-        ) => [new NativeArtifact("fixture", Path.Combine(output, "output.data"), NativeArtifactRole.StaticArchive)]
+        ) => [new NativeArtifact("fixture", Path.Combine(output, "output.data"), NativeArtifactRole.StaticArchive)],
+        cancellationToken: cancellationToken
     );
 
     private static Task<string> GitAsync(

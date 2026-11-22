@@ -20,6 +20,6 @@ internal sealed class ImportGraphAssetImporter : AssetImporter<ImportGraphAsset>
             output.DependsOnSource(AssetPath.Parse(dependency));
         }
         output.SetAsset(new ImportGraphAsset());
-        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken);
     }
 }

@@ -129,10 +129,10 @@ public sealed class SdkScriptCompilationEnvironment : IScriptCompilationEnvironm
                 sdk.hostPath,
                 arguments,
                 directory,
-                cancellationToken,
                 DotNetSdkEnvironment.Create(sdk.hostPath),
                 output,
-                errors
+                errors,
+                cancellationToken
             ).ConfigureAwait(false);
             return output.ToString();
         }

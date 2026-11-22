@@ -42,11 +42,11 @@ public static partial class ShaderGraphArtifact
     /// <param name="readSource">
     /// Reads an immutable function bundle by stable identity and diagnostic last-known path.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancellation before node expansion, target expansion and dependency reads.
-    /// </param>
     /// <param name="readGraph">
     /// Reads an authored Shader graph used as a reusable node, when the graph contains one.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancellation before node expansion, target expansion and dependency reads.
     /// </param>
     /// <returns>
     /// Native immutable authoring artifact bytes usable by import or isolated preview compilation.
@@ -57,8 +57,8 @@ public static partial class ShaderGraphArtifact
         SerializationRegistry serialization,
         SerializationContext context,
         Func<Guid, string, byte[]> readSource,
-        CancellationToken cancellationToken = default,
-        Func<Guid, string, GraphDocument>? readGraph = null
+        Func<Guid, string, GraphDocument>? readGraph = null,
+        CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(readSource);
         using IDisposable operation = types.AcquireOperation("Capture shader authoring candidate");

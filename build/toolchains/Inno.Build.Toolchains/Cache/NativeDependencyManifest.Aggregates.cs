@@ -85,7 +85,7 @@ public static partial class NativeDependencyManifest
         Directory.CreateDirectory(output);
         string assetName = product.component + "-" + product.targetID + "-" + product.fingerprint + ".zip";
         string archive = Path.Combine(output, assetName);
-        await NativeArtifactTransfer.ExportAsync(context.engineRoot, archive, cancellationToken, directories).ConfigureAwait(false);
+        await NativeArtifactTransfer.ExportAsync(context.engineRoot, archive, directories, cancellationToken).ConfigureAwait(false);
         using FileStream payload = File.OpenRead(archive);
         string hash = Convert.ToHexStringLower(await SHA256.HashDataAsync(payload, cancellationToken).ConfigureAwait(false));
         string revision = (await ToolchainEnvironment.CaptureOutputAsync(
@@ -255,7 +255,7 @@ public static partial class NativeDependencyManifest
                 owner,
                 fingerprint,
                 outputs,
-                cancellationToken
+                cancellationToken: cancellationToken
             ).ConfigureAwait(false);
             try
             {

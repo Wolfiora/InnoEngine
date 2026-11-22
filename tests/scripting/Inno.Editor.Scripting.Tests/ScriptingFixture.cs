@@ -168,7 +168,7 @@ internal sealed class ScriptingFixture : IDisposable
         CancellationToken cancellationToken = default
     ) {
         Rescan();
-        return compiler.CompileAuthoringGenerationAsync(progress, cancellationToken).GetAwaiter().GetResult();
+        return compiler.CompileAuthoringGenerationAsync(progress, cancellationToken: cancellationToken).GetAwaiter().GetResult();
     }
 
     internal ScriptCompilationResult CompileRuntimeDeployment(

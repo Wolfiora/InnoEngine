@@ -52,7 +52,7 @@ public sealed partial class AnimationClipImporter : AssetImporter<AnimationClipA
         };
         clip.Validate();
         output.SetAsset(clip);
-        await output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken).ConfigureAwait(false);
+        await output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

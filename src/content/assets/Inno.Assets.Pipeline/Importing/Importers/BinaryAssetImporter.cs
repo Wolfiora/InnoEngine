@@ -38,7 +38,7 @@ internal sealed class BinaryAssetImporter : AssetImporter<BinaryAsset>
         byte[] payload = context.sourceBytes.ToArray();
         var asset = new BinaryAsset(payload.Length);
         output.SetAsset(asset);
-        await output.WriteArtifactAsync("runtime", payload, cancellationToken).ConfigureAwait(false);
+        await output.WriteArtifactAsync("runtime", payload, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

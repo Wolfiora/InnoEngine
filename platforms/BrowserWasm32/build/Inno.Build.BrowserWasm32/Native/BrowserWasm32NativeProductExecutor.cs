@@ -163,8 +163,8 @@ public sealed class BrowserWasm32NativeProductExecutor : INativeProductExecutor
                         tools.ResolveExecutable("cmake"),
                         ["--install", build, "--component", "Inno"],
                         scoped.engineRoot,
-                        token,
-                        tools.environment
+                        tools.environment,
+                        token
                     ).ConfigureAwait(false);
                     ValidateNativeOutputs(output, tools.targetID, plan);
                     NativeBindingGenerationDescriptor.WriteSelection(
@@ -178,7 +178,6 @@ public sealed class BrowserWasm32NativeProductExecutor : INativeProductExecutor
                             )
                     );
                 },
-                cancellationToken,
                 describeOutputs: static (
                     @scoped,
                     output
@@ -188,7 +187,8 @@ public sealed class BrowserWasm32NativeProductExecutor : INativeProductExecutor
                         file,
                         Path.GetExtension(file) == ".a" ? NativeArtifactRole.StaticArchive : NativeArtifactRole.SupportFile
                     ))
-                    .ToArray()
+                    .ToArray(),
+                cancellationToken: cancellationToken
             ).ConfigureAwait(false);
             return new ProductNativeBuildResult([product], generations, Path.Combine(product.directory, "Outputs"), recipe);
         }

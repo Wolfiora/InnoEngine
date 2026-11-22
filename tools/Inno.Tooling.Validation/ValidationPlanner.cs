@@ -133,7 +133,7 @@ internal static partial class ValidationPlanner
             sdk,
             paths.Select(path => Path.Combine(root, path)).ToArray(),
             properties,
-            cancellationToken
+            cancellationToken: cancellationToken
         ).ConfigureAwait(false);
         RecordStage("sdk-capture");
         using JsonDocument graph = JsonDocument.Parse(captured);
@@ -527,7 +527,7 @@ internal static partial class ValidationPlanner
                 sdk,
                 paths.Select(path => Path.Combine(root, path)).ToArray(),
                 evaluationProperties,
-                cancellationToken
+                cancellationToken: cancellationToken
             ).ConfigureAwait(false);
             using JsonDocument nativeGraph = JsonDocument.Parse(nativeCapture);
             RequireCompilerInputs(nativeGraph.RootElement);
@@ -942,7 +942,7 @@ internal static partial class ValidationPlanner
                         sdk,
                         paths.Select(path => Path.Combine(root, path)).ToArray(),
                         releaseInputsProperties,
-                        cancellationToken
+                        cancellationToken: cancellationToken
                     ).ConfigureAwait(false);
                     using JsonDocument backendGraph = JsonDocument.Parse(backendCapture);
                     RequireCompilerInputs(backendGraph.RootElement);
@@ -963,7 +963,7 @@ internal static partial class ValidationPlanner
                     sdk,
                     paths.Select(path => Path.Combine(root, path)).ToArray(),
                     evaluationProperties,
-                    cancellationToken
+                    cancellationToken: cancellationToken
                 ).ConfigureAwait(false);
                 using JsonDocument releaseGraph = JsonDocument.Parse(releaseCapture);
                 RequireCompilerInputs(releaseGraph.RootElement);

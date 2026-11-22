@@ -332,8 +332,8 @@ internal sealed class DocumentationProjectReferences
                 m_dotnetHost,
                 projects,
                 batchProperties,
-                cancellationToken,
-                resolveReferences: true
+                resolveReferences: true,
+                cancellationToken: cancellationToken
             ).GetAwaiter().GetResult();
             using JsonDocument batch = JsonDocument.Parse(captured);
             foreach (JsonElement snapshot in batch.RootElement.EnumerateArray())

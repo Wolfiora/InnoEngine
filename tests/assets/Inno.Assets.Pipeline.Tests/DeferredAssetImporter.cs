@@ -19,6 +19,6 @@ internal sealed class DeferredAssetImporter : AssetImporter<DeferredAsset>
         CancellationToken cancellationToken
     ) {
         output.SetAsset(new DeferredAsset());
-        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken);
     }
 }

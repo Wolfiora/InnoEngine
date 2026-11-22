@@ -55,11 +55,11 @@ public sealed class PlayerSupportPackPublisher
     /// <param name="dotnetHost">
     /// The SDK executable selected by the host.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels preparation before directory installation begins.
-    /// </param>
     /// <param name="nativeDependencies">
     /// An explicit native selection disabling third-party production, or null for local source preparation.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels preparation before directory installation begins.
     /// </param>
     /// <returns>
     /// Reading ownership of the selected Pack and any post-commit diagnostics. Dispose after consuming its files.
@@ -88,8 +88,8 @@ public sealed class PlayerSupportPackPublisher
         string outputRoot,
         BuildTargetID target,
         string dotnetHost,
-        CancellationToken cancellationToken = default,
-        string? nativeDependencies = null
+        string? nativeDependencies = null,
+        CancellationToken cancellationToken = default
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(engineRoot);
         ArgumentException.ThrowIfNullOrWhiteSpace(outputRoot);
@@ -159,8 +159,8 @@ public sealed class PlayerSupportPackPublisher
                 target,
                 staging,
                 source,
-                cancellationToken,
-                plan.VerifyInputsAsync
+                plan.VerifyInputsAsync,
+                cancellationToken
             ).ConfigureAwait(false);
             try
             {

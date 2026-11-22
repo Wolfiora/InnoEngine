@@ -19,6 +19,6 @@ internal sealed class PrivateConstructorAssetImporter : AssetImporter<PrivateCon
         CancellationToken cancellationToken
     ) {
         output.SetAsset(new PrivateConstructorAsset { value = context.ReadUtf8Text() });
-        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken);
     }
 }

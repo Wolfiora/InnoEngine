@@ -175,7 +175,7 @@ public static class ToolchainEnvironment
         string workingDirectory,
         CancellationToken cancellationToken,
         IReadOnlyDictionary<string, string?>? environment = null
-    ) => RunCoreAsync(fileName, arguments, workingDirectory, cancellationToken, environment, Console.Out);
+    ) => RunCoreAsync(fileName, arguments, workingDirectory, environment, Console.Out, cancellationToken);
 
     /// <summary>
     /// Executes a declared absolute tool with an explicitly resolved SDK environment and records the operation cost.
@@ -192,11 +192,11 @@ public static class ToolchainEnvironment
     /// <param name="workingDirectory">
     /// The owned source or intermediate directory.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels execution and drains the complete process tree.
-    /// </param>
     /// <param name="environment">
     /// The frozen environment supplied by the selected SDK resolver.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels execution and drains the complete process tree.
     /// </param>
     /// <returns>
     /// Completion after successful exit and output delivery.
@@ -215,8 +215,8 @@ public static class ToolchainEnvironment
         string fileName,
         IReadOnlyList<string> arguments,
         string workingDirectory,
-        CancellationToken cancellationToken,
-        IReadOnlyDictionary<string, string> environment
+        IReadOnlyDictionary<string, string> environment,
+        CancellationToken cancellationToken
     ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(environment);
@@ -240,9 +240,6 @@ public static class ToolchainEnvironment
     /// <param name="workingDirectory">
     /// The project directory controlling SDK and workload resolution.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels the complete process tree and drains both output streams.
-    /// </param>
     /// <param name="environment">
     /// Optional child-only toolchain variables. Null values remove inherited variables;
     /// empty values remain explicitly empty.
@@ -252,6 +249,9 @@ public static class ToolchainEnvironment
     /// </param>
     /// <param name="standardError">
     /// The caller-owned standard error destination; the runner does not dispose it.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels the complete process tree and drains both output streams.
     /// </param>
     /// <returns>
     /// Completion after successful exit and complete output delivery; failures propagate.
@@ -269,10 +269,10 @@ public static class ToolchainEnvironment
         string fileName,
         IReadOnlyList<string> arguments,
         string workingDirectory,
-        CancellationToken cancellationToken,
         IReadOnlyDictionary<string, string?>? environment,
         TextWriter standardOutput,
-        TextWriter standardError
+        TextWriter standardError,
+        CancellationToken cancellationToken
     ) {
         ArgumentNullException.ThrowIfNull(standardOutput);
         ArgumentNullException.ThrowIfNull(standardError);
@@ -391,7 +391,7 @@ public static class ToolchainEnvironment
         using var output = new StringWriter();
         try
         {
-            await RunCoreAsync(fileName, arguments, workingDirectory, cancellationToken, environment, output).ConfigureAwait(false);
+            await RunCoreAsync(fileName, arguments, workingDirectory, environment, output, cancellationToken).ConfigureAwait(false);
         }
         catch (InvalidOperationException failure)
         {
@@ -546,9 +546,9 @@ public static class ToolchainEnvironment
         string fileName,
         IReadOnlyList<string> arguments,
         string workingDirectory,
-        CancellationToken cancellationToken,
         IReadOnlyDictionary<string, string?>? environment,
-        TextWriter standardOutput
+        TextWriter standardOutput,
+        CancellationToken cancellationToken
     ) {
         var start = new ProcessStartInfo(fileName) { WorkingDirectory = workingDirectory };
         foreach (string argument in arguments)

@@ -29,11 +29,11 @@ public static class ManagedProjectGraphCapture
     /// <param name="properties">
     /// The complete evaluation properties, including configuration and any explicit output owner.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels preparation or evaluation and drains child processes before releasing owners.
-    /// </param>
     /// <param name="resolveReferences">
     /// Resolves compile references and implicit symbols after restore without building project references or native products.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels preparation or evaluation and drains child processes before releasing owners.
     /// </param>
     /// <returns>
     /// A JSON array of SDK snapshots. An empty request or failed evaluation throws instead of returning partial evidence.
@@ -55,8 +55,8 @@ public static class ManagedProjectGraphCapture
         string dotnetHost,
         IReadOnlyList<string> projects,
         IReadOnlyDictionary<string, string> properties,
-        CancellationToken cancellationToken = default,
-        bool resolveReferences = false
+        bool resolveReferences = false,
+        CancellationToken cancellationToken = default
     ) {
         ValidateProjects(projects, properties);
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveDirectoryAsync(
@@ -64,7 +64,7 @@ public static class ManagedProjectGraphCapture
             engineRoot,
             cancellationToken
         ).ConfigureAwait(false);
-        return await EvaluateAsync(engineRoot, sdk, projects, properties, cancellationToken, resolveReferences).ConfigureAwait(false);
+        return await EvaluateAsync(engineRoot, sdk, projects, properties, resolveReferences, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -82,11 +82,11 @@ public static class ManagedProjectGraphCapture
     /// <param name="properties">
     /// The complete evaluation properties, including configuration and any explicit output owner.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels preparation or evaluation and drains child processes before releasing owners.
-    /// </param>
     /// <param name="resolveReferences">
     /// Resolves compile references and implicit symbols after restore without building project references or native products.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels preparation or evaluation and drains child processes before releasing owners.
     /// </param>
     /// <returns>
     /// A JSON array of SDK snapshots. An empty request or failed evaluation throws instead of returning partial evidence.
@@ -108,12 +108,12 @@ public static class ManagedProjectGraphCapture
         DotNetSdkDescriptor sdk,
         IReadOnlyList<string> projects,
         IReadOnlyDictionary<string, string> properties,
-        CancellationToken cancellationToken = default,
-        bool resolveReferences = false
+        bool resolveReferences = false,
+        CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(sdk);
         ValidateProjects(projects, properties);
-        return await EvaluateAsync(engineRoot, sdk, projects, properties, cancellationToken, resolveReferences).ConfigureAwait(false);
+        return await EvaluateAsync(engineRoot, sdk, projects, properties, resolveReferences, cancellationToken).ConfigureAwait(false);
     }
 
     private static void ValidateProjects(
@@ -140,8 +140,8 @@ public static class ManagedProjectGraphCapture
         DotNetSdkDescriptor sdk,
         IReadOnlyList<string> projects,
         IReadOnlyDictionary<string, string> properties,
-        CancellationToken cancellationToken,
-        bool resolveReferences
+        bool resolveReferences,
+        CancellationToken cancellationToken
     ) {
         var context = new NativeBuildContext(engineRoot, "debug");
         using ManagedInputEvaluatorPreparation.Result evaluator = await ManagedInputEvaluatorPreparation.PrepareAsync(
