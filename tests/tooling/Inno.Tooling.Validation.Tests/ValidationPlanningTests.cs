@@ -662,6 +662,36 @@ public sealed class ValidationPlanningTests
         );
     }
 
+    [Fact]
+    public async Task IncrementalProfilesLimitArchitectureSourceRulesToChangedSources()
+    {
+        using var repository = new ValidationRepository();
+        repository.Write("src/Example/Changed.cs", "namespace Example;\n");
+        repository.Write("src/Example/Changed.txt", "Text.\n");
+        foreach (string? profile in new[] { null, "fast" })
+        {
+            using JsonDocument incremental = await repository.PlanAsync(profile: profile);
+            Assert.Equal(
+                ["src/Example/Changed.cs"],
+                Architecture(incremental).GetProperty("changedSources").EnumerateArray().Select(static source => source.GetString())
+            );
+        }
+        using JsonDocument master = await repository.PlanAsync(profile: "master");
+        Assert.False(IsIncremental(master));
+        repository.Write("InnoEngine.sln", "Microsoft Visual Studio Solution File, Format Version 12.00\n\n");
+        using JsonDocument tooling = await repository.PlanAsync();
+        Assert.False(IsIncremental(tooling));
+
+        static bool IsIncremental(JsonDocument plan)
+            => Architecture(plan).TryGetProperty("changedSources", out JsonElement sources) && sources.ValueKind != JsonValueKind.Null;
+
+        static JsonElement Architecture(JsonDocument plan)
+            => plan.RootElement
+                .GetProperty("checks")
+                .EnumerateArray()
+                .Single(static check => check.GetProperty("id").GetString() == "architecture");
+    }
+
     [Theory]
     [InlineData("tests/Example.Tests/Changed.cs", "global using System;")]
     [InlineData("docs/Example.cs.txt", "global using System;")]

@@ -585,6 +585,22 @@ internal static partial class ValidationPlanner
                                     ));
         inputSets.Add("tooling", toolingInputs);
         inputSets.Add("native-sources", submoduleInputs);
+        // Style and XML documentation rules judge one file at a time. An incremental profile checks the changed sources;
+        // a changed validator can alter any verdict, so it selects every source again.
+        string[]? changedSources = full || toolingChanged || profile is not (ValidationProfile.PullRequest or ValidationProfile.Fast)
+                                   ? null
+                                   : changes
+                                       .Where(path => (
+                                           path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
+                                           && inputs.TryGetValue(path, out string? value)
+                                           && value != "missing"
+                                       ))
+                                       .Order(StringComparer.Ordinal)
+                                       .ToArray();
+        if (changedSources is not null)
+        {
+            diagnostics.Add($"Architecture style and XML documentation rules cover {changedSources.Length} changed C# source(s).");
+        }
         List<ValidationCheck> checks =
         [
             new ValidationCheck(
@@ -618,7 +634,8 @@ internal static partial class ValidationPlanner
                     .Order(StringComparer.Ordinal)
                     .ToArray(),
                 true,
-                null
+                null,
+                changedSources: changedSources
             )
         ];
         if (changes.Any(static path => path.StartsWith(".agents/", StringComparison.Ordinal) || path is "AGENTS.md" or "CONTRIBUTING.md")

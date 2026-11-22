@@ -72,6 +72,8 @@ Every other rule is not yet checked by the tool and is enforced in review: N-02,
 
 A `SuppressMessage("InnoStyle", "<rule ID>", Justification = "...")` attribute on a member or a type hides the findings of that rule inside the declaration (EX-01). The engine reports a suppression that names no checked rule, names a rule that `style fix` corrects, has no justification, sits on another target or hides no finding. `style check` and the architecture validation list every suppression.
 
+The architecture check of the unified validation runs the style rules and the XML documentation rule on the changed C# sources in the `pull-request` and `fast` profiles, and on every source in the `master` and `full` profiles or when the validator itself changed. Every other architecture invariant stays repository-wide in all profiles. The check carries its changed sources in `changedSources`, so incremental evidence never satisfies a complete run.
+
 These checks read syntax only and report the part of a rule that syntax decides:
 
 | ID | Reported | Left to review |

@@ -265,6 +265,14 @@ internal static class ValidationRunner
                             }
                             break;
                         case "architecture":
+                            string[] changedSources = [];
+                            if (check.changedSources is not null)
+                            {
+                                string changedSourcesPath = Path.Combine(directory, "architecture-changed-sources.txt");
+                                await File.WriteAllLinesAsync(changedSourcesPath, check.changedSources, cancellationToken)
+                                    .ConfigureAwait(false);
+                                changedSources = ["--paths-from", changedSourcesPath];
+                            }
                             if (ArchitectureValidator.Execute([
                                 plan.root,
                                 "--configuration",
@@ -273,7 +281,8 @@ internal static class ValidationRunner
                                 "--dotnet",
                                 plan.dotnet,
                                 "--sdk-snapshot",
-                                graphPath
+                                graphPath,
+                                .. changedSources
                             ], cancellationToken) != 0
                             ) {
                                 throw new InvalidDataException("Repository architecture validation failed.");

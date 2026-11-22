@@ -67,6 +67,32 @@ public sealed class ArchitectureSymbolTests
     }
 
     [Fact]
+    public void ChangedSourceSelectionLimitsStyleAndDocumentationRulesToTheListedSources()
+    {
+        using var fixture = new SymbolFixture();
+        const string C_PROJECT = "src/foundation/core/Inno.Core.Probe";
+        Directory.CreateDirectory(fixture.PathFor(C_PROJECT));
+        fixture.WriteSource(C_PROJECT, "namespace Inno.Core.Probe;\n\npublic sealed class Probe { }\n");
+        File.WriteAllText(
+            Path.Combine(fixture.PathFor(C_PROJECT), "Other.cs"),
+            "namespace Inno.Core.Probe;\n\npublic sealed class Other { }\n"
+        );
+        string paths = fixture.PathFor("changed.txt");
+        File.WriteAllText(paths, C_PROJECT + "/Probe.cs\n");
+
+        string selected = fixture.Run("--source-only", "--paths-from", paths);
+        Assert.Contains(C_PROJECT + "/Probe.cs:3: B-07:", selected, StringComparison.Ordinal);
+        Assert.Contains(C_PROJECT + "/Probe.cs:3: public or protected declaration", selected, StringComparison.Ordinal);
+        Assert.DoesNotContain(C_PROJECT + "/Other.cs", selected, StringComparison.Ordinal);
+        Assert.Contains("covered 1 changed source(s)", selected, StringComparison.Ordinal);
+
+        string complete = fixture.Run("--source-only");
+        Assert.Contains(C_PROJECT + "/Other.cs:3: B-07:", complete, StringComparison.Ordinal);
+        Assert.Contains(C_PROJECT + "/Other.cs:3: public or protected declaration", complete, StringComparison.Ordinal);
+        Assert.Throws<ArgumentException>(() => fixture.Run("--paths-from", paths));
+    }
+
+    [Fact]
     public void InheritedDocumentationUsesTheOwningProjectInsteadOfACopiedDependency()
     {
         using var fixture = new SymbolFixture();

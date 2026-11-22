@@ -91,7 +91,8 @@ internal sealed record ValidationCheck(
     string[]? projects = null,
     ValidationDocumentationCheck? documentation = null,
     string[]? sourceSets = null,
-    ValidationNativeRequest[]? consumedProducts = null
+    ValidationNativeRequest[]? consumedProducts = null,
+    string[]? changedSources = null
 );
 
 internal sealed record ValidationDocumentationBinding(

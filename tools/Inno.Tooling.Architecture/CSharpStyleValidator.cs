@@ -10,10 +10,14 @@ internal static class CSharpStyleValidator
         string content,
         SyntaxTree tree,
         ICollection<string> failures,
-        ICollection<StyleSuppression>? suppressions = null
+        ICollection<StyleSuppression>? suppressions = null,
+        bool isStyleSelected = true
     ) {
         EditorPresentationSourceValidator.Validate(relativePath, tree, failures);
-        ValidateStyle(relativePath, content, failures, suppressions);
+        if (isStyleSelected)
+        {
+            ValidateStyle(relativePath, content, failures, suppressions);
+        }
     }
 
     // Reports each finding of the style rulebook as '<path>:<line>: <rule>: <message>'.

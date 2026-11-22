@@ -40,7 +40,8 @@ public static partial class ArchitectureValidator
     /// </summary>
     /// <param name="arguments">
     /// The optional repository path, configuration, XML maintenance flag, explicit SDK, evaluated graph output,
-    /// selected API owners and an optional prepared SDK snapshot. Product documentation is validated by the docs command group.
+    /// selected API owners, an optional prepared SDK snapshot and an optional file that lists the changed sources of an
+    /// incremental source-only run. Product documentation is validated by the docs command group.
     /// </param>
     /// <param name="cancellationToken">
     /// Cancels owned SDK evaluation processes and drains them before returning.
@@ -76,6 +77,7 @@ public static partial class ArchitectureValidator
         string? dotnetHost = null;
         string? projectGraphPath = null;
         string? artifactsPath = null;
+        string? pathsFrom = null;
         List<string> paths = [];
         for (int index = 0; index < arguments.Length; index++)
         {
@@ -116,6 +118,10 @@ public static partial class ArchitectureValidator
             {
                 artifactsPath = Path.GetFullPath(arguments[++index]);
             }
+            else if (argument == "--paths-from" && pathsFrom is null && index + 1 < arguments.Length)
+            {
+                pathsFrom = arguments[++index];
+            }
             else if (argument == "--configuration" && !selectedConfiguration && index + 1 < arguments.Length)
             {
                 configuration = arguments[++index] switch
@@ -134,7 +140,7 @@ public static partial class ArchitectureValidator
             else
             {
                 throw new ArgumentException(
-                    "Usage: verify [engine-root] [--configuration Debug|SourceDebug|Release] [--expand-xml] [--source-only|--metadata-only|--agent-documents-only] [--api-project project.csproj] [--dotnet SDK] [--artifacts-path directory] [--project-graph output.json] [--sdk-snapshot input.json]",
+                    "Usage: verify [engine-root] [--configuration Debug|SourceDebug|Release] [--expand-xml] [--source-only|--metadata-only|--agent-documents-only] [--api-project project.csproj] [--dotnet SDK] [--artifacts-path directory] [--project-graph output.json] [--sdk-snapshot input.json] [--paths-from FILE]",
                     nameof(arguments)
                 );
             }
@@ -157,6 +163,18 @@ public static partial class ArchitectureValidator
         {
             throw new ArgumentException("Source-only validation cannot claim compiled API evidence.", nameof(arguments));
         }
+        if (pathsFrom is not null && !sourceOnly)
+        {
+            throw new ArgumentException("Changed-source selection applies to source-only validation.", nameof(arguments));
+        }
+        // The style and XML documentation rules judge one file at a time, so an incremental run covers the changed
+        // sources. Every other invariant relates files to each other and stays repository-wide.
+        HashSet<string>? selectedSources = pathsFrom is null
+                                           ? null
+                                           : File.ReadAllLines(pathsFrom)
+                                               .Where(static line => line.Length > 0)
+                                               .Select(static line => line.Replace('\\', '/'))
+                                               .ToHashSet(StringComparer.Ordinal);
         List<StyleSuppression> suppressions = [];
         if (expandXml)
         {
@@ -215,6 +233,7 @@ public static partial class ArchitectureValidator
                 documentationModels,
                 sourceTrees,
                 sourceOnly,
+                selectedSources: selectedSources,
                 suppressions: suppressions
             );
         }
@@ -222,7 +241,7 @@ public static partial class ArchitectureValidator
 
         if (!metadataOnly)
         {
-            ValidateTestStyle(repositoryRoot, failures, suppressions);
+            ValidateTestStyle(repositoryRoot, failures, selectedSources, suppressions);
             UsingPolicyValidator.Validate(repositoryRoot, failures, sourceTrees);
             ValidateProjectReferences(repositoryRoot, failures);
             ValidateProductionSolutionFolders(repositoryRoot, failures);
@@ -284,6 +303,10 @@ public static partial class ArchitectureValidator
                 Console.WriteLine($"  {suppression.path}:{suppression.line}: {suppression.rule}: {suppression.justification}");
             }
         }
+        if (selectedSources is not null)
+        {
+            Console.WriteLine($"Style and XML documentation rules covered {selectedSources.Count} changed source(s).");
+        }
         if (failures.Count == 0)
         {
             Console.WriteLine(
@@ -338,11 +361,16 @@ public static partial class ArchitectureValidator
     private static void ValidateTestStyle(
         string repositoryRoot,
         ICollection<string> failures,
+        IReadOnlySet<string>? selectedSources,
         ICollection<StyleSuppression> suppressions
     ) {
         foreach (string path in EnumerateFiles(Path.Combine(repositoryRoot, "tests"), "*.cs"))
         {
-            CSharpStyleValidator.ValidateStyle(Relative(repositoryRoot, path), File.ReadAllText(path), failures, suppressions);
+            string relative = Relative(repositoryRoot, path);
+            if (selectedSources is null || selectedSources.Contains(relative))
+            {
+                CSharpStyleValidator.ValidateStyle(relative, File.ReadAllText(path), failures, suppressions);
+            }
         }
     }
 
@@ -354,6 +382,7 @@ public static partial class ArchitectureValidator
         IDictionary<string, SyntaxTree> sourceTrees,
         bool sourceOnly = false,
         bool semanticOnly = false,
+        IReadOnlySet<string>? selectedSources = null,
         ICollection<StyleSuppression>? suppressions = null
     ) {
         foreach (string path in EnumerateFiles(root, "*.cs"))
@@ -369,23 +398,27 @@ public static partial class ArchitectureValidator
                 syntax = CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.CSharp14), path: relative);
                 sourceTrees.Add(path, syntax);
             }
+            bool isSelected = selectedSources is null || selectedSources.Contains(relative);
             if (!semanticOnly)
             {
-                CSharpStyleValidator.Validate(relative, source, syntax, failures, suppressions);
+                CSharpStyleValidator.Validate(relative, source, syntax, failures, suppressions, isSelected);
             }
             if (relative.StartsWith("tools/Inno.Tooling.Architecture/", StringComparison.Ordinal)
                 || RepositorySourceInventory.IsTestPath(relative)
             ) {
                 continue;
             }
-            PublicApiDocumentationValidator.Validate(
-                relative,
-                syntax,
-                failures,
-                !sourceOnly && source.Contains("<inheritdoc", StringComparison.Ordinal) ? documentationModels.GetModel(path) : null,
-                documentationModels,
-                validateInheritedContract: !sourceOnly
-            );
+            if (isSelected)
+            {
+                PublicApiDocumentationValidator.Validate(
+                    relative,
+                    syntax,
+                    failures,
+                    !sourceOnly && source.Contains("<inheritdoc", StringComparison.Ordinal) ? documentationModels.GetModel(path) : null,
+                    documentationModels,
+                    validateInheritedContract: !sourceOnly
+                );
+            }
             if (!sourceOnly && RuntimeContentBoundaryValidator.ShouldAudit(relative))
             {
                 RuntimeContentBoundaryValidator.Validate(relative, documentationModels.GetModel(path), failures);
