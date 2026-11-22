@@ -8,3 +8,5 @@
 8de047da96764ca00db11c73f622bbcddbd8c8de
 # C# public symbol renames to the rulebook naming
 c46af2ba7e19ca3a69f2ab46bdb4aa8d17d70bec
+# Rename test methods and remaining members to the naming table
+49f33b29104df851a5ed5ad7cea453c68d527dc4
