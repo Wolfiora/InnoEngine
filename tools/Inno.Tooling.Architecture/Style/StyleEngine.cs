@@ -40,6 +40,7 @@ internal static class StyleEngine
         new ClauseStyleRule(),
         new ArrowMemberStyleRule(),
         new LeadingOperatorStyleRule(),
+        new AssignmentBreakStyleRule(),
         new ChainStyleRule(),
         new SingleLineBlockStyleRule(),
         new StatementLineStyleRule(),
@@ -68,7 +69,18 @@ internal static class StyleEngine
         new UsingPlacementStyleRule(),
         new BuiltInTypeStyleRule(),
         new MemberOrderStyleRule(),
-        new NamingStyleRule()
+        new NamingStyleRule(),
+        new ThisQualifierStyleRule(),
+        new QualifiedNameStyleRule(),
+        new NullPatternStyleRule(),
+        new UsingDeclarationStyleRule(),
+        new ObjectCreationStyleRule(),
+        new CollectionExpressionStyleRule(),
+        new ArgumentGuardStyleRule(),
+        new CancellationParameterStyleRule(),
+        new ProhibitedTriviaStyleRule(),
+        new StringBuildStyleRule(),
+        new ExpressionBodyStyleRule()
     ];
 
     internal static IEnumerable<string> EnumerateSources(string root)

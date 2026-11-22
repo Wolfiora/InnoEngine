@@ -86,6 +86,48 @@ public sealed class StyleCommandTests
     [InlineData("NM-13", "internal sealed class UiProbe;")]
     [InlineData("NM-13", "internal sealed class Probe\n{\n    internal int assetId => 0;\n}")]
     [InlineData("NM-13", "internal sealed class Probe\n{\n    internal void Run(int[] assetIds) {}\n}")]
+    [InlineData(
+        "E-08",
+        "internal sealed class Probe\n{\n    internal Probe()\n    {\n        count = 1;\n    }\n\n    internal int count { get; }\n}"
+    )]
+    [InlineData(
+        "E-08",
+        "internal sealed class Probe\n{\n    internal int count { get; set; }\n\n    internal int Read() => this.count;\n}"
+    )]
+    [InlineData("N-05", "internal sealed class Probe\n{\n    internal System.Text.StringBuilder text => new();\n}")]
+    [InlineData("N-05", "internal sealed class Probe\n{\n    internal bool Has(string path) => System.IO.File.Exists(path);\n}")]
+    [InlineData("N-06", "using Path = System.IO.Path;\n\ninternal sealed class Probe;")]
+    [InlineData("N-06", "using nativePath = System.IO.Path;\n\ninternal sealed class Probe;")]
+    [InlineData("N-06", "using FilePath = System.IO.Path;\nusing NativePath = System.IO.Path;\n\ninternal sealed class Probe;")]
+    [InlineData("E-04", "internal sealed class Probe\n{\n    internal bool Has(object? value) => !(value is null);\n}")]
+    [InlineData(
+        "E-06",
+        "internal sealed class Probe\n{\n    internal void Run()\n    {\n        Use(new());\n    }\n\n    private void Use(object value) {}\n}"
+    )]
+    [InlineData("E-06", "internal sealed class Probe\n{\n    internal void Run()\n    {\n        object value = new();\n    }\n}")]
+    [InlineData("I-02", "internal sealed class Probe\n{\n    private readonly int[] m_values = new[] { 1, 2 };\n}")]
+    [InlineData("I-02", "internal sealed class Probe\n{\n    private readonly int[] m_values = Array.Empty<int>();\n}")]
+    [InlineData("I-02", "internal sealed class Probe\n{\n    private readonly List<int> m_values = new();\n}")]
+    [InlineData("I-02", "internal sealed class Probe\n{\n    internal void Run()\n    {\n        var values = new List<int>();\n    }\n}")]
+    [InlineData(
+        "E-05",
+        "internal sealed class Probe\n{\n    internal void Run(object value)\n    {\n        if (value is null) throw new ArgumentNullException(nameof(value));\n    }\n}"
+    )]
+    [InlineData(
+        "E-05",
+        "internal sealed class Probe\n{\n    internal object Run(object value)\n    {\n        return value ?? throw new ArgumentNullException(nameof(value));\n    }\n}"
+    )]
+    [InlineData("P-03", "internal sealed class Probe\n{\n    internal void Run(CancellationToken token) {}\n}")]
+    [InlineData("D-06", "internal sealed class Probe\n{\n    #region State\n    internal int count => 0;\n    #endregion\n}")]
+    [InlineData("D-06", "#nullable disable\ninternal sealed class Probe;")]
+    [InlineData("D-06", "internal sealed class Probe\n{\n    /* The count. */\n    internal int count => 0;\n}")]
+    [InlineData("E-09", "internal sealed class Probe\n{\n    internal string Name(int value) => string.Format(\"item-{0}\", value);\n}")]
+    [InlineData(
+        "E-09",
+        "internal sealed class Probe\n{\n    internal string Name(string first, string second) => string.Concat(first, second);\n}"
+    )]
+    [InlineData("M-02", "internal sealed class Probe\n{\n    internal int Read()\n    {\n        return 1;\n    }\n}")]
+    [InlineData("M-02", "internal sealed class Probe\n{\n    private int m_count;\n\n    internal Probe() => m_count = 1;\n}")]
     public void FindingsThatNeedTheAuthorAreReportedAndLeftUnchanged(
         string rule,
         string text
@@ -140,8 +182,7 @@ public sealed class StyleCommandTests
     [InlineData("[GeneratedCode(\\\"Tool\\\", \\\"1\\\")]")]
     public void SourcesThatOnlyWriteAGeneratedMarkerAreHandwritten(string marker)
     {
-        string content =
-            "internal sealed class Probe\n{\n    internal string Run() { return \"" + marker + "\"; }\n}\n";
+        string content = "internal sealed class Probe\n{\n    internal string Run() { return \"" + marker + "\"; }\n}\n";
 
         string root = CreateRoot();
         try
@@ -369,6 +410,7 @@ public sealed class StyleCommandTests
                 {
                     internal void Run()
                     {
+                        Begin();
                         Register(firstArgumentWithALongName, secondArgumentWithALongName, thirdArgumentWithALongName,
                             fourthArgumentWithALongName, fifthArgumentWithALongName);
                     }
@@ -381,6 +423,7 @@ public sealed class StyleCommandTests
                 {
                     internal void Run()
                     {
+                        Begin();
                         Register(
                             firstArgumentWithALongName,
                             secondArgumentWithALongName,
@@ -426,6 +469,7 @@ public sealed class StyleCommandTests
                         int second
                     )
                     {
+                        Begin();
                         Step();
                     }
                 }
@@ -439,6 +483,7 @@ public sealed class StyleCommandTests
                         int first,
                         int second
                     ) {
+                        Begin();
                         Step();
                     }
                 }
@@ -515,6 +560,7 @@ public sealed class StyleCommandTests
                 {
                     internal int Run()
                     {
+                        Begin();
                         return m_values.Where(static value => value > 0).Select(static value => value * 2).
                             Sum();
                     }
@@ -527,6 +573,7 @@ public sealed class StyleCommandTests
                 {
                     internal int Run()
                     {
+                        Begin();
                         return m_values.Where(static value => value > 0)
                             .Select(static value => value * 2)
                             .Sum();
@@ -541,7 +588,7 @@ public sealed class StyleCommandTests
                 """
                 internal sealed class Probe
                 {
-                    internal void Run() { Step(); }
+                    internal Probe() { Step(); }
                 }
                 """
             ),
@@ -549,7 +596,7 @@ public sealed class StyleCommandTests
                 """
                 internal sealed class Probe
                 {
-                    internal void Run()
+                    internal Probe()
                     {
                         Step();
                     }
@@ -628,7 +675,7 @@ public sealed class StyleCommandTests
             Source(
                 """
                 internal sealed class Probe {
-                    internal void Run() {
+                    internal Probe() {
                         Step();
                     }
                 }
@@ -638,7 +685,7 @@ public sealed class StyleCommandTests
                 """
                 internal sealed class Probe
                 {
-                    internal void Run()
+                    internal Probe()
                     {
                         Step();
                     }
@@ -824,6 +871,7 @@ public sealed class StyleCommandTests
                 {
                     internal void Run()
                     {
+                        Begin();
                         Register(firstArgumentWithALongName, secondArgumentWithALongName, thirdArgumentWithALongName, fourthArgumentWithALongName, fifthArgumentWithALongName);
                     }
                 }
@@ -835,6 +883,7 @@ public sealed class StyleCommandTests
                 {
                     internal void Run()
                     {
+                        Begin();
                         Register(
                             firstArgumentWithALongName,
                             secondArgumentWithALongName,
@@ -961,6 +1010,7 @@ public sealed class StyleCommandTests
                 {
                     internal void Run()
                     {
+                        Begin();
                         Report($"The viewport '{viewport.name}' does not support the requested mode '{Describe(defaultMode, viewport.capabilities)}' in '{viewport.owner}'.");
                     }
                 }
@@ -972,6 +1022,7 @@ public sealed class StyleCommandTests
                 {
                     internal void Run()
                     {
+                        Begin();
                         Report(
                             $"The viewport '{viewport.name}' does not support the requested mode '{Describe(defaultMode, viewport.capabilities)}' in '{viewport.owner}'."
                         );
@@ -1011,7 +1062,7 @@ public sealed class StyleCommandTests
                 """
                 internal sealed class Probe
                 {
-                    private readonly List<int> m_values = new List<int>();
+                    private readonly StringBuilder m_values = new StringBuilder();
                     private int m_first = 1, m_second = 2;
                 }
                 """
@@ -1020,7 +1071,7 @@ public sealed class StyleCommandTests
                 """
                 internal sealed class Probe
                 {
-                    private readonly List<int> m_values = new();
+                    private readonly StringBuilder m_values = new();
                     private int m_first = 1;
                     private int m_second = 2;
                 }
@@ -1309,7 +1360,7 @@ public sealed class StyleCommandTests
                 {
                     private readonly Int32 m_count = Int32.Parse("1");
 
-                    internal String Name(Object value) => String.Concat(value, m_count);
+                    internal String Name(Object value) => String.Join("-", value, m_count);
                 }
                 """
             ),
@@ -1321,7 +1372,7 @@ public sealed class StyleCommandTests
                 {
                     private readonly int m_count = int.Parse("1");
 
-                    internal string Name(object value) => string.Concat(value, m_count);
+                    internal string Name(object value) => string.Join("-", value, m_count);
                 }
                 """
             )
@@ -1391,6 +1442,7 @@ public sealed class StyleCommandTests
                         int mesh,
                         int material
                     ) {
+                        Begin();
                         Submit(mesh + material);
                     }
 
@@ -1422,6 +1474,7 @@ public sealed class StyleCommandTests
                         int mesh,
                         int material
                     ) {
+                        Begin();
                         Submit(mesh + material);
                     }
 
@@ -1434,6 +1487,74 @@ public sealed class StyleCommandTests
                     protected void Reset() {}
 
                     private void Submit(int item) {}
+                }
+                """
+            )
+        },
+        {
+            "W-04",
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    internal int Read(int first)
+                    {
+                        int total =
+                            first + 1;
+                        total
+                            = total + 2;
+                        return total;
+                    }
+                }
+                """
+            ),
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    internal int Read(int first)
+                    {
+                        int total = first + 1;
+                        total = total + 2;
+                        return total;
+                    }
+                }
+                """
+            )
+        },
+        {
+            "E-12",
+            Source(
+                """
+                using System.IO;
+
+                internal sealed class Probe
+                {
+                    internal int Read(string path)
+                    {
+                        int offset = 1;
+                        using (FileStream stream = File.OpenRead(path))
+                        {
+                            int value = stream.ReadByte();
+                            return value + offset;
+                        }
+                    }
+                }
+                """
+            ),
+            Source(
+                """
+                using System.IO;
+
+                internal sealed class Probe
+                {
+                    internal int Read(string path)
+                    {
+                        int offset = 1;
+                        using FileStream stream = File.OpenRead(path);
+                        int value = stream.ReadByte();
+                        return value + offset;
+                    }
                 }
                 """
             )
@@ -1605,7 +1726,7 @@ public sealed class StyleCommandTests
                 {
                     internal object String() => this;
 
-                    internal string Describe() => nameof(Int32) + typeof(System.String).Name;
+                    internal string Describe() => nameof(Int32) + nameof(String);
 
                     /// <summary>
                     /// Returns a <see cref="String"/>.
@@ -1762,6 +1883,307 @@ public sealed class StyleCommandTests
                 }
 
                 internal sealed record PageReference(string pageId);
+                """
+            )
+        },
+        {
+            "N-05",
+            Source(
+                """
+                using System.IO;
+
+                using NativePath = System.IO.Path;
+
+                namespace Inno.Probe;
+
+                internal sealed class Probe
+                {
+                    internal static string Name(string path) => NativePath.GetFileName(path) + Path.DirectorySeparatorChar;
+                }
+                """
+            )
+        },
+        {
+            "N-06",
+            Source(
+                """
+                using NativePath = System.IO.Path;
+                using TextBuffer = System.Text.StringBuilder;
+
+                internal sealed class Probe
+                {
+                    internal static string Name(string path) => new TextBuffer(NativePath.GetFileName(path)).ToString();
+                }
+                """
+            )
+        },
+        {
+            "E-04",
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    internal bool Has(object? value) => value is not null && !(value is string);
+
+                    internal bool Lacks(Probe? value) => value == null;
+                }
+                """
+            )
+        },
+        {
+            "E-08",
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    private readonly int m_seed;
+
+                    internal Probe(int count)
+                    {
+                        m_seed = count;
+                        this.count = count;
+                    }
+
+                    internal int count { get; private set; }
+
+                    internal int seed => m_seed;
+
+                    internal void Reset(int count)
+                    {
+                        this.count = count;
+                        Notify();
+                    }
+                }
+                """
+            )
+        },
+        {
+            "W-04",
+            Source(
+                """
+                internal sealed class Probe
+                {
+                    internal int[] Read()
+                    {
+                        int[] values =
+                        [
+                            1,
+                            2
+                        ];
+                        return values;
+                    }
+                }
+                """
+            )
+        },
+        {
+            "E-12",
+            Source(
+                """
+                using System;
+                using System.IO;
+
+                internal sealed class Probe
+                {
+                    internal int Read(
+                        string path,
+                        IDisposable scope
+                    ) {
+                        using (FileStream first = File.OpenRead(path))
+                        {
+                            int value = first.ReadByte();
+                            if (value < 0) return value;
+                        }
+                        using (scope)
+                        {
+                            return 0;
+                        }
+                    }
+
+                    internal int ReadTwice(string path)
+                    {
+                        {
+                            int value = 1;
+                            if (value < 0) return value;
+                        }
+                        using (FileStream stream = File.OpenRead(path))
+                        {
+                            int value = stream.ReadByte();
+                            return value;
+                        }
+                    }
+                }
+                """
+            )
+        },
+        {
+            "E-06",
+            Source(
+                """
+                using System.Collections.Generic;
+                using System.Text;
+
+                internal sealed class Probe
+                {
+                    private readonly StringBuilder m_text = new();
+
+                    internal List<int> values { get; set; } = new(4);
+
+                    internal StringBuilder Create() => new();
+
+                    internal StringBuilder Reset()
+                    {
+                        var text = new StringBuilder();
+                        values = new(8);
+                        Append(new StringBuilder());
+                        return new();
+                    }
+
+                    private void Append(StringBuilder text) {}
+                }
+                """
+            )
+        },
+        {
+            "I-02",
+            Source(
+                """
+                using System.Collections.Generic;
+                using System.Linq;
+
+                internal sealed class Probe
+                {
+                    private readonly List<int> m_sized = new(16);
+                    private readonly int[] m_buffer = new int[4];
+
+                    internal int[] values { get; } = [1, 2];
+
+                    internal int Count(IEnumerable<int> source)
+                    {
+                        var copy = new List<int>(source);
+                        List<int> empty = [];
+                        return copy.Count + empty.Count + new[] { 1, 2 }.Sum();
+                    }
+                }
+                """
+            )
+        },
+        {
+            "E-05",
+            Source(
+                """
+                using System;
+
+                internal sealed class Probe
+                {
+                    private readonly string m_name;
+
+                    internal Probe(string name)
+                    {
+                        ArgumentNullException.ThrowIfNull(name);
+                        m_name = name;
+                    }
+
+                    internal string Name(string? other) => other ?? throw new ArgumentNullException(nameof(other));
+
+                    internal string Require(string? value)
+                    {
+                        if (value is null) throw new InvalidOperationException("The value is missing.");
+                        return m_name + value;
+                    }
+                }
+                """
+            )
+        },
+        {
+            "P-03",
+            Source(
+                """
+                using System;
+                using System.Threading;
+                using System.Threading.Tasks;
+
+                internal sealed class Probe
+                {
+                    internal Task RunAsync(CancellationToken cancellationToken)
+                    {
+                        Func<CancellationToken, Task> step = token => Task.Delay(1, token);
+                        return step(cancellationToken);
+                    }
+                }
+                """
+            )
+        },
+        {
+            "D-06",
+            Source(
+                """
+                // A line comment that mentions #region and /* text */ is not a directive.
+                internal sealed class Probe
+                {
+                #if DEBUG
+                    internal string text => "#nullable /* kept */";
+                #endif
+                }
+                """
+            )
+        },
+        {
+            "E-09",
+            Source(
+                """
+                using System.Collections.Generic;
+                using System.Globalization;
+
+                internal sealed class Probe
+                {
+                    internal string Join(IEnumerable<string> parts) => string.Concat(parts);
+
+                    internal string Format(
+                        string template,
+                        int value
+                    ) => string.Format(CultureInfo.InvariantCulture, template, value);
+
+                    internal string Name(int value) => $"item-{value}";
+                }
+                """
+            )
+        },
+        {
+            "M-02",
+            Source(
+                """
+                using System;
+
+                internal sealed class Probe
+                {
+                    private int m_count;
+
+                    internal Probe()
+                    {
+                        m_count = 1;
+                    }
+
+                    internal int count
+                    {
+                        get => m_count;
+                        set => m_count = value;
+                    }
+
+                    internal int Next() => m_count + 1;
+
+                    internal void Reset()
+                    {
+                        // The first frame starts from one.
+                        m_count = 1;
+                    }
+
+                    internal void Clear()
+                    {
+                        if (m_count == 0) throw new InvalidOperationException("The probe is empty.");
+                        m_count = 0;
+                    }
+                }
                 """
             )
         }

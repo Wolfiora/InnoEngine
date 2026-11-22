@@ -39,7 +39,8 @@ internal sealed partial class NamingStyleRule : StyleRule
         StyleSource source,
         ICollection<StyleFinding> findings
     ) {
-        bool isNative = source.path.Contains("/Inno.Native.", StringComparison.Ordinal);
+        bool isNative = source.path.Contains("/Inno.Native.", StringComparison.Ordinal)
+                        && !source.path.StartsWith("tests/", StringComparison.Ordinal);
         foreach (SyntaxNode node in source.root.DescendantNodes())
         {
             switch (node)
