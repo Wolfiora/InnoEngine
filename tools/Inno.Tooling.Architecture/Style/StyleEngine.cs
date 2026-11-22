@@ -80,7 +80,8 @@ internal static class StyleEngine
         new CancellationParameterStyleRule(),
         new ProhibitedTriviaStyleRule(),
         new StringBuildStyleRule(),
-        new ExpressionBodyStyleRule()
+        new ExpressionBodyStyleRule(),
+        new FileTypeNameStyleRule()
     ];
 
     internal static IEnumerable<string> EnumerateSources(string root)

@@ -50,7 +50,7 @@ The engine currently enforces these rules. A finding is reported under the first
 
 | Reported ID | Also covers |
 | --- | --- |
-| F-01, F-03, F-04, F-05 | |
+| F-01, F-02, F-03, F-04, F-05 | |
 | N-01, N-03, N-04, N-05 | N-06 |
 | NM-01 to NM-13 | |
 | T-01, T-02, T-03, T-04 | |
@@ -67,12 +67,13 @@ The engine currently enforces these rules. A finding is reported under the first
 | E-01, E-03, E-04, E-05, E-06, E-07, E-08, E-09, E-10, E-11, E-12 | |
 | D-02, D-05, D-06 | D-04 |
 
-Every other rule is not yet checked by the tool and is enforced in review: F-02, N-02, T-05, T-07, T-08, B-02, A-04, S-01, S-02, E-02, all X rules, D-03 and all TS rules. The compiler enforces D-01 through `CS1591`. The checks for N-05, E-04 and E-08 read syntax only: N-05 recognizes a qualified name by its root namespace, E-04 reports a negated `is null` and leaves `==` comparisons to review because an overloaded operator is not visible in syntax, and E-08 knows the members that the same type declaration declares. The naming check reads syntax only: it trusts the names of overrides, interface implementations, native interop declarations and serialized members, and it exempts test methods from the `Async` suffix. `.editorconfig` states the same naming table for editors.
+Every other rule is not yet checked by the tool and is enforced in review: N-02, T-05, T-07, T-08, B-02, A-04, S-01, S-02, E-02, all X rules, D-03 and all TS rules. The compiler enforces D-01 through `CS1591`. The checks for N-05, E-04 and E-08 read syntax only: N-05 recognizes a qualified name by its root namespace, E-04 reports a negated `is null` and leaves `==` comparisons to review because an overloaded operator is not visible in syntax, and E-08 knows the members that the same type declaration declares. The naming check reads syntax only: it trusts the names of overrides, interface implementations, native interop declarations and serialized members, and it exempts test methods from the `Async` suffix. `.editorconfig` states the same naming table for editors.
 
 These checks read syntax only and report the part of a rule that syntax decides:
 
 | ID | Reported | Left to review |
 | --- | --- | --- |
+| F-02 | A file that declares no type named like it, a primary type that is not first, and a second top-level type other than an enum, a delegate or a positional record. `Type.Part.cs` is named after `Type`. | Whether the companion is used only by the primary type. |
 | M-02 | A block body that is one `return`, call, assignment or `throw`; a constructor with an expression body. | A body that holds a comment or a directive. |
 | P-03 | A `CancellationToken` parameter of a declaration that is not named `cancellationToken`. | Its position in the list, and lambda parameters. |
 | W-04 | A line break directly before or after `=`; the fix joins the lines. | |

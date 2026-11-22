@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace Inno.Tooling.Architecture.Tests;
@@ -43,12 +44,16 @@ public sealed class StyleCommandTests
         string root = CreateRoot();
         try
         {
-            string path = Path.Combine(root, "src", "Probe.cs");
+            string path = Path.Combine(root, "src", FirstTypeName(text) + ".cs");
+            string report = Path.Combine(root, "report.tsv");
             File.WriteAllText(path, text);
 
             Assert.Equal(0, StyleCommand.Execute(["check", root, "--rule", rule]));
-            Assert.Equal(0, StyleCommand.Execute(["fix", root]));
+            StyleCommand.Execute(["fix", root, "--report", report]);
             Assert.Equal(text, File.ReadAllText(path));
+
+            // A probe may declare several types to cover one rule; no other rule reports it.
+            Assert.All(File.ReadAllLines(report), static line => Assert.StartsWith("F-02\t", line, StringComparison.Ordinal));
         }
         finally
         {
@@ -128,6 +133,10 @@ public sealed class StyleCommandTests
     )]
     [InlineData("M-02", "internal sealed class Probe\n{\n    internal int Read()\n    {\n        return 1;\n    }\n}")]
     [InlineData("M-02", "internal sealed class Probe\n{\n    private int m_count;\n\n    internal Probe() => m_count = 1;\n}")]
+    [InlineData("F-02", "internal sealed class Sample;")]
+    [InlineData("F-02", "internal enum ProbeKind\n{\n    First\n}\n\ninternal sealed class Probe;")]
+    [InlineData("F-02", "internal sealed class Probe;\n\ninternal sealed class Sample;")]
+    [InlineData("F-02", "internal sealed class Probe;\n\ninternal sealed record ProbeOptions\n{\n    internal int value { get; init; }\n}")]
     public void FindingsThatNeedTheAuthorAreReportedAndLeftUnchanged(
         string rule,
         string text
@@ -214,6 +223,28 @@ public sealed class StyleCommandTests
             Assert.Equal(1, StyleCommand.Execute(["check", root, "--rule", "NM-13", "--report", report]));
             string line = Assert.Single(File.ReadAllLines(report));
             Assert.StartsWith("NM-13\tsrc/Probe.cs\t5\t", line, StringComparison.Ordinal);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData("Probe.Observation.cs", "internal sealed partial class Probe;\n", 0)]
+    [InlineData("Probe.Observation.cs", "internal sealed partial class Observation;\n", 1)]
+    [InlineData("Usings.cs", "using System;\n", 0)]
+    public void APartFileIsNamedAfterTheTypeItExtends(
+        string name,
+        string text,
+        int expected
+    ) {
+        string root = CreateRoot();
+        try
+        {
+            File.WriteAllText(Path.Combine(root, "src", name), text);
+
+            Assert.Equal(expected, StyleCommand.Execute(["check", root, "--rule", "F-02"]));
         }
         finally
         {
@@ -1565,6 +1596,25 @@ public sealed class StyleCommandTests
         => new()
     {
         {
+            "F-02",
+            Source(
+                """
+                internal sealed class Probe;
+
+                internal sealed class Probe<TValue>;
+
+                internal enum ProbeKind
+                {
+                    First
+                }
+
+                internal delegate void ProbeChanged(ProbeKind kind);
+
+                internal sealed record ProbeOptions(ProbeKind kind);
+                """
+            )
+        },
+        {
             "B-09",
             Source(
                 """
@@ -2194,6 +2244,13 @@ public sealed class StyleCommandTests
         string root = Path.Combine(Path.GetTempPath(), "InnoStyleCommandTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(Path.Combine(root, "src"));
         return root;
+    }
+
+    // Names the probe file after its first type, as F-02 requires.
+    private static string FirstTypeName(string text)
+    {
+        Match match = Regex.Match(text, @"\b(?:class|struct|interface|enum|record)\s+(?!struct\b|class\b)(\w+)");
+        return match.Success ? match.Groups[1].Value : "Probe";
     }
 
     private static string Source(string text) => text + "\n";
