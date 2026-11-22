@@ -12,3 +12,5 @@ c46af2ba7e19ca3a69f2ab46bdb4aa8d17d70bec
 49f33b29104df851a5ed5ad7cea453c68d527dc4
 # Apply the remaining mechanical rulebook rules
 dce88f2ec6c70c91cdd7c9a9dcabd30e8d431a4d
+# Keep one top-level type per file
+840d139fa9e9be55c8d9c370caca105b22b96e2b
