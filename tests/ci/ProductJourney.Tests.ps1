@@ -203,8 +203,6 @@ int main(int argc, const char *argv[])
         & /usr/bin/xcrun clang -fobjc-arc -framework AppKit (Join-Path $root 'CocoaFixture.m') -o $cocoa *> (Join-Path $root 'cocoa-build.log')
         if ($LASTEXITCODE -ne 0) { throw "AppKit protocol fixture build failed:`n$(Get-Content (Join-Path $root 'cocoa-build.log') -Raw)" }
     }
-    $source = Join-Path $root 'Source'
-    $null = New-Item -ItemType Directory -Path (Join-Path $source 'Assets')
     $cases = @(
         @{ name='valid'; scenario='Workflows'; cycles=100; success=$true },
         @{ name='missing-evidence'; scenario='Workflows'; cycles=100; reason='did not complete the journey' },
@@ -249,7 +247,7 @@ int main(int argc, const char *argv[])
             $hostExecutable = if ($case.name.StartsWith('appkit-', [StringComparison]::Ordinal)) { $cocoa } else { $dotnet }
             $deadline = if ($hostExecutable -ceq $cocoa) { 30 } else { 5 }
             & $pwsh -NoProfile -File (Join-Path $repository 'tests/Invoke-EditorUiProductJourney.ps1') `
-                -EditorAssembly (Join-Path $root 'bin/Debug/net10.0/Fixture.dll') -ProjectDirectory $source `
+                -EditorAssembly (Join-Path $root 'bin/Debug/net10.0/Fixture.dll') `
                 -ResultsDirectory $output -Dotnet $hostExecutable -GraphicsApi ProtocolFixture -Scenario $case.scenario `
                 -Cycles $case.cycles -TimeoutSeconds $deadline *> "$output.log"
             $code = $LASTEXITCODE

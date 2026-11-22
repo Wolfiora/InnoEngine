@@ -532,9 +532,8 @@ internal static class ValidationRunner
                                 }
                                 string productDirectory = Path.Combine(directory, check.id);
                                 Directory.CreateDirectory(productDirectory);
-                                // The engine owns its product input: an empty project whose journeys create their scenes.
-                                string project = Path.Combine(productDirectory, "Source");
-                                Directory.CreateDirectory(Path.Combine(project, "Assets"));
+                                // Each product step starts the Editor on its own empty project inside the results.
+                                string project = Path.Combine(productDirectory, "Smoke");
                                 await ShellAsync(
                                     "tests/Invoke-EditorSmoke.ps1",
                                     [
@@ -568,8 +567,6 @@ internal static class ValidationRunner
                                         [
                                             "-EditorAssembly",
                                             assembly,
-                                            "-ProjectDirectory",
-                                            project,
                                             "-ResultsDirectory",
                                             Path.Combine(productDirectory, scenario),
                                             "-Dotnet",

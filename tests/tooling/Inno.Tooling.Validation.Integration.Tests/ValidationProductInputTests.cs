@@ -12,11 +12,16 @@ namespace Inno.Tooling.Validation.Tests;
 public sealed class ValidationProductInputTests
 {
     [Fact]
-    public async Task ProductChecksStartFromAnEmptyEngineOwnedProject()
+    public async Task ProductChecksStartTheEditorOnAnEmptyProjectInsideTheirResults()
     {
         using var repository = new ValidationRepository();
-        // Stop at the external product boundary: this regression certifies input preparation, not an Editor journey.
-        repository.Write("tests/Invoke-EditorSmoke.ps1", "throw 'Product input reached the product boundary.'\n");
+        // Stop at the external product boundary: this regression certifies the project the Editor receives, not a journey.
+        repository.Write(
+            "tests/Invoke-EditorSmoke.ps1",
+            "Set-Content -LiteralPath \"$PSScriptRoot/smoke-project.txt\" -NoNewline "
+            + "-Value $args[[array]::IndexOf($args, '-ProjectDirectory') + 1]\n"
+            + "throw 'Product input reached the product boundary.'\n"
+        );
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare the product boundary");
         repository.Write("src/Example/Changed.cs", "namespace Example; public class Changed { }\n");
@@ -49,7 +54,6 @@ public sealed class ValidationProductInputTests
         ))!;
         project["Properties"]!["InnoValidationBackendPattern"] = "Declared fixture renderer";
         repository.Write("artifacts/plan/plan.json", plan.ToJsonString());
-        string artifacts = repository.BindWorkspace(plan["artifacts"]!.GetValue<string>());
 
         await Assert.ThrowsAsync<InvalidDataException>(() => repository.RunAsync(output: "artifacts/probe"));
 
@@ -61,10 +65,9 @@ public sealed class ValidationProductInputTests
             .Single(result => result.GetProperty("id").GetString() == "product-probe");
         Assert.Equal("Failed", result.GetProperty("status").GetString());
         string detail = result.GetProperty("detail").GetString()!;
+        string smokeProject = Path.Combine(output, "product-probe", "Smoke");
         Assert.True(detail.Contains("Product input reached the product boundary", StringComparison.Ordinal), detail);
-        string source = Path.Combine(output, "product-probe", "Source");
-        Assert.Equal(Path.Combine(source, "Assets"), Assert.Single(Directory.GetFileSystemEntries(source)));
-        Assert.Empty(Directory.GetFileSystemEntries(Path.Combine(source, "Assets")));
-        Assert.False(Directory.Exists(Path.Combine(artifacts, "consumer-inputs")));
+        Assert.Equal(smokeProject, File.ReadAllText(repository.PathOf("tests/smoke-project.txt")));
+        Assert.False(Directory.Exists(smokeProject));
     }
 }
