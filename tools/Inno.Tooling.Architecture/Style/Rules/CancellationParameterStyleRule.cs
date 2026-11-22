@@ -53,6 +53,7 @@ internal sealed class CancellationParameterStyleRule : StyleRule
         }
     }
 
+    // A `params` parameter must close the list, so the token precedes only that parameter.
     private static bool MustMoveLast(
         ParameterSyntax parameter,
         ParameterListSyntax list
@@ -63,8 +64,7 @@ internal sealed class CancellationParameterStyleRule : StyleRule
         List<ParameterSyntax> later = list.Parameters.Skip(index + 1).ToList();
         if (later.Any(IsCancellationToken)) return false;
 
-        return parameter.Default is not null
-               || !later.Any(other => other.Default is not null || other.Modifiers.Any(SyntaxKind.ParamsKeyword));
+        return later.Count > 1 || !later[0].Modifiers.Any(SyntaxKind.ParamsKeyword);
     }
 
     private static bool IsCancellationToken(ParameterSyntax parameter)

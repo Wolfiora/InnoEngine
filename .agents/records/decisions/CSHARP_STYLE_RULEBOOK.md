@@ -75,7 +75,7 @@ These checks read syntax only and report the part of a rule that syntax decides:
 | --- | --- | --- |
 | F-02 | A file that declares no type named like it, a primary type that is not first, and a second top-level type other than an enum, a delegate or a positional record. `Type.Part.cs` is named after `Type`. | Whether the companion is used only by the primary type. |
 | M-02 | A block body that is one `return`, call, assignment or `throw`; a constructor with an expression body. | A body that holds a comment or a directive. |
-| P-03 | A `CancellationToken` parameter of a declaration that is not named `cancellationToken` or is not the last parameter. | A required token that precedes optional or `params` parameters, and lambda parameters. |
+| P-03 | A `CancellationToken` parameter of a declaration that is not named `cancellationToken` or is not the last parameter. | A token that directly precedes a closing `params` parameter, and lambda parameters. |
 | W-04 | A line break directly before or after `=`; the fix joins the lines. | |
 | I-02 | A declaration typed as an array or `List<T>` (or a `var` local) whose value is `new[] {}`, `new T[] {}`, `Array.Empty<T>()` or a `List<T>` creation without constructor arguments. | A creation without a target type: a call receiver, an inferred generic argument, an anonymous-type member. |
 | E-05 | A hand-written `if` that throws `ArgumentNullException` for the tested name, and `?? throw new ArgumentNullException(nameof(x))` on a parameter in a statement of a block body. | Expression bodies and initializers, range checks, custom messages. |
