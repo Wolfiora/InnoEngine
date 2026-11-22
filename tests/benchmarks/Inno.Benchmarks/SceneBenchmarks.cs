@@ -171,7 +171,7 @@ public class SceneLifecycleBenchmarks
     }
 
     [Benchmark(Description = "Serialize+Deserialize scene with N objects")]
-    public GameScene SerializeRoundTrip()
+    public int SerializeRoundTrip()
     {
         GameScene scene = m_harness.world.LoadNewScene("Serialize");
         for (int index = 0; index < objectCount; index++)
@@ -180,6 +180,10 @@ public class SceneLifecycleBenchmarks
         }
         byte[] bytes = m_harness.serialization.Serialize(scene, m_harness.serializationContext);
         m_harness.world.UnloadAllScenes();
-        return m_harness.serialization.Deserialize<GameScene>(bytes, m_harness.serializationContext);
+        GameScene restored = m_harness.serialization.Deserialize<GameScene>(bytes, m_harness.serializationContext);
+        m_harness.world.LoadScene(restored);
+        int restoredCount = restored.GetObjects().Count;
+        m_harness.world.UnloadAllScenes();
+        return restoredCount;
     }
 }
