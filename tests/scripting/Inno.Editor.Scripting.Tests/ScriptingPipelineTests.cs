@@ -1746,7 +1746,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
                     CancellationToken cancellationToken)
                 {
                     output.SetAsset(new ShutdownAsset());
-                    await output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+                    await output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken);
                 }
             }
             """);

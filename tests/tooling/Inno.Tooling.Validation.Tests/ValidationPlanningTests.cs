@@ -230,7 +230,7 @@ public sealed class ValidationPlanningTests
         using var repository = new ValidationRepository(TestRepository.GetRoot(typeof(ValidationPlanningTests).Assembly));
         const string C_STYLE = "src/composition/editor/panels/Inno.Editor.Panel.Logging/Styling/ConsoleStyle.cs";
         string original = File.ReadAllText(repository.PathOf(C_STYLE));
-        string changed = original.Replace("new(0.80f, 0.90f, 0.85f", "new(0.81f, 0.90f, 0.85f", StringComparison.Ordinal);
+        string changed = original.Replace("new(0.8f, 0.9f, 0.85f", "new(0.81f, 0.9f, 0.85f", StringComparison.Ordinal);
         Assert.NotEqual(original, changed);
         repository.Write(C_STYLE, changed);
         // Consume-only planning establishes scope without fetching source dependencies or preparing an Editor.
