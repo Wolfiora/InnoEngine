@@ -5,9 +5,10 @@ $hostsToRun = @([pscustomobject]@{runner='required';fast=$true},[pscustomobject]
 $change = "M`ttests/Feature/Test.cs"
 $routingFixture = [IO.Path]::GetTempFileName()
 $originalId = $env:GITHUB_REPOSITORY_ID
+$failingGit = ''
 function git {
-    $global:LASTEXITCODE = 0
-    if ($args -contains 'diff') { $change }
+    $global:LASTEXITCODE = if ($failingGit -and $args -contains $failingGit) { 128 } else { 0 }
+    if ($args -contains 'diff' -and !$LASTEXITCODE) { $change }
 }
 function Invoke-RestMethod($Headers,$Uri) {
     if ($Uri.Contains('/workflows/')) {
@@ -46,4 +47,9 @@ try {
     Check 2
     $env:GITHUB_REPOSITORY_ID = '8'
     Check 2
+    # A stale pull-request base is absent from the shallow checkout; the step must still succeed with every host.
+    foreach ($failingGit in @('merge-base', 'diff')) {
+        Check 2
+        if ($LASTEXITCODE) { throw "A handled git $failingGit failure leaked exit code $LASTEXITCODE." }
+    }
 } finally { [IO.File]::Delete($routingFixture); $env:GITHUB_REPOSITORY_ID = $originalId }

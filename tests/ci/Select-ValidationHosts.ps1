@@ -7,9 +7,10 @@ param(
 $ErrorActionPreference = 'Stop'
 if ($Baseline -cnotmatch '^[a-f0-9]{40}$' -or $Candidate -cnotmatch '^[a-f0-9]{40}$' -or !@($Hosts | Where-Object fast).Count) { return $Hosts }
 & git merge-base --is-ancestor $Baseline $Candidate 2>$null
-if ($LASTEXITCODE) { return $Hosts }
+# A handled git failure must not become the exit code of the calling workflow step.
+if ($LASTEXITCODE) { $global:LASTEXITCODE = 0; return $Hosts }
 $changes = @(& git -c core.quotepath=false diff --no-renames --name-status $Baseline $Candidate)
-if ($LASTEXITCODE -or !$changes.Count -or @($changes | Where-Object { $_ -cnotmatch '^M\ttests/[^\t]+$' }).Count) { return $Hosts }
+if ($LASTEXITCODE -or !$changes.Count -or @($changes | Where-Object { $_ -cnotmatch '^M\ttests/[^\t]+$' }).Count) { $global:LASTEXITCODE = 0; return $Hosts }
 $paths = @($changes | ForEach-Object { $_.Substring(2) })
 $headers = @{Authorization="Bearer $env:GH_TOKEN";Accept='application/vnd.github+json'}
 $base = "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY"
