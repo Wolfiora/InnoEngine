@@ -17,6 +17,6 @@ runs:
       run: |
         $plan = 'artifacts/validation/ci-plan/plan.json'
         $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
-        $decision = ./tests/ci/Resolve-BackendAcquisition.ps1 -PlanPath $plan -EntryAssembly $entry -OutputDirectory artifacts/backend-request
+        $decision = ./tools/ci/Resolve-BackendAcquisition.ps1 -PlanPath $plan -EntryAssembly $entry -OutputDirectory artifacts/backend-request
         "required=$(($decision.packages.Count -gt 0).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
         "production=$(@($decision.packages | Where-Object operation -CEQ 'produce').Count -gt 0)".ToLowerInvariant() >> $env:GITHUB_OUTPUT

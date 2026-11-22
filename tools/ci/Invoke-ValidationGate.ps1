@@ -9,7 +9,7 @@ if ($env:REUSED -ceq 'true') {
   if ($env:GITHUB_EVENT_NAME -cne 'schedule' -or $env:PREFLIGHT_RESULT -cne 'success' -or $env:REUSE_RESULT -cne 'success') {
     throw 'Only scheduled complete acceptance may reuse authenticated prior certification.'
   }
-  ./tests/ci/Join-ValidationAcceptance.ps1 -ReceivedDirectory artifacts/validation/received `
+  ./tools/ci/Join-ValidationAcceptance.ps1 -ReceivedDirectory artifacts/validation/received `
     -Hosts (($env:HOSTS | ConvertFrom-Json).include.runner) -ExpectedCommit $env:EXPECTED_COMMIT -Attempt ([int]$env:GITHUB_RUN_ATTEMPT) `
     -OutputPath artifacts/validation/acceptance-reuse.json
   $decision = Get-Content artifacts/validation/acceptance-reuse.json -Raw | ConvertFrom-Json
@@ -31,5 +31,5 @@ if ($env:SHOULD_RUN -cne 'true' -or (!$direct -and $env:MATRIX_RESULT -cne 'succ
     ($env:GITHUB_EVENT_NAME -ceq 'schedule' -and $env:PREFLIGHT_RESULT -cne 'skipped' -and $env:REUSE_RESULT -cne 'success')) {
   throw 'One or more required execution jobs did not complete successfully.'
 }
-./tests/ci/Join-ValidationCi.ps1 -ReceivedDirectory artifacts/validation/received -Hosts (($env:HOSTS | ConvertFrom-Json).include.runner) `
+./tools/ci/Join-ValidationCi.ps1 -ReceivedDirectory artifacts/validation/received -Hosts (($env:HOSTS | ConvertFrom-Json).include.runner) `
   -ExpectedCommit $env:EXPECTED_COMMIT -Attempt ([int]$env:GITHUB_RUN_ATTEMPT)

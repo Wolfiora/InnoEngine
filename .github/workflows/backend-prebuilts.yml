@@ -57,14 +57,14 @@ jobs:
         run: |
           $item = $env:SPEC | ConvertFrom-Json
           $zip = if ($item.sha256) {
-            ./tests/ci/Get-BackendPlatformArchive.ps1 -Sha256 $item.sha256 -AssetId $item.assetId -Directory artifacts/backend-downloads
+            ./tools/ci/Get-BackendPlatformArchive.ps1 -Sha256 $item.sha256 -AssetId $item.assetId -Directory artifacts/backend-downloads
           }
           $hostInputs = @{}
           if ($item.hostSeed) {
             $hostInputs.HostSeedDigest = $item.hostSeed.sha256
-            $hostInputs.HostSeedZip = ./tests/ci/Get-BackendPlatformArchive.ps1 -Sha256 $item.hostSeed.sha256 -AssetId $item.hostSeed.assetId -Directory artifacts/backend-downloads
+            $hostInputs.HostSeedZip = ./tools/ci/Get-BackendPlatformArchive.ps1 -Sha256 $item.hostSeed.sha256 -AssetId $item.hostSeed.assetId -Directory artifacts/backend-downloads
           }
-          ./tests/ci/Initialize-BackendProduction.ps1 -Target $item.target -HostTarget $item.hostTarget -Operation $item.operation `
+          ./tools/ci/Initialize-BackendProduction.ps1 -Target $item.target -HostTarget $item.hostTarget -Operation $item.operation `
             -OutputDirectory artifacts/backend-input -NativeDirectory artifacts/backend-native `
             -PreviousZip $zip -PreviousDigest $item.sha256 @hostInputs -PrepareNative:$item.nativeInputs
       - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
@@ -126,8 +126,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $item = $env:SPEC | ConvertFrom-Json
-          $null = ./tests/ci/Initialize-NativeDependencyWorkloads.ps1 -Targets @($item.target)
-          $entry = @(./tests/ci/Initialize-ValidationEntry.ps1 -Dotnet (Get-Command dotnet).Source -LogPath artifacts/components/bootstrap.log)
+          $null = ./tools/ci/Initialize-NativeDependencyWorkloads.ps1 -Targets @($item.target)
+          $entry = @(./tools/ci/Initialize-ValidationEntry.ps1 -Dotnet (Get-Command dotnet).Source -LogPath artifacts/components/bootstrap.log)
           $native = [ordered]@{layout='platform-packages';assets=@();aggregates=@()}
           foreach ($component in Get-ChildItem artifacts/components -Directory) {
             $source = Get-Content -LiteralPath (Join-Path $component.FullName 'selection.json') -Raw | ConvertFrom-Json -AsHashtable -Depth 80
@@ -149,7 +149,7 @@ jobs:
           }
           [IO.File]::WriteAllText([IO.Path]::GetFullPath('artifacts/components/selection.json'), (ConvertTo-Json $native -Compress -Depth 80))
           $seed = if ($item.sha256) { Join-Path 'artifacts/backend-seed' $item.asset }
-          ./tests/ci/Build-BackendPrebuilt.ps1 -Target $item.target -HostTarget $item.hostTarget -EntryAssembly $entry[0] `
+          ./tools/ci/Build-BackendPrebuilt.ps1 -Target $item.target -HostTarget $item.hostTarget -EntryAssembly $entry[0] `
             -NativeSelection "artifacts/components/$($item.target)/selection.json" -ConsumptionSelection artifacts/components/selection.json `
             -PreviousPackage $seed -PreviousSha256 $item.sha256 -PreviousTag $item.tag -WorkspaceDirectory artifacts/bp -OutputDirectory artifacts/backend-candidate
           $digest = (Get-FileHash -LiteralPath (Join-Path 'artifacts/backend-candidate' $item.asset)).Hash.ToLowerInvariant()
@@ -196,7 +196,7 @@ jobs:
           REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
         run: |
           $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
-          ./tests/ci/Install-BackendAcquisition.ps1 -PlanPath artifacts/validation/ci-plan/plan.json -EntryAssembly $entry `
+          ./tools/ci/Install-BackendAcquisition.ps1 -PlanPath artifacts/validation/ci-plan/plan.json -EntryAssembly $entry `
             -Acquisition artifacts/backend-request/acquisition.json -Downloads artifacts/backend-downloads -Candidates artifacts/candidates -RebuildTargets $env:REBUILD_TARGETS
       - uses: ./.github/actions/execute-validation
         with:

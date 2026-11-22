@@ -35,7 +35,7 @@ try {
         $hosts = if ($case -ceq 'duplicate-host') { @('host-a', 'host-a') } else { @('host-a', 'host-b') }
         $failed = $false
         try {
-            & "$PSScriptRoot/Join-ValidationAcceptance.ps1" -ReceivedDirectory $received -Hosts $hosts -ExpectedCommit ('a' * 40) `
+            & "$PSScriptRoot/../../tools/ci/Join-ValidationAcceptance.ps1" -ReceivedDirectory $received -Hosts $hosts -ExpectedCommit ('a' * 40) `
                 -Attempt 1 -OutputPath (Join-Path $root 'decision.json')
         } catch { $failed = $true; $_ | Out-String | Set-Content (Join-Path $root 'failure.log') }
         if ($failed -ne ($case -cnotin @('complete', 'missing-decision', 'different-environment'))) { throw "Unexpected acceptance matrix result: $case. See $root." }

@@ -49,7 +49,7 @@ public sealed class ValidationShardExecutionTests
             )
         );
         repository.Write("src/Example/Contract.cs", "namespace Example; public static class Contract { public static int Value => 1; }");
-        repository.Write("tests/ci/Test-AgentRules.ps1", "Write-Output 'Policy passed'");
+        repository.Write("tools/ci/Test-AgentRules.ps1", "Write-Output 'Policy passed'");
         using JsonDocument cold = await repository.PlanAsync(profile: "full");
         JsonObject accepted = SelectCompilation(cold);
         repository.Write("artifacts/cold.json", accepted.ToJsonString());
@@ -153,7 +153,7 @@ public sealed class ValidationShardExecutionTests
             "Shared.props",
             "<Project><Import Project=\"" + SecurityElement.Escape(sdkInput.PathOf("Environment.props")) + "\" /></Project>"
         );
-        repository.Write("tests/ci/Test-AgentRules.ps1", "Add-Content -LiteralPath artifacts/policy-executions.txt -Value executed");
+        repository.Write("tools/ci/Test-AgentRules.ps1", "Add-Content -LiteralPath artifacts/policy-executions.txt -Value executed");
         using JsonDocument before = await repository.PlanAsync(profile: "full");
         JsonObject accepted = SelectPolicy(before);
         repository.Write("artifacts/accepted.json", accepted.ToJsonString());
@@ -225,7 +225,7 @@ public sealed class ValidationShardExecutionTests
     public async Task ContinuationRetainsARealCompiledUnionWithoutInvokingBuildAgain()
     {
         using var repository = new ValidationRepository();
-        repository.Write("tests/ci/Test-AgentRules.ps1", "Write-Output 'Policy passed'");
+        repository.Write("tools/ci/Test-AgentRules.ps1", "Write-Output 'Policy passed'");
         repository.Write("tests/ci/Compilation.Tests.ps1", "Write-Output 'Compilation fixture policy passed'");
         repository.Write(
             "src/Example/Example.csproj",
@@ -427,7 +427,7 @@ public sealed class ValidationShardExecutionTests
     public async Task ContinuationExecutesOnlyMissingPolicyAndRejectsForeignEvidence()
     {
         using var repository = new ValidationRepository();
-        repository.Write("tests/ci/Test-AgentRules.ps1", "Add-Content -LiteralPath artifacts/policy-executions.txt -Value executed");
+        repository.Write("tools/ci/Test-AgentRules.ps1", "Add-Content -LiteralPath artifacts/policy-executions.txt -Value executed");
         using JsonDocument generated = await repository.PlanAsync(profile: "full");
         JsonObject accepted = JsonNode.Parse(generated.RootElement.GetRawText())!.AsObject();
         JsonObject policy = accepted["checks"]!
@@ -504,7 +504,7 @@ public sealed class ValidationShardExecutionTests
     public async Task CompleteAcceptanceRequiresTheSameEnvironmentInputsAndCheckDefinitions()
     {
         using var repository = new ValidationRepository();
-        repository.Write("tests/ci/Test-AgentRules.ps1", "Write-Output 'Actual policy execution'");
+        repository.Write("tools/ci/Test-AgentRules.ps1", "Write-Output 'Actual policy execution'");
         using JsonDocument generated = await repository.PlanAsync(profile: "full");
         JsonObject plan = JsonNode.Parse(generated.RootElement.GetRawText())!.AsObject();
         JsonObject policy = plan["checks"]!
@@ -605,7 +605,7 @@ public sealed class ValidationShardExecutionTests
     public async Task FrozenPlanBindsAnotherCheckoutWithoutChangingItsIdentity()
     {
         using var producer = new ValidationRepository();
-        producer.Write("tests/ci/Test-AgentRules.ps1", "Write-Output 'Actual policy execution in the consumer checkout'");
+        producer.Write("tools/ci/Test-AgentRules.ps1", "Write-Output 'Actual policy execution in the consumer checkout'");
         producer.Git("add", ".");
         producer.Git("commit", "-m", "Portable policy fixture");
         using JsonDocument generated = await producer.PlanAsync();
@@ -659,7 +659,7 @@ public sealed class ValidationShardExecutionTests
                 "<PropertyGroup><IsTestProject>true</IsTestProject><InnoTestNativeProduct>editor</InnoTestNativeProduct><InnoValidationLayer>native</InnoValidationLayer></PropertyGroup>"
             )
         );
-        repository.Write("tests/ci/Test-AgentRules.ps1", "Write-Output 'Managed change'");
+        repository.Write("tools/ci/Test-AgentRules.ps1", "Write-Output 'Managed change'");
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare a separately deployed native test");
         using JsonDocument generated = await repository.PlanAsync(profile: "fast", backendStore: "artifacts/b");
@@ -712,7 +712,7 @@ public sealed class ValidationShardExecutionTests
     public async Task IndependentShardReceiptsRequireCompleteExactCandidateCoverage()
     {
         using var repository = new ValidationRepository();
-        repository.Write("tests/ci/Test-AgentRules.ps1", "Write-Output 'Actual policy execution'");
+        repository.Write("tools/ci/Test-AgentRules.ps1", "Write-Output 'Actual policy execution'");
         using JsonDocument generated = await repository.PlanAsync();
         JsonObject plan = JsonNode.Parse(generated.RootElement.GetRawText())!.AsObject();
         JsonObject policy = plan["checks"]!

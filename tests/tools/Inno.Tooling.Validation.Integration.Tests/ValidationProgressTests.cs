@@ -17,7 +17,7 @@ public sealed class ValidationProgressTests
     public async Task QuietChildReportsActivityBeforeExitAndCancellationRetainsItsFailureEvidence()
     {
         using var repository = new ValidationRepository();
-        repository.Write("tests/ci/Test-AgentRules.ps1", """
+        repository.Write("tools/ci/Test-AgentRules.ps1", """
             [Console]::Out.WriteLine('first stdout evidence')
             [Console]::Error.WriteLine('first stderr evidence')
             [Console]::Out.Write('::error::this is child text, not a workflow command')

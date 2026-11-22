@@ -75,7 +75,7 @@ jobs:
             if ($env:REQUESTED_PROFILE -cne 'full') { throw 'Unsupported scheduled profile.' }
             $selected = [pscustomobject]@{ run = $true; profile = $env:REQUESTED_PROFILE }
           } else {
-            $selected = ./tests/ci/Get-ValidationCadence.ps1 -EventPath $env:GITHUB_EVENT_PATH -Event $env:GITHUB_EVENT_NAME `
+            $selected = ./tools/ci/Get-ValidationCadence.ps1 -EventPath $env:GITHUB_EVENT_PATH -Event $env:GITHUB_EVENT_NAME `
               -Commit $env:CANDIDATE -Repository $env:GITHUB_REPOSITORY -ApiUrl $env:GITHUB_API_URL | ConvertFrom-Json
           }
           if ($env:REBUILD_TARGETS -and ($env:GITHUB_EVENT_NAME -cne 'workflow_dispatch' -or $selected.profile -cne 'full')) {
@@ -93,11 +93,11 @@ jobs:
             if ($LASTEXITCODE) { throw 'Manual affected validation requires the candidate parent.' }
           }
           if ($selected.run -and $selected.profile -ceq 'pull-request' -and $env:BASELINE) {
-            $hosts = @(./tests/ci/Select-ValidationHosts.ps1 -Hosts $hosts -Baseline $env:BASELINE -Candidate $env:CANDIDATE -DefaultBranch $env:DEFAULT_BRANCH)
+            $hosts = @(./tools/ci/Select-ValidationHosts.ps1 -Hosts $hosts -Baseline $env:BASELINE -Candidate $env:CANDIDATE -DefaultBranch $env:DEFAULT_BRANCH)
           }
           # Recheck an ordinary push immediately before scheduling expensive jobs; PR event delivery can race the first lookup.
           if (-not $env:REQUESTED_PROFILE -and $env:GITHUB_EVENT_NAME -ceq 'push' -and $selected.profile -ceq 'fast' -and $selected.run) {
-            $selected = ./tests/ci/Get-ValidationCadence.ps1 -EventPath $env:GITHUB_EVENT_PATH -Event $env:GITHUB_EVENT_NAME `
+            $selected = ./tools/ci/Get-ValidationCadence.ps1 -EventPath $env:GITHUB_EVENT_PATH -Event $env:GITHUB_EVENT_NAME `
               -Commit $env:CANDIDATE -Repository $env:GITHUB_REPOSITORY -ApiUrl $env:GITHUB_API_URL | ConvertFrom-Json
           }
           "run=$($selected.run.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
@@ -132,7 +132,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
-          ./tests/ci/Install-BackendAcquisition.ps1 -PlanPath artifacts/validation/ci-plan/plan.json -EntryAssembly $entry `
+          ./tools/ci/Install-BackendAcquisition.ps1 -PlanPath artifacts/validation/ci-plan/plan.json -EntryAssembly $entry `
             -Acquisition artifacts/backend-request/acquisition.json -Downloads artifacts/backend-downloads
       - name: Compare retained complete acceptance after current environment capture
         shell: pwsh
@@ -140,7 +140,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PLATFORM: ${{ matrix.runner }}
         run: |
-          ./tests/ci/Find-ValidationAcceptance.ps1 -PlanDirectory artifacts/validation/ci-plan -Platform $env:PLATFORM `
+          ./tools/ci/Find-ValidationAcceptance.ps1 -PlanDirectory artifacts/validation/ci-plan -Platform $env:PLATFORM `
             -Repository $env:GITHUB_REPOSITORY -ApiUrl $env:GITHUB_API_URL
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
@@ -173,7 +173,7 @@ jobs:
         env:
           HOSTS: ${{ needs.route.outputs.hosts }}
         run: |
-          ./tests/ci/Join-ValidationAcceptance.ps1 -ReceivedDirectory artifacts/validation/received `
+          ./tools/ci/Join-ValidationAcceptance.ps1 -ReceivedDirectory artifacts/validation/received `
             -Hosts (($env:HOSTS | ConvertFrom-Json).include.runner) -ExpectedCommit $env:GITHUB_SHA -Attempt ([int]$env:GITHUB_RUN_ATTEMPT) `
             -OutputPath artifacts/validation/acceptance-reuse.json
 
@@ -277,7 +277,7 @@ jobs:
           HOSTS: ${{ needs.route.outputs.hosts }}
           REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
         run: |
-          $jobs = ./tests/ci/Join-BackendAcquisitions.ps1 -RebuildTargets $env:REBUILD_TARGETS -Received artifacts/requests -Hosts (($env:HOSTS | ConvertFrom-Json).include.runner) `
+          $jobs = ./tools/ci/Join-BackendAcquisitions.ps1 -RebuildTargets $env:REBUILD_TARGETS -Received artifacts/requests -Hosts (($env:HOSTS | ConvertFrom-Json).include.runner) `
             -Revision $env:GITHUB_SHA
           foreach ($name in 'chains','producers','independent') {
             "$name=$(@{include=@($jobs.$name)} | ConvertTo-Json -Compress -Depth 8)" >> $env:GITHUB_OUTPUT
@@ -364,7 +364,7 @@ jobs:
           SHOULD_RUN: ${{ needs.route.outputs.run }}
           HOSTS: ${{ needs.route.outputs.hosts }}
           EXPECTED_COMMIT: ${{ github.sha }}
-        run: ./tests/ci/Invoke-ValidationGate.ps1
+        run: ./tools/ci/Invoke-ValidationGate.ps1
       - name: Retain first failures and timing by check category
         if: ${{ !cancelled() && needs.route.outputs.run == 'true' && needs.acceptance-reuse.outputs.reusable != 'true' }}
         shell: pwsh
@@ -373,7 +373,7 @@ jobs:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           HOSTS: ${{ needs.route.outputs.hosts }}
         run: |
-          ./tests/ci/Write-ValidationSummary.ps1 -ReceivedDirectory artifacts/validation/received -Repository $env:GITHUB_REPOSITORY `
+          ./tools/ci/Write-ValidationSummary.ps1 -ReceivedDirectory artifacts/validation/received -Repository $env:GITHUB_REPOSITORY `
             -DefaultBranch $env:DEFAULT_BRANCH -Attempt ([int]$env:GITHUB_RUN_ATTEMPT) -RunId ([long]$env:GITHUB_RUN_ID) -ApiUrl $env:GITHUB_API_URL `
             -Hosts (($env:HOSTS | ConvertFrom-Json).include.runner)
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
@@ -446,7 +446,7 @@ jobs:
           $head = Invoke-RestMethod -Headers @{Authorization="Bearer $env:GH_TOKEN"} -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/git/ref/heads/$env:DEFAULT_BRANCH"
           if ($head.object.sha -cne $env:GITHUB_SHA) { Write-Host 'A newer default-branch candidate owns promotion.'; return }
           $artifacts = @(Get-ChildItem -LiteralPath artifacts/promotion -Directory)
-          $evidence = ./tests/ci/Select-ValidationArtifact.ps1 -Artifacts $artifacts -Name engine-acceptance-evidence -MaximumAttempt ([int]$env:GITHUB_RUN_ATTEMPT)
+          $evidence = ./tools/ci/Select-ValidationArtifact.ps1 -Artifacts $artifacts -Name engine-acceptance-evidence -MaximumAttempt ([int]$env:GITHUB_RUN_ATTEMPT)
           $producers = @((ConvertFrom-Json $env:MATRIX).include)
           foreach ($item in $producers) {
             $owner = [IO.Directory]::CreateDirectory([IO.Path]::GetFullPath("artifacts/promotion/$($item.target)")).FullName
@@ -455,5 +455,5 @@ jobs:
             $hostEvidence = Join-Path $evidence.FullName $item.runner
             Copy-Item -LiteralPath "$hostEvidence/plan.json","$hostEvidence/results.json" -Destination $owner
           }
-          ./tests/ci/Publish-BackendPrebuilts.ps1 -Directory artifacts/promotion -Repository $env:GITHUB_REPOSITORY `
+          ./tools/ci/Publish-BackendPrebuilts.ps1 -Directory artifacts/promotion -Repository $env:GITHUB_REPOSITORY `
             -Revision $env:GITHUB_SHA -ApiUrl $env:GITHUB_API_URL -ChangedTargets $producers.target

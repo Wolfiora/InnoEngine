@@ -13,7 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="../fixtures/Inno.Testing.Validation/Inno.Testing.Validation.csproj" />
 
-    <InnoValidationInput Include="../../services/input/Inno.Input.Tests/*.csproj;../../services/ui/Inno.UI.Tests/*.csproj;../../Invoke-IsolatedTests.ps1" />
+    <InnoValidationInput Include="../../services/input/Inno.Input.Tests/*.csproj;../../services/ui/Inno.UI.Tests/*.csproj;../../../tools/ci/Invoke-IsolatedTests.ps1" />
   </ItemGroup>
 
   <ItemGroup>

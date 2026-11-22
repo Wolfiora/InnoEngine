@@ -6,12 +6,12 @@ $cases = @('complete', 'missing-shard', 'changed-entry', 'wrong-candidate', 'fai
 try {
     foreach ($case in $cases) {
         $root = Join-Path $owner $case
-        $scripts = Join-Path $root 'tests/ci'
+        $scripts = Join-Path $root 'tools/ci'
         $received = Join-Path $root 'artifacts/validation/received'
         $planRoot = Join-Path $received 'validation-plan-fixture-attempt-1'
         $joinRoot = Join-Path $received 'validation-joined-fixture-attempt-1'
         New-Item -ItemType Directory -Path $scripts, $planRoot, $joinRoot -Force | Out-Null
-        Copy-Item -LiteralPath "$PSScriptRoot/Join-ValidationCi.ps1", "$PSScriptRoot/Select-ValidationArtifact.ps1", "$PSScriptRoot/Test-ValidationReport.ps1" -Destination $scripts
+        Copy-Item -LiteralPath "$PSScriptRoot/../../tools/ci/Join-ValidationCi.ps1", "$PSScriptRoot/../../tools/ci/Select-ValidationArtifact.ps1", "$PSScriptRoot/../../tools/ci/Test-ValidationReport.ps1" -Destination $scripts
         $executor = 'E' * 64
         @{ sha256 = $executor } | ConvertTo-Json | Set-Content (Join-Path $planRoot 'entry.json')
         $commit = if ($case -ceq 'wrong-candidate') { 'f' * 40 } else { 'a' * 40 }

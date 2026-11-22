@@ -20,7 +20,7 @@ function Invoke-RestMethod($Headers,$Uri) {
 }
 function Invoke-WebRequest($Headers,$Uri,$OutFile) { [IO.File]::Copy($routingFixture,$OutFile,$true) }
 function Check([int]$Expected) {
-    $selected = @(& "$PSScriptRoot/Select-ValidationHosts.ps1" -Baseline $baseline -Candidate $candidate -Hosts $hostsToRun -DefaultBranch master)
+    $selected = @(& "$PSScriptRoot/../../tools/ci/Select-ValidationHosts.ps1" -Baseline $baseline -Candidate $candidate -Hosts $hostsToRun -DefaultBranch master)
     if ($selected.Count -ne $Expected -or $selected[0].runner -cne 'required') { throw "Unexpected route for $change." }
 }
 try {
@@ -29,12 +29,12 @@ try {
     $zip = [IO.Compression.ZipArchive]::new($stream,[IO.Compression.ZipArchiveMode]::Create)
     try {
         $writer = [IO.StreamWriter]::new($zip.CreateEntry('host-routing.json').Open())
-        try { $writer.Write((ConvertTo-Json @{commit=$baseline;hosts=@{conditional=@('tests/Feature/Test.cs','tests/ci/Invoke-ValidationGate.ps1')}} -Depth 5)) }
+        try { $writer.Write((ConvertTo-Json @{commit=$baseline;hosts=@{conditional=@('tests/Feature/Test.cs','tools/ci/Invoke-ValidationGate.ps1')}} -Depth 5)) }
         finally { $writer.Dispose() }
     } finally { $zip.Dispose(); $stream.Dispose() }
     $digest = 'sha256:'+(Get-FileHash -LiteralPath $routingFixture).Hash.ToLowerInvariant()
     Check 1
-    $change = "M`ttests/ci/Invoke-ValidationGate.ps1"
+    $change = "M`ttools/ci/Invoke-ValidationGate.ps1"
     Check 1
     $change = "M`t.github/workflows/engine-ci.yml"
     Check 2

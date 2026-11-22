@@ -135,7 +135,7 @@ public sealed class ValidationSelectionTests : ValidationPlanFixture
     public async Task SharedTestExecutionChangesSelectAllTestOwnersAndInvalidateOnlyTheirExecutionInputs()
     {
         using var repository = new ValidationRepository();
-        const string C_EXECUTOR = "tests/Invoke-IsolatedTests.ps1";
+        const string C_EXECUTOR = "tools/ci/Invoke-IsolatedTests.ps1";
         const string C_UNRELATED = "tests/Unrelated.Tests/Unrelated.Tests.csproj";
         repository.Write(
             C_UNRELATED,
@@ -281,10 +281,10 @@ public sealed class ValidationSelectionTests : ValidationPlanFixture
 
     [Theory]
     [InlineData("tests/ci/Scope.Tests.ps1", false)]
-    [InlineData("tests/ci/Invoke-ValidationGate.ps1", false)]
+    [InlineData("tools/ci/Invoke-ValidationGate.ps1", false)]
     [InlineData("tests/ci/Invoke-ValidationGate.Tests.ps1", false)]
-    [InlineData("tests/ci/Test-AgentRules.ps1", false)]
-    [InlineData("tests/ci/Prepare-Unknown.ps1", true)]
+    [InlineData("tools/ci/Test-AgentRules.ps1", false)]
+    [InlineData("tools/ci/Prepare-Unknown.ps1", true)]
     [InlineData("tests/ci/nested/Scope.Tests.ps1", true)]
     public async Task StaticContractOwnersFollowActualDiscoveryWithoutSelectingProductBuilds(
         string path,
@@ -321,14 +321,14 @@ public sealed class ValidationSelectionTests : ValidationPlanFixture
     public async Task StaticContractRecognitionDoesNotHideAnExplicitProjectConsumer()
     {
         using var repository = new ValidationRepository();
-        const string C_SCRIPT = "tests/ci/Invoke-ValidationGate.ps1";
+        const string C_SCRIPT = "tools/ci/Invoke-ValidationGate.ps1";
         const string C_OWNER = "tests/Example.Tests/Example.Tests.csproj";
         repository.Write(C_SCRIPT, "Write-Output 'Original'\n");
         repository.Write(
             C_OWNER,
             File.ReadAllText(repository.PathOf(C_OWNER)).Replace(
                 "</Project>",
-                "<ItemGroup><InnoValidationInput Include=\"../ci/Invoke-ValidationGate.ps1\" /></ItemGroup></Project>",
+                "<ItemGroup><InnoValidationInput Include=\"../../tools/ci/Invoke-ValidationGate.ps1\" /></ItemGroup></Project>",
                 StringComparison.Ordinal
             )
         );

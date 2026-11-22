@@ -435,8 +435,8 @@ internal static partial class ValidationPlanner
                 proofInputs[project] = direct[project];
             }
             foreach (KeyValuePair<string, string> input in plan.inputs.Where(static pair => (
-                pair.Key is "tests/ci/Build-BackendPrebuilt.ps1" or "tests/ci/New-BackendPrebuiltPackage.ps1"
-                or "tests/ci/Initialize-BackendProduction.ps1" or "tests/ci/Prepare-BackendNativeInputs.ps1"
+                pair.Key is "tools/ci/Build-BackendPrebuilt.ps1" or "tools/ci/New-BackendPrebuiltPackage.ps1"
+                or "tools/ci/Initialize-BackendProduction.ps1" or "tools/ci/Prepare-BackendNativeInputs.ps1"
                 or ".github/workflows/backend-prebuilts.yml"
             ))) {
                 proofInputs[input.Key] = input.Value;

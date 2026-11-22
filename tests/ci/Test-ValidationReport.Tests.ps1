@@ -28,7 +28,7 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [bool]$Accept) {
     $accepted = $false
     $diagnostic = ''
     try {
-        $receipt = & (Join-Path $PSScriptRoot 'Test-ValidationReport.ps1') -PlanPath $planFile -ResultsPath $resultFile `
+        $receipt = & (Join-Path $PSScriptRoot '../../tools/ci/Test-ValidationReport.ps1') -PlanPath $planFile -ResultsPath $resultFile `
             -ExpectedCommit $state.expectedCommit -JobConclusion $state.conclusion
         if ($null -ne $state.plan.documentation -and $receipt.documentation.snapshot -cne $state.plan.documentation.snapshot) {
             throw 'Reconciliation lost the explicitly selected documentation snapshot.'

@@ -3,7 +3,7 @@ $root = Join-Path ([IO.Path]::GetFullPath('../../artifacts/validation/continuati
 $scripts = Join-Path $root 'scripts'
 New-Item -ItemType Directory -Path $scripts -Force | Out-Null
 foreach ($name in @('Get-ValidationContinuation.ps1', 'Select-ValidationArtifact.ps1', 'Expand-ValidationArtifact.ps1', 'Transfer-ValidationOutputs.ps1')) {
-    Copy-Item (Join-Path $PSScriptRoot $name) $scripts
+    Copy-Item (Join-Path $PSScriptRoot "../../tools/ci/$name") $scripts
 }
 # Receipt semantics execute in the validation contract/integration suites. This boundary fixture
 # isolates authenticated remote selection and real digest-checked archive extraction.
@@ -30,7 +30,7 @@ $artifacts = foreach ($role in $roles) {
         $compiled = Join-Path $root 'compiled-source'
         New-Item -ItemType Directory -Path $compiled | Out-Null
         'compiled fixture bytes' | Set-Content (Join-Path $compiled 'fixture.dll')
-        & "$PSScriptRoot/Transfer-ValidationOutputs.ps1" -Operation Pack -Directory $compiled -Archive (Join-Path $source 'outputs-managed.tar')
+        & "$PSScriptRoot/../../tools/ci/Transfer-ValidationOutputs.ps1" -Operation Pack -Directory $compiled -Archive (Join-Path $source 'outputs-managed.tar')
     }
     $zip = Join-Path $root "$role.zip"
     [IO.Compression.ZipFile]::CreateFromDirectory($source, $zip)

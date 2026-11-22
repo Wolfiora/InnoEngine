@@ -35,7 +35,7 @@ public sealed class ValidationCompletionTests
         using var cancellation = new CancellationTokenSource(TimeSpan.FromHours(1));
         const string C_PROBE = "tests/services/input/Inno.Input.Tests/CompilationInputProbe.cs";
         const string C_DEPENDENCY = "src/foundation/core/Inno.Core.IO/CompilationDependencyProbe.cs";
-        const string C_RULES = "tests/ci/Test-AgentRules.ps1";
+        const string C_RULES = "tools/ci/Test-AgentRules.ps1";
         string gate = repository.PathOf("artifacts/change-compilation-input");
         string source = repository.PathOf(C_PROBE);
         repository.Write(
@@ -167,7 +167,7 @@ public sealed class ValidationCompletionTests
         );
         string signal = repository.PathOf("artifacts/check-ready");
         string release = repository.PathOf("artifacts/check-release");
-        const string C_RULES = "tests/ci/Test-AgentRules.ps1";
+        const string C_RULES = "tools/ci/Test-AgentRules.ps1";
         repository.Write(
             C_RULES,
             File.ReadAllText(repository.PathOf(C_RULES)) + "\n"

@@ -26,7 +26,7 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [bool]$Expected) {
     if (-not $state.missing) { $state.report | ConvertTo-Json -Depth 12 | Set-Content $file -Encoding utf8NoBOM }
     $accepted = $false; $diagnostic = ''
     try {
-        $receipt = @(& "$PSScriptRoot/Get-DocumentationExampleReceipt.ps1" -Plan $state.plan -Evidence $state.evidence -Context $state.context -Directory $directory)
+        $receipt = @(& "$PSScriptRoot/../../tools/ci/Get-DocumentationExampleReceipt.ps1" -Plan $state.plan -Evidence $state.evidence -Context $state.context -Directory $directory)
         if ($receipt.Count -ne 1 -or $receipt[0].reportIdentity -cne (Get-FileHash $file).Hash.ToLowerInvariant() `
             -or $receipt[0].pages[0].blocks.Count -ne 1 -or $receipt[0].pages[0].projects[0] -cne 'Probe') { throw 'Example receipt lost actual compiled input or included a reference declaration.' }
         $accepted = $true

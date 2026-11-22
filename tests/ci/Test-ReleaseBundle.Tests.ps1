@@ -19,7 +19,7 @@ function Invoke-BundleCase([string]$Name, [scriptblock]$Change, [bool]$Accept) {
     $manifest | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $directory 'deliverable-manifest.json')
     $accepted = $false
     try {
-        $null = & "$PSScriptRoot/Test-ReleaseBundle.ps1" -Directory $directory -Commit $commit -Platform windows-2022 -Receipt $receipt
+        $null = & "$PSScriptRoot/../../tools/ci/Test-ReleaseBundle.ps1" -Directory $directory -Commit $commit -Platform windows-2022 -Receipt $receipt
         $accepted = $true
     } catch { if ($Accept) { throw } }
     if ($accepted -ne $Accept) { throw "Unexpected artifact content result: $Name" }
@@ -52,7 +52,7 @@ function Invoke-ZipCase([string]$Name, [string[]]$Members, [bool]$Accept, [bool]
     if ($Corrupt) { $digest = 'sha256:' + ('0' * 64) }
     $accepted = $false
     try {
-        & "$PSScriptRoot/Expand-ValidationArtifact.ps1" -ArchivePath $path -Destination (Join-Path $root ($Name + '-extracted')) -ExpectedDigest $digest
+        & "$PSScriptRoot/../../tools/ci/Expand-ValidationArtifact.ps1" -ArchivePath $path -Destination (Join-Path $root ($Name + '-extracted')) -ExpectedDigest $digest
         $accepted = $true
     } catch { if ($Accept) { throw } }
     if ($accepted -ne $Accept) { throw "Unexpected archive boundary result: $Name" }

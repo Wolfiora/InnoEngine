@@ -1,7 +1,7 @@
 param([string]$DocsRoot)
 $ErrorActionPreference = 'Stop'
 $repository = [IO.Path]::GetFullPath('../..', $PSScriptRoot)
-$entry = Join-Path $PSScriptRoot 'Test-AgentRules.ps1'
+$entry = Join-Path $PSScriptRoot '../../tools/ci/Test-AgentRules.ps1'
 
 function Assert-Rejected([string]$message, [scriptblock]$action) {
     $failure = $null
@@ -34,11 +34,11 @@ $fixture = Join-Path ([IO.Path]::GetFullPath([IO.Path]::GetTempPath())) ('InnoRu
 try {
     $rules = Join-Path $fixture '.agents/rulebook'
     $docs = Join-Path $fixture 'docs-checkout'
-    foreach ($directory in @((Join-Path $fixture 'tests/ci'), (Join-Path $rules 'domains'), (Join-Path $docs '.agents/rulebook'))) {
+    foreach ($directory in @((Join-Path $fixture 'tools/ci'), (Join-Path $rules 'domains'), (Join-Path $docs '.agents/rulebook'))) {
         [void][IO.Directory]::CreateDirectory($directory)
     }
-    $fixtureEntry = Join-Path $fixture 'tests/ci/Test-AgentRules.ps1'
-    $examples = Join-Path $fixture 'tests/ci/Test-AgentRules.examples.json'
+    $fixtureEntry = Join-Path $fixture 'tools/ci/Test-AgentRules.ps1'
+    $examples = Join-Path $fixture 'tools/ci/Test-AgentRules.examples.json'
     Copy-Item -LiteralPath $entry -Destination $fixtureEntry
     function Write-Fixture([string]$path, [string]$text) { [IO.File]::WriteAllText((Join-Path $fixture $path), $text) }
     Write-Fixture 'AGENTS.md' "# Entry`n"
@@ -48,7 +48,7 @@ try {
     Write-Fixture '.agents/rulebook/delivery.md' "---`ntags: [delivery, shared]`n---`n# Delivery`n"
     Write-Fixture 'docs-checkout/.agents/rulebook/README.md' "# Docs index`n"
     Write-Fixture 'docs-checkout/.agents/rulebook/writing.md' "---`npaths: [`"content/**`"]`ntags: [writing]`n---`n# Writing`n"
-    Write-Fixture 'tests/ci/Test-AgentRules.examples.json' '[{ "path": "src/editor/State.cs", "includes": ["coding", "domains/editor"], "excludes": ["delivery"] }]'
+    Write-Fixture 'tools/ci/Test-AgentRules.examples.json' '[{ "path": "src/editor/State.cs", "includes": ["coding", "domains/editor"], "excludes": ["delivery"] }]'
 
     # Globs match the whole path, `*` stays inside one name and matching is case-sensitive.
     $valid = @(& $fixtureEntry) -join "`n"
@@ -81,9 +81,9 @@ try {
         @{ message = 'not a repository-relative glob'; path = '.agents/rulebook/broken.md'; text = "---`npaths: [`"src/../**`"]`n---`n# Rule`n" },
         @{ message = 'exceeds 16384 bytes'; path = '.agents/rulebook/broken.md'; text = "---`ntags: [large]`n---`n" + ('x' * 16384) },
         @{ message = 'Root instructions exceed 8192 bytes'; path = 'AGENTS.md'; text = 'x' * 8193 },
-        @{ message = 'must select delivery'; path = 'tests/ci/Test-AgentRules.examples.json'; text = '[{ "path": "src/a.cs", "includes": ["delivery"] }]' },
-        @{ message = 'must not select coding'; path = 'tests/ci/Test-AgentRules.examples.json'; text = '[{ "path": "src/a.cs", "excludes": ["coding"] }]' },
-        @{ message = 'names an unknown rule: retired'; path = 'tests/ci/Test-AgentRules.examples.json'; text = '[{ "path": "src/a.cs", "excludes": ["retired"] }]' }
+        @{ message = 'must select delivery'; path = 'tools/ci/Test-AgentRules.examples.json'; text = '[{ "path": "src/a.cs", "includes": ["delivery"] }]' },
+        @{ message = 'must not select coding'; path = 'tools/ci/Test-AgentRules.examples.json'; text = '[{ "path": "src/a.cs", "excludes": ["coding"] }]' },
+        @{ message = 'names an unknown rule: retired'; path = 'tools/ci/Test-AgentRules.examples.json'; text = '[{ "path": "src/a.cs", "excludes": ["retired"] }]' }
     )
     foreach ($case in $cases) {
         $target = Join-Path $fixture $case.path

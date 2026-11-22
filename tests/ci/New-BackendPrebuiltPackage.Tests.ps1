@@ -6,7 +6,7 @@ $boundary = [IO.Directory]::CreateDirectory((Join-Path $root 'artifacts/validati
 $owner = [IO.Directory]::CreateDirectory((Join-Path $boundary ([guid]::NewGuid().ToString('N')))).FullName
 try {
     if (!$EntryAssembly) {
-        $EntryAssembly = @(& "$PSScriptRoot/Initialize-ValidationEntry.ps1" -Dotnet (Get-Command $Dotnet).Source -LogPath "$owner/entry.log" -WorkspaceDirectory "$owner/bootstrap")[0]
+        $EntryAssembly = @(& "$PSScriptRoot/../../tools/ci/Initialize-ValidationEntry.ps1" -Dotnet (Get-Command $Dotnet).Source -LogPath "$owner/entry.log" -WorkspaceDirectory "$owner/bootstrap")[0]
     }
     $target = (Get-Content "$root/.github/native-targets.json" -Raw | ConvertFrom-Json)[0].target
     $stage = [IO.Directory]::CreateDirectory("$owner/staging").FullName
@@ -26,14 +26,14 @@ try {
     $argsForPackage = @{Staging=$stage; InputPlans=@("$owner/plan.json"); NativeSelection="$owner/selection.json"; EntryAssembly=$EntryAssembly;
         Target=$target;OutputDirectory="$owner/output";Dotnet=$Dotnet}
     $selection | ConvertTo-Json -Depth 8 | Set-Content "$owner/selection.json"
-    $archive = @(& "$PSScriptRoot/New-BackendPrebuiltPackage.ps1" @argsForPackage)[-1]
+    $archive = @(& "$PSScriptRoot/../../tools/ci/New-BackendPrebuiltPackage.ps1" @argsForPackage)[-1]
     $zip = [IO.Compression.ZipFile]::OpenRead($archive)
     try {
         if (!$zip.GetEntry("native/$digest.zip") -or !$zip.GetEntry('managed/tool/lib/tool.dll')) { throw 'The certified native or managed payload is missing.' }
     } finally { $zip.Dispose() }
     $selection.requests[0].digests += ('c' * 64)
     $selection | ConvertTo-Json -Depth 8 | Set-Content "$owner/selection.json"
-    try { & "$PSScriptRoot/New-BackendPrebuiltPackage.ps1" @argsForPackage; throw 'A receipt with a missing component was accepted.' }
+    try { & "$PSScriptRoot/../../tools/ci/New-BackendPrebuiltPackage.ps1" @argsForPackage; throw 'A receipt with a missing component was accepted.' }
     catch { if ($_.Exception.Message -cne 'A certified native product references a missing payload.') { throw } }
 } finally {
     if ([IO.Directory]::GetParent($owner).FullName -ne $boundary) { throw 'Unexpected fixture owner.' }

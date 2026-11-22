@@ -17,7 +17,7 @@ namespace Inno.Tooling.Validation;
 
 internal static class ValidationRunner
 {
-    internal const string C_TEST_EXECUTOR = "tests/Invoke-IsolatedTests.ps1";
+    internal const string C_TEST_EXECUTOR = "tools/ci/Invoke-IsolatedTests.ps1";
 
     internal static async Task<ValidationEvidence> RunAsync(
         ValidationPlan plan,
@@ -200,7 +200,7 @@ internal static class ValidationRunner
                             }
                             break;
                         case "hot-builds":
-                            await ShellAsync("tests/Invoke-BuildCacheChecks.ps1", [
+                            await ShellAsync("tools/ci/Invoke-BuildCacheChecks.ps1", [
                                 "-Dotnet",
                                 plan.dotnet,
                                 "-PlanPath",
@@ -623,7 +623,7 @@ internal static class ValidationRunner
                                     cancellationToken: cancellationToken
                                 ).ConfigureAwait(false);
                                 await ShellAsync(
-                                    "tests/ci/Test-SupportPackClosure.ps1",
+                                    "tools/ci/Test-SupportPackClosure.ps1",
                                     ["-Archive", Path.Combine(deliverables, "PlayerSupportPack.zip")],
                                     "support-pack-closure.log"
                                 ).ConfigureAwait(false);

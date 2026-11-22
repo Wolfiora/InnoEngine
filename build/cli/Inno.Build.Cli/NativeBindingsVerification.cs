@@ -60,7 +60,7 @@ internal static partial class NativeBindingsVerification
                 .ConfigureAwait(false);
             nativeContext = nativeContext.WithToolchain(sdk);
             string testHost = ToolchainEnvironment.ResolveExecutable("pwsh");
-            string testEntry = Path.Combine(repositoryRoot, "tests", "Invoke-IsolatedTests.ps1");
+            string testEntry = Path.Combine(repositoryRoot, "tools", "ci", "Invoke-IsolatedTests.ps1");
             if (!File.Exists(testEntry))
             {
                 throw new FileNotFoundException("The common test execution entry is unavailable.", testEntry);

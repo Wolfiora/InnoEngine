@@ -16,7 +16,7 @@ public sealed class ValidationFailureExecutionTests
     public async Task FailedContractBlocksItsDependentButIndependentContextStillExecutes()
     {
         using var repository = new ValidationRepository();
-        repository.Write("tests/ci/Test-AgentRules.ps1", "Write-Output 'Independent policy executed'");
+        repository.Write("tools/ci/Test-AgentRules.ps1", "Write-Output 'Independent policy executed'");
         repository.Write("tests/ci/Failure.Tests.ps1", "Write-Output ('x' * 20000)\nthrow 'Original contract failure'");
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare independent verification scripts");

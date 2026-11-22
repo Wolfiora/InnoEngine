@@ -10,7 +10,7 @@ $owner = [IO.Directory]::CreateDirectory((Join-Path $work "backend-request-$runn
 $file = Join-Path $owner 'acquisition.json'
 function Join-Requests([array]$Packages, [string]$Commit=$revision, [string]$RebuildTargets, [bool]$Deferred=($Packages.Count -gt 0)) {
     [IO.File]::WriteAllText($file,(ConvertTo-Json @{commit=$Commit;packages=$Packages;deferred=$Deferred;executedLocally=$false} -Depth 8))
-    & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts @($runner) -Revision $revision -RebuildTargets $RebuildTargets
+    & "$PSScriptRoot/../../tools/ci/Join-BackendAcquisitions.ps1" -Received $work -Hosts @($runner) -Revision $revision -RebuildTargets $RebuildTargets
 }
 try {
     $none = Join-Requests @()
@@ -30,30 +30,30 @@ try {
             $peerPackage = @{target=$peer.target;operation='produce';sha256=$null;assetId=$null}
             $peerDecision = @{commit=$revision;packages=@($peerPackage);deferred=$true;executedLocally=$false;portableTestChanges=$false}
             [IO.File]::WriteAllText($peerFile,(ConvertTo-Json $peerDecision -Depth 8))
-            $split = & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
+            $split = & "$PSScriptRoot/../../tools/ci/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
             if ($split.chains.Count -ne 2) { throw 'Disjoint target requests must start independent chains.' }
             $peerDecision.packages += $prior
             [IO.File]::WriteAllText($peerFile,(ConvertTo-Json $peerDecision -Depth 8))
-            $shared = & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
+            $shared = & "$PSScriptRoot/../../tools/ci/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
             if ($shared.chains.Count -ne 1 -or $shared.chains[0].consumers.include.Count -ne 2 -or $shared.chains[0].platforms.include.Count -ne 2) {
                 throw 'A shared target requires one acquisition for both consumers.'
             }
             $peerDecision.packages = @()
             $peerDecision.deferred = $false
             [IO.File]::WriteAllText($peerFile,(ConvertTo-Json $peerDecision -Depth 8))
-            $ready = & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
+            $ready = & "$PSScriptRoot/../../tools/ci/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
             if ($ready.independent.Count -ne 1 -or $ready.independent[0].runner -cne $peer.runner -or $ready.chains.Count -ne 1) {
                 throw 'A host with no pending producer must not wait for other hosts.'
             }
             $peerDecision.executedLocally = $true
             [IO.File]::WriteAllText($peerFile,(ConvertTo-Json $peerDecision -Depth 8))
             $rejected = $false
-            try { $null = & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision }
+            try { $null = & "$PSScriptRoot/../../tools/ci/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision }
             catch { $rejected = $_.Exception.Message.Contains('inline host') }
             if (!$rejected) { throw 'A product host was allowed to suppress its independent worker.' }
             $peerDecision.portableTestChanges = $true
             [IO.File]::WriteAllText($peerFile,(ConvertTo-Json $peerDecision -Depth 8))
-            $mixed = & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
+            $mixed = & "$PSScriptRoot/../../tools/ci/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
             if ($mixed.independent.Count -or $mixed.chains.Count -ne 1) { throw 'A completed domain suite was dispatched again.' }
         } finally {
             if ([IO.File]::Exists($peerFile)) { [IO.File]::Delete($peerFile) }

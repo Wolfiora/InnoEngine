@@ -8,7 +8,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$repository = Split-Path $PSScriptRoot -Parent
+$repository = [IO.Path]::GetFullPath('../..', $PSScriptRoot)
 $Dotnet = (Get-Command $Dotnet -ErrorAction Stop).Source
 $results = [IO.Path]::GetFullPath($ResultsDirectory, $repository)
 New-Item -ItemType Directory -Force -Path $results | Out-Null

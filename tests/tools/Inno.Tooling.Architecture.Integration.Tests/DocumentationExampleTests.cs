@@ -643,7 +643,7 @@ public sealed class DocumentationExampleTests : IDisposable
                 project = $owner; owners = @($owner); sourceIdentity = $hash; environment = $hash; configuration = 'Debug'; target = $null
                 packages = @{}; sources = @{ $owner = (Get-FileHash "$PSScriptRoot/../$owner" -Algorithm SHA256).Hash.ToLowerInvariant() } }) }) }
             $context = @{ snapshot = $catalog.snapshot; contentIdentity = $catalog.contentIdentity; sourceTree = $catalog.sourceTree }
-            $receipt = @(& "$Repository/tests/ci/Get-DocumentationExampleReceipt.ps1" -Plan $plan -Evidence $evidence -Context $context -Directory $PSScriptRoot)
+            $receipt = @(& "$Repository/tools/ci/Get-DocumentationExampleReceipt.ps1" -Plan $plan -Evidence $evidence -Context $context -Directory $PSScriptRoot)
             if ($receipt.Count -ne 1 -or $receipt[0].pages.Count -ne 1 -or $receipt[0].pages[0].page -cne $Page) {
                 throw 'The real compiler report lost its selected example during CI reconciliation.'
             }

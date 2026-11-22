@@ -22,7 +22,7 @@ $sdkEnvironment = @('--environment', "DOTNET_ROOT=$sdkDirectory",
 $assemblyEnvironment = @('--environment', "DOTNET_HOST_PATH=$Dotnet",
     '--environment', "PATH=$sdkDirectory$([IO.Path]::PathSeparator)$env:PATH")
 
-$repositoryRoot = Split-Path $PSScriptRoot -Parent
+$repositoryRoot = [IO.Path]::GetFullPath('../..', $PSScriptRoot)
 $executionEnvironment = @('--environment', "INNO_TESTING_REPOSITORY_ROOT=$repositoryRoot")
 if ($ArtifactsPath) {
     $executionEnvironment += @('--environment', "INNO_TESTING_ARTIFACTS_PATH=$([IO.Path]::GetFullPath($ArtifactsPath, $repositoryRoot))")
@@ -138,7 +138,7 @@ $projects = @($selectedProjects | ForEach-Object {
         }
 })
 
-$loggerProject = Join-Path $PSScriptRoot 'support/Inno.Testing.Discovery.TestLogger/Inno.Testing.Discovery.TestLogger.csproj'
+$loggerProject = Join-Path $repositoryRoot 'tests/support/Inno.Testing.Discovery.TestLogger/Inno.Testing.Discovery.TestLogger.csproj'
 $logger = @($snapshots | Where-Object { [IO.Path]::GetFullPath($_.Path) -eq $loggerProject })
 $assemblies = [Collections.Generic.Dictionary[string,object]]::new($(if ($IsWindows) { [StringComparer]::OrdinalIgnoreCase } else { [StringComparer]::Ordinal }))
 $contracts = @{}
@@ -215,7 +215,7 @@ foreach ($project in $projects) {
                 --blame --logger "trx;LogFileName=$reportName" --logger 'console;verbosity=normal' --results-directory $resultsRoot @assemblyEnvironment @runnerSettings
             $caseExit = $LASTEXITCODE
             if ($caseExit -eq 0) {
-                & (Join-Path $PSScriptRoot 'ci/Test-IsolatedExecution.ps1') -Report (Join-Path $resultsRoot $reportName) -Contract $name
+                & (Join-Path $PSScriptRoot 'Test-IsolatedExecution.ps1') -Report (Join-Path $resultsRoot $reportName) -Contract $name
             }
             Add-CheckResult 'Isolated' $name $(if ($caseExit -eq 0) { 'Passed' } else { 'Failed' }) $caseExit '' -Owner $project.FullName
         } catch {

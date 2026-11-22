@@ -54,7 +54,7 @@ jobs:
           VERIFY_ONLY: ${{ inputs.verify_only }}
           COMPLETE_MISSING: ${{ inputs.complete_missing }}
         run: |
-          ./tests/ci/New-ValidatedDraftRelease.ps1 -RunId ([long]$env:RELEASE_RUN_ID) -Commit $env:RELEASE_COMMIT `
+          ./tools/ci/New-ValidatedDraftRelease.ps1 -RunId ([long]$env:RELEASE_RUN_ID) -Commit $env:RELEASE_COMMIT `
             -Tag $env:RELEASE_TAG -Repository $env:GITHUB_REPOSITORY -ApiUrl $env:GITHUB_API_URL `
             -VerifyOnly:($env:VERIFY_ONLY -ceq 'true') -CompleteMissing:($env:COMPLETE_MISSING -ceq 'true')
       - name: Retain release verification and failure evidence

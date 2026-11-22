@@ -9,7 +9,7 @@ try {
     $native = Join-Path $owner 'native'
     $arguments = @{Target=$target.target;HostTarget=$target.target;Operation='consume';OutputDirectory=$output;NativeDirectory=$native
         PreviousZip=$archive;PreviousDigest=$digest;Dotnet='an-sdk-must-not-run-for-an-unchanged-transfer'}
-    & "$PSScriptRoot/Initialize-BackendProduction.ps1" @arguments
+    & "$PSScriptRoot/../../tools/ci/Initialize-BackendProduction.ps1" @arguments
     $receipt = Get-Content -LiteralPath (Join-Path $output 'candidate.json') -Raw | ConvertFrom-Json
     if (!$receipt.reused -or $receipt.sha256 -cne $digest -or $receipt.target -cne $target.target -or
         (Get-FileHash -LiteralPath (Join-Path $output $target.asset)).Hash.ToLowerInvariant() -cne $digest -or (Test-Path -LiteralPath $native)) {
@@ -17,11 +17,11 @@ try {
     }
     $arguments.OutputDirectory = Join-Path $owner 'bad'
     $arguments.PreviousDigest = '0'*64
-    try { & "$PSScriptRoot/Initialize-BackendProduction.ps1" @arguments; throw 'A different seed was accepted.' }
+    try { & "$PSScriptRoot/../../tools/ci/Initialize-BackendProduction.ps1" @arguments; throw 'A different seed was accepted.' }
     catch { if ($_.Exception.Message -cne 'Backend producer seed differs from the catalog.') { throw } }
     if (Test-Path -LiteralPath (Join-Path $arguments.OutputDirectory 'candidate.json')) { throw 'Rejected transfer published a receipt.' }
     $root = Join-Path $owner 'workspace with spaces'
-    $scripts = Join-Path $root 'tests/ci'
+    $scripts = Join-Path $root 'tools/ci'
     $project = Join-Path $root 'entry/InnoEngine.Build'
     New-Item -ItemType Directory -Path $project,$scripts,"$root/.github" -Force | Out-Null
     '<Project />' | Set-Content "$root/Directory.Build.props"
@@ -30,7 +30,7 @@ try {
         Set-Content "$project/InnoEngine.Build.csproj"
     'System.Console.WriteLine("backend-entry-verified");' | Set-Content "$project/Program.cs"
     '[{"target":"fixture-host"}]' | Set-Content "$root/.github/native-targets.json"
-    Copy-Item "$PSScriptRoot/Initialize-BackendProduction.ps1" $scripts
+    Copy-Item "$PSScriptRoot/../../tools/ci/Initialize-BackendProduction.ps1" $scripts
     'return $false' | Set-Content "$scripts/Initialize-NativeDependencyWorkloads.ps1"
     @'
 param($Target,$HostTarget,$BuildEntry,$Dotnet,$Directory,$PreviousDirectory)

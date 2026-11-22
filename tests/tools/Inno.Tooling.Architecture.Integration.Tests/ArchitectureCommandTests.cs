@@ -187,6 +187,37 @@ public sealed class ArchitectureCommandTests
     }
 
     [Theory]
+    [InlineData("tests/ci/Probe.Tests.ps1", false)]
+    [InlineData("tests/ci/fixtures/probe.json", false)]
+    [InlineData("tools/ci/Invoke-Probe.ps1", false)]
+    [InlineData("tests/ci/Invoke-Probe.ps1", true)]
+    [InlineData("tests/ci/Probe.examples.json", true)]
+    [InlineData("tests/ci/nested/Probe.Tests.ps1", true)]
+    public void CiContractDirectoryHoldsOnlyContractsAndTheirFixtures(
+        string relative,
+        bool rejected
+    ) {
+        string root = Path.Combine(Path.GetTempPath(), "InnoCiContractTests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            Directory.CreateDirectory(root);
+            File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), "Microsoft Visual Studio Solution File, Format Version 12.00");
+            string path = Path.Combine(root, relative);
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, "Write-Output 'probe'\n");
+            (_, string output) = ArchitectureCommandFixture.Run(root);
+            Assert.Equal(rejected, output.Contains("a script that CI executes belongs to tools/ci", StringComparison.Ordinal));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Theory]
     [InlineData("src/services/audio/Probe.cs", "global using System;", "global using", true)]
     [InlineData(
         "src/composition/player/Inno.Player.Runtime/Probe.cs",

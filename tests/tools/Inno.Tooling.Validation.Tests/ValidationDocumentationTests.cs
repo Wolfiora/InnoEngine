@@ -433,7 +433,7 @@ public sealed class ValidationDocumentationTests
                 "src/Example/Changed.cs",
                 "namespace Example; /// <summary>A captured source contract.</summary>\npublic class Changed { }"
             );
-            repository.Write("tests/ci/Test-AgentRules.ps1", "Write-Output 'Fixture policy passed'");
+            repository.Write("tools/ci/Test-AgentRules.ps1", "Write-Output 'Fixture policy passed'");
             repository.Write("tests/ci/CapturePolicy.Tests.ps1", "Write-Output 'Fixture compilation policy passed'");
         }
         using JsonDocument plan = await docs.PlanAsync(current, baseline);

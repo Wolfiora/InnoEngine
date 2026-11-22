@@ -148,7 +148,7 @@ public sealed class ValidationEvidenceIdentityTests : ValidationPlanFixture
                 + "[IO.File]::SetLastWriteTimeUtc($path, $stamp)"
             ))
         );
-        repository.Write("tests/ci/Test-AgentRules.ps1", script);
+        repository.Write("tools/ci/Test-AgentRules.ps1", script);
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare check-time source and environment mutations");
         using JsonDocument plan = await repository.PlanAsync();

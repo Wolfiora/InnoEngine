@@ -38,7 +38,7 @@ $execute = {
         $env:InnoBackendHostTarget = $frozen.backendHost
         $env:InnoNativeDependencyManifest = [IO.Path]::GetFullPath($frozen.nativeDependencies, $checkout)
     }
-    ./tests/ci/Invoke-ValidationCi.ps1 -Stage Run -BaseRevision $commit -ExpectedCommit $commit `
+    ./tools/ci/Invoke-ValidationCi.ps1 -Stage Run -BaseRevision $commit -ExpectedCommit $commit `
         -Shard $shard -PlanDirectory $planDirectory -OutputDirectory "artifacts/validation/shards/$shard" `
         -PrerequisitesDirectory $prerequisites -SourceRunId $sourceRun
 }
@@ -106,7 +106,7 @@ while ($pending.Count -gt 0) {
                     $owner = New-Item -ItemType Directory -Path (Join-Path $inputs "validation-result-$Platform-$dependency-attempt-$Attempt")
                     Copy-Item -LiteralPath $receipts[$dependency] -Destination $owner
                 }
-                & (Join-Path $checkout 'tests/ci/Prepare-ValidationShard.ps1') -ReceivedDirectory $inputs -Platform $Platform -Shard $id -Attempt $Attempt
+                & (Join-Path $checkout 'tools/ci/Prepare-ValidationShard.ps1') -ReceivedDirectory $inputs -Platform $Platform -Shard $id -Attempt $Attempt
                 $prerequisites = Join-Path $checkout 'artifacts/validation/prerequisites'
             }
             $output = Join-Path $checkout "artifacts/validation/shards/$id"

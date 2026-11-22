@@ -1,5 +1,5 @@
 ---
-paths: ["tests/**", "**/tests/**", "AGENTS.md", "CONTRIBUTING.md", ".agents/**"]
+paths: ["tests/**", "**/tests/**", "tools/ci/**", "AGENTS.md", "CONTRIBUTING.md", ".agents/**"]
 tags: [tests, compilation, completion, review, new-boundary, public-api, ownership, delivery, rules, skills, records]
 ---
 # Validation

@@ -19,10 +19,10 @@ try {
     $pin = Invoke-FixtureGit $source @('rev-parse', 'HEAD')
     foreach ($case in $cases) {
         $root = Join-Path $directory $case
-        $scripts = Join-Path $root 'tests/ci'
+        $scripts = Join-Path $root 'tools/ci'
         $output = Join-Path $root 'artifacts'
         New-Item -ItemType Directory -Path $scripts, $output -Force | Out-Null
-        Copy-Item -LiteralPath "$PSScriptRoot/Prepare-ValidationSources.ps1" -Destination $scripts
+        Copy-Item -LiteralPath "$PSScriptRoot/../../tools/ci/Prepare-ValidationSources.ps1" -Destination $scripts
         "artifacts/`n" | Set-Content (Join-Path $root '.gitignore')
         'Committed engine inputs.' | Set-Content (Join-Path $root 'engine.txt')
         $null = Invoke-FixtureGit $root @('init', '-q')

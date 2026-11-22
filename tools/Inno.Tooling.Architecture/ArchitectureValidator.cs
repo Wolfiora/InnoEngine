@@ -246,6 +246,7 @@ public static partial class ArchitectureValidator
             ValidateProjectReferences(repositoryRoot, failures);
             ValidateProductionSolutionFolders(repositoryRoot, failures);
             ValidateTestSolutionFolders(repositoryRoot, failures);
+            ValidateCiContractDirectory(repositoryRoot, failures);
             ArchitectureRules.Validate(repositoryRoot, failures);
         }
         IReadOnlyDictionary<string, string>? outputs = null;
@@ -612,6 +613,31 @@ public static partial class ArchitectureValidator
                 ) {
                     failures.Add($"{projectRelative}: RmlUi native code is restricted to the RmlUi adapter.");
                 }
+            }
+        }
+    }
+
+    // tests/ci proves the scripts CI runs; the scripts themselves are production tooling in tools/ci.
+    private static void ValidateCiContractDirectory(
+        string repositoryRoot,
+        ICollection<string> failures
+    ) {
+        string directory = Path.Combine(repositoryRoot, "tests", "ci");
+        if (!Directory.Exists(directory))
+        {
+            return;
+        }
+        foreach (string entry in Directory.EnumerateFileSystemEntries(directory).Order(StringComparer.Ordinal))
+        {
+            string name = Path.GetFileName(entry);
+            bool contract = File.Exists(entry) && name.EndsWith(".Tests.ps1", StringComparison.Ordinal);
+            bool fixtures = Directory.Exists(entry) && name == "fixtures";
+            if (!contract && !fixtures)
+            {
+                failures.Add(
+                    $"{Relative(repositoryRoot, entry)}: tests/ci holds only *.Tests.ps1 contracts and their fixtures directory; "
+                    + "a script that CI executes belongs to tools/ci."
+                );
             }
         }
     }

@@ -880,7 +880,7 @@ internal static partial class ValidationPlanner
                     "native-host",
                     [editorBuild.id],
                     editorBuild.inputs
-                        .Append("tests/Invoke-BuildCacheChecks.ps1")
+                        .Append("tools/ci/Invoke-BuildCacheChecks.ps1")
                         .ToArray(),
                     false,
                     null,
@@ -1665,6 +1665,7 @@ internal static partial class ValidationPlanner
 
     private static bool IsCiContractInput(string path)
         => path.StartsWith("tests/ci/", StringComparison.Ordinal)
+           || path.StartsWith("tools/ci/", StringComparison.Ordinal)
            || path.StartsWith("tests/product/fixtures/editor-ui/", StringComparison.Ordinal)
            || path == "tests/product/Invoke-EditorUiProductJourney.ps1";
 

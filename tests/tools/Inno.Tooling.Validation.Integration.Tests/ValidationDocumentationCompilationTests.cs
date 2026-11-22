@@ -47,7 +47,7 @@ public sealed class ValidationDocumentationCompilationTests
                 + "<ItemGroup><PackageReference Include=\"Inno.ProofFixture\" Version=\"1.0.0\" /></ItemGroup>"
             )
         );
-        repository.Write("tests/ci/Test-AgentRules.ps1", "Write-Output 'Fixture instructions passed'\n");
+        repository.Write("tools/ci/Test-AgentRules.ps1", "Write-Output 'Fixture instructions passed'\n");
         repository.Write("tests/ci/Policy.Tests.ps1", "Write-Output 'Fixture compilation policy passed'\n");
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare actual package and finite compilation policy");

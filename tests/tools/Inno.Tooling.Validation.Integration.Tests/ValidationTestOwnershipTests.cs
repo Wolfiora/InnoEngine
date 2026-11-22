@@ -88,7 +88,7 @@ public sealed class ValidationTestOwnershipTests
             "Expected " + expected + "; original owner evidence: " + originalUI.GetRawText() + "; repaired: " + ui.GetRawText()
         );
 
-        const string C_EXECUTOR = "tests/Invoke-IsolatedTests.ps1";
+        const string C_EXECUTOR = "tools/ci/Invoke-IsolatedTests.ps1";
         string executor = File.ReadAllText(repository.PathOf(C_EXECUTOR));
         repository.Write(
             C_EXECUTOR,

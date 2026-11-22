@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 $commit = 'a' * 40
-$script = Join-Path $PSScriptRoot 'Select-ValidationCadence.ps1'
+$script = Join-Path $PSScriptRoot '../../tools/ci/Select-ValidationCadence.ps1'
 $daily = @{ Event = 'schedule'; Commit = $commit; Schedule = '17 19 * * *' }
 $fresh = & $script @daily
 if (-not $fresh.run -or -not $fresh.full -or $fresh.extended -or $fresh.profile -cne 'full') { throw 'Nightly requires complete functional validation.' }

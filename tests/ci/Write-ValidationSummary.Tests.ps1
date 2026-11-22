@@ -15,7 +15,7 @@ try {
                 ConvertTo-Json -Depth 5 | Set-Content (Join-Path $resultDirectory 'results.json')
         }
         $summary = Join-Path $directory "$case/summary.md"
-        & "$PSScriptRoot/Write-ValidationSummary.ps1" -ReceivedDirectory $received -Hosts @('fixture-host') `
+        & "$PSScriptRoot/../../tools/ci/Write-ValidationSummary.ps1" -ReceivedDirectory $received -Hosts @('fixture-host') `
             -Repository fixture/engine -DefaultBranch master -Attempt 1 -RunId 1 -SummaryPath $summary
         $text = Get-Content -LiteralPath $summary -Raw
         if ($text -match 'windows-|macos-') { throw 'The summary invented an unselected host requirement.' }
