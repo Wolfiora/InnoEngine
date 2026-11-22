@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Core.Diagnostics;
-using Inno.Core.Events;
 using Inno.Core.Input;
 using Inno.Core.Logging;
 using Inno.Editor.Core;
@@ -364,20 +363,5 @@ public sealed unsafe class NativePanelHost : IDisposable
                 }
             }
         }
-    }
-
-    internal sealed class InactivePlayMode : IEditorPlayMode
-    {
-        private readonly EventDispatcher m_events = new();
-        public EditorPlayModeState state => EditorPlayModeState.Editing;
-        public bool isPlaying => false;
-        public string? lastFailure => null;
-        public LogSessionID activeSessionID => LogSessionID.none;
-
-        public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener) => m_events.CreateHub();
-
-        public bool EnterPlayMode() => false;
-
-        public bool ExitPlayMode() => false;
     }
 }

@@ -274,6 +274,7 @@ public sealed class EditorHistoryTests
         fixture.history.RecordApplied("Change Neutral Value", NeutralValueHistoryHandler.CreateChange(1, 3, 14));
         fixture.types.Rebuild();
         _ = fixture.runtime.panelCount;
+        Assert.True(fixture.history.canUndo);
         Assert.True(fixture.history.Undo().succeeded);
         Assert.Equal(3, NeutralValueHistoryHandler.GetValue(1));
         Assert.True(fixture.history.Redo().succeeded);

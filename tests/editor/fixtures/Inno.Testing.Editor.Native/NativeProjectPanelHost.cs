@@ -25,7 +25,7 @@ using Inno.Scene;
 namespace Inno.Testing.Editor.Native;
 
 /// <summary>
-/// Owns a temporary project, authoring services and real native panels for contract and performance acceptance.
+/// Owns a temporary project, authoring services and real native panels for contract acceptance.
 /// </summary>
 /// <remarks>
 /// Use and dispose the complete fixture on one thread. Returned services remain owned by this fixture.
@@ -109,7 +109,7 @@ public sealed class NativeProjectPanelHost : IDisposable
             pluginSources.Scan(),
             m_engine.modules.generations
         );
-        m_console = new EditorConsole(m_engine.logs, m_engine.diagnostics, new NativePanelHost.InactivePlayMode());
+        m_console = new EditorConsole(m_engine.logs, m_engine.diagnostics, new InactivePlayMode());
         m_console.Start();
         var ui = new EditorUISession();
         this.reloads = new EditorReloadCoordinator();

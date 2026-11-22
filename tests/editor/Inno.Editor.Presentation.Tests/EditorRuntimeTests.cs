@@ -399,20 +399,6 @@ public sealed partial class EditorRuntimeTests : IDisposable
     }
 
     [Fact]
-    public void NeutralHistorySurvivesATypeCatalogGenerationChange()
-    {
-        NeutralHistoryHandler.value = 14;
-        m_runtime.interactions.history.RecordApplied("Change Neutral Value", NeutralHistoryHandler.CreateChange(before: 3, after: 14));
-        m_types.Rebuild();
-        _ = m_runtime.panelCount;
-        Assert.True(m_runtime.interactions.history.canUndo);
-        Assert.True(m_runtime.interactions.history.Undo().succeeded);
-        Assert.Equal(3, NeutralHistoryHandler.value);
-        Assert.True(m_runtime.interactions.history.Redo().succeeded);
-        Assert.Equal(14, NeutralHistoryHandler.value);
-    }
-
-    [Fact]
     public void MissingHistoryHandlerCreatesAnExplicitBarrier()
     {
         m_runtime.interactions.history.RecordApplied(

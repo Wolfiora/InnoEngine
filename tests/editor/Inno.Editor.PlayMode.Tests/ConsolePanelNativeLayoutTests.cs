@@ -9,7 +9,6 @@ using BGCS.Runtime;
 using Xunit;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Core.Diagnostics;
-using Inno.Core.Events;
 using Inno.Core.Input;
 using Inno.Core.Logging;
 using Inno.Editor.Core;
@@ -19,6 +18,7 @@ using Inno.Editor.Interactions;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 using Inno.Native.ImGui;
+using Inno.Testing.Editor.Native;
 
 using Gui = Inno.Editor.ImGui.ImGui;
 using ImGuiApi = Inno.Native.ImGui.ImGui;
@@ -232,21 +232,5 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
         public EditorConsoleSnapshot Capture() => throw new InvalidOperationException("Snapshot source failed.");
 
         public void Clear() {}
-    }
-
-    private sealed class InactivePlayMode : IEditorPlayMode
-    {
-        private readonly EventDispatcher m_stateDispatcher = new();
-
-        public EditorPlayModeState state => EditorPlayModeState.Editing;
-        public bool isPlaying => false;
-        public string? lastFailure => null;
-        public LogSessionID activeSessionID => LogSessionID.none;
-
-        public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener) => m_stateDispatcher.CreateHub();
-
-        public bool EnterPlayMode() => false;
-
-        public bool ExitPlayMode() => false;
     }
 }
