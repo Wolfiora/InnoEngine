@@ -7,7 +7,7 @@ using Inno.Editor.Exporting;
 using Inno.Editor.Interactions;
 using Inno.Testing.Build;
 
-namespace Inno.Editor.Exporting.Tests;
+namespace Inno.Editor.Exporting.Native.Tests;
 
 public sealed class ExportWorkflowTests : BuildPipelineFixture
 {

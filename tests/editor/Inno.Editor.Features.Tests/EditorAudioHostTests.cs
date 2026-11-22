@@ -8,12 +8,13 @@ using Inno.Assets;
 using Inno.Audio;
 using Inno.Audio.Runtime;
 using Inno.Core.Logging;
+using Inno.Editor.Audio;
 using Inno.Runtime;
 using Inno.Runtime.Contracts;
 
 using RuntimeAudio = Inno.Audio.Audio;
 
-namespace Inno.Editor.Audio.Tests;
+namespace Inno.Editor.Features.Tests;
 
 public sealed class EditorAudioHostTests : IDisposable
 {

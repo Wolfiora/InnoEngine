@@ -1,6 +1,6 @@
 using Xunit;
 
-namespace Inno.Rendering.Assets.Tests;
+namespace Inno.Rendering.Assets.Authoring.Tests;
 
 public sealed class MaterialContractTests
 {

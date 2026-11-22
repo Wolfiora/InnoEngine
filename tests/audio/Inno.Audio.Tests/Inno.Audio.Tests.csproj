@@ -21,6 +21,12 @@
     <ProjectReference Include="../../../src/content/references/Inno.References/Inno.References.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/runtime/engine/Inno.Runtime/Inno.Runtime.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/runtime/scripting/Inno.Scripting.Compiler/Inno.Scripting.Compiler.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/services/audio/Inno.Audio.Assets/Inno.Audio.Assets.csproj" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Diagnostics/Inno.Core.Diagnostics.csproj" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Logging/Inno.Core.Logging.csproj" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
+    <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj" />
+    <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" />
   </ItemGroup>
 
   <ItemGroup>

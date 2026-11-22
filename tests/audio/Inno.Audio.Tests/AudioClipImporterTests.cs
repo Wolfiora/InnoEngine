@@ -14,7 +14,7 @@ using Inno.Core.Serialization;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 
-namespace Inno.Audio.Assets.Tests;
+namespace Inno.Audio.Tests;
 
 public sealed class AudioClipImporterTests : IDisposable
 {

@@ -6,7 +6,7 @@ using Inno.Core.Serialization;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 
-namespace Inno.Rendering.Assets.Tests;
+namespace Inno.Rendering.Assets.Authoring.Tests;
 
 public sealed class RuntimeAssetSerializationTests
 {

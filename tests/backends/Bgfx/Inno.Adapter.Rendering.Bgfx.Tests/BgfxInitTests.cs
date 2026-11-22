@@ -1,7 +1,8 @@
 using System;
 using Xunit;
+using Inno.Native.Bgfx;
 
-namespace Inno.Native.Bgfx.Tests;
+namespace Inno.Adapter.Rendering.Bgfx.Tests;
 
 public sealed class BgfxInitTests
 {

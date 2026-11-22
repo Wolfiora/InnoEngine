@@ -1,7 +1,7 @@
 using Xunit;
 using Inno.Core.Mathematics;
 
-namespace Inno.Rendering.Assets.Tests;
+namespace Inno.Rendering.Assets.Authoring.Tests;
 
 public sealed class GeometryArtifactTests
 {
