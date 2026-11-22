@@ -62,7 +62,7 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
     }
 
     [Fact]
-    public void SceneAsset_CaptureSaveLoadInstantiate_PreservesCanonicalIdentity()
+    public void SceneAssetCaptureSaveLoadInstantiatePreservesCanonicalIdentity()
     {
         var source = new GameScene("Captured");
         source.CreateObject("Object");
@@ -90,7 +90,7 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
     }
 
     [Fact]
-    public void PrefabAsset_IsSceneIndependentAndRemapsInternalReferences()
+    public void PrefabAssetIsSceneIndependentAndRemapsInternalReferences()
     {
         var sourceScene = new GameScene("Source");
         GameObject sourceRoot = sourceScene.CreateObject("Root");
@@ -125,7 +125,7 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
     }
 
     [Fact]
-    public void LoadedScene_InstantiatesConnectedPrefabsDuringUpdate()
+    public void LoadedSceneInstantiatesConnectedPrefabsDuringUpdate()
     {
         var sourceScene = new GameScene("Source");
         GameObject sourceRoot = sourceScene.CreateObject("Root");
@@ -163,7 +163,7 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
     }
 
     [Fact]
-    public void SceneAsset_DirectAssetReferenceUsesCanonicalInstanceAndDependencyMetadata()
+    public void SceneAssetDirectAssetReferenceUsesCanonicalInstanceAndDependencyMetadata()
     {
         WriteAsset("Text/shared.txt", "shared");
         Assert.True(m_assets.Import(AssetPath.Project("Text/shared.txt")));
@@ -191,7 +191,7 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
     }
 
     [Fact]
-    public void ConnectedPrefabSceneRoundtrip_PreservesPropertyAndStructureOverrides()
+    public void ConnectedPrefabSceneRoundtripPreservesPropertyAndStructureOverrides()
     {
         var sourceScene = new GameScene("Source");
         GameObject sourceRoot = sourceScene.CreateObject("Root");
@@ -250,7 +250,7 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
     }
 
     [Fact]
-    public void MissingPrefabSource_PreservesConnectionAndRecoversInPlace()
+    public void MissingPrefabSourcePreservesConnectionAndRecoversInPlace()
     {
         var sourceScene = new GameScene("Source");
         GameObject sourceRoot = sourceScene.CreateObject("Root");
@@ -295,7 +295,7 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
     }
 
     [Fact]
-    public void EngineImporters_AreDiscoveredWithoutManualRegistration()
+    public void EngineImportersAreDiscoveredWithoutManualRegistration()
     {
         IReadOnlyList<TypeRef> importerTypes = m_fixture.types.GetSubTypesOf<AssetImporter>();
 
@@ -305,7 +305,7 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
     }
 
     [Fact]
-    public void ExternalSceneRename_PreservesIdentityAndUsesFileNameAsSceneName()
+    public void ExternalSceneRenamePreservesIdentityAndUsesFileNameAsSceneName()
     {
         var source = new GameScene("Original Name");
         source.CreateObject("Object");
@@ -329,7 +329,7 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
     }
 
     [Fact]
-    public void ExternalPrefabRename_PreservesIdentityAndRenamesOnlyTheSourceRoot()
+    public void ExternalPrefabRenamePreservesIdentityAndRenamesOnlyTheSourceRoot()
     {
         var sourceScene = new GameScene("Source");
         GameObject root = sourceScene.CreateObject("Old Root");

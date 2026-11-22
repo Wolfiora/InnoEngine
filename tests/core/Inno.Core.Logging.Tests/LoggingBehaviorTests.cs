@@ -133,7 +133,7 @@ public sealed class LoggingBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void LogRouter_DispatchesToRegisteredSink()
+    public void LogRouterDispatchesToRegisteredSink()
     {
         using var sink = new ProbeSink();
         m_router.RegisterSink(sink);
@@ -170,7 +170,7 @@ public sealed class LoggingBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void LogRouter_RespectsMinimumLevel()
+    public void LogRouterRespectsMinimumLevel()
     {
         using var sink = new ProbeSink();
         m_router.RegisterSink(sink);
@@ -269,7 +269,7 @@ public sealed class LoggingBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void FileLogSink_WritesEntriesAndRotates()
+    public void FileLogSinkWritesEntriesAndRotates()
     {
         string dir = Path.Combine(Path.GetTempPath(), "InnoLoggingTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(dir);

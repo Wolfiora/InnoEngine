@@ -98,7 +98,7 @@ public sealed unsafe partial class ImGuiWidget
     {
         m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        return m_openStatesByID.GetValueOrDefault(id);
+        return openStatesByID.GetValueOrDefault(id);
     }
 
     /// <summary>
@@ -122,11 +122,11 @@ public sealed unsafe partial class ImGuiWidget
     ) {
         m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        if (m_openStatesByID.GetValueOrDefault(id) == open)
+        if (openStatesByID.GetValueOrDefault(id) == open)
         {
             return;
         }
-        m_openStatesByID[id] = open;
+        openStatesByID[id] = open;
         GetTreeWindowState().expansionRevision++;
     }
 
@@ -143,13 +143,13 @@ public sealed unsafe partial class ImGuiWidget
         m_nextTreeNodeOpen = open;
     }
 
-    private List<TreeWidgetNodeState> m_treeNodeStack => GetTreeWindowState().treeNodeStack;
-    private List<string> m_lastNodeIDsByDepth => GetTreeWindowState().lastNodeIDsByDepth;
-    private List<TreeWidgetLineSegment> m_lineSegments => GetTreeWindowState().lineSegments;
-    private Dictionary<string, bool> m_hasNextSiblingByID => GetTreeWindowState().hasNextSiblingByID;
-    private Dictionary<string, bool> m_openStatesByID => GetTreeWindowState().openStatesByID;
+    private List<TreeWidgetNodeState> treeNodeStack => GetTreeWindowState().treeNodeStack;
+    private List<string> lastNodeIDsByDepth => GetTreeWindowState().lastNodeIDsByDepth;
+    private List<TreeWidgetLineSegment> lineSegments => GetTreeWindowState().lineSegments;
+    private Dictionary<string, bool> hasNextSiblingByID => GetTreeWindowState().hasNextSiblingByID;
+    private Dictionary<string, bool> openStatesByID => GetTreeWindowState().openStatesByID;
 
-    private int m_lastFrame
+    private int lastFrame
     {
         get => GetTreeWindowState().lastFrame;
         set => GetTreeWindowState().lastFrame = value;
@@ -205,7 +205,7 @@ public sealed unsafe partial class ImGuiWidget
         ImDrawList* drawList,
         bool drawContent
     ) {
-        bool open = !isLeaf && m_openStatesByID.TryGetValue(id, out bool storedOpen) && storedOpen;
+        bool open = !isLeaf && openStatesByID.TryGetValue(id, out bool storedOpen) && storedOpen;
         if (!isLeaf && m_hasNextTreeNodeOpen)
         {
             open = m_nextTreeNodeOpen;
@@ -264,7 +264,7 @@ public sealed unsafe partial class ImGuiWidget
             ImGuiWindow* window = NativeImGui.Raw.GetCurrentWindow();
             if (isOpen && !isLeaf)
             {
-                m_treeNodeStack.Add(
+                treeNodeStack.Add(
                     new TreeWidgetNodeState { id = id, cursor = nodeCursor, rowMaxY = nativeRowMaxY, hasNextSibling = hasNextSibling }
                 );
             }
@@ -315,7 +315,7 @@ public sealed unsafe partial class ImGuiWidget
             }
             if (isOpen && !isLeaf)
             {
-                m_treeNodeStack.Add(
+                treeNodeStack.Add(
                     new TreeWidgetNodeState { id = id, cursor = nodeCursor, rowMaxY = contentRect.max.Y, hasNextSibling = hasNextSibling }
                 );
             }
@@ -431,7 +431,7 @@ public sealed unsafe partial class ImGuiWidget
     private void BeginTreeFrameIfNeeded()
     {
         int frame = NativeImGui.GetFrameCount();
-        if (frame == m_lastFrame)
+        if (frame == lastFrame)
         {
             return;
         }
@@ -445,14 +445,14 @@ public sealed unsafe partial class ImGuiWidget
             state.activeContentID = 0;
             state.activeContentOwner = null;
         }
-        m_lastFrame = frame;
+        lastFrame = frame;
     }
 
     private void PruneTreeNodeStack(int nativeDepth)
     {
-        while (m_treeNodeStack.Count > nativeDepth)
+        while (treeNodeStack.Count > nativeDepth)
         {
-            m_treeNodeStack.RemoveAt(m_treeNodeStack.Count - 1);
+            treeNodeStack.RemoveAt(treeNodeStack.Count - 1);
         }
     }
 
@@ -460,21 +460,21 @@ public sealed unsafe partial class ImGuiWidget
         string id,
         int depth
     ) {
-        bool hasNextSibling = m_hasNextSiblingByID.TryGetValue(id, out bool cachedHasNextSibling) && cachedHasNextSibling;
-        while (m_lastNodeIDsByDepth.Count <= depth)
+        bool hasNextSibling = hasNextSiblingByID.TryGetValue(id, out bool cachedHasNextSibling) && cachedHasNextSibling;
+        while (lastNodeIDsByDepth.Count <= depth)
         {
-            m_lastNodeIDsByDepth.Add(string.Empty);
+            lastNodeIDsByDepth.Add(string.Empty);
         }
-        string previousID = m_lastNodeIDsByDepth[depth];
+        string previousID = lastNodeIDsByDepth[depth];
         if (!string.IsNullOrEmpty(previousID) && !string.Equals(previousID, id, StringComparison.Ordinal))
         {
-            m_hasNextSiblingByID[previousID] = true;
+            hasNextSiblingByID[previousID] = true;
         }
-        m_hasNextSiblingByID[id] = false;
-        m_lastNodeIDsByDepth[depth] = id;
-        for (int i = depth + 1; i < m_lastNodeIDsByDepth.Count; i++)
+        hasNextSiblingByID[id] = false;
+        lastNodeIDsByDepth[depth] = id;
+        for (int i = depth + 1; i < lastNodeIDsByDepth.Count; i++)
         {
-            m_lastNodeIDsByDepth[i] = string.Empty;
+            lastNodeIDsByDepth[i] = string.Empty;
         }
         return hasNextSibling;
     }
@@ -484,7 +484,7 @@ public sealed unsafe partial class ImGuiWidget
         bool hasNextSibling,
         bool hasDisclosureArrow
     ) {
-        if (m_treeNodeStack.Count == 0)
+        if (treeNodeStack.Count == 0)
         {
             return;
         }
@@ -499,10 +499,10 @@ public sealed unsafe partial class ImGuiWidget
         float fileConnectorPadding = MathF.Max(1f, style->ItemInnerSpacing.X);
         float folderConnectorPadding = fileConnectorPadding * 2f + this.style.treeFolderConnectorPadding;
         float targetX = hasDisclosureArrow ? nodeCursor.X + guideOffset - folderConnectorPadding : labelStartX - fileConnectorPadding;
-        for (int i = 0; i < m_treeNodeStack.Count - 1; i++)
+        for (int i = 0; i < treeNodeStack.Count - 1; i++)
         {
-            TreeWidgetNodeState ancestorState = m_treeNodeStack[i];
-            TreeWidgetNodeState pathChildState = m_treeNodeStack[i + 1];
+            TreeWidgetNodeState ancestorState = treeNodeStack[i];
+            TreeWidgetNodeState pathChildState = treeNodeStack[i + 1];
             if (pathChildState.hasNextSibling)
             {
                 float ancestorX = ancestorState.cursor.X + guideOffset;
@@ -511,7 +511,7 @@ public sealed unsafe partial class ImGuiWidget
             }
         }
 
-        TreeWidgetNodeState parentState = m_treeNodeStack[^1];
+        TreeWidgetNodeState parentState = treeNodeStack[^1];
         float branchX = parentState.cursor.X + guideOffset;
         float branchStartY = MathF.Max(parentState.rowMaxY, nodeCursor.Y);
         AddTreeLine(new Vector2(branchX, branchStartY), new Vector2(branchX, hasNextSibling ? rowMaxY : rowCenterY));
@@ -530,7 +530,7 @@ public sealed unsafe partial class ImGuiWidget
             from = SnapTreeLinePoint(from),
             to = SnapTreeLinePoint(to)
         };
-        m_lineSegments.Add(line);
+        lineSegments.Add(line);
         ImGui.DrawNativeLine(
             NativeImGui.Raw.GetWindowDrawList(),
             line.from,

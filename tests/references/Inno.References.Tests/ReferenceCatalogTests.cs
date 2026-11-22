@@ -12,7 +12,7 @@ public sealed class ReferenceCatalogTests
     private static readonly ReferenceKindID KIND = new("asset");
 
     [Fact]
-    public void Resolve_PreservesUnassignedAndMissingIntent()
+    public void ResolvePreservesUnassignedAndMissingIntent()
     {
         var unassigned = new ReferenceDescriptor(KIND, Guid.Empty);
         var missing = new ReferenceDescriptor(KIND, Guid.NewGuid(), lastKnownName: "Portrait");
@@ -27,7 +27,7 @@ public sealed class ReferenceCatalogTests
     }
 
     [Fact]
-    public void Create_RejectsDuplicateReferenceKinds()
+    public void CreateRejectsDuplicateReferenceKinds()
     {
         var first = new FixedResolver(KIND, null);
         var second = new FixedResolver(KIND, null);
@@ -36,7 +36,7 @@ public sealed class ReferenceCatalogTests
     }
 
     [Fact]
-    public void RecoveryTransaction_RollsBackAppliedParticipantsInReverseOrder()
+    public void RecoveryTransactionRollsBackAppliedParticipantsInReverseOrder()
     {
         var allocator = new IdentityAllocator();
         var target = new Target();

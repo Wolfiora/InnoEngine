@@ -1117,7 +1117,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void Import_WritesCacheWithoutCreatingCanonicalInstance()
+    public void ImportWritesCacheWithoutCreatingCanonicalInstance()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Config/game.txt", "one");
@@ -1137,7 +1137,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void AutomaticallyDiscoveredPrivateImporter_LoadsWithoutRegistrationApi()
+    public void AutomaticallyDiscoveredPrivateImporterLoadsWithoutRegistrationApi()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Private/item.privateasset", "private");
@@ -1153,7 +1153,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void SameAssetType_CanUseMultipleImportersForDifferentExtensions()
+    public void SameAssetTypeCanUseMultipleImportersForDifferentExtensions()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Graphs/a.depgraph", string.Empty);
@@ -1165,7 +1165,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void DuplicateImporterID_IsRejectedDuringAutomaticDiscovery()
+    public void DuplicateImporterIDIsRejectedDuringAutomaticDiscovery()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Conflict/initialize.txt", "initialize");
@@ -1191,7 +1191,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void DuplicateImporterExtension_IsRejectedDuringAutomaticDiscovery()
+    public void DuplicateImporterExtensionIsRejectedDuringAutomaticDiscovery()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Conflict/value.conflict", "value");
@@ -1206,7 +1206,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void PathAndPersistentIDLoads_ReturnCanonicalInstance()
+    public void PathAndPersistentIDLoadsReturnCanonicalInstance()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Text/shared.txt", "shared");
@@ -1248,7 +1248,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void ChangedStampWithEqualContent_DoesNotReimportCanonicalAsset()
+    public void ChangedStampWithEqualContentDoesNotReimportCanonicalAsset()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Text/touched.txt", "value");
@@ -1293,7 +1293,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public async Task ConcurrentAsyncLoads_ShareImportAndCancellationOnlyCancelsOneWaiter()
+    public async Task ConcurrentAsyncLoadsShareImportAndCancellationOnlyCancelsOneWaiter()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Slow/item.slowasset", "value");
@@ -1345,7 +1345,7 @@ public sealed class AssetLoaderTests : IDisposable
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void StaleSource_ReimportsAndUpdatesCanonicalInstanceInPlace(bool preserveTimestamp)
+    public void StaleSourceReimportsAndUpdatesCanonicalInstanceInPlace(bool preserveTimestamp)
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Text/reload.txt", "one");
@@ -1370,7 +1370,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void RuntimeDependencyCycle_IsAllowedAndLoadsAsOneCanonicalSubgraph()
+    public void RuntimeDependencyCycleIsAllowedAndLoadsAsOneCanonicalSubgraph()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Graphs/a.depgraph", "Graphs/b.depgraph");
@@ -1624,7 +1624,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void ImportDependencyCycle_IsRejectedWithClosedPathChain()
+    public void ImportDependencyCycleIsRejectedWithClosedPathChain()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Import/a.importgraph", "Import/b.importgraph");
@@ -1644,7 +1644,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void RenameAndDelete_UpdateCanonicalInstanceWithoutChangingIdentity()
+    public void RenameAndDeleteUpdateCanonicalInstanceWithoutChangingIdentity()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Text/old.txt", "value");
@@ -1678,7 +1678,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void RecreatedSourceWithoutMetadata_ReceivesNewIdentity()
+    public void RecreatedSourceWithoutMetadataReceivesNewIdentity()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Text/recover.txt", "one");
@@ -1705,7 +1705,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void Tombstone_SurvivesCatalogRestartWithoutOccupyingItsFormerPath()
+    public void TombstoneSurvivesCatalogRestartWithoutOccupyingItsFormerPath()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Text/value.txt", "one");
@@ -1731,7 +1731,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void CatalogRestart_PrefersCurrentSourceIdentityOverHistoricalPathRecord()
+    public void CatalogRestartPrefersCurrentSourceIdentityOverHistoricalPathRecord()
     {
         using var workspace = new TestWorkspace();
         const string C_PATH = "Text/identity.txt";
@@ -1787,7 +1787,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void CatalogRestart_DoesNotPromoteHistoricalTombstonesToMissingReferences()
+    public void CatalogRestartDoesNotPromoteHistoricalTombstonesToMissingReferences()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Text/removed.txt", "one");
@@ -1861,7 +1861,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void RestoredSourceAndMetadata_ReactivatesOriginalIdentityInPlace()
+    public void RestoredSourceAndMetadataReactivatesOriginalIdentityInPlace()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Text/recover.txt", "one");
@@ -1888,7 +1888,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void DeleteCreateRenameFallback_PreservesIdentityOnlyWhenFingerprintMatchIsUnique()
+    public void DeleteCreateRenameFallbackPreservesIdentityOnlyWhenFingerprintMatchIsUnique()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Text/old.txt", "value");
@@ -1909,7 +1909,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void AmbiguousDeleteCreateRenameFallback_DoesNotGuessAnIdentity()
+    public void AmbiguousDeleteCreateRenameFallbackDoesNotGuessAnIdentity()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Text/first.txt", "same");
@@ -1941,7 +1941,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void Save_PreservesIdentityIncrementsVersionAndRejectsDifferentPath()
+    public void SavePreservesIdentityIncrementsVersionAndRejectsDifferentPath()
     {
         using var workspace = new TestWorkspace();
         using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
@@ -1961,7 +1961,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void FailedReimport_KeepsPreviousCanonicalStateAndVersion()
+    public void FailedReimportKeepsPreviousCanonicalStateAndVersion()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Data/stable.mutableasset", "one");
@@ -1983,7 +1983,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void FailedReimport_PublishesCurrentDiagnosticUntilSuccessfulRetry()
+    public void FailedReimportPublishesCurrentDiagnosticUntilSuccessfulRetry()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Data/diagnostic.mutableasset", "valid");
@@ -2041,7 +2041,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void FailedSave_PreservesCommittedSourceMetaArtifactAndVersion()
+    public void FailedSavePreservesCommittedSourceMetaArtifactAndVersion()
     {
         using var workspace = new TestWorkspace();
         using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
@@ -2071,7 +2071,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void RuntimeDependencyRetention_KeepsDependencyAliveWhileRootIsReferenced()
+    public void RuntimeDependencyRetentionKeepsDependencyAliveWhileRootIsReferenced()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Text/dependency.txt", "dependency");
@@ -2087,7 +2087,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void UnusedRuntimeDependencyCycle_IsCollectedAsAUnit()
+    public void UnusedRuntimeDependencyCycleIsCollectedAsAUnit()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Graphs/a.depgraph", "Graphs/b.depgraph");
@@ -2104,7 +2104,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void ReferenceDiagnostics_DoNotKeepAssetsAlive()
+    public void ReferenceDiagnosticsDoNotKeepAssetsAlive()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Text/dependency.txt", "dependency");
@@ -2117,7 +2117,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void Dispose_ReleasesRuntimeResourcesExactlyOnce()
+    public void DisposeReleasesRuntimeResourcesExactlyOnce()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Hooks/value.hookasset", "value");
@@ -2133,7 +2133,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void Rescan_TracksUnsupportedSourcesAndFolderIdentityWithoutFakeArtifacts()
+    public void RescanTracksUnsupportedSourcesAndFolderIdentityWithoutFakeArtifacts()
     {
         using var workspace = new TestWorkspace();
         Directory.CreateDirectory(workspace.SourcePath("EmptyFolder"));
@@ -2155,7 +2155,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void Rescan_RecoversAnonymousCatalogEntryFromSourceIdentityWithoutFalseMissingWarning()
+    public void RescanRecoversAnonymousCatalogEntryFromSourceIdentityWithoutFalseMissingWarning()
     {
         using var workspace = new TestWorkspace();
         const string C_PATH = "Deferred/value.unavailable";
@@ -2231,7 +2231,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void Rescan_PreservesLastGoodCatalogWhileItsPathImporterIsUnavailable()
+    public void RescanPreservesLastGoodCatalogWhileItsPathImporterIsUnavailable()
     {
         using var workspace = new TestWorkspace();
         const string C_PATH = "Deferred/value.deferredasset";
@@ -2290,7 +2290,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void SourceMetadata_RestoresPersistentIdentityWhenLibraryIsRebuilt()
+    public void SourceMetadataRestoresPersistentIdentityWhenLibraryIsRebuilt()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Text/value.txt", "value");
@@ -2311,7 +2311,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void ContentAddressedStore_DeduplicatesEqualImportsAndCollectsUnreachableBundles()
+    public void ContentAddressedStoreDeduplicatesEqualImportsAndCollectsUnreachableBundles()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Text/first.txt", "same");
@@ -2367,7 +2367,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public async Task AggregateBuildProcessor_ProducesStableContentAddressedOutput()
+    public async Task AggregateBuildProcessorProducesStableContentAddressedOutput()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteText("Text/input.txt", "value");

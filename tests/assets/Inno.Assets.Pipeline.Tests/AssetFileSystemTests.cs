@@ -98,7 +98,7 @@ public sealed class AssetFileSystemTests
     }
 
     [Fact]
-    public void Queries_RejectRootedAndTraversalPaths()
+    public void QueriesRejectRootedAndTraversalPaths()
     {
         string root = CreateRoot();
         try
@@ -116,7 +116,7 @@ public sealed class AssetFileSystemTests
     }
 
     [Fact]
-    public void Refresh_IndexesDirectoriesAndFiles()
+    public void RefreshIndexesDirectoriesAndFiles()
     {
         string root = CreateRoot();
         try
@@ -145,7 +145,7 @@ public sealed class AssetFileSystemTests
     }
 
     [Fact]
-    public void Watcher_PublishesChangesOnlyWhenOwnerPolls()
+    public void WatcherPublishesChangesOnlyWhenOwnerPolls()
     {
         string root = CreateRoot();
         try
@@ -168,7 +168,7 @@ public sealed class AssetFileSystemTests
     }
 
     [Fact]
-    public void Entries_ExposeLastExtensionDisplayNameAndFilterDatabaseNoise()
+    public void EntriesExposeLastExtensionDisplayNameAndFilterDatabaseNoise()
     {
         string root = CreateRoot();
         try
@@ -193,7 +193,7 @@ public sealed class AssetFileSystemTests
     }
 
     [Fact]
-    public void Refresh_TreatsProjectTildeDirectoriesAsOrdinaryWritableContent()
+    public void RefreshTreatsProjectTildeDirectoriesAsOrdinaryWritableContent()
     {
         string root = CreateRoot();
         try
@@ -275,7 +275,7 @@ public sealed class AssetFileSystemTests
     }
 
     [Fact]
-    public void Watcher_RenameCarriesOldAndNewPathsThroughOwnerPolling()
+    public void WatcherRenameCarriesOldAndNewPathsThroughOwnerPolling()
     {
         string root = CreateRoot();
         try

@@ -41,7 +41,7 @@ public sealed class MeshAndStateTests : IDisposable
     }
 
     [Fact]
-    public void MaterialAndPipelineState_RoundTripsThroughAssetSerialization()
+    public void MaterialAndPipelineStateRoundTripsThroughAssetSerialization()
     {
         var material = new MaterialAsset { techniqueId = new ShaderTechniqueID("high-quality") };
         material.Set(new ShaderPropertyID("roughness"), MaterialValue.FromFloat(0.4f));
@@ -107,7 +107,7 @@ public sealed class MeshAndStateTests : IDisposable
     }
 
     [Fact]
-    public void MaterialResolver_UsesProviderOwnedContractsRolesAndCapabilities()
+    public void MaterialResolverUsesProviderOwnedContractsRolesAndCapabilities()
     {
         var advancedPass = new ShaderPassDefinition(
             "advanced-draw",
@@ -175,7 +175,7 @@ public sealed class MeshAndStateTests : IDisposable
     }
 
     [Fact]
-    public void ShaderRasterState_RoundTripsWithoutLosingProviderChoices()
+    public void ShaderRasterStateRoundTripsWithoutLosingProviderChoices()
     {
         ShaderRenderState sourceState = ShaderRenderState.opaque;
         sourceState.topology = RenderPrimitiveTopology.LineStrip;

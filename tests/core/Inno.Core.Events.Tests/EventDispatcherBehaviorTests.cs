@@ -62,7 +62,7 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void CreateHub_ProducesValidHub()
+    public void CreateHubProducesValidHub()
     {
         var dispatcher = new EventDispatcher();
         using EventHub hub = dispatcher.CreateHub();
@@ -71,7 +71,7 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void DisposeHub_MakesHubInvalidAndPreventsFurtherListen()
+    public void DisposeHubMakesHubInvalidAndPreventsFurtherListen()
     {
         var dispatcher = new EventDispatcher();
         EventHub hub = dispatcher.CreateHub();
@@ -83,7 +83,7 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void ListenTokenDispose_UnsubscribesListener()
+    public void ListenTokenDisposeUnsubscribesListener()
     {
         var dispatcher = new EventDispatcher();
         using EventHub hub = dispatcher.CreateHub();
@@ -98,7 +98,7 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void ListenTokenDispose_ConcurrentDispose_IsSafeAndIdempotent()
+    public void ListenTokenDisposeConcurrentDisposeIsSafeAndIdempotent()
     {
         var dispatcher = new EventDispatcher();
         using EventHub hub = dispatcher.CreateHub();
@@ -112,7 +112,7 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void ListenOnce_InvokesOnlyOneTime()
+    public void ListenOnceInvokesOnlyOneTime()
     {
         var dispatcher = new EventDispatcher();
         using EventHub hub = dispatcher.CreateHub();
@@ -127,7 +127,7 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void ListenOnce_ConcurrentEmit_StillInvokesOnlyOneTime()
+    public void ListenOnceConcurrentEmitStillInvokesOnlyOneTime()
     {
         const int C_ITERATIONS = 10_000;
         var dispatcher = new EventDispatcher();
@@ -144,7 +144,7 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void EnqueueAndFlush_DispatchesQueuedEvents()
+    public void EnqueueAndFlushDispatchesQueuedEvents()
     {
         var dispatcher = new EventDispatcher();
         using EventHub hub = dispatcher.CreateHub();
@@ -184,7 +184,7 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void HubOrder_HigherOrderRunsFirst()
+    public void HubOrderHigherOrderRunsFirst()
     {
         var dispatcher = new EventDispatcher();
         using EventHub lowHub = dispatcher.CreateHub(order: 0);
@@ -200,7 +200,7 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void HandledStopsPropagation_WithinHubAndAcrossHubs()
+    public void HandledStopsPropagationWithinHubAndAcrossHubs()
     {
         var dispatcher = new EventDispatcher();
         using EventHub firstHub = dispatcher.CreateHub(order: 10);
@@ -219,7 +219,7 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void HandledEventBeforeEmit_SkipsDispatch()
+    public void HandledEventBeforeEmitSkipsDispatch()
     {
         var dispatcher = new EventDispatcher();
         using EventHub hub = dispatcher.CreateHub();
@@ -235,7 +235,7 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void HandleInHub_StopsOnlyCurrentHub()
+    public void HandleInHubStopsOnlyCurrentHub()
     {
         var dispatcher = new EventDispatcher();
         using EventHub firstHub = dispatcher.CreateHub(order: 10);
@@ -254,7 +254,7 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void HandleInHub_DoesNotAffectNextHub()
+    public void HandleInHubDoesNotAffectNextHub()
     {
         var dispatcher = new EventDispatcher();
         using EventHub firstHub = dispatcher.CreateHub(order: 10);
@@ -273,7 +273,7 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void ConcurrentEmit_AcrossThreads_IsStable()
+    public void ConcurrentEmitAcrossThreadsIsStable()
     {
         const int C_ITERATIONS = 20_000;
         var dispatcher = new EventDispatcher();
@@ -295,7 +295,7 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void ConcurrentEmit_WithHandleInHub_StopsOnlyCurrentHub()
+    public void ConcurrentEmitWithHandleInHubStopsOnlyCurrentHub()
     {
         const int C_ITERATIONS = 20_000;
         var dispatcher = new EventDispatcher();
@@ -327,7 +327,7 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void ConcurrentEmit_WithHandleInGlobal_StopsFollowingHubs()
+    public void ConcurrentEmitWithHandleInGlobalStopsFollowingHubs()
     {
         const int C_ITERATIONS = 20_000;
         var dispatcher = new EventDispatcher();
@@ -359,7 +359,7 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void Announce_DispatchesImmediately_OnlyInCurrentHub()
+    public void AnnounceDispatchesImmediatelyOnlyInCurrentHub()
     {
         var dispatcher = new EventDispatcher();
         using EventHub hubA = dispatcher.CreateHub(order: 10);
@@ -377,7 +377,7 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void Announce_RespectsHandleInHub_InSameHub()
+    public void AnnounceRespectsHandleInHubInSameHub()
     {
         var dispatcher = new EventDispatcher();
         using EventHub hub = dispatcher.CreateHub();
@@ -392,7 +392,7 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void DisposeHub_DuringDispatch_StopsRemainingListenersInSameHub()
+    public void DisposeHubDuringDispatchStopsRemainingListenersInSameHub()
     {
         var dispatcher = new EventDispatcher();
         EventHub hub = dispatcher.CreateHub();
@@ -408,7 +408,7 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void DisposeHub_DuringAnnounce_StopsRemainingListenersInSameHub()
+    public void DisposeHubDuringAnnounceStopsRemainingListenersInSameHub()
     {
         var dispatcher = new EventDispatcher();
         EventHub hub = dispatcher.CreateHub();

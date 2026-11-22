@@ -9,7 +9,7 @@ public sealed class IdentityAllocatorTests
     private readonly IdentityAllocator m_allocator = new();
 
     [Fact]
-    public void GetIdentity_DoesNotAutoRegisterObject()
+    public void GetIdentityDoesNotAutoRegisterObject()
     {
         var entity = new Entity();
 
@@ -19,7 +19,7 @@ public sealed class IdentityAllocatorTests
     }
 
     [Fact]
-    public void InitializePersistentIdentity_AssignsDetachedIdentityWithoutUnregisterEvent()
+    public void InitializePersistentIdentityAssignsDetachedIdentityWithoutUnregisterEvent()
     {
         var entity = new Entity();
         Guid persistentID = Guid.NewGuid();
@@ -42,7 +42,7 @@ public sealed class IdentityAllocatorTests
     }
 
     [Fact]
-    public void Register_AndGet_ByRuntimeID_AndPersistentID_AndExplicitPersistentOverride()
+    public void RegisterAndGetByRuntimeIDAndPersistentIDAndExplicitPersistentOverride()
     {
         var entity = new Entity();
         Assert.True(m_allocator.Register(entity, Guid.Parse("11111111-1111-1111-1111-111111111111")));
@@ -58,7 +58,7 @@ public sealed class IdentityAllocatorTests
     }
 
     [Fact]
-    public void RuntimeIdentity_RejectsAnEqualNumericIDFromAnotherDomain()
+    public void RuntimeIdentityRejectsAnEqualNumericIDFromAnotherDomain()
     {
         var first = new Entity();
         var second = new Entity();
@@ -76,7 +76,7 @@ public sealed class IdentityAllocatorTests
     }
 
     [Fact]
-    public void Register_ReturnsFalse_WhenAlreadyRegistered()
+    public void RegisterReturnsFalseWhenAlreadyRegistered()
     {
         var entity = new Entity();
         Assert.True(m_allocator.Register(entity));
@@ -87,7 +87,7 @@ public sealed class IdentityAllocatorTests
     }
 
     [Fact]
-    public void Unregister_RemovesRuntimeID_AndGetReturnsNull()
+    public void UnregisterRemovesRuntimeIDAndGetReturnsNull()
     {
         var entity = new Entity();
         m_allocator.Register(entity);
@@ -100,7 +100,7 @@ public sealed class IdentityAllocatorTests
     }
 
     [Fact]
-    public void Unregister_EventRunsAfterRemoval_InvokesEveryHandler_AndAggregatesFailures()
+    public void UnregisterEventRunsAfterRemovalInvokesEveryHandlerAndAggregatesFailures()
     {
         var entity = new Entity();
         Assert.True(m_allocator.Register(entity));
@@ -139,7 +139,7 @@ public sealed class IdentityAllocatorTests
     }
 
     [Fact]
-    public void SlotReuse_ChangesGeneration_WhenReRegistered()
+    public void SlotReuseChangesGenerationWhenReRegistered()
     {
         var first = new Entity();
         m_allocator.Register(first);
@@ -158,7 +158,7 @@ public sealed class IdentityAllocatorTests
     }
 
     [Fact]
-    public void Register_RequiresUniquePersistentID()
+    public void RegisterRequiresUniquePersistentID()
     {
         Guid fixedID = Guid.NewGuid();
         var first = new Entity();
@@ -169,14 +169,14 @@ public sealed class IdentityAllocatorTests
     }
 
     [Fact]
-    public void Get_ReturnsNull_ForInvalidLookupKeys()
+    public void GetReturnsNullForInvalidLookupKeys()
     {
         Assert.Null(m_allocator.Get<IdentityObject>(int.MaxValue));
         Assert.Null(m_allocator.Get<IdentityObject>(Guid.Empty));
     }
 
     [Fact]
-    public void RegisteredIdentity_DoesNotPreventGarbageCollection()
+    public void RegisteredIdentityDoesNotPreventGarbageCollection()
     {
         int runtimeID;
         WeakReference<Entity> weakEntity;

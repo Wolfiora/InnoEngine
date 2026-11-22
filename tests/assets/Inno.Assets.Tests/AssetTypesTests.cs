@@ -6,7 +6,7 @@ namespace Inno.Assets.Tests;
 public sealed class AssetTypesTests
 {
     [Fact]
-    public void TextAsset_Ctor_AssignsValues()
+    public void TextAssetCtorAssignsValues()
     {
         var asset = new TextAsset("hello", "plain");
         Assert.Equal("hello", asset.content);
@@ -14,7 +14,7 @@ public sealed class AssetTypesTests
     }
 
     [Fact]
-    public void BinaryAsset_Ctor_AssignsValues()
+    public void BinaryAssetCtorAssignsValues()
     {
         var asset = new BinaryAsset(10);
         Assert.Equal(10, asset.byteLength);

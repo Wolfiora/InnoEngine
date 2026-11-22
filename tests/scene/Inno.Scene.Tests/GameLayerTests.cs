@@ -30,7 +30,7 @@ public sealed class GameLayerTests : IDisposable
     /// Verifies that layer identifiers accept exactly the thirty-two mask-backed slots.
     /// </summary>
     [Fact]
-    public void GameLayer_ValidatesSupportedSlotRange()
+    public void GameLayerValidatesSupportedSlotRange()
     {
         Assert.Equal(0, GameLayer.defaultLayer.index);
         Assert.Equal(31, new GameLayer(31).index);
@@ -42,7 +42,7 @@ public sealed class GameLayerTests : IDisposable
     /// Verifies immutable mask construction and membership operations.
     /// </summary>
     [Fact]
-    public void GameLayerMask_ComposesAndFiltersLayers()
+    public void GameLayerMaskComposesAndFiltersLayers()
     {
         var first = new GameLayer(1);
         var second = new GameLayer(2);
@@ -60,7 +60,7 @@ public sealed class GameLayerTests : IDisposable
     /// Verifies layer naming constraints and symmetric interaction updates.
     /// </summary>
     [Fact]
-    public void GameLayerCatalog_EnforcesUniqueDefinitionsAndSymmetricInteractions()
+    public void GameLayerCatalogEnforcesUniqueDefinitionsAndSymmetricInteractions()
     {
         var stack = new GameLayerCatalog();
         var player = new GameLayer(1);
@@ -87,7 +87,7 @@ public sealed class GameLayerTests : IDisposable
     /// Verifies that project-scoped identities are resolved from stable local keys at the read boundary.
     /// </summary>
     [Fact]
-    public void ProjectScopedIDs_FollowProjectIdentityWithoutRewritingDefinitions()
+    public void ProjectScopedIDsFollowProjectIdentityWithoutRewritingDefinitions()
     {
         var firstProject = new ProjectID("studio.first");
         Assert.Equal("innoengine-rendering2d", ProjectID.FromName("InnoEngine.Rendering2D").value);
@@ -118,7 +118,7 @@ public sealed class GameLayerTests : IDisposable
     /// Verifies that Scene layer indexes remain coherent after live metadata changes.
     /// </summary>
     [Fact]
-    public void GameScene_LayerQueriesTrackLiveObjectChanges()
+    public void GameSceneLayerQueriesTrackLiveObjectChanges()
     {
         var scene = new GameScene("Layers");
         GameObject first = scene.CreateObject("First");

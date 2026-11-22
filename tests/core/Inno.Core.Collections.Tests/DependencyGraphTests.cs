@@ -10,7 +10,7 @@ namespace Inno.Core.Collections.Tests;
 public sealed class DependencyGraphTests
 {
     [Fact]
-    public void NodesAndEdges_AreIdempotentAndVersionOnlyTracksChanges()
+    public void NodesAndEdgesAreIdempotentAndVersionOnlyTracksChanges()
     {
         var graph = new DependencyGraph<string>();
         Assert.True(graph.AddNode("A"));
@@ -25,7 +25,7 @@ public sealed class DependencyGraphTests
     }
 
     [Fact]
-    public void ReplaceDependencies_UpdatesForwardAndReverseEdgesAtomically()
+    public void ReplaceDependenciesUpdatesForwardAndReverseEdgesAtomically()
     {
         var graph = new DependencyGraph<string>();
         graph.ReplaceDependencies("Root", ["A", "B"]);
@@ -41,7 +41,7 @@ public sealed class DependencyGraphTests
     }
 
     [Fact]
-    public void RemoveNode_RemovesAllIncomingAndOutgoingEdges()
+    public void RemoveNodeRemovesAllIncomingAndOutgoingEdges()
     {
         var graph = new DependencyGraph<string>();
         graph.AddDependency("C", "B");
@@ -56,7 +56,7 @@ public sealed class DependencyGraphTests
     }
 
     [Fact]
-    public void RecursiveQueries_ReturnDeterministicTransitiveSnapshots()
+    public void RecursiveQueriesReturnDeterministicTransitiveSnapshots()
     {
         var graph = new DependencyGraph<string>();
         graph.AddDependency("D", "B");
@@ -72,7 +72,7 @@ public sealed class DependencyGraphTests
     }
 
     [Fact]
-    public void TopologicalSort_PlacesEveryDependencyBeforeItsDependent()
+    public void TopologicalSortPlacesEveryDependencyBeforeItsDependent()
     {
         var graph = new DependencyGraph<string>();
         graph.AddDependency("C", "B");
@@ -85,7 +85,7 @@ public sealed class DependencyGraphTests
     }
 
     [Fact]
-    public void OrderingComparer_ControlsStableQueryOrder()
+    public void OrderingComparerControlsStableQueryOrder()
     {
         var graph = new DependencyGraph<string>(orderingComparer: StringComparer.Ordinal);
         graph.ReplaceDependencies("Root", ["Z", "A", "M"]);
@@ -93,7 +93,7 @@ public sealed class DependencyGraphTests
     }
 
     [Fact]
-    public void CycleDetection_ReturnsClosedCompleteCycleAndTopologicalSortReportsIt()
+    public void CycleDetectionReturnsClosedCompleteCycleAndTopologicalSortReportsIt()
     {
         var graph = new DependencyGraph<string>();
         graph.AddDependency("A", "B");
@@ -110,7 +110,7 @@ public sealed class DependencyGraphTests
     }
 
     [Fact]
-    public void SelfCycle_IsDetected()
+    public void SelfCycleIsDetected()
     {
         var graph = new DependencyGraph<int>();
         graph.AddDependency(7, 7);
@@ -119,7 +119,7 @@ public sealed class DependencyGraphTests
     }
 
     [Fact]
-    public void StronglyConnectedComponents_IncludeCyclesAndSingletons()
+    public void StronglyConnectedComponentsIncludeCyclesAndSingletons()
     {
         var graph = new DependencyGraph<string>();
         graph.AddDependency("A", "B");
@@ -133,7 +133,7 @@ public sealed class DependencyGraphTests
     }
 
     [Fact]
-    public void Clear_RemovesAllStateAndOnlyChangesVersionWhenNeeded()
+    public void ClearRemovesAllStateAndOnlyChangesVersionWhenNeeded()
     {
         var graph = new DependencyGraph<int>();
         graph.AddDependency(2, 1);
@@ -146,7 +146,7 @@ public sealed class DependencyGraphTests
     }
 
     [Fact]
-    public async Task ConcurrentReaders_ObserveOnlyCompleteSnapshots()
+    public async Task ConcurrentReadersObserveOnlyCompleteSnapshots()
     {
         var graph = new DependencyGraph<int>();
         graph.ReplaceDependencies(10, [1, 2, 3]);

@@ -7,7 +7,7 @@ namespace Inno.Core.Mathematics.Tests;
 public sealed class VectorMatrixTests
 {
     [Fact]
-    public void Vector2QuaternionTransform_PreservesLengthForZRotation()
+    public void Vector2QuaternionTransformPreservesLengthForZRotation()
     {
         Quaternion rotation = Quaternion.CreateFromAxisAngle(Vector3.FORWARD, MathF.PI * 0.5f);
 
@@ -19,7 +19,7 @@ public sealed class VectorMatrixTests
     }
 
     [Fact]
-    public void EulerAnglesXYZ_RoundTripsCompoundRotation()
+    public void EulerAnglesXYZRoundTripsCompoundRotation()
     {
         var source = new Vector3(0.31f, -0.47f, 0.83f);
 
@@ -36,7 +36,7 @@ public sealed class VectorMatrixTests
     }
 
     [Fact]
-    public void Vector2_LengthSquared_MatchesDot()
+    public void Vector2LengthSquaredMatchesDot()
     {
         var v = new Vector2(3f, 4f);
         float dot = Vector2.Dot(v, v);
@@ -46,7 +46,7 @@ public sealed class VectorMatrixTests
     }
 
     [Fact]
-    public void Vector3_Cross_IsOrthogonal()
+    public void Vector3CrossIsOrthogonal()
     {
         var a = new Vector3(1f, 0f, 0f);
         var b = new Vector3(0f, 1f, 0f);
@@ -60,7 +60,7 @@ public sealed class VectorMatrixTests
     }
 
     [Fact]
-    public void Vector3_TransformNormal_IgnoresTranslation()
+    public void Vector3TransformNormalIgnoresTranslation()
     {
         var normal = new Vector3(0f, 1f, 0f);
         Matrix translation = Matrix.CreateTranslation(10f, 20f, 30f);
@@ -72,7 +72,7 @@ public sealed class VectorMatrixTests
     }
 
     [Fact]
-    public void Vector2_Angle_SignedAngle()
+    public void Vector2AngleSignedAngle()
     {
         var right = new Vector2(1f, 0f);
         var up = new Vector2(0f, 1f);
@@ -84,7 +84,7 @@ public sealed class VectorMatrixTests
     }
 
     [Fact]
-    public void Matrix_Multiply_ColumnVector_Order()
+    public void MatrixMultiplyColumnVectorOrder()
     {
         Matrix scale = Matrix.CreateScale(2f);
         Matrix translate = Matrix.CreateTranslation(1f, 0f, 0f);
@@ -99,7 +99,7 @@ public sealed class VectorMatrixTests
     }
 
     [Fact]
-    public void Matrix_Determinant_Invert_Roundtrip()
+    public void MatrixDeterminantInvertRoundtrip()
     {
         Matrix m = Matrix.CreateTranslation(1f, 2f, 3f) * Matrix.CreateScale(2f, 3f, 4f);
         float det = Matrix.Determinant(m);
@@ -111,7 +111,7 @@ public sealed class VectorMatrixTests
     }
 
     [Fact]
-    public void Matrix_Decompose_Roundtrip()
+    public void MatrixDecomposeRoundtrip()
     {
         var scale = new Vector3(2f, 3f, 4f);
         Quaternion rotation = Quaternion.FromEulerAnglesXYZ(new Vector3(0.2f, 0.3f, 0.4f));
@@ -131,7 +131,7 @@ public sealed class VectorMatrixTests
     }
 
     [Fact]
-    public void Matrix_Decompose_PreservesReflectedTransform()
+    public void MatrixDecomposePreservesReflectedTransform()
     {
         var scale = new Vector3(-2f, 3f, 4f);
         Quaternion rotation = Quaternion.FromEulerAnglesXYZ(new Vector3(0.2f, 0.3f, 0.4f));
@@ -155,7 +155,7 @@ public sealed class VectorMatrixTests
     }
 
     [Fact]
-    public void Matrix_LookAtRH_IdentityForMinusZ()
+    public void MatrixLookAtRHIdentityForMinusZ()
     {
         var eye = new Vector3(0f, 0f, 0f);
         var target = new Vector3(0f, 0f, -1f);
@@ -166,7 +166,7 @@ public sealed class VectorMatrixTests
     }
 
     [Fact]
-    public void Matrix_PerspectiveRH_MapsNearFar()
+    public void MatrixPerspectiveRHMapsNearFar()
     {
         float near = 0.1f;
         float far = 10f;
@@ -183,7 +183,7 @@ public sealed class VectorMatrixTests
     }
 
     [Fact]
-    public void Matrix_PerspectiveLH_MapsNearFar()
+    public void MatrixPerspectiveLHMapsNearFar()
     {
         float near = 0.1f;
         float far = 10f;
@@ -197,7 +197,7 @@ public sealed class VectorMatrixTests
     }
 
     [Fact]
-    public void Matrix_LookAtLH_RotatesWorldIntoCameraAxes()
+    public void MatrixLookAtLHRotatesWorldIntoCameraAxes()
     {
         Matrix view = Matrix.CreateLookAt(Vector3.ZERO, Vector3.RIGHT, Vector3.UP);
 
@@ -209,7 +209,7 @@ public sealed class VectorMatrixTests
     }
 
     [Fact]
-    public void Matrix_OrthographicOffCenter_MapsEdges()
+    public void MatrixOrthographicOffCenterMapsEdges()
     {
         Matrix ortho = Matrix.CreateOrthographicOffCenter(-2f, 2f, -1f, 1f, 0f, 10f);
 
@@ -221,7 +221,7 @@ public sealed class VectorMatrixTests
     }
 
     [Fact]
-    public void Matrix_ToColumnMajorArray_Layout()
+    public void MatrixToColumnMajorArrayLayout()
     {
         var m = new Matrix(1f, 2f, 3f, 4f, 5f, 6f, 7f, 8f, 9f, 10f, 11f, 12f, 13f, 14f, 15f, 16f);
 
@@ -239,7 +239,7 @@ public sealed class VectorMatrixTests
     }
 
     [Fact]
-    public void Quaternion_Normalize_UnitLength()
+    public void QuaternionNormalizeUnitLength()
     {
         var q = new Quaternion(1f, 2f, 3f, 4f);
         Quaternion n = Quaternion.Normalize(q);
@@ -248,7 +248,7 @@ public sealed class VectorMatrixTests
     }
 
     [Fact]
-    public void Quaternion_FromRotationMatrix_Roundtrip()
+    public void QuaternionFromRotationMatrixRoundtrip()
     {
         Quaternion q = Quaternion.FromEulerAnglesXYZ(new Vector3(0.25f, 0.5f, 1.1f));
         Matrix m = q.ToMatrix();
@@ -266,7 +266,7 @@ public sealed class VectorMatrixTests
     }
 
     [Fact]
-    public void MathHelper_Clamp_Saturate_IsFinite()
+    public void MathHelperClampSaturateIsFinite()
     {
         Assert.True(MathHelper.AlmostEquals(0.5f, MathHelper.Clamp(0.5f, 0f, 1f)));
         Assert.True(MathHelper.AlmostEquals(1f, MathHelper.Clamp(2f, 0f, 1f)));

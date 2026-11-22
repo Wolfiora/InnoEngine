@@ -649,7 +649,7 @@ public sealed class PluginSourceServiceTests : IDisposable
     }
 
     [Fact]
-    public void CodePluginUpdate_RemainsInvisibleWhileItsCompilationCandidateIsPending()
+    public void CodePluginUpdateRemainsInvisibleWhileItsCompilationCandidateIsPending()
     {
         InitializeProjectAssets();
         var service = new PluginSourceService(m_serialization, m_plugins, m_library);
@@ -771,7 +771,7 @@ public sealed class PluginSourceServiceTests : IDisposable
     }
 
     [Fact]
-    public void SourceMountCandidate_TransfersLiveIdentitiesOnlyDuringActivation()
+    public void SourceMountCandidateTransfersLiveIdentitiesOnlyDuringActivation()
     {
         const string C_FILE_NAME = "identity-handoff.iplugin";
         WritePlugin(C_FILE_NAME, Manifest("tests.identity-handoff"), new Dictionary<string, byte[]>

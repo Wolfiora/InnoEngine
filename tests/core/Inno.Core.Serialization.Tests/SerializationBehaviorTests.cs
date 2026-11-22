@@ -78,14 +78,14 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void ISerializable_IsPureMarkerInterface()
+    public void ISerializableIsPureMarkerInterface()
     {
         Assert.Empty(typeof(ISerializable).GetMethods());
         Assert.Empty(typeof(ISerializable).GetProperties());
     }
 
     [Fact]
-    public void PublicOperations_RejectDisposedRegistry()
+    public void PublicOperationsRejectDisposedRegistry()
     {
         m_serialization.Dispose();
 
@@ -96,7 +96,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public async Task CapturedGeneration_RemainsUsableAcrossRefreshAndWorkerContinuation()
+    public async Task CapturedGenerationRemainsUsableAcrossRefreshAndWorkerContinuation()
     {
         var source = new DefaultSample { count = 73, name = "Pinned" };
         SerializationGeneration generation = m_serialization.CaptureGeneration();
@@ -112,7 +112,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void TypeCatalogConstructor_RequiresActiveModuleHost()
+    public void TypeCatalogConstructorRequiresActiveModuleHost()
     {
         m_serialization.Dispose();
         m_types.Dispose();
@@ -129,7 +129,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void SerializeDeserialize_RoundTripsSupportedDefaultValues()
+    public void SerializeDeserializeRoundTripsSupportedDefaultValues()
     {
         var source = new DefaultSample
         {
@@ -192,7 +192,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void Restore_UpdatesExistingInstance()
+    public void RestoreUpdatesExistingInstance()
     {
         var source = new DefaultSample { count = 77, name = "Restored" };
         var target = new DefaultSample { count = 1, name = "Old" };
@@ -204,7 +204,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void CollectingPropertyRestore_CollectsInvalidMembersAndPreservesDefaults()
+    public void CollectingPropertyRestoreCollectsInvalidMembersAndPreservesDefaults()
     {
         var previous = new PreviousSchemaSample
         {
@@ -236,7 +236,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void StrictPropertyRestore_ThrowsForAnIncompatibleMember()
+    public void StrictPropertyRestoreThrowsForAnIncompatibleMember()
     {
         IReadOnlyList<SerializationPropertySnapshot> snapshots =
             m_serialization.CaptureProperties(new PreviousSchemaSample { changed = 42 });
@@ -253,7 +253,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void PropertyData_CapturesAndRestoresOnlyTheRequestedMember()
+    public void PropertyDataCapturesAndRestoresOnlyTheRequestedMember()
     {
         var source = new DefaultSample
         {
@@ -276,7 +276,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void PropertyData_RoundTripsAllPersistentMembersWithoutTheOwningObject()
+    public void PropertyDataRoundTripsAllPersistentMembersWithoutTheOwningObject()
     {
         var source = new PreviousSchemaSample
         {
@@ -297,7 +297,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void PropertyData_RejectsMalformedOrTrailingBytes()
+    public void PropertyDataRejectsMalformedOrTrailingBytes()
     {
         byte[] data = m_serialization.CapturePropertyData(
             new DefaultSample { count = 12 },
@@ -311,7 +311,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void Deserialize_UsesNonPublicParameterlessConstructor()
+    public void DeserializeUsesNonPublicParameterlessConstructor()
     {
         byte[] bytes = m_serialization.Encode(static writer => writer.Write("value", 9));
 
@@ -322,7 +322,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void Deserialize_WithoutParameterlessConstructor_RequiresConverter()
+    public void DeserializeWithoutParameterlessConstructorRequiresConverter()
     {
         byte[] bytes = m_serialization.Encode(static writer => writer.Write("value", 5));
 
@@ -335,7 +335,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void Deserialize_UsesConverterWhenNoParameterlessConstructorExists()
+    public void DeserializeUsesConverterWhenNoParameterlessConstructorExists()
     {
         var source = new ConvertedConstructorSample(31);
 
@@ -347,7 +347,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void Deserialize_PreservesConstructorFailureAsInnerException()
+    public void DeserializePreservesConstructorFailureAsInnerException()
     {
         byte[] bytes = m_serialization.Encode(static _ => {});
 
@@ -360,7 +360,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void RequiredConverter_Missing_ThrowsClearError()
+    public void RequiredConverterMissingThrowsClearError()
     {
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(
             () => m_serialization.Serialize(new MissingRequiredConverterSample())
@@ -371,7 +371,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void Visibility_ControlsPersistenceAndRuntimeMetadataStrictly()
+    public void VisibilityControlsPersistenceAndRuntimeMetadataStrictly()
     {
         var source = new VisibilitySample
         {
@@ -419,14 +419,14 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void MetadataValidation_RejectsInvalidMembersAndDuplicateKeys()
+    public void MetadataValidationRejectsInvalidMembersAndDuplicateKeys()
     {
         Assert.Throws<InvalidOperationException>(() => m_serialization.GetProperties(new MissingSetterSample()));
         Assert.Throws<InvalidOperationException>(() => m_serialization.GetProperties(new DuplicateKeyDerivedSample()));
     }
 
     [Fact]
-    public void ClassMemberWithoutConverter_FailsWithCompletePath()
+    public void ClassMemberWithoutConverterFailsWithCompletePath()
     {
         var source = new MissingClassHost { child = new MissingChild { value = 1 } };
 
@@ -439,7 +439,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void ClassCollectionElementWithoutConverter_FailsWithIndexedPath()
+    public void ClassCollectionElementWithoutConverterFailsWithIndexedPath()
     {
         var source = new MissingClassCollectionHost
         {
@@ -454,7 +454,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void ExplicitConverter_RoundTripsNestedClass()
+    public void ExplicitConverterRoundTripsNestedClass()
     {
         var source = new ConvertedChildHost
         {
@@ -470,7 +470,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void ExplicitConverter_CycleFailsWithBothPaths()
+    public void ExplicitConverterCycleFailsWithBothPaths()
     {
         var cycle = new CycleValue();
         cycle.next = cycle;
@@ -525,7 +525,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void ConverterSelection_PrefersNearestBaseThenExactType()
+    public void ConverterSelectionPrefersNearestBaseThenExactType()
     {
         var nearestSource = new NearestHost { item = new NearestLeaf { value = 21 } };
         NearestHost nearest = m_serialization.Deserialize<NearestHost>(m_serialization.Serialize(nearestSource));
@@ -539,7 +539,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void ConverterSelection_RejectsEqualDistanceAmbiguity()
+    public void ConverterSelectionRejectsEqualDistanceAmbiguity()
     {
         var source = new AmbiguousHost { item = new AmbiguousValue() };
 
@@ -560,7 +560,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void OpenGenericConverter_IsClosedFromRequestedType()
+    public void OpenGenericConverterIsClosedFromRequestedType()
     {
         var source = new GenericBoxHost { box = new GenericBox<int>(45) };
 
@@ -571,7 +571,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void SerializationContext_IsImmutableAndUsesExactTypeKeys()
+    public void SerializationContextIsImmutableAndUsesExactTypeKeys()
     {
         var service = new SampleContext();
         SerializationContext original = SerializationContext.empty;
@@ -586,7 +586,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void ReaderWriter_ReportDuplicateMissingAndTypePaths()
+    public void ReaderWriterReportDuplicateMissingAndTypePaths()
     {
         InvalidOperationException duplicate = Assert.Throws<InvalidOperationException>(() =>
             m_serialization.Encode(writer =>
@@ -619,7 +619,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void ReaderWriter_AreInvalidOutsideTheirOperation()
+    public void ReaderWriterAreInvalidOutsideTheirOperation()
     {
         SerializationWriter? capturedWriter = null;
         _ = m_serialization.Encode(writer => capturedWriter = writer);
@@ -636,7 +636,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void RestoreHooks_RunOnceBaseToDerivedForDefaultAndConverterPaths()
+    public void RestoreHooksRunOnceBaseToDerivedForDefaultAndConverterPaths()
     {
         byte[] bytes = m_serialization.Encode(static writer => writer.Write("value", 3));
         var target = new HookDerivedSample();
@@ -661,7 +661,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void CompletionCallbacks_RunOnlyAfterSuccessfulDecode()
+    public void CompletionCallbacksRunOnlyAfterSuccessfulDecode()
     {
         byte[] bytes = m_serialization.Encode(static writer => writer.Write("value", 1));
         var calls = new List<string>();
@@ -684,7 +684,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void NonStringMapEncoding_IsDeterministic()
+    public void NonStringMapEncodingIsDeterministic()
     {
         var left = new MapHost { values = new Dictionary<int, string> { [9] = "nine", [1] = "one" } };
         var right = new MapHost { values = new Dictionary<int, string> { [1] = "one", [9] = "nine" } };
@@ -693,7 +693,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void ForeignFormatHeader_IsRejected()
+    public void ForeignFormatHeaderIsRejected()
     {
         using var stream = new MemoryStream();
         using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))

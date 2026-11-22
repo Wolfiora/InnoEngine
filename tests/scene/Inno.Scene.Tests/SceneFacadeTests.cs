@@ -112,7 +112,7 @@ public sealed class SceneFacadeTests : IDisposable
     }
 
     [Fact]
-    public void CreateObject_StoresDataInSceneStore_AndReturnsFacade()
+    public void CreateObjectStoresDataInSceneStoreAndReturnsFacade()
     {
         var scene = new GameScene("Test");
 
@@ -183,7 +183,7 @@ public sealed class SceneFacadeTests : IDisposable
     }
 
     [Fact]
-    public void GetObjects_ReturnsSceneOwnedObjects()
+    public void GetObjectsReturnsSceneOwnedObjects()
     {
         var scene = new GameScene("Test");
         GameObject a = scene.CreateObject("A");
@@ -239,7 +239,7 @@ public sealed class SceneFacadeTests : IDisposable
     }
 
     [Fact]
-    public void DestroyObject_InvalidatesFacade()
+    public void DestroyObjectInvalidatesFacade()
     {
         var scene = new GameScene("Test");
         GameObject gameObject = scene.CreateObject("Cube");
@@ -252,7 +252,7 @@ public sealed class SceneFacadeTests : IDisposable
     }
 
     [Fact]
-    public void DestroyObject_UnlinksTransformHierarchy()
+    public void DestroyObjectUnlinksTransformHierarchy()
     {
         var scene = new GameScene("Test");
         GameObject parent = scene.CreateObject("Parent");
@@ -266,7 +266,7 @@ public sealed class SceneFacadeTests : IDisposable
     }
 
     [Fact]
-    public void GameBehaviorLifecycle_DispatchesLifecycleCallbacks()
+    public void GameBehaviorLifecycleDispatchesLifecycleCallbacks()
     {
         var scene = new GameScene("Test");
         GameObject gameObject = scene.CreateObject("Actor");
@@ -292,7 +292,7 @@ public sealed class SceneFacadeTests : IDisposable
     }
 
     [Fact]
-    public void GameBehaviorLifecycle_ReindexesAfterStructuralChanges()
+    public void GameBehaviorLifecycleReindexesAfterStructuralChanges()
     {
         var scene = new GameScene("Dynamic Behaviors");
         SceneManager.LoadScene(scene);
@@ -315,7 +315,7 @@ public sealed class SceneFacadeTests : IDisposable
     }
 
     [Fact]
-    public void GameBehaviorLifecycle_StartsLateOnlyBehaviorWithoutDispatchingUpdate()
+    public void GameBehaviorLifecycleStartsLateOnlyBehaviorWithoutDispatchingUpdate()
     {
         var scene = new GameScene("Phase-indexed Behaviors");
         GameObject gameObject = scene.CreateObject("Late Actor");
@@ -330,7 +330,7 @@ public sealed class SceneFacadeTests : IDisposable
     }
 
     [Fact]
-    public void ResetComponent_UsesVirtualDispatchAndExplicitBaseCall()
+    public void ResetComponentUsesVirtualDispatchAndExplicitBaseCall()
     {
         var scene = new GameScene("Test");
         GameObject gameObject = scene.CreateObject("Actor");
@@ -347,7 +347,7 @@ public sealed class SceneFacadeTests : IDisposable
     }
 
     [Fact]
-    public void SceneManager_LoadScene_ReplacesActiveScene()
+    public void SceneManagerLoadSceneReplacesActiveScene()
     {
         var first = new GameScene("First");
         var second = new GameScene("Second");

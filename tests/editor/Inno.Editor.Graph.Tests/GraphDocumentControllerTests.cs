@@ -184,7 +184,7 @@ public sealed class GraphDocumentControllerTests : IDisposable
     }
 
     [Fact]
-    public void AddNode_RecordsNeutralHistoryPayload()
+    public void AddNodeRecordsNeutralHistoryPayload()
     {
         GraphEditorModule module = Assert.IsType<GraphEditorModule>(m_sink.module);
         var history = new RecordingHistory();
@@ -200,7 +200,7 @@ public sealed class GraphDocumentControllerTests : IDisposable
     }
 
     [Fact]
-    public void ReplaceDocument_IsAtomicUndoableAndDoesNotRetainTheCallerDocument()
+    public void ReplaceDocumentIsAtomicUndoableAndDoesNotRetainTheCallerDocument()
     {
         GraphEditorModule module = Assert.IsType<GraphEditorModule>(m_sink.module);
         var history = new RecordingHistory();
@@ -224,7 +224,7 @@ public sealed class GraphDocumentControllerTests : IDisposable
     }
 
     [Fact]
-    public void CopyPaste_RemapsNodesAndPreservesInternalConnections()
+    public void CopyPasteRemapsNodesAndPreservesInternalConnections()
     {
         GraphEditorModule module = Assert.IsType<GraphEditorModule>(m_sink.module);
         var history = new RecordingHistory();
@@ -251,7 +251,7 @@ public sealed class GraphDocumentControllerTests : IDisposable
     }
 
     [Fact]
-    public void CanvasZoom_PreservesGraphPointUnderPivot()
+    public void CanvasZoomPreservesGraphPointUnderPivot()
     {
         var canvas = new GraphCanvasState();
         canvas.SetViewport(new GraphPosition(10f, 20f), 1f);

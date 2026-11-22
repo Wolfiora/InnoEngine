@@ -22,7 +22,7 @@ public sealed class AssetCoreTests
     }
 
     [Fact]
-    public void AssetDependency_UsesPersistentIdentityForEquality()
+    public void AssetDependencyUsesPersistentIdentityForEquality()
     {
         Guid persistentID = Guid.NewGuid();
         var first = new AssetDependency(persistentID, new TypeRef(Guid.NewGuid()), "A/first.txt");
@@ -33,7 +33,7 @@ public sealed class AssetCoreTests
     }
 
     [Fact]
-    public void AssetObject_DefaultRuntimeState_IsDetachedAndEmpty()
+    public void AssetObjectDefaultRuntimeStateIsDetachedAndEmpty()
     {
         var asset = new TextAsset();
 
@@ -45,7 +45,7 @@ public sealed class AssetCoreTests
     }
 
     [Fact]
-    public void AssetDependency_IsAnImmutableValueContract()
+    public void AssetDependencyIsAnImmutableValueContract()
     {
         PropertyInfo[] properties = typeof(AssetDependency).GetProperties(BindingFlags.Instance | BindingFlags.Public);
 
@@ -54,7 +54,7 @@ public sealed class AssetCoreTests
     }
 
     [Fact]
-    public void AssetObject_PublicSurface_DoesNotExposeSourceHashDependenciesOrSetters()
+    public void AssetObjectPublicSurfaceDoesNotExposeSourceHashDependenciesOrSetters()
     {
         string[] propertyNames = typeof(AssetObject)
             .GetProperties(BindingFlags.Instance | BindingFlags.Public)
@@ -71,7 +71,7 @@ public sealed class AssetCoreTests
     }
 
     [Fact]
-    public void ArtifactKey_NormalizesAndComparesHexadecimalValues()
+    public void ArtifactKeyNormalizesAndComparesHexadecimalValues()
     {
         var lower = new AssetArtifactKey("  " + new string('a', 64) + "  ");
         var upper = new AssetArtifactKey(new string('A', 64));
@@ -118,7 +118,7 @@ public sealed class AssetCoreTests
     }
 
     [Fact]
-    public void AssetInfo_ExposesAnImmutableCatalogSnapshot()
+    public void AssetInfoExposesAnImmutableCatalogSnapshot()
     {
         Guid id = Guid.NewGuid();
         var info = new AssetInfo(
@@ -143,7 +143,7 @@ public sealed class AssetCoreTests
     }
 
     [Fact]
-    public void ChangeSet_PreservesMoveIdentityAndRevision()
+    public void ChangeSetPreservesMoveIdentityAndRevision()
     {
         Guid id = Guid.NewGuid();
         var change = new AssetChange(

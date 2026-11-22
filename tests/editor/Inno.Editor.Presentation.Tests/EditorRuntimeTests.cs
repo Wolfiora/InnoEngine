@@ -806,7 +806,7 @@ public sealed partial class EditorRuntimeTests : IDisposable
     }
 
     [Fact]
-    public void ExtensionStateCaptureFailure_PublishesCurrentDiagnosticUntilRetrySucceeds()
+    public void ExtensionStateCaptureFailurePublishesCurrentDiagnosticUntilRetrySucceeds()
     {
         var sink = new TestDiagnosticSink();
         m_diagnostics.RegisterSink(sink);

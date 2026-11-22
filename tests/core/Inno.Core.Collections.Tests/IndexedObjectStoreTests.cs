@@ -9,7 +9,7 @@ namespace Inno.Core.Collections.Tests;
 public sealed class IndexedObjectStoreTests
 {
     [Fact]
-    public void Add_Remove_Count_Clear()
+    public void AddRemoveCountClear()
     {
         var store = new IndexedObjectStore<Item>();
         var a = new Item("A", 1);
@@ -28,7 +28,7 @@ public sealed class IndexedObjectStoreTests
     }
 
     [Fact]
-    public void DefineKey_UniqueAndLookup()
+    public void DefineKeyUniqueAndLookup()
     {
         var store = new IndexedObjectStore<Item>();
         IndexedObjectKey<int> key = store.DefineKey<int>("id", IndexedObjectKeyFlags.Unique);
@@ -48,7 +48,7 @@ public sealed class IndexedObjectStoreTests
     }
 
     [Fact]
-    public void DefineKey_Unique_ThrowsOnDuplicateValueFromDifferentItems()
+    public void DefineKeyUniqueThrowsOnDuplicateValueFromDifferentItems()
     {
         var store = new IndexedObjectStore<Item>();
         IndexedObjectKey<int> key = store.DefineKey<int>("id", IndexedObjectKeyFlags.Unique);
@@ -64,7 +64,7 @@ public sealed class IndexedObjectStoreTests
     }
 
     [Fact]
-    public void DefineKey_Unique_AllowsResettingSameValueOnSameItem()
+    public void DefineKeyUniqueAllowsResettingSameValueOnSameItem()
     {
         var store = new IndexedObjectStore<Item>();
         IndexedObjectKey<int> key = store.DefineKey<int>("id", IndexedObjectKeyFlags.Unique);
@@ -79,7 +79,7 @@ public sealed class IndexedObjectStoreTests
     }
 
     [Fact]
-    public void DefineKey_MultiAndQuery()
+    public void DefineKeyMultiAndQuery()
     {
         var store = new IndexedObjectStore<Item>();
         IndexedObjectKey<int> key = store.DefineKey<int>("category", IndexedObjectKeyFlags.Unordered);
@@ -166,7 +166,7 @@ public sealed class IndexedObjectStoreTests
     }
 
     [Fact]
-    public void OrderBy_UsesSortedKey()
+    public void OrderByUsesSortedKey()
     {
         var store = new IndexedObjectStore<Item>();
         IndexedObjectKey<int> key = store.DefineKey<int>("ordered", IndexedObjectKeyFlags.Ordered, Comparer<int>.Default);
@@ -187,7 +187,7 @@ public sealed class IndexedObjectStoreTests
     }
 
     [Fact]
-    public void RemoveKey_InvalidatesKey()
+    public void RemoveKeyInvalidatesKey()
     {
         var store = new IndexedObjectStore<Item>();
         IndexedObjectKey<int> key = store.DefineKey<int>("temp");
@@ -201,7 +201,7 @@ public sealed class IndexedObjectStoreTests
     }
 
     [Fact]
-    public void TryGetKey_ResolvesByName()
+    public void TryGetKeyResolvesByName()
     {
         var store = new IndexedObjectStore<Item>();
         IndexedObjectKey<int> key = store.DefineKey<int>("resolve");
@@ -212,7 +212,7 @@ public sealed class IndexedObjectStoreTests
     }
 
     [Fact]
-    public void PredicateQuery_Works()
+    public void PredicateQueryWorks()
     {
         var store = new IndexedObjectStore<Item>();
         var a = new Item("A", 1);
@@ -231,7 +231,7 @@ public sealed class IndexedObjectStoreTests
     }
 
     [Fact]
-    public void GetFast_IsFailFast_WhenStoreMutates()
+    public void GetFastIsFailFastWhenStoreMutates()
     {
         var store = new IndexedObjectStore<Item>();
         store.Add(new Item("A", 1));
@@ -246,7 +246,7 @@ public sealed class IndexedObjectStoreTests
     }
 
     [Fact]
-    public void Get_ReturnsStableSnapshot_WhenStoreMutates()
+    public void GetReturnsStableSnapshotWhenStoreMutates()
     {
         var store = new IndexedObjectStore<Item>();
         var a = new Item("A", 1);
@@ -263,7 +263,7 @@ public sealed class IndexedObjectStoreTests
     }
 
     [Fact]
-    public void RemoveAll_KeepsKeys()
+    public void RemoveAllKeepsKeys()
     {
         var store = new IndexedObjectStore<Item>();
         IndexedObjectKey<int> key = store.DefineKey<int>("category");
@@ -277,7 +277,7 @@ public sealed class IndexedObjectStoreTests
     }
 
     [Fact]
-    public void All_ReturnsStableSnapshot_WhenStoreMutates()
+    public void AllReturnsStableSnapshotWhenStoreMutates()
     {
         var store = new IndexedObjectStore<Item>();
         var a = new Item("A", 1);
@@ -294,7 +294,7 @@ public sealed class IndexedObjectStoreTests
     }
 
     [Fact]
-    public void AllFast_ReturnsAllItems()
+    public void AllFastReturnsAllItems()
     {
         var store = new IndexedObjectStore<Item>();
         var a = new Item("A", 1);
@@ -313,7 +313,7 @@ public sealed class IndexedObjectStoreTests
     }
 
     [Fact]
-    public void AllFast_IsFailFast_WhenStoreMutates()
+    public void AllFastIsFailFastWhenStoreMutates()
     {
         var store = new IndexedObjectStore<Item>();
         store.Add(new Item("A", 1));

@@ -12,7 +12,7 @@ namespace Inno.Assets.Pipeline.Tests;
 public sealed class AssetFileSystemChangeTests
 {
     [Fact]
-    public void Watcher_CoalescesCreateChangeAndDeleteThroughPublicCoordinator()
+    public void WatcherCoalescesCreateChangeAndDeleteThroughPublicCoordinator()
     {
         string root = CreateRoot();
         try
@@ -43,7 +43,7 @@ public sealed class AssetFileSystemChangeTests
     }
 
     [Fact]
-    public void Watcher_RenamePreservesOldAndNewRelativePaths()
+    public void WatcherRenamePreservesOldAndNewRelativePaths()
     {
         string root = CreateRoot();
         try

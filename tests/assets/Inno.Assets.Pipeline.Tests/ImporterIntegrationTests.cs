@@ -52,7 +52,7 @@ public sealed class ImporterIntegrationTests : IDisposable
     [InlineData("Text/a.yml", "yaml")]
     [InlineData("Text/a.md", "markdown")]
     [InlineData("Text/a.xml", "xml")]
-    public void TextExtensions_AreAutomaticallyDiscovered(
+    public void TextExtensionsAreAutomaticallyDiscovered(
         string relativePath,
         string languageHint
     ) {
@@ -76,7 +76,7 @@ public sealed class ImporterIntegrationTests : IDisposable
     }
 
     [Fact]
-    public void BinaryImporter_CreatesRuntimeDescriptor()
+    public void BinaryImporterCreatesRuntimeDescriptor()
     {
         using var workspace = new TestWorkspace();
         workspace.Write("Data/blob.bytes", [1, 2, 3, 4]);
@@ -96,7 +96,7 @@ public sealed class ImporterIntegrationTests : IDisposable
     }
 
     [Fact]
-    public void ExportableBuiltInAsset_RoundTripsThroughPublicLoaderContract()
+    public void ExportableBuiltInAssetRoundTripsThroughPublicLoaderContract()
     {
         using var workspace = new TestWorkspace();
         using var loader = new AssetLoader(

@@ -9,7 +9,7 @@ namespace Inno.Build.Toolchains.Bgfx.Integration.Tests;
 public sealed class ToolRunnerTests
 {
     [Fact]
-    public void Run_UsesExplicitlyDeployedTools()
+    public void RunUsesExplicitlyDeployedTools()
     {
         foreach (BgfxTool tool in Enum.GetValues<BgfxTool>())
         {

@@ -26,7 +26,7 @@ public sealed class DiagnosticHubTests : IDisposable
     }
 
     [Fact]
-    public void DiagnosticFactories_CreateTheRequestedSeverityAndLocation()
+    public void DiagnosticFactoriesCreateTheRequestedSeverityAndLocation()
     {
         var location = new DiagnosticLocation("Assets/Test.cs", 4, 2);
 
@@ -41,7 +41,7 @@ public sealed class DiagnosticHubTests : IDisposable
     }
 
     [Fact]
-    public void Set_ReplacesTheCompleteReportOwnedByOneCallerGroup()
+    public void SetReplacesTheCompleteReportOwnedByOneCallerGroup()
     {
         var sink = new ProbeSink();
         m_hub.RegisterSink(sink);
@@ -68,7 +68,7 @@ public sealed class DiagnosticHubTests : IDisposable
     }
 
     [Fact]
-    public void Set_EmptyCollectionClearsOnlyItsCallerGroup()
+    public void SetEmptyCollectionClearsOnlyItsCallerGroup()
     {
         var sink = new ProbeSink();
         m_hub.RegisterSink(sink);
@@ -83,7 +83,7 @@ public sealed class DiagnosticHubTests : IDisposable
     }
 
     [Fact]
-    public void Set_TargetedReportsRemainIndependent()
+    public void SetTargetedReportsRemainIndependent()
     {
         var sink = new ProbeSink();
         Guid otherAssetID = Guid.NewGuid();
@@ -110,7 +110,7 @@ public sealed class DiagnosticHubTests : IDisposable
     }
 
     [Fact]
-    public void Set_SameGroupNameRemainsIndependentAcrossCallerTypes()
+    public void SetSameGroupNameRemainsIndependentAcrossCallerTypes()
     {
         var sink = new ProbeSink();
         m_hub.RegisterSink(sink);
@@ -125,7 +125,7 @@ public sealed class DiagnosticHubTests : IDisposable
     }
 
     [Fact]
-    public void RegisterSink_ReplaysEveryActiveReport()
+    public void RegisterSinkReplaysEveryActiveReport()
     {
         Diagnostics.Set(C_COMPILATION_DIAGNOSTICS, Diagnostic.Error("A", "First"));
         Diagnostics.Set(C_RELOAD_DIAGNOSTICS, Diagnostic.Warning("B", "Second"));
@@ -138,7 +138,7 @@ public sealed class DiagnosticHubTests : IDisposable
     }
 
     [Fact]
-    public void SinkFailure_DoesNotPreventOtherSinksFromReceivingState()
+    public void SinkFailureDoesNotPreventOtherSinksFromReceivingState()
     {
         var failingSink = new FailingSink();
         var sink = new ProbeSink();

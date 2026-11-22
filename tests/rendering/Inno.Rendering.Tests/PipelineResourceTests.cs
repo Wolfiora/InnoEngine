@@ -48,7 +48,7 @@ public sealed class PipelineResourceTests
     }
 
     [Fact]
-    public void VertexLayout_RejectsDuplicateSemantic() => Assert.Throws<ArgumentException>(() => new RenderVertexLayout(
+    public void VertexLayoutRejectsDuplicateSemantic() => Assert.Throws<ArgumentException>(() => new RenderVertexLayout(
         [
             new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3),
             new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float2)
@@ -56,7 +56,7 @@ public sealed class PipelineResourceTests
     ));
 
     [Fact]
-    public void VertexLayout_PreservesExplicitOffsetsAndTrailingPadding()
+    public void VertexLayoutPreservesExplicitOffsetsAndTrailingPadding()
     {
         var layout = new RenderVertexLayout(
             [
@@ -72,7 +72,7 @@ public sealed class PipelineResourceTests
     }
 
     [Fact]
-    public void VertexLayoutEquality_IncludesTrailingStride()
+    public void VertexLayoutEqualityIncludesTrailingStride()
     {
         RenderVertexAttribute[] attributes =
         [
@@ -86,7 +86,7 @@ public sealed class PipelineResourceTests
     }
 
     [Fact]
-    public void VertexLayout_RejectsOverlappingAttributesAndShortStride()
+    public void VertexLayoutRejectsOverlappingAttributesAndShortStride()
     {
         Assert.Throws<ArgumentException>(() => new RenderVertexLayout(
             [
@@ -103,7 +103,7 @@ public sealed class PipelineResourceTests
     }
 
     [Fact]
-    public void PersistentVertexBuffer_RequiresMatchingLayout()
+    public void PersistentVertexBufferRequiresMatchingLayout()
     {
         var buffer = new RenderBufferDescriptor(3, 12, RenderBufferUsage.Vertex);
         var mismatched = new RenderVertexLayout(
@@ -116,7 +116,7 @@ public sealed class PipelineResourceTests
     }
 
     [Fact]
-    public void TextureDescriptor_ModelsVolumeAndCubemapSubresourcesWithoutBackendTypes()
+    public void TextureDescriptorModelsVolumeAndCubemapSubresourcesWithoutBackendTypes()
     {
         var volume = new RenderTextureDescriptor(
             16,
@@ -146,7 +146,7 @@ public sealed class PipelineResourceTests
     }
 
     [Fact]
-    public void TextureDescriptor_RejectsContradictoryDimensions()
+    public void TextureDescriptorRejectsContradictoryDimensions()
     {
         Assert.Throws<ArgumentException>(() => new RenderTextureDescriptor(
             16,
@@ -236,13 +236,13 @@ public sealed class PipelineResourceTests
     }
 
     [Fact]
-    public void ShaderBinding_RejectsDefaultIdentifier() => Assert.Throws<ArgumentException>(() => new RenderShaderBindingDescriptor(
+    public void ShaderBindingRejectsDefaultIdentifier() => Assert.Throws<ArgumentException>(() => new RenderShaderBindingDescriptor(
         default,
         RenderShaderBindingKind.Uniform
     ));
 
     [Fact]
-    public void ShaderBinding_ModelsStorageTextureAccessWithoutBackendTypes()
+    public void ShaderBindingModelsStorageTextureAccessWithoutBackendTypes()
     {
         var binding = new RenderShaderBindingDescriptor(
             new RenderBindingID("u_output"),

@@ -8,7 +8,7 @@ namespace Inno.Extensibility.Reload.Tests;
 public sealed class AssemblyUnloadBarrierTests
 {
     [Fact]
-    public void Advance_CompletesOnlyAfterEveryProbeCompletes()
+    public void AdvanceCompletesOnlyAfterEveryProbeCompletes()
     {
         var first = new Probe("first");
         var second = new Probe("second");
@@ -31,7 +31,7 @@ public sealed class AssemblyUnloadBarrierTests
     }
 
     [Fact]
-    public void Advance_RetainsFaultAndRejectsEveryLaterSuccessAttempt()
+    public void AdvanceRetainsFaultAndRejectsEveryLaterSuccessAttempt()
     {
         var probe = new Probe("Plugin.Game (InnoPlugin/Runtime, generation 4)");
         var barrier = new AssemblyUnloadBarrier(

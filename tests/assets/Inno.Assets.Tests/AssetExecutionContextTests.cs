@@ -8,7 +8,7 @@ namespace Inno.Assets.Tests;
 public sealed class AssetExecutionContextTests
 {
     [Fact]
-    public void Assets_WithoutAnExecutionScope_FailsExplicitly()
+    public void AssetsWithoutAnExecutionScopeFailsExplicitly()
     {
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
             Assets.Load<TextAsset>(AssetPath.Project("missing.txt")));
@@ -17,7 +17,7 @@ public sealed class AssetExecutionContextTests
     }
 
     [Fact]
-    public void NestedScopes_RestoreThePreviousLookup()
+    public void NestedScopesRestoreThePreviousLookup()
     {
         var outerAsset = new TextAsset();
         var innerAsset = new TextAsset();
@@ -36,7 +36,7 @@ public sealed class AssetExecutionContextTests
     }
 
     [Fact]
-    public void Scopes_DisposedOutOfOrder_AreRejectedWithoutLosingTheActiveLookup()
+    public void ScopesDisposedOutOfOrderAreRejectedWithoutLosingTheActiveLookup()
     {
         var outer = new FixedAssetLookup(new TextAsset());
         var inner = new FixedAssetLookup(new TextAsset());
@@ -56,7 +56,7 @@ public sealed class AssetExecutionContextTests
     }
 
     [Fact]
-    public async Task ParallelAsyncFlows_ResolveTheirOwnLookups()
+    public async Task ParallelAsyncFlowsResolveTheirOwnLookups()
     {
         var firstAsset = new TextAsset();
         var secondAsset = new TextAsset();

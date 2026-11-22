@@ -85,7 +85,7 @@ public sealed class NativeBindingCompilation
     /// <param name="nativeDirectory">
     /// The selected generation's absolute native output.
     /// </param>
-    /// <param name="rootId">
+    /// <param name="rootID">
     /// An ordinal root identity from this description.
     /// </param>
     /// <returns>
@@ -97,10 +97,10 @@ public sealed class NativeBindingCompilation
     public string ResolveRoot(
         string engineRoot,
         string nativeDirectory,
-        string rootId
+        string rootID
     ) {
-        NativeBindingSourceRoot root = roots.SingleOrDefault(root => root.id == rootId)
-                                       ?? throw new InvalidDataException("Unknown native compilation root: " + rootId);
+        NativeBindingSourceRoot root = roots.SingleOrDefault(root => root.id == rootID)
+                                       ?? throw new InvalidDataException("Unknown native compilation root: " + rootID);
         return root.generated ? Path.GetFullPath(nativeDirectory) : Path.GetFullPath(root.directory, engineRoot);
     }
 

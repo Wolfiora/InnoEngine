@@ -45,7 +45,7 @@ public sealed class GraphValidatorTests : IDisposable
     }
 
     [Fact]
-    public void Validate_WithCompatibleConnection_IsValid()
+    public void ValidateWithCompatibleConnectionIsValid()
     {
         GraphDocument document = CreateConnectedDocument("float", "float");
 
@@ -56,7 +56,7 @@ public sealed class GraphValidatorTests : IDisposable
     }
 
     [Fact]
-    public void Validate_WithDirectedConversion_IsValid()
+    public void ValidateWithDirectedConversionIsValid()
     {
         GraphDocument document = CreateConnectedDocument("float", "vector3");
 
@@ -70,7 +70,7 @@ public sealed class GraphValidatorTests : IDisposable
     }
 
     [Fact]
-    public void Validate_WithIncompatibleTypes_ReportsError()
+    public void ValidateWithIncompatibleTypesReportsError()
     {
         GraphDocument document = CreateConnectedDocument("texture2d", "float");
 
@@ -81,7 +81,7 @@ public sealed class GraphValidatorTests : IDisposable
     }
 
     [Fact]
-    public void Validate_WithMissingNodeDefinition_PreservesDocumentAsWarning()
+    public void ValidateWithMissingNodeDefinitionPreservesDocumentAsWarning()
     {
         var document = new GraphDocument();
         var node = new GraphNodeRecord(new GraphNodeID("missing"), "plugin.removed");
@@ -95,7 +95,7 @@ public sealed class GraphValidatorTests : IDisposable
     }
 
     [Fact]
-    public void Validate_WithCycle_ReportsError()
+    public void ValidateWithCycleReportsError()
     {
         var document = new GraphDocument();
         GraphNodeRecord left = CreateNode("left", "float", "float");
@@ -112,7 +112,7 @@ public sealed class GraphValidatorTests : IDisposable
     }
 
     [Fact]
-    public void RemoveNode_RemovesConnectedEdges()
+    public void RemoveNodeRemovesConnectedEdges()
     {
         GraphDocument document = CreateConnectedDocument("float", "float");
 

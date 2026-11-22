@@ -23,7 +23,7 @@ public sealed class TransformTests : IDisposable
     }
 
     [Fact]
-    public void SetParent_PreservesWorldTransform_AndComputesLocalWithNonUniformScale()
+    public void SetParentPreservesWorldTransformAndComputesLocalWithNonUniformScale()
     {
         var scene = new GameScene("SetParentScale");
         Transform parent = scene.CreateObject("Parent").GetComponent<Transform>();
@@ -59,7 +59,7 @@ public sealed class TransformTests : IDisposable
     }
 
     [Fact]
-    public void SetParent_WithRotation_PreservesWorldRotation_WithLocalRotationByInverseParent()
+    public void SetParentWithRotationPreservesWorldRotationWithLocalRotationByInverseParent()
     {
         var scene = new GameScene("SetParentRotation");
         Transform parent = scene.CreateObject("Parent").GetComponent<Transform>();
@@ -91,7 +91,7 @@ public sealed class TransformTests : IDisposable
     }
 
     [Fact]
-    public void SetParent_UnparentPreservesWorldTransform()
+    public void SetParentUnparentPreservesWorldTransform()
     {
         var scene = new GameScene("Unparent");
         Transform parent = scene.CreateObject("Parent").GetComponent<Transform>();
@@ -122,7 +122,7 @@ public sealed class TransformTests : IDisposable
     }
 
     [Fact]
-    public void SetParent_RejectsSelfAndDescendantCycle()
+    public void SetParentRejectsSelfAndDescendantCycle()
     {
         var scene = new GameScene("Cycle");
         Transform root = scene.CreateObject("Root").GetComponent<Transform>();
@@ -140,7 +140,7 @@ public sealed class TransformTests : IDisposable
     }
 
     [Fact]
-    public void TransformPoint_UsesExactRotatedNonUniformParentHierarchy()
+    public void TransformPointUsesExactRotatedNonUniformParentHierarchy()
     {
         var scene = new GameScene("ExactHierarchy");
         Transform parent = scene.CreateObject("Parent").GetComponent<Transform>();
@@ -168,7 +168,7 @@ public sealed class TransformTests : IDisposable
     }
 
     [Fact]
-    public void WorldPosition_UsesExactInverseUnderShearedAncestorHierarchy()
+    public void WorldPositionUsesExactInverseUnderShearedAncestorHierarchy()
     {
         var scene = new GameScene("ExactWorldSetter");
         Transform root = scene.CreateObject("Root").transform;
@@ -189,7 +189,7 @@ public sealed class TransformTests : IDisposable
     }
 
     [Fact]
-    public void WorldToLocal_RejectsNonInvertibleZeroScaleHierarchy()
+    public void WorldToLocalRejectsNonInvertibleZeroScaleHierarchy()
     {
         var scene = new GameScene("SingularTransform");
         Transform transform = scene.CreateObject("Zero Scale").transform;

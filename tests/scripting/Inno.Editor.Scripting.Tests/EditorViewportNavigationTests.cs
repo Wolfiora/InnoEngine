@@ -8,7 +8,7 @@ namespace Inno.Editor.Scripting.Tests;
 public sealed class EditorViewportNavigationTests
 {
     [Fact]
-    public void Profile_RejectsDefaultModeMissingFromCapabilities()
+    public void ProfileRejectsDefaultModeMissingFromCapabilities()
     {
         Assert.Throws<ArgumentException>(() => new EditorViewportNavigationProfile(
             new EditorViewportNavigationProfileID("tests.navigation.invalid-default"),
@@ -24,7 +24,7 @@ public sealed class EditorViewportNavigationTests
     }
 
     [Fact]
-    public void ConfigurePerspective_IsAtomicWhenValidationFails()
+    public void ConfigurePerspectiveIsAtomicWhenValidationFails()
     {
         var state = new EditorViewportNavigationState();
         state.ConfigureOrthographic(new Vector3(2f, 3f, 4f), Quaternion.identity, 8f);
@@ -44,7 +44,7 @@ public sealed class EditorViewportNavigationTests
     }
 
     [Fact]
-    public void State_RejectsUndefinedProjectionAndMode()
+    public void StateRejectsUndefinedProjectionAndMode()
     {
         var state = new EditorViewportNavigationState();
 

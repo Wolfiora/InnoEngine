@@ -92,7 +92,7 @@ public sealed class JobSystemBehaviorTests
     }
 
     [Fact]
-    public void SingleThread_ExecutesDeterministicallyOnMainThread()
+    public void SingleThreadExecutesDeterministicallyOnMainThread()
     {
         using var jobs = new JobScheduler(JobExecutionMode.SingleThread);
         jobs.BeginFrame();
@@ -111,7 +111,7 @@ public sealed class JobSystemBehaviorTests
     }
 
     [Fact]
-    public void SingleThread_RejectsCrossThreadUsage()
+    public void SingleThreadRejectsCrossThreadUsage()
     {
         using var jobs = new JobScheduler(JobExecutionMode.SingleThread);
         jobs.BeginFrame();
@@ -136,7 +136,7 @@ public sealed class JobSystemBehaviorTests
     }
 
     [Fact]
-    public void WorkStealing_ScheduleAndComplete_RunsJob()
+    public void WorkStealingScheduleAndCompleteRunsJob()
     {
         using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
@@ -150,7 +150,7 @@ public sealed class JobSystemBehaviorTests
     }
 
     [Fact]
-    public void WorkStealing_ScheduleWithDependencies_RunsInOrder()
+    public void WorkStealingScheduleWithDependenciesRunsInOrder()
     {
         using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
@@ -166,7 +166,7 @@ public sealed class JobSystemBehaviorTests
     }
 
     [Fact]
-    public void WorkStealing_CombineDependencies_CompletesAfterAll()
+    public void WorkStealingCombineDependenciesCompletesAfterAll()
     {
         using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
@@ -183,7 +183,7 @@ public sealed class JobSystemBehaviorTests
     }
 
     [Fact]
-    public void WorkStealing_ParallelFor_CoversEveryIndexExactlyOnce()
+    public void WorkStealingParallelForCoversEveryIndexExactlyOnce()
     {
         using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
@@ -211,7 +211,7 @@ public sealed class JobSystemBehaviorTests
     }
 
     [Fact]
-    public void WorkStealing_MainThreadQueue_DrainExecutesOnMainThread()
+    public void WorkStealingMainThreadQueueDrainExecutesOnMainThread()
     {
         using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
@@ -228,7 +228,7 @@ public sealed class JobSystemBehaviorTests
     }
 
     [Fact]
-    public void WorkStealing_MainThreadQueue_DrainFromWorkerThread_Throws()
+    public void WorkStealingMainThreadQueueDrainFromWorkerThreadThrows()
     {
         using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
@@ -253,7 +253,7 @@ public sealed class JobSystemBehaviorTests
     }
 
     [Fact]
-    public void WorkStealing_WhenJobThrows_CompleteRethrowsAndEndFrameAggregates()
+    public void WorkStealingWhenJobThrowsCompleteRethrowsAndEndFrameAggregates()
     {
         using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
@@ -267,7 +267,7 @@ public sealed class JobSystemBehaviorTests
     }
 
     [Fact]
-    public void WorkStealing_EndFrameRecyclesHandle_AndStaleHandleThrows()
+    public void WorkStealingEndFrameRecyclesHandleAndStaleHandleThrows()
     {
         using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
@@ -283,7 +283,7 @@ public sealed class JobSystemBehaviorTests
     }
 
     [Fact]
-    public void WorkStealing_ConcurrentSchedulingAcrossThreads_IsStable()
+    public void WorkStealingConcurrentSchedulingAcrossThreadsIsStable()
     {
         using JobScheduler jobs = CreateWorkStealing(workerCount: 4);
         jobs.BeginFrame();
@@ -301,7 +301,7 @@ public sealed class JobSystemBehaviorTests
     }
 
     [Fact]
-    public void WorkStealing_WorkerThreadsParticipateUnderLoad()
+    public void WorkStealingWorkerThreadsParticipateUnderLoad()
     {
         using JobScheduler jobs = CreateWorkStealing(workerCount: 4);
         jobs.BeginFrame();
@@ -324,7 +324,7 @@ public sealed class JobSystemBehaviorTests
     }
 
     [Fact]
-    public void WorkStealing_NestedScheduleFromWorker_IsSupported()
+    public void WorkStealingNestedScheduleFromWorkerIsSupported()
     {
         using JobScheduler jobs = CreateWorkStealing(workerCount: 2);
         jobs.BeginFrame();
@@ -344,14 +344,14 @@ public sealed class JobSystemBehaviorTests
     }
 
     [Fact]
-    public void WorkStealing_AutoWorkerCount_IsInValidRange()
+    public void WorkStealingAutoWorkerCountIsInValidRange()
     {
         using var jobs = new JobScheduler(JobExecutionMode.WorkerPool, new JobSchedulerOptions { workerCount = 0 });
         Assert.InRange(jobs.workerCount, 1, 64);
     }
 
     [Fact]
-    public void WorkStealing_CombineManyDependencies_CompletesReliably()
+    public void WorkStealingCombineManyDependenciesCompletesReliably()
     {
         using JobScheduler jobs = CreateWorkStealing(workerCount: 4);
         jobs.BeginFrame();
@@ -372,14 +372,14 @@ public sealed class JobSystemBehaviorTests
     }
 
     [Fact]
-    public void CommonApi_EndFrameWithoutBeginFrame_Throws()
+    public void CommonApiEndFrameWithoutBeginFrameThrows()
     {
         using JobScheduler jobs = CreateWorkStealing();
         Assert.Throws<InvalidOperationException>(() => jobs.EndFrame());
     }
 
     [Fact]
-    public void CommonApi_BeginFrameTwice_Throws()
+    public void CommonApiBeginFrameTwiceThrows()
     {
         using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
@@ -388,7 +388,7 @@ public sealed class JobSystemBehaviorTests
     }
 
     [Fact]
-    public void CommonApi_ParallelForInvalidArguments_Throws()
+    public void CommonApiParallelForInvalidArgumentsThrows()
     {
         using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
@@ -406,7 +406,7 @@ public sealed class JobSystemBehaviorTests
     }
 
     [Fact]
-    public void CommonApi_DisposePreventsFurtherUse()
+    public void CommonApiDisposePreventsFurtherUse()
     {
         JobScheduler jobs = CreateWorkStealing();
         jobs.Dispose();

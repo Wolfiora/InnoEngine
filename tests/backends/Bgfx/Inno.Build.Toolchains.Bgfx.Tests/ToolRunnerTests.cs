@@ -8,5 +8,5 @@ namespace Inno.Build.Toolchains.Bgfx.Tests;
 public sealed class ToolRunnerTests
 {
     [Fact]
-    public void Run_Throws_WhenToolMissing() => Assert.Throws<FileNotFoundException>(() => new ToolRunner().Run((BgfxTool)999, ["--help"]));
+    public void RunThrowsWhenToolMissing() => Assert.Throws<FileNotFoundException>(() => new ToolRunner().Run((BgfxTool)999, ["--help"]));
 }

@@ -13,7 +13,7 @@ namespace Inno.Build;
 [GenerateSerializationConverter]
 public sealed class BuildProfile : ISerializable
 {
-    private static readonly HashSet<string> S_WINDOWS_RESERVED_NAMES = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> WINDOWS_RESERVED_NAMES = new(StringComparer.OrdinalIgnoreCase)
     {
         "CON", "PRN", "AUX", "NUL",
         "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
@@ -172,7 +172,7 @@ public sealed class BuildProfile : ISerializable
            && (value.Length == 0 || value.Split('/').All(static segment => (
                segment is not "." and not ".."
                && !segment.EndsWith('.')
-               && !S_WINDOWS_RESERVED_NAMES.Contains(segment.Split('.', 2)[0])
+               && !WINDOWS_RESERVED_NAMES.Contains(segment.Split('.', 2)[0])
                && IsPortableIdentifier(segment)
            )));
 
@@ -190,6 +190,6 @@ public sealed class BuildProfile : ISerializable
             return false;
         }
         string stem = value.Split('.', 2)[0];
-        return !S_WINDOWS_RESERVED_NAMES.Contains(stem);
+        return !WINDOWS_RESERVED_NAMES.Contains(stem);
     }
 }

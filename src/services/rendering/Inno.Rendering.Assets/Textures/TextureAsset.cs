@@ -19,7 +19,7 @@ public sealed class TextureAsset : AssetObject, IRenderTextureArtifactSource
     private static readonly RenderTextureArtifactSlot[] LINEAR_TEXTURE_ARTIFACTS =
         [new RenderTextureArtifactSlot("main", "source", TextureColorSpace.Linear)];
 
-    private static readonly RenderTextureArtifactSlot[] S_RGB_TEXTURE_ARTIFACTS =
+    private static readonly RenderTextureArtifactSlot[] RGB_TEXTURE_ARTIFACTS =
         [new RenderTextureArtifactSlot("main", "source", TextureColorSpace.Srgb)];
 
     internal TextureAsset() {}
@@ -89,7 +89,7 @@ public sealed class TextureAsset : AssetObject, IRenderTextureArtifactSource
     /// </summary>
     public IReadOnlyList<RenderTextureArtifactSlot> textureArtifacts
         => colorSpace == TextureColorSpace.Srgb
-           ? S_RGB_TEXTURE_ARTIFACTS
+           ? RGB_TEXTURE_ARTIFACTS
            : LINEAR_TEXTURE_ARTIFACTS;
 
     /// <summary>

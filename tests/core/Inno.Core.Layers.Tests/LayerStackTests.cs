@@ -10,7 +10,7 @@ namespace Inno.Core.Layers.Tests;
 public sealed class LayerStackTests
 {
     [Fact]
-    public void PushLayer_InsertsBelowExistingOverlays()
+    public void PushLayerInsertsBelowExistingOverlays()
     {
         var dispatcher = new EventDispatcher();
         using var stack = new LayerStack(() => dispatcher.CreateHub());
@@ -29,7 +29,7 @@ public sealed class LayerStackTests
     }
 
     [Fact]
-    public void PushLayer_RejectsDuplicateInstance()
+    public void PushLayerRejectsDuplicateInstance()
     {
         var dispatcher = new EventDispatcher();
         using var stack = new LayerStack(() => dispatcher.CreateHub());
@@ -43,7 +43,7 @@ public sealed class LayerStackTests
     }
 
     [Fact]
-    public void EventDispatch_RunsTopmostOverlayFirst()
+    public void EventDispatchRunsTopmostOverlayFirst()
     {
         var dispatcher = new EventDispatcher();
         using var stack = new LayerStack(() => dispatcher.CreateHub());
@@ -57,7 +57,7 @@ public sealed class LayerStackTests
     }
 
     [Fact]
-    public void RenderFrame_UnwindsPreparedLayersInReverseOrderAfterFailure()
+    public void RenderFrameUnwindsPreparedLayersInReverseOrderAfterFailure()
     {
         var dispatcher = new EventDispatcher();
         using var stack = new LayerStack(() => dispatcher.CreateHub());
@@ -74,7 +74,7 @@ public sealed class LayerStackTests
     }
 
     [Fact]
-    public void PopMethods_RespectBaseAndOverlayRegions()
+    public void PopMethodsRespectBaseAndOverlayRegions()
     {
         var dispatcher = new EventDispatcher();
         using var stack = new LayerStack(() => dispatcher.CreateHub());
@@ -92,7 +92,7 @@ public sealed class LayerStackTests
     }
 
     [Fact]
-    public void FailedAttach_ReleasesSubscriptionsAndLeavesStackReusable()
+    public void FailedAttachReleasesSubscriptionsAndLeavesStackReusable()
     {
         var dispatcher = new EventDispatcher();
         using var stack = new LayerStack(() => dispatcher.CreateHub());

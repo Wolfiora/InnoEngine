@@ -11,7 +11,7 @@ namespace Inno.Audio.Tests;
 public sealed class AudioContractTests
 {
     [Fact]
-    public void ExecutionContext_ForwardsFacadeAndEnforcesLifoDisposal()
+    public void ExecutionContextForwardsFacadeAndEnforcesLifoDisposal()
     {
         var outer = new FakeAudioService(1);
         var inner = new FakeAudioService(2);
@@ -27,7 +27,7 @@ public sealed class AudioContractTests
     }
 
     [Fact]
-    public void MixerBuilder_ProducesParentBeforeChildGraphWithMasterBus()
+    public void MixerBuilderProducesParentBeforeChildGraphWithMasterBus()
     {
         var builder = new AudioMixerBuilder();
         var music = new AudioBusID("game.audio.bus.music");
@@ -49,7 +49,7 @@ public sealed class AudioContractTests
     }
 
     [Fact]
-    public void MixerBuilder_RejectsMissingParentsAndCycles()
+    public void MixerBuilderRejectsMissingParentsAndCycles()
     {
         var missingParent = new AudioMixerBuilder();
         missingParent.AddBus(new AudioBusID("game.audio.bus.music"), new AudioBusID("missing"));
@@ -64,7 +64,7 @@ public sealed class AudioContractTests
     }
 
     [Fact]
-    public void MetadataCodec_RoundTripsCompactRuntimeHeader()
+    public void MetadataCodecRoundTripsCompactRuntimeHeader()
     {
         var expected = new AudioClipMetadata(AudioCodecID.flac, 2, 48_000, 96_000, 123_456);
 
@@ -77,7 +77,7 @@ public sealed class AudioContractTests
     }
 
     [Fact]
-    public void DeviceHandleGeneration_RejectsStaleHandles()
+    public void DeviceHandleGenerationRejectsStaleHandles()
     {
         var first = new FakeAudioService(41);
         var replacement = new FakeAudioService(42);

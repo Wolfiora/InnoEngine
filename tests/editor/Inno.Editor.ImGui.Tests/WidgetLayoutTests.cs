@@ -554,7 +554,7 @@ public sealed unsafe class WidgetLayoutTests
     }
 
     [Fact]
-    public void TimelineWorkspace_UsesOneBoundedChildScrollOwner()
+    public void TimelineWorkspaceUsesOneBoundedChildScrollOwner()
     {
         using var context = new NativeContext(1f);
         float childScroll = 0f;
@@ -598,7 +598,7 @@ public sealed unsafe class WidgetLayoutTests
     }
 
     [Fact]
-    public void TimelinePointer_UsesCumulativeUIDragUntilRelease()
+    public void TimelinePointerUsesCumulativeUIDragUntilRelease()
     {
         using var context = new NativeContext(1f);
         Vector2 hit = default;
@@ -639,7 +639,7 @@ public sealed unsafe class WidgetLayoutTests
     [InlineData(0.75f)]
     [InlineData(1f)]
     [InlineData(1.5f)]
-    public void PropertyRows_WrapWithinTwoToThreeColumnsWithoutScrollbars(float zoom)
+    public void PropertyRowsWrapWithinTwoToThreeColumnsWithoutScrollbars(float zoom)
     {
         using var context = new NativeContext(zoom);
         Vector2 labelSize = default;
@@ -688,7 +688,7 @@ public sealed unsafe class WidgetLayoutTests
     [InlineData(2, false, 1.5f)]
     [InlineData(100, true, 1f)]
     [InlineData(100, true, 1.5f)]
-    public void BoundedSelectors_OpenDownwardAndScrollOnlyWhenRequired(
+    public void BoundedSelectorsOpenDownwardAndScrollOnlyWhenRequired(
         int itemCount,
         bool shouldScroll,
         float zoom
@@ -744,7 +744,7 @@ public sealed unsafe class WidgetLayoutTests
     [Theory]
     [InlineData(280f)]
     [InlineData(320f)]
-    public void SelectorsNearWindowBottom_UseOnlyRemainingDownwardSpace(float verticalOffset)
+    public void SelectorsNearWindowBottomUseOnlyRemainingDownwardSpace(float verticalOffset)
     {
         using var context = new NativeContext(1f);
         Vector2 controlMinimum = default;
@@ -792,7 +792,7 @@ public sealed unsafe class WidgetLayoutTests
     [InlineData(0.9f)]
     [InlineData(1f)]
     [InlineData(1.1f)]
-    public void ContextMenu_SearchFillsItsActualContentWidthWithoutScrollbars(float zoom)
+    public void ContextMenuSearchFillsItsActualContentWidthWithoutScrollbars(float zoom)
     {
         using var context = new NativeContext(zoom);
         Vector2 controlMinimum = default;
@@ -836,7 +836,7 @@ public sealed unsafe class WidgetLayoutTests
     }
 
     [Fact]
-    public void OverlappingWindows_OnlyForegroundClickableTextReceivesPress()
+    public void OverlappingWindowsOnlyForegroundClickableTextReceivesPress()
     {
         using var context = new NativeContext(1f);
         int backgroundPresses = 0;
@@ -872,7 +872,7 @@ public sealed unsafe class WidgetLayoutTests
     [InlineData(false, 1f)]
     [InlineData(true, 1.5f)]
     [InlineData(false, 1.5f)]
-    public void TreeRows_ContentClickIsDeliveredOnce(
+    public void TreeRowsContentClickIsDeliveredOnce(
         bool isLeaf,
         float zoom
     ) {
@@ -914,7 +914,7 @@ public sealed unsafe class WidgetLayoutTests
     }
 
     [Fact]
-    public void TreeRows_DisclosureClickExpandsWithoutSelectingContent()
+    public void TreeRowsDisclosureClickExpandsWithoutSelectingContent()
     {
         using var context = new NativeContext(1f);
         int presses = 0;
@@ -951,7 +951,7 @@ public sealed unsafe class WidgetLayoutTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void TreeRows_OverlayConsumesItsOwnClick(bool settleHover)
+    public void TreeRowsOverlayConsumesItsOwnClick(bool settleHover)
     {
         using var context = new NativeContext(1f);
         int rowPresses = 0;
@@ -992,7 +992,7 @@ public sealed unsafe class WidgetLayoutTests
     }
 
     [Fact]
-    public void TreeRows_ContentDoubleClickExpandsOnce()
+    public void TreeRowsContentDoubleClickExpandsOnce()
     {
         using var context = new NativeContext(1f);
         int presses = 0;

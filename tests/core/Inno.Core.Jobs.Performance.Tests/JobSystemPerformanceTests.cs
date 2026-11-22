@@ -9,7 +9,7 @@ namespace Inno.Core.JobsSystem.Tests;
 public sealed class JobSystemPerformanceTests
 {
     [Fact]
-    public void SameScheduleFlow_MoreWorkersIsFasterThanSingleWorker()
+    public void SameScheduleFlowMoreWorkersIsFasterThanSingleWorker()
     {
         Assert.True(Environment.ProcessorCount >= 2, "Worker scaling measurements require at least two logical processors.");
 
@@ -33,7 +33,7 @@ public sealed class JobSystemPerformanceTests
     }
 
     [Fact]
-    public void WorkStealingScheduleCompleteAll_IsFasterThanSingleThread()
+    public void WorkStealingScheduleCompleteAllIsFasterThanSingleThread()
     {
         Assert.True(Environment.ProcessorCount >= 2, "Worker scaling measurements require at least two logical processors.");
 
@@ -57,7 +57,7 @@ public sealed class JobSystemPerformanceTests
     }
 
     [Fact]
-    public void WorkStealingParallelFor_IsFasterThanSingleThread()
+    public void WorkStealingParallelForIsFasterThanSingleThread()
     {
         Assert.True(Environment.ProcessorCount >= 2, "Worker scaling measurements require at least two logical processors.");
 

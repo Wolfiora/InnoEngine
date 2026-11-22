@@ -47,7 +47,7 @@ public sealed partial class SceneSerializationTests : IDisposable
     }
 
     [Fact]
-    public void SceneRoundtrip_PreservesHierarchyOrderStateAndDirectReferences()
+    public void SceneRoundtripPreservesHierarchyOrderStateAndDirectReferences()
     {
         var source = new GameScene("Roundtrip");
         GameObject root = source.CreateObject("Root");
@@ -115,7 +115,7 @@ public sealed partial class SceneSerializationTests : IDisposable
     }
 
     [Fact]
-    public void PrefabInstantiation_RemapsIdentitiesAndIsolatesInternalReferences()
+    public void PrefabInstantiationRemapsIdentitiesAndIsolatesInternalReferences()
     {
         var sourceScene = new GameScene("PrefabSource");
         GameObject sourceRoot = sourceScene.CreateObject("Root");
@@ -192,7 +192,7 @@ public sealed partial class SceneSerializationTests : IDisposable
     }
 
     [Fact]
-    public void SerializableLayerValues_RoundtripThroughComponentState()
+    public void SerializableLayerValuesRoundtripThroughComponentState()
     {
         var scene = new GameScene("GameLayer Values");
         LayerValueComponent component = scene.CreateObject("Object").AddComponent<LayerValueComponent>();
@@ -235,7 +235,7 @@ public sealed partial class SceneSerializationTests : IDisposable
     }
 
     [Fact]
-    public void PrefabCapture_RejectsReferenceOutsideCapturedSubtreeWithDiagnosticContext()
+    public void PrefabCaptureRejectsReferenceOutsideCapturedSubtreeWithDiagnosticContext()
     {
         var scene = new GameScene("Boundary");
         GameObject root = scene.CreateObject("Root");
@@ -256,7 +256,7 @@ public sealed partial class SceneSerializationTests : IDisposable
     }
 
     [Fact]
-    public void SceneUnload_ReleasesCyclicSceneObjectGraphForGarbageCollection()
+    public void SceneUnloadReleasesCyclicSceneObjectGraphForGarbageCollection()
     {
         (WeakReference<GameScene> scene, WeakReference<GameObject> gameObject, WeakReference<GameComponent> component) =
             CreateAndUnloadCyclicGraph();

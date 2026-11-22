@@ -13,7 +13,7 @@ public sealed class ProjectSettingsExecutionContextTests
     private static readonly ProjectSettingID SETTING_ID = new("tests.execution-context");
 
     [Fact]
-    public void Settings_WithoutAnExecutionScope_FailsExplicitly()
+    public void SettingsWithoutAnExecutionScopeFailsExplicitly()
     {
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
             RuntimeSettings.Get<TestSetting>(SETTING_ID));
@@ -22,7 +22,7 @@ public sealed class ProjectSettingsExecutionContextTests
     }
 
     [Fact]
-    public void NestedScopes_RestoreThePreviousSettingsLookup()
+    public void NestedScopesRestoreThePreviousSettingsLookup()
     {
         var outer = new FixedSettingsLookup(11);
         var inner = new FixedSettingsLookup(22);
@@ -39,7 +39,7 @@ public sealed class ProjectSettingsExecutionContextTests
     }
 
     [Fact]
-    public void Scopes_DisposedOutOfOrder_AreRejectedWithoutLosingTheActiveLookup()
+    public void ScopesDisposedOutOfOrderAreRejectedWithoutLosingTheActiveLookup()
     {
         var outer = new FixedSettingsLookup(11);
         var inner = new FixedSettingsLookup(22);
@@ -59,7 +59,7 @@ public sealed class ProjectSettingsExecutionContextTests
     }
 
     [Fact]
-    public async Task ParallelAsyncFlows_ResolveTheirOwnSettingsLookups()
+    public async Task ParallelAsyncFlowsResolveTheirOwnSettingsLookups()
     {
         Task<int> first = ResolveAsync(new FixedSettingsLookup(11));
         Task<int> second = ResolveAsync(new FixedSettingsLookup(22));

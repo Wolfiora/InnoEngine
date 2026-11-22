@@ -22,7 +22,7 @@ public sealed class BgfxDeviceTests
     }
 
     [Fact]
-    public void NoopDevice_ExecutesOneGraphAndSubmitsOneFrame()
+    public void NoopDeviceExecutesOneGraphAndSubmitsOneFrame()
     {
         var builder = new RenderGraphBuilder(1, m_device.capabilities);
         builder
@@ -43,7 +43,7 @@ public sealed class BgfxDeviceTests
     }
 
     [Fact]
-    public void NoopDevice_ResetsPublicCommandCountersPerFrame()
+    public void NoopDeviceResetsPublicCommandCountersPerFrame()
     {
         m_device.BeginFrame();
         Assert.Equal(default, m_device.frameCounters);
@@ -54,7 +54,7 @@ public sealed class BgfxDeviceTests
     }
 
     [Fact]
-    public void CreateWindowSurface_RejectsUnsupportedPlatformHandlesBeforeNativeCreation()
+    public void CreateWindowSurfaceRejectsUnsupportedPlatformHandlesBeforeNativeCreation()
     {
         m_device.BeginFrame();
 
@@ -69,7 +69,7 @@ public sealed class BgfxDeviceTests
     }
 
     [Fact]
-    public void NoopDevice_CreatesAndDefersPersistentTextureDestruction()
+    public void NoopDeviceCreatesAndDefersPersistentTextureDestruction()
     {
         var descriptor = new RenderTextureDescriptor(16, 16, RenderTextureFormat.RGBA8, RenderTextureUsage.Sampled);
 
@@ -88,7 +88,7 @@ public sealed class BgfxDeviceTests
     }
 
     [Fact]
-    public void NoopDevice_UploadsCompletePersistentTextureSubresource()
+    public void NoopDeviceUploadsCompletePersistentTextureSubresource()
     {
         var descriptor = new RenderTextureDescriptor(4, 4, RenderTextureFormat.RGBA8, RenderTextureUsage.Sampled);
 
@@ -100,7 +100,7 @@ public sealed class BgfxDeviceTests
     }
 
     [Fact]
-    public void NoopDevice_CreatesAndUpdatesVolumeAndCubemapSubresources()
+    public void NoopDeviceCreatesAndUpdatesVolumeAndCubemapSubresources()
     {
         Assert.True(m_device.capabilities.Supports(GraphicsCapability.Texture3D));
         Assert.True(m_device.capabilities.SupportsSampled(RenderTextureFormat.RGBA8, RenderTextureDimension.Texture3D));
@@ -132,7 +132,7 @@ public sealed class BgfxDeviceTests
     }
 
     [Fact]
-    public void NoopDevice_UpdatesDynamicVertexBuffer()
+    public void NoopDeviceUpdatesDynamicVertexBuffer()
     {
         var layout = new RenderVertexLayout(
             [
@@ -152,7 +152,7 @@ public sealed class BgfxDeviceTests
     }
 
     [Fact]
-    public void NoopDevice_CreatesVertexBufferWithExplicitPadding()
+    public void NoopDeviceCreatesVertexBufferWithExplicitPadding()
     {
         var layout = new RenderVertexLayout(
             [
@@ -179,7 +179,7 @@ public sealed class BgfxDeviceTests
     }
 
     [Fact]
-    public void NoopDevice_CreatesVertexAndIndexBuffersAtFrameSafetyPoint()
+    public void NoopDeviceCreatesVertexAndIndexBuffersAtFrameSafetyPoint()
     {
         var layout = new RenderVertexLayout(
             [
@@ -207,7 +207,7 @@ public sealed class BgfxDeviceTests
     }
 
     [Fact]
-    public void NoopDevice_AllocatesTransientStorageBufferForCompiledGraph()
+    public void NoopDeviceAllocatesTransientStorageBufferForCompiledGraph()
     {
         var builder = new RenderGraphBuilder(8, m_device.capabilities);
         RenderBufferHandle buffer = builder.CreateBuffer(
@@ -231,7 +231,7 @@ public sealed class BgfxDeviceTests
     }
 
     [Fact]
-    public void NoopDevice_AllocatesTransientStorageTextureForCompiledGraph()
+    public void NoopDeviceAllocatesTransientStorageTextureForCompiledGraph()
     {
         Assert.True(m_device.capabilities.Supports(GraphicsCapability.StorageTexture));
         Assert.True(m_device.capabilities.SupportsStorage(RenderTextureFormat.RGBA8, RenderStorageAccess.Write));
@@ -257,7 +257,7 @@ public sealed class BgfxDeviceTests
     }
 
     [Fact]
-    public void NoopDevice_ReusesSteadyStateTransientTextureAndFramebufferAcrossGraphs()
+    public void NoopDeviceReusesSteadyStateTransientTextureAndFramebufferAcrossGraphs()
     {
         CompiledRenderGraph first = BuildColorTargetGraph(101);
         m_device.BeginFrame();
@@ -277,7 +277,7 @@ public sealed class BgfxDeviceTests
     }
 
     [Fact]
-    public void NoopDevice_AcceptsBothSynchronizationPoliciesAndKeepsResizeFrameBoundaries()
+    public void NoopDeviceAcceptsBothSynchronizationPoliciesAndKeepsResizeFrameBoundaries()
     {
         IRenderDevice device = m_device;
         uint generation = device.generation;
@@ -293,7 +293,7 @@ public sealed class BgfxDeviceTests
     }
 
     [Fact]
-    public void NoopDevice_RetiresSupersededNamedFramebuffersDuringResizeChurn()
+    public void NoopDeviceRetiresSupersededNamedFramebuffersDuringResizeChurn()
     {
         const int C_PASS_COUNT = 16;
         for (uint frame = 0; frame < 32; frame++)
@@ -333,7 +333,7 @@ public sealed class BgfxDeviceTests
     }
 
     [Fact]
-    public void CreateBuffer_WithPartialInitialData_FailsWithoutClosingFrame()
+    public void CreateBufferWithPartialInitialDataFailsWithoutClosingFrame()
     {
         var layout = new RenderVertexLayout(
             [
@@ -351,7 +351,7 @@ public sealed class BgfxDeviceTests
     }
 
     [Fact]
-    public void NoopDevice_BindsRequestedTextureArrayLayer()
+    public void NoopDeviceBindsRequestedTextureArrayLayer()
     {
         var builder = new RenderGraphBuilder(4, m_device.capabilities);
         RenderTextureHandle texture = builder.CreateTexture(
@@ -381,7 +381,7 @@ public sealed class BgfxDeviceTests
     }
 
     [Fact]
-    public void EndFrame_WithoutBeginFrame_Throws() => Assert.Throws<InvalidOperationException>(() => m_device.EndFrame());
+    public void EndFrameWithoutBeginFrameThrows() => Assert.Throws<InvalidOperationException>(() => m_device.EndFrame());
 
     [Fact]
     public void WindowlessDeviceDoesNotAdvertiseAnInternalBackbufferAsPresentation()

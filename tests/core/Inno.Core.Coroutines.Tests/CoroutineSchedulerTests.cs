@@ -11,7 +11,7 @@ namespace Inno.Core.Coroutines.Tests;
 public sealed class CoroutineSchedulerTests
 {
     [Fact]
-    public void StartCoroutine_NullYield_RunsOnNextTick()
+    public void StartCoroutineNullYieldRunsOnNextTick()
     {
         using var scheduler = new CoroutineScheduler();
         bool ran = false;
@@ -31,7 +31,7 @@ public sealed class CoroutineSchedulerTests
     }
 
     [Fact]
-    public void WaitForSeconds_WaitsByTime()
+    public void WaitForSecondsWaitsByTime()
     {
         using var scheduler = new CoroutineScheduler();
         bool ran = false;
@@ -55,7 +55,7 @@ public sealed class CoroutineSchedulerTests
     }
 
     [Fact]
-    public void WaitUntil_And_WaitWhile_Work()
+    public void WaitUntilAndWaitWhileWork()
     {
         using var scheduler = new CoroutineScheduler();
         bool flag = false;
@@ -83,7 +83,7 @@ public sealed class CoroutineSchedulerTests
     }
 
     [Fact]
-    public void StopCoroutine_StopsTarget()
+    public void StopCoroutineStopsTarget()
     {
         using var scheduler = new CoroutineScheduler();
         int count = 0;
@@ -107,7 +107,7 @@ public sealed class CoroutineSchedulerTests
     }
 
     [Fact]
-    public void StopAllCoroutines_ByOwner_StopsOnlyThatOwner()
+    public void StopAllCoroutinesByOwnerStopsOnlyThatOwner()
     {
         using var scheduler = new CoroutineScheduler();
         var ownerA = new object();
@@ -141,7 +141,7 @@ public sealed class CoroutineSchedulerTests
     }
 
     [Fact]
-    public void NestedCoroutine_Works()
+    public void NestedCoroutineWorks()
     {
         using var scheduler = new CoroutineScheduler();
         string order = string.Empty;
@@ -169,7 +169,7 @@ public sealed class CoroutineSchedulerTests
     }
 
     [Fact]
-    public void WaitForTask_WaitsCompletion()
+    public void WaitForTaskWaitsCompletion()
     {
         using var scheduler = new CoroutineScheduler();
         var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -192,7 +192,7 @@ public sealed class CoroutineSchedulerTests
     }
 
     [Fact]
-    public void ListenOnceStyle_YieldCoroutineHandle_WaitsTarget()
+    public void ListenOnceStyleYieldCoroutineHandleWaitsTarget()
     {
         using var scheduler = new CoroutineScheduler();
         bool done = false;
@@ -218,7 +218,7 @@ public sealed class CoroutineSchedulerTests
     }
 
     [Fact]
-    public void ConcurrentStartAndTick_IsStable()
+    public void ConcurrentStartAndTickIsStable()
     {
         using var scheduler = new CoroutineScheduler();
         const int C_WORKERS = 8;
@@ -247,7 +247,7 @@ public sealed class CoroutineSchedulerTests
     }
 
     [Fact]
-    public void ConcurrentStopByHandle_IsStable()
+    public void ConcurrentStopByHandleIsStable()
     {
         using var scheduler = new CoroutineScheduler();
         const int C_COUNT = 3000;
@@ -277,7 +277,7 @@ public sealed class CoroutineSchedulerTests
     }
 
     [Fact]
-    public void HandleIsValid_TracksLifecycle()
+    public void HandleIsValidTracksLifecycle()
     {
         using var scheduler = new CoroutineScheduler();
         CoroutineHandle handle = scheduler.StartCoroutine(Routine());
@@ -296,7 +296,7 @@ public sealed class CoroutineSchedulerTests
     }
 
     [Fact]
-    public void HandleIsValid_BecomesFalseAfterStop()
+    public void HandleIsValidBecomesFalseAfterStop()
     {
         using var scheduler = new CoroutineScheduler();
         CoroutineHandle handle = scheduler.StartCoroutine(Loop(() => {}));
@@ -308,7 +308,7 @@ public sealed class CoroutineSchedulerTests
     }
 
     [Fact]
-    public void StopCoroutine_FromOtherScheduler_ReturnsFalseAndDoesNotAffectOwner()
+    public void StopCoroutineFromOtherSchedulerReturnsFalseAndDoesNotAffectOwner()
     {
         using var schedulerA = new CoroutineScheduler();
         using var schedulerB = new CoroutineScheduler();
@@ -324,7 +324,7 @@ public sealed class CoroutineSchedulerTests
     }
 
     [Fact]
-    public void StartCoroutine_AfterDispose_ThrowsAndHandleCannotBeCreated()
+    public void StartCoroutineAfterDisposeThrowsAndHandleCannotBeCreated()
     {
         using var scheduler = new CoroutineScheduler();
         scheduler.Dispose();

@@ -45,7 +45,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void MutationScope_Uncommitted_RollsBackPassesResourcesAndOutputs()
+    public void MutationScopeUncommittedRollsBackPassesResourcesAndOutputs()
     {
         RenderGraphBuilder graph = CreateGraph();
         using (graph.BeginMutationScope())
@@ -75,7 +75,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void Compile_SchedulesProducerBeforeConsumer()
+    public void CompileSchedulesProducerBeforeConsumer()
     {
         RenderGraphBuilder graph = CreateGraph();
         RenderTextureHandle intermediate = graph.CreateTexture("Intermediate", ColorDescriptor());
@@ -102,7 +102,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void Compile_CullsUnconsumedPass()
+    public void CompileCullsUnconsumedPass()
     {
         RenderGraphBuilder graph = CreateGraph();
         RenderTextureHandle unused = graph.CreateTexture("Unused", ColorDescriptor());
@@ -129,7 +129,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void Compile_WithUninitializedRead_FailsClearly()
+    public void CompileWithUninitializedReadFailsClearly()
     {
         RenderGraphBuilder graph = CreateGraph();
         RenderTextureHandle input = graph.CreateTexture("Input", SampledDescriptor());
@@ -148,7 +148,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void Compile_WithReadWriteDeclaredAsSeparateAccess_FailsHazardValidation()
+    public void CompileWithReadWriteDeclaredAsSeparateAccessFailsHazardValidation()
     {
         RenderGraphBuilder graph = CreateGraph();
         RenderTextureHandle texture = graph.CreateTexture(
@@ -186,7 +186,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void Compile_ReusesCompatibleNonOverlappingTextures()
+    public void CompileReusesCompatibleNonOverlappingTextures()
     {
         RenderGraphBuilder graph = CreateGraph();
         RenderTextureHandle first = graph.CreateTexture("First", ColorDescriptor());
@@ -229,7 +229,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void Compile_WhenViewLimitExceeded_FailsClearly()
+    public void CompileWhenViewLimitExceededFailsClearly()
     {
         var graph = new RenderGraphBuilder(1, CreateCapabilities(maxViews: 1));
         graph.AddRasterPass("A", GEOMETRY, 0, static (
@@ -248,7 +248,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void Compile_WithPhaseCycle_FailsClearly()
+    public void CompileWithPhaseCycleFailsClearly()
     {
         var left = new RenderPhaseID("tests.left");
         var right = new RenderPhaseID("tests.right");
@@ -271,7 +271,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void Compile_WithInvalidAttachmentSubresource_FailsClearly()
+    public void CompileWithInvalidAttachmentSubresourceFailsClearly()
     {
         RenderGraphBuilder graph = CreateGraph();
         RenderTextureHandle texture = graph.CreateTexture(
@@ -300,7 +300,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void Compile_WhenTextureUsageDoesNotMatchPassOperation_FailsClearly()
+    public void CompileWhenTextureUsageDoesNotMatchPassOperationFailsClearly()
     {
         RenderGraphBuilder graph = CreateGraph();
         RenderTextureHandle texture = graph.CreateTexture(
@@ -322,7 +322,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void Compile_WhenStoredOutputIsDiscarded_FailsClearly()
+    public void CompileWhenStoredOutputIsDiscardedFailsClearly()
     {
         RenderGraphBuilder graph = CreateGraph();
         RenderTextureHandle output = graph.CreateTexture("Discarded", ColorDescriptor());
@@ -341,7 +341,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void Compile_WhenBufferCopyCapabilityIsMissing_FailsClearly()
+    public void CompileWhenBufferCopyCapabilityIsMissingFailsClearly()
     {
         RenderGraphBuilder graph = CreateGraph();
         RenderBufferHandle source = graph.CreateBuffer(
@@ -367,7 +367,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void Compile_WhenSampledFormatIsMissing_FailsClearly()
+    public void CompileWhenSampledFormatIsMissingFailsClearly()
     {
         var graph = new RenderGraphBuilder(
             1,
@@ -385,7 +385,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void Compile_WhenTextureArrayCapabilityIsMissing_FailsClearly()
+    public void CompileWhenTextureArrayCapabilityIsMissingFailsClearly()
     {
         var graph = new RenderGraphBuilder(
             1,
@@ -409,7 +409,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void Compile_WhenUnsigned32BitIndexCapabilityIsMissing_FailsClearly()
+    public void CompileWhenUnsigned32BitIndexCapabilityIsMissingFailsClearly()
     {
         var graph = new RenderGraphBuilder(
             1,
@@ -432,7 +432,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void Compile_WhenVolumeTextureCapabilityIsMissing_FailsClearly()
+    public void CompileWhenVolumeTextureCapabilityIsMissingFailsClearly()
     {
         var graph = new RenderGraphBuilder(1, CreateCapabilities(maxViews: 64));
         _ = graph.CreateTexture(
@@ -454,7 +454,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void Compile_WithSupportedVolumeAndCubemapTextures_Succeeds()
+    public void CompileWithSupportedVolumeAndCubemapTexturesSucceeds()
     {
         var graph = new RenderGraphBuilder(
             1,
@@ -492,7 +492,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void Compile_WhenMultisampleFormatCapabilityIsMissing_FailsClearly()
+    public void CompileWhenMultisampleFormatCapabilityIsMissingFailsClearly()
     {
         var graph = new RenderGraphBuilder(1, CreateCapabilities(maxViews: 64));
         RenderTextureHandle target = graph.CreateTexture(
@@ -520,7 +520,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void Compile_StorageTextureAccessHonorsReadAndWriteFormatCapabilities()
+    public void CompileStorageTextureAccessHonorsReadAndWriteFormatCapabilities()
     {
         var readGraph = new RenderGraphBuilder(
             1,
@@ -599,7 +599,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void Execute_WhenPassFails_StillEndsPassAndGraph()
+    public void ExecuteWhenPassFailsStillEndsPassAndGraph()
     {
         RenderGraphBuilder graph = CreateGraph();
         graph
@@ -622,7 +622,7 @@ public sealed class RenderGraphCompilerTests
     }
 
     [Fact]
-    public void Execute_ParallelRecordingOverlapsEligibleCallbacksAndReplaysInGraphOrder()
+    public void ExecuteParallelRecordingOverlapsEligibleCallbacksAndReplaysInGraphOrder()
     {
         RenderGraphBuilder graph = CreateGraph();
         int activeRecorders = 0;
