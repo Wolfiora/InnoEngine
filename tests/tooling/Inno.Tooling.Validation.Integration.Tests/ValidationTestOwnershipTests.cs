@@ -30,7 +30,8 @@ public sealed class ValidationTestOwnershipTests
                 [Fact]
                 public void SharedFailure() => Assert.Fail("Intentional owner failure");
 
-                [Fact, Trait("ProcessIsolation", "Required")]
+                [Fact]
+                [Trait("ProcessIsolation", "Required")]
                 public void IsolatedFailure() => Assert.Fail("Intentional isolated owner failure");
             }
 
@@ -42,7 +43,8 @@ public sealed class ValidationTestOwnershipTests
 
             public sealed class UnionSuccessProbe
             {
-                [Fact, Trait("ProcessIsolation", "Required")]
+                [Fact]
+                [Trait("ProcessIsolation", "Required")]
                 public void IsolatedSuccess() => Assert.Equal(2, 1 + 1);
             }
 

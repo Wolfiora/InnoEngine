@@ -252,11 +252,17 @@ public sealed class ValidationCompletionTests
         repository.Write(C_FIXTURE + "/Probe.cs", """
             namespace Inno.Input.CompilationFixture;
 
-            /// <summary>Exposes a real fixture compilation value.</summary>
+            /// <summary>
+            /// Exposes a real fixture compilation value.
+            /// </summary>
             public static class Probe
             {
-                /// <summary>Reads the value compiled from this source.</summary>
-                /// <returns>The current fixture value.</returns>
+                /// <summary>
+                /// Reads the value compiled from this source.
+                /// </summary>
+                /// <returns>
+                /// The current fixture value.
+                /// </returns>
                 public static int Read() => 1;
             }
 
