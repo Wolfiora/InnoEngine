@@ -1,5 +1,11 @@
 # Engine CI/CD acceptance
 
+## Independent backend publication
+
+On base `baed28a5`, Windows contract fixtures promoted two platform archives in sequence. Each publication had only its own target's candidate and results. The catalog retained the other archive digests across both updates, and retrying either publication reused the current release. The fixtures also exercised the initial complete catalog, a pinned reader during rotation, interrupted draft ownership and rejection of incomplete SDK evidence.
+
+A local replay verified the five original Windows plan, join and shard artifacts from PR #91 for merge candidate `2719885180c0e17cf12e8a83cc40cddb3cd30572`. The new platform publication path accepted 21 passed checks and 76 explicit exclusions using attempt 1 evidence in a simulated second attempt. It emitted Windows results without issuing whole-engine certification. Live publication requires a trusted default-branch event. [Original Windows execution](https://github.com/Wolfiora/InnoEngine/actions/runs/45183406559/job/137835300349)
+
 ## Windows cancellation and failed batch evidence
 
 The [first PR 88 candidate](https://github.com/Wolfiora/InnoEngine/actions/runs/44760191698/job/136373208390) returned all 300 planned Windows managed checks. One owner failed, and a 301st process record hid its diagnostic during reconciliation. The archived case took 2.0144153 seconds. The managed test process took 6,409.8 seconds. Its TRX did not capture the instant cancellation was requested.

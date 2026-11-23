@@ -11,6 +11,7 @@ $hostsRegistry = @(Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.git
 $targets = [ordered]@{}
 $deferred = @()
 $requirements = [ordered]@{}
+$readerTags = [Collections.Generic.SortedSet[string]]::new([StringComparer]::Ordinal)
 $independent = @()
 foreach ($hostName in $Hosts) {
     $hostRegistration = @($hostsRegistry | Where-Object runner -CEQ $hostName)
@@ -22,6 +23,7 @@ foreach ($hostName in $Hosts) {
     }
     $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
     foreach ($package in $decision.packages) {
+        if ($package.PSObject.Properties['tag'] -and $package.tag) { $null = $readerTags.Add($package.tag) }
         $target = $package.target
         $registration = @($platforms | Where-Object target -CEQ $target)
         if ($registration.Count -ne 1 -or !$seen.Add($target) -or $package.operation -cnotin @('produce','consume')) {
@@ -60,6 +62,8 @@ foreach ($hostName in $Hosts) {
         $deferred += [pscustomobject]@{runner=$hostName;target=$hostRegistration[0].target;pattern=$pattern;destination=$destination}
     }
 }
+# The initial catalog must publish all registered targets together. Check before a cold rebuild clears seed identities.
+$bootstrap = $targets.Count -eq $platforms.Count -and !@($targets.Values | Where-Object sha256).Count
 if ($RebuildTargets) {
     $requested = @($RebuildTargets.Split(',') | ForEach-Object { $_.Trim() })
     if (@($requested | Sort-Object -CaseSensitive -Unique).Count -ne $requested.Count) { throw 'Duplicate manual rebuild target.' }
@@ -93,6 +97,7 @@ $pending = [Collections.Generic.List[string]]::new()
 foreach ($runner in $requirements.Keys) { $pending.Add($runner) }
 while ($pending.Count) {
     $members = @($pending[0])
+    if ($bootstrap) { $members = $pending.ToArray() }
     $closure = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
     for ($i = 0; $i -lt $members.Count; $i++) {
         $null = $pending.Remove($members[$i])
@@ -115,4 +120,4 @@ while ($pending.Count) {
         consumers=@{include=@($deferred | Where-Object { $_.runner -cin $members })}}
 }
 [pscustomobject]@{platforms=@($targets.Values); producers=@($targets.Values | Where-Object operation -CEQ 'produce');
-    deferred=$deferred; chains=$chains; independent=$independent}
+    deferred=$deferred; chains=$chains; independent=$independent; readerTags=@($readerTags)}

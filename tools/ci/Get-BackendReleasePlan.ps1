@@ -3,6 +3,7 @@ param(
     [Parameter(Mandatory)][hashtable]$Digests,
     [Parameter(Mandatory)][string]$Revision,
     [string[]]$ActiveTags = @(),
+    [switch]$UpdateLatest,
     [datetime]$UtcDate = [datetime]::UtcNow
 )
 $ErrorActionPreference = 'Stop'
@@ -38,6 +39,7 @@ foreach ($release in $owned) {
     if (!$release.draft -and !$seen.Count) { throw "Published backend release $($release.tag_name) is incomplete." }
 }
 foreach ($release in $published) {
+    if ($UpdateLatest -and $release.id -ne $published[0].id) { break }
     if ($release.assets.Count -eq $Digests.Count -and !@($release.assets | Where-Object { $_.digest -cne ('sha256:' + $Digests[$_.name]) }).Count) {
         return [pscustomobject]@{ operation='reuse'; tag=$release.tag_name; id=$release.id; retire=$null }
     }
@@ -63,8 +65,9 @@ if ($drafts.Count) {
 }
 $retire = $null
 if ($published.Count -eq 3) {
-    $oldest = $published[-1]
-    if ($oldest.tag_name -cin $ActiveTags) { throw "Backend release $($oldest.tag_name) still has a reader or rollback reference." }
+    # Keep the current rollback catalog and all inputs pinned by sibling chains.
+    $oldest = $published | Select-Object -Skip 1 | Where-Object { $_.tag_name -cnotin $ActiveTags } | Select-Object -Last 1
+    if (!$oldest) { throw 'Every retirement candidate still has a reader or rollback reference.' }
     $retire = [pscustomobject]@{ id=$oldest.id; tag=$oldest.tag_name }
 }
 [pscustomobject]@{ operation=$operation; tag=$tag; title=('Backend Prebuilts ' + $tag.Substring('backend-prebuilts-'.Length)); id=$id; retire=$retire }

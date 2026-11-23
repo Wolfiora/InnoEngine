@@ -2,7 +2,7 @@ $ErrorActionPreference = 'Stop'
 $owner = Join-Path ([IO.Path]::GetFullPath('../../artifacts/validation/ci-gate-contracts', $PSScriptRoot)) ([Guid]::NewGuid().ToString('N'))
 $savedSummary = $env:GITHUB_STEP_SUMMARY
 $savedEnvironment = $env:GITHUB_ENV
-$cases = @('complete', 'missing-shard', 'changed-entry', 'wrong-candidate', 'failed-join', 'changed-shard', 'duplicate-shards', 'changed-result', 'wrong-platform', 'empty-hosts', 'duplicate-hosts')
+$cases = @('complete', 'platform-retry', 'missing-shard', 'changed-entry', 'wrong-candidate', 'failed-join', 'changed-shard', 'duplicate-shards', 'changed-result', 'wrong-platform', 'empty-hosts', 'duplicate-hosts')
 try {
     foreach ($case in $cases) {
         $root = Join-Path $owner $case
@@ -42,9 +42,13 @@ try {
         $hosts = if ($case -ceq 'duplicate-hosts') { @('fixture', 'fixture') } elseif ($case -ceq 'empty-hosts') { @() } else { @('fixture') }
         $failed = $false
         try {
-            & (Join-Path $scripts 'Join-ValidationCi.ps1') -ReceivedDirectory $received -Hosts $hosts -ExpectedCommit ('a' * 40) -Attempt 1
+            $retry = $case -ceq 'platform-retry'
+            & (Join-Path $scripts 'Join-ValidationCi.ps1') -ReceivedDirectory $received -Hosts $hosts -ExpectedCommit ('a' * 40) -Attempt $(if ($retry) { 2 } else { 1 }) -HostEvidenceOnly:$retry
         } catch { $failed = $true; $_ | Out-String | Set-Content (Join-Path $root 'failure.log') }
-        if ($failed -ne ($case -cne 'complete')) { throw "Unexpected final gate result: $case. See $root." }
+        if ($failed -ne ($case -cnotin @('complete','platform-retry'))) { throw "Unexpected final gate result: $case. See $root." }
+        if ($retry -and (!(Test-Path (Join-Path $root 'artifacts/validation/joined/fixture/results.json')) -or (Test-Path $env:GITHUB_ENV))) {
+            throw 'A platform retry must retain verified host results without claiming complete acceptance.'
+        }
         $certificate = Join-Path $root 'artifacts/validation/certification.json'
         if ((Test-Path $certificate) -ne ($case -ceq 'complete')) { throw 'An incomplete candidate received a final certification.' }
         if ($case -ceq 'complete') {

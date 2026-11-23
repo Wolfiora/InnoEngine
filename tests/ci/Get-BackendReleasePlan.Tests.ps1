@@ -21,8 +21,10 @@ for ($generation = 1; $generation -le 5; $generation++) {
     if ($plan.operation -cne 'create' -or $plan.tag -cne "backend-prebuilts-2026.11.19.$generation") { throw 'Unexpected platform release version.' }
     if ($generation -gt 3) {
         if ($plan.retire.id -ne ($generation - 3)) { throw 'Rotation selected the wrong release.' }
+        $protected = & $script -Releases $history -Digests (Digests $generation) -Revision $revision -UtcDate $date -ActiveTags @($plan.retire.tag)
+        if ($protected.retire.id -ne ($generation - 2)) { throw 'Rotation must preserve both the pinned catalog and latest rollback.' }
         $blocked = $false
-        try { $null = & $script -Releases $history -Digests (Digests $generation) -Revision $revision -UtcDate $date -ActiveTags @($plan.retire.tag) }
+        try { $null = & $script -Releases $history -Digests (Digests $generation) -Revision $revision -UtcDate $date -ActiveTags @($plan.retire.tag,$protected.retire.tag) }
         catch { $blocked = $_.Exception.Message.Contains('still has a reader') }
         if (!$blocked) { throw 'An active rollback release could be retired.' }
         $history = @($history | Where-Object tag_name -CNE $plan.retire.tag)
@@ -32,6 +34,8 @@ for ($generation = 1; $generation -le 5; $generation++) {
     if ($repeat.operation -cne 'reuse' -or $repeat.tag -cne $plan.tag) { throw 'A retry created another prerelease.' }
 }
 $draft = Release 6
+$rollback = & $script -Releases $history -Digests (Digests 4) -Revision $revision -UtcDate $date -UpdateLatest
+if ($rollback.operation -cne 'create') { throw 'A platform rollback reused a historical catalog while leaving newer bytes selected.' }
 $draft.draft = $true
 $draft.assets = @($draft.assets[0])
 $resume = & $script -Releases ($history + $draft) -Digests (Digests 6) -Revision $revision -UtcDate $date
