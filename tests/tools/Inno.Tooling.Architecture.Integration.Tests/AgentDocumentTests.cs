@@ -45,6 +45,19 @@ public sealed class AgentDocumentTests : IDisposable
     }
 
     [Fact]
+    public void RecordPagesAreNotLinkSourcesWhileOtherAgentPagesAre()
+    {
+        File.WriteAllText(Path.Combine(m_root, "AGENTS.md"), "# Entry\n\n[Records](.agents/records/README.md)\n");
+        File.WriteAllText(Path.Combine(m_root, ".agents/records/acceptance/RECORD.md"), "# Record\n\n[Moved](../../../tests/moved.ps1)\n");
+        Assert.Equal(0, ArchitectureCommandFixture.Run(m_root, "--agent-documents-only").exitCode);
+        File.WriteAllText(Path.Combine(m_root, ".agents/rulebook/rule.md"), "# Rule\n\n[Moved](../../tests/moved.ps1)\n");
+        (int exitCode, string output) rejected = ArchitectureCommandFixture.Run(m_root, "--agent-documents-only");
+        Assert.Equal(1, rejected.exitCode);
+        Assert.Contains("rule.md' links to missing path", rejected.output);
+        Assert.DoesNotContain("RECORD.md", rejected.output);
+    }
+
+    [Fact]
     public void SkillsAreListedInTheRootInstructions()
     {
         string skill = Path.Combine(m_root, ".agents/skills/example");

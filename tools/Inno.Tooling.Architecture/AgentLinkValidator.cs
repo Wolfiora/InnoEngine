@@ -18,6 +18,9 @@ internal static class AgentLinkValidator
         .UseAutoIdentifiers(AutoIdentifierOptions.GitHub)
         .Build();
 
+    // Records keep the paths of the revision they describe, so their pages are not link sources. Links into them stay checked.
+    private static readonly string HISTORICAL_RECORDS = Path.Combine(".agents", "records");
+
     internal static void Validate(
         string root,
         ICollection<string> failures,
@@ -25,8 +28,13 @@ internal static class AgentLinkValidator
     ) {
         var anchors = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
         string location = Path.Combine(root, contentRoot);
+        string records = Path.GetFullPath(Path.Combine(root, HISTORICAL_RECORDS)) + Path.DirectorySeparatorChar;
         foreach (string page in File.Exists(location) ? [location] : RepositorySourceInventory.Files(location, "*.md"))
         {
+            if (Path.GetFullPath(page).StartsWith(records, StringComparison.Ordinal))
+            {
+                continue;
+            }
             MarkdownDocument parsed = Markdown.Parse(File.ReadAllText(page), PIPELINE);
             foreach (string target in parsed.Descendants<LinkInline>()
                 .Where(static link => link.Url is not null)
